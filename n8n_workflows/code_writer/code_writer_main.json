@@ -1,0 +1,124 @@
+{
+    "name": "✍️ AI Code Writer - Tự Động Tạo Code",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "generate-code",
+                "responseMode": "responseNode"
+            },
+            "id": "webhook-2",
+            "name": "Webhook - Nhận Yêu Cầu Code",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const spec = $input.item.json.body || {};\n\nconst pythonScript = `\nimport sys\nimport json\nsys.path.append('c:/Users/GHC/Desktop/python1 - Copy/ai_modules')\nfrom code_writer_ai import CodeWriterAI\n\nwriter = CodeWriterAI()\nspec = ${JSON.stringify(spec)}\nresult = writer.write_code_from_spec(spec)\nprint(json.dumps(result, ensure_ascii=False))\n`;\n\nreturn [{\n  json: {\n    spec: spec,\n    python_script: pythonScript\n  }\n}];"
+            },
+            "id": "code-3",
+            "name": "Chuẩn Bị Spec",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "python -c \"{{ $json.python_script }}\"",
+                "cwd": "c:/Users/GHC/Desktop/python1 - Copy"
+            },
+            "id": "execute-2",
+            "name": "Tạo Code",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const output = $input.item.json.stdout || '{}';\nconst result = JSON.parse(output);\n\nreturn [{\n  json: {\n    success: true,\n    code: result.code,\n    validation: result.validation,\n    name: result.name,\n    language: result.language\n  }\n}];"
+            },
+            "id": "code-4",
+            "name": "Xử Lý Code",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                850,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $json }}"
+            },
+            "id": "respond-2",
+            "name": "Trả Code",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1050,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook - Nhận Yêu Cầu Code": {
+            "main": [
+                [
+                    {
+                        "node": "Chuẩn Bị Spec",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Chuẩn Bị Spec": {
+            "main": [
+                [
+                    {
+                        "node": "Tạo Code",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tạo Code": {
+            "main": [
+                [
+                    {
+                        "node": "Xử Lý Code",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Xử Lý Code": {
+            "main": [
+                [
+                    {
+                        "node": "Trả Code",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "active": false
+}

@@ -1,0 +1,170 @@
+{
+    "name": "🤖 AI Backend for QMDG Web",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "qmdg-ai",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ],
+            "name": "Webhook - AI Request",
+            "webhookId": "qmdg-ai-webhook"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extract request data\nconst body = $input.item.json.body;\nconst question = body.question || \"\";\nconst context = body.context || {};\nconst action = body.action || \"answer\";\n\nreturn [{\n  json: {\n    question: question,\n    context: context,\n    action: action,\n    timestamp: new Date().toISOString()\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                460,
+                300
+            ],
+            "name": "Parse Request"
+        },
+        {
+            "parameters": {
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": []
+                },
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Bạn là chuyên gia Kỳ Môn Độn Giáp. Trả lời câu hỏi sau bằng tiếng Việt:\\n\\n{{ $json.question }}\"\n    }]\n  }]\n}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                680,
+                300
+            ],
+            "name": "Call Gemini API",
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "1",
+                    "name": "Gemini API Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extract AI response\nconst response = $input.item.json;\nlet aiText = \"Xin lỗi, không thể xử lý yêu cầu.\";\n\ntry {\n  if (response.candidates && response.candidates[0]) {\n    const content = response.candidates[0].content;\n    if (content && content.parts && content.parts[0]) {\n      aiText = content.parts[0].text;\n    }\n  }\n} catch (error) {\n  aiText = \"Lỗi: \" + error.message;\n}\n\nreturn [{\n  json: {\n    success: true,\n    response: aiText,\n    timestamp: new Date().toISOString()\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                900,
+                300
+            ],
+            "name": "Format Response"
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $json }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1120,
+                300
+            ],
+            "name": "Send Response"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Error handler\nreturn [{\n  json: {\n    success: false,\n    error: \"Gemini API không khả dụng. Vui lòng thử lại sau.\",\n    timestamp: new Date().toISOString()\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                900,
+                450
+            ],
+            "name": "Error Handler"
+        }
+    ],
+    "connections": {
+        "Webhook - AI Request": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Request",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Request": {
+            "main": [
+                [
+                    {
+                        "node": "Call Gemini API",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Call Gemini API": {
+            "main": [
+                [
+                    {
+                        "node": "Format Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Response": {
+            "main": [
+                [
+                    {
+                        "node": "Send Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Error Handler": {
+            "main": [
+                [
+                    {
+                        "node": "Send Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "pinData": {},
+    "tags": []
+}
