@@ -309,37 +309,54 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
         
         # 2. CONTEXTUAL PROMPT
         poi_desc = []
+        # Get extra data from qmdg_data for deeper AI context
+        from qmdg_data import KY_MON_DATA
+        
         for p_num, info in palaces_of_interest.items():
             labels_str = ", ".join(info['labels'])
             void_str = " [KHÔNG VONG]" if info['void'] else ""
             p_name = CUNG_TEN.get(p_num, f"Cung {p_num}")
-            desc = (f"Cung {p_num} ({p_name}): Chứa {labels_str}. "
-                    f"Trận thế: {info['star']} - {info['door']} - {info['deity']}. "
-                    f"Cặp Can: {info['can_thien']}/{info['can_dia']}{void_str}")
+            
+            # Enrich with detailed symbolism
+            star_prop = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['CUU_TINH'].get(info['star'], {}).get('Tính_Chất', 'Bình')
+            door_prop = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['BAT_MON'].get(info['door'] if " Môn" in info['door'] else f"{info['door']} Môn", {}).get('Luận_Đoán', 'Bình')
+            deity_prop = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['BAT_THAN'].get(info['deity'], {}).get('Tính_Chất', 'Bình')
+            can_prop = KY_MON_DATA['CAN_CHI_LUAN_GIAI'].get(info['can_thien'], {}).get('Tính_Chất', 'Bình')
+            
+            desc = (f"- **{p_name} (Cung {p_num})**: Chứa {labels_str}.\n"
+                    f"  + Trận thế: Sao {info['star']} ({star_prop}), Môn {info['door']} ({door_prop}), Thần {info['deity']} ({deity_prop}).\n"
+                    f"  + Cặp Can: {info['can_thien']} ({can_prop}) trên {info['can_dia']}.{void_str}")
             poi_desc.append(desc)
 
-        prompt = f"""{self.get_context_prompt()}Bạn là bậc thầy Kỳ Môn Độn Giáp cao cấp. Hãy thực hiện LUẬN GIẢI CHUYÊN SÂU TAM GIÁC (Structured Analysis) cho chủ đề: **{topic}**.
+        prompt = f"""{self.get_context_prompt()}Bạn là bậc thầy Kỳ Môn Độn Giáp cao cấp. Hãy thực hiện LUẬN GIẢI CHUYÊN SÂU NHÂN QUẢ cho chủ đề: **{topic}**.
 
-**NGUYÊN TẮC LUẬN GIẢI BẮT BUỘC (THEO THỨ TỰ):**
-1. **NHẬN DIỆN VỊ TRÍ**: Xác định rõ từng nhân tố đại diện nằm ở Cung nào (Ví dụ: Chủ thể ở cung Chấn, Đối tượng ở cung Đoài...).
-2. **PHÂN TÍCH NỘI TẠI & ĐỘNG CƠ**: Đánh giá "chất lượng" từng cung. Sao/Môn/Thần/Can đang nói gì về trạng thái và lý do hành động của nhân tố đó? Họ có đủ lực không?
-3. **TƯƠNG TÁC TAM GIÁC**: So sánh Sinh/Khắc/Xung/Hợp giữa: **Chủ Thể ({final_subj_stem})**, **Đối Tượng ({final_obj_stem})** và **Dụng Thần Topic**.
-4. **CHIẾN THUẬT & PHÁN QUYẾT**: Câu trả lời cuối cùng là gì? Cần làm gì để xoay chuyển tình thế?
+**YÊU CẦU BẮT BUỘC VỀ CẤU TRÚC (KHÔNG ĐƯỢC THIẾU):**
 
-**DỮ LIỆU CÁC CUNG TRỌNG TÂM:**
+**BƯỚC 1: BẢNG NHẬN DIỆN VỊ TRÍ (ĐẶT LÊN ĐẦU TIÊN)**
+Hãy liệt kê rõ ràng:
+- **Chủ Thể ({final_subj_stem})**: Nằm ở Cung mấy? Tên cung là gì?
+- **Đối Tượng ({final_obj_stem})**: Nằm ở Cung mấy? Tên cung là gì?
+- **Dụng Thần Topic**: Nằm ở Cung mấy? Tên cung là gì?
+(Việc này giúp người xem định vị ngay lập tức mà không cần tra lại bàn cờ).
+
+**BƯỚC 2: PHÂN TÍCH NỘI TẠI & ĐỘNG CƠ ẨN GIẤU**
+Sử dụng các Tính chất/Luận đoán chi tiết được cung cấp để giải thích **TẠI SAO** sự việc diễn ra như vậy. 
+- Ví dụ: Có Bạch Hổ/Tử Môn thì do bệnh tật, tang gia hay áp lực nợ nần? Có Thiên Nhậm thì do điền sản, đất đai?
+- Đánh giá sức mạnh thực sự của từng nhân tố.
+
+**BƯỚC 3: TƯƠNG TÁC TAM GIÁC (NHÂN - QUẢ)**
+So sánh Sinh/Khắc/Xung/Hợp giữa 3 cung vị đã nhận diện ở Bước 1.
+
+**BƯỚC 4: CHIẾN THUẬT & PHÁN QUYẾT**
+Kết luận cuối cùng: Thành hay Bại? Và lời khuyên hành động cốt lõi.
+
+**DỮ LIỆU CÁC CUNG TRỌNG TÂM (CHI TIẾT):**
 {chr(10).join(poi_desc)}
 
 **THẾ TRẬN TỔNG THỂ:**
 - Xu thế (Trực Phù): {truc_phu}
 - Chấp hành (Trực Sử): {truc_su}
 - Gợi ý chuyên môn: "{topic_hints}"
-
-**NỘI DUNG BÁO CÁO (CHUYÊN NGHIỆP - QUYỀN LỰC):**
-
-- **PHẦN 1: NHẬN DIỆN VỊ TRÍ**: Nêu tên cung vị của từng nhân tố.
-- **PHẦN 2: ĐÁNH GIÁ NĂNG LỰC & ĐỘNG CƠ**: Phân tích sâu nội tại của từng cung trọng tâm.
-- **PHẦN 3: DIỄN BIẾN TƯƠNG TÁC**: Mô tả quá trình tương tác giữa các bên và mục tiêu.
-- **PHẦN 4: KẾT LUẬN & CHIẾN THUẬT**: Phán quyết cuối cùng và lời khuyên hành động cụ thể.
 
 Trả lời bằng phong thái chuyên gia, ngôn ngữ sắc bén, tập trung hoàn toàn vào việc giải quyết vấn đề cho Chủ Thể."""
 
