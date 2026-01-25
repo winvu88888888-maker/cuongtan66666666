@@ -1,6 +1,12 @@
 
 # phan_tich_da_tang.py
-from database_tuong_tac import *
+from database_tuong_tac import (
+    LUC_THAN_MAPPING, 
+    SINH_KHAC_MATRIX, 
+    QUY_TAC_CHON_DUNG_THAN, 
+    ANH_HUONG_MUA, 
+    TRONG_SO_PHAN_TICH
+)
 from qmdg_data import KY_MON_DATA, CUNG_NGU_HANH
 
 def chon_dung_than_theo_chu_de(topic):

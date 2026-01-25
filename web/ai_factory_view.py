@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Import modules from ai_modules
 from ai_modules.orchestrator import AIOrchestrator
 from ai_modules.memory_system import MemorySystem
+from n8n_integration import N8NClient, setup_n8n_config
 
 def render_ai_factory_view():
     """Renders the AI Factory Dashboard within the main application."""
@@ -28,6 +29,9 @@ def render_ai_factory_view():
             
     if 'memory' not in st.session_state:
         st.session_state.memory = MemorySystem()
+        
+    if 'n8n_client' not in st.session_state:
+        st.session_state.n8n_client = N8NClient()
 
     # Sub-navigation for AI Factory
     tab1, tab2, tab3, tab4 = st.tabs(["🏠 Dashboard", "✍️ Tạo Code & Dự Án", "📚 Knowledge Base", "⚙️ Workflows"])
@@ -194,9 +198,84 @@ def render_knowledge_base_tab():
 def render_workflows_tab():
     st.subheader("Quản Lý n8n Workflows")
     
-    st.info("🚧 Tích hợp n8n API. Các workflow đang hoạt động:")
+    client = st.session_state.n8n_client
     
-    # List workflows in directory
+    # Connection Status Check
+    is_connected = client.test_connection()
+    
+    col_status, col_config = st.columns([2, 1])
+    with col_status:
+        if is_connected:
+            st.success(f"✅ **Đã kết nối n8n** tại `{client.base_url}`")
+        else:
+            st.warning("⚠️ **Chưa kết nối n8n Server** (Dùng Local Files)")
+    
+    with col_config:
+        with st.popover("⚙️ Cấu Hình"):
+            st.markdown("### Cấu hình n8n")
+            with st.form("n8n_config_form"):
+                base_url = st.text_input("Server URL:", value=client.base_url)
+                api_key = st.text_input("API Key:", value=client.api_key or "", type="password")
+                
+                if st.form_submit_button("Lưu & Kết Nối"):
+                    setup_n8n_config(api_key, base_url)
+                    # Re-init client
+                    st.session_state.n8n_client = N8NClient(base_url, api_key)
+                    st.rerun()
+
+    # If connected, show Dashboard
+    if is_connected:
+        st.markdown("---")
+        
+        # Stats Board
+        s1, s2, s3, s4 = st.columns(4)
+        stats = client.get_workflow_statistics()
+        exec_stats = client.get_execution_statistics()
+        
+        s1.metric("Total Workflows", stats['total_workflows'])
+        s2.metric("Active Running", stats['active_workflows'])
+        s3.metric("Total Executions", exec_stats['total_executions'])
+        s4.metric("Success Rate", f"{int(exec_stats['successful'] / max(1, exec_stats['total_executions']) * 100)}%")
+        
+        st.markdown("### 📋 Danh Sách Workflows (Server)")
+        
+        tab_list, tab_execs = st.tabs(["Workflows", "Recent Executions"])
+        
+        with tab_list:
+            workflows = client.get_workflows()
+            for wf in workflows:
+                status_icon = "🟢" if wf.get('active') else "⚪"
+                with st.expander(f"{status_icon} {wf.get('name', 'Unnamed')} (ID: {wf.get('id')})"):
+                    col_info, col_act = st.columns([3, 1])
+                    with col_info:
+                        st.json(wf)
+                    with col_act:
+                        if wf.get('active'):
+                            if st.button("⏹️ Deactivate", key=f"deac_{wf['id']}"):
+                                client.deactivate_workflow(wf['id'])
+                                st.rerun()
+                        else:
+                            if st.button("▶️ Activate", key=f"act_{wf['id']}"):
+                                client.activate_workflow(wf['id'])
+                                st.rerun()
+                        
+                        if st.button("🚀 Execute", key=f"exec_{wf['id']}"):
+                            with st.spinner("Executing..."):
+                                res = client.execute_workflow(wf['id'])
+                                if res: st.success("Executed!")
+                                else: st.error("Failed")
+        
+        with tab_execs:
+            executions = exec_stats['executions']
+            for exe in executions:
+                status = "✅" if exe.get('finished') and not exe.get('stoppedAt') else "❌"
+                st.write(f"{status} **ID:** {exe.get('id')} | **Time:** {exe.get('startedAt')}")
+
+    
+    st.markdown("---")
+    st.info("📂 **Local Workflow Files (Backups/Templates):**")
+    
+    # List workflows in directory (Fallback/Reference)
     workflows_dir = Path("n8n_workflows")
     if workflows_dir.exists():
         tabs = st.tabs(["Secretary", "Code Writer", "Code Fixer", "Memory"])

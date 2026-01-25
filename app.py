@@ -205,16 +205,40 @@ st.markdown("""
 
     /* 3D Palace Card Styles */
     .palace-3d {
-        perspective: 1000px;
+        perspective: 1200px;
+        margin-bottom: 30px;
     }
     
     .palace-inner {
         transform-style: preserve-3d;
-        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s;
+        border-radius: 16px;
+        position: relative;
+    }
+    
+    .palace-inner:before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
+        z-index: 0;
+        backdrop-filter: blur(5px);
     }
     
     .palace-inner:hover {
-        transform: rotateX(5deg) rotateY(5deg) scale(1.02);
+        transform: rotateX(5deg) rotateY(5deg) scale(1.03) translateY(-10px);
+        box-shadow: 20px 20px 40px rgba(0,0,0,0.3), -5px -5px 15px rgba(255,255,255,0.5) !important;
+        z-index: 10;
+    }
+    
+    .element-icon-3d {
+        filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+        transition: transform 0.4s;
+    }
+    
+    .palace-inner:hover .element-icon-3d {
+        transform: scale(1.2) rotate(10deg);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -750,7 +774,21 @@ if st.session_state.current_view == "ky_mon":
                         # Load Background Image Base64
                         bg_path = os.path.join(os.path.dirname(__file__), "web", "static", "img", "elements", element_configs['img'])
                         bg_base64 = get_base64_image(bg_path)
-                        bg_url = f"data:image/png;base64,{bg_base64}" if bg_base64 else ""
+                        
+                        # Fallback Gradients if image missing
+                        gradients = {
+                            "Mộc": "linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)",
+                            "Hỏa": "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)",
+                            "Thổ": "linear-gradient(to right, #f6d365 0%, #fda085 100%)",
+                            "Kim": "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
+                            "Thủy": "linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%)"
+                        }
+                        
+                        if bg_base64:
+                            bg_style = f"url('data:image/png;base64,{bg_base64}') center/cover no-repeat"
+                        else:
+                            bg_style = gradients.get(hanh, "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)")
+
 
                         strength_color = {
                             "Vượng": "#F56565", "Tướng": "#ECC94B", "Hưu": "#4FD1C5", "Tù": "#4299E1", "Tử": "#A0AEC0"
@@ -764,16 +802,16 @@ if st.session_state.current_view == "ky_mon":
                         st.markdown(f"""
                         <div class="palace-3d" style="margin-bottom: 25px;">
                         <div class="palace-inner" style="
-                            background: url('{bg_url}') center/cover no-repeat;
+                            background: {bg_style};
                             border: {border_width} solid {element_configs['border']};
-                            border-radius: 15px;
-                            padding: 18px;
-                            min-height: 300px;
-                            box-shadow: 15px 15px 30px rgba(0,0,0,0.4), inset 0 0 100px rgba(0,0,0,0.3);
+                            border-radius: 16px;
+                            padding: 20px;
+                            min-height: 320px;
+                            box-shadow: 10px 10px 20px rgba(0,0,0,0.2), inset 0 0 60px rgba(255,255,255,0.2);
                             position: relative;
                             display: flex;
                             flex-direction: column;
-                            border-bottom: 8px solid {element_configs['border']};
+                            border-bottom: 10px solid {element_configs['border']};
                             overflow: hidden;
                         ">
                             <!-- Overlay for readability -->
@@ -787,7 +825,7 @@ if st.session_state.current_view == "ky_mon":
                                     </div>
                                     <div style="text-align: right;">
                                         <div style="background: {strength_color}; color: white; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase;">{strength}</div>
-                                        <div style="font-size: 20px; margin-top: 5px;">{element_configs['icon']}</div>
+                                        <div style="font-size: 20px; margin-top: 5px;" class="element-icon-3d">{element_configs['icon']}</div>
                                     </div>
                                 </div>
 
