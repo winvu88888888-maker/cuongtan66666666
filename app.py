@@ -177,10 +177,10 @@ st.markdown("""
         background: linear-gradient(145deg, #334155, #1e293b);
     }
     
-    /* Palace 4D & Clarity Enhancements */
+    /* Palace 4D & Ultra-Large Text Enhancements */
     .palace-3d {
         perspective: 1200px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
     
     .palace-inner {
@@ -192,28 +192,14 @@ st.markdown("""
         background-color: white;
     }
 
-    .palace-inner:hover {
-        transform: translateZ(15px) rotateX(1deg);
-        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-    }
-
-    /* Overlay refinement for Clarity */
-    .glass-overlay {
-        position: absolute; 
-        inset: 0; 
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
-        z-index: 0;
-        pointer-events: none;
-    }
-
     /* Grid Layout & Text Clarity */
     .palace-grid-container {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 1fr 1.5fr 1fr;
-        height: 180px;
+        grid-template-rows: 1fr 1fr 1fr;
+        height: 200px;
         position: relative;
-        padding: 5px 12px;
+        padding: 5px 15px;
         margin-top: 5px;
     }
 
@@ -221,46 +207,48 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-shadow: 0 0 10px white, 0 0 5px white;
+        font-weight: 900;
+        font-size: 1.8rem; /* Scale everything up! */
+        text-shadow: 0 0 12px white, 0 0 6px white;
         z-index: 2;
+        transition: all 0.2s;
     }
 
-    /* Position Mappings */
-    .top-right { grid-area: 1 / 3 / 2 / 4; justify-content: flex-end; align-items: flex-start; font-size: 1.1rem; }
-    .mid-left { grid-area: 2 / 1 / 3 / 2; justify-content: flex-start; }
+    /* Position Mappings with Ultra Sizes */
+    .top-right { grid-area: 1 / 3 / 2 / 4; justify-content: flex-end; align-items: flex-start; font-size: 1.8rem; }
+    .mid-left { grid-area: 2 / 1 / 3 / 2; justify-content: flex-start; font-size: 1.8rem; }
     .center-deity { 
         grid-area: 2 / 2 / 3 / 3; 
-        font-size: 1.8rem !important; 
-        font-weight: 900 !important; 
+        font-size: 2.2rem !important; 
         color: #1e293b;
-        filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
+        filter: drop-shadow(0 0 10px rgba(255,255,255,1));
     }
-    .bot-center { grid-area: 3 / 2 / 4 / 3; align-items: flex-end; font-size: 1.15rem; }
+    .bot-center { grid-area: 3 / 2 / 4 / 3; align-items: flex-end; font-size: 1.9rem; }
     .bot-right { 
         grid-area: 3 / 3 / 4 / 4; 
         justify-content: flex-end; 
         align-items: flex-end; 
-        font-size: 1.9rem; 
-        font-weight: 900; 
+        font-size: 2.3rem; 
     }
 
     .palace-header-row {
         display: flex;
         justify-content: space-between;
         padding: 8px 12px;
-        border-bottom: 1px solid rgba(0,0,0,0.04);
+        border-bottom: 1px solid rgba(0,0,0,0.06);
         position: relative;
         z-index: 2;
     }
 
-    .palace-title {
-        font-size: 0.75rem;
+    .palace-footer-markers {
+        display: flex;
+        justify-content: flex-start;
+        gap: 20px;
+        padding: 10px 15px;
+        position: relative;
+        z-index: 2;
+        font-size: 1.5rem; /* Large icons/text in footer */
         font-weight: 800;
-        color: #475569;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .status-badge {
@@ -837,21 +825,21 @@ if st.session_state.current_view == "ky_mon":
                         p_full_name = f"{palace_num} {QUAI_TUONG.get(palace_num, '')}" if palace_num != 5 else "5 Trung Cung"
                         status_badge = f'<span class="status-badge" style="background: {strength_color}; color: white;">{strength}</span>'
 
-                        # --- RENDER PALACE CARD (4D & CLARITY ENHANCED) ---
+                        # --- RENDER PALACE CARD (ULTRA-BOLD & MAX VISIBILITY) ---
                         palace_html = f"""<div class="palace-3d animated-panel">
-<div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 250px;">
+<div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 280px;">
 <div class="glass-overlay"></div>
 <div class="palace-header-row"><span class="palace-title">{p_full_name}</span>{status_badge}</div>
 <div class="palace-grid-container">
 <div class="grid-cell top-right" style="color: {c_thien};">{can_thien}</div>
 <div class="grid-cell mid-left" style="color: {c_sao};">{sao.replace('Thiên ', '')}</div>
 <div class="grid-cell center-deity" style="color: {c_than};">{than}</div>
-<div class="grid-cell bot-center" style="color: {c_cua}; font-size: 1.1rem;">{cua.replace(' Môn', '')}</div>
-<div class="grid-cell bot-right" style="color: {c_dia}; font-weight: 900; font-size: 1.8rem;">{can_dia}</div>
+<div class="grid-cell bot-center" style="color: {c_cua};">{cua.replace(' Môn', '')}</div>
+<div class="grid-cell bot-right" style="color: {c_dia};">{can_dia}</div>
 </div>
 <div class="palace-footer-markers">
-{f'<span style="color:#64748b; font-size:0.75rem;">⚪ {palace_num} KV</span>' if palace_num in chart['khong_vong'] else ''}
-{f'<span style="color:#f59e0b; font-size:0.75rem;">🐎 Mã</span>' if palace_num == chart['dich_ma'] else ''}
+{f'<span style="color:#64748b;">⚪ {palace_num} KV</span>' if palace_num in chart['khong_vong'] else ''}
+{f'<span style="color:#f59e0b;">🐎 Mã</span>' if palace_num == chart['dich_ma'] else ''}
 </div></div></div>"""
                         st.markdown(palace_html, unsafe_allow_html=True)
 
