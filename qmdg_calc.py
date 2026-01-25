@@ -73,6 +73,10 @@ def get_tiet_khi(dt):
 
 def calculate_qmdg_params(dt):
     """Main entry point for QMDG parameters calculation"""
+    # Ensure dt is naive for comparison with static terms
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+        
     day_can, day_chi = get_can_chi_day(dt)
     hour_can, hour_chi = get_can_chi_hour(day_can, dt.hour)
     tiet_khi = get_tiet_khi(dt)
@@ -111,3 +115,4 @@ def calculate_qmdg_params(dt):
         'truc_phu': "Thiên Tâm", # Will be correctly calculated by lap_ban_qmdg if needed
         'truc_su': "Khai Môn"
     }
+
