@@ -245,28 +245,36 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}\n\nVui lòng kiểm tra API key hoặc thử lại."
     
-    def comprehensive_analysis(self, chart_data, topic, dung_than_info=None, topic_hints="", subj_stem=None, obj_stem=None):
+    def comprehensive_analysis(self, chart_data, topic, dung_than_info=None, topic_hints="", subj_stem=None, obj_stem=None, subj_label="Bản thân"):
         """
-        Laser-Focused Analysis: Interaction between specific Dụng Thần palaces.
-        With Dynamic Subject (Chủ) and Object (Khách) identification.
+        Expert Consultation: Human-Centric Narrative with Deep Elemental Detail.
         """
         # Update context
         self.update_context(
             topic=topic,
             chart_data=chart_data,
             dung_than=dung_than_info or [],
-            last_action="Luận giải đa tầng Laser-Focused (Dynamic Actors)"
+            last_action=f"Tư vấn chuyên sâu cho {subj_label}"
         )
         
         can_ngay = chart_data.get('can_ngay', 'N/A')
         can_gio = chart_data.get('can_gio', 'N/A')
         truc_phu = chart_data.get('truc_phu_ten', 'N/A')
         truc_su = chart_data.get('truc_su_ten', 'N/A')
-        khong_vong = chart_data.get('khong_vong', [])
+        khong_vong_list = chart_data.get('khong_vong', [])
+        dich_ma_cung = chart_data.get('dich_ma', None)
         
         # Determine actual actors for this session
         final_subj_stem = subj_stem if subj_stem else can_ngay
         final_obj_stem = obj_stem if obj_stem else can_gio
+        
+        # Mapping for human-centric roles
+        role_map = {
+            final_subj_stem: subj_label,
+            # If the user is asking about someone else, Day Stem might still be "Bạn (Người hỏi)"
+            can_ngay: "Bạn (Người hỏi)" if final_subj_stem != can_ngay else subj_label,
+            final_obj_stem: "Đối tượng/Người mua/Đối phương" if final_obj_stem != can_gio else "Đối tượng (Can Giờ)"
+        }
         
         # 1. GROUP DATA BY PALACE
         palaces_of_interest = {} # {palace_num: {info}}
@@ -281,84 +289,75 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
                     'can_thien': chart_data.get('can_thien_ban', {}).get(p_num, 'N/A'),
                     'can_dia': chart_data.get('dia_can', {}).get(p_num, 'N/A'),
                     'hanh': CUNG_NGU_HANH.get(p_num, 'N/A'),
-                    'void': p_num in khong_vong
+                    'void': p_num in khong_vong_list,
+                    'horse': p_num == dich_ma_cung
                 }
             if label not in palaces_of_interest[p_num]['labels']:
                 palaces_of_interest[p_num]['labels'].append(label)
 
         # Scan all palaces for actors and Useful Gods
         for i in range(1, 10):
-            # 1. Check Subject (Self/As selected)
-            if chart_data.get('can_thien_ban', {}).get(i) == final_subj_stem:
-                add_to_poi(i, f"Bản Thân/Chủ Thể ({final_subj_stem})")
+            can_thien_p = chart_data.get('can_thien_ban', {}).get(i)
+            # 1. Check for Roles (Bản thân, Anh chị...)
+            if can_thien_p in role_map:
+                add_to_poi(i, role_map[can_thien_p])
             
-            # 2. Check Object (Target/As selected)
-            if chart_data.get('can_thien_ban', {}).get(i) == final_obj_stem:
-                add_to_poi(i, f"Đối Tượng/Khách ({final_obj_stem})")
-            
-            # 3. Check other Dụng Thần
+            # 2. Check for Dụng Thần Topic
             if dung_than_info:
                 for dt in dung_than_info:
                     door_val = chart_data.get('nhan_ban', {}).get(i)
                     if (chart_data.get('thien_ban', {}).get(i) == dt or 
                         door_val == dt or 
                         chart_data.get('than_ban', {}).get(i) == dt or 
-                        chart_data.get('can_thien_ban', {}).get(i) == dt or
-                        (dt.endswith(" Môn") and door_val and door_val in dt)):
+                        can_thien_p == dt or
+                        (dt.split(' (')[0] if ' (' in dt else dt) in [door_val, f"{door_val} Môn"]):
                         add_to_poi(i, dt)
         
         # 2. CONTEXTUAL PROMPT
         poi_desc = []
-        # Get extra data from qmdg_data for deeper AI context
         from qmdg_data import KY_MON_DATA
         
         for p_num, info in palaces_of_interest.items():
             labels_str = ", ".join(info['labels'])
-            void_str = " [KHÔNG VONG]" if info['void'] else ""
+            void_str = " [📍 KHÔNG VONG - Sự việc bế tắc/Trống rỗng]" if info['void'] else ""
+            horse_str = " [🐎 DỊCH MÃ - Sự chuyển dịch/Nhanh chóng]" if info['horse'] else ""
             p_name = CUNG_TEN.get(p_num, f"Cung {p_num}")
             
-            # Enrich with detailed symbolism
+            # Detailed Symbolism Lookup
             star_prop = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['CUU_TINH'].get(info['star'], {}).get('Tính_Chất', 'Bình')
             door_prop = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['BAT_MON'].get(info['door'] if " Môn" in info['door'] else f"{info['door']} Môn", {}).get('Luận_Đoán', 'Bình')
             deity_prop = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['BAT_THAN'].get(info['deity'], {}).get('Tính_Chất', 'Bình')
             can_prop = KY_MON_DATA['CAN_CHI_LUAN_GIAI'].get(info['can_thien'], {}).get('Tính_Chất', 'Bình')
             
-            desc = (f"- **{p_name} (Cung {p_num})**: Chứa {labels_str}.\n"
-                    f"  + Trận thế: Sao {info['star']} ({star_prop}), Môn {info['door']} ({door_prop}), Thần {info['deity']} ({deity_prop}).\n"
-                    f"  + Cặp Can: {info['can_thien']} ({can_prop}) trên {info['can_dia']}.{void_str}")
+            desc = (f"- **{p_name} (Cung {p_num})**: Đại diện cho **{labels_str}**.\n"
+                    f"  + Thành phần: Sao {info['star']} ({star_prop}), Môn {info['door']} ({door_prop}), Thần {info['deity']} ({deity_prop}).\n"
+                    f"  + Thiên Can: {info['can_thien']} ({can_prop}) lâm trên {info['can_dia']}.\n"
+                    f"  + Đặc tính: {info['hanh']}{void_str}{horse_str}.")
             poi_desc.append(desc)
 
-        prompt = f"""{self.get_context_prompt()}Bạn là bậc thầy Kỳ Môn Độn Giáp cao cấp. Hãy thực hiện LUẬN GIẢI CHUYÊN SÂU NHÂN QUẢ cho chủ đề: **{topic}**.
+        prompt = f"""{self.get_context_prompt()}Bạn là bậc thầy Kỳ Môn Độn Giáp tư vấn riêng cho **{subj_label}**. Hãy thực hiện LUẬN GIẢI CHI TIẾT NHÂN QUẢ cho chủ đề: **{topic}**.
 
-**YÊU CẦU BẮT BUỘC VỀ CẤU TRÚC (KHÔNG ĐƯỢC THIẾU):**
+**NGUYÊN TẮC NGÔN NGỮ BẮT BUỘC:**
+1. **Dùng tên gọi gần gũi**: Tuyệt đối không gọi là "Chủ thể", "Khách". Hãy gọi là **"{subj_label}"**, **"Người mua"**, **"Ngôi nhà"**, **"Công việc"**... tùy theo ngữ cảnh.
+2. **Tư duy Ngũ Hành**: Khi phân tích một cung, hãy giải thích: "Vì Sao/Môn này thuộc hành X, tương tác với cung Y nên kết quả là Z". 
+3. **Phân tích Động cơ (Lý do)**: Dựa vào các tính chất Sao/Môn/Thần, hãy chỉ rõ lý do tại sao sự việc diễn ra (Ví dụ: Vì có Bạch Hổ nên {subj_label} đang gặp áp lực rất lớn về nợ nần/sức khỏe).
 
-**BƯỚC 1: BẢNG NHẬN DIỆN VỊ TRÍ (ĐẶT LÊN ĐẦU TIÊN)**
-Hãy liệt kê rõ ràng:
-- **Chủ Thể ({final_subj_stem})**: Nằm ở Cung mấy? Tên cung là gì?
-- **Đối Tượng ({final_obj_stem})**: Nằm ở Cung mấy? Tên cung là gì?
-- **Dụng Thần Topic**: Nằm ở Cung mấy? Tên cung là gì?
-(Việc này giúp người xem định vị ngay lập tức mà không cần tra lại bàn cờ).
+**CẤU TRÚC BÁO CÁO:**
 
-**BƯỚC 2: PHÂN TÍCH NỘI TẠI & ĐỘNG CƠ ẨN GIẤU**
-Sử dụng các Tính chất/Luận đoán chi tiết được cung cấp để giải thích **TẠI SAO** sự việc diễn ra như vậy. 
-- Ví dụ: Có Bạch Hổ/Tử Môn thì do bệnh tật, tang gia hay áp lực nợ nần? Có Thiên Nhậm thì do điền sản, đất đai?
-- Đánh giá sức mạnh thực sự của từng nhân tố.
+**1. ĐỊNH VỊ NHÂN VẬT & MỤC TIÊU** (Liệt kê rõ ai/cái gì ở cung nào, số mấy).
+**2. PHÂN TÍCH CHI TIẾT NỘI TẠI** (Bóc tách Ngũ hành, Sao/Môn/Thần và các dấu hiệu Dịch Mã/Không Vong để nói rõ trạng thái tâm lý/năng lực của {subj_label} và đối tác).
+**3. LUẬN GIẢI TƯƠNG TÁC (NHÂN - QUẢ)** (Sự kết nối giữa các cung vị đã nêu).
+**4. LỜI KHUYÊN CHIẾN THUẬT & PHÁN QUYẾT** (Kết quả cuối cùng và bước đi thông minh nhất).
 
-**BƯỚC 3: TƯƠNG TÁC TAM GIÁC (NHÂN - QUẢ)**
-So sánh Sinh/Khắc/Xung/Hợp giữa 3 cung vị đã nhận diện ở Bước 1.
-
-**BƯỚC 4: CHIẾN THUẬT & PHÁN QUYẾT**
-Kết luận cuối cùng: Thành hay Bại? Và lời khuyên hành động cốt lõi.
-
-**DỮ LIỆU CÁC CUNG TRỌNG TÂM (CHI TIẾT):**
+**DỮ LIỆU CUNG VỊ CHI TIẾT:**
 {chr(10).join(poi_desc)}
 
-**THẾ TRẬN TỔNG THỂ:**
+**THẾ TRẬN TỔNG QUAN:**
 - Xu thế (Trực Phù): {truc_phu}
 - Chấp hành (Trực Sử): {truc_su}
-- Gợi ý chuyên môn: "{topic_hints}"
+- Gợi ý định hướng: "{topic_hints}"
 
-Trả lời bằng phong thái chuyên gia, ngôn ngữ sắc bén, tập trung hoàn toàn vào việc giải quyết vấn đề cho Chủ Thể."""
+Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ giàu hình ảnh và sắc bén."""
 
         try:
             return self._call_ai(prompt)

@@ -1252,27 +1252,37 @@ if st.session_state.current_view == "ky_mon":
                                 subj_stem = st.session_state.chart_data.get('can_ngay') # Default to Self
                                 obj_stem = st.session_state.chart_data.get('can_gio') # Default to General Matter/Other Party
                                 
+                                role_label = "Bản thân bạn"
                                 if "Anh chị em" in rel_type:
                                     subj_stem = st.session_state.chart_data.get('can_thang')
+                                    role_label = "Anh chị bạn"
                                 elif "Bố mẹ" in rel_type:
                                     subj_stem = st.session_state.chart_data.get('can_nam')
+                                    role_label = "Bố mẹ bạn"
                                 elif "Con cái" in rel_type:
                                     subj_stem = st.session_state.chart_data.get('can_gio')
+                                    role_label = "Con cái bạn"
                                 elif "Người lạ" in rel_type:
                                     custom_val = st.session_state.get('target_stem_name_custom', "Giáp")
                                     if "Không rõ" not in custom_val:
                                         subj_stem = custom_val
+                                    role_label = "Đối phương (Người ngoài)"
                                 
-                                # In triangular logic (e.g., Sibling selling to someone), 
-                                # the 'Subject' is the relative, and 'Object' remains the Hour Stem (Buyer/Stranger).
+                                # Process Dụng Thần labels for better context
+                                enriched_dung_than = []
+                                for dt in dung_than_list:
+                                    if dt == "Sinh Môn": enriched_dung_than.append("Sinh Môn (Lợi nhuận/Ngôi nhà)")
+                                    elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
+                                    else: enriched_dung_than.append(dt)
                                 
                                 analysis = st.session_state.gemini_helper.comprehensive_analysis(
                                     st.session_state.chart_data,
                                     selected_topic,
-                                    dung_than_list,
+                                    enriched_dung_than,
                                     topic_hints,
                                     subj_stem=subj_stem,
-                                    obj_stem=obj_stem
+                                    obj_stem=obj_stem,
+                                    subj_label=role_label
                                 )
                                 st.markdown(f'<div class="expert-box">{analysis}</div>', unsafe_allow_html=True)
                             except Exception as e:
