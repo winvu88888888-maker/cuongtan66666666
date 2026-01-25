@@ -820,33 +820,95 @@ if st.session_state.current_view == "ky_mon":
                         current_season = season_map.get(month, "Xuân")
                         strength = phan_tich_yeu_to_thoi_gian(hanh, current_season) if USE_MULTI_LAYER_ANALYSIS else "Bình"
                         
-                        # Element Styles & Backgrounds
-                        element_configs = {
-                            "Mộc": {"img": "moc.png", "border": "#10b981", "glow": "rgba(16, 185, 129, 0.4)", "icon": "🌿"},
-                            "Hỏa": {"img": "hoa.png", "border": "#ef4444", "glow": "rgba(239, 68, 68, 0.4)", "icon": "🔥"},
-                            "Thổ": {"img": "tho.png", "border": "#f59e0b", "glow": "rgba(245, 158, 11, 0.4)", "icon": "⛰️"},
-                            "Kim": {"img": "kim.png", "border": "#94a3b8", "glow": "rgba(148, 163, 184, 0.4)", "icon": "⚔️"},
-                            "Thủy": {"img": "thuy.png", "border": "#3b82f6", "glow": "rgba(59, 130, 246, 0.4)", "icon": "💧"}
-                        }.get(hanh, {"img": "tho.png", "border": "#475569", "glow": "rgba(71, 85, 105, 0.4)", "icon": "✨"})
-
-                        # Use local image path for background
-                        bg_img_path = f"web/static/img/elements/{element_configs['img']}"
-                        bg_style = f"url('app/static/{bg_img_path}') center/cover no-repeat"
-
+                        # Load Background Image Base64 (Reliable Streamlit Method)
+                        bg_path = os.path.join(os.path.dirname(__file__), "web", "static", "img", "elements", element_configs['img'])
+                        bg_base64 = get_base64_image(bg_path)
+                        
+                        if bg_base64:
+                            bg_style = f"url('data:image/png;base64,{bg_base64}') center/cover no-repeat"
+                        else:
+                            # Fallback Gradient
+                            gradients = {
+                                "Mộc": "linear-gradient(135deg, #064e3b 0%, #10b981 100%)",
+                                "Hỏa": "linear-gradient(135deg, #7f1d1d 0%, #ef4444 100%)",
+                                "Thổ": "linear-gradient(135deg, #78350f 0%, #f59e0b 100%)",
+                                "Kim": "linear-gradient(135deg, #334155 0%, #94a3b8 100%)",
+                                "Thủy": "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+                            }
+                            bg_style = gradients.get(hanh, "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)")
 
                         strength_color = {
-                            "Vượng": "#F56565", "Tướng": "#ECC94B", "Hưu": "#4FD1C5", "Tù": "#4299E1", "Tử": "#A0AEC0"
-                        }.get(strength, "#718096")
+                            "Vượng": "#ef4444", "Tướng": "#f59e0b", "Hưu": "#10b981", "Tù": "#3b82f6", "Tử": "#64748b"
+                        }.get(strength, "#475569")
 
                         # Hexagram Line Visualization
                         palace_lines = [random.randint(0,1) for _ in range(3)]
-                        lines_html = "".join([f'<div style="color: {"#FF4D4D" if l == 1 else "#3B82F6"}; font-size: 7px; line-height: 1;">{"━━━━━━" if l == 1 else "━━  ━━"}</div>' for l in palace_lines])
+                        lines_html = "".join([f'<div style="color: {"#f87171" if l == 1 else "#60a5fa"}; font-size: 8px; line-height: 1.1;">{"━━━━━━" if l == 1 else "━━  ━━"}</div>' for l in palace_lines])
 
                         # Prepare markers HTML
-                        marker_html = f'<div style="margin-top: 12px; font-size: 11px; color: #6d28d9; font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 1px;">✨ {marker_text}</div>' if marker_text else ''
+                        marker_html = f'<div style="margin-top: 15px; font-size: 11px; color: #c084fc; font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 2px; filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.5));">✨ {marker_text}</div>' if marker_text else ''
 
-                        # Construct Palace Card HTML - ENSURE NO LEADING WHITESPACE OR BLANK LINES
-                        palace_html = f"""<div class="palace-3d" style="margin-bottom: 25px;"><div class="palace-inner" style="background: {bg_style}; border: {border_width} solid {element_configs['border']}; border-radius: 16px; padding: 20px; min-height: 320px; box-shadow: 10px 10px 20px rgba(0,0,0,0.2), inset 0 0 60px rgba(255,255,255,0.2); position: relative; display: flex; flex-direction: column; border-bottom: 10px solid {element_configs['border']}; overflow: hidden;"><div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px); z-index: 0;"></div><div style="position: relative; z-index: 1;"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><div style="font-weight: 900; font-size: 26px; color: {element_configs['border']}; line-height: 1;">{palace_num}</div><div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-top: 2px;">{QUAI_TUONG.get(palace_num, '')}</div></div><div style="text-align: right;"><div style="background: {strength_color}; color: white; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase;">{strength}</div><div style="font-size: 20px; margin-top: 5px;" class="element-icon-3d">{element_configs['icon']}</div></div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;"><div style="background: rgba(255,255,255,0.8); padding: 8px; border-radius: 10px; text-align: center; border: 1px solid {element_configs['border']}44; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);"><div style="font-size: 10px; color: {element_configs['border']}; font-weight: 800; letter-spacing: 1px;">TINH</div><div style="font-size: 16px; font-weight: 900; color: #1a202c;">{sao}</div></div><div style="background: rgba(255,255,255,0.8); padding: 8px; border-radius: 10px; text-align: center; border: 1px solid {element_configs['border']}44; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);"><div style="font-size: 10px; color: {element_configs['border']}; font-weight: 800; letter-spacing: 1px;">MÔN</div><div style="font-size: 16px; font-weight: 900; color: #1a202c;">{cua}</div></div><div style="background: rgba(255,255,255,0.8); padding: 8px; border-radius: 10px; text-align: center; border: 1px solid {element_configs['border']}44; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);"><div style="font-size: 10px; color: {element_configs['border']}; font-weight: 800; letter-spacing: 1px;">THẦN</div><div style="font-size: 16px; font-weight: 900; color: #1a202c;">{than}</div></div><div style="background: rgba(255,255,255,0.8); padding: 8px; border-radius: 10px; text-align: center; border: 1px solid {element_configs['border']}44; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);"><div style="font-size: 9px; color: {element_configs['border']}; font-weight: 800;">QUÁI</div><div style="margin-top: 4px;">{lines_html}</div></div></div><div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;"><div><span style="font-size: 10px; font-weight: 800; color: #64748b;">THIÊN:</span><span style="font-size: 18px; font-weight: 900; color: #D97706; margin-left: 5px;">{can_thien}</span></div><div><span style="font-size: 10px; font-weight: 800; color: #64748b;">ĐỊA:</span><span style="font-size: 18px; font-weight: 900; color: #475569; margin-left: 5px;">{can_dia}</span></div></div>{marker_html}</div></div></div>"""
+                        # PREMIUM PALACE CARD HTML
+                        palace_html = f"""
+                        <div class="palace-3d">
+                            <div class="palace-inner" style="
+                                background: {bg_style}; 
+                                border: {border_width} solid {element_configs['border']};
+                                min-height: 380px;
+                                position: relative;
+                                box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+                            ">
+                                <!-- Dark Overlay for contrast -->
+                                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.8)); z-index: 0;"></div>
+                                
+                                <div style="position: relative; z-index: 1; padding: 22px; height: 100%; display: flex; flex-direction: column;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <div style="font-weight: 900; font-size: 32px; color: white; line-height: 1; text-shadow: 0 0 10px {element_configs['glow']};">{palace_num}</div>
+                                            <div style="font-size: 15px; font-weight: 800; color: {element_configs['border']}; margin-top: 4px; letter-spacing: 1px;">{QUAI_TUONG.get(palace_num, '')}</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="background: {strength_color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 0 10px {strength_color}66;">{strength}</div>
+                                            <div class="element-icon-3d" style="margin-top: 10px; color: white;">{element_configs['icon']}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
+                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">TINH</div>
+                                            <div style="font-size: 18px; font-weight: 900; color: #f8fafc; text-shadow: 0 0 8px rgba(255,255,255,0.3);">{sao}</div>
+                                        </div>
+                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">MÔN</div>
+                                            <div style="font-size: 18px; font-weight: 900; color: #f8fafc; text-shadow: 0 0 8px rgba(255,255,255,0.3);">{cua}</div>
+                                        </div>
+                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">THẦN</div>
+                                            <div style="font-size: 18px; font-weight: 900; color: #f8fafc; text-shadow: 0 0 8px rgba(255,255,255,0.3);">{than}</div>
+                                        </div>
+                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1);">
+                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; margin-bottom: 4px;">QUÁI</div>
+                                            <div style="margin-top: 2px;">{lines_html}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top: auto; padding-top: 15px;">
+                                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between;">
+                                            <div>
+                                                <div style="font-size: 9px; font-weight: 800; color: #94a3b8; margin-bottom: 2px;">THIÊN</div>
+                                                <div style="font-size: 22px; font-weight: 900; color: #fbbf24; line-height: 1;">{can_thien}</div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div style="font-size: 9px; font-weight: 800; color: #94a3b8; margin-bottom: 2px;">ĐỊA</div>
+                                                <div style="font-size: 22px; font-weight: 900; color: #e2e8f0; line-height: 1;">{can_dia}</div>
+                                            </div>
+                                        </div>
+                                        {marker_html}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        """
                         st.markdown(palace_html, unsafe_allow_html=True)
 
                         
