@@ -1243,10 +1243,14 @@ if st.session_state.current_view == "ky_mon":
                                     topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
                                     dung_than_list = topic_data.get("Dụng_Thần", [])
                                 
+                                # Get interpretation hints
+                                topic_hints = TOPIC_INTERPRETATIONS.get(selected_topic, {}).get("Luận_Giải_Gợi_Ý", "")
+                                
                                 analysis = st.session_state.gemini_helper.comprehensive_analysis(
                                     st.session_state.chart_data,
                                     selected_topic,
-                                    dung_than_list
+                                    dung_than_list,
+                                    topic_hints
                                 )
                                 st.markdown(f'<div class="expert-box">{analysis}</div>', unsafe_allow_html=True)
                             except Exception as e:

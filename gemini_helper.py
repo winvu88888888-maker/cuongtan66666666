@@ -198,16 +198,16 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}\n\nVui lòng kiểm tra API key hoặc thử lại."
     
-    def comprehensive_analysis(self, chart_data, topic, dung_than_info=None):
+    def comprehensive_analysis(self, chart_data, topic, dung_than_info=None, topic_hints=""):
         """
-        Focused Relational Analysis: Self (Subject) vs Topic (Object)
+        Multi-Factor Relational Analysis: Comparing Buyer, Price, Seller, etc.
         """
         # Update context
         self.update_context(
             topic=topic,
             chart_data=chart_data,
             dung_than=dung_than_info or [],
-            last_action="Luận giải trọng tâm Dụng Thần"
+            last_action="Luận giải trọng tâm Dụng Thần (Đa tầng)"
         )
         
         # 1. SCAN FOR CORE ACTORS
@@ -221,13 +221,13 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
         process_palace = "?"
         
         for i in range(1, 10):
-            # Locate Self
+            # Locate Self (Seller/Subject)
             if chart_data.get('can_thien_ban', {}).get(i) == can_ngay:
                 self_palace = str(i)
-            # Locate Process/Outcome
+            # Locate Outcome (Outcome/Timing)
             if chart_data.get('can_thien_ban', {}).get(i) == can_gio:
                 process_palace = str(i)
-            # Locate Dụng Thần
+            # Locate Topic Factors (Dụng Thần)
             if dung_than_info:
                 for dt in dung_than_info:
                     door_val = chart_data.get('nhan_ban', {}).get(i)
@@ -236,7 +236,7 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
                         chart_data.get('than_ban', {}).get(i) == dt or 
                         chart_data.get('can_thien_ban', {}).get(i) == dt or
                         (dt.endswith(" Môn") and door_val and door_val in dt)):
-                        # Get details of Dụng Thần Palace
+                        
                         detail = {
                             'dt': dt,
                             'palace': i,
@@ -248,27 +248,27 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
                         dung_than_details.append(detail)
         
         # 2. CONTEXTUAL PROMPT
-        prompt = f"""{self.get_context_prompt()}Bạn là bậc thầy Kỳ Môn Độn Giáp. Hãy thực hiện luận giải LUẬN GIẢI TRỌNG TÂM cho chủ đề: **{topic}**.
+        prompt = f"""{self.get_context_prompt()}Bạn là bậc thầy Kỳ Môn Độn Giáp. Hãy thực hiện LUẬN GIẢI ĐA TẦNG cho chủ đề: **{topic}**.
 
-**QUY TẮC CỐT LÕI:**
-- KHÔNG liệt kê tất cả 9 cung. 
-- CHỈ tập trung vào mối quan hệ giữa **Bản Thân ({can_ngay})** và **Dụng Thần ({topic})**.
-- KẾT LUẬN dứt khoát dựa trên Sinh/Khắc/Chế/Hóa.
+**NGUYÊN TẮC LUẬN GIẢI:**
+- CHỈ phân tích các cung có Dụng Thần hoặc Bản Thân. KHÔNG liệt kê các cung khác.
+- SO SÁNH các Dụng Thần với nhau (ví dụ: Người mua so với Giá bán, hoặc Công việc so với Tiền bạc).
+- SỬ DỤNG gợi ý sau để định hướng: "{topic_hints}"
 
-**THÔNG TIN KEY TRONG BÀN:**
-1. **Bản Thân (Người hỏi):** Cung {self_palace} (Sao {chart_data.get('thien_ban', {}).get(int(self_palace) if self_palace.isdigit() else 1)}, Môn {chart_data.get('nhan_ban', {}).get(int(self_palace) if self_palace.isdigit() else 1)}).
-2. **Dụng Thần ({topic}):** {', '.join([f"{d['dt']} tại Cung {d['palace']} (Sao {d['star']}, Môn {d['door']}, Thần {d['deity']}{', KHÔNG VONG' if d['void'] else ''})" for d in dung_than_details])}.
+**THÔNG TIN BÀN CỜ:**
+1. **Bản Thân (Can Ngày):** Cung {self_palace} (Sao {chart_data.get('thien_ban', {}).get(int(self_palace) if self_palace.isdigit() else 1)}, Môn {chart_data.get('nhan_ban', {}).get(int(self_palace) if self_palace.isdigit() else 1)}).
+2. **Các Nhân Tố Dụng Thần ({topic}):** 
+   {chr(10).join([f"- {d['dt']} tại Cung {d['palace']} (Môn {d['door']}, Thần {d['deity']}{', KHÔNG VONG' if d['void'] else ''})" for d in dung_than_details])}
 3. **Diễn biến (Can Giờ):** Cung {process_palace}.
-4. **Cơ cấu lãnh đạo:** Trực Phù là {truc_phu}, Trực Sử là {truc_su}.
+4. **Cơ cấu lãnh đạo:** {truc_phu} (Xu thế), {truc_su} (Chấp hành).
 
-**YÊU CẦU: TRẢ LỜI SẮC LẠNH, SÚC TÍCH, KHÔNG CHỦ GIẢI LÝ THUYẾT.**
+**YÊU CẦU NỘI DUNG (SÚC TÍCH):**
 
-- **PHẦN 1: KẾT QUẢ (3-4 dòng):** Sinh hay Khắc? Cát hay Hung? Ngắn gọn nhất có thể.
-- **PHẦN 2: DIỄN BIẾN (Trực Phù/Trực Sử):** Xu thế và hành động cốt lõi.
-- **PHẦN 3: CHIẾN THUẬT (1 câu duy nhất):** Phải làm gì ngay bây giờ.
-- **PHẦN 4: THỜI ĐIỂM (1 cụm từ):** Khi nào.
+- **PHẦN 1: TƯƠNG QUAN DỤNG THẦN (Cốt lõi):** So sánh quan hệ giữa các nhân tố trên. Ví dụ: Dụng thần Người mua có phối hợp với Dụng thần Giá bán không? Cả hai có Sinh cho Bản thân không?
+- **PHẦN 2: KẾT LUẬN & CHIẾN THUẬT:** Dựa trên gợi ý "{topic_hints}", hãy cho biết kết quả là thắng hay bại? Phải làm gì để chốt hạ vấn đề?
+- **PHẦN 3: ỨNG KỲ:** Thời điểm chính xác (Dựa trên Cung Can Giờ {process_palace}).
 
-Hãy trả lời bằng tiếng Việt, cực kỳ súc tích, tập trung 100% vào chủ đề {topic}."""
+Trả lời sắc bén, lạnh lùng, tập trung 100% vào việc ra quyết định."""
 
         try:
             return self._call_ai(prompt)
