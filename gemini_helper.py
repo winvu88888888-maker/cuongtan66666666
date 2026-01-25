@@ -290,6 +290,9 @@ Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không
             last_action=f"Tư vấn chuyên sâu cho {subj_label}"
         )
         
+        truc_phu = chart_data.get('truc_phu_ten', 'N/A')
+        truc_su = chart_data.get('truc_su_ten', 'N/A')
+        
         # Determine actual actors for this session
         final_subj_stem = subj_stem if subj_stem else chart_data.get('can_ngay', 'N/A')
         final_obj_stem = obj_stem if obj_stem else chart_data.get('can_gio', 'N/A')
