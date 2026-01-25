@@ -127,9 +127,27 @@ class GeminiQMDGHelper:
         """Update current context"""
         self.current_context.update(kwargs)
     
+    def get_system_knowledge(self):
+        """Returns string representation of key system rules for AI context"""
+        knowledge = """
+**KIẾN THỨC HỆ THỐNG KỲ MÔN:**
+- Hệ thống sử dụng Ma trận Sinh Khắc: Mộc sinh Hỏa, Hỏa sinh Thổ, Thổ sinh Kim, Kim sinh Thủy, Thủy sinh Mộc.
+- Các cung: 1 (Khảm - Thủy), 2 (Khôn - Thổ), 3 (Chấn - Mộc), 4 (Tốn - Mộc), 6 (Càn - Kim), 7 (Đoài - Kim), 8 (Cấn - Thổ), 9 (Ly - Hỏa).
+- Trực Phù là yếu tố lãnh đạo, Trực Sử là việc thực thi.
+- Dụng Thần quan trọng: 
+  + Hôn nhân: Ất (Nữ), Canh (Nam), Lục Hợp (Hợp tác).
+  + Kinh doanh: Sinh Môn (Lợi nhuận), Mậu (Vốn).
+  + Bệnh tật: Thiên Nhuế (Bệnh), Thiên Tâm/Ất (Thầy thuốc/Thuốc).
+- Các thần: Trực Phù (Cát), Đằng Xà (Quái dị), Thái Âm (Mưu mẹo), Lục Hợp (Hòa hợp), Bạch Hổ (Sát phạt), Huyền Vũ (Tối tăm), Cửu Địa (Bền vững), Cửu Thiên (Phát triển).
+"""
+        return knowledge
+
     def get_context_prompt(self):
         """Build context prompt from current state"""
         context_parts = []
+        
+        # Add system-wide knowledge
+        context_parts.append(self.get_system_knowledge())
         
         if self.current_context.get('topic'):
             context_parts.append(f"**Chủ đề hiện tại:** {self.current_context['topic']}")
@@ -148,7 +166,7 @@ class GeminiQMDGHelper:
             context_parts.append(f"**Hành động trước:** {self.current_context['last_action']}")
         
         if context_parts:
-            return "\n".join(["**NGỮ CẢNH HIỆN TẠI:**"] + context_parts) + "\n\n"
+            return "\n".join(["**NGỮ CẢNH VÀ KIẾN THỨC HIỆN TẠI:**"] + context_parts) + "\n\n"
         return ""
     
     def analyze_palace(self, palace_data, topic):
