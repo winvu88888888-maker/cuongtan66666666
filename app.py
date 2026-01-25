@@ -1234,49 +1234,108 @@ if st.session_state.current_view == "ky_mon":
                 except Exception as e:
                     st.error(f"Lỗi so sánh: {e}")
         
-        # ===== INTEGRATED ANALYSIS SECTION =====
+        # ===== UNIFIED EXPERT ANALYSIS SYSTEM =====
         if st.session_state.chart_data:
             st.markdown("---")
-            st.markdown("### 📋 BÁO CÁO TỔNG HỢP")
+            st.markdown("## 🏆 HỆ THỐNG LUẬN GIẢI TỔNG HỢP CHUYÊN SÂU")
             
-            with st.expander("🔍 Xem Phân Tích Tổng Hợp (Kỳ Môn + Mai Hoa + Lục Hào)"):
-                if USE_SUPER_DETAILED and st.button("🎯 Tạo Báo Cáo Tổng Hợp", type="primary"):
+            # 1. PRIMARY AI EXPERT REPORT (Dụng Thần focus)
+            if 'gemini_helper' in st.session_state:
+                with st.container():
+                    st.markdown("### 🎯 KẾT LUẬN TỔNG HỢP TỪ AI (Dụng Thần)")
+                    if st.button("🚀 Bắt Đầu Luận Giải Chuyên Sâu", type="primary", key="ai_final_report_btn"):
+                        with st.spinner("🤖 AI đang thực hiện luận giải trọng tâm..."):
+                            try:
+                                # Get Dụng Thần info from the best available source
+                                dung_than_list = []
+                                if 'USE_200_TOPICS' in globals() and USE_200_TOPICS:
+                                    dung_than_list = lay_dung_than_200(selected_topic)
+                                
+                                if not dung_than_list:
+                                    topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
+                                    dung_than_list = topic_data.get("Dụng_Thần", [])
+                                
+                                analysis = st.session_state.gemini_helper.comprehensive_analysis(
+                                    st.session_state.chart_data,
+                                    selected_topic,
+                                    dung_than_list
+                                )
+                                st.markdown(f'<div class="expert-box">{analysis}</div>', unsafe_allow_html=True)
+                            except Exception as e:
+                                st.error(f"❌ Lỗi AI: {str(e)}")
+
+            # 2. COMPARISON SECTION (Chủ - Khách Interaction)
+            st.markdown("---")
+            st.markdown("### ⚖️ SO SÁNH CHỦ - KHÁCH")
+            col_comp1, col_comp2 = st.columns([3, 1])
+            with col_comp1:
+                st.caption("Phân tích tương quan giữa Bản thân (Chủ) và Đối tượng/Sự việc (Khách)")
+            with col_comp2:
+                if st.button("📊 Chạy So Sánh", key="run_comp_btn", use_container_width=True):
+                    st.session_state.show_comparison = True
+            
+            if st.session_state.get('show_comparison'):
+                # Extract comparison logic (Previously at line 1200 area)
+                try:
+                    chart = st.session_state.chart_data
+                    chu_idx = 5
+                    for cung, can in chart['can_thien_ban'].items():
+                        if can == chart['can_ngay']:
+                            chu_idx = cung
+                            break
+                    khach_idx = st.session_state.get('khach_cung_select', 1)
+                    
+                    def get_mini_info(idx):
+                        return {
+                            'so': idx,
+                            'hanh': CUNG_NGU_HANH.get(idx, 'Thổ'),
+                            'sao': chart['thien_ban'].get(idx, 'N/A'),
+                            'cua': chart['nhan_ban'].get(idx, 'N/A')
+                        }
+                    
+                    c_chu = get_mini_info(chu_idx)
+                    c_khach = get_mini_info(khach_idx)
+                    
+                    c1, c2 = st.columns(2)
+                    with c1: st.info(f"**Bản Thân (Cung {chu_idx}):** {c_chu['sao']} - {c_chu['cua']}")
+                    with c2: st.warning(f"**Đối Tượng (Cung {khach_idx}):** {c_khach['sao']} - {c_khach['cua']}")
+                    
+                    res_mqh = tinh_ngu_hanh_sinh_khac(c_chu['hanh'], c_khach['hanh'])
+                    st.success(f"**Tương tác Ngũ Hành:** {res_mqh}")
+                    
+                    if st.button("🤖 AI Phân Tích So Sánh", key="ai_compare_details"):
+                        with st.spinner("AI đang so sánh..."):
+                            p = f"So sánh chi tiết Cung {chu_idx} và Cung {khach_idx} cho {selected_topic}."
+                            ans = st.session_state.gemini_helper.answer_question(p)
+                            st.info(ans)
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+
+            # 3. DETAILED TECHNICAL REPORT (Existing multi-layer analysis)
+            st.markdown("---")
+            with st.expander("🔍 Xem Phân Tích Kỹ Thuật (Kỳ Môn + Mai Hoa + Lục Hào)"):
+                if USE_SUPER_DETAILED and st.button("🚀 Tạo Báo Cáo Kỹ Thuật", key="tech_report_btn"):
                     try:
+                        # ... (original logic from line 1245-1362)
                         chart = st.session_state.chart_data
-                        
-                        # Find host palace (Can Ngay)
-                        chu_idx = 5  # Default to center
+                        chu_idx = 5
                         for cung, can in chart['can_thien_ban'].items():
-                            if can == chart['can_ngay']:
-                                chu_idx = cung
-                                break
-                        
-                        # Use selected guest palace or default
+                            if can == chart['can_ngay']: chu_idx = cung; break
                         khach_idx = st.session_state.get('khach_cung_select', 1)
                         
                         def get_p_info(idx):
                             return {
-                                'so': idx,
-                                'ten': QUAI_TUONG.get(idx, 'N/A'),
-                                'hanh': CUNG_NGU_HANH.get(idx, 'N/A'),
-                                'sao': chart['thien_ban'].get(idx, 'N/A'),
-                                'cua': chart['nhan_ban'].get(idx, 'N/A'),
-                                'than': chart['than_ban'].get(idx, 'N/A'),
-                                'can_thien': chart['can_thien_ban'].get(idx, 'N/A'),
+                                'so': idx, 'ten': QUAI_TUONG.get(idx, 'N/A'), 'hanh': CUNG_NGU_HANH.get(idx, 'N/A'),
+                                'sao': chart['thien_ban'].get(idx, 'N/A'), 'cua': chart['nhan_ban'].get(idx, 'N/A'),
+                                'than': chart['than_ban'].get(idx, 'N/A'), 'can_thien': chart['can_thien_ban'].get(idx, 'N/A'),
                                 'can_dia': chart['dia_can'].get(idx, 'N/A')
                             }
                         
-                        chu = get_p_info(chu_idx)
-                        khach = get_p_info(khach_idx)
-                        now = datetime.now()
-                        
-                        # Super detailed analysis
+                        chu = get_p_info(chu_idx); khach = get_p_info(khach_idx); now = datetime.now()
                         from super_detailed_analysis import phan_tich_sieu_chi_tiet_chu_de, tao_phan_tich_lien_mach
-                        
-                        with st.spinner("Đang phân tích toàn diện..."):
-                            res_9pp = phan_tich_sieu_chi_tiet_chu_de(selected_topic, chu, khach, now)
-                            mqh = tinh_ngu_hanh_sinh_khac(chu['hanh'], khach['hanh'])
-                            res_lien_mach = tao_phan_tich_lien_mach(selected_topic, chu, khach, now, res_9pp, mqh)
+                        res_9pp = phan_tich_sieu_chi_tiet_chu_de(selected_topic, chu, khach, now)
+                        mqh = tinh_ngu_hanh_sinh_khac(chu['hanh'], khach['hanh'])
+                        res_lien_mach = tao_phan_tich_lien_mach(selected_topic, chu, khach, now, res_9pp, mqh)
                         
                         st.success("✅ Đã tạo báo cáo tổng hợp!")
                         
@@ -1361,59 +1420,15 @@ PHÂN TÍCH LIÊN MẠCH:
                         import traceback
                         st.code(traceback.format_exc())
 
-            # AI Comprehensive Analysis
-            if 'gemini_helper' in st.session_state and st.session_state.chart_data:
-                st.markdown("---")
-                st.markdown("### 🤖 PHÂN TÍCH TỔNG HỢP BẰNG AI")
-                
-                if st.button("💬 Phân Tích Toàn Bàn Bằng AI", type="primary", key="ai_comprehensive"):
-                    with st.spinner("🤖 AI đang phân tích toàn bộ bàn..."):
-                        try:
-                            # Get Dụng Thần info from the best available source
-                            dung_than_list = []
-                            if 'USE_200_TOPICS' in globals() and USE_200_TOPICS:
-                                dung_than_list = lay_dung_than_200(selected_topic)
-                            
-                            if not dung_than_list:
-                                topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
-                                dung_than_list = topic_data.get("Dụng_Thần", [])
-                            
-                            analysis = st.session_state.gemini_helper.comprehensive_analysis(
-                                st.session_state.chart_data,
-                                selected_topic,
-                                dung_than_list
-                            )
-                            
-                            st.success("**🤖 Phân Tích Tổng Hợp:**")
-                            st.markdown(analysis)
-                        except Exception as e:
-                            st.error(f"❌ Lỗi: {str(e)}")
-            
-            # AI Q&A Section
-            if 'gemini_helper' in st.session_state and st.session_state.chart_data:
-                st.markdown("---")
-                st.markdown("### ❓ HỎI AI VỀ BÀN NÀY")
-                
-                user_question = st.text_area(
-                    "Câu hỏi của bạn:",
-                    placeholder="Ví dụ: Tôi nên làm gì để tăng vận may? Thời điểm nào tốt nhất?",
-                    key="ai_question"
-                )
-                
-                if st.button("🤖 Hỏi AI", key="ai_ask", type="primary"):
-                    if user_question:
-                        with st.spinner("🤖 AI đang suy nghĩ..."):
-                            try:
-                                answer = st.session_state.gemini_helper.answer_question(
-                                    user_question,
-                                    st.session_state.chart_data,
-                                    selected_topic
-                                )
-                                st.info(f"**🤖 Trả lời:**\n\n{answer}")
-                            except Exception as e:
-                                st.error(f"❌ Lỗi: {str(e)}")
-                    else:
-                        st.warning("⚠️ Vui lòng nhập câu hỏi")
+            # 4. AI Q&A SECTION
+            st.markdown("---")
+            st.markdown("### ❓ HỎI AI VỀ BÀN NÀY")
+            user_question = st.text_area("Đặt câu hỏi cho Chuyên gia AI:", placeholder="Hỏi thêm về thời điểm, cách hóa giải...", key="ai_q_input")
+            if st.button("🤖 Gửi Câu Hỏi", key="ai_ask_final"):
+                if user_question:
+                    with st.spinner("Đang trả lời..."):
+                        a = st.session_state.gemini_helper.answer_question(user_question, st.session_state.chart_data, selected_topic)
+                        st.info(a)
 
 
 

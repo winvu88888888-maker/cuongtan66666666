@@ -235,17 +235,18 @@ Trả lời bằng tiếng Việt, ngắn gọn, súc sắc và mang tính chấ
             # Locate Dụng Thần
             if dung_than_info:
                 for dt in dung_than_info:
+                    door_val = chart_data.get('nhan_ban', {}).get(i)
                     if (chart_data.get('thien_ban', {}).get(i) == dt or 
-                        chart_data.get('nhan_ban', {}).get(i) == dt or 
+                        door_val == dt or 
                         chart_data.get('than_ban', {}).get(i) == dt or 
                         chart_data.get('can_thien_ban', {}).get(i) == dt or
-                        (dt.endswith(" Môn") and chart_data.get('nhan_ban', {}).get(i) in dt)):
+                        (dt.endswith(" Môn") and door_val and door_val in dt)):
                         # Get details of Dụng Thần Palace
                         detail = {
                             'dt': dt,
                             'palace': i,
                             'star': chart_data.get('thien_ban', {}).get(i),
-                            'door': chart_data.get('nhan_ban', {}).get(i),
+                            'door': door_val,
                             'deity': chart_data.get('than_ban', {}).get(i),
                             'void': i in chart_data.get('khong_vong', [])
                         }
