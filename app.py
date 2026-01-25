@@ -150,50 +150,42 @@ st.set_page_config(
 # ======================================================================
 st.markdown("""
 <style>
-    /* Glassmorphism & 3D Wow Factor */
+    /* Imperial Silk & High-Contrast Theme */
     .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: #f8fafc;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #1e293b;
     }
     
     .stButton>button {
-        background: linear-gradient(145deg, #3b82f6, #2563eb);
-        color: white;
+        background: linear-gradient(145deg, #1e293b, #334155);
+        color: #f1f5f9;
         border: none;
         padding: 12px 24px;
         border-radius: 15px;
         font-weight: 700;
         letter-spacing: 0.5px;
-        box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.5),
+        box-shadow: 0 10px 20px -5px rgba(30, 41, 59, 0.4),
                     inset 0 -4px 0 rgba(0,0,0,0.2),
-                    inset 0 2px 2px rgba(255,255,255,0.3);
+                    inset 0 2px 2px rgba(255,255,255,0.1);
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         text-transform: uppercase;
-        font-size: 0.85rem;
     }
     
     .stButton>button:hover {
         transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 15px 30px -8px rgba(37, 99, 235, 0.6),
-                    inset 0 -2px 0 rgba(0,0,0,0.2),
-                    inset 0 4px 4px rgba(255,255,255,0.4);
-        background: linear-gradient(145deg, #60a5fa, #3b82f6);
-    }
-    
-    .stButton>button:active {
-        transform: translateY(2px);
-        box-shadow: 0 5px 10px -2px rgba(37, 99, 235, 0.4);
+        box-shadow: 0 15px 30px -8px rgba(30, 41, 59, 0.5);
+        background: linear-gradient(145deg, #334155, #1e293b);
     }
     
     .ai-response-panel {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
         border-radius: 24px;
         padding: 25px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        color: #e2e8f0;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        color: #1e293b;
     }
 
     .palace-3d {
@@ -207,27 +199,26 @@ st.markdown("""
         border-radius: 20px;
         padding: 2px;
         overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        background-color: #1e293b;
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        background-color: #ffffff;
     }
     
     .palace-inner:hover {
         transform: rotateX(10deg) rotateY(-10deg) translateY(-10px);
-        box-shadow: 0 30px 60px rgba(0,0,0,0.7), 0 0 20px rgba(37, 99, 235, 0.3);
-        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        border: 1px solid rgba(0,0,0,0.2);
     }
     
     .palace-content {
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
         padding: 15px;
         border-radius: 18px;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        border: 1px solid rgba(255,255,255,0.05);
     }
 
     .element-icon-3d {
@@ -243,20 +234,20 @@ st.markdown("""
     }
 
     .interpret-box {
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
         border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(0,0,0,0.05);
         padding: 24px;
-        color: #f1f5f9;
-        box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        color: #1e293b;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
     }
 
     .interpret-title {
-        color: #60a5fa;
+        color: #1e3a8a;
         font-weight: 800;
         font-size: 1.1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
         padding-bottom: 10px;
         margin-bottom: 20px;
         display: flex;
@@ -266,8 +257,8 @@ st.markdown("""
 
     /* Sidebar styling */
     section[data-testid="stSidebar"] {
-        background-color: #0f172a;
-        border-right: 1px solid rgba(255,255,255,0.1);
+        background-color: #f1f5f9;
+        border-right: 1px solid rgba(0,0,0,0.05);
     }
     
     /* Animations */
@@ -857,67 +848,8 @@ if st.session_state.current_view == "ky_mon":
                         # Prepare markers HTML
                         marker_html = f'<div style="margin-top: 15px; font-size: 11px; color: #c084fc; font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 2px; filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.5));">✨ {marker_text}</div>' if marker_text else ''
 
-                        # PREMIUM PALACE CARD HTML
-                        palace_html = f"""
-                        <div class="palace-3d">
-                            <div class="palace-inner" style="
-                                background: {bg_style}; 
-                                border: {border_width} solid {element_configs['border']};
-                                min-height: 380px;
-                                position: relative;
-                                box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-                            ">
-                                <!-- Dark Overlay for contrast -->
-                                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.8)); z-index: 0;"></div>
-                                
-                                <div style="position: relative; z-index: 1; padding: 22px; height: 100%; display: flex; flex-direction: column;">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                        <div>
-                                            <div style="font-weight: 900; font-size: 32px; color: white; line-height: 1; text-shadow: 0 0 10px {element_configs['glow']};">{palace_num}</div>
-                                            <div style="font-size: 15px; font-weight: 800; color: {element_configs['border']}; margin-top: 4px; letter-spacing: 1px;">{QUAI_TUONG.get(palace_num, '')}</div>
-                                        </div>
-                                        <div style="text-align: right;">
-                                            <div style="background: {strength_color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 0 10px {strength_color}66;">{strength}</div>
-                                            <div class="element-icon-3d" style="margin-top: 10px; color: white;">{element_configs['icon']}</div>
-                                        </div>
-                                    </div>
-
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
-                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">TINH</div>
-                                            <div style="font-size: 18px; font-weight: 900; color: #f8fafc; text-shadow: 0 0 8px rgba(255,255,255,0.3);">{sao}</div>
-                                        </div>
-                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">MÔN</div>
-                                            <div style="font-size: 18px; font-weight: 900; color: #f8fafc; text-shadow: 0 0 8px rgba(255,255,255,0.3);">{cua}</div>
-                                        </div>
-                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">THẦN</div>
-                                            <div style="font-size: 18px; font-weight: 900; color: #f8fafc; text-shadow: 0 0 8px rgba(255,255,255,0.3);">{than}</div>
-                                        </div>
-                                        <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1);">
-                                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; margin-bottom: 4px;">QUÁI</div>
-                                            <div style="margin-top: 2px;">{lines_html}</div>
-                                        </div>
-                                    </div>
-
-                                    <div style="margin-top: auto; padding-top: 15px;">
-                                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between;">
-                                            <div>
-                                                <div style="font-size: 9px; font-weight: 800; color: #94a3b8; margin-bottom: 2px;">THIÊN</div>
-                                                <div style="font-size: 22px; font-weight: 900; color: #fbbf24; line-height: 1;">{can_thien}</div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-size: 9px; font-weight: 800; color: #94a3b8; margin-bottom: 2px;">ĐỊA</div>
-                                                <div style="font-size: 22px; font-weight: 900; color: #e2e8f0; line-height: 1;">{can_dia}</div>
-                                            </div>
-                                        </div>
-                                        {marker_html}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        """
+                        # PREMIUM PALACE CARD HTML - DEDENTED FOR STREAMLIT RENDER
+                        palace_html = f"""<div class="palace-3d"><div class="palace-inner" style="background: {bg_style}; border: {border_width} solid {element_configs['border']}; min-height: 380px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.1);"><div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.6)); z-index: 0;"></div><div style="position: relative; z-index: 1; padding: 22px; height: 100%; display: flex; flex-direction: column;"><div style="display: flex; justify-content: space-between; align-items: flex-start;"><div><div style="font-weight: 900; font-size: 32px; color: #1e293b; line-height: 1; text-shadow: 0 0 10px rgba(255,255,255,0.8);">{palace_num}</div><div style="font-size: 15px; font-weight: 800; color: {element_configs['border']}; margin-top: 4px; letter-spacing: 1px;">{QUAI_TUONG.get(palace_num, '')}</div></div><div style="text-align: right;"><div style="background: {strength_color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; text-transform: uppercase;">{strength}</div><div class="element-icon-3d" style="margin-top: 10px;">{element_configs['icon']}</div></div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;"><div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(0,0,0,0.05);"><div style="font-size: 9px; color: #64748b; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">TINH</div><div style="font-size: 18px; font-weight: 900; color: #1e293b;">{sao}</div></div><div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(0,0,0,0.05);"><div style="font-size: 9px; color: #64748b; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">MÔN</div><div style="font-size: 18px; font-weight: 900; color: #1e293b;">{cua}</div></div><div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(0,0,0,0.05);"><div style="font-size: 9px; color: #64748b; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">THẦN</div><div style="font-size: 18px; font-weight: 900; color: #1e293b;">{than}</div></div><div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); padding: 10px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(0,0,0,0.05);"><div style="font-size: 9px; color: #64748b; font-weight: 800; margin-bottom: 4px;">QUÁI</div><div style="margin-top: 2px;">{lines_html}</div></div></div><div style="margin-top: auto; padding-top: 15px;"><div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between;"><div><div style="font-size: 9px; font-weight: 800; color: #64748b; margin-bottom: 2px;">THIÊN</div><div style="font-size: 22px; font-weight: 900; color: #b45309; line-height: 1;">{can_thien}</div></div><div style="text-align: right;"><div style="font-size: 9px; font-weight: 800; color: #64748b; margin-bottom: 2px;">ĐỊA</div><div style="font-size: 22px; font-weight: 900; color: #475569; line-height: 1;">{can_dia}</div></div></div>{marker_html}</div></div></div></div>"""
                         st.markdown(palace_html, unsafe_allow_html=True)
 
                         
