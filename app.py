@@ -149,55 +149,134 @@ st.set_page_config(
 # PREMIUM CUSTOM CSS
 # ======================================================================
 st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@300;400;500&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Roboto', sans-serif;
+    /* Glassmorphism & 3D Wow Factor */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #f8fafc;
     }
     
-    h1, h2, h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        color: #1a2a6c;
-    }
-    
-    /* Rounded buttons and panels */
     .stButton>button {
-        border-radius: 12px;
-        font-weight: 500;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        background: linear-gradient(145deg, #3b82f6, #2563eb);
+        color: white;
         border: none;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 12px 24px;
+        border-radius: 15px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.5),
+                    inset 0 -4px 0 rgba(0,0,0,0.2),
+                    inset 0 2px 2px rgba(255,255,255,0.3);
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-transform: uppercase;
+        font-size: 0.85rem;
     }
     
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 7px 14px rgba(0,0,0,0.15);
-        background-color: #f8f9fa;
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 30px -8px rgba(37, 99, 235, 0.6),
+                    inset 0 -2px 0 rgba(0,0,0,0.2),
+                    inset 0 4px 4px rgba(255,255,255,0.4);
+        background: linear-gradient(145deg, #60a5fa, #3b82f6);
     }
     
-    /* Custom containers for AI response */
+    .stButton>button:active {
+        transform: translateY(2px);
+        box-shadow: 0 5px 10px -2px rgba(37, 99, 235, 0.4);
+    }
+    
     .ai-response-panel {
-        background: #ffffff;
-        padding: 24px;
-        border-radius: 20px;
-        border-left: 8px solid #667eea;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        margin: 20px 0;
-        border: 1px solid rgba(0,0,0,0.05);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 25px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        color: #e2e8f0;
+    }
+
+    .palace-3d {
+        perspective: 2000px;
+        margin-bottom: 25px;
     }
     
+    .palace-inner {
+        transform-style: preserve-3d;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        border-radius: 20px;
+        padding: 2px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        background-color: #1e293b;
+    }
+    
+    .palace-inner:hover {
+        transform: rotateX(10deg) rotateY(-10deg) translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.7), 0 0 20px rgba(37, 99, 235, 0.3);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .palace-content {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(8px);
+        padding: 15px;
+        border-radius: 18px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .element-icon-3d {
+        font-size: 2.5rem;
+        filter: drop-shadow(0 0 15px currentColor);
+        margin-bottom: 10px;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-10px) scale(1.1); }
+    }
+
+    .interpret-box {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 24px;
+        color: #f1f5f9;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .interpret-title {
+        color: #60a5fa;
+        font-weight: 800;
+        font-size: 1.1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     /* Sidebar styling */
     section[data-testid="stSidebar"] {
-        background-color: #f0f2f6;
-        border-right: 1px solid #e0e0e0;
+        background-color: #0f172a;
+        border-right: 1px solid rgba(255,255,255,0.1);
     }
     
     /* Animations */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animated-panel {
+        animation: fadeIn 0.6s ease-out forwards;
     }
     
     .animated-panel {
@@ -669,11 +748,18 @@ with st.sidebar:
             "👨‍👩‍👧 Anh chị em",
             "👴👵 Bố mẹ",
             "👶 Con cái",
-            "🤝 Người ngoài (Quan)",
-            "💰 Người ngoài (Tài)"
+            "🤝 Người lạ (theo Can sinh)"
         ]
         
         selected_doi_tuong = st.selectbox("Chọn đối tượng:", doi_tuong_options, index=0)
+        
+        target_stem_name = "Giáp" # Default
+        if selected_doi_tuong == "🤝 Người lạ (theo Can sinh)":
+            target_stem_name = st.selectbox("Chọn Thiên Can năm sinh của người đó:", 
+                                           ["Không rõ (Dùng Can Giờ)", "Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"])
+        
+        st.session_state.selected_doi_tuong = selected_doi_tuong
+        st.session_state.target_stem_name_custom = target_stem_name
 
 # ======================================================================
 # MAIN CONTENT
@@ -805,30 +891,16 @@ if st.session_state.current_view == "ky_mon":
                         
                         # Element Styles & Backgrounds
                         element_configs = {
-                            "Mộc": {"img": "moc.png", "border": "#2D6A4F", "glow": "#74C69D", "icon": "🌿"},
-                            "Hỏa": {"img": "hoa.png", "border": "#9B2226", "glow": "#EE9B00", "icon": "🔥"},
-                            "Thổ": {"img": "tho.png", "border": "#744210", "glow": "#D4A373", "icon": "⛰️"},
-                            "Kim": {"img": "kim.png", "border": "#2D3748", "glow": "#A0AEC0", "icon": "⚔️"},
-                            "Thủy": {"img": "thuy.png", "border": "#005F73", "glow": "#94D2BD", "icon": "💧"}
-                        }.get(hanh, {"img": "tho.png", "border": "#4A5568", "glow": "#CBD5E0", "icon": "✨"})
+                            "Mộc": {"img": "moc.png", "border": "#10b981", "glow": "rgba(16, 185, 129, 0.4)", "icon": "🌿"},
+                            "Hỏa": {"img": "hoa.png", "border": "#ef4444", "glow": "rgba(239, 68, 68, 0.4)", "icon": "🔥"},
+                            "Thổ": {"img": "tho.png", "border": "#f59e0b", "glow": "rgba(245, 158, 11, 0.4)", "icon": "⛰️"},
+                            "Kim": {"img": "kim.png", "border": "#94a3b8", "glow": "rgba(148, 163, 184, 0.4)", "icon": "⚔️"},
+                            "Thủy": {"img": "thuy.png", "border": "#3b82f6", "glow": "rgba(59, 130, 246, 0.4)", "icon": "💧"}
+                        }.get(hanh, {"img": "tho.png", "border": "#475569", "glow": "rgba(71, 85, 105, 0.4)", "icon": "✨"})
 
-                        # Load Background Image Base64
-                        bg_path = os.path.join(os.path.dirname(__file__), "web", "static", "img", "elements", element_configs['img'])
-                        bg_base64 = get_base64_image(bg_path)
-                        
-                        # Fallback Gradients if image missing
-                        gradients = {
-                            "Mộc": "linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)",
-                            "Hỏa": "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)",
-                            "Thổ": "linear-gradient(to right, #f6d365 0%, #fda085 100%)",
-                            "Kim": "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
-                            "Thủy": "linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%)"
-                        }
-                        
-                        if bg_base64:
-                            bg_style = f"url('data:image/png;base64,{bg_base64}') center/cover no-repeat"
-                        else:
-                            bg_style = gradients.get(hanh, "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)")
+                        # Use local image path for background
+                        bg_img_path = f"web/static/img/elements/{element_configs['img']}"
+                        bg_style = f"url('app/static/{bg_img_path}') center/cover no-repeat"
 
 
                         strength_color = {
@@ -871,6 +943,29 @@ if st.session_state.current_view == "ky_mon":
                             actual_can_thang = chart.get('can_thang', 'N/A')
                             actual_can_nam = chart.get('can_nam', 'N/A')
                             
+                            # Resolve Relation (Lục Thân) stem
+                            rel_type = st.session_state.get('selected_doi_tuong', "🧑 Bản thân")
+                            target_can_representative = actual_can_ngay # Default to Self
+                            rel_label = "Bản thân"
+                            
+                            if "Anh chị em" in rel_type:
+                                target_can_representative = actual_can_thang
+                                rel_label = "Anh chị em"
+                            elif "Bố mẹ" in rel_type:
+                                target_can_representative = actual_can_nam
+                                rel_label = "Bố mẹ"
+                            elif "Con cái" in rel_type:
+                                target_can_representative = actual_can_gio
+                                rel_label = "Con cái"
+                            elif "Người lạ" in rel_type:
+                                custom_val = st.session_state.get('target_stem_name_custom', "Giáp")
+                                if "Không rõ" in custom_val:
+                                    target_can_representative = actual_can_gio
+                                    rel_label = "Đối tượng (Can Giờ)"
+                                else:
+                                    target_can_representative = custom_val
+                                    rel_label = f"Đối tượng ({target_can_representative})"
+                            
                             for dt in dung_than_list:
                                 is_match = False
                                 display_name = dt
@@ -886,7 +981,7 @@ if st.session_state.current_view == "ky_mon":
                                     display_name = f"Can Giờ ({actual_can_gio} - Sự việc)"
                                     is_match = True
                                 elif dt == "Can Ngày" and (actual_can_ngay == can_thien):
-                                    display_name = f"Can Ngày ({actual_can_ngay} - Bản thân)"
+                                    display_name = f"Can Ngày ({actual_can_ngay})"
                                     is_match = True
                                 elif dt == "Can Tháng" and (actual_can_thang == can_thien):
                                     display_name = f"Can Tháng ({actual_can_thang})"
@@ -905,6 +1000,10 @@ if st.session_state.current_view == "ky_mon":
                                 
                                 if is_match:
                                     found_dt.append(display_name)
+                                    
+                            # ADD RELATIONSHIP HIGHLIGHT
+                            if target_can_representative == can_thien:
+                                found_dt.append(f"📍 {rel_label}")
                             
                             dt_html = f"""
                             <div class="dung-than-box">
@@ -1035,6 +1134,73 @@ if st.session_state.current_view == "ky_mon":
                 if 'vi_du' in km:
                     st.write(f"**Ví dụ:** {km['vi_du']}")
         
+        # ===== COMPREHENSIVE AI REPORT SECTION =====
+        if st.session_state.chart_data and 'gemini_helper' in st.session_state:
+            st.markdown("---")
+            st.markdown("### 🏆 BÁO CÁO TỔNG HỢP CHUYÊN SÂU (AI)")
+            
+            with st.container():
+                st.markdown(f"""
+                <div class="ai-response-panel animated-panel">
+                    <div style="font-size: 1.2rem; font-weight: 800; color: #1e3a8a; margin-bottom: 15px;">
+                        🤖 KẾT LUẬN CUỐI CÙNG TỪ AI
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("🔮 Bắt đầu Phân Tích Tổng Hợp", type="primary", use_container_width=True):
+                    with st.spinner("AI đang tổng hợp dữ liệu từ 9 cung và tính toán kết quả..."):
+                        # Prepare data for AI
+                        chart = st.session_state.chart_data
+                        topic = selected_topic
+                        
+                        # Identify key palaces for AI
+                        key_palaces_info = []
+                        for pn in range(1, 10):
+                            # (Simulate the finding logic for the report summary)
+                            can_t = chart['can_thien_ban'].get(pn, 'N/A')
+                            can_d = chart['dia_can'].get(pn, 'N/A')
+                            s = chart['thien_ban'].get(pn, 'N/A')
+                            c = chart['nhan_ban'].get(pn, 'N/A')
+                            t = chart['than_ban'].get(pn, 'N/A')
+                            
+                            # Just send all palaces as they are rich data
+                            key_palaces_info.append(f"Cung {pn}: Sao {s}, Môn {c}, Thần {t}, Can {can_t}/{can_d}")
+                        
+                        rel_type = st.session_state.get('selected_doi_tuong', "🧑 Bản thân")
+                        custom_stem = st.session_state.get('target_stem_name_custom', "N/A")
+                        
+                        prompt = f"""
+                        Bạn là một đại sư Kỳ Môn Độn Giáp. Hãy phân tích TỔNG HỢP cho chủ đề: {topic}.
+                        
+                        **Ngữ cảnh Đối tượng (Lục Thân):** {rel_type} (Can mục tiêu: {custom_stem if 'người lạ' in rel_type.lower() else 'Theo Lục Thân'})
+                        
+                        **Dữ liệu 9 Cung:**
+                        {chr(10).join(key_palaces_info)}
+                        
+                        **Trạng thái Can:** Giờ: {chart['can_gio']}, Ngày: {chart['can_ngay']}, Tháng: {chart.get('can_thang')}, Năm: {chart.get('can_nam')}
+                        
+                        **YÊU CẦU PHÂN TÍCH CHUYÊN SÂU:**
+                        1. Xác định Cung Bản Thân (người hỏi) và Cung Sự Việc (Kết quả) hoặc Cung Đối tác/Người mua (Can Giờ).
+                        2. Phân tích sự tương tác Sinh-Khắc-Hợp-Xung giữa các Cung này.
+                        3. Đánh giá sức mạnh của các Sao và Cửa tại các cung trọng yếu.
+                        4. **KẾT LUẬN DỨT KHOÁT:** Có đạt được mục đích không? (Bán được không? Giá tốt không? Kết hôn được không?...).
+                        5. **LỜI KHUYÊN HÀNH ĐỘNG:** Cần làm gì ngay bây giờ? 
+                        
+                        Viết theo phong cách chuyên nghiệp, thực tế, không dùng thuật ngữ quá khó hiểu nếu không giải thích kèm theo.
+                        """
+                        
+                        try:
+                            # Use comprehensive_analysis if suitable, or answer_question for flexibility
+                            final_report = st.session_state.gemini_helper.answer_question(prompt)
+                            st.markdown(f"""
+                            <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
+                                {final_report}
+                            </div>
+                            """, unsafe_allow_html=True)
+                        except Exception as e:
+                            st.error(f"Lỗi phân tích: {e}")
+
         # ===== PALACE COMPARISON SECTION =====
         if st.session_state.chart_data:
             st.markdown("---")
