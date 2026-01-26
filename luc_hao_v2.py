@@ -1,4 +1,4 @@
-# luc_hao_kinh_dich.py - Module Lục Hào Kinh Dịch FULL
+# luc_hao_v2.py - Module Lục Hào Kinh Dịch FULL
 import random
 from datetime import datetime
 

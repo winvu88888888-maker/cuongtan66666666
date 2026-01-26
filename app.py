@@ -6,6 +6,20 @@ import textwrap
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from PIL import Image
+import importlib
+
+# --- DIAGNOSTIC INFO (SIDEBAR) ---
+st.sidebar.markdown("### 🔍 Hệ thống Giao diện")
+st.sidebar.write(f"📁 Thư mục gốc: `{os.path.dirname(os.path.abspath(__file__))}`")
+try:
+    import mai_hoa_v2
+    st.sidebar.caption(f"🌸 Module Mai Hoa V2: `{mai_hoa_v2.__file__}`")
+    importlib.reload(mai_hoa_v2)
+    import luc_hao_v2
+    st.sidebar.caption(f"☯️ Module Lục Hào V2: `{luc_hao_v2.__file__}`")
+    importlib.reload(luc_hao_v2)
+except Exception as e:
+    st.sidebar.error(f"⚠️ Reload V2: {e}")
 
 # Add project root and dist directory to Python path
 root_path = os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +29,16 @@ ai_modules_path = os.path.join(root_path, 'ai_modules')
 for path in [root_path, dist_path, ai_modules_path]:
     if path not in sys.path:
         sys.path.insert(0, path)
+
+# FORCE RELOAD CUSTOM MODULES
+import importlib
+try:
+    import mai_hoa_dich_so
+    importlib.reload(mai_hoa_dich_so)
+    import luc_hao_kinh_dich
+    importlib.reload(luc_hao_kinh_dich)
+except Exception:
+    pass
 
 # Import modules from dist directory
 try:

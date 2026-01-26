@@ -1,4 +1,4 @@
-# mai_hoa_dich_so.py - Module Mai Hoa Dịch Số 64 Quẻ FULL DATA
+# mai_hoa_v2.py - Module Mai Hoa Dịch Số 64 Quẻ FULL DATA
 import random
 from datetime import datetime
 
@@ -6,7 +6,6 @@ QUAI_SYMBOLS = {1: "☰ Càn", 2: "☱ Đoài", 3: "☲ Ly", 4: "☳ Chấn", 5:
 QUAI_NAMES = {1: "Càn", 2: "Đoài", 3: "Ly", 4: "Chấn", 5: "Tốn", 6: "Khảm", 7: "Cấn", 8: "Khôn"}
 QUAI_ELEMENTS = {1: "Kim", 2: "Kim", 3: "Hỏa", 4: "Mộc", 5: "Mộc", 6: "Thủy", 7: "Thổ", 8: "Thổ"}
 
-# 64 Hexagrams Database
 HEXAGRAM_DATA = {
     (1, 1): {"ten": "Càn Vi Thiên", "tuong": "Thiên hành kiện", "nghĩa": "Cửu thiên huyền bí, khởi đầu hanh thông."},
     (8, 8): {"ten": "Khôn Vi Địa", "tuong": "Địa thế khôn", "nghĩa": "Nhu thuận, bao dung, hậu đức tải vật."},
