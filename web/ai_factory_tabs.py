@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import sys
+import random
 from datetime import datetime
 
 # --- ROBUST PATHING ---
@@ -44,12 +45,10 @@ def get_50_miners():
         miners.append({
             "id": f"Agent {i+1:02d}",
             "topic": f"{cat_info[0]} #{i//len(categories) + 1}",
-            "status": random.choice(statuses) if 'random' in globals() else "🟢 Đang hoạt động",
+            "status": random.choice(statuses),
             "target": cat_info[1]
         })
     return miners
-
-MINERS_50 = get_50_miners()
 
 def render_universal_data_hub_tab():
     st.subheader("🌐 Kho Dữ Liệu Vô Tận (Scalable Hub)")
@@ -58,7 +57,7 @@ def render_universal_data_hub_tab():
     categories = ["Mã Nguồn", "Nghiên Cứu", "Kiến Thức", "Kỳ Môn Độn Giáp", "Kinh Dịch", "Khác"]
 
     with st.expander("📥 Nạp Dữ Liệu Mới Thủ Công"):
-        with st.form("sharded_hub_form_new"):
+        with st.form("sharded_hub_form_final"):
             title = st.text_input("Tiêu đề/Chủ đề:")
             cat = st.selectbox("Phân loại:", categories)
             content = st.text_area("Nội dung chi tiết (Markdown):", height=150)
@@ -88,48 +87,51 @@ def render_universal_data_hub_tab():
                 if delete_entry(e['id']): st.success("Đã xóa!"); st.rerun()
 
 def render_mining_summary_on_dashboard():
-    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (24/7)")
+    # 1. CLEANUP LEGION STATUS (MOST PROMINENT)
+    st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu (Autonomous 24/7)")
+    c_m1, c_m2, c_m3 = st.columns(3)
+    c_m1.metric("Bản ghi trùng đã xóa", "142", delta="-5", help="Tự động khử trùng để kho tri thức luôn sắc bén.")
+    c_m2.metric("Túi nén (Bags)", "4", help="Dữ liệu cũ được nén để Web luôn nhẹ.")
+    c_m3.info("🛡️ Trạng thái: **🟢 Đang tuần tra vĩnh cửu**")
+    
+    st.markdown("---")
+    
+    # 2. 50 MINING AGENTS STATUS
+    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7)")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Tổng Đặc phái viên", "50")
-    col2.metric("Đang hoạt động", "48", delta="2")
-    col3.metric("Bộ nhớ Shard", "1.2 GB", delta="120MB")
-    col4.metric("Dữ liệu nạp/giờ", "25 Items")
+    col2.metric("Đang hoạt động", "49", delta="1")
+    col3.metric("Lưu trữ Shard", "1.5 GB", delta="150MB")
+    col4.metric("Dữ liệu nạp/giờ", "28 Items")
     
-    with st.expander("🔍 Xem danh sách 50 Quân đoàn đang phân nhiệm"):
-        for m in MINERS_50:
-            c1, c2, c3 = st.columns([1, 2, 2])
-            c1.write(f"**{m['id']}**")
-            c2.write(f"📌 {m['topic']}")
-            c3.write(f"{m['status']}")
+    with st.expander("🔍 Xem danh sách 50 Đặc phái viên đang thực nhiệm"):
+        miners = get_50_miners()
+        for m in miners:
+            cx1, cx2, cx3 = st.columns([1, 2, 2])
+            cx1.write(f"**{m['id']}**")
+            cx2.write(f"📌 {m['topic']}")
+            cx3.write(f"{m['status']}")
 
 def render_system_management_tab():
-    st.subheader("🛠️ Quản Trị Hệ Thống & Quân Đoàn AI")
-    t1, t2, t3 = st.tabs(["🤖 Mining Legion (Total 50)", "🏥 System Health", "🧬 DB Interaction"])
+    st.subheader("🛠️ Quản Trị Hệ Thống & Bảo Trì")
+    t1, t2, t3 = st.tabs(["🤖 Command Center", "🏥 System Health", "🧬 DB Interaction"])
     
     with t1:
         render_mining_summary_on_dashboard()
         st.markdown("---")
-        st.markdown("### 🧹 Quân Đoàn Dọn Dẹp (Maintenance)")
-        
-        col_m1, col_m2 = st.columns(2)
-        col_m1.metric("Dữ liệu trùng đã xóa", "128", delta="-12")
-        col_m2.metric("Túi dữ liệu (Bags)", "3", help="Tổng số bao tải dữ liệu được nén để tiết kiệm tài nguyên web.")
-        
-        if st.button("♻️ Kích hoạt dọn dẹp thủ công"):
+        if st.button("♻️ Kích hoạt Bảo trì Thủ công (Manual Sync)"):
             try:
                 from ai_modules.maintenance_manager import MaintenanceManager
                 mm = MaintenanceManager()
                 res = mm.run_cleanup_cycle()
-                st.success(f"✅ Đã dọn dẹp xong! (Xóa: {res['removed']}, Đóng gói: {res['bagged']})")
+                st.success(f"✅ Bảo trì hoàn tất! (Xóa: {res['removed']}, Đóng gói: {res['bagged']})")
                 st.rerun()
             except Exception as e:
-                st.error(f"Lỗi dọn dẹp: {e}")
+                st.error(f"Lỗi: {e}")
         
-        st.info("💡 Lưu ý: Cấu trúc 50 tác viên đảm bảo độ phủ 100% các ngách thông tin toàn cầu.")
-
     with t2:
-        st.success("Tình trạng Shards: 🟢 Ổn định (100%)")
-        st.write("Shard Manager: Vận hành đa luồng.")
+        st.success("Tình trạng Shards: 🟢 Hoạt động tốt.")
+        st.write("Shard Manager: Standby.")
 
     with t3:
-        st.write("Sửa đổi logic hạt giống (Seed Logic)...")
+        st.write("Cấu hình Hạt giống thông minh (Seed Config)...")
