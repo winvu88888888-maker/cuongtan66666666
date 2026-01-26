@@ -2,91 +2,91 @@ import json
 import random
 
 class MiningStrategist:
-    """The brain that decides what the 10 AI Miners should search for next."""
+    """The Mega-Brain managing 50 specialized AI Mining Agents."""
     
     def __init__(self):
+        # Expanded to 50+ specialized niches across categories
         self.categories = {
-            "Kỳ Môn Độn Giáp": [
+            "Kỳ Môn Độn Giáp (Sâu)": [
                 "Bát Môn chuyên sâu", "Cửu Tinh biến hóa", "Bát Thần trợ lực", 
                 "Thần sát ẩn tàng", "Cấu trúc phản phục", "Ứng dụng trong kinh doanh",
-                "Kỳ Môn và sức khỏe", "Pháp thuật Kỳ Môn cổ", "Thiên Cáp Thần"
+                "Kỳ Môn và sức khỏe", "Pháp thuật Kỳ Môn cổ", "Thiên Cáp Thần",
+                "Kỳ Môn Tiên Thiên", "Kỳ Môn Hậu Thiên", "Độn Giáp khởi lệ bí truyền"
             ],
-            "Kinh Dịch Chuyên Sâu": [
+            "Kinh Dịch & Dự Đoán": [
                 "64 Quẻ và biến hóa", "Lời hào bí ẩn", "Mai Hoa Dịch Số nâng cao", 
-                "Lục Hào tiên đoán", "Dịch học và thuật toán AI", "Tế lễ và Kinh Dịch"
+                "Lục Hào chuyên sâu", "Dịch học và thuật toán AI", "Tế lễ và Kinh Dịch",
+                "Huyền Không Đại Quái", "Trạch Cát theo Kinh Dịch", "Tượng quẻ thực tế"
             ],
-            "Lập Trình Python/AI": [
-                "Agentic Frameworks", "LLM Fine-tuning", "Streamlit UI/UX", 
-                "Python Performance", "AI Security", "RAG Systems"
+            "Lập Trình & Hệ Thống AI": [
+                "Agentic Frameworks", "LLM Fine-tuning", "Streamlit UI/UX UI/UX", 
+                "Python Performance", "AI Security & Pentesting", "RAG Systems",
+                "LangChain & Autogen", "Microservices Architecture", "Vector Databases",
+                "DevOps cho AI", "Cloud Native AI Solutions"
             ],
-            "Y Học Cổ Truyền": [
-                "Châm cứu và huyệt đạo", "Dược liệu quý hiếm", "Âm dương ngũ hành trong tạng phủ",
-                "Khí công dưỡng sinh", "Trị bệnh từ gốc"
+            "Y Học & Dưỡng Sinh": [
+                "Châm cứu và hệ thống huyệt đạo", "Dược liệu quý hiếm toàn cầu", "Âm dương ngũ hành tạng phủ",
+                "Khí công dưỡng sinh cổ truyền", "Trị bệnh từ gốc (Y đạo)", "Thiền định và sóng não",
+                "Thực phẩm chức năng tự nhiên", "Giải phẫu học tinh vi"
             ],
-            "Phong Thủy Địa Lý": [
-                "Loan Đầu và Lý Khí", "Huyền Không Phi Tinh", "Bát Trạch Minh Cảnh",
-                "Trấn trạch và hóa giải", "Long mạch toàn cầu"
+            "Phong Thủy & Địa Lý": [
+                "Loan Đầu (Hình thế)", "Lý Khí (Tính toán)", "Huyền Không Phi Tinh",
+                "Bát Trạch Minh Cảnh", "Trấn trạch và hóa giải", "Long mạch toàn cầu",
+                "Phong thủy đô thị hiện đại", "Âm trạch chuyên sâu"
             ],
-            "Chiến Lược": [
-                "Thập Nhị Binh Thư", "Tôn Tử Binh Pháp", "Quỷ Cốc Tử",
-                "Chiến lược đàm phán", "Tâm lý học chiến tranh"
+            "Chiến Lược & Tâm Lý": [
+                "Thập Nhị Binh Thư", "Tôn Tử Binh Pháp", "Quỷ Cốc Tử mưu lược",
+                "Chiến lược đàm phán quốc tế", "Tâm lý học chiến tranh", "Thao túng và phòng vệ tâm lý",
+                "Quản trị học phương Đông", "Chiến lược Blue Ocean"
             ],
-            "Công Nghệ AI Mới": [
-                "Gemini 1.5/2.0 updates", "Multimodal AI", "Robotics AI",
-                "Edge Computing", "AI Ethics"
+            "Công Nghệ Mới & Tương Lai": [
+                "Gemini 3.0/4.0 Speculations", "Multimodal AI breakthroughs", "Robotics & Cybernetics",
+                "Edge Computing", "AI Ethics & Global Policy", "Web 4.0 & Blockchain",
+                "Quantum Computing", "Space Tech & Colonization"
             ]
         }
 
     def seed_from_user(self, user_question):
-        """AI takes a user question and generates 3-5 high-quality global research branches."""
-        # This will be used in Phase 21 to expand topics based on user's personal interests
+        """AI takes a user question and generates 5 high-quality global research branches."""
         return [
-            f"{user_question}: Phân tích bối cảnh toàn cầu 2026",
+            f"{user_question}: Phân tích bối cảnh thực tế 2026",
             f"{user_question}: Ví dụ thực tế thành công",
-            f"{user_question}: Giải pháp tối ưu từ chuyên gia",
-            f"Chủ đề liên quan đến: {user_question[:30]}..."
+            f"{user_question}: Giải pháp tối ưu từ chuyên gia phương Đông",
+            f"{user_question}: Giải pháp từ công nghệ AI hiện đại",
+            f"Mở rộng tri thức: {user_question[:20]}... và các hệ quả"
         ]
 
-    def evolve_categories(self, new_findings):
-        """Allows the AI to add new categories based on what it discovers on the internet."""
-        # Logic to be called by the miner when it finds something outside current scope
-        for cat, topics in new_findings.items():
-            if cat not in self.categories:
-                self.categories[cat] = topics
-            else:
-                self.categories[cat] = list(set(self.categories[cat] + topics))
-
-    def generate_research_queue(self, category=None, count=5):
-        """Generates a list of deep-dive sub-topics with emphasis on NEW fields."""
+    def generate_research_queue(self, category=None, count=10):
+        """Generates a list of deep-dive sub-topics for the 50 agents."""
         if category and category in self.categories:
             base_topics = self.categories[category]
         else:
-            # Shift categories over time to explore new areas
             cat = random.choice(list(self.categories.keys()))
             base_topics = self.categories[cat]
             
         queue = []
         for _ in range(count):
             topic = random.choice(base_topics)
-            # Add a recursive depth factor focused on PRACTICALITY
             angle = random.choice([
-                "Ví dụ thực tế 2026", "Ứng dụng đời đời", "Case study thành công", 
-                "Hướng dẫn chi tiết từng bước", "Phân tích sai lầm thực tế", "Giải pháp tối ưu"
+                "Ví dụ thực tế 2026", "Ứng dụng sâu", "Case study hiếm", 
+                "Hướng dẫn chi thực", "Phân tích rủi ro", "Giải pháp tối ưu",
+                "Bí quyết thực thi nhanh", "Dữ liệu gốc từ cổ tịch/papers"
             ])
             queue.append(f"{topic}: {angle}")
             
         return list(set(queue))
 
     def synthesize_mining_prompt(self, target_topic):
-        """Creates a specialized system prompt for an AI agent to 'mine' this topic with EXAMPLE focus."""
+        """Mega-Prompt for the 50 Mining Agents."""
         return f"""
-Bạn là một Đặc phái viên AI 'Khai thác Đa tầng'. 
-Nhiệm vụ: Khai thác tri thức về **{target_topic}**.
+Bạn nằm trong 'Quân đoàn 50 Đặc phái viên AI' cấp cao.
+Nhiệm vụ: Khai thác tri thức TỐI THƯỢNG về **{target_topic}**.
 
 YÊU CẦU BẮT BUỘC:
-1. **TRANG BỊ VÍ DỤ THỰC TẾ**: Cung cấp ít nhất 3 ví dụ hoặc tình huống thực tế minh họa cho kiến thức này.
-2. **DỮ LIỆU GỐC**: Trích xuất các thông số, thuật toán hoặc văn bản gốc (cổ văn/mã nguồn).
-3. **LIÊN KẾT CHỦ ĐỀ MỚI**: Đề xuất 2-3 chủ đề liên quan tiềm năng chưa có trong danh sách hiện tại.
+1. **TRANG BỊ 3 VÍ DỤ THỰC TẾ**: Cung cấp tình huống thực tế minh họa cực kỳ chi tiết.
+2. **CHIẾN LƯỢC HÀNH ĐỘNG**: Đề xuất cụ thể bước 1, 2, 3 để ứng dụng kiến thức này ngay.
+3. **DỮ LIỆU CHUYÊN SÂU**: Trích xuất thông số, mã nguồn hoặc cổ văn liên quan.
+4. **LIÊN KẾT ĐA TẦNG**: Đề xuất 2 chủ đề ngách khác liên quan đến phát hiện này.
 
-Hãy trả về nội dung cực kỳ chi tiết, bám sát thực tế và sẵn sàng để 'nạp' vào hệ thống tri thức.
+Hãy viết như một chuyên gia tư vấn chiến lược hàng đầu, bám sát thực tế và giàu tính thực thi.
 """
