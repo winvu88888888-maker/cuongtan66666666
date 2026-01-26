@@ -1970,6 +1970,8 @@ elif st.session_state.current_view == "luc_hao":
             
             if show_debug_ih:
                 st.write("DEBUG (Hào 1):", res['ban']['details'][0])
+                st.write(f"📁 Module Path: `{luc_hao_kinh_dich.__file__}`")
+                st.write(f"🏷️ Version: `{getattr(luc_hao_kinh_dich, 'VERSION_LH', 'Unknown')}`")
 
             st.markdown('<table class="hao-table-pro"><tr><th>HÀO</th><th>LỤC THÂN</th><th>CAN CHI</th><th>ĐỊNH VỊ</th></tr>', unsafe_allow_html=True)
             for d in reversed(res['ban']['details']):

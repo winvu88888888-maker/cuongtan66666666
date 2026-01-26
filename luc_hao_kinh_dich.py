@@ -3,6 +3,7 @@ from datetime import datetime
 
 LUC_THAN = ["Huynh Đệ", "Phụ Mẫu", "Quan Quỷ", "Thê Tài", "Tử Tôn"]
 LUC_THU = ["Thanh Long", "Chu Tước", "Câu Trần", "Đằng Xà", "Bạch Hổ", "Huyền Vũ"]
+VERSION_LH = "2026.01.26.PRO_V3"
 PALACE_ELEMENTS = {"Càn":"Kim", "Đoài":"Kim", "Ly":"Hỏa", "Chấn":"Mộc", "Tốn":"Mộc", "Khảm":"Thủy", "Cấn":"Thổ", "Khôn":"Thổ"}
 HEXAGRAM_PALACES = {
     "Càn Vi Thiên":"Càn", "Thiên Địa Bĩ":"Càn", "Thiên Sơn Độn":"Càn", "Thiên Hỏa Đồng Nhân":"Càn",
