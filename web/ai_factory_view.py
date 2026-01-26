@@ -2,31 +2,57 @@ import streamlit as st
 import sys
 import os
 import json
+import importlib.util
 from pathlib import Path
 from datetime import datetime
 
-# --- ROBUST PATH INITIALIZATION ---
-try:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    root_path = os.path.dirname(current_dir)
-    if root_path not in sys.path:
-        sys.path.insert(0, root_path)
-    if current_dir not in sys.path:
-        sys.path.insert(0, current_dir)
-except Exception:
-    pass
+# --- ROBUST PATH INITIALIZATION (STREAMLIT CLOUD COMPATIBLE) ---
+def initialize_paths():
+    try:
+        # Get the absolute path of the current file (ai_factory_view.py)
+        current_file = os.path.abspath(__file__)
+        current_dir = os.path.dirname(current_file)
+        root_dir = os.path.dirname(current_dir)
+        
+        # Add both to sys.path if not present
+        for p in [root_dir, current_dir]:
+            if p not in sys.path:
+                sys.path.insert(0, p)
+        
+        return root_dir, current_dir
+    except Exception as e:
+        st.error(f"Path Init Error: {e}")
+        return None, None
 
-# --- ROBUST IMPORTS ---
+ROOT_PATH, WEB_PATH = initialize_paths()
+
+# --- DEFINE FALLBACKS FOR TABS ---
+def render_universal_data_hub_tab(): st.error("Tab Dữ Liệu lỗi")
+def render_system_management_tab(): st.error("Tab Quản Trị lỗi")
+def add_to_hub(*args, **kwargs): return False
+
+# --- DYNAMIC IMPORT OF TABS ---
 try:
+    # Try multiple import styles to handle different server environments
     try:
         from web.ai_factory_tabs import render_universal_data_hub_tab, render_system_management_tab, add_to_hub
     except ImportError:
-        from ai_factory_tabs import render_universal_data_hub_tab, render_system_management_tab, add_to_hub
-except ImportError as e:
-    st.error(f"⚠️ Lỗi nạp Tab bổ trợ: {e}")
-    def render_universal_data_hub_tab(): st.error("Tab Dữ Liệu lỗi")
-    def render_system_management_tab(): st.error("Tab Quản Trị lỗi")
-    def add_to_hub(*args, **kwargs): return False
+        try:
+            from ai_factory_tabs import render_universal_data_hub_tab, render_system_management_tab, add_to_hub
+        except ImportError:
+            # Absolute fallback using file path if standard imports fail
+            tabs_path = os.path.join(WEB_PATH, "ai_factory_tabs.py")
+            if os.path.exists(tabs_path):
+                spec = importlib.util.spec_from_file_location("ai_factory_tabs_dynamic", tabs_path)
+                tabs_mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(tabs_mod)
+                render_universal_data_hub_tab = tabs_mod.render_universal_data_hub_tab
+                render_system_management_tab = tabs_mod.render_system_management_tab
+                add_to_hub = tabs_mod.add_to_hub
+            else:
+                st.error(f"⚠️ Không tìm thấy file tại: {tabs_path}")
+except Exception as e:
+    st.error(f"⚠️ Lỗi tải Tab bổ trợ: {e}")
 
 # Import modules from ai_modules
 try:
@@ -62,7 +88,6 @@ def render_ai_factory_view():
     
     # Initialize session state for this view
     if 'orchestrator' not in st.session_state:
-        # Check if we have a key from the main app's sidebar
         if 'gemini_key' in st.session_state and st.session_state.gemini_key:
             st.session_state.orchestrator = AIOrchestrator(st.session_state.gemini_key)
         else:
@@ -72,7 +97,6 @@ def render_ai_factory_view():
         st.session_state.memory = MemorySystem()
         
     if 'n8n_client' not in st.session_state:
-        # Load from secrets or default
         n8n_url = st.secrets.get("N8N_BASE_URL", "http://localhost:5678")
         n8n_key = st.secrets.get("N8N_API_KEY", None)
         st.session_state.n8n_client = N8NClient(n8n_url, n8n_key)
@@ -87,310 +111,114 @@ def render_ai_factory_view():
         "🛠️ Quản Trị Hệ Thống"
     ])
 
-    with tab1:
-        render_dashboard_tab()
-
-    with tab2:
-        render_create_code_tab()
-
-    with tab3:
-        render_knowledge_base_tab()
-        
-    with tab4:
-        render_universal_data_hub_tab()
-        
-    with tab5:
-        render_workflows_tab()
-
-    with tab6:
-        render_system_management_tab()
+    with tab1: render_dashboard_tab()
+    with tab2: render_create_code_tab()
+    with tab3: render_knowledge_base_tab()
+    with tab4: render_universal_data_hub_tab()
+    with tab5: render_workflows_tab()
+    with tab6: render_system_management_tab()
 
 def render_dashboard_tab():
     st.subheader("Thống Kê Hoạt Động")
-    
     stats = st.session_state.memory.get_statistics()
-    
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown(f"""
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #667eea;">
-            <h3 style="color: #667eea; margin: 0;">📁 {stats.get('total_code_files', 0)}</h3>
-            <p style="margin: 0; color: #666;">File Code</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
+        st.markdown(f'<div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #667eea;"><h3 style="color: #667eea; margin: 0;">📁 {stats.get("total_code_files", 0)}</h3><p style="margin: 0; color: #666;">File Code</p></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown(f"""
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #764ba2;">
-            <h3 style="color: #764ba2; margin: 0;">📚 {stats.get('total_knowledge', 0)}</h3>
-            <p style="margin: 0; color: #666;">Kiến Thức</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
+        st.markdown(f'<div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #764ba2;"><h3 style="color: #764ba2; margin: 0;">📚 {stats.get("total_knowledge", 0)}</h3><p style="margin: 0; color: #666;">Kiến Thức</p></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown(f"""
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #2ecc71;">
-            <h3 style="color: #2ecc71; margin: 0;">⚡ {stats.get('total_executions', 0)}</h3>
-            <p style="margin: 0; color: #666;">Lần Chạy</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
+        st.markdown(f'<div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #2ecc71;"><h3 style="color: #2ecc71; margin: 0;">⚡ {stats.get("total_executions", 0)}</h3><p style="margin: 0; color: #666;">Lần Chạy</p></div>', unsafe_allow_html=True)
     with col4:
         success_rate = 0
         if stats.get('total_executions', 0) > 0:
             success = stats.get('executions_by_status', {}).get('success', 0)
             success_rate = int((success / stats['total_executions']) * 100)
-            
-        st.markdown(f"""
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #e74c3c;">
-            <h3 style="color: #e74c3c; margin: 0;">✅ {success_rate}%</h3>
-            <p style="margin: 0; color: #666;">Thành Công</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #e74c3c;"><h3 style="color: #e74c3c; margin: 0;">✅ {success_rate}%</h3><p style="margin: 0; color: #666;">Thành Công</p></div>', unsafe_allow_html=True)
         
     st.markdown("### 📜 Hoạt Động Gần Đây")
-    recent_executions = st.session_state.memory.get_execution_history(limit=5)
-    
-    if recent_executions:
-        for exec in recent_executions:
-            status_color = "green" if exec['status'] == 'success' else "red"
-            st.markdown(f"- <span style='color:{status_color}'>●</span> **{exec['workflow_name']}** ({exec['created_at']}) - {exec['execution_time']}ms", unsafe_allow_html=True)
-    else:
-        st.info("Chưa có hoạt động nào được ghi nhận.")
+    recent = st.session_state.memory.get_execution_history(limit=5)
+    if recent:
+        for ex in recent:
+            color = "green" if ex['status'] == 'success' else "red"
+            st.markdown(f"- <span style='color:{color}'>●</span> **{ex['workflow_name']}** ({ex['created_at']})", unsafe_allow_html=True)
+    else: st.info("Chưa có hoạt động.")
 
 def render_create_code_tab():
     st.subheader("Tạo Code & Dự Án Mới")
-    
     if st.session_state.orchestrator is None:
-        st.warning("⚠️ Vui lòng nhập Gemini API key ở thanh bên trái (Sidebar) để sử dụng tính năng này.")
+        st.warning("⚠️ Vui lòng nhập Gemini API key ở Sidebar.")
         return
 
     if 'last_generation_result' not in st.session_state:
         st.session_state.last_generation_result = None
 
     with st.form("code_generation_form"):
-        st.markdown("### 📝 Mô Tả Yêu Cầu")
-        
-        user_request = st.text_area(
-            "Mô tả chi tiết phần mềm bạn muốn tạo:",
-            height=150,
-            placeholder="Ví dụ: Tạo một ứng dụng quản lý chi tiêu cá nhân bằng Python với giao diện dòng lệnh, lưu dữ liệu vào SQLite..."
-        )
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            auto_execute = st.checkbox("Tự động thực thi quy trình", value=True)
-        
-        submit = st.form_submit_button("🚀 Bắt Đầu (n8n + AI)")
-        
-        if submit and user_request:
-            with st.spinner("🤖 Nhà máy AI đang vận hành... Phân tích -> Lập kế hoạch -> Viết Code -> Kiểm thử"):
+        req = st.text_area("Mô tả phần mềm:", height=150)
+        auto = st.checkbox("Tự động thực thi", value=True)
+        if st.form_submit_button("🚀 Bắt Đầu"):
+            with st.spinner("🤖 Đang vận hành..."):
                 try:
-                    result = st.session_state.orchestrator.process_request(
-                        user_request,
-                        auto_execute=auto_execute
-                    )
-                    
-                    # AUTO-ARCHIVE TO UNIVERSAL HUB
-                    project_name = result.get('plan', {}).get('project_name', 'Unnamed Project')
-                    
-                    # Archive request and plan
-                    add_to_hub(
-                        title=f"Yêu cầu: {project_name}",
-                        category="Nghiên Cứu",
-                        content=f"**Yêu cầu:** {user_request}\n\n**Kế hoạch:**\n{json.dumps(result.get('plan', {}), indent=2, ensure_ascii=False)}",
-                        tags=["research", project_name]
-                    )
-                    
-                    # Archive each file
-                    for file in result.get('execution', {}).get('created_files', []):
-                        if os.path.exists(file):
-                            try:
-                                with open(file, 'r', encoding='utf-8') as f:
-                                    content = f.read()
-                                add_to_hub(
-                                    title=f"Source: {os.path.basename(file)} ({project_name})",
-                                    category="Mã Nguồn",
-                                    content=f"```python\n{content}\n```",
-                                    tags=["source_code", project_name]
-                                )
-                            except: pass
-
-                    st.session_state.last_generation_result = result
+                    res = st.session_state.orchestrator.process_request(req, auto_execute=auto)
+                    # Auto Archive
+                    nm = res.get('plan', {}).get('project_name', 'Untilted')
+                    add_to_hub(f"Yêu cầu: {nm}", f"**Yêu cầu:** {req}\n\n**Plan:**\n{json.dumps(res.get('plan',{}), indent=2, ensure_ascii=False)}", "Nghiên Cứu")
+                    for f_path in res.get('execution', {}).get('created_files', []):
+                        if os.path.exists(f_path):
+                            with open(f_path, 'r', encoding='utf-8') as f:
+                                add_to_hub(f"Source: {os.path.basename(f_path)} ({nm})", f"```python\n{f.read()}\n```", "Mã Nguồn")
+                    st.session_state.last_generation_result = res
                     st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Lỗi trong quá trình xử lý: {str(e)}")
+                except Exception as e: st.error(f"Lỗi: {e}")
 
-    # Display results OUTSIDE the form
     if st.session_state.last_generation_result:
-        result = st.session_state.last_generation_result
-        st.success("✅ Quy trình hoàn tất! Dữ liệu đã được tự động lưu vào Kho Vô Tận.")
-        
-        # Display results summary
+        res = st.session_state.last_generation_result
+        st.success("✅ Hoàn tất! Đã tự động lưu vào Kho Vô Tận.")
         c1, c2, c3 = st.columns(3)
-        c1.metric("Files Created", len(result.get('execution', {}).get('created_files', [])))
-        c2.metric("Errors Fixed", result.get('fixes', {}).get('total_fixes', 0))
-        c3.metric("Total Time", f"{result.get('total_time', 0):.2f}s")
+        c1.metric("Files", len(res.get('execution', {}).get('created_files', [])))
+        c2.metric("Fixes", res.get('fixes', {}).get('total_fixes', 0))
+        c3.metric("Time", f"{res.get('total_time', 0):.2f}s")
         
-        # Download button
-        if result.get('package') and os.path.exists(result['package']):
-            try:
-                with open(result['package'], "rb") as f:
-                    st.download_button(
-                        "📥 Tải về Project (.zip)", 
-                        f, 
-                        file_name=os.path.basename(result['package']),
-                        mime="application/zip"
-                    )
-            except Exception as e:
-                st.warning(f"Không thể chuẩn bị file tải về: {e}")
-        
-        # Plan Details
-        with st.expander("📋 Xem Kế Hoạch Chi Tiết"):
-            st.json(result.get('plan', {}))
-            
-        # Files Created
-        if result.get('execution', {}).get('created_files'):
+        if res.get('package') and os.path.exists(res['package']):
+            with open(res['package'], "rb") as f:
+                st.download_button("📥 Tải (.zip)", f, file_name=os.path.basename(res['package']))
+                
+        if res.get('execution', {}).get('created_files'):
             st.markdown("### 📁 Files Đã Tạo")
-            for file in result['execution']['created_files']:
-                if os.path.exists(file):
-                    with st.expander(f"📄 {os.path.basename(file)}"):
-                        try:
-                            with open(file, "r", encoding="utf-8") as f:
-                                st.code(f.read())
-                        except:
-                            st.warning(f"Không thể đọc file {file}")
+            for f in res['execution']['created_files']:
+                if os.path.exists(f):
+                    with st.expander(f"📄 {os.path.basename(f)}"):
+                        with open(f, 'r', encoding='utf-8') as content: st.code(content.read())
 
 def render_knowledge_base_tab():
     st.subheader("Cơ Sở Tri Thức AI")
+    q = st.text_input("🔍 Tìm kiếm:")
+    if q:
+        items = st.session_state.memory.search_knowledge(q)
+        for i in items:
+            with st.expander(f"📖 {i['topic']}"): st.markdown(i['content'])
     
-    search_query = st.text_input("🔍 Tìm kiếm kiến thức đã lưu:")
-    
-    if search_query:
-        results = st.session_state.memory.search_knowledge(search_query)
-        st.markdown(f"**Tìm thấy {len(results)} kết quả:**")
-        
-        for item in results:
-            with st.expander(f"📖 {item['topic']}"):
-                st.markdown(item['content'])
-                st.caption(f"Nguồn: {item['source']} | Danh mục: {item['category']}")
-    
-    st.markdown("---")
-    with st.expander("➕ Thêm Kiến Thức Mới Thụ Động"):
-        with st.form("add_knowledge"):
-            topic = st.text_input("Chủ đề:")
-            content = st.text_area("Nội dung chi tiết:")
-            category = st.selectbox("Danh mục:", ["coding", "design", "testing", "deployment", "qmdg", "other"])
-            
-            if st.form_submit_button("💾 Lưu vào Bộ Nhớ"):
-                if topic and content:
-                    st.session_state.memory.store_knowledge(topic, content, category=category)
-                    st.success("✅ Đã lưu kiến thức mới!")
-                    st.experimental_rerun()
+    with st.expander("➕ Thêm Kiến Thức Mới"):
+        with st.form("add_k"):
+            t = st.text_input("Chủ đề:")
+            c = st.text_area("Nội dung:")
+            if st.form_submit_button("💾 Lưu"):
+                st.session_state.memory.store_knowledge(t, c)
+                st.success("Đã lưu!")
 
 def render_workflows_tab():
     st.subheader("Quản Lý n8n Workflows")
-    
     client = st.session_state.n8n_client
-    
-    # Connection Status Check
-    is_connected = client.test_connection()
-    
-    col_status, col_config = st.columns([2, 1])
-    with col_status:
-        if is_connected:
-            st.success(f"✅ **Đã kết nối n8n** tại `{client.base_url}`")
-        else:
-            st.warning("⚠️ **Chưa kết nối n8n Server** (Dùng Local Files)")
-    
-    with col_config:
-        with st.popover("⚙️ Cấu Hình"):
-            st.markdown("### Cấu hình n8n")
-            with st.form("n8n_config_form"):
-                base_url = st.text_input("Server URL:", value=client.base_url)
-                api_key = st.text_input("API Key:", value=client.api_key or "", type="password")
-                
-                if st.form_submit_button("Lưu & Kết Nối"):
-                    setup_n8n_config(api_key, base_url)
-                    # Re-init client
-                    st.session_state.n8n_client = N8NClient(base_url, api_key)
-                    st.rerun()
-
-    # If connected, show Dashboard
-    if is_connected:
-        st.markdown("---")
-        
-        # Stats Board
-        s1, s2, s3, s4 = st.columns(4)
+    if client.test_connection():
+        st.success(f"✅ Đã kết nối n8n tại `{client.base_url}`")
         stats = client.get_workflow_statistics()
-        exec_stats = client.get_execution_statistics()
-        
-        s1.metric("Total Workflows", stats['total_workflows'])
-        s2.metric("Active Running", stats['active_workflows'])
-        s3.metric("Total Executions", exec_stats['total_executions'])
-        s4.metric("Success Rate", f"{int(exec_stats['successful'] / max(1, exec_stats['total_executions']) * 100)}%")
-        
-        st.markdown("### 📋 Danh Sách Workflows (Server)")
-        
-        tab_list, tab_execs = st.tabs(["Workflows", "Recent Executions"])
-        
-        with tab_list:
-            workflows = client.get_workflows()
-            for wf in workflows:
-                status_icon = "🟢" if wf.get('active') else "⚪"
-                with st.expander(f"{status_icon} {wf.get('name', 'Unnamed')} (ID: {wf.get('id')})"):
-                    col_info, col_act = st.columns([3, 1])
-                    with col_info:
-                        st.json(wf)
-                    with col_act:
-                        if wf.get('active'):
-                            if st.button("⏹️ Deactivate", key=f"deac_{wf['id']}"):
-                                client.deactivate_workflow(wf['id'])
-                                st.rerun()
-                        else:
-                            if st.button("▶️ Activate", key=f"act_{wf['id']}"):
-                                client.activate_workflow(wf['id'])
-                                st.rerun()
-                        
-                        if st.button("🚀 Execute", key=f"exec_{wf['id']}"):
-                            with st.spinner("Executing..."):
-                                res = client.execute_workflow(wf['id'])
-                                if res: st.success("Executed!")
-                                else: st.error("Failed")
-        
-        with tab_execs:
-            executions = exec_stats['executions']
-            for exe in executions:
-                status = "✅" if exe.get('finished') and not exe.get('stoppedAt') else "❌"
-                st.write(f"{status} **ID:** {exe.get('id')} | **Time:** {exe.get('startedAt')}")
+        st.metric("Workflows", stats['total_workflows'])
+        for wf in client.get_workflows():
+            st.write(f"- {wf.get('name')}")
+    else: st.warning("⚠️ Chưa kết nối n8n Server")
 
-    
-    st.markdown("---")
-    st.info("📂 **Local Workflow Files (Backups/Templates):**")
-    
-    # List workflows in directory (Fallback/Reference)
-    workflows_dir = Path("n8n_workflows")
-    if workflows_dir.exists():
-        tabs = st.tabs(["Secretary", "Code Writer", "Code Fixer", "Memory"])
-        
-        with tabs[0]:
-            show_workflows_in_dir(workflows_dir / "secretary")
-        with tabs[1]:
-            show_workflows_in_dir(workflows_dir / "code_writer")
-        with tabs[2]:
-            show_workflows_in_dir(workflows_dir / "code_fixer")
-        with tabs[3]:
-            show_workflows_in_dir(workflows_dir / "memory")
-
+# Helper for dir listing
 def show_workflows_in_dir(directory):
-    if directory.exists():
-        for wf_file in directory.rglob("*.json"):
-            with st.expander(f"📄 {wf_file.name}"):
-                st.markdown(f"**Path:** `{wf_file}`")
-                try:
-                    with open(wf_file, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                    st.json(data)
-                except:
-                    st.error("Invalid JSON")
+    if Path(directory).exists():
+        for f in Path(directory).rglob("*.json"):
+            with st.expander(f.name): st.json(json.load(open(f, 'r', encoding='utf-8')))
