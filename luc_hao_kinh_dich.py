@@ -68,6 +68,31 @@ def get_element_strength(h_element, month):
     }
     return strengths.get(m_el, {}).get(h_element, "Bình")
 
+def get_tuan_khong(can_ngay, chi_ngay):
+    # Simplified Tuan Khong
+    can_map = {"Giáp":1, "Ất":2, "Bính":3, "Đinh":4, "Mậu":5, "Kỷ":6, "Canh":7, "Tân":8, "Nhâm":9, "Quý":10}
+    chi_map = {"Tý":1, "Sửu":2, "Dần":3, "Mão":4, "Thìn":5, "Tị":6, "Ngọ":7, "Mùi":8, "Thân":9, "Dậu":10, "Tuất":11, "Hợi":12}
+    
+    c_idx = can_map.get(can_ngay, 1)
+    ch_idx = chi_map.get(chi_ngay, 1)
+    
+    # Tuan Khong branches (2 branches after the 10th stem in the current 12 branch cycle)
+    start_phi = (ch_idx - c_idx + 1)
+    if start_phi <= 0: start_phi += 12
+    
+    void_indices = [(start_phi + 10 - 1) % 12 + 1, (start_phi + 11 - 1) % 12 + 1]
+    inv_chi_map = {v: k for k, v in chi_map.items()}
+    return [inv_chi_map.get(idx) for idx in void_indices]
+
+def get_dich_ma(chi_ngay):
+    map_ma = {
+        "Thân": "Dần", "Tý": "Dần", "Thìn": "Dần",
+        "Dần": "Thân", "Ngọ": "Thân", "Tuất": "Thân",
+        "Tị": "Hợi", "Dậu": "Hợi", "Sửu": "Hợi",
+        "Hợi": "Tị", "Mão": "Tị", "Mùi": "Tị"
+    }
+    return map_ma.get(chi_ngay, "")
+
 def get_luc_than(h_element, p_element):
     relations = {
         "Kim": {"Kim": "Huynh Đệ", "Mộc": "Thê Tài", "Hỏa": "Quan Quỷ", "Thủy": "Tử Tôn", "Thổ": "Phụ Mẫu"},
@@ -78,7 +103,7 @@ def get_luc_than(h_element, p_element):
     }
     return relations.get(p_element, {}).get(h_element, "Huynh Đệ")
 
-def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", **kwargs):
+def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi_ngay="Tý", **kwargs):
     hao_results = [random.randint(6, 9) for _ in range(6)]
     ban_lines = [1 if h in [7, 9] else 0 for h in hao_results]
     bien_lines = [ (0 if h==9 else 1 if h==6 else (1 if h==7 else 0)) for h in hao_results ]
@@ -92,34 +117,50 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", **k
     start_thu = {"Giáp":0, "Ất":0, "Bính":1, "Đinh":1, "Mậu":2, "Kỷ":3, "Canh":4, "Tân":4, "Nhâm":5, "Quý":5}.get(can_ngay[0], 0)
     nap_giap = NAP_GIAP_MAP.get(palace, NAP_GIAP_MAP["Càn"])
     
+    # Advanced markers
+    void_branches = get_tuan_khong(can_ngay, chi_ngay)
+    ma_branch = get_dich_ma(chi_ngay)
+    
     # Simple The/Ung logic (Hào 3/6 as common default in simplified apps, but let's vary it)
     the_pos = random.choice([1, 2, 3, 4, 5, 6])
     ung_pos = (the_pos + 2) % 6 + 1
     
     details_ban = []
     for i in range(6):
-        cc = nap_giap[i]; c_element = cc.split("-")[1]
+        cc = nap_giap[i]; c_branch = cc.split("-")[0]; c_element = cc.split("-")[1]
         lt = get_luc_than(c_element, p_element)
         strength = get_element_strength(c_element, month)
+        
+        markers = []
+        if (i+1)==the_pos: markers.append("(T)")
+        if (i+1)==ung_pos: markers.append("(Ứ)")
+        if c_branch in void_branches: markers.append("(○)") # Void
+        if c_branch == ma_branch: markers.append("(🐎)") # Traveling Horse
+        
         details_ban.append({
             'hao': i+1, 'line': ban_lines[i], 'is_moving': hao_results[i] in [6, 9],
             'luc_than': lt, 'can_chi': cc, 'luc_thu': LUC_THU[(start_thu+i)%6],
             'strength': strength,
-            'marker': " (T)" if (i+1)==the_pos else " (Ứ)" if (i+1)==ung_pos else ""
+            'marker': " ".join(markers)
         })
         
     details_bien = []
     for i in range(6):
         # Biến hexagram Can Chi usually depends on its own quái
         # For simplicity, we use same palace's nap giap but can be improved
-        cc = nap_giap[i]; c_element = cc.split("-")[1]
+        cc = nap_giap[i]; c_branch = cc.split("-")[0]; c_element = cc.split("-")[1]
         lt = get_luc_than(c_element, p_element)
         strength = get_element_strength(c_element, month)
+        
+        markers_b = []
+        if c_branch in void_branches: markers_b.append("(○)")
+        if c_branch == ma_branch: markers_b.append("(🐎)")
+        
         details_bien.append({
             'hao': i+1, 'line': bien_lines[i], 'is_moving': False,
             'luc_than': lt, 'can_chi': cc, 'luc_thu': LUC_THU[(start_thu+i)%6],
             'strength': strength,
-            'marker': ""
+            'marker': " ".join(markers_b)
         })
         
     return {

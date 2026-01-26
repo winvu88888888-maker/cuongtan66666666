@@ -972,7 +972,9 @@ if st.session_state.current_view == "ky_mon":
                 'khong_vong': khong_vong,
                 'dich_ma': dich_ma,
                 'can_gio': can_gio,
+                'chi_gio': params['chi_gio'],
                 'can_ngay': params['can_ngay'],
+                'chi_ngay': params['chi_ngay'],
                 'can_thang': params.get('can_thang', 'N/A'),
                 'can_nam': params.get('can_nam', 'N/A')
             }
@@ -1906,8 +1908,9 @@ elif st.session_state.current_view == "luc_hao":
         try:
             now = datetime.now()
             can_ngay = st.session_state.chart_data.get('can_ngay', 'Giáp') if 'chart_data' in st.session_state else "Giáp"
+            chi_ngay = st.session_state.chart_data.get('chi_ngay', 'Tý') if 'chart_data' in st.session_state else "Tý"
             # Fixed call with explicit keyword arguments to resolve argument count mismatch
-            st.session_state.luc_hao_result = lap_qua_luc_hao(now.year, now.month, now.day, now.hour, topic=selected_topic, can_ngay=can_ngay)
+            st.session_state.luc_hao_result = lap_qua_luc_hao(now.year, now.month, now.day, now.hour, topic=selected_topic, can_ngay=can_ngay, chi_ngay=chi_ngay)
         except Exception as e:
             st.error(f"Lỗi: {e}")
 
@@ -1947,7 +1950,11 @@ elif st.session_state.current_view == "luc_hao":
                     st.markdown(f'<div class="hao-line-pro {cls} {dong_cls}"></div>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<div class="{cls}"><div class="yin-half-pro {dong_cls}"></div><div class="yin-half-pro {dong_cls}"></div></div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {d.get("strength","")} {d.get("marker","")}</div>', unsafe_allow_html=True)
+                
+                # Enhanced Label
+                s = d.get("strength","")
+                s_label = f"<span style='color: #15803d;'>{s}</span>" if s in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{s} (Suy)</span>" if s in ["Hưu", "Tù", "Tử"] else s
+                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {s_label} {d.get("marker","")}</div>', unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1974,7 +1981,11 @@ elif st.session_state.current_view == "luc_hao":
                     st.markdown(f'<div class="hao-line-pro {cls}"></div>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<div class="{cls}"><div class="yin-half-pro"></div><div class="yin-half-pro"></div></div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {d.get("strength","")}</div>', unsafe_allow_html=True)
+                
+                # Enhanced Label (Converted Hexagram usually doesn't show strength/marker in some schools but user asked for it)
+                sb = d.get("strength","")
+                sb_label = f"<span style='color: #15803d;'>{sb}</span>" if sb in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{sb} (Suy)</span>" if sb in ["Hưu", "Tù", "Tử"] else sb
+                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {sb_label} {d.get("marker","")}</div>', unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
