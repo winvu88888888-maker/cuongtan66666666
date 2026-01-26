@@ -953,6 +953,27 @@ with st.sidebar:
     st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
 
     search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
+    
+    with st.expander("✍️ Đặt câu hỏi riêng & Kích hoạt AI Mining"):
+        with st.form("custom_topic_form"):
+            new_q = st.text_area("Nhập vấn đề/câu hỏi bạn đang quan tâm:", placeholder="Ví dụ: Đầu tư vàng năm 2026, Phân tích quẻ gieo cho sức khỏe bố mẹ...")
+            if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
+                if new_q:
+                    try:
+                        from ai_modules.shard_manager import add_entry
+                        # Save as a SEED topic
+                        id = add_entry(
+                            title=new_q, 
+                            content=f"Câu hỏi gốc người dùng: {new_q}\n(Chủ đề này đã được nạp làm hạt giống để AI quân đoàn đi khai thác Internet.)",
+                            category="Kiến Thức",
+                            source="User Inquiry"
+                        )
+                        if id:
+                            st.success(f"✅ Đã nạp thành công! AI sẽ bắt đầu tìm kiếm thông tin liên quan cho bạn.")
+                            st.session_state.chu_de_hien_tai = new_q
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Lỗi nạp chủ đề: {e}")
 
     if search_term:
         filtered_topics = [t for t in st.session_state.all_topics_full if search_term.lower() in t.lower()]

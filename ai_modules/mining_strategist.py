@@ -37,6 +37,16 @@ class MiningStrategist:
             ]
         }
 
+    def seed_from_user(self, user_question):
+        """AI takes a user question and generates 3-5 high-quality global research branches."""
+        # This will be used in Phase 21 to expand topics based on user's personal interests
+        return [
+            f"{user_question}: Phân tích bối cảnh toàn cầu 2026",
+            f"{user_question}: Ví dụ thực tế thành công",
+            f"{user_question}: Giải pháp tối ưu từ chuyên gia",
+            f"Chủ đề liên quan đến: {user_question[:30]}..."
+        ]
+
     def evolve_categories(self, new_findings):
         """Allows the AI to add new categories based on what it discovers on the internet."""
         # Logic to be called by the miner when it finds something outside current scope
