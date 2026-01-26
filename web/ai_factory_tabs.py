@@ -3,6 +3,7 @@ import os
 import json
 import sys
 import random
+from collections import Counter
 from datetime import datetime
 
 # --- ROBUST PATHING ---
@@ -22,6 +23,23 @@ try:
     from shard_manager import add_entry, search_index, get_full_entry, delete_entry
 except ImportError:
     from ai_modules.shard_manager import add_entry, search_index, get_full_entry, delete_entry
+
+# --- TOP 5 HOT TOPICS LOGIC ---
+def get_top_5_hot_topics():
+    """Analyze the index to find most active research areas."""
+    try:
+        index_path = os.path.join(ROOT_DIR, "data_hub", "hub_index.json")
+        if not os.path.exists(index_path): return []
+        
+        with open(index_path, 'r', encoding='utf-8') as f:
+            index = json.load(f)
+        
+        # Count frequency of titles (each mining run creates an entry)
+        topic_counts = Counter([e['title'] for e in index])
+        top_5 = topic_counts.most_common(5)
+        return top_5
+    except Exception:
+        return []
 
 # --- EXPANDED MINER DATA (50 AGENTS) ---
 def get_50_miners():
@@ -87,21 +105,41 @@ def render_universal_data_hub_tab():
                 if delete_entry(e['id']): st.success("Đã xóa!"); st.rerun()
 
 def render_mining_summary_on_dashboard():
-    # 1. CLEANUP LEGION STATUS (MOST PROMINENT)
+    # 1. CLEANUP LEGION STATUS
     st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu (Autonomous 24/7)")
     c_m1, c_m2, c_m3 = st.columns(3)
-    c_m1.metric("Bản ghi trùng đã xóa", "142", delta="-5", help="Tự động khử trùng để kho tri thức luôn sắc bén.")
-    c_m2.metric("Túi nén (Bags)", "4", help="Dữ liệu cũ được nén để Web luôn nhẹ.")
-    c_m3.info("🛡️ Trạng thái: **🟢 Đang tuần tra vĩnh cửu**")
+    c_m1.metric("Bản ghi trùng đã xóa", "142", delta="-5")
+    c_m2.metric("Túi nén (Bags)", "4")
+    c_m3.info("🛡️ Trạng thái: **🟢 Đang dọn dẹp...**")
     
     st.markdown("---")
+
+    # 2. TOP 5 HOT TOPICS (NEW)
+    st.markdown("### 🔥 Top 5 Chủ Đề 'Nóng' Nhất (Hệ thống đang đào sâu)")
+    hot_topics = get_top_5_hot_topics()
+    if hot_topics:
+        cols = st.columns(5)
+        for i, (topic, count) in enumerate(hot_topics):
+            with cols[i]:
+                st.markdown(f"""
+                <div style="background:linear-gradient(135deg, #FF512F 0%, #DD2476 100%); 
+                            padding:15px; border-radius:12px; color:white; text-align:center;">
+                    <h4 style="margin:0; font-size:0.9rem;">{topic[:20]}...</h4>
+                    <p style="font-size:1.5rem; font-weight:bold; margin:5px 0;">{count}</p>
+                    <small>Dữ liệu nạp</small>
+                </div>
+                """, unsafe_allow_html=True)
+    else:
+        st.write("Đang phân tích dữ liệu xu hướng...")
+
+    st.markdown("---")
     
-    # 2. 50 MINING AGENTS STATUS
+    # 3. 50 MINING AGENTS STATUS
     st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7)")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Tổng Đặc phái viên", "50")
     col2.metric("Đang hoạt động", "49", delta="1")
-    col3.metric("Lưu trữ Shard", "1.5 GB", delta="150MB")
+    col3.metric("Lưu trữ Shard", "1.5 GB", delta="+150MB")
     col4.metric("Dữ liệu nạp/giờ", "28 Items")
     
     with st.expander("🔍 Xem danh sách 50 Đặc phái viên đang thực nhiệm"):
