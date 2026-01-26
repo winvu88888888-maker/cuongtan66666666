@@ -1904,6 +1904,8 @@ elif st.session_state.current_view == "luc_hao":
     
     st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
     
+    show_debug_ih = st.checkbox("🐞 Chế độ Kiểm tra Dữ liệu", key="debug_iching_mode")
+    
     if st.button("🎲 LẬP QUẺ LỤC HÀO PRO", type="primary", use_container_width=True):
         try:
             now = datetime.now()
@@ -1951,12 +1953,23 @@ elif st.session_state.current_view == "luc_hao":
                 else:
                     st.markdown(f'<div class="{cls}"><div class="yin-half-pro {dong_cls}"></div><div class="yin-half-pro {dong_cls}"></div></div>', unsafe_allow_html=True)
                 
-                # Enhanced Label
-                s = d.get("strength","")
-                s_label = f"<span style='color: #15803d;'>{s}</span>" if s in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{s} (Suy)</span>" if s in ["Hưu", "Tù", "Tử"] else s
-                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {s_label} {d.get("marker","")}</div>', unsafe_allow_html=True)
+                # Enhanced Label with Debugging
+                s = d.get("strength")
+                val_s = s if s else "N/A"
+                if s:
+                    s_label = f"<span style='color: #15803d;'>{s}</span>" if s in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{s} (Suy)</span>" if s in ["Hưu", "Tù", "Tử"] else s
+                else:
+                    s_label = "⚠️ Thiếu"
+                
+                lt = d.get("luc_thu", "N/A")
+                m = d.get("marker", "")
+                
+                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","N/A")} | {d.get("can_chi","N/A")} | {lt} | {s_label} {m}</div>', unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
+            
+            if show_debug_ih:
+                st.write("DEBUG (Hào 1):", res['ban']['details'][0])
 
             st.markdown('<table class="hao-table-pro"><tr><th>HÀO</th><th>LỤC THÂN</th><th>CAN CHI</th><th>ĐỊNH VỊ</th></tr>', unsafe_allow_html=True)
             for d in reversed(res['ban']['details']):
