@@ -11,6 +11,7 @@ sys.path.append(current_dir)
 try:
     from shard_manager import add_entry
     from mining_strategist import MiningStrategist
+    from maintenance_manager import MaintenanceManager
     from gemini_helper import GeminiQMDGHelper
     import streamlit as st
 except ImportError:
@@ -54,6 +55,11 @@ def run_mining_cycle(api_key, category=None):
             print(f"❌ Lỗi nạp dữ liệu cho: {topic}")
             
         time.sleep(2) # Prevent rate limits
+
+    # 4. AUTONOMOUS CLEANUP (24/7 Cleanup Legion)
+    print("🧹 Kích hoạt Quân đoàn Dọn dẹp tự động...")
+    maintenance = MaintenanceManager()
+    maintenance.run_cleanup_cycle()
 
 if __name__ == "__main__":
     # For local testing, attempt to find a key
