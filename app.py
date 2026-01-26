@@ -703,7 +703,8 @@ with st.sidebar:
     st.markdown("---")
     
     # Gemini AI Configuration - Auto-load if available
-    if 'gemini_helper' not in st.session_state:
+    # Force re-init if existing helper is missing new methods (e.g. from old session)
+    if 'gemini_helper' not in st.session_state or not hasattr(st.session_state.gemini_helper, 'analyze_luc_hao'):
         # Load from custom_data.json first
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
@@ -719,9 +720,10 @@ with st.sidebar:
             except Exception: pass
         
         # 2. Fallback to Free/Offline if still nothing
-        if 'gemini_helper' not in st.session_state and FREE_AI_AVAILABLE:
-            st.session_state.gemini_helper = FreeAIHelper()
-            st.session_state.ai_type = "Free AI (Offline)"
+        if 'gemini_helper' not in st.session_state or not hasattr(st.session_state.gemini_helper, 'analyze_luc_hao'):
+            if FREE_AI_AVAILABLE:
+                st.session_state.gemini_helper = FreeAIHelper()
+                st.session_state.ai_type = "Free AI (Offline)"
 
     # AI Status Display
     ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
