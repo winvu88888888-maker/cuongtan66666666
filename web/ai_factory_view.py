@@ -53,14 +53,19 @@ def render_ai_factory_view():
     st.info("Hệ thống tích hợp n8n & Sharded Data Hub: Tự động hóa 24/7.")
     
     # Initialize Global Factory Manager (Persistent 24/7)
-    if 'global_factory_status' not in st.session_state:
+    from ai_modules.autonomous_miner import load_config
+    config = load_config()
+    is_active_247 = config.get("autonomous_247", False)
+
+    if 'global_factory_status' not in st.session_state or st.session_state.get('last_247_state') != is_active_247:
         try:
-            # Use cache_resource to ensure it only runs once per server instance
+            # Use cache_resource but pass is_active as argument to force refresh on toggle
             @st.cache_resource
-            def start_daemon_resource():
+            def start_daemon_resource(active_status):
                 return init_global_factory()
             
-            st.session_state.global_factory_status = start_daemon_resource()
+            st.session_state.global_factory_status = start_daemon_resource(is_active_247)
+            st.session_state.last_247_state = is_active_247
         except Exception as e:
             st.error(f"Lỗi khởi động 24/7: {e}")
 

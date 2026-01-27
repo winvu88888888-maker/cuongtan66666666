@@ -174,13 +174,28 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     c1_24, c2_24 = st.columns([2, 1])
     with c1_24:
         toggle_key = f"toggle_247_{key_suffix}"
+        
+        # Check if key exists before allowing activation
+        current_key = st.session_state.get("gemini_key", "")
+        
         new_status = st.toggle("⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7", value=is_active, key=toggle_key)
+        
         if new_status != is_active:
-            config["autonomous_247"] = new_status
-            if new_status:
-                config["api_key"] = st.session_state.get("gemini_key", "")
-            save_config(config)
-            st.rerun()
+            if new_status and not current_key:
+                st.error("⚠️ Vui lòng nhập Gemini API Key trước khi kích hoạt chế độ 24/7!")
+            else:
+                config["autonomous_247"] = new_status
+                if new_status:
+                    config["api_key"] = current_key
+                save_config(config)
+                
+                # Explicitly trigger daemon
+                if new_status:
+                    init_global_factory()
+                
+                st.success(f"✅ Đã {'BẬT' if new_status else 'TẮT'} chế độ tự trị!")
+                time.sleep(0.5)
+                st.rerun()
             
     with c2_24:
         if is_active:
