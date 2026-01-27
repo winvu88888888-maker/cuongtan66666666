@@ -173,7 +173,8 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     # 24/7 Control Panel
     c1_24, c2_24 = st.columns([2, 1])
     with c1_24:
-        new_status = st.toggle("⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7", value=is_active)
+        toggle_key = f"toggle_247_{key_suffix}"
+        new_status = st.toggle("⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7", value=is_active, key=toggle_key)
         if new_status != is_active:
             config["autonomous_247"] = new_status
             if new_status:
