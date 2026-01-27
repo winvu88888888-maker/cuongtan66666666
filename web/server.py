@@ -69,6 +69,16 @@ try:
         USE_MULTI_LAYER = True
     except ImportError:
         USE_MULTI_LAYER = False
+
+    # AI Factory Modules
+    try:
+        from ai_modules.autonomous_miner import run_mining_cycle, load_config
+        from ai_modules.shard_manager import get_hub_stats
+    except ImportError:
+        try:
+            from autonomous_miner import run_mining_cycle, load_config
+            from shard_manager import get_hub_stats
+        except: pass
         
 except ImportError as e:
     print(f"Import error: {e}")
@@ -563,7 +573,39 @@ def comprehensive_analysis():
         import traceback
         print(f"Error in comprehensive_analysis: {e}")
         print(traceback.format_exc())
-        return jsonify({'error': str(e)}), 500
+@app.route('/api/factory/stats', methods=['GET'])
+def get_factory_stats():
+    """Get AI Factory Stats for n8n"""
+    try:
+        stats = get_hub_stats()
+        config = load_config()
+        return jsonify({
+            "status": "online",
+            "shards_total": stats.get("total", 0),
+            "shards_size_mb": stats.get("size_mb", 0.0),
+            "autonomous_active": config.get("autonomous_247", False),
+            "last_run": config.get("last_run", "N/A")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/factory/run-cycle', methods=['POST'])
+def run_factory_cycle():
+    """Trigger a mining cycle via n8n"""
+    try:
+        config = load_config()
+        api_key = config.get("api_key")
+        if not api_key:
+            return jsonify({"success": False, "error": "API Key not configured"}), 400
+        
+        # Run in a separate thread to not block the request
+        import threading
+        thread = threading.Thread(target=run_mining_cycle, args=(api_key,))
+        thread.start()
+        
+        return jsonify({"success": True, "message": "Mining cycle started in background"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ==================== STATIC FILES ====================
 

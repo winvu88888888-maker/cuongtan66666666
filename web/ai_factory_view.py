@@ -16,9 +16,11 @@ try:
     try:
         from web.ai_factory_tabs import render_universal_data_hub_tab, render_system_management_tab, render_mining_summary_on_dashboard
         from ai_modules.shard_manager import add_entry, get_hub_stats
+        from ai_modules.factory_manager import init_global_factory
     except ImportError:
         from ai_factory_tabs import render_universal_data_hub_tab, render_system_management_tab, render_mining_summary_on_dashboard
         from shard_manager import add_entry, get_hub_stats
+        from factory_manager import init_global_factory
 except Exception as e:
     st.error(f"🚨 Lỗi nạp Hệ thống: {e}")
     def render_universal_data_hub_tab(): st.error("Tab Dữ Liệu lỗi")
@@ -50,6 +52,18 @@ def render_ai_factory_view():
     st.markdown("## 🏭 NHÀ MÁY AI - PHÁT TRIỂN TỰ ĐỘNG")
     st.info("Hệ thống tích hợp n8n & Sharded Data Hub: Tự động hóa 24/7.")
     
+    # Initialize Global Factory Manager (Persistent 24/7)
+    if 'global_factory_status' not in st.session_state:
+        try:
+            # Use cache_resource to ensure it only runs once per server instance
+            @st.cache_resource
+            def start_daemon_resource():
+                return init_global_factory()
+            
+            st.session_state.global_factory_status = start_daemon_resource()
+        except Exception as e:
+            st.error(f"Lỗi khởi động 24/7: {e}")
+
     if 'orchestrator' not in st.session_state:
         if 'gemini_key' in st.session_state and st.session_state.gemini_key:
             st.session_state.orchestrator = AIOrchestrator(st.session_state.gemini_key)

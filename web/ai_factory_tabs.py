@@ -21,10 +21,12 @@ ROOT_DIR = setup_sub_paths()
 # --- IMPORT SHARD MANAGER ---
 try:
     from shard_manager import add_entry, search_index, get_full_entry, delete_entry, get_hub_stats
-    from autonomous_miner import run_mining_cycle
+    from autonomous_miner import run_mining_cycle, run_daemon, load_config, save_config
+    from factory_manager import init_global_factory
 except ImportError:
     from ai_modules.shard_manager import add_entry, search_index, get_full_entry, delete_entry, get_hub_stats
-    from ai_modules.autonomous_miner import run_mining_cycle
+    from ai_modules.autonomous_miner import run_mining_cycle, run_daemon, load_config, save_config
+    from ai_modules.factory_manager import init_global_factory
 
 # --- TOP 5 HOT TOPICS LOGIC ---
 def get_top_5_hot_topics():
@@ -165,9 +167,30 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     # 3. 50 MINING AGENTS STATUS
     st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7)")
     
-    # Real Trigger Button
+    config = load_config()
+    is_active = config.get("autonomous_247", False)
+    
+    # 24/7 Control Panel
+    c1_24, c2_24 = st.columns([2, 1])
+    with c1_24:
+        new_status = st.toggle("⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7", value=is_active)
+        if new_status != is_active:
+            config["autonomous_247"] = new_status
+            if new_status:
+                config["api_key"] = st.session_state.get("gemini_key", "")
+            save_config(config)
+            st.rerun()
+            
+    with c2_24:
+        if is_active:
+            st.success("🤖 ĐANG CHẠY 24/7")
+            init_global_factory() # Ensure it's active
+        else:
+            st.info("💤 ĐANG TẠM DỪNG")
+
+    # Real Trigger Button (Manual override)
     btn_key = f"activate_mining_legion_btn{key_suffix}"
-    if st.button("🚀 KÍCH HOẠT QUÂN ĐOÀN KHAI THÁC (RUN CYCLE)", use_container_width=True, type="primary", key=btn_key):
+    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG", use_container_width=True, key=btn_key):
         if 'gemini_key' in st.session_state and st.session_state.gemini_key:
             with st.spinner("🤖 Quân đoàn AI đang xuất quân..."):
                 try:
@@ -182,9 +205,12 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     stats = get_hub_stats()
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Tổng Đặc phái viên", "50")
-    col2.metric("Đang hoạt động", "49", delta="1")
+    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0))
     col3.metric("Lưu trữ Shard", f"{stats['size_mb']} MB")
     col4.metric("Dữ liệu nạp", f"{stats['total']} bản ghi")
+    
+    if config.get("last_run"):
+        st.caption(f"🕒 Lần cuối hoạt động: {config['last_run']} | Giãn cách: {config.get('interval_minutes')} phút")
     
     with st.expander("🔍 Xem danh sách 50 Đặc phái viên đang thực nhiệm"):
         miners = get_50_miners()
