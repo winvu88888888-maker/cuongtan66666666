@@ -34,8 +34,11 @@ class MaintenanceManager:
             return 0
             
         with open(self.index_path, 'r', encoding='utf-8') as f:
-            index = json.load(f)
+            full_data = json.load(f)
             
+        index = full_data.get("index", [])
+        stats = full_data.get("stats", {"total": 0, "categories": {}})
+        
         seen_titles = set()
         to_remove = []
         unique_index = []
@@ -49,19 +52,28 @@ class MaintenanceManager:
                 unique_index.append(entry)
         
         if to_remove:
-            # Update Index
-            with open(self.index_path, 'w', encoding='utf-8') as f:
-                json.dump(unique_index, f, ensure_ascii=False, indent=2)
-            
-            # Physically remove shard files if they are empty or orphaned (Simplified logic)
+            # Update Stats
             for entry in to_remove:
-                shard_file = self.data_hub_dir / f"shard_{entry['shard']}.json"
+                cat = entry.get('category', 'Khác')
+                stats["total"] -= 1
+                stats["categories"][cat] = max(0, stats["categories"].get(cat, 0) - 1)
+
+            # Update Index Data
+            full_data["index"] = unique_index
+            full_data["stats"] = stats
+            
+            with open(self.index_path, 'w', encoding='utf-8') as f:
+                json.dump(full_data, f, ensure_ascii=False, indent=2)
+            
+            # Physically remove shard files if they are empty or orphaned
+            for entry in to_remove:
+                shard_file = self.data_hub_dir / entry['shard']
                 if shard_file.exists():
                     try:
                         with open(shard_file, 'r', encoding='utf-8') as f:
                             data = json.load(f)
-                        if entry['id'] in data:
-                            del data[entry['id']]
+                        if entry['id'] in data.get("entries", {}):
+                            del data["entries"][entry['id']]
                             with open(shard_file, 'w', encoding='utf-8') as f:
                                 json.dump(data, f, ensure_ascii=False, indent=2)
                     except Exception: pass
@@ -80,7 +92,10 @@ class MaintenanceManager:
         print(f"📦 Hệ thống quá đầy ({size_mb:.1f}MB). Đang đóng gói dữ liệu cũ...")
         
         with open(self.index_path, 'r', encoding='utf-8') as f:
-            index = json.load(f)
+            full_data = json.load(f)
+            
+        index = full_data.get("index", [])
+        stats = full_data.get("stats", {"total": 0, "categories": {}})
             
         # Sort by date
         index.sort(key=lambda x: x['created_at'])
@@ -94,21 +109,28 @@ class MaintenanceManager:
         
         bag_content = {}
         for entry in archive_batch:
-            shard_file = self.data_hub_dir / f"shard_{entry['shard']}.json"
+            shard_file = self.data_hub_dir / entry['shard']
             if shard_file.exists():
                 with open(shard_file, 'r', encoding='utf-8') as f:
                     shard_data = json.load(f)
-                if entry['id'] in shard_data:
-                    bag_content[entry['id']] = shard_data[entry['id']]
-                    # Entry stays in index but marked as 'archived'? 
-                    # For now, let's just move them to keep web fast.
+                if entry['id'] in shard_data.get("entries", {}):
+                    bag_content[entry['id']] = shard_data["entries"][entry['id']]
+                    
+                    # Update Stats for archived items
+                    cat = entry.get('category', 'Khác')
+                    stats["total"] -= 1
+                    stats["categories"][cat] = max(0, stats["categories"].get(cat, 0) - 1)
         
         # Save compressed bag
-        with gzip.open(bag_path, 'wt', encoding='utf-8') as f:
-            json.dump(bag_content, f, ensure_ascii=False)
+        if bag_content:
+            with gzip.open(bag_path, 'wt', encoding='utf-8') as f:
+                json.dump(bag_content, f, ensure_ascii=False)
             
-        # Update Index
+        # Update Index Data
+        full_data["index"] = remaining_index
+        full_data["stats"] = stats
+            
         with open(self.index_path, 'w', encoding='utf-8') as f:
-            json.dump(remaining_index, f, ensure_ascii=False, indent=2)
+            json.dump(full_data, f, ensure_ascii=False, indent=2)
             
         return len(archive_batch)

@@ -96,7 +96,7 @@ def render_dashboard_tab():
     col4.markdown(f'<div style="{s}#e74c3c;background:#f8f9fa"><h3>✅ {int(success/total*100)}%</h3><p>Hệ thống</p></div>', unsafe_allow_html=True)
     
     st.markdown("---")
-    render_mining_summary_on_dashboard()
+    render_mining_summary_on_dashboard(key_suffix="_dash")
 
 def render_create_code_tab():
     if st.session_state.orchestrator is None:

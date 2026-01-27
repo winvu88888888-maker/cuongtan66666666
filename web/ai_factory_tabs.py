@@ -132,7 +132,7 @@ def render_universal_data_hub_tab():
             if st.button("🗑️ Xóa", key=f"del_{e['id']}"):
                 if delete_entry(e['id']): st.success("Đã xóa!"); st.rerun()
 
-def render_mining_summary_on_dashboard():
+def render_mining_summary_on_dashboard(key_suffix=""):
     # 1. CLEANUP LEGION STATUS
     st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu (Autonomous 24/7)")
     c_m1, c_m2, c_m3 = st.columns(3)
@@ -166,7 +166,8 @@ def render_mining_summary_on_dashboard():
     st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7)")
     
     # Real Trigger Button
-    if st.button("🚀 KÍCH HOẠT QUÂN ĐOÀN KHAI THÁC (RUN CYCLE)", use_container_width=True, type="primary"):
+    btn_key = f"activate_mining_legion_btn{key_suffix}"
+    if st.button("🚀 KÍCH HOẠT QUÂN ĐOÀN KHAI THÁC (RUN CYCLE)", use_container_width=True, type="primary", key=btn_key):
         if 'gemini_key' in st.session_state and st.session_state.gemini_key:
             with st.spinner("🤖 Quân đoàn AI đang xuất quân..."):
                 try:
@@ -198,7 +199,7 @@ def render_system_management_tab():
     t1, t2, t3 = st.tabs(["🤖 Command Center", "🏥 System Health", "🧬 DB Interaction"])
     
     with t1:
-        render_mining_summary_on_dashboard()
+        render_mining_summary_on_dashboard(key_suffix="_mgmt")
         st.markdown("---")
         if st.button("♻️ Kích hoạt Bảo trì Thủ công (Manual Sync)"):
             try:
