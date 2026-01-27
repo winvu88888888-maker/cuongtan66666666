@@ -1,0 +1,382 @@
+{
+    "name": "🏭 AI FACTORY - Master Workflow",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "ai-factory",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-master",
+            "name": "📥 Nhận Yêu Cầu",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                250,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/analyze",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "request",
+                            "value": "={{ $json.body.request }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "http-secretary",
+            "name": "🤖 AI Secretary",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Phân tích kết quả từ Secretary\nconst analysis = $input.item.json;\n\n// Quyết định workflow tiếp theo\nconst complexity = analysis.estimated_complexity || 'Medium';\nconst requirements = analysis.parsed_requirements || [];\n\nreturn [{\n  json: {\n    analysis: analysis,\n    next_step: 'qmdg_consult',\n    complexity: complexity,\n    requirements: requirements,\n    timestamp: new Date().toISOString()\n  }\n}];"
+            },
+            "id": "code-decision",
+            "name": "🎯 Phân Tích & Quyết Định",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/qmdg-consult",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "topic",
+                            "value": "Phát triển phần mềm"
+                        },
+                        {
+                            "name": "question",
+                            "value": "={{ $json.analysis.original_request }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-qmdg",
+            "name": "🔮 Tư Vấn QMDG",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                850,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/create-plan",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "analysis",
+                            "value": "={{ JSON.stringify($('🎯 Phân Tích & Quyết Định').item.json.analysis) }}"
+                        },
+                        {
+                            "name": "qmdg_result",
+                            "value": "={{ JSON.stringify($json) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-plan",
+            "name": "📋 Tạo Kế Hoạch",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                1050,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/generate-code",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "plan",
+                            "value": "={{ JSON.stringify($json) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-codegen",
+            "name": "✍️ AI Code Writer",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                1250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/fix-code",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "code_result",
+                            "value": "={{ JSON.stringify($json) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-fixer",
+            "name": "🔧 AI Code Fixer",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                1450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/test-code",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "fixed_code",
+                            "value": "={{ JSON.stringify($json) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-tester",
+            "name": "🧪 AI Tester",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                1650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/package",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "test_result",
+                            "value": "={{ JSON.stringify($json) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-packager",
+            "name": "📦 AI Packager",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                1850,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Tổng hợp kết quả cuối cùng\nconst finalResult = {\n  success: true,\n  request: $('📥 Nhận Yêu Cầu').item.json.body.request,\n  analysis: $('🎯 Phân Tích & Quyết Định').item.json.analysis,\n  qmdg: $('🔮 Tư Vấn QMDG').item.json,\n  plan: $('📋 Tạo Kế Hoạch').item.json,\n  code: $('✍️ AI Code Writer').item.json,\n  fixes: $('🔧 AI Code Fixer').item.json,\n  tests: $('🧪 AI Tester').item.json,\n  package: $json,\n  timestamp: new Date().toISOString(),\n  workflow: 'AI Factory Master'\n};\n\nreturn [{ json: finalResult }];"
+            },
+            "id": "code-final",
+            "name": "📊 Tổng Hợp Kết Quả",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                2050,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json, null, 2) }}"
+            },
+            "id": "respond-final",
+            "name": "✅ Trả Kết Quả",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                2250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8501/api/save-memory",
+                "method": "POST",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "result",
+                            "value": "={{ JSON.stringify($('📊 Tổng Hợp Kết Quả').item.json) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "http-memory",
+            "name": "💾 Lưu Vào Memory",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                2050,
+                500
+            ]
+        }
+    ],
+    "connections": {
+        "📥 Nhận Yêu Cầu": {
+            "main": [
+                [
+                    {
+                        "node": "🤖 AI Secretary",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🤖 AI Secretary": {
+            "main": [
+                [
+                    {
+                        "node": "🎯 Phân Tích & Quyết Định",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🎯 Phân Tích & Quyết Định": {
+            "main": [
+                [
+                    {
+                        "node": "🔮 Tư Vấn QMDG",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🔮 Tư Vấn QMDG": {
+            "main": [
+                [
+                    {
+                        "node": "📋 Tạo Kế Hoạch",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📋 Tạo Kế Hoạch": {
+            "main": [
+                [
+                    {
+                        "node": "✍️ AI Code Writer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "✍️ AI Code Writer": {
+            "main": [
+                [
+                    {
+                        "node": "🔧 AI Code Fixer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🔧 AI Code Fixer": {
+            "main": [
+                [
+                    {
+                        "node": "🧪 AI Tester",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🧪 AI Tester": {
+            "main": [
+                [
+                    {
+                        "node": "📦 AI Packager",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📦 AI Packager": {
+            "main": [
+                [
+                    {
+                        "node": "📊 Tổng Hợp Kết Quả",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📊 Tổng Hợp Kết Quả": {
+            "main": [
+                [
+                    {
+                        "node": "✅ Trả Kết Quả",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "💾 Lưu Vào Memory",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "active": true,
+    "tags": [
+        "ai-factory",
+        "master",
+        "automation"
+    ]
+}

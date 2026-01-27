@@ -1,0 +1,70 @@
+{
+  "index": [
+    {
+      "id": "21a0cd7520260127224554",
+      "shard": "shard_1.json",
+      "title": "Edge Computing: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Công Nghệ Mới & Tương Lai",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-27T22:45:54.676186"
+    },
+    {
+      "id": "0c5f114320260127224555",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Hướng dẫn chi thực",
+      "category": "Công Nghệ Mới & Tương Lai",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-27T22:45:55.000426"
+    },
+    {
+      "id": "ce69a18b20260127224555",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Case study hiếm",
+      "category": "Công Nghệ Mới & Tương Lai",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-01-27T22:45:55.401994"
+    },
+    {
+      "id": "e71e4a5b20260127224556",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Công Nghệ Mới & Tương Lai",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-27T22:45:56.050770"
+    },
+    {
+      "id": "5477f98a20260127224556",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Ví dụ thực tế 2026",
+      "category": "Công Nghệ Mới & Tương Lai",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-27T22:45:56.541179"
+    }
+  ],
+  "stats": {
+    "total": 5,
+    "categories": {
+      "Công Nghệ Mới & Tương Lai": 5
+    }
+  }
+}

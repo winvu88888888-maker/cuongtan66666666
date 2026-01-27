@@ -1,0 +1,46 @@
+name: AI Factory 24/7 Independent Mining
+
+on:
+  schedule:
+    # Chạy tự động mỗi 1 giờ (có thể chỉnh thành 30 phút '*/30 * * * *')
+    - cron: '0 * * * *'
+  workflow_dispatch: # Cho phép ấn nút chạy thủ công trên GitHub
+
+permissions:
+  contents: write # Cần quyền ghi để lưu dữ liệu mới
+
+jobs:
+  mining_cycle:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install google-generativeai lyric-wikia googlesearch-python
+
+    - name: Run AI Mining Legion
+      env:
+        # Cố gắng đọc Key từ Secrets trước, nếu không có thì script sẽ tự tìm trong file config
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
+      run: |
+        # Chạy script khai thác một lần (không phải daemon loop)
+        python ai_modules/autonomous_miner.py
+
+    - name: Commit and Push New Data
+      run: |
+        git config --global user.name "AI Factory Bot"
+        git config --global user.email "ai-bot@users.noreply.github.com"
+        git add data_hub/
+        git commit -m "🤖 AI Factory: Thu hoạch dữ liệu mới [skip ci]" || echo "Không có dữ liệu mới"
+        git push

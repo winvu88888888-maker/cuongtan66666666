@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Ứng dụng Kỳ Môn Độn Giáp - Phân tích dự đoán chuyên nghiệp">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>🔮 Kỳ Môn Độn Giáp - Vũ Việt Cường</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+
+    <!-- Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/main.css">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+</head>
+
+<body class="bg-light">
+    <!-- Login Screen -->
+    <div id="login-screen" class="container mt-5">
+        <div class="card shadow mx-auto" style="max-width: 400px;">
+            <div class="card-header bg-dark text-white text-center">
+                <h4>🔐 XÁC THỰC TRUY CẬP</h4>
+            </div>
+            <div class="card-body text-center">
+                <p>Vui lòng nhập mật khẩu để sử dụng</p>
+                <input type="password" id="password" class="form-control mb-3 text-center"
+                    placeholder="Nhập mật khẩu..." autocomplete="current-password">
+                <button onclick="app.login()" class="btn btn-success w-100 py-2">
+                    🔑 MỞ ỨNG DỤNG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app" class="d-none">
+        <!-- Header -->
+        <nav class="navbar navbar-dark bg-dark sticky-top shadow-sm">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">🔮 KỲ MÔN ĐỘN GIÁP</span>
+
+                <!-- Zoom Controls -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Zoom controls">
+                        <button type="button" class="btn btn-outline-light" onclick="app.zoomOut()" title="Thu nhỏ">
+                            <span style="font-size: 1.2rem;">🔍−</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-light" onclick="app.resetZoom()" title="Đặt lại">
+                            <span style="font-size: 1rem;">100%</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-light" onclick="app.zoomIn()" title="Phóng to">
+                            <span style="font-size: 1.2rem;">🔍+</span>
+                        </button>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-end ms-2">
+                        <span class="text-warning small fw-bold">Vũ Việt Cường</span>
+                        <span id="current-time" class="text-white-50" style="font-size: 0.75rem;">--:--</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-2 px-md-3 mt-3">
+            <!-- Topic Selection & Search -->
+            <div class="card mb-3 shadow-sm border-danger">
+                <div class="card-header bg-danger text-white py-2">
+                    <h6 class="mb-0">🎯 CHỦ ĐỀ CHÍNH</h6>
+                </div>
+                <div class="card-body p-2">
+                    <!-- Search Bar -->
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">🔍</span>
+                        <input type="text" id="topic-search" class="form-control" placeholder="Tìm kiếm chủ đề...">
+                        <button class="btn btn-outline-secondary" onclick="app.clearSearch()">✖</button>
+                    </div>
+
+                    <!-- Topic Dropdown -->
+                    <select id="topic-select" class="form-select fw-bold text-danger border-danger mb-2">
+                        <option value="Tổng Quát">Tổng Quát</option>
+                    </select>
+
+                    <!-- NEW: Lục Thân Selection -->
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small mb-1">🎯 Đối Tượng (Lục Thân):</label>
+                            <select id="luc-than-select" class="form-select form-select-sm">
+                                <option value="Bản thân">🧑 Bản thân</option>
+                                <option value="Anh chị em">👨‍👩‍👧 Anh chị em</option>
+                                <option value="Bố mẹ">👴👵 Bố mẹ</option>
+                                <option value="Con cái">👶 Con cái</option>
+                                <option value="Quan">🤝 Người ngoài (Quan)</option>
+                                <option value="Tài">💰 Người ngoài (Tài)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <button onclick="app.calculate()" class="btn btn-primary w-100 btn-sm">
+                                🔮 LẬP BÀN
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button onclick="app.reloadCurrentTime()" class="btn btn-success w-100 btn-sm">
+                                🔄 GIỜ THỰC
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button onclick="app.showAnalysis()" class="btn btn-info w-100 btn-sm">
+                                📊 CHI TIẾT
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button onclick="app.showComparison()" class="btn btn-warning w-100 btn-sm">
+                                ⚖️ SO SÁNH
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Full Lunar Calendar Display -->
+            <div class="card mb-3 shadow-sm border-info">
+                <div class="card-header bg-info text-white py-2">
+                    <h6 class="mb-0">📅 ÂM LỊCH (CAN CHI)</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div id="lunar-calendar" class="text-center fw-bold text-danger">
+                        Đang tính toán...
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <small class="text-muted">Tiết Khí:</small>
+                            <span id="tiet-khi" class="fw-bold">--</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Cục:</small>
+                            <span id="cuc-display" class="fw-bold">--</span>
+                            <small class="text-muted ms-2">(<span id="duong-am">--</span> Độn)</small>
+                        </div>
+                    </div>
+                    <!-- NEW: Trực Phù & Trực Sử -->
+                    <div class="row mt-2 pt-2 border-top">
+                        <div class="col-6">
+                            <small class="text-muted">Sao Trực Phù:</small>
+                            <span id="truc-phu-display" class="fw-bold text-primary">--</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Cửa Trực Sử:</small>
+                            <span id="truc-su-display" class="fw-bold text-success">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Dụng Thần Panel (3 Methods) -->
+            <div class="card mb-3 shadow-sm border-success">
+                <div class="card-header bg-success text-white py-2">
+                    <h6 class="mb-0">🎯 DỤNG THẦN (3 PHƯƠNG PHÁP)</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div id="dung-than-panel">
+                        <div class="text-muted small">Chọn chủ đề để xem Dụng Thần...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Palace Navigation -->
+            <div class="card mb-3 shadow-sm border-secondary">
+                <div class="card-body p-2">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <button onclick="app.navigatePalace(-1)" class="btn btn-outline-secondary w-100 btn-sm">
+                                ◀ Cung Trước
+                            </button>
+                        </div>
+                        <div class="col-4 text-center">
+                            <span class="badge bg-secondary" id="current-palace-indicator">Cung 5</span>
+                        </div>
+                        <div class="col-4">
+                            <button onclick="app.navigatePalace(1)" class="btn btn-outline-secondary w-100 btn-sm">
+                                Cung Sau ▶
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Info Panel -->
+            <div class="card mb-3 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white py-2">
+                    <h6 class="mb-0">📊 THÔNG TIN BÀN CUNG</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div class="row g-2 small">
+                        <div class="col-6 col-md-4">
+                            <strong>Cục:</strong> <span id="info-ju" class="text-primary">--</span>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <strong>Tiết Khí:</strong> <span id="info-solar" class="text-success">--</span>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <strong>Loại:</strong> <span id="info-type" class="text-info">--</span>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <strong>Trực Phù:</strong> <span id="info-zhifu" class="text-warning">--</span>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <strong>Trực Sử:</strong> <span id="info-zhishi" class="text-warning">--</span>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <strong>Địa Chi Giờ:</strong> <span id="info-branch" class="text-danger">--</span>
+                        </div>
+                        <div class="col-12">
+                            <strong>🌙 Âm Lịch:</strong> <span id="info-lunar" class="text-muted">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dụng Thần Quick View -->
+            <div class="card mb-3 shadow-sm border-success" id="dung-than-panel">
+                <div class="card-header bg-success text-white py-2 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">🎯 DỤNG THẦN (3 PHƯƠNG PHÁP)</h6>
+                    <button class="btn btn-sm btn-light" onclick="app.toggleDungThan()">
+                        <span id="dung-than-toggle">▼</span>
+                    </button>
+                </div>
+                <div class="card-body p-2" id="dung-than-content">
+                    <div class="small text-muted">Chọn chủ đề để xem Dụng Thần...</div>
+                </div>
+            </div>
+
+            <!-- Palace Navigation -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-outline-primary btn-sm" onclick="app.navigatePalace(-1)">
+                            ◀ Cung Trước
+                        </button>
+                        <span class="fw-bold text-primary" id="current-palace-info">Cung 5</span>
+                        <button class="btn btn-outline-primary btn-sm" onclick="app.navigatePalace(1)">
+                            Cung Sau ▶
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 Method Tabs - PROMINENT STYLE -->
+            <div class="card mb-3 shadow-lg border-0">
+                <div class="card-body p-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <ul class="nav nav-pills nav-fill mb-3" id="method-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold py-3" id="qimen-tab" data-bs-toggle="tab"
+                                data-bs-target="#qimen" type="button" role="tab"
+                                style="font-size: 1.1rem; border-radius: 10px;">
+                                🔮 BẢNG KỲ MÔN
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-3" id="maihoa-tab" data-bs-toggle="tab"
+                                data-bs-target="#maihoa" type="button" role="tab"
+                                style="font-size: 1.1rem; border-radius: 10px;">
+                                📖 MAI HOA 64 QUẺ
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-3" id="luchao-tab" data-bs-toggle="tab"
+                                data-bs-target="#luchao" type="button" role="tab"
+                                style="font-size: 1.1rem; border-radius: 10px;">
+                                ☯️ LỤC HÀO KINH DỊCH
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="method-tab-content">
+                <!-- Qi Men Grid -->
+                <div class="tab-pane fade show active" id="qimen">
+                    <div id="qimen-grid" class="qmdg-grid mb-3">
+                        <!-- 9 Palaces will be rendered here -->
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="card shadow-sm">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-around flex-wrap small">
+                                <span>💀 Không Vong</span>
+                                <span>🐎 Dịch Mã</span>
+                                <span class="text-success">✅ Cát</span>
+                                <span class="text-danger">❌ Hung</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mai Hoa Tab -->
+                <div class="tab-pane fade" id="maihoa">
+                    <div id="maihoa-content" class="bg-white p-3 rounded shadow-sm">
+                        <div class="text-center text-muted">Đang tải...</div>
+                    </div>
+                </div>
+
+                <!-- Lục Hào Tab -->
+                <div class="tab-pane fade" id="luchao">
+                    <div id="luchao-content" class="bg-white p-3 rounded shadow-sm">
+                        <div class="text-center text-muted">Đang tải...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div class="modal fade" id="analysisModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">📊 PHÂN TÍCH TỔNG HỢP</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="analysis-body">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang phân tích...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Palace Detail Modal -->
+    <div class="modal fade" id="palaceModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="palace-modal-title">Chi Tiết Cung</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="palace-body">
+                    <!-- Palace details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Comparison Modal -->
+    <div class="modal fade" id="comparisonModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">⚖️ SO SÁNH 2 CUNG CHI TIẾT</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Selection -->
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Cung Chủ (Cung 1):</label>
+                            <select id="compare-palace1" class="form-select">
+                                <option value="1">1 - Khảm</option>
+                                <option value="2">2 - Khôn</option>
+                                <option value="3">3 - Chấn</option>
+                                <option value="4">4 - Tốn</option>
+                                <option value="5" selected>5 - Trung Cung</option>
+                                <option value="6">6 - Càn</option>
+                                <option value="7">7 - Đoài</option>
+                                <option value="8">8 - Cấn</option>
+                                <option value="9">9 - Ly</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 text-center d-flex align-items-end justify-content-center">
+                            <button onclick="app.performComparison()" class="btn btn-warning w-100">
+                                ⚖️ SO SÁNH
+                            </button>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Cung Khách (Cung 2):</label>
+                            <select id="compare-palace2" class="form-select">
+                                <option value="1" selected>1 - Khảm</option>
+                                <option value="2">2 - Khôn</option>
+                                <option value="3">3 - Chấn</option>
+                                <option value="4">4 - Tốn</option>
+                                <option value="5">5 - Trung Cung</option>
+                                <option value="6">6 - Càn</option>
+                                <option value="7">7 - Đoài</option>
+                                <option value="8">8 - Cấn</option>
+                                <option value="9">9 - Ly</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Result -->
+                    <div id="comparison-result">
+                        <div class="text-center text-muted">
+                            Chọn 2 cung và nhấn "So Sánh" để xem kết quả
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="d-none">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+        </div>
+        <p class="text-light mt-3">Đang xử lý...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
