@@ -209,7 +209,7 @@ def render_mining_summary_on_dashboard(key_suffix=""):
                     init_global_factory()
                 
                 st.success(f"✅ Đã {'BẬT' if new_status else 'TẮT'} chế độ tự trị!")
-                time.sleep(0.5)
+                time.sleep(1.0) # Increased delay for stabilization
                 st.rerun()
             
     with c2_24:
