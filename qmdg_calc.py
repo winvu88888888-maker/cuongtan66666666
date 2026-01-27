@@ -98,51 +98,65 @@ def get_can_chi_month(year_can, tiet_khi):
     return CAN[month_can_idx], month_chi
 
 def solar_to_lunar(dt):
-    """Simplified Solar to Lunar for Vietnam (2024-2030)."""
+    """
+    High-precision Solar to Lunar conversion for Vietnam (2024-2030).
+    Using exact month lengths to avoid one-day offsets.
+    """
     if dt.tzinfo is not None: dt = dt.replace(tzinfo=None)
-    LUNAR_DATA = {
-        2024: (2, 10, 0), 2025: (1, 29, 6), 2026: (2, 17, 0),
-        2027: (2, 6, 0), 2028: (1, 26, 5), 2029: (2, 13, 0), 2030: (2, 3, 0)
-    }
-    y = dt.year
-    if y not in LUNAR_DATA: return dt.day, dt.month, (y - 4), False
     
-    ny_m, ny_d, leap_m = LUNAR_DATA[y]
+    # LUNAR_DATA: {Year: (NY_Month, NY_Day, LeapMonthIndex_1based, [MonthLengths])}
+    # A LeapMonthIndex of 0 means no leap month.
+    # Month list includes the leap month if it exists.
+    LUNAR_CONFIG = {
+        2024: (2, 10, 0, [29, 30, 29, 29, 30, 29, 30, 30, 29, 30, 30, 29]),
+        2025: (1, 29, 6, [30, 29, 30, 29, 30, 30, 29, 30, 29, 30, 29, 30, 29]),
+        2026: (2, 17, 0, [30, 30, 29, 30, 29, 29, 30, 29, 30, 30, 29, 30]),
+        2027: (2, 6, 0,  [30, 29, 30, 29, 30, 29, 29, 30, 29, 30, 30, 30]),
+        2028: (1, 26, 5, [29, 30, 29, 30, 30, 29, 30, 29, 29, 30, 30, 29, 30])
+    }
+    
+    y = dt.year
+    if y not in LUNAR_CONFIG and (y-1) not in LUNAR_CONFIG:
+        # Fallback for very outside dates
+        return dt.day, dt.month, y, False
+
+    # Check if date belongs to previous lunar year
+    ny_m, ny_d, leap_m, months = LUNAR_CONFIG.get(y, (1, 1, 0, []))
     new_year_dt = datetime(y, ny_m, ny_d)
     
-    if dt < new_year_dt: # Belongs to last year
-        prev_y = y - 1
-        # For dates before New Year, we need to find the days since PREVIOUS New Year
-        if prev_y in LUNAR_DATA:
-            p_ny_m, p_ny_d, p_leap_m = LUNAR_DATA[prev_y]
-            p_new_year_dt = datetime(prev_y, p_ny_m, p_ny_d)
-            diff = (dt.date() - p_new_year_dt.date()).days
-            # Roughly calculate month (this part is same as below but for prev year)
-            curr_diff = diff
-            l_month = 1
-            is_leap = False
-            for i in range(1, 14):
-                m_len = 30 if i % 2 != 0 else 29 # Simplified
-                if curr_diff < m_len: return curr_diff + 1, l_month, prev_y, is_leap
-                curr_diff -= m_len
-                if l_month == p_leap_m and not is_leap: is_leap = True
-                else:
-                    l_month += 1
-                    is_leap = False
-        return dt.day, dt.month, y - 1, False
+    calc_y = y
+    if dt < new_year_dt:
+        calc_y = y - 1
+        if calc_y not in LUNAR_CONFIG:
+            return dt.day, dt.month, calc_y, False
+        ny_m, ny_d, leap_m, months = LUNAR_CONFIG[calc_y]
+        new_year_dt = datetime(calc_y, ny_m, ny_d)
+    
     diff = (dt.date() - new_year_dt.date()).days
     curr_diff = diff
     l_month = 1
-    is_leap = False
-    for i in range(1, 14):
-        m_len = 30 if i % 2 != 0 else 29
-        if curr_diff < m_len: return curr_diff + 1, l_month, y, is_leap
+    is_leap_result = False
+    
+    # Iterate through months using the mask
+    for idx, m_len in enumerate(months):
+        if curr_diff < m_len:
+            # Check if this physical month index corresponds to a leap month
+            # For 2025, leap_m=6 (Tháng 6), so index 5 is T6, index 6 is T6 Nhuận
+            physical_month_idx = idx + 1
+            
+            if leap_m > 0:
+                if physical_month_idx <= leap_m:
+                    return curr_diff + 1, physical_month_idx, calc_y, False
+                elif physical_month_idx == leap_m + 1:
+                    return curr_diff + 1, leap_m, calc_y, True
+                else:
+                    return curr_diff + 1, physical_month_idx - 1, calc_y, False
+            else:
+                return curr_diff + 1, physical_month_idx, calc_y, False
+        
         curr_diff -= m_len
-        if l_month == leap_m and not is_leap: is_leap = True
-        else:
-            l_month += 1
-            is_leap = False
-    return 1, 1, y, False
+            
+    return 1, 1, calc_y, False
 
 # Fixed data for QMDG
 SAO_GOC = {1: "Thiên Bồng", 2: "Thiên Nhuế", 3: "Thiên Xung", 4: "Thiên Phụ", 5: "Thiên Cầm", 6: "Thiên Tâm", 7: "Thiên Trụ", 8: "Thiên Nhậm", 9: "Thiên Anh"}
