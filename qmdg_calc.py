@@ -51,6 +51,7 @@ def get_can_chi_hour(day_can, hour):
 
 def get_tiet_khi(dt):
     """Calculate Solar Term (Approximate dates for 21st century)."""
+    if dt.tzinfo is not None: dt = dt.replace(tzinfo=None)
     year = dt.year
     base_dates = {
         "Xuân Phân": (3, 20.6), "Thanh Minh": (4, 4.8), "Cốc Vũ": (4, 20.1),
@@ -98,6 +99,7 @@ def get_can_chi_month(year_can, tiet_khi):
 
 def solar_to_lunar(dt):
     """Simplified Solar to Lunar for Vietnam (2024-2030)."""
+    if dt.tzinfo is not None: dt = dt.replace(tzinfo=None)
     LUNAR_DATA = {
         2024: (2, 10, 0), 2025: (1, 29, 6), 2026: (2, 17, 0),
         2027: (2, 6, 0), 2028: (1, 26, 5), 2029: (2, 13, 0), 2030: (2, 3, 0)
