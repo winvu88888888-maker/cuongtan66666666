@@ -81,15 +81,31 @@ def _single_agent_task(agent_id, topic, api_key):
         if web_data:
             mining_prompt = f"{mining_prompt}\n\n**DỮ LIỆU THU THẬP TỪ WEB:**\n{web_data[:3000]}"
         
-        content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
+        raw_content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
         
-        # Save to Hub
-        cat_match = next((k for k in strategist.categories if any(t in topic for t in strategist.categories[k])), "Kiến Thức")
+        # SMART FILTERING: Parse clean title and category from AI response
+        clean_title = topic
+        standard_category = "Kiến Thức"
+        final_content = raw_content
+        
+        try:
+            # Look for JSON block
+            if "```json" in raw_content:
+                parts = raw_content.split("```json")
+                if len(parts) > 1:
+                    json_str = parts[1].split("```")[0].strip()
+                    meta = json.loads(json_str)
+                    clean_title = meta.get("clean_title", topic)
+                    standard_category = meta.get("standard_category", "Kiến Thức")
+                    # Remove the JSON block from final content to keep it clean
+                    final_content = raw_content.replace(f"```json{json_str}```", "").strip()
+        except Exception as e:
+            print(f"⚠️ [Agent #{agent_id}] Smart filtering parse failed: {e}")
         
         id = add_entry(
-            title=topic,
-            content=content,
-            category=cat_match,
+            title=clean_title,
+            content=final_content,
+            category=standard_category,
             source=f"Agent #{agent_id} (Quân Đoàn AI)",
             tags=["autonomous", "hyper-depth", f"agent-{agent_id}"]
         )

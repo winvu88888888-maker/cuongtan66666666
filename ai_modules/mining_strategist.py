@@ -102,12 +102,22 @@ class MiningStrategist:
         return list(set(queue))
 
     def synthesize_mining_prompt(self, target_topic):
-        """Mega-Prompt for the 50 Mining Agents."""
+        """Mega-Prompt for the 50 Mining Agents - Now requesting Smart Filtering fields."""
+        category_list = ", ".join(self.categories.keys())
         return f"""
 Bạn nằm trong 'Quân đoàn 50 Đặc phái viên AI' cấp cao.
 Nhiệm vụ: Khai thác tri thức TỐI THƯỢNG về **{target_topic}**.
 
-YÊU CẦU BẮT BUỘC:
+YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (RẤT QUAN TRỌNG):
+Bắt đầu phản hồi bằng một khối JSON như sau (để hệ thống lọc thông minh):
+```json
+{{
+  "clean_title": "Tên chủ đề ngắn gọn, dễ hiểu (ví dụ: 'Bệnh mãn tính' thay vì tên kỹ thuật dài)",
+  "standard_category": "Chọn 1 trong danh sách này: {category_list}"
+}}
+```
+
+SAU ĐÓ LÀ NỘI DUNG CHI TIẾT:
 1. **TRANG BỊ 3 VÍ DỤ THỰC TẾ**: Cung cấp tình huống thực tế minh họa cực kỳ chi tiết.
 2. **CHIẾN LƯỢC HÀNH ĐỘNG**: Đề xuất cụ thể bước 1, 2, 3 để ứng dụng kiến thức này ngay.
 3. **DỮ LIỆU CHUYÊN SÂU**: Trích xuất thông số, mã nguồn hoặc cổ văn liên quan.

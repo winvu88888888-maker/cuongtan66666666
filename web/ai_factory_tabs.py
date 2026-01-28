@@ -85,6 +85,19 @@ def render_universal_data_hub_tab():
         except:
             pass
     
+    # MASTER STATUS CARD (As requested by user)
+    st.markdown(f"""
+    <div style='padding: 20px; border-radius: 12px; background-color: #2e4a45; border: 1px solid #3e5a55; margin-bottom: 20px;'>
+        <div style='display: flex; align-items: center; gap: 10px;'>
+            <div style='width: 15px; height: 15px; background-color: #00ff00; border-radius: 50%; box-shadow: 0 0 10px #00ff00;'></div>
+            <h3 style='color: #4ade80; margin: 0; font-size: 1.2rem;'>AI Factory: {'ONLINE' if is_recently_active else 'OFFLINE'}</h3>
+        </div>
+        <p style='color: #4ade80; margin: 10px 0 0 0; font-size: 0.9rem; opacity: 0.8;'>
+            (Chạy lúc: {last_run_str if last_run_str else 'Chưa có thông tin'})
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Status indicators
     col_status1, col_status2, col_status3 = st.columns(3)
     
@@ -209,56 +222,95 @@ def render_universal_data_hub_tab():
                 if delete_entry(e['id']): st.success("Đã xóa!"); st.rerun()
 
 def render_mining_summary_on_dashboard(key_suffix=""):
-    # 1. CLEANUP LEGION STATUS
-    st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu (Autonomous 24/7)")
+    config = load_config()
+    last_run_str = config.get("last_run")
+    
+    # ═══════════════════════════════════════════════════════════
+    # 📊 TRẠNG THÁT HỆ THỐNG (TOP PRIORITY)
+    # ═══════════════════════════════════════════════════════════
+    st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
+    
+    # Status Check Logic
+    is_recently_active = False
+    time_diff_minutes = 999
+    if last_run_str:
+        try:
+            last_run_dt = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            diff = datetime.datetime.now() - last_run_dt
+            time_diff_minutes = diff.total_seconds() / 60
+            if time_diff_minutes < 90: is_recently_active = True
+        except: pass
+    
+    col_status1, col_status2, col_status3 = st.columns(3)
+    
+    with col_status1:
+        if is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center; box-shadow: 0 4px 15px rgba(0,200,83,0.3); border: 2px solid #ffffff;'>
+                <h3 style='color: white; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG KHAI THÁC</p>
+                <small style='color: white; opacity: 0.8;'>Lần cuối: """ + str(int(time_diff_minutes)) + """p trước</small>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center; box-shadow: 0 4px 15px rgba(211,47,47,0.3); border: 2px solid #ffffff;'>
+                <h3 style='color: white; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG DỪNG</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    with col_status2:
+        total_cycles = config.get("total_cycles", 0)
+        cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
+        if cleanup_active and is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #0288d1 0%, #03a9f4 100%); text-align: center; box-shadow: 0 4px 15px rgba(2,136,209,0.3); border: 2px solid #ffffff;'>
+                <h3 style='color: white; margin: 0;'>🔵 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG TỐI ƯU</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #455a64 0%, #607d8b 100%); text-align: center; opacity: 0.8; border: 2px solid #ffffff;'>
+                <h3 style='color: white; margin: 0;'>⚪ AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>CHỜ CHU KỲ</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    with col_status3:
+        github_actions_active = config.get("autonomous_247", False)
+        if github_actions_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center; box-shadow: 0 4px 15px rgba(0,200,83,0.3); border: 2px solid #ffffff;'>
+                <h3 style='color: white; margin: 0;'>🟢 24/7 ACTIVE</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>MỖI 30 PHÚT</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center; box-shadow: 0 4px 15px rgba(211,47,47,0.3); border: 2px solid #ffffff;'>
+                <h3 style='color: white; margin: 0;'>🔴 24/7 OFF</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐÃ TẮT</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # 1. CLEANUP LEGION INFO
+    st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu")
     c_m1, c_m2, c_m3 = st.columns(3)
     c_m1.metric("Bản ghi trùng đã xóa", "0", delta="0")
     c_m2.metric("Túi nén (Bags)", "0")
-    c_m3.info("🛡️ Trạng thái: **🟢 Sẵn sàng dọn dẹp**")
+    c_m3.info("🛡️ Dọn dẹp tự động định kỳ.")
     
     st.markdown("---")
-
-
-
     
-    # 3. 50 MINING AGENTS STATUS
-    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7 + Web Search)")
+    # 2. 50 MINING AGENTS INFO
+    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI")
     st.caption("✨ **NÂNG CẤP MỚI**: Mỗi agent tìm kiếm trên Google/Internet + Gemini AI Grounding")
     
-    config = load_config()
-    is_active = config.get("autonomous_247", False) # Keep original variable name
-    last_run_str = config.get("last_run")
-    
-    # --- STATUS CHECK LOGIC ---
-    is_running_realtime = False
-    time_diff_minutes = 999
-    
-    if last_run_str:
-        try:
-            last_run_dt = datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
-            # Calculate diff
-            now = datetime.now()
-            diff = now - last_run_dt
-            time_diff_minutes = diff.total_seconds() / 60
-            
-            # If last run was within 90 mins (allow 1h cycle + buffer), consider RUNNING
-            if time_diff_minutes < 90:
-                is_running_realtime = True
-        except: pass
-        
-    # DISPLAY VISUAL STATUS
-    st1, st2 = st.columns(2)
-    with st1:
-        if is_running_realtime:
-            st.success(f"🟢 **NHÀ MÁY AI: ĐANG HOẠT ĐỘNG**\n\n(Lần cuối: {int(time_diff_minutes)} phút trước)")
-        else:
-            st.error(f"🔴 **NHÀ MÁY AI: ĐÃ DỪNG**\n\n(Lần cuối: {last_run_str if last_run_str else 'Chưa chạy'})")
-            
-    with st2:
-        if is_running_realtime:
-             st.success("🟢 **AI DỌN DẸP: SẴN SÀNG**\n\n(Tự động kích hoạt mỗi 3 chu kỳ)")
-        else:
-             st.error("🔴 **AI DỌN DẸP: NGHỈ NGƠI**\n\n(Chờ Nhà máy hoạt động lại)")
+    # --- Removed redundant status check and display ---
 
     # 24/7 Control Panel
     c1_24, c2_24 = st.columns([2, 1])
@@ -277,80 +329,7 @@ def render_mining_summary_on_dashboard(key_suffix=""):
                     st.session_state.gemini_key = current_key
             except: pass
     
-    # REAL-TIME STATUS INDICATORS (moved outside c1_24 block)
-    st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
-    
-    # Check if systems are running
-    import datetime
-    last_run_str = config.get("last_run")
-    is_recently_active = False
-    
-    if last_run_str:
-        try:
-            last_run = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
-            time_diff = datetime.datetime.now() - last_run
-            # Consider active if ran within last 45 minutes (30min interval + 15min buffer)
-            is_recently_active = time_diff.total_seconds() < 2700
-        except:
-            pass
-    
-    # Status indicators
-    col_status1, col_status2, col_status3 = st.columns(3)
-    
-    with col_status1:
-        if is_recently_active:
-            st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🟢 50 AI AGENTS</h3>
-                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🔴 50 AI AGENTS</h3>
-                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>KHÔNG CHẠY</p>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with col_status2:
-        total_cycles = config.get("total_cycles", 0)
-        cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
-        
-        if cleanup_active and is_recently_active:
-            st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🟢 AI DỌN DẸP</h3>
-                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🔴 AI DỌN DẸP</h3>
-                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>CHỜ CHU KỲ</p>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with col_status3:
-        github_actions_active = config.get("autonomous_247", False)
-        
-        if github_actions_active:
-            st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🟢 GITHUB ACTIONS</h3>
-                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>24/7 ACTIVE</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🔴 GITHUB ACTIONS</h3>
-                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>TẮT</p>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("---")
+
     
     # 24/7 Autonomous Mode Toggle
     c1_24, c2_24 = st.columns([1, 1])

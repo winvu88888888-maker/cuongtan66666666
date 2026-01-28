@@ -966,13 +966,26 @@ with st.sidebar:
     st.markdown("### 🎯 Chủ Đề Chính")
     
     # Dynamic Topic Refresh
+    # Dynamic Topic Refresh with Categories
     core_topics = list(TOPIC_INTERPRETATIONS.keys())
-    hub_topics = []
+    
+    # Get standard categories from Strategist
+    from ai_modules.mining_strategist import MiningStrategist
+    standard_categories = list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Khác"]
+    
+    hub_entries = []
     try:
         from ai_modules.shard_manager import search_index
-        hub_topics = list(set([e['title'] for e in search_index()]))
+        hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
     except Exception: pass
-    st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
+    
+    # Store full entry list for filtering
+    st.session_state.hub_entries = hub_entries
+    
+    # Filter topics logic simplified for selectbox
+    all_titles = sorted(list(set(core_topics + [e['title'] for e in hub_entries])))
+    st.session_state.all_topics_full = all_titles
+
 
     search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
     
@@ -1002,16 +1015,42 @@ with st.sidebar:
                     except Exception as e:
                         st.error(f"Lỗi nạp chủ đề: {e}")
 
-    if search_term:
-        filtered_topics = [t for t in st.session_state.all_topics_full if search_term.lower() in t.lower()]
-    else:
-        filtered_topics = st.session_state.all_topics_full
+    # 1. Select Standard Category (Chủ đề chuẩn)
+    from ai_modules.mining_strategist import MiningStrategist
+    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Khác"]
     
-    selected_topic = st.selectbox(
-        "Chọn chủ đề:",
-        filtered_topics,
-        index=0 if "Tổng Quát" not in filtered_topics else filtered_topics.index("Tổng Quát")
+    selected_cat = st.selectbox(
+        "🗂️ Lọc theo Phân loại chuẩn:",
+        standard_categories,
+        index=0
     )
+    
+    # 2. Filter topics based on category
+    if selected_cat == "Tất cả":
+        available_topics = st.session_state.all_topics_full
+    else:
+        # Get hub topics in this category
+        cat_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
+        # Intersection with search term if any
+        if search_term:
+            available_topics = [t for t in cat_topics if search_term.lower() in t.lower()]
+        else:
+            available_topics = cat_topics
+            
+        # If no topics found in this category, just show a message or list all
+        if not available_topics:
+            available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
+    
+    # 3. Final Search Filtering (if not already done)
+    if selected_cat == "Tất cả" and search_term:
+        available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
+
+    selected_topic = st.selectbox(
+        "Chọn chủ đề chi tiết:",
+        available_topics,
+        index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
+    )
+
     
     st.session_state.chu_de_hien_tai = selected_topic
     
