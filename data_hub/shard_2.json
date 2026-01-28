@@ -376,6 +376,539 @@
         "agent-14"
       ],
       "created_at": "2026-01-28T18:39:07.483977"
+    },
+    "7ac2899620260128192649": {
+      "id": "7ac2899620260128192649",
+      "title": "Genomics Research: Ví dụ thực tế 2026",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #28 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-28"
+      ],
+      "created_at": "2026-01-28T19:26:49.730162"
+    },
+    "b740ae6c20260128192656": {
+      "id": "b740ae6c20260128192656",
+      "title": "Exoplanet Research: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #33 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-01-28T19:26:56.336073"
+    },
+    "985133e920260128192707": {
+      "id": "985133e920260128192707",
+      "title": "Neuroscience Breakthroughs: Phân tích rủi ro",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #30 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:27:07.397588"
+    },
+    "c972920620260128192708": {
+      "id": "c972920620260128192708",
+      "title": "Climate Change Solutions: Phân tích rủi ro",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #8 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-28T19:27:08.898097"
+    },
+    "03b3e3c120260128192708": {
+      "id": "03b3e3c120260128192708",
+      "title": "Dark Matter Studies: Hướng dẫn chi thực",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #49 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T19:27:08.939633"
+    },
+    "a91dcec120260128192714": {
+      "id": "a91dcec120260128192714",
+      "title": "Materials Science: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #36 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T19:27:14.272907"
+    },
+    "0054a75a20260128192719": {
+      "id": "0054a75a20260128192719",
+      "title": "Astrophysics Discoveries: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #42 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T19:27:19.973454"
+    },
+    "679389e720260128192720": {
+      "id": "679389e720260128192720",
+      "title": "Climate Change Solutions: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #21 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-28T19:27:20.257719"
+    },
+    "79904f0120260128192720": {
+      "id": "79904f0120260128192720",
+      "title": "Exoplanet Research: Phân tích rủi ro",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #30 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:27:20.801000"
+    },
+    "20a78c7820260128192720": {
+      "id": "20a78c7820260128192720",
+      "title": "Ocean Exploration: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #31 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T19:27:20.982989"
+    },
+    "82c7ab7a20260128192722": {
+      "id": "82c7ab7a20260128192722",
+      "title": "Astrophysics Discoveries: Giải pháp tối ưu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #2 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-28T19:27:22.098577"
+    },
+    "779d616120260128192726": {
+      "id": "779d616120260128192726",
+      "title": "Ocean Exploration: Giải pháp tối ưu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #45 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-28T19:27:26.392038"
+    },
+    "a7f9014e20260128192728": {
+      "id": "a7f9014e20260128192728",
+      "title": "Genomics Research: Hướng dẫn chi thực",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #9 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T19:27:28.967092"
+    },
+    "3c4ae2d720260128192734": {
+      "id": "3c4ae2d720260128192734",
+      "title": "Climate Change Solutions: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #12 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-28T19:27:34.594959"
+    },
+    "e561ab4420260128192738": {
+      "id": "e561ab4420260128192738",
+      "title": "Materials Science: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #9 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T19:27:38.106644"
+    },
+    "64b958db20260128192739": {
+      "id": "64b958db20260128192739",
+      "title": "Climate Change Solutions: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #29 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T19:27:39.156631"
+    },
+    "bc587fe820260128192740": {
+      "id": "bc587fe820260128192740",
+      "title": "Astrophysics Discoveries: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #14 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T19:27:40.156676"
+    },
+    "2ebb15a220260128192745": {
+      "id": "2ebb15a220260128192745",
+      "title": "Particle Physics: Ví dụ thực tế 2026",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #41 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T19:27:45.018943"
+    },
+    "43b6c4ae20260128192750": {
+      "id": "43b6c4ae20260128192750",
+      "title": "Renewable Energy Tech: Giải pháp tối ưu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #39 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-28T19:27:50.752811"
+    },
+    "3a84473820260128192751": {
+      "id": "3a84473820260128192751",
+      "title": "Genomics Research: Phân tích rủi ro",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #25 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T19:27:51.443088"
+    },
+    "501ffe3f20260128192751": {
+      "id": "501ffe3f20260128192751",
+      "title": "Renewable Energy Tech: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #24 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-28T19:27:51.543563"
+    },
+    "2cbc1b5420260128192756": {
+      "id": "2cbc1b5420260128192756",
+      "title": "Ocean Exploration: Ví dụ thực tế 2026",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #16 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T19:27:56.197785"
+    },
+    "aa57905e20260128192800": {
+      "id": "aa57905e20260128192800",
+      "title": "Particle Physics: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #27 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T19:28:00.528870"
+    },
+    "5ba3d82f20260128192805": {
+      "id": "5ba3d82f20260128192805",
+      "title": "Climate Change Solutions: Ví dụ thực tế 2026",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #19 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-28T19:28:05.464534"
+    },
+    "62949eda20260128192807": {
+      "id": "62949eda20260128192807",
+      "title": "Particle Physics: Hướng dẫn chi thực",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #22 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T19:28:07.753580"
+    },
+    "4299fefa20260128192810": {
+      "id": "4299fefa20260128192810",
+      "title": "Dark Matter Studies: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #30 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:28:10.923758"
+    },
+    "1633222120260128192811": {
+      "id": "1633222120260128192811",
+      "title": "Exoplanet Research: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #27 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T19:28:11.588495"
+    },
+    "0b904f4020260128192814": {
+      "id": "0b904f4020260128192814",
+      "title": "Dark Matter Studies: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #37 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T19:28:14.932208"
+    },
+    "fb243b5520260128192817": {
+      "id": "fb243b5520260128192817",
+      "title": "Neuroscience Breakthroughs: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #8 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-28T19:28:17.204576"
+    },
+    "a0f24e5320260128192817": {
+      "id": "a0f24e5320260128192817",
+      "title": "Climate Change Solutions: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #20 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T19:28:17.751099"
+    },
+    "1e808b6d20260128192818": {
+      "id": "1e808b6d20260128192818",
+      "title": "Ocean Exploration: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #46 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T19:28:18.838627"
+    },
+    "80b5523a20260128192818": {
+      "id": "80b5523a20260128192818",
+      "title": "Genomics Research: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #15 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T19:28:18.905065"
+    },
+    "4e7fcad520260128192823": {
+      "id": "4e7fcad520260128192823",
+      "title": "Exoplanet Research: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #16 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T19:28:23.241989"
+    },
+    "75aaadbd20260128192823": {
+      "id": "75aaadbd20260128192823",
+      "title": "Astrophysics Discoveries: Ví dụ thực tế 2026",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #26 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T19:28:23.944641"
+    },
+    "3d4c283820260128192826": {
+      "id": "3d4c283820260128192826",
+      "title": "Renewable Energy Tech: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #40 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T19:28:26.209135"
+    },
+    "e3d42f6620260128192828": {
+      "id": "e3d42f6620260128192828",
+      "title": "Renewable Energy Tech: Hướng dẫn chi thực",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #28 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-28"
+      ],
+      "created_at": "2026-01-28T19:28:28.737978"
+    },
+    "b9544ebd20260128192829": {
+      "id": "b9544ebd20260128192829",
+      "title": "Dark Matter Studies: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #6 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T19:28:29.600950"
+    },
+    "f73bca5220260128192848": {
+      "id": "f73bca5220260128192848",
+      "title": "Particle Physics: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #41 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T19:28:48.724696"
+    },
+    "21c1947420260128192859": {
+      "id": "21c1947420260128192859",
+      "title": "Neuroscience Breakthroughs: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #10 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T19:28:59.058352"
+    },
+    "07d8df7a20260128192910": {
+      "id": "07d8df7a20260128192910",
+      "title": "Neuroscience Breakthroughs: Case study hiếm",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #46 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T19:29:10.510573"
+    },
+    "d22c984020260128192948": {
+      "id": "d22c984020260128192948",
+      "title": "Neuroscience Breakthroughs: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #42 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T19:29:48.044676"
     }
   }
 }
