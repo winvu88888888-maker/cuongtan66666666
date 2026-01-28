@@ -872,6 +872,18 @@ with st.sidebar:
                             data = load_custom_data()
                             data["GEMINI_API_KEY"] = new_key
                             save_custom_data(data)
+                            
+                            # ĐỒNG BỘ SANG AI FACTORY
+                            try:
+                                config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+                                if os.path.exists(config_path):
+                                    with open(config_path, 'r', encoding='utf-8') as f:
+                                        cfg = json.load(f)
+                                    cfg["api_key"] = new_key
+                                    with open(config_path, 'w', encoding='utf-8') as f:
+                                        json.dump(cfg, f, indent=2, ensure_ascii=False)
+                            except: pass
+                            
                             st.success("✅ Đã cập nhật và Lưu vĩnh viễn!")
                         else:
                             st.success("✅ Đã cập nhật (Tạm thời)!")
@@ -898,9 +910,21 @@ with st.sidebar:
                             data = load_custom_data()
                             data["GEMINI_API_KEY"] = user_api_key
                             save_custom_data(data)
-                            st.success("✅ Thành công và Đã Lưu!")
+                            
+                            # ĐỒNG BỘ SANG AI FACTORY
+                            try:
+                                config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+                                if os.path.exists(config_path):
+                                    with open(config_path, 'r', encoding='utf-8') as f:
+                                        cfg = json.load(f)
+                                    cfg["api_key"] = user_api_key
+                                    with open(config_path, 'w', encoding='utf-8') as f:
+                                        json.dump(cfg, f, indent=2, ensure_ascii=False)
+                            except: pass
+                                    
+                            st.success("✅ Kích hoạt và Lưu vĩnh viễn!")
                         else:
-                            st.success("✅ Thành công!")
+                            st.success("✅ Đã kích hoạt!")
                         st.rerun()
                     except Exception as e:
                         st.error(f"❌ Lỗi: {e}")

@@ -11,7 +11,9 @@
 
 ### Bước 1: Kiểm Tra GitHub Actions
 
-1. Vào: https://github.com/winvu88888888-maker/cuongtan66666666/actions
+1. Vào: https://github.com/winvu88888888-maker/cuongtan66666666/actions (Nếu bạn đổi tên repo, hãy vào link mới)
+   - Hoặc truy cập Web: https://cuongtan888888.streamlit.app/
+
 2. Xem workflow **"AI Factory 24/7 Independent Mining"**
 3. Kiểm tra:
    - ✅ Có workflow này không?

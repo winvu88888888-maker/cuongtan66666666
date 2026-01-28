@@ -1,6 +1,6 @@
 @echo off
 echo ====================================================
-echo   PUSH TRUC TIEP LEN cuongtan66666666
+echo   PUSH TRUC TIEP LEN cuongtan888888
 echo ====================================================
 echo.
 
@@ -14,7 +14,7 @@ echo [2] Committing...
 git commit -m "🚀 Update: 50 AI Agents + Status Indicators" || echo "Already committed"
 
 echo.
-echo [3] Pushing to cuongtan66666666...
+echo [3] Pushing to cuongtan888888...
 git push origin main
 
 echo.
@@ -22,7 +22,7 @@ echo ====================================================
 echo              DONE!
 echo ====================================================
 echo.
-echo Web: https://cuongtan66666666.streamlit.app/
+echo Web: https://cuongtan888888.streamlit.app/
 echo Doi 1-2 phut de cap nhat!
 echo.
 pause

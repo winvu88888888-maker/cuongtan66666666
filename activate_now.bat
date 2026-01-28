@@ -21,6 +21,6 @@ echo.
 echo Kiểm tra kết quả:
 echo - Xem file data_hub\hub_index.json
 echo - Metrics "total_cycles" trong factory_config.json
-echo - Vào web: https://cuongtan66666666.streamlit.app/
+echo - Vào web: https://cuongtan888888.streamlit.app/
 echo.
 pause

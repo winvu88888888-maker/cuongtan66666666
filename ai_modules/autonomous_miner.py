@@ -253,14 +253,28 @@ def run_daemon():
         if not api_key:
             print("\n❌ CHƯA TÌM THẤY API KEY.")
             print("👉 Vui lòng nhập Gemini API Key của bạn vào bên dưới để cấu hình một lần duy nhất.")
-            print("(Key sẽ được lưu vào factory_config.json để tự động chạy các lần sau)")
+            print("(Key sẽ được lưu vào factory_config.json và custom_data.json để tự động chạy các lần sau)")
             try:
                 user_input_key = input("🔑 Nhập API Key: ").strip()
                 if user_input_key and len(user_input_key) > 10:
                     api_key = user_input_key
                     config["api_key"] = api_key
                     save_config(config)
-                    print("✅ Đã lưu cấu hình thành công! Bắt đầu khởi động...")
+                    
+                    # CỰC KỲ QUAN TRỌNG: Lưu đồng thời vào custom_data.json cho app.py thấy
+                    try:
+                        custom_data_path = os.path.join(os.path.dirname(current_dir), "custom_data.json")
+                        c_data = {}
+                        if os.path.exists(custom_data_path):
+                            with open(custom_data_path, 'r', encoding='utf-8') as f:
+                                c_data = json.load(f)
+                        c_data["GEMINI_API_KEY"] = api_key
+                        with open(custom_data_path, 'w', encoding='utf-8') as f:
+                            json.dump(c_data, f, ensure_ascii=False, indent=4)
+                        print(f"✅ Đã lưu cấu hình và đồng bộ sang custom_data.json")
+                    except: pass
+                    
+                    print("✅ Khởi động thành công!")
                 else:
                     print("⚠️ Key không hợp lệ. Đang thử lại sau 60s...")
                     time.sleep(60)

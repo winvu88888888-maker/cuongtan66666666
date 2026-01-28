@@ -1,10 +1,15 @@
 import json
 import os
 import sys
+from datetime import datetime
 
 # Add the directory to path so we can import shard_manager
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from ai_modules.shard_manager import delete_entry
+base_dir = os.path.dirname(os.path.abspath(__file__))
+ai_modules_dir = os.path.join(base_dir, "ai_modules")
+if ai_modules_dir not in sys.path:
+    sys.path.append(ai_modules_dir)
+
+from shard_manager import delete_entry
 
 def cleanup_technical_titles():
     index_path = os.path.join("data_hub", "hub_index.json")

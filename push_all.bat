@@ -14,7 +14,7 @@ echo [2] Committing...
 git commit -m "🧹 Cleanup + ✨ Status indicators" || echo "No new changes"
 
 echo.
-echo [3] Pushing to cuongtan66666666...
+echo [3] Pushing to cuongtan888888...
 git push origin main
 
 echo.
@@ -22,7 +22,7 @@ echo ====================================================
 echo              DONE!
 echo ====================================================
 echo.
-echo Web: https://cuongtan66666666.streamlit.app/
+echo Web: https://cuongtan888888.streamlit.app/
 echo Doi 1-2 phut, nhan Ctrl+F5, vao tab "Nha May AI"!
 echo.
 pause

@@ -33,7 +33,7 @@
 ## 🚀 Cách Sử Dụng
 
 ### Lần Đầu Tiên
-1. Vào web: https://cuongtan66666666.streamlit.app/
+1. Vào web: https://cuongtan888888.streamlit.app/
 2. Paste Gemini API Key vào sidebar
 3. ✅ Tick "Lưu khóa này vĩnh viễn"
 4. Click "Kích hoạt ngay"
