@@ -143,8 +143,8 @@ class WebSearcher:
             if result['snippet']:
                 collected_data.append(f"**Tóm tắt**: {result['snippet']}\n\n")
             
-            # Extract full content
-            content = self.extract_content(result['url'], max_length=2000)
+            # Extract full content (Increased depth)
+            content = self.extract_content(result['url'], max_length=4000)
             if content:
                 collected_data.append(f"**Nội dung chi tiết**:\n{content}\n\n")
                 collected_data.append("---\n\n")

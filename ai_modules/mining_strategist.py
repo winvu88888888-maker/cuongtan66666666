@@ -102,26 +102,27 @@ class MiningStrategist:
         return list(set(queue))
 
     def synthesize_mining_prompt(self, target_topic):
-        """Mega-Prompt for the 50 Mining Agents - Now requesting Smart Filtering fields."""
+        """Mega-Prompt for the 50 Mining Agents - Re-focused on Practical Divination & Reality Checking."""
         category_list = ", ".join(self.categories.keys())
         return f"""
-Bạn nằm trong 'Quân đoàn 50 Đặc phái viên AI' cấp cao.
-Nhiệm vụ: Khai thác tri thức TỐI THƯỢNG về **{target_topic}**.
+Bạn là 'Bậc Thầy Tư Vấn Tri Thức' (Expert Strategy Consultant & Diviner).
+Nhiệm vụ: Khai thác bí mật và **KIỂM CHỨNG THỰC TẾ** về chủ đề: **{target_topic}**.
 
-YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (RẤT QUAN TRỌNG):
-Bắt đầu phản hồi bằng một khối JSON như sau (để hệ thống lọc thông minh):
+Mục tiêu không phải là nạp tài liệu thô, mà là **TRÍ TUỆ THỰC CHIẾN**.
+
+YÊU CẦU ĐỊNH DẠNG PHẢN HỒI JSON (BẮT BUỘC Ở ĐẦU):
 ```json
 {{
-  "clean_title": "Tên chủ đề ngắn gọn, dễ hiểu (ví dụ: 'Bệnh mãn tính' thay vì tên kỹ thuật dài)",
-  "standard_category": "Chọn 1 trong danh sách này: {category_list}"
+  "clean_title": "Tên chủ đề thực tế, ngắn gọn (Ví dụ: 'Bệnh mãn tính' thay vì 'Nghiên cứu về bệnh...')",
+  "standard_category": "Chọn 1 trong: {category_list}"
 }}
 ```
 
-SAU ĐÓ LÀ NỘI DUNG CHI TIẾT:
-1. **TRANG BỊ 3 VÍ DỤ THỰC TẾ**: Cung cấp tình huống thực tế minh họa cực kỳ chi tiết.
-2. **CHIẾN LƯỢC HÀNH ĐỘNG**: Đề xuất cụ thể bước 1, 2, 3 để ứng dụng kiến thức này ngay.
-3. **DỮ LIỆU CHUYÊN SÂU**: Trích xuất thông số, mã nguồn hoặc cổ văn liên quan.
-4. **LIÊN KẾT ĐA TẦNG**: Đề xuất 2 chủ đề ngách khác liên quan đến phát hiện này.
+NỘI DUNG YÊU CẦU (PHONG CÁCH CHUYÊN GIA):
+1. **KIỂM CHỨNG THỰC TẾ (REALITY CHECK)**: Dựa trên dữ liệu thu thập, hãy cho biết kiến thức này có thực sự hiệu quả trong đời sống không? Tỷ lệ thành công/chính xác là bao nhiêu?
+2. **HỎI BÓI & ỨNG DỤNG**: Nếu một người hỏi về việc này, giải pháp 'vàng' cho họ là gì? (Ví dụ: Chữa bệnh thế nào, đầu tư ra sao, hóa giải thế nào?)
+3. **TRÍ TUỆ CHUYÊN SÂU**: Trích xuất những tinh túy nhất từ tài liệu đã tìm thấy. Không viết chung chung.
+4. **KẾ HOẠCH HÀNH ĐỘNG**: Bước 1, 2, 3 cụ thể để người dùng thực hiện ngay.
 
-Hãy viết như một chuyên gia tư vấn chiến lược hàng đầu, bám sát thực tế và giàu tính thực thi.
+Hãy viết bằng giọng văn sắc bén, thông thái, mang tính dự báo và thực chứng cao.
 """
