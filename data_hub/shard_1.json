@@ -870,6 +870,461 @@
         "agent-10"
       ],
       "created_at": "2026-01-28T15:10:13.991908"
+    },
+    "4d0530ff20260128160101": {
+      "id": "4d0530ff20260128160101",
+      "title": "Ứng dụng trong kinh doanh: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #11 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T16:01:01.744603"
+    },
+    "39be365a20260128160102": {
+      "id": "39be365a20260128160102",
+      "title": "Kỳ Môn chọn ngày giờ: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #5 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T16:01:02.113788"
+    },
+    "4182ec3820260128160104": {
+      "id": "4182ec3820260128160104",
+      "title": "Cửu Tinh biến hóa: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #1 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-28T16:01:04.454049"
+    },
+    "e7229ab320260128160104": {
+      "id": "e7229ab320260128160104",
+      "title": "Độn Giáp khởi lệ bí truyền: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #32 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T16:01:04.802133"
+    },
+    "3df87ad620260128160106": {
+      "id": "3df87ad620260128160106",
+      "title": "Thiên Cáp Thần: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #40 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T16:01:06.359128"
+    },
+    "f6acaa5b20260128160107": {
+      "id": "f6acaa5b20260128160107",
+      "title": "Thiên Cáp Thần: Case study hiếm",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #13 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-28T16:01:07.788673"
+    },
+    "124e5b6e20260128160107": {
+      "id": "124e5b6e20260128160107",
+      "title": "Kỳ Môn quân sự: Case study hiếm",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #4 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-4"
+      ],
+      "created_at": "2026-01-28T16:01:07.885897"
+    },
+    "31fd336a20260128160112": {
+      "id": "31fd336a20260128160112",
+      "title": "Kỳ Môn và sức khỏe: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #24 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-28T16:01:12.330799"
+    },
+    "d2a3f12e20260128160112": {
+      "id": "d2a3f12e20260128160112",
+      "title": "Kỳ Môn chọn ngày giờ: Case study hiếm",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #11 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T16:01:12.677080"
+    },
+    "88d881d720260128160113": {
+      "id": "88d881d720260128160113",
+      "title": "Kỳ Môn Hậu Thiên: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #6 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T16:01:13.260543"
+    },
+    "8363c46220260128160113": {
+      "id": "8363c46220260128160113",
+      "title": "Bát Môn chuyên sâu: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #47 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T16:01:13.594497"
+    },
+    "9345f3cb20260128160114": {
+      "id": "9345f3cb20260128160114",
+      "title": "Cửu Tinh biến hóa: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #41 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T16:01:14.278252"
+    },
+    "d05d4dc220260128160115": {
+      "id": "d05d4dc220260128160115",
+      "title": "Bát Thần trợ lực: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #40 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T16:01:15.021062"
+    },
+    "4d29829620260128160115": {
+      "id": "4d29829620260128160115",
+      "title": "Kỳ Môn Hậu Thiên: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #41 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T16:01:15.316349"
+    },
+    "e8a74c2a20260128160138": {
+      "id": "e8a74c2a20260128160138",
+      "title": "Bát Thần trợ lực: Case study hiếm",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #5 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T16:01:38.103869"
+    },
+    "aa5169e120260128160140": {
+      "id": "aa5169e120260128160140",
+      "title": "Kỳ Môn quân sự: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #43 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T16:01:40.452492"
+    },
+    "ec95502c20260128160140": {
+      "id": "ec95502c20260128160140",
+      "title": "Kỳ Môn Tiên Thiên: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #34 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-28T16:01:40.787496"
+    },
+    "8500a66920260128160147": {
+      "id": "8500a66920260128160147",
+      "title": "Pháp thuật Kỳ Môn cổ: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #24 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-28T16:01:47.994383"
+    },
+    "cfd08dd620260128160156": {
+      "id": "cfd08dd620260128160156",
+      "title": "Thần sát ẩn tàng: Case study hiếm",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #17 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T16:01:56.519003"
+    },
+    "6262624320260128160157": {
+      "id": "6262624320260128160157",
+      "title": "Thiên Cáp Thần: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #37 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T16:01:57.441992"
+    },
+    "a6e9954620260128160158": {
+      "id": "a6e9954620260128160158",
+      "title": "Bát Môn chuyên sâu: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #18 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T16:01:58.298032"
+    },
+    "fb15865320260128160201": {
+      "id": "fb15865320260128160201",
+      "title": "Pháp thuật Kỳ Môn cổ: Giải pháp tối ưu",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #30 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T16:02:01.191293"
+    },
+    "763b11d420260128160202": {
+      "id": "763b11d420260128160202",
+      "title": "Pháp thuật Kỳ Môn cổ: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #9 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T16:02:02.577599"
+    },
+    "22f6812520260128160203": {
+      "id": "22f6812520260128160203",
+      "title": "Kỳ Môn dự đoán thời tiết: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #36 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T16:02:03.198097"
+    },
+    "f4c43bff20260128160203": {
+      "id": "f4c43bff20260128160203",
+      "title": "Độn Giáp khởi lệ bí truyền: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #31 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T16:02:03.960743"
+    },
+    "6da0bdab20260128160204": {
+      "id": "6da0bdab20260128160204",
+      "title": "Kỳ Môn chọn ngày giờ: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #3 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T16:02:04.598950"
+    },
+    "6722f35720260128160204": {
+      "id": "6722f35720260128160204",
+      "title": "Bát Môn chuyên sâu: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #29 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T16:02:04.873236"
+    },
+    "01580cbd20260128160205": {
+      "id": "01580cbd20260128160205",
+      "title": "Thiên Cáp Thần: Ứng dụng sâu",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #23 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-23"
+      ],
+      "created_at": "2026-01-28T16:02:05.115166"
+    },
+    "398bec0420260128160205": {
+      "id": "398bec0420260128160205",
+      "title": "Kỳ Môn Hậu Thiên: Ứng dụng sâu",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #36 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T16:02:05.557861"
+    },
+    "4ce6c10f20260128160206": {
+      "id": "4ce6c10f20260128160206",
+      "title": "Bát Môn chuyên sâu: Giải pháp tối ưu",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #17 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T16:02:06.213677"
+    },
+    "0bdb626a20260128160207": {
+      "id": "0bdb626a20260128160207",
+      "title": "Kỳ Môn dự đoán thời tiết: Giải pháp tối ưu",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #22 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T16:02:07.294428"
+    },
+    "18d8b71020260128160208": {
+      "id": "18d8b71020260128160208",
+      "title": "Ứng dụng trong kinh doanh: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #43 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T16:02:08.716566"
+    },
+    "f0eafec920260128160212": {
+      "id": "f0eafec920260128160212",
+      "title": "Bát Thần trợ lực: Ứng dụng sâu",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #49 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T16:02:12.288363"
+    },
+    "7a8e29e720260128160218": {
+      "id": "7a8e29e720260128160218",
+      "title": "Cửu Tinh biến hóa: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #47 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T16:02:18.284812"
+    },
+    "37fc1d4920260128160218": {
+      "id": "37fc1d4920260128160218",
+      "title": "Kỳ Môn Hậu Thiên: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kỳ Môn Độn Giáp (Sâu)",
+      "source": "Agent #29 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T16:02:18.652516"
     }
   }
 }
