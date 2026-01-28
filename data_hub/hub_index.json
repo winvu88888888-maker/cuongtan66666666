@@ -983,15 +983,579 @@
         "agent-25"
       ],
       "created_at": "2026-01-28T17:59:29.779956"
+    },
+    {
+      "id": "1c6b821f20260128183645",
+      "shard": "shard_1.json",
+      "title": "Python Performance Optimization: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T18:36:45.634618"
+    },
+    {
+      "id": "0176f42820260128183646",
+      "shard": "shard_1.json",
+      "title": "Python Performance Optimization: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T18:36:46.987087"
+    },
+    {
+      "id": "1ee6840120260128183647",
+      "shard": "shard_1.json",
+      "title": "Multi-Agent Systems: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T18:36:47.223645"
+    },
+    {
+      "id": "6ab1e0e820260128183647",
+      "shard": "shard_1.json",
+      "title": "AI Model Compression: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T18:36:47.283428"
+    },
+    {
+      "id": "2459c50c20260128183650",
+      "shard": "shard_1.json",
+      "title": "Prompt Engineering Mastery: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T18:36:50.076415"
+    },
+    {
+      "id": "2a30d38e20260128183650",
+      "shard": "shard_1.json",
+      "title": "Multi-Agent Systems: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T18:36:50.773944"
+    },
+    {
+      "id": "ea2c87a320260128183654",
+      "shard": "shard_1.json",
+      "title": "MLOps Best Practices: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T18:36:54.406834"
+    },
+    {
+      "id": "fcd2430620260128183654",
+      "shard": "shard_1.json",
+      "title": "Microservices Architecture: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:36:54.665239"
+    },
+    {
+      "id": "9dccda9a20260128183655",
+      "shard": "shard_1.json",
+      "title": "LangChain & Autogen: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T18:36:55.473356"
+    },
+    {
+      "id": "77c7116f20260128183656",
+      "shard": "shard_1.json",
+      "title": "Agentic Frameworks: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T18:36:56.123101"
+    },
+    {
+      "id": "56a5c8dc20260128183657",
+      "shard": "shard_1.json",
+      "title": "Vector Databases: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T18:36:57.955083"
+    },
+    {
+      "id": "47bc725f20260128183658",
+      "shard": "shard_1.json",
+      "title": "Multi-Agent Systems: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:36:58.160172"
+    },
+    {
+      "id": "3509603520260128183658",
+      "shard": "shard_1.json",
+      "title": "AI Security & Pentesting: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:36:58.245360"
+    },
+    {
+      "id": "8fce6e6420260128183658",
+      "shard": "shard_1.json",
+      "title": "LangChain & Autogen: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T18:36:58.641863"
+    },
+    {
+      "id": "590c489b20260128183708",
+      "shard": "shard_1.json",
+      "title": "Prompt Engineering Mastery: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T18:37:08.129052"
+    },
+    {
+      "id": "37950e1020260128183710",
+      "shard": "shard_1.json",
+      "title": "MLOps Best Practices: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T18:37:10.431059"
+    },
+    {
+      "id": "d310748220260128183710",
+      "shard": "shard_1.json",
+      "title": "Prompt Engineering Mastery: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:10.979608"
+    },
+    {
+      "id": "4f490b7920260128183721",
+      "shard": "shard_1.json",
+      "title": "LangChain & Autogen: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T18:37:21.108931"
+    },
+    {
+      "id": "aaf8e45620260128183721",
+      "shard": "shard_2.json",
+      "title": "Edge AI Deployment: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T18:37:21.152834"
+    },
+    {
+      "id": "0f25132120260128183725",
+      "shard": "shard_2.json",
+      "title": "Agentic Frameworks: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T18:37:25.163695"
+    },
+    {
+      "id": "983ba62d20260128183725",
+      "shard": "shard_2.json",
+      "title": "Prompt Engineering Mastery: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-28T18:37:25.329618"
+    },
+    {
+      "id": "2f2be5f420260128183729",
+      "shard": "shard_2.json",
+      "title": "Python Performance Optimization: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:37:29.447376"
+    },
+    {
+      "id": "23dbd86920260128183730",
+      "shard": "shard_2.json",
+      "title": "AI Model Compression: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T18:37:30.715143"
+    },
+    {
+      "id": "340e574620260128183731",
+      "shard": "shard_2.json",
+      "title": "LLM Fine-tuning: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T18:37:31.179117"
+    },
+    {
+      "id": "4b0a651720260128183734",
+      "shard": "shard_2.json",
+      "title": "Edge AI Deployment: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-28T18:37:34.879987"
+    },
+    {
+      "id": "3e5d6c8520260128183737",
+      "shard": "shard_2.json",
+      "title": "Microservices Architecture: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T18:37:37.630802"
+    },
+    {
+      "id": "2a3b351820260128183739",
+      "shard": "shard_2.json",
+      "title": "Prompt Engineering Mastery: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:37:39.053475"
+    },
+    {
+      "id": "2cf5345220260128183739",
+      "shard": "shard_2.json",
+      "title": "LLM Fine-tuning: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T18:37:39.481131"
+    },
+    {
+      "id": "f0019d4920260128183741",
+      "shard": "shard_2.json",
+      "title": "Streamlit Advanced UI/UX: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-28T18:37:41.012852"
+    },
+    {
+      "id": "9830a76520260128183741",
+      "shard": "shard_2.json",
+      "title": "Streamlit Advanced UI/UX: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:41.526746"
+    },
+    {
+      "id": "30994aa220260128183742",
+      "shard": "shard_2.json",
+      "title": "Python Performance Optimization: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:37:42.388915"
+    },
+    {
+      "id": "b579249c20260128183742",
+      "shard": "shard_2.json",
+      "title": "Cloud Native AI Solutions: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T18:37:42.685212"
+    },
+    {
+      "id": "b954c6f020260128183742",
+      "shard": "shard_2.json",
+      "title": "LangChain & Autogen: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T18:37:42.912055"
+    },
+    {
+      "id": "8ce2282820260128183745",
+      "shard": "shard_2.json",
+      "title": "MLOps Best Practices: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T18:37:45.334774"
+    },
+    {
+      "id": "f6b1e19720260128183747",
+      "shard": "shard_2.json",
+      "title": "RAG Systems: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-28T18:37:47.280774"
+    },
+    {
+      "id": "f08bc77820260128183749",
+      "shard": "shard_2.json",
+      "title": "Vector Databases: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:37:49.406758"
+    },
+    {
+      "id": "332cc03820260128183749",
+      "shard": "shard_2.json",
+      "title": "Vector Databases: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:49.918316"
+    },
+    {
+      "id": "39973f9220260128183750",
+      "shard": "shard_2.json",
+      "title": "Agentic Frameworks: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-28T18:37:50.378580"
+    },
+    {
+      "id": "75bdbba920260128183750",
+      "shard": "shard_2.json",
+      "title": "RAG Systems: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-28T18:37:50.579813"
+    },
+    {
+      "id": "ea5f95df20260128183750",
+      "shard": "shard_2.json",
+      "title": "MLOps Best Practices: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T18:37:50.704322"
+    },
+    {
+      "id": "f4a1950020260128183751",
+      "shard": "shard_2.json",
+      "title": "MLOps Best Practices: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T18:37:51.771496"
+    },
+    {
+      "id": "5fe7419b20260128183755",
+      "shard": "shard_2.json",
+      "title": "AI Security & Pentesting: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:55.991775"
+    },
+    {
+      "id": "89f41a1e20260128183805",
+      "shard": "shard_2.json",
+      "title": "DevOps cho AI: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T18:38:05.642609"
+    },
+    {
+      "id": "271b052820260128183819",
+      "shard": "shard_2.json",
+      "title": "Kubernetes for ML: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T18:38:19.908079"
+    },
+    {
+      "id": "d8654e4320260128183822",
+      "shard": "shard_2.json",
+      "title": "LangChain & Autogen: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-28T18:38:22.982876"
+    },
+    {
+      "id": "1b57bd3d20260128183832",
+      "shard": "shard_2.json",
+      "title": "Vector Databases: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-28T18:38:32.528785"
+    },
+    {
+      "id": "78e5306620260128183907",
+      "shard": "shard_2.json",
+      "title": "Cloud Native AI Solutions: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:39:07.483977"
     }
   ],
   "stats": {
-    "total": 82,
+    "total": 129,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 82
+      "Kiến Thức": 129
     }
   }
 }

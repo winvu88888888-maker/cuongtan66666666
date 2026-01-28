@@ -1091,6 +1091,240 @@
         "agent-25"
       ],
       "created_at": "2026-01-28T17:59:29.779956"
+    },
+    "1c6b821f20260128183645": {
+      "id": "1c6b821f20260128183645",
+      "title": "Python Performance Optimization: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #42 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T18:36:45.634618"
+    },
+    "0176f42820260128183646": {
+      "id": "0176f42820260128183646",
+      "title": "Python Performance Optimization: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #15 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T18:36:46.987087"
+    },
+    "1ee6840120260128183647": {
+      "id": "1ee6840120260128183647",
+      "title": "Multi-Agent Systems: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #48 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T18:36:47.223645"
+    },
+    "6ab1e0e820260128183647": {
+      "id": "6ab1e0e820260128183647",
+      "title": "AI Model Compression: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #43 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T18:36:47.283428"
+    },
+    "2459c50c20260128183650": {
+      "id": "2459c50c20260128183650",
+      "title": "Prompt Engineering Mastery: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #46 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T18:36:50.076415"
+    },
+    "2a30d38e20260128183650": {
+      "id": "2a30d38e20260128183650",
+      "title": "Multi-Agent Systems: Dữ liệu gốc từ cổ tịch/papers",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #42 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T18:36:50.773944"
+    },
+    "ea2c87a320260128183654": {
+      "id": "ea2c87a320260128183654",
+      "title": "MLOps Best Practices: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #26 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T18:36:54.406834"
+    },
+    "fcd2430620260128183654": {
+      "id": "fcd2430620260128183654",
+      "title": "Microservices Architecture: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #14 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:36:54.665239"
+    },
+    "9dccda9a20260128183655": {
+      "id": "9dccda9a20260128183655",
+      "title": "LangChain & Autogen: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #22 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T18:36:55.473356"
+    },
+    "77c7116f20260128183656": {
+      "id": "77c7116f20260128183656",
+      "title": "Agentic Frameworks: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #18 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T18:36:56.123101"
+    },
+    "56a5c8dc20260128183657": {
+      "id": "56a5c8dc20260128183657",
+      "title": "Vector Databases: Bí quyết thực thi nhanh",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #3 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T18:36:57.955083"
+    },
+    "47bc725f20260128183658": {
+      "id": "47bc725f20260128183658",
+      "title": "Multi-Agent Systems: Phân tích rủi ro",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #49 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:36:58.160172"
+    },
+    "3509603520260128183658": {
+      "id": "3509603520260128183658",
+      "title": "AI Security & Pentesting: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #14 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:36:58.245360"
+    },
+    "8fce6e6420260128183658": {
+      "id": "8fce6e6420260128183658",
+      "title": "LangChain & Autogen: Ví dụ thực tế 2026",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #10 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T18:36:58.641863"
+    },
+    "590c489b20260128183708": {
+      "id": "590c489b20260128183708",
+      "title": "Prompt Engineering Mastery: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #32 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T18:37:08.129052"
+    },
+    "37950e1020260128183710": {
+      "id": "37950e1020260128183710",
+      "title": "MLOps Best Practices: Case study hiếm",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #20 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T18:37:10.431059"
+    },
+    "d310748220260128183710": {
+      "id": "d310748220260128183710",
+      "title": "Prompt Engineering Mastery: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #17 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:10.979608"
+    },
+    "4f490b7920260128183721": {
+      "id": "4f490b7920260128183721",
+      "title": "LangChain & Autogen: Hướng dẫn chi thực",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #11 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T18:37:21.108931"
     }
   }
 }
