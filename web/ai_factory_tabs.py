@@ -33,20 +33,39 @@ except ImportError:
 
 # --- TOP 5 HOT TOPICS LOGIC ---
 def get_top_5_hot_topics():
-    """Analyze the index to find most active research areas."""
+    """Analyze the index to find most active research areas using CATEGORY, not random titles."""
     try:
         index_path = os.path.join(ROOT_DIR, "data_hub", "hub_index.json")
-        if not os.path.exists(index_path): return []
+        if not os.path.exists(index_path): 
+            return []
         
         with open(index_path, 'r', encoding='utf-8') as f:
             index = json.load(f)
         
-        # Count frequency of titles (each mining run creates an entry)
-        topic_counts = Counter([e['title'] for e in index])
+        # FIXED: Use 'category' field instead of 'title' to get real topics
+        # Category is the actual research topic, not random text
+        topic_counts = Counter()
+        
+        for entry in index:
+            # Get category (the real topic)
+            category = entry.get('category', 'Unknown')
+            
+            # Skip generic/invalid categories
+            if category and category not in ['Unknown', 'Khác', 'Other', '']:
+                topic_counts[category] += 1
+        
+        # Get top 5 most researched categories
         top_5 = topic_counts.most_common(5)
+        
+        # If no valid topics, return empty
+        if not top_5:
+            return []
+            
         return top_5
-    except Exception:
+    except Exception as e:
+        print(f"Error getting hot topics: {e}")
         return []
+
 
 # --- EXPANDED MINER DATA (50 AGENTS) ---
 def get_50_miners():
