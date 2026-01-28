@@ -827,7 +827,21 @@ with st.sidebar:
     if 'gemini_helper' not in st.session_state or not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or not hasattr(st.session_state.gemini_helper, 'analyze_mai_hoa'):
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
-        secret_api_key = st.secrets.get("GEMINI_API_KEY", saved_key)
+        
+        # KIỂM TRA THÊM TỪ FACTORY CONFIG (Cho sự đồng bộ cao nhất)
+        factory_key = None
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+            if os.path.exists(config_path):
+                with open(config_path, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                    factory_key = cfg.get("api_key")
+        except: pass
+        
+        # Tổng hợp các nguồn Key (Ưu tiên File nếu Secrets trống)
+        final_key = saved_key or factory_key
+        st_secret = st.secrets.get("GEMINI_API_KEY")
+        secret_api_key = st_secret if st_secret else final_key
         
         if st.session_state.ai_preference == "offline":
             if FREE_AI_AVAILABLE:

@@ -17,16 +17,50 @@ class MaintenanceManager:
 
     def run_cleanup_cycle(self):
         """Main entry point for the maintenance cycle."""
-        print("🧹 Khởi chạy Quân đoàn Dọn dẹp (Cleanup Legion)...")
+        print("Paramedics: Running deep sanitation...")
         
-        # 1. Deduplication
-        removed_count = self.remove_duplicates()
+        # 1. Remove AI Error entries
+        removed_errors = self.purge_ai_errors()
         
-        # 2. Archiving (Bagging) if necessary
-        bagged_count = self.archive_old_data(threshold_mb=100) # Archive if total hub > 100MB for web speed
+        # 2. Deduplication
+        removed_dupes = self.remove_duplicates()
         
-        print(f"✨ Hoàn tất dọn dẹp: Đã xóa {removed_count} mục trùng, đóng gói {bagged_count} mục vào kho lưu trữ.")
-        return {"removed": removed_count, "bagged": bagged_count}
+        # 3. Archiving (Bagging) if necessary
+        bagged_count = self.archive_old_data(threshold_mb=100)
+        
+        print(f"✨ Hoàn tất dọn dẹp: Xóa {removed_errors} lỗi, {removed_dupes} mục trùng, đóng gói {bagged_count} mục.")
+        return {"removed": removed_errors + removed_dupes, "bagged": bagged_count}
+
+    def purge_ai_errors(self):
+        """Removes entries containing AI error messages."""
+        if not self.index_path.exists(): return 0
+        
+        with open(self.index_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        index = data.get("index", [])
+        to_remove = []
+        
+        error_keywords = ["❌ Lỗi AI", "🛑 **Hết hạn mức AI**", "400 google_search", "quota", "limit"]
+        
+        for entry in index:
+            shard_file = self.data_hub_dir / entry['shard']
+            if shard_file.exists():
+                try:
+                    with open(shard_file, 'r', encoding='utf-8') as f:
+                        s_data = json.load(f)
+                    e_data = s_data.get("entries", {}).get(entry['id'], {})
+                    content = e_data.get("content", "")
+                    if any(kw in content for kw in error_keywords):
+                        to_remove.append(entry['id'])
+                except: pass
+        
+        if to_remove:
+            from shard_manager import delete_entry
+            for eid in to_remove:
+                delete_entry(eid)
+        
+        return len(to_remove)
 
     def remove_duplicates(self):
         """Removes entries with identical or nearly identical titles/content."""
