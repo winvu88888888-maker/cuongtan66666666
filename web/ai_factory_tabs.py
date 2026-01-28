@@ -77,7 +77,88 @@ def get_50_miners():
 
 def render_universal_data_hub_tab():
     st.subheader("🌐 Kho Dữ Liệu Vô Tận (Scalable Hub)")
+    
+    # ═══════════════════════════════════════════════════════════
+    # REAL-TIME STATUS INDICATORS
+    # ═══════════════════════════════════════════════════════════
+    st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
+    
+    # Check if systems are running
+    import datetime
+    config = load_config()
+    last_run_str = config.get("last_run")
+    is_recently_active = False
+    
+    if last_run_str:
+        try:
+            last_run = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            time_diff = datetime.datetime.now() - last_run
+            # Consider active if ran within last 45 minutes (30min interval + 15min buffer)
+            is_recently_active = time_diff.total_seconds() < 2700
+        except:
+            pass
+    
+    # Status indicators
+    col_status1, col_status2, col_status3 = st.columns(3)
+    
+    with col_status1:
+        if is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>KHÔNG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col_status2:
+        total_cycles = config.get("total_cycles", 0)
+        cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
+        
+        if cleanup_active and is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>CHỜ CHU KỲ</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col_status3:
+        github_actions_active = config.get("autonomous_247", False)
+        
+        if github_actions_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 GITHUB ACTIONS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>24/7 ACTIVE</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 GITHUB ACTIONS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>TẮT</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    # ═══════════════════════════════════════════════════════════
+    
     st.info("Hệ thống lưu trữ Đa Tầng: Tốc độ xử lý vĩnh cửu.")
+
 
     # Data Volume Stats Button
     if st.button("📊 KIỂM TRA DỮ LIỆU ĐÃ TẢI", use_container_width=True, type="primary"):
