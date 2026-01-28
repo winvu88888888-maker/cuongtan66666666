@@ -225,8 +225,8 @@ def render_mining_summary_on_dashboard(key_suffix=""):
                 if current_key:
                     st.session_state.gemini_key = current_key
             except: pass
-        
-        # REAL-TIME STATUS INDICATORS
+    
+    # REAL-TIME STATUS INDICATORS (moved outside c1_24 block)
     st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
     
     # Check if systems are running
