@@ -503,13 +503,289 @@
         "agent-21"
       ],
       "created_at": "2026-01-28T21:40:37.670191"
+    },
+    {
+      "id": "18b7028820260128150719",
+      "shard": "shard_1.json",
+      "title": "64 Quẻ và biến hóa: Ứng dụng sâu",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T15:07:19.734844"
+    },
+    {
+      "id": "69ff73c320260128150721",
+      "shard": "shard_1.json",
+      "title": "Tế lễ và Kinh Dịch: Ví dụ thực tế 2026",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T15:07:21.402298"
+    },
+    {
+      "id": "05004ef320260128150722",
+      "shard": "shard_1.json",
+      "title": "Tượng quẻ thực tế: Ví dụ thực tế 2026",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-4"
+      ],
+      "created_at": "2026-01-28T15:07:22.691019"
+    },
+    {
+      "id": "71b3276920260128150726",
+      "shard": "shard_1.json",
+      "title": "Mai Hoa Dịch Số nâng cao: Bí quyết thực thi nhanh",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-28T15:07:26.734648"
+    },
+    {
+      "id": "10f31c6220260128150727",
+      "shard": "shard_1.json",
+      "title": "Trạch Cát theo Kinh Dịch: Hướng dẫn chi thực",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T15:07:27.680206"
+    },
+    {
+      "id": "e9e47a4120260128150728",
+      "shard": "shard_1.json",
+      "title": "Kinh Dịch và tâm lý học hiện đại: Case study hiếm",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T15:07:28.204486"
+    },
+    {
+      "id": "95a5569520260128150729",
+      "shard": "shard_1.json",
+      "title": "Tượng quẻ thực tế: Ứng dụng sâu",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T15:07:29.527492"
+    },
+    {
+      "id": "de0947d220260128150818",
+      "shard": "shard_1.json",
+      "title": "Lời hào bí ẩn: Giải pháp tối ưu",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T15:08:18.859917"
+    },
+    {
+      "id": "6e4e842b20260128150824",
+      "shard": "shard_1.json",
+      "title": "Kinh Dịch và vật lý lượng tử: Bí quyết thực thi nhanh",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T15:08:24.133623"
+    },
+    {
+      "id": "b105061120260128150826",
+      "shard": "shard_1.json",
+      "title": "Tượng quẻ thực tế: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T15:08:26.388473"
+    },
+    {
+      "id": "5ca6fbf320260128150826",
+      "shard": "shard_1.json",
+      "title": "Tế lễ và Kinh Dịch: Hướng dẫn chi thực",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T15:08:26.498491"
+    },
+    {
+      "id": "d8732e3820260128150829",
+      "shard": "shard_1.json",
+      "title": "Kinh Dịch và tâm lý học hiện đại: Giải pháp tối ưu",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T15:08:29.362739"
+    },
+    {
+      "id": "87259c8420260128150829",
+      "shard": "shard_1.json",
+      "title": "Dịch học và thuật toán AI: Bí quyết thực thi nhanh",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-28T15:08:29.753031"
+    },
+    {
+      "id": "158a719220260128150833",
+      "shard": "shard_1.json",
+      "title": "Kinh Dịch và vật lý lượng tử: Case study hiếm",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T15:08:33.701158"
+    },
+    {
+      "id": "771c885820260128150833",
+      "shard": "shard_1.json",
+      "title": "Tượng quẻ thực tế: Phân tích rủi ro",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T15:08:33.886237"
+    },
+    {
+      "id": "f76e4c4b20260128150836",
+      "shard": "shard_1.json",
+      "title": "Ứng dụng Kinh Dịch trong tài chính: Phân tích rủi ro",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-23"
+      ],
+      "created_at": "2026-01-28T15:08:36.308197"
+    },
+    {
+      "id": "10bdac1620260128150838",
+      "shard": "shard_1.json",
+      "title": "Dịch học và thuật toán AI: Phân tích rủi ro",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T15:08:38.062459"
+    },
+    {
+      "id": "ee1c665820260128150838",
+      "shard": "shard_1.json",
+      "title": "Mai Hoa Dịch Số nâng cao: Hướng dẫn chi thực",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T15:08:38.875166"
+    },
+    {
+      "id": "f681472f20260128150841",
+      "shard": "shard_1.json",
+      "title": "Trạch Cát theo Kinh Dịch: Case study hiếm",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T15:08:41.756092"
+    },
+    {
+      "id": "abb7e6ca20260128150925",
+      "shard": "shard_1.json",
+      "title": "Mai Hoa Dịch Số nâng cao: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T15:09:25.036570"
+    },
+    {
+      "id": "077b6c6c20260128150931",
+      "shard": "shard_1.json",
+      "title": "Huyền Không Đại Quái: Case study hiếm",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T15:09:31.387454"
+    },
+    {
+      "id": "2bd27ff220260128150932",
+      "shard": "shard_1.json",
+      "title": "Lục Hào chuyên sâu: Giải pháp tối ưu",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T15:09:32.389104"
+    },
+    {
+      "id": "dfbb3d8620260128151013",
+      "shard": "shard_1.json",
+      "title": "Lời hào bí ẩn: Case study hiếm",
+      "category": "Kinh Dịch & Dự Đoán",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T15:10:13.991908"
     }
   ],
   "stats": {
-    "total": 42,
+    "total": 65,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 5,
-      "Kinh Dịch & Dự Đoán": 37
+      "Kinh Dịch & Dự Đoán": 60
     }
   }
 }
