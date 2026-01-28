@@ -171,7 +171,8 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     st.markdown("---")
     
     # 3. 50 MINING AGENTS STATUS
-    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7)")
+    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7 + Web Search)")
+    st.caption("✨ **NÂNG CẤP MỚI**: Mỗi agent tìm kiếm trên Google/Internet + Gemini AI Grounding")
     
     config = load_config()
     is_active = config.get("autonomous_247", False) # Keep original variable name
@@ -267,10 +268,10 @@ def render_mining_summary_on_dashboard(key_suffix=""):
 
     stats = get_hub_stats()
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Tổng Đặc phái viên", "50")
-    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0))
-    col3.metric("Lưu trữ Shard", f"{stats['size_mb']} MB")
-    col4.metric("Dữ liệu nạp", f"{stats['total']} bản ghi")
+    col1.metric("Tổng Đặc phái viên", "50", help="50 AI agents tìm kiếm trên Google + Internet")
+    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0), help="Mỗi chu kỳ = 50 tasks")
+    col3.metric("Lưu trữ Shard", f"{stats['size_mb']} MB", help="Dữ liệu từ web + AI synthesis")
+    col4.metric("Dữ liệu nạp", f"{stats['total']} bản ghi", help="Tự động cập nhật 24/7")
     
     if config.get("last_run"):
         st.caption(f"🕒 Lần cuối hoạt động: {config['last_run']} | Giãn cách: {config.get('interval_minutes')} phút")

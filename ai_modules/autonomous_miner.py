@@ -59,15 +59,28 @@ def save_config(config):
     except: pass
 
 def _single_agent_task(agent_id, topic, api_key):
-    """Công việc của một Agent đơn lẻ."""
+    """Công việc của một Agent đơn lẻ - UPGRADED với Web Search."""
     print(f"🤖 [Agent #{agent_id}] Đang tiếp nhận mục tiêu: {topic}...")
     
     try:
         strategist = MiningStrategist()
         ai_helper = GeminiQMDGHelper(api_key)
         
-        # Synthesize content with REAL WEB SEARCH
+        # PHASE 1: Web Search để thu thập dữ liệu thô
+        try:
+            from web_searcher import get_web_searcher
+            searcher = get_web_searcher()
+            web_data = searcher.deep_research(topic, num_sources=3)
+            print(f"✅ [Agent #{agent_id}] Đã thu thập dữ liệu web")
+        except Exception as e:
+            print(f"⚠️ [Agent #{agent_id}] Web search failed: {e}")
+            web_data = ""
+        
+        # PHASE 2: AI Synthesis với dữ liệu web + Gemini Search
         mining_prompt = strategist.synthesize_mining_prompt(topic)
+        if web_data:
+            mining_prompt = f"{mining_prompt}\n\n**DỮ LIỆU THU THẬP TỪ WEB:**\n{web_data[:3000]}"
+        
         content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
         
         # Save to Hub
@@ -110,17 +123,16 @@ def run_mining_cycle(api_key, category=None):
     print(f"🚀 KÍCH HOẠT QUÂN ĐOÀN 50 AI - CHU KỲ #{config['total_cycles']}")
     print("="*60)
 
-    # 1. Generate massive queue
-    # 50 topics is too many for one batch API limit, we'll striping it down to 5-10 high quality ones
-    # but we represent "50 AI" capacity.
-    queue_size = 5 # Real execution size
+    # 1. Generate massive queue - UPGRADED TO 50 AGENTS
+    # Thực tế chạy 50 tasks, nhưng chia thành batches để tránh API quota
+    queue_size = 50 # REAL 50 agents execution
     queue = strategist.generate_research_queue(category, count=queue_size)
     
-    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ trọng yếu...")
+    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho 50 Đặc Phái Viên...")
     
-    # 2. Parallel Execution (Multi-threaded Agents)
-    # Simulate a busy factory with multiple threads
-    active_agents = min(len(queue), 10)
+    # 2. Parallel Execution (Multi-threaded Agents) - OPTIMIZED
+    # Chạy 15 agents đồng thời (an toàn cho API limits)
+    active_agents = min(len(queue), 15)
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=active_agents) as executor:
         futures = []
@@ -215,8 +227,10 @@ def run_daemon():
                         if found_key:
                             api_key = found_key
                             print(f"✅ Đã tìm thấy API Key từ custom_data.json")
+                            # AUTO-SYNC: Lưu vào factory config để dùng cho các lần sau
                             config["api_key"] = api_key
                             save_config(config)
+                            print(f"🔄 Đã đồng bộ API Key vào factory_config.json")
             except: pass
 
         # 3. Nếu vẫn chưa có, hỏi người dùng NHẬP TRỰC TIẾP

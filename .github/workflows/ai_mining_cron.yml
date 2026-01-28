@@ -2,8 +2,8 @@ name: AI Factory 24/7 Independent Mining
 
 on:
   schedule:
-    # Chạy tự động mỗi 1 giờ (có thể chỉnh thành 30 phút '*/30 * * * *')
-    - cron: '0 * * * *'
+    # Chạy tự động mỗi 30 PHÚT - 24/7 NON-STOP với 50 AI Agents
+    - cron: '*/30 * * * *'
   workflow_dispatch: # Cho phép ấn nút chạy thủ công trên GitHub
 
 permissions:
@@ -27,7 +27,7 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install -r requirements.txt
-        pip install google-generativeai lyric-wikia googlesearch-python
+        pip install google-generativeai beautifulsoup4 requests lxml googlesearch-python
 
     - name: Run AI Mining Legion
       env:
