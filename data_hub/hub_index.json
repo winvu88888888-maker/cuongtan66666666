@@ -443,15 +443,555 @@
         "agent-32"
       ],
       "created_at": "2026-01-28T17:08:12.687053"
+    },
+    {
+      "id": "f21ff36820260128175616",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-28T17:56:16.742355"
+    },
+    {
+      "id": "1d5aa73520260128175617",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T17:56:17.127669"
+    },
+    {
+      "id": "ce46153920260128175618",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T17:56:18.258221"
+    },
+    {
+      "id": "287d80c120260128175619",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T17:56:19.261697"
+    },
+    {
+      "id": "5c5b9a6f20260128175620",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T17:56:20.418649"
+    },
+    {
+      "id": "e637aa6620260128175622",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T17:56:22.338860"
+    },
+    {
+      "id": "0171cb6920260128175622",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-28T17:56:22.469819"
+    },
+    {
+      "id": "eaf8095420260128175627",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T17:56:27.180264"
+    },
+    {
+      "id": "4fadabb320260128175627",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T17:56:27.452029"
+    },
+    {
+      "id": "de258dab20260128175627",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T17:56:27.807658"
+    },
+    {
+      "id": "f3e24fbd20260128175628",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:56:28.235825"
+    },
+    {
+      "id": "d2c777a720260128175628",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T17:56:28.814942"
+    },
+    {
+      "id": "a91b3a5320260128175628",
+      "shard": "shard_1.json",
+      "title": "Synthetic Biology: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T17:56:28.887959"
+    },
+    {
+      "id": "d3d554ce20260128175630",
+      "shard": "shard_1.json",
+      "title": "Nanotechnology: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-28T17:56:30.314954"
+    },
+    {
+      "id": "5fc9a59920260128175640",
+      "shard": "shard_1.json",
+      "title": "Gemini 3.0/4.0 Speculations: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:56:40.493258"
+    },
+    {
+      "id": "9628e5ed20260128175649",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T17:56:49.765723"
+    },
+    {
+      "id": "bdd905b120260128175650",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-28T17:56:50.637524"
+    },
+    {
+      "id": "941d373920260128175653",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T17:56:53.665406"
+    },
+    {
+      "id": "72b0ac1b20260128175659",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T17:56:59.051443"
+    },
+    {
+      "id": "e4b9d73f20260128175659",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T17:56:59.770913"
+    },
+    {
+      "id": "eda5e5d520260128175705",
+      "shard": "shard_1.json",
+      "title": "Gemini 3.0/4.0 Speculations: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:57:05.533918"
+    },
+    {
+      "id": "bf00875e20260128175706",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T17:57:06.751506"
+    },
+    {
+      "id": "b933b89320260128175707",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:57:07.623923"
+    },
+    {
+      "id": "97b0c50d20260128175710",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-28T17:57:10.005106"
+    },
+    {
+      "id": "55b0db7020260128175711",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-28T17:57:11.629601"
+    },
+    {
+      "id": "997ba3e920260128175712",
+      "shard": "shard_1.json",
+      "title": "Synthetic Biology: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T17:57:12.101813"
+    },
+    {
+      "id": "cf193be620260128175713",
+      "shard": "shard_1.json",
+      "title": "Brain-Computer Interfaces: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:57:13.120393"
+    },
+    {
+      "id": "f301705c20260128175716",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:57:16.236055"
+    },
+    {
+      "id": "c08b7f9520260128175716",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T17:57:16.326295"
+    },
+    {
+      "id": "86019cb620260128175718",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T17:57:18.228389"
+    },
+    {
+      "id": "f5675fe420260128175718",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T17:57:18.473697"
+    },
+    {
+      "id": "71d98a9020260128175719",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T17:57:19.044476"
+    },
+    {
+      "id": "8508573920260128175720",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T17:57:20.648600"
+    },
+    {
+      "id": "ce5a531d20260128175721",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T17:57:21.825529"
+    },
+    {
+      "id": "bf1c8b6120260128175722",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-28T17:57:22.113064"
+    },
+    {
+      "id": "14b78d0020260128175722",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-28T17:57:22.387249"
+    },
+    {
+      "id": "56ef23dc20260128175722",
+      "shard": "shard_1.json",
+      "title": "Nanotechnology: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T17:57:22.434884"
+    },
+    {
+      "id": "63b7df9120260128175726",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T17:57:26.081515"
+    },
+    {
+      "id": "b7c3e82c20260128175729",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:57:29.059431"
+    },
+    {
+      "id": "0a5369eb20260128175738",
+      "shard": "shard_1.json",
+      "title": "Nanotechnology: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T17:57:38.084729"
+    },
+    {
+      "id": "ea9c470320260128175742",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T17:57:42.006700"
+    },
+    {
+      "id": "0bc24f3e20260128175752",
+      "shard": "shard_1.json",
+      "title": "Synthetic Biology: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T17:57:52.786114"
+    },
+    {
+      "id": "cd9b047520260128175757",
+      "shard": "shard_1.json",
+      "title": "Edge Computing: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T17:57:57.903187"
+    },
+    {
+      "id": "489d4c9920260128175800",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T17:58:00.042569"
+    },
+    {
+      "id": "cb205e2f20260128175929",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:59:29.779956"
     }
   ],
   "stats": {
-    "total": 37,
+    "total": 82,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 37
+      "Kiến Thức": 82
     }
   }
 }
