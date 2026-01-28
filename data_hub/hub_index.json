@@ -1,11 +1,457 @@
 {
-  "index": [],
+  "index": [
+    {
+      "id": "7908835520260128170538",
+      "shard": "shard_1.json",
+      "title": "Climate Change Solutions: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T17:05:38.540908"
+    },
+    {
+      "id": "14fa07be20260128170539",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T17:05:39.911919"
+    },
+    {
+      "id": "83a6a8c520260128170540",
+      "shard": "shard_1.json",
+      "title": "Materials Science: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:05:40.582613"
+    },
+    {
+      "id": "4ea9dd3c20260128170541",
+      "shard": "shard_1.json",
+      "title": "Ocean Exploration: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-28"
+      ],
+      "created_at": "2026-01-28T17:05:41.148613"
+    },
+    {
+      "id": "8a238e4520260128170542",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T17:05:42.647441"
+    },
+    {
+      "id": "5a96899120260128170543",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:05:43.033196"
+    },
+    {
+      "id": "bf6d672f20260128170543",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:05:43.515128"
+    },
+    {
+      "id": "4353f5f520260128170548",
+      "shard": "shard_1.json",
+      "title": "Astrophysics Discoveries: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T17:05:48.027346"
+    },
+    {
+      "id": "d52d6ef820260128170548",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T17:05:48.235453"
+    },
+    {
+      "id": "a23ad74720260128170548",
+      "shard": "shard_1.json",
+      "title": "Materials Science: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:05:48.919135"
+    },
+    {
+      "id": "39eb715a20260128170549",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:05:49.919603"
+    },
+    {
+      "id": "b4f75eea20260128170550",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-23"
+      ],
+      "created_at": "2026-01-28T17:05:50.059234"
+    },
+    {
+      "id": "f16c388720260128170550",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T17:05:50.605747"
+    },
+    {
+      "id": "e9c0755520260128170550",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T17:05:50.942949"
+    },
+    {
+      "id": "25ff66f520260128170551",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:05:51.978319"
+    },
+    {
+      "id": "85393c3720260128170606",
+      "shard": "shard_1.json",
+      "title": "Particle Physics: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T17:06:06.831912"
+    },
+    {
+      "id": "f2a17ec420260128170608",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T17:06:08.278530"
+    },
+    {
+      "id": "81a7fe5d20260128170610",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T17:06:10.533186"
+    },
+    {
+      "id": "2b75155e20260128170611",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T17:06:11.384031"
+    },
+    {
+      "id": "c4a9c37520260128170611",
+      "shard": "shard_1.json",
+      "title": "Particle Physics: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:06:11.814862"
+    },
+    {
+      "id": "883abdd020260128170616",
+      "shard": "shard_1.json",
+      "title": "Ocean Exploration: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T17:06:16.913392"
+    },
+    {
+      "id": "245949e620260128170620",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:06:20.498122"
+    },
+    {
+      "id": "c7e94dc120260128170621",
+      "shard": "shard_1.json",
+      "title": "Ocean Exploration: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T17:06:21.204783"
+    },
+    {
+      "id": "c135fc5720260128170621",
+      "shard": "shard_1.json",
+      "title": "Climate Change Solutions: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T17:06:21.250392"
+    },
+    {
+      "id": "d0b6490620260128170622",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T17:06:22.087432"
+    },
+    {
+      "id": "12cacb6120260128170623",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:06:23.859853"
+    },
+    {
+      "id": "5776499f20260128170624",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T17:06:24.898002"
+    },
+    {
+      "id": "5e48f89c20260128170626",
+      "shard": "shard_1.json",
+      "title": "Climate Change Solutions: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:06:26.473434"
+    },
+    {
+      "id": "74e5c32220260128170627",
+      "shard": "shard_1.json",
+      "title": "Materials Science: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T17:06:27.324184"
+    },
+    {
+      "id": "a5c92ebc20260128170628",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T17:06:28.362081"
+    },
+    {
+      "id": "751834e720260128170631",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:06:31.247378"
+    },
+    {
+      "id": "7e2cecfe20260128170631",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-01-28T17:06:31.847906"
+    },
+    {
+      "id": "11557ad220260128170635",
+      "shard": "shard_1.json",
+      "title": "Astrophysics Discoveries: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T17:06:35.940045"
+    },
+    {
+      "id": "b6527c0e20260128170639",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-28T17:06:39.007898"
+    },
+    {
+      "id": "cb3dcbfa20260128170659",
+      "shard": "shard_1.json",
+      "title": "Astrophysics Discoveries: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:06:59.881205"
+    },
+    {
+      "id": "6b12cba120260128170700",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-28T17:07:00.832418"
+    },
+    {
+      "id": "0dd7145b20260128170812",
+      "shard": "shard_1.json",
+      "title": "Particle Physics: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T17:08:12.687053"
+    }
+  ],
   "stats": {
-    "total": 0,
+    "total": 37,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
-      "Kỳ Môn Độn Giáp (Sâu)": 0
+      "Kỳ Môn Độn Giáp (Sâu)": 0,
+      "Kiến Thức": 37
     }
   }
 }
