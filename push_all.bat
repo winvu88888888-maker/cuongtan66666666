@@ -11,10 +11,14 @@ git add -A
 
 echo.
 echo [2] Committing...
-git commit -m "🧹 Cleanup + ✨ Status indicators" || echo "No new changes"
+git commit -m "🧹 Cleanup + ✨ Status indicators + ⚡ Auto-Sync" || echo "No new changes to commit"
 
 echo.
-echo [3] Pushing to cuongtan888888...
+echo [3] Integrating remote changes (Miner data)...
+git pull --rebase origin main
+
+echo.
+echo [4] Pushing to GitHub...
 git push origin main
 
 echo.

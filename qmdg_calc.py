@@ -163,6 +163,31 @@ SAO_GOC = {1: "Thiên Bồng", 2: "Thiên Nhuế", 3: "Thiên Xung", 4: "Thiên 
 MON_GOC = {1: "Hưu", 2: "Tử", 3: "Thương", 4: "Đỗ", 6: "Khai", 7: "Kinh", 8: "Sinh", 9: "Cảnh"}
 CHI_CUNG_MAP = {"Tý": 1, "Sửu": 8, "Dần": 8, "Mão": 3, "Thìn": 4, "Tị": 4, "Ngọ": 9, "Mùi": 2, "Thân": 2, "Dậu": 7, "Tuất": 6, "Hợi": 6}
 
+def get_tuan_khong(can, chi):
+    """Tính Tuần Không dựa trên Can Chi (2 Chi bị trống trong vòng 60)."""
+    can_idx = CAN.index(can)
+    chi_idx = CHI.index(chi)
+    tuan_thu_chi_idx = (chi_idx - can_idx) % 12
+    # Tuần Giáp Tý (0) -> Tuất(10), Hợi(11)
+    # Tuần Giáp Tuất (10) -> Thân(8), Mùi(7) - Sai, tính lại:
+    # Công thức: (10 - Can_idx + Chi_idx) % 12. Nhưng dễ nhất là:
+    # 2 Chi đứng trước Giáp của tuần đó.
+    khong_1 = (tuan_thu_chi_idx - 2) % 12
+    khong_2 = (tuan_thu_chi_idx - 1) % 12
+    # Trả về Cung tương ứng
+    return [CHI_CUNG_MAP[CHI[khong_1]], CHI_CUNG_MAP[CHI[khong_2]]]
+
+def get_ma_ban(chi):
+    """Tính Mã Bàn (Thiên Mã) dựa trên Chi."""
+    ma_map = {
+        "Dần": "Thân", "Ngọ": "Thân", "Tuất": "Thân",
+        "Thân": "Dần", "Tý": "Dần", "Thìn": "Dần",
+        "Hợi": "Tị", "Mão": "Tị", "Mùi": "Tị",
+        "Tị": "Hợi", "Dậu": "Hợi", "Sửu": "Hợi"
+    }
+    target_chi = ma_map.get(chi)
+    return CHI_CUNG_MAP[target_chi]
+
 def calculate_qmdg_params(dt):
     """Main entry point for QMDG parameters calculation."""
     if dt.tzinfo is not None: dt = dt.replace(tzinfo=None)
@@ -197,9 +222,26 @@ def calculate_qmdg_params(dt):
     truc_phu = SAO_GOC.get(leader_palace, "Thiên Tâm")
     if leader_palace == 5: truc_phu = "Thiên Cầm"; truc_su = "Tử"
     else: truc_su = MON_GOC.get(leader_palace, "Khai")
+    # Calculate Void and Horse for all 4 pillars
+    khong_gio = get_tuan_khong(hour_can, hour_chi)
+    khong_ngay = get_tuan_khong(day_can, day_chi)
+    khong_thang = get_tuan_khong(month_can, month_chi)
+    khong_nam = get_tuan_khong(year_can, year_chi)
+    
+    ma_gio = get_ma_ban(hour_chi)
+    ma_ngay = get_ma_ban(day_chi)
+    ma_thang = get_ma_ban(month_chi)
+    ma_nam = get_ma_ban(year_chi)
+
     return {
         'can_gio': hour_can, 'chi_gio': hour_chi, 'can_ngay': day_can, 'chi_ngay': day_chi,
         'can_thang': month_can, 'chi_thang': month_chi, 'can_nam': year_can, 'chi_nam': year_chi,
         'cuc': cuc, 'is_duong_don': is_duong_don, 'tiet_khi': tiet_khi, 'tuan_thu': tuan_thu,
-        'leader_palace': leader_palace, 'truc_phu': truc_phu, 'truc_su': truc_su + (" Môn" if " Môn" not in truc_su else "")
+        'leader_palace': leader_palace, 'truc_phu': truc_phu, 'truc_su': truc_su + (" Môn" if " Môn" not in truc_su else ""),
+        'khong': {
+            'gio': khong_gio, 'ngay': khong_ngay, 'thang': khong_thang, 'nam': khong_nam
+        },
+        'ma': {
+            'gio': ma_gio, 'ngay': ma_ngay, 'thang': ma_thang, 'nam': ma_nam
+        }
     }

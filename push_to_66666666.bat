@@ -11,10 +11,14 @@ git add -A
 
 echo.
 echo [2] Committing...
-git commit -m "🚀 Update: 50 AI Agents + Status Indicators" || echo "Already committed"
+git commit -m "🚀 Update UI + ⚡ Auto-Merge Miner Data" || echo "Nothing new to commit"
 
 echo.
-echo [3] Pushing to cuongtan888888...
+echo [3] Fetching latest data from remote...
+git pull --rebase origin main
+
+echo.
+echo [4] Pushing to GitHub...
 git push origin main
 
 echo.

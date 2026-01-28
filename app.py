@@ -256,65 +256,64 @@ st.markdown("""
         background-color: white;
     }
 
-    /* Grid Layout & Precision Precision Alignment */
-    .palace-grid-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 1fr 1fr 1fr;
-        height: 220px;
-        position: relative;
-        padding: 0; /* Absolute flush */
-        margin-top: 5px;
-    }
-
-    .grid-cell {
+    /* Palace Layout & Element Stacking */
+    .palace-content-v {
         display: flex;
-        flex-direction: column; /* Stack label and value */
-        align-items: center;
-        justify-content: center;
-        font-weight: 900;
-        font-size: 1.6rem; /* Balanced size */
-        text-shadow: 0 0 10px white, 0 0 5px white;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 15px;
         z-index: 2;
-        line-height: 1;
+        position: relative;
     }
 
-    .qmdg-label {
+    .palace-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 900;
+        font-size: 1.2rem;
+        border-bottom: 1px dashed rgba(0,0,0,0.08);
+        padding-bottom: 3px;
+        line-height: 1.2;
+    }
+
+    .q-label {
         font-size: 0.65rem;
-        font-weight: 800;
         color: #64748b;
         text-transform: uppercase;
-        margin-bottom: -2px;
-        letter-spacing: 0.3px;
+        font-weight: 800;
+        width: 50px;
+        letter-spacing: 0.5px;
     }
 
-    /* Precision Alignment: Flush to Margins */
-    .top-left { 
-        grid-area: 1 / 1 / 2 / 2; 
-        align-items: flex-start;
-        justify-content: flex-start;
+    .palace-markers {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        position: absolute;
+        bottom: 10px;
+        left: 12px;
+        z-index: 3;
     }
-    .top-right { 
-        grid-area: 1 / 3 / 2 / 4; 
-        align-items: flex-end;
-        justify-content: flex-start;
+
+    .kv-group, .ma-group {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
     }
-    .mid-left { 
-        grid-area: 2 / 1 / 3 / 2; 
-        align-items: flex-start;
-        justify-content: center;
+
+    .marker {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-weight: 900;
+        color: white;
+        text-shadow: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    .bot-center { 
-        grid-area: 3 / 2 / 4 / 3; 
-        align-items: center;
-        justify-content: flex-end; 
-    }
-    .bot-right { 
-        grid-area: 3 / 3 / 4 / 4; 
-        align-items: flex-end;
-        justify-content: flex-end; 
-        font-size: 2rem; 
-    }
+    
+    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { background: #475569; }
+    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { background: #d97706; }
 
     .palace-header-row {
         display: flex;
@@ -1161,8 +1160,8 @@ if st.session_state.current_view == "ky_mon":
                 'nhan_ban': nhan_ban,
                 'than_ban': than_ban,
                 'dia_can': dia_can,
-                'khong_vong': khong_vong,
-                'dich_ma': dich_ma,
+                'khong_vong_4': params.get('khong', {}),
+                'dich_ma_4': params.get('ma', {}),
                 'can_gio': can_gio,
                 'chi_gio': params['chi_gio'],
                 'can_ngay': params['can_ngay'],
@@ -1288,34 +1287,46 @@ if st.session_state.current_view == "ky_mon":
                             if can_thien == "N/A":
                                 can_thien = can_dia # Showing Earth Plate as a reference for "What is Heaven Plate in 5"
 
-                        # Status Badge
-                        status_badge = f'<span class="status-badge" style="background: {strength_color}; color: white;">{strength}</span>'
+                        # Determine markers for each pillar
+                        kv4 = chart.get('khong_vong_4', {})
+                        ma4 = chart.get('dich_ma_4', {})
+                        
+                        kv_markers = []
+                        if palace_num in kv4.get('nam', []): kv_markers.append('<span class="marker kv-nam" title="Không Vong Năm">K-N</span>')
+                        if palace_num in kv4.get('thang', []): kv_markers.append('<span class="marker kv-thang" title="Không Vong Tháng">K-T</span>')
+                        if palace_num in kv4.get('ngay', []): kv_markers.append('<span class="marker kv-ngay" title="Không Vong Ngày">K-Ng</span>')
+                        if palace_num in kv4.get('gio', []): kv_markers.append('<span class="marker kv-gio" title="Không Vong Giờ">K-G</span>')
+                        
+                        ma_markers = []
+                        if palace_num == ma4.get('nam'): ma_markers.append('<span class="marker ma-nam" title="Mã Năm">M-N</span>')
+                        if palace_num == ma4.get('thang'): ma_markers.append('<span class="marker ma-thang" title="Mã Tháng">M-T</span>')
+                        if palace_num == ma4.get('ngay'): ma_markers.append('<span class="marker ma-ngay" title="Mã Ngày">M-Ng</span>')
+                        if palace_num == ma4.get('gio'): ma_markers.append('<span class="marker ma-gio" title="Mã Giờ">M-G</span>')
 
                         # Palace Name & Alignment Refinement
                         p_full_name = f"{palace_num} {QUAI_TUONG.get(palace_num, '')}"
                         if palace_num == 5: p_full_name = "5 Trung Cung"
 
-                        # --- RENDER PALACE CARD (PRECISION LABELS & BALANCED ALIGNMENT) ---
+                        # Status Badge
+                        status_badge = f'<span class="status-badge" style="background: {strength_color}; color: white;">{strength}</span>'
+
+                        # --- RENDER PALACE CARD (NEW ORDER: Thần -> Sao -> Môn -> Thiên -> Địa) ---
                         palace_html = f"""<div class="palace-3d animated-panel">
-<div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 280px; position: relative;">
+<div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 320px; position: relative;">
 <div class="glass-overlay"></div>
 <div class="palace-header-row"><span class="palace-title">{p_full_name}</span>{status_badge}</div>
-<div class="palace-grid-container" style="position: relative; height: 180px; padding: 0;">
-<!-- Top Row: Thần & Thiên Can -->
-<div class="grid-cell top-left" style="position: absolute; top: 2px; left: 6px; color: {c_than};"><span class="qmdg-label">Thần</span>{than}</div>
-<div class="grid-cell top-right" style="position: absolute; top: 2px; right: 6px; color: {c_thien};">{can_thien}</div>
-
-<!-- Mid Row: Tinh (Sao) -->
-<div class="grid-cell mid-left" style="position: absolute; top: 45%; left: 6px; transform: translateY(-50%); color: {c_sao};"><span class="qmdg-label">Tinh</span>{sao.replace('Thiên ', '')}</div>
-
-<!-- Bot Row: Môn & Địa Can -->
-<div class="grid-cell bot-center" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); color: {c_cua};"><span class="qmdg-label">Môn</span>{cua.replace(' Môn', '')}</div>
-<div class="grid-cell bot-right" style="position: absolute; bottom: -8px; right: 6px; color: {c_dia};">{can_dia}</div>
+<div class="palace-content-v">
+    <div class="palace-row than-row" style="color: {c_than};"><span class="q-label">Thần:</span> {than}</div>
+    <div class="palace-row sao-row" style="color: {c_sao};"><span class="q-label">Sao:</span> {sao.replace('Thiên ', '')}</div>
+    <div class="palace-row mon-row" style="color: {c_cua};"><span class="q-label">Môn:</span> {cua.replace(' Môn', '')}</div>
+    <div class="palace-row thien-row" style="color: {c_thien};"><span class="q-label">Thiên:</span> {can_thien}</div>
+    <div class="palace-row dia-row" style="color: {c_dia};"><span class="q-label">Địa:</span> {can_dia}</div>
 </div>
-<div class="palace-footer-markers" style="font-size: 3rem; margin-top: 15px; line-height: 1;">
-{f'<span style="color:#64748b;">⚪</span>' if palace_num in chart['khong_vong'] else ''}
-{f'<span style="color:#f59e0b;">🐎</span>' if palace_num == chart['dich_ma'] else ''}
-</div></div></div>"""
+<div class="palace-markers">
+    <div class="kv-group">{''.join(kv_markers)}</div>
+    <div class="ma-group">{''.join(ma_markers)}</div>
+</div>
+</div></div>"""
                         st.markdown(palace_html, unsafe_allow_html=True)
 
                         
