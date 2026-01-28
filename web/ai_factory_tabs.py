@@ -31,40 +31,8 @@ except ImportError:
     from ai_modules.factory_manager import init_global_factory
     from qmdg_data import load_custom_data # Should be in root
 
-# --- TOP 5 HOT TOPICS LOGIC ---
-def get_top_5_hot_topics():
-    """Analyze the index to find most active research areas using CATEGORY, not random titles."""
-    try:
-        index_path = os.path.join(ROOT_DIR, "data_hub", "hub_index.json")
-        if not os.path.exists(index_path): 
-            return []
-        
-        with open(index_path, 'r', encoding='utf-8') as f:
-            index = json.load(f)
-        
-        # FIXED: Use 'category' field instead of 'title' to get real topics
-        # Category is the actual research topic, not random text
-        topic_counts = Counter()
-        
-        for entry in index:
-            # Get category (the real topic)
-            category = entry.get('category', 'Unknown')
-            
-            # Skip generic/invalid categories
-            if category and category not in ['Unknown', 'Khác', 'Other', '']:
-                topic_counts[category] += 1
-        
-        # Get top 5 most researched categories
-        top_5 = topic_counts.most_common(5)
-        
-        # If no valid topics, return empty
-        if not top_5:
-            return []
-            
-        return top_5
-    except Exception as e:
-        print(f"Error getting hot topics: {e}")
-        return []
+
+
 
 
 # --- EXPANDED MINER DATA (50 AGENTS) ---
@@ -250,25 +218,8 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     
     st.markdown("---")
 
-    # 2. TOP 5 HOT TOPICS (NEW)
-    st.markdown("### 🔥 Top 5 Chủ Đề 'Nóng' Nhất (Hệ thống đang đào sâu)")
-    hot_topics = get_top_5_hot_topics()
-    if hot_topics:
-        cols = st.columns(5)
-        for i, (topic, count) in enumerate(hot_topics):
-            with cols[i]:
-                st.markdown(f"""
-                <div style="background:linear-gradient(135deg, #FF512F 0%, #DD2476 100%); 
-                            padding:15px; border-radius:12px; color:white; text-align:center;">
-                    <h4 style="margin:0; font-size:0.9rem;">{topic[:20]}...</h4>
-                    <p style="font-size:1.5rem; font-weight:bold; margin:5px 0;">{count}</p>
-                    <small>Dữ liệu nạp</small>
-                </div>
-                """, unsafe_allow_html=True)
-    else:
-        st.write("Đang phân tích dữ liệu xu hướng...")
 
-    st.markdown("---")
+
     
     # 3. 50 MINING AGENTS STATUS
     st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7 + Web Search)")
