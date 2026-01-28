@@ -254,17 +254,37 @@ def render_mining_summary_on_dashboard(key_suffix=""):
 
     # Real Trigger Button (Manual override)
     btn_key = f"activate_mining_legion_btn{key_suffix}"
-    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG", use_container_width=True, key=btn_key):
+    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG (50 AGENTS THẬT)", use_container_width=True, key=btn_key, type="primary"):
+        # AUTO-DETECT API KEY FROM MULTIPLE SOURCES
+        api_key = None
+        
+        # Source 1: Session state
         if 'gemini_key' in st.session_state and st.session_state.gemini_key:
-            with st.spinner("🤖 Quân đoàn AI đang xuất quân..."):
+            api_key = st.session_state.gemini_key
+        
+        # Source 2: custom_data.json
+        if not api_key:
+            try:
+                import json, os
+                custom_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "custom_data.json")
+                if os.path.exists(custom_path):
+                    with open(custom_path, "r", encoding="utf-8") as f:
+                        api_key = json.load(f).get("GEMINI_API_KEY")
+            except: pass
+        
+        # RUN OR ERROR
+        if api_key:
+            with st.spinner("🤖 50 AI AGENTS ĐANG CHẠY THẬT... (2-5 phút)"):
                 try:
-                    run_mining_cycle(st.session_state.gemini_key)
-                    st.success("✅ Chu kỳ khai thác hoàn tất! Dữ liệu đã được nạp vào Shard Hub.")
+                    run_mining_cycle(api_key)
+                    st.success("✅ HOÀN TẤT! 50 agents đã thu thập dữ liệu THẬT từ Google + Gemini AI!")
+                    st.balloons()
+                    time.sleep(1)
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Lỗi khai thác: {e}")
+                    st.error(f"❌ Lỗi: {e}")
         else:
-            st.warning("⚠️ Vui lòng cấu hình Gemini API Key để kích hoạt quân đoàn.")
+            st.error("❌ THIẾU API KEY! Paste Gemini API Key ở sidebar trước (phần '🤖 Cấu hình AI')")
 
     stats = get_hub_stats()
     col1, col2, col3, col4 = st.columns(4)
