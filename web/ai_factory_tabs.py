@@ -226,7 +226,94 @@ def render_mining_summary_on_dashboard(key_suffix=""):
                     st.session_state.gemini_key = current_key
             except: pass
         
-        new_status = st.toggle("⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7", value=is_active, key=toggle_key)
+        # REAL-TIME STATUS INDICATORS
+    st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
+    
+    # Check if systems are running
+    import datetime
+    last_run_str = config.get("last_run")
+    is_recently_active = False
+    
+    if last_run_str:
+        try:
+            last_run = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            time_diff = datetime.datetime.now() - last_run
+            # Consider active if ran within last 45 minutes (30min interval + 15min buffer)
+            is_recently_active = time_diff.total_seconds() < 2700
+        except:
+            pass
+    
+    # Status indicators
+    col_status1, col_status2, col_status3 = st.columns(3)
+    
+    with col_status1:
+        if is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>KHÔNG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col_status2:
+        total_cycles = config.get("total_cycles", 0)
+        cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
+        
+        if cleanup_active and is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>CHỜ CHU KỲ</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col_status3:
+        github_actions_active = config.get("autonomous_247", False)
+        
+        if github_actions_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 GITHUB ACTIONS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>24/7 ACTIVE</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 GITHUB ACTIONS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>TẮT</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # 24/7 Autonomous Mode Toggle
+    c1_24, c2_24 = st.columns([1, 1])
+    
+    with c1_24:
+        is_active = config.get("autonomous_247", False)
+        current_key = config.get("api_key") or (st.session_state.get('gemini_key') if 'gemini_key' in st.session_state else None)
+        
+        new_status = st.toggle(
+            "⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7",
+            value=is_active,
+            key=f"toggle_247_mode{key_suffix}",
+            help="Bật để hệ thống tự động chạy liên tục mỗi 30 phút qua GitHub Actions"
+        )
         
         if new_status != is_active:
             if new_status and not current_key:
