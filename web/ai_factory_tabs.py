@@ -438,6 +438,21 @@ def render_system_management_tab():
                 st.rerun()
             except Exception as e:
                 st.error(f"Lỗi: {e}")
+
+        # NEW: AI Smart Cleanup (Topic Refinement & Filtering)
+        st.markdown("---")
+        st.markdown("### ✨ AI Smart Cleanup")
+        st.info("AI sẽ tự động lọc, chuẩn hóa và phân loại các chủ đề 'Rác' hoặc 'Sách vở' vào mục Lưu Trữ.")
+        if st.button("🚀 Kích Hoạt AI Lọc Chủ Đề", key="btn_ai_smart_cleanup", type="primary"):
+            try:
+                from deep_ai_cleanup import deep_ai_refinement
+                with st.spinner("🤖 AI đang phân loại và dọn dẹp hàng trăm chủ đề... (Vui lòng đợi)"):
+                    deep_ai_refinement()
+                    st.success("✅ Dọn dẹp thông minh hoàn tất! Các chủ đề không phù hợp đã được chuyển vào mục 'Lưu Trữ (Sách)'.")
+                    time.sleep(2)
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Lỗi dọn dẹp: {e}")
         
     with t2:
         st.success("Tình trạng Shards: 🟢 Hoạt động tốt.")

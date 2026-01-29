@@ -69,46 +69,71 @@ def deep_ai_refinement():
             # 2. Check for technical junk in labels using AI for batches of 10
         except: continue
 
-    # 2. Second pass: Refine titles in batches
+    # 2. Second pass: Refine titles and CATEGORY in batches
     batch_size = 10
+    from ai_modules.mining_strategist import MiningStrategist
+    categories = list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
+    
     for i in range(0, len(index), batch_size):
         batch = index[i:i+batch_size]
-        titles_map = {e["id"]: e["title"] for e in batch}
+        entries_data = []
+        for e in batch:
+            # Try to get a snippet of content for better classification
+            snippet = ""
+            full_e = get_full_entry(e["id"], e["shard"])
+            if full_e:
+                snippet = full_e.get("content", "")[:300]
+            
+            entries_data.append({
+                "id": e["id"],
+                "title": e["title"],
+                "content_snippet": snippet
+            })
         
         prompt = f"""
-Bạn là chuyên gia biên tập nội dung. Hãy chuẩn hóa danh sách tiêu đề sau đây.
-YÊU CẦU:
-- Loại bỏ các tiền tố/hậu tố kỹ thuật: 'Ví dụ:', 'Nghiên cứu:', 'Case study:', 'Phần 1:', 'Ứng dụng:', 'Bí quyết:', 'Chi tiết:'...
-- Giữ tên chủ đề NGẮN GỌN, SÚC TÍCH, CHUYÊN NGHIỆP.
-- Ví dụ: 'Kỳ Môn Độn Giáp: Bí quyết thành công' -> 'Kỳ Môn Độn Giáp Thành Công'.
-- Nếu tiêu đề đã chuẩn, giữ nguyên.
+Bạn là chuyên gia phân loại nội dung cho hệ thống Kỳ Môn Độn Giáp.
+Hãy phân loại và chuẩn hóa danh sách sau đây.
+
+MỤC TIÊU:
+- Nhận diện các tiêu đề là "Tên sách", "Kiến thức lý thuyết suông" hoặc "Nội dung không dùng để gieo quẻ/xem bói".
+- Những nội dung đó hãy chuyển vào phân loại: 'Lưu Trữ (Sách)'.
+- Những nội dung thực tiễn (Ví dụ: 'Đầu tư 2026', 'Sức khỏe', 'Tình duyên'...) hãy giữ ở phân loại phù hợp.
+- Chuẩn hóa tiêu đề: Loại bỏ tiền tố rác (Ví dụ:, Nghiên cứu:, ...).
+
+PHÂN LOẠI CHO PHÉP: {categories}
 
 DANH SÁCH (JSON):
-{json.dumps(titles_map, ensure_ascii=False, indent=2)}
+{json.dumps(entries_data, ensure_ascii=False, indent=2)}
 
-TRẢ VỀ CHỈ MỘT KHỐI JSON DUY NHẤT VỚI CÂU TRẢ LỜI ĐÃ CHUẨN HÓA (tỉ lệ 1:1 với ID đầu vào).
+TRẢ VỀ JSON DUY NHẤT:
+{{
+  "id_cần_xử_lý": {{
+    "title": "Tiêu đề mới",
+    "category": "Phân loại mới"
+  }}
+}}
 """
         try:
+            from ai_modules.shard_manager import get_full_entry
             response = ai._call_ai(prompt)
-            # Find JSON in response
             if "```json" in response:
                 response = response.split("```json")[1].split("```")[0].strip()
             
-            refined_titles = json.loads(response)
+            refinements = json.loads(response)
             
-            for eid, new_title in refined_titles.items():
-                old_title = titles_map.get(eid)
-                if new_title and new_title != old_title:
-                    print(f"[*] Refining: {old_title} -> {new_title}")
-                    # Update in DB
-                    update_entry(eid, title=new_title)
-                    refined_count += 1
+            for eid, ref in refinements.items():
+                new_title = ref.get("title")
+                new_cat = ref.get("category")
+                
+                print(f"[*] Updating {eid}: Category -> {new_cat}")
+                update_entry(eid, title=new_title, category=new_cat)
+                refined_count += 1
         except Exception as e:
             print(f"⚠️ Batch refinement failed: {e}")
 
     print(f"\n✨ Cleanup Complete!")
     print(f"🗑️ Removed (Errors): {removed_count}")
-    print(f"🖋️ Refined (Titles): {refined_count}")
+    print(f"🖋️ Processed (AI): {refined_count}")
 
 if __name__ == "__main__":
     deep_ai_refinement()

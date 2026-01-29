@@ -137,6 +137,51 @@ def delete_entry(entry_id):
     
     return True
 
+def update_entry(entry_id, title=None, category=None, tags=None, content=None):
+    """Update an existing entry in both index and shard."""
+    if not os.path.exists(INDEX_FILE): return False
+    
+    with open(INDEX_FILE, 'r', encoding='utf-8') as f:
+        index_data = json.load(f)
+        
+    # Find in index
+    entry_idx = next((i for i, e in enumerate(index_data["index"]) if e["id"] == entry_id), -1)
+    if entry_idx == -1: return False
+    
+    entry_ref = index_data["index"][entry_idx]
+    old_cat = entry_ref["category"]
+    
+    # 1. Update Shard
+    shard_path = os.path.join(BASE_HUB_DIR, entry_ref["shard"])
+    if os.path.exists(shard_path):
+        with open(shard_path, 'r', encoding='utf-8') as f:
+            shard_data = json.load(f)
+        
+        if entry_id in shard_data["entries"]:
+            e = shard_data["entries"][entry_id]
+            if title: e["title"] = title
+            if category: e["category"] = category
+            if tags: e["tags"] = tags
+            if content: e["content"] = content
+            
+            with open(shard_path, 'w', encoding='utf-8') as f:
+                json.dump(shard_data, f, indent=2, ensure_ascii=False)
+                
+    # 2. Update Index
+    if title: entry_ref["title"] = title
+    if category: entry_ref["category"] = category
+    if tags: entry_ref["tags"] = tags
+    
+    # Update Stats if category changed
+    if category and category != old_cat:
+        index_data["stats"]["categories"][old_cat] = max(0, index_data["stats"]["categories"].get(old_cat, 0) - 1)
+        index_data["stats"]["categories"][category] = index_data["stats"]["categories"].get(category, 0) + 1
+    
+    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
+        json.dump(index_data, f, indent=2, ensure_ascii=False)
+    
+    return True
+
 def get_hub_stats():
     """Get statistics about the entire data hub (Total, Categories, Disk Size)."""
     if not os.path.exists(INDEX_FILE):

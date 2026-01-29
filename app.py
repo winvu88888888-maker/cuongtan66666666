@@ -1053,8 +1053,7 @@ with st.sidebar:
                         st.error(f"Lỗi nạp chủ đề: {e}")
 
     # 1. Select Standard Category (Chủ đề chuẩn)
-    from ai_modules.mining_strategist import MiningStrategist
-    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Khác"]
+    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
     
     selected_cat = st.selectbox(
         "🗂️ Lọc theo Phân loại chuẩn:",
@@ -1063,24 +1062,21 @@ with st.sidebar:
     )
     
     # 2. Filter topics based on category
+    available_topics = []
     if selected_cat == "Tất cả":
-        available_topics = st.session_state.all_topics_full
+        # Filter out Archive/Book categories by default unless explicitly searching
+        available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] != "Lưu Trữ (Sách)"]
+        available_topics = sorted(list(set(core_topics + available_topics)))
     else:
         # Get hub topics in this category
-        cat_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
-        # Intersection with search term if any
-        if search_term:
-            available_topics = [t for t in cat_topics if search_term.lower() in t.lower()]
-        else:
-            available_topics = cat_topics
-            
-        # If no topics found in this category, just show a message or list all
-        if not available_topics:
-            available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
-    
-    # 3. Final Search Filtering (if not already done)
-    if selected_cat == "Tất cả" and search_term:
+        available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
+        
+    # Search Filter
+    if search_term:
         available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
+    
+    if not available_topics:
+        available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
 
     selected_topic = st.selectbox(
         "Chọn chủ đề chi tiết:",
