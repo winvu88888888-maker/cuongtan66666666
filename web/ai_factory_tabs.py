@@ -426,33 +426,34 @@ def render_system_management_tab():
     t1, t2, t3 = st.tabs(["🤖 Command Center", "🏥 System Health", "🧬 DB Interaction"])
     
     with t1:
-        render_mining_summary_on_dashboard(key_suffix="_mgmt")
-        st.markdown("---")
-        if st.button("♻️ Kích hoạt Bảo trì Thủ công (Manual Sync)", key="btn_manual_sync"):
+        # --- TOP ACTION BUTTON ---
+        st.info("✨ **AI Smart Cleanup**: Tự động lọc, chuẩn hóa và phân loại các chủ đề 'Rác' hoặc 'Sách vở' vào mục Lưu Trữ.")
+        if st.button("🚀 Kích Hoạt AI Lọc Chủ Đề NGAY BÂY GIỜ", key="btn_ai_smart_cleanup_top", type="primary", use_container_width=True):
             try:
-                from ai_modules.maintenance_manager import MaintenanceManager
-                mm = MaintenanceManager()
-                res = mm.run_cleanup_cycle()
-                st.success(f"✅ Bảo trì hoàn tất! (Xóa: {res['removed']}, Đóng gói: {res['bagged']})")
-                time.sleep(0.5)
+                from deep_ai_cleanup import deep_ai_refinement
+                with st.spinner("🤖 AI đang quét và dọn dẹp hệ thống..."):
+                    deep_ai_refinement()
+                st.success("✅ Đã dọn dẹp xong! Các chủ đề không phù hợp đã được di chuyển hoặc xóa.")
+                time.sleep(1)
                 st.rerun()
             except Exception as e:
                 st.error(f"Lỗi: {e}")
-
-        # NEW: AI Smart Cleanup (Topic Refinement & Filtering)
+        
         st.markdown("---")
-        st.markdown("### ✨ AI Smart Cleanup")
-        st.info("AI sẽ tự động lọc, chuẩn hóa và phân loại các chủ đề 'Rác' hoặc 'Sách vở' vào mục Lưu Trữ.")
-        if st.button("🚀 Kích Hoạt AI Lọc Chủ Đề", key="btn_ai_smart_cleanup", type="primary"):
+        render_mining_summary_on_dashboard(key_suffix="_mgmt")
+        st.markdown("---")
+        
+        if st.button("♻️ Kích hoạt Bảo trì Thủ công (Manual Sync)", key="btn_manual_sync", use_container_width=True):
             try:
-                from deep_ai_cleanup import deep_ai_refinement
-                with st.spinner("🤖 AI đang phân loại và dọn dẹp hàng trăm chủ đề... (Vui lòng đợi)"):
-                    deep_ai_refinement()
-                    st.success("✅ Dọn dẹp thông minh hoàn tất! Các chủ đề không phù hợp đã được chuyển vào mục 'Lưu Trữ (Sách)'.")
-                    time.sleep(2)
-                    st.rerun()
+                from ai_modules.maintenance_manager import MaintenanceManager
+                mm = MaintenanceManager()
+                with st.spinner("🏥 Đang chạy bảo trì hệ thống..."):
+                    res = mm.run_cleanup_cycle()
+                st.success(f"✅ Bảo trì hoàn tất! (Xóa: {res['removed']}, Đóng gói: {res['bagged']})")
+                time.sleep(1)
+                st.rerun()
             except Exception as e:
-                st.error(f"Lỗi dọn dẹp: {e}")
+                st.error(f"Lỗi bảo trì: {e}")
         
     with t2:
         st.success("Tình trạng Shards: 🟢 Hoạt động tốt.")

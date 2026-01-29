@@ -115,6 +115,21 @@ def render_dashboard_tab():
     col4.markdown(f'<div style="{s}#e74c3c;background:#f8f9fa"><h3>✅ {int(success/total*100)}%</h3><p>Hệ thống</p></div>', unsafe_allow_html=True)
     
     st.markdown("---")
+    c_clean1, c_clean2 = st.columns([2, 1])
+    with c_clean1:
+        st.info("✨ **Dọn dẹp Thông minh**: Xóa bỏ các chủ đề rác và tiêu đề không chuẩn bằng AI.")
+    with c_clean2:
+        if st.button("🚀 Dọn dẹp Ngay", key="btn_quick_cleanup_dash", use_container_width=True):
+            try:
+                from deep_ai_cleanup import deep_ai_refinement
+                with st.spinner("🤖 AI đang dọn dẹp..."):
+                    deep_ai_refinement()
+                st.success("✅ Đã dọn dẹp!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Lỗi: {e}")
+    
+    st.markdown("---")
     render_mining_summary_on_dashboard(key_suffix="_dash")
 
 def render_create_code_tab():
