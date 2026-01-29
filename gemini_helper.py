@@ -287,10 +287,24 @@ class GeminiQMDGHelper:
         """Generate precise numerical predictions with risk assessment."""
         topic_type = self.classify_topic_intent(topic)
         
-        # Search for similar cases
+        # Search for similar cases in knowledge hub
         case_studies = self.search_knowledge_hub(topic, category="Kỳ Môn Độn Giáp", max_results=2)
         case_context = ""
-        if case_studies:
+        
+        # FALLBACK: If hub is empty, search Google for real-world examples
+        if not case_studies or len(case_studies) < 1:
+            try:
+                from ai_modules.web_searcher import get_web_searcher
+                searcher = get_web_searcher()
+                web_query = f"{topic} Kỳ Môn Độn Giáp ví dụ thực tế kết quả"
+                web_results = searcher.search_google(web_query, num_results=3)
+                if web_results:
+                    case_context = "\n\n**VÍ DỤ THỰC TẾ TỪ GOOGLE:**\n"
+                    for i, result in enumerate(web_results[:2], 1):
+                        case_context += f"{i}. {result.get('title', 'N/A')}: {result.get('snippet', 'N/A')[:150]}...\n"
+            except:
+                pass
+        else:
             case_context = "\n\n**TIỀN LỆ THỰC TẾ:**\n"
             for i, case in enumerate(case_studies, 1):
                 case_context += f"{i}. {case['title']}: {case['content_snippet'][:200]}...\n"
@@ -380,10 +394,24 @@ Trả lời dưới dạng danh sách gạch đầu dòng, không dẫn nhập.
         # Classify topic for specialized analysis
         topic_type = self.classify_topic_intent(topic)
         
-        # Search for evidence
+        # Search for evidence in knowledge hub
         evidence = self.search_knowledge_hub(topic, max_results=2)
         evidence_context = ""
-        if evidence:
+        
+        # FALLBACK: If hub is empty, search Google for real-world examples
+        if not evidence or len(evidence) < 1:
+            try:
+                from ai_modules.web_searcher import get_web_searcher
+                searcher = get_web_searcher()
+                web_query = f"{topic} Kỳ Môn Độn Giáp ví dụ thực tế"
+                web_results = searcher.search_google(web_query, num_results=3)
+                if web_results:
+                    evidence_context = "\n\n**VÍ DỤ THỰC TẾ TỪ GOOGLE:**\n"
+                    for e in web_results[:2]:
+                        evidence_context += f"- {e.get('title', 'N/A')}: {e.get('snippet', 'N/A')[:150]}...\n"
+            except:
+                pass
+        else:
             evidence_context = "\n\n**CHỨNG CỨ TỪ KHO TRI THỨC:**\n"
             for e in evidence:
                 evidence_context += f"- {e['title']}: {e['content_snippet'][:150]}...\n"
