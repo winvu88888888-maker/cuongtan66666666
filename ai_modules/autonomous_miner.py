@@ -140,15 +140,28 @@ def run_mining_cycle(api_key, category=None):
     print("="*60)
 
     # 1. Generate massive queue - UPGRADED TO 50 AGENTS
-    # Thực tế chạy 50 tasks, nhưng chia thành batches để tránh API quota
     queue_size = 50 # REAL 50 agents execution
-    queue = strategist.generate_research_queue(category, count=queue_size)
+    initial_queue = strategist.generate_research_queue(category, count=queue_size)
     
-    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho 50 Đặc Phái Viên...")
+    # DEDUPLICATION: Check hub_index to skip already researched topics
+    from shard_manager import search_index
+    existing_entries = search_index()
+    existing_titles = [e['title'].lower() for e in existing_entries]
     
-    # 2. Parallel Execution (Multi-threaded Agents) - OPTIMIZED
-    # Chạy 15 agents đồng thời (an toàn cho API limits)
-    active_agents = min(len(queue), 15)
+    queue = []
+    for t in initial_queue:
+        if t.lower() not in existing_titles and len(queue) < queue_size:
+            queue.append(t)
+    
+    if not queue:
+        print("✨ Tất cả chủ đề hiện tại đã được khai thác. Đang tạo chủ đề ngẫu nhiên mới...")
+        queue = [f"{t} - Chuyên sâu Giai đoạn {random.randint(2, 5)}" for t in initial_queue[:10]]
+
+    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho Quân đoàn AI...")
+    
+    # 2. Parallel Execution (Multi-threaded Agents) - SCALED UP
+    # Chạy 20 agents đồng thời (Tăng cường hiệu suất)
+    active_agents = min(len(queue), 20)
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=active_agents) as executor:
         futures = []

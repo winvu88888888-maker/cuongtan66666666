@@ -12,13 +12,21 @@ class MiningStrategist:
                 "Cửu Tinh và Thần Sát trong Kỳ Môn: Nguyên lý gốc", "Kỳ Môn Độn Giáp: Các cách cục quý hiếm",
                 "Ứng dụng Kỳ Môn trong dự đoán vận hạn cao cấp", "Bản dịch Kỳ Môn Độn Giáp chuẩn từ thư khố cổ",
                 "Kỳ Môn Độn Giáp: Pháp thuật và tâm linh thực hành", "Trạch Cát Kỳ Môn: Tuyển tập bí yếu",
-                "Kỳ Môn và các bản thảo quân sự mưu lược cổ", "Phân tích 1080 cục Kỳ Môn Độn Giáp: Cách luận chuẩn"
+                "Phân tích 1080 cục Kỳ Môn Độn Giáp: Cách luận chuẩn", "Kỳ Môn Độn Giáp: Khói mây biến hóa Cửu Cung",
+                "Thần sát Thiên Mã, Thiên Võng trong Kỳ Môn", "Kỳ Môn Độn Giáp: Lộc Mã Quý Nhân bí pháp",
+                "Dụng Thần Kỳ Môn Độn Giáp: Ứng dụng bách biến", "Kỳ Môn Độn Giáp: Chế sát và Hóa giải bí truyền"
             ],
             "Kinh Dịch & Dự Đoán": [
                 "Kinh Dịch: 64 Quẻ và lời hào gốc Chu Dịch", "Mai Hoa Dịch Số: Tuyển thảo Thần đoán", 
                 "Lục Hào Dự Đoán: Nguyên lý gieo quẻ và ứng dụng chuẩn", "Giải mã 384 hào bản dịch cổ quý hiếm",
                 "Dịch Học: Các bí bản về dự toán thiên văn và vận mệnh", "Tượng quẻ thực tế từ các đại sư Kinh Dịch xưa",
-                "Huyền Không Đại Quái: Bản thảo gốc và ứng dụng", "Kinh Dịch: Sự biến hóa của âm dương bản văn quý"
+                "Huyền Không Đại Quái: Bản thảo gốc và ứng dụng", "Kinh Dịch: Sự biến hóa của âm dương bản văn quý",
+                "Quẻ Dịch và Phong Thủy: Mối liên hệ mật thiết", "Dự đoán Lục Hào: Nạp Giáp và Phi Thần bí yếu",
+                "Dịch Kinh: Đạo trị quốc và mưu lược quân sự", "Mai Hoa Dịch Số: Đoán sự qua âm thanh và hình ảnh"
+            ],
+            "Tài Liệu Cổ Tịch (Tri Thức Vô Tận)": [
+                "Bản thảo hiếm về Thuật Số phương Đông", "Tàng thư bí truyền của các danh gia Huyền học",
+                "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm", "Tri thức từ các thư viện cổ quốc tế về Dịch Lý"
             ],
             "Y Học & Dưỡng Sinh": [
                 "Âm Dương Ngũ Hành và Y Đạo: Bí yếu trị liệu cổ", "Hoàng Đế Nội Kinh: Bản dịch và chú giải chuyên sâu",

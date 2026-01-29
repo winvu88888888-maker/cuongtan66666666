@@ -2,8 +2,8 @@ name: AI Factory 24/7 Independent Mining
 
 on:
   schedule:
-    # Chạy tự động mỗi 30 PHÚT - 24/7 NON-STOP với 50 AI Agents
-    - cron: '*/30 * * * *'
+    # Chạy tự động mỗi 20 PHÚT - 24/7 NON-STOP với 50 AI Agents
+    - cron: '*/20 * * * *'
   workflow_dispatch: # Cho phép ấn nút chạy thủ công trên GitHub
 
 permissions:
