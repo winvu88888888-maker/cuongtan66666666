@@ -1385,25 +1385,33 @@ if st.session_state.current_view == "ky_mon":
                             if can_thien == "N/A":
                                 can_thien = can_dia # Showing Earth Plate as a reference for "What is Heaven Plate in 5"
 
-                        # --- ROBUST MARKER LOGIC (RE-VERIFIED) ---
+                        # --- ROBUST MARKER LOGIC (HARDENED INT MATCHING) ---
                         ma_data = params.get('ma', {})
                         kv_data = params.get('khong', {})
                         
                         m_html = []
-                        # Horse (Mã) - Force int comparison
+                        # Force current palace to int
                         try:
-                            p_val = int(palace_num)
-                            if ma_data.get('nam') == p_val: m_html.append('<div class="marker-badge ma">🐎 Năm</div>')
-                            if ma_data.get('thang') == p_val: m_html.append('<div class="marker-badge ma">🐎 Tháng</div>')
-                            if ma_data.get('ngay') == p_val: m_html.append('<div class="marker-badge ma">🐎 Ngày</div>')
-                            if ma_data.get('gio') == p_val: m_html.append('<div class="marker-badge ma">🐎 Giờ</div>')
-                            
-                            # Void (Tuần Không)
-                            for pillar in ['nam', 'thang', 'ngay', 'gio']:
-                                if p_val in [int(x) for x in kv_data.get(pillar, [])]:
-                                    label = {"nam":"N", "thang":"T", "ngay":"Ng", "gio":"G"}[pillar]
+                            curr_p_int = int(palace_num)
+                        except:
+                            curr_p_int = -99
+
+                        # Horse (Mã)
+                        for pillar, label in [('nam', 'Năm'), ('thang', 'Tháng'), ('ngay', 'Ngày'), ('gio', 'Giờ')]:
+                            val = ma_data.get(pillar)
+                            if val is not None:
+                                try:
+                                    if int(val) == curr_p_int:
+                                        m_html.append(f'<div class="marker-badge ma">🐎 {label}</div>')
+                                except: pass
+                        
+                        # Void (Tuần Không)
+                        for pillar, label in [('nam', 'N'), ('thang', 'T'), ('ngay', 'Ng'), ('gio', 'G')]:
+                            vals = kv_data.get(pillar, [])
+                            try:
+                                if any(int(v) == curr_p_int for v in vals):
                                     m_html.append(f'<div class="marker-badge kv">💀 Không-{label}</div>')
-                        except: pass
+                            except: pass
                         
                         marker_display_html = "".join(m_html)
 
@@ -1418,7 +1426,11 @@ if st.session_state.current_view == "ky_mon":
                         palace_html = f"""<div class="palace-3d animated-panel">
 <div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 320px; position: relative;">
 <div class="glass-overlay"></div>
-<div class="palace-header-row"><span class="palace-title">{p_full_name}</span>{status_badge}</div>
+<div class="palace-header-row">
+    <span class="palace-title">{p_full_name}</span>
+    <span style="font-size: 8px; color: rgba(255,255,255,0.3);">M:{ma_data.get('nam')} K:{kv_data.get('nam')}</span>
+    {status_badge}
+</div>
 <div class="palace-content-v">
     <div class="than-corner" style="color: {c_than};">{than}</div>
     <div class="sao-corner" style="color: {c_sao};">{sao.replace('Thiên ', '')}</div>
