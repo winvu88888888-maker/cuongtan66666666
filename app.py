@@ -344,25 +344,37 @@ st.markdown("""
         text-shadow: 2px 2px 10px black, 0 0 5px black;
     }
 
-    .marker {
-        font-size: 1.6rem; /* HUGE MARKERS */
-        font-weight: 900;
-        color: white;
-        text-shadow: 2px 2px 4px black;
-        line-height: 1;
-    }
-    
-    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { color: #ffffff; }
-    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { color: #f59e0b; }
-
     .palace-markers {
         position: absolute;
-        bottom: 12px;
-        left: 12px;
+        bottom: 10px;
+        left: 10px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        z-index: 4;
+        gap: 8px;
+        z-index: 999; /* ABOVE EVERYTHING */
+        pointer-events: none;
+    }
+
+    .marker {
+        font-size: 1.5rem;
+        font-weight: 900;
+        padding: 4px 8px;
+        border-radius: 6px;
+        line-height: 1;
+        display: inline-block;
+        box-shadow: 0 0 15px rgba(0,0,0,0.8), 0 0 5px white;
+        text-shadow: 2px 2px 4px black;
+        border: 2px solid white;
+    }
+    
+    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { 
+        background: #ffffff; 
+        color: #000000 !important;
+        text-shadow: none;
+    }
+    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { 
+        background: #f59e0b; 
+        color: #ffffff !important;
     }
 
     .kv-group, .ma-group {
@@ -1363,22 +1375,31 @@ if st.session_state.current_view == "ky_mon":
                             if can_thien == "N/A":
                                 can_thien = can_dia # Showing Earth Plate as a reference for "What is Heaven Plate in 5"
 
-                        # Determine markers for each pillar
+                        # Determine markers for each pillar (ROBUST INTEGER COMPARISON)
                         kv4 = chart.get('khong_vong_4', {})
                         ma4 = chart.get('dich_ma_4', {})
                         
-                        kv_markers = []
+                        try:
+                            p_int = int(palace_num)
+                        except:
+                            p_int = 0
+
                         ma_markers = []
-                        if palace_num == ma4.get('nam'): ma_markers.append('<span class="marker ma-nam" title="Mã Năm">🐎N</span>')
-                        if palace_num == ma4.get('thang'): ma_markers.append('<span class="marker ma-thang" title="Mã Tháng">🐎T</span>')
-                        if palace_num == ma4.get('ngay'): ma_markers.append('<span class="marker ma-ngay" title="Mã Ngày">🐎Ng</span>')
-                        if palace_num == ma4.get('gio'): ma_markers.append('<span class="marker ma-gio" title="Mã Giờ">🐎G</span>')
+                        if ma4.get('nam') and p_int == int(ma4.get('nam')): ma_markers.append('<span class="marker ma-nam">🐎N</span>')
+                        if ma4.get('thang') and p_int == int(ma4.get('thang')): ma_markers.append('<span class="marker ma-thang">🐎T</span>')
+                        if ma4.get('ngay') and p_int == int(ma4.get('ngay')): ma_markers.append('<span class="marker ma-ngay">🐎Ng</span>')
+                        if ma4.get('gio') and p_int == int(ma4.get('gio')): ma_markers.append('<span class="marker ma-gio">🐎G</span>')
                         
                         kv_markers = []
-                        if palace_num in kv4.get('nam', []): kv_markers.append('<span class="marker kv-nam" title="Không Vong Năm">💀N</span>')
-                        if palace_num in kv4.get('thang', []): kv_markers.append('<span class="marker kv-thang" title="Không Vong Tháng">💀T</span>')
-                        if palace_num in kv4.get('ngay', []): kv_markers.append('<span class="marker kv-ngay" title="Không Vong Ngày">💀Ng</span>')
-                        if palace_num in kv4.get('gio', []): kv_markers.append('<span class="marker kv-gio" title="Không Vong Giờ">💀G</span>')
+                        # Convert kv lists to sets of ints for speed and safety
+                        def is_in_kv(pillar):
+                            lst = kv4.get(pillar, [])
+                            return any(int(x) == p_int for x in lst)
+
+                        if is_in_kv('nam'): kv_markers.append('<span class="marker kv-nam">💀N</span>')
+                        if is_in_kv('thang'): kv_markers.append('<span class="marker kv-thang">💀T</span>')
+                        if is_in_kv('ngay'): kv_markers.append('<span class="marker kv-ngay">💀Ng</span>')
+                        if is_in_kv('gio'): kv_markers.append('<span class="marker kv-gio">💀G</span>')
 
                         # Palace Name & Alignment Refinement
                         p_full_name = f"{palace_num} {QUAI_TUONG.get(palace_num, '')}"
