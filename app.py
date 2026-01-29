@@ -345,42 +345,46 @@ st.markdown("""
     }
 
     .palace-markers {
-        position: absolute;
-        bottom: 8px;
-        left: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        z-index: 1000;
-        pointer-events: none;
+        position: absolute !important;
+        bottom: 10px !important;
+        left: 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        z-index: 99999 !important; /* ABOVE EVERYTHING */
+        pointer-events: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .marker-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        background: #ffffff;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        background: #ffffff !important;
         color: #000000 !important;
-        font-size: 1.1rem;
-        font-weight: 900;
-        padding: 4px 10px;
-        border-radius: 8px;
-        border: 2px solid #000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        line-height: 1;
+        font-size: 1.2rem !important;
+        font-weight: 900 !important;
+        padding: 5px 12px !important;
+        border-radius: 8px !important;
+        border: 3px solid #000 !important;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 5px 15px rgba(0,0,0,0.5) !important;
+        line-height: 1 !important;
         text-shadow: none !important;
+        white-space: nowrap !important;
     }
 
     .marker-badge.ma {
-        background: #f59e0b;
+        background: #f59e0b !important;
         color: #ffffff !important;
-        border-color: #ffffff;
+        border-color: #ffffff !important;
     }
 
     .marker-badge.kv {
-        background: #ffffff;
+        background: #ffffff !important;
         color: #000000 !important;
-        border-color: #000000;
+        border-color: #000000 !important;
     }
 
     .kv-group, .ma-group {
@@ -1381,26 +1385,25 @@ if st.session_state.current_view == "ky_mon":
                             if can_thien == "N/A":
                                 can_thien = can_dia # Showing Earth Plate as a reference for "What is Heaven Plate in 5"
 
-                        # --- ROBUST MARKER LOGIC (Using local params instead of chart) ---
+                        # --- ROBUST MARKER LOGIC (RE-VERIFIED) ---
                         ma_data = params.get('ma', {})
                         kv_data = params.get('khong', {})
                         
                         m_html = []
-                        # Horse (Mã)
-                        if ma_data.get('nam') == palace_num: m_html.append('<div class="marker-badge ma">🐎 Năm</div>')
-                        if ma_data.get('thang') == palace_num: m_html.append('<div class="marker-badge ma">🐎 Tháng</div>')
-                        if ma_data.get('ngay') == palace_num: m_html.append('<div class="marker-badge ma">🐎 Ngày</div>')
-                        if ma_data.get('gio') == palace_num: m_html.append('<div class="marker-badge ma">🐎 Giờ</div>')
-                        
-                        # Void (Tuần Không)
-                        def check_kv(p):
-                            lst = kv_data.get(p, [])
-                            return palace_num in lst or str(palace_num) in [str(x) for x in lst]
-
-                        if check_kv('nam'): m_html.append('<div class="marker-badge kv">💀 Không-N</div>')
-                        if check_kv('thang'): m_html.append('<div class="marker-badge kv">💀 Không-T</div>')
-                        if check_kv('ngay'): m_html.append('<div class="marker-badge kv">💀 Không-Ng</div>')
-                        if check_kv('gio'): m_html.append('<div class="marker-badge kv">💀 Không-G</div>')
+                        # Horse (Mã) - Force int comparison
+                        try:
+                            p_val = int(palace_num)
+                            if ma_data.get('nam') == p_val: m_html.append('<div class="marker-badge ma">🐎 Năm</div>')
+                            if ma_data.get('thang') == p_val: m_html.append('<div class="marker-badge ma">🐎 Tháng</div>')
+                            if ma_data.get('ngay') == p_val: m_html.append('<div class="marker-badge ma">🐎 Ngày</div>')
+                            if ma_data.get('gio') == p_val: m_html.append('<div class="marker-badge ma">🐎 Giờ</div>')
+                            
+                            # Void (Tuần Không)
+                            for pillar in ['nam', 'thang', 'ngay', 'gio']:
+                                if p_val in [int(x) for x in kv_data.get(pillar, [])]:
+                                    label = {"nam":"N", "thang":"T", "ngay":"Ng", "gio":"G"}[pillar]
+                                    m_html.append(f'<div class="marker-badge kv">💀 Không-{label}</div>')
+                        except: pass
                         
                         marker_display_html = "".join(m_html)
 
