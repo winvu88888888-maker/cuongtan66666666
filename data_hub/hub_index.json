@@ -1,34 +1,2332 @@
 {
   "index": [
     {
-      "id": "e18c368720260128214000",
+      "id": "7908835520260128170538",
       "shard": "shard_1.json",
-      "title": "Mai Hoa Dịch Số Nâng Cao",
-      "category": "Kinh Dịch & Dự Đoán",
+      "title": "Climate Change Solutions: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T17:05:38.540908"
+    },
+    {
+      "id": "14fa07be20260128170539",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T17:05:39.911919"
+    },
+    {
+      "id": "83a6a8c520260128170540",
+      "shard": "shard_1.json",
+      "title": "Materials Science: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:05:40.582613"
+    },
+    {
+      "id": "4ea9dd3c20260128170541",
+      "shard": "shard_1.json",
+      "title": "Ocean Exploration: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-28"
+      ],
+      "created_at": "2026-01-28T17:05:41.148613"
+    },
+    {
+      "id": "8a238e4520260128170542",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T17:05:42.647441"
+    },
+    {
+      "id": "5a96899120260128170543",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:05:43.033196"
+    },
+    {
+      "id": "bf6d672f20260128170543",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:05:43.515128"
+    },
+    {
+      "id": "4353f5f520260128170548",
+      "shard": "shard_1.json",
+      "title": "Astrophysics Discoveries: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T17:05:48.027346"
+    },
+    {
+      "id": "d52d6ef820260128170548",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T17:05:48.235453"
+    },
+    {
+      "id": "a23ad74720260128170548",
+      "shard": "shard_1.json",
+      "title": "Materials Science: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:05:48.919135"
+    },
+    {
+      "id": "39eb715a20260128170549",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:05:49.919603"
+    },
+    {
+      "id": "b4f75eea20260128170550",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-23"
+      ],
+      "created_at": "2026-01-28T17:05:50.059234"
+    },
+    {
+      "id": "f16c388720260128170550",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T17:05:50.605747"
+    },
+    {
+      "id": "e9c0755520260128170550",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T17:05:50.942949"
+    },
+    {
+      "id": "25ff66f520260128170551",
+      "shard": "shard_1.json",
+      "title": "Renewable Energy Tech: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:05:51.978319"
+    },
+    {
+      "id": "85393c3720260128170606",
+      "shard": "shard_1.json",
+      "title": "Particle Physics: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T17:06:06.831912"
+    },
+    {
+      "id": "f2a17ec420260128170608",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T17:06:08.278530"
+    },
+    {
+      "id": "81a7fe5d20260128170610",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T17:06:10.533186"
+    },
+    {
+      "id": "2b75155e20260128170611",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T17:06:11.384031"
+    },
+    {
+      "id": "c4a9c37520260128170611",
+      "shard": "shard_1.json",
+      "title": "Particle Physics: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:06:11.814862"
+    },
+    {
+      "id": "883abdd020260128170616",
+      "shard": "shard_1.json",
+      "title": "Ocean Exploration: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T17:06:16.913392"
+    },
+    {
+      "id": "245949e620260128170620",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:06:20.498122"
+    },
+    {
+      "id": "c7e94dc120260128170621",
+      "shard": "shard_1.json",
+      "title": "Ocean Exploration: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T17:06:21.204783"
+    },
+    {
+      "id": "c135fc5720260128170621",
+      "shard": "shard_1.json",
+      "title": "Climate Change Solutions: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T17:06:21.250392"
+    },
+    {
+      "id": "d0b6490620260128170622",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T17:06:22.087432"
+    },
+    {
+      "id": "12cacb6120260128170623",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:06:23.859853"
+    },
+    {
+      "id": "5776499f20260128170624",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T17:06:24.898002"
+    },
+    {
+      "id": "5e48f89c20260128170626",
+      "shard": "shard_1.json",
+      "title": "Climate Change Solutions: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:06:26.473434"
+    },
+    {
+      "id": "74e5c32220260128170627",
+      "shard": "shard_1.json",
+      "title": "Materials Science: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T17:06:27.324184"
+    },
+    {
+      "id": "a5c92ebc20260128170628",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T17:06:28.362081"
+    },
+    {
+      "id": "751834e720260128170631",
+      "shard": "shard_1.json",
+      "title": "Neuroscience Breakthroughs: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:06:31.247378"
+    },
+    {
+      "id": "7e2cecfe20260128170631",
+      "shard": "shard_1.json",
+      "title": "Genomics Research: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-01-28T17:06:31.847906"
+    },
+    {
+      "id": "11557ad220260128170635",
+      "shard": "shard_1.json",
+      "title": "Astrophysics Discoveries: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T17:06:35.940045"
+    },
+    {
+      "id": "b6527c0e20260128170639",
+      "shard": "shard_1.json",
+      "title": "Dark Matter Studies: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-28T17:06:39.007898"
+    },
+    {
+      "id": "cb3dcbfa20260128170659",
+      "shard": "shard_1.json",
+      "title": "Astrophysics Discoveries: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:06:59.881205"
+    },
+    {
+      "id": "6b12cba120260128170700",
+      "shard": "shard_1.json",
+      "title": "Exoplanet Research: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-28T17:07:00.832418"
+    },
+    {
+      "id": "0dd7145b20260128170812",
+      "shard": "shard_1.json",
+      "title": "Particle Physics: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T17:08:12.687053"
+    },
+    {
+      "id": "f21ff36820260128175616",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-28T17:56:16.742355"
+    },
+    {
+      "id": "1d5aa73520260128175617",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T17:56:17.127669"
+    },
+    {
+      "id": "ce46153920260128175618",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T17:56:18.258221"
+    },
+    {
+      "id": "287d80c120260128175619",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T17:56:19.261697"
+    },
+    {
+      "id": "5c5b9a6f20260128175620",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T17:56:20.418649"
+    },
+    {
+      "id": "e637aa6620260128175622",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T17:56:22.338860"
+    },
+    {
+      "id": "0171cb6920260128175622",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-28T17:56:22.469819"
+    },
+    {
+      "id": "eaf8095420260128175627",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T17:56:27.180264"
+    },
+    {
+      "id": "4fadabb320260128175627",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T17:56:27.452029"
+    },
+    {
+      "id": "de258dab20260128175627",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T17:56:27.807658"
+    },
+    {
+      "id": "f3e24fbd20260128175628",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:56:28.235825"
+    },
+    {
+      "id": "d2c777a720260128175628",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T17:56:28.814942"
+    },
+    {
+      "id": "a91b3a5320260128175628",
+      "shard": "shard_1.json",
+      "title": "Synthetic Biology: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T17:56:28.887959"
+    },
+    {
+      "id": "d3d554ce20260128175630",
+      "shard": "shard_1.json",
+      "title": "Nanotechnology: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-28T17:56:30.314954"
+    },
+    {
+      "id": "5fc9a59920260128175640",
+      "shard": "shard_1.json",
+      "title": "Gemini 3.0/4.0 Speculations: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T17:56:40.493258"
+    },
+    {
+      "id": "9628e5ed20260128175649",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T17:56:49.765723"
+    },
+    {
+      "id": "bdd905b120260128175650",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-28T17:56:50.637524"
+    },
+    {
+      "id": "941d373920260128175653",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T17:56:53.665406"
+    },
+    {
+      "id": "72b0ac1b20260128175659",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T17:56:59.051443"
+    },
+    {
+      "id": "e4b9d73f20260128175659",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T17:56:59.770913"
+    },
+    {
+      "id": "eda5e5d520260128175705",
+      "shard": "shard_1.json",
+      "title": "Gemini 3.0/4.0 Speculations: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:57:05.533918"
+    },
+    {
+      "id": "bf00875e20260128175706",
+      "shard": "shard_1.json",
+      "title": "Robotics & Cybernetics: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T17:57:06.751506"
+    },
+    {
+      "id": "b933b89320260128175707",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:57:07.623923"
+    },
+    {
+      "id": "97b0c50d20260128175710",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-28T17:57:10.005106"
+    },
+    {
+      "id": "55b0db7020260128175711",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-28T17:57:11.629601"
+    },
+    {
+      "id": "997ba3e920260128175712",
+      "shard": "shard_1.json",
+      "title": "Synthetic Biology: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T17:57:12.101813"
+    },
+    {
+      "id": "cf193be620260128175713",
+      "shard": "shard_1.json",
+      "title": "Brain-Computer Interfaces: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T17:57:13.120393"
+    },
+    {
+      "id": "f301705c20260128175716",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:57:16.236055"
+    },
+    {
+      "id": "c08b7f9520260128175716",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T17:57:16.326295"
+    },
+    {
+      "id": "86019cb620260128175718",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T17:57:18.228389"
+    },
+    {
+      "id": "f5675fe420260128175718",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T17:57:18.473697"
+    },
+    {
+      "id": "71d98a9020260128175719",
+      "shard": "shard_1.json",
+      "title": "Space Tech & Colonization: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T17:57:19.044476"
+    },
+    {
+      "id": "8508573920260128175720",
+      "shard": "shard_1.json",
+      "title": "Web 4.0 & Blockchain: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T17:57:20.648600"
+    },
+    {
+      "id": "ce5a531d20260128175721",
+      "shard": "shard_1.json",
+      "title": "Fusion Energy: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T17:57:21.825529"
+    },
+    {
+      "id": "bf1c8b6120260128175722",
+      "shard": "shard_1.json",
+      "title": "Quantum Computing: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-28T17:57:22.113064"
+    },
+    {
+      "id": "14b78d0020260128175722",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-28T17:57:22.387249"
+    },
+    {
+      "id": "56ef23dc20260128175722",
+      "shard": "shard_1.json",
+      "title": "Nanotechnology: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T17:57:22.434884"
+    },
+    {
+      "id": "63b7df9120260128175726",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T17:57:26.081515"
+    },
+    {
+      "id": "b7c3e82c20260128175729",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T17:57:29.059431"
+    },
+    {
+      "id": "0a5369eb20260128175738",
+      "shard": "shard_1.json",
+      "title": "Nanotechnology: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T17:57:38.084729"
+    },
+    {
+      "id": "ea9c470320260128175742",
+      "shard": "shard_1.json",
+      "title": "Multimodal AI breakthroughs: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T17:57:42.006700"
+    },
+    {
+      "id": "0bc24f3e20260128175752",
+      "shard": "shard_1.json",
+      "title": "Synthetic Biology: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T17:57:52.786114"
+    },
+    {
+      "id": "cd9b047520260128175757",
+      "shard": "shard_1.json",
+      "title": "Edge Computing: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T17:57:57.903187"
+    },
+    {
+      "id": "489d4c9920260128175800",
+      "shard": "shard_1.json",
+      "title": "6G Networks: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T17:58:00.042569"
+    },
+    {
+      "id": "cb205e2f20260128175929",
+      "shard": "shard_1.json",
+      "title": "AI Ethics & Global Policy: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T17:59:29.779956"
+    },
+    {
+      "id": "1c6b821f20260128183645",
+      "shard": "shard_1.json",
+      "title": "Python Performance Optimization: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T18:36:45.634618"
+    },
+    {
+      "id": "0176f42820260128183646",
+      "shard": "shard_1.json",
+      "title": "Python Performance Optimization: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T18:36:46.987087"
+    },
+    {
+      "id": "1ee6840120260128183647",
+      "shard": "shard_1.json",
+      "title": "Multi-Agent Systems: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T18:36:47.223645"
+    },
+    {
+      "id": "6ab1e0e820260128183647",
+      "shard": "shard_1.json",
+      "title": "AI Model Compression: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T18:36:47.283428"
+    },
+    {
+      "id": "2459c50c20260128183650",
+      "shard": "shard_1.json",
+      "title": "Prompt Engineering Mastery: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T18:36:50.076415"
+    },
+    {
+      "id": "2a30d38e20260128183650",
+      "shard": "shard_1.json",
+      "title": "Multi-Agent Systems: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T18:36:50.773944"
+    },
+    {
+      "id": "ea2c87a320260128183654",
+      "shard": "shard_1.json",
+      "title": "MLOps Best Practices: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T18:36:54.406834"
+    },
+    {
+      "id": "fcd2430620260128183654",
+      "shard": "shard_1.json",
+      "title": "Microservices Architecture: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:36:54.665239"
+    },
+    {
+      "id": "9dccda9a20260128183655",
+      "shard": "shard_1.json",
+      "title": "LangChain & Autogen: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T18:36:55.473356"
+    },
+    {
+      "id": "77c7116f20260128183656",
+      "shard": "shard_1.json",
+      "title": "Agentic Frameworks: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T18:36:56.123101"
+    },
+    {
+      "id": "56a5c8dc20260128183657",
+      "shard": "shard_1.json",
+      "title": "Vector Databases: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-28T18:36:57.955083"
+    },
+    {
+      "id": "47bc725f20260128183658",
+      "shard": "shard_1.json",
+      "title": "Multi-Agent Systems: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:36:58.160172"
+    },
+    {
+      "id": "3509603520260128183658",
+      "shard": "shard_1.json",
+      "title": "AI Security & Pentesting: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:36:58.245360"
+    },
+    {
+      "id": "8fce6e6420260128183658",
+      "shard": "shard_1.json",
+      "title": "LangChain & Autogen: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T18:36:58.641863"
+    },
+    {
+      "id": "590c489b20260128183708",
+      "shard": "shard_1.json",
+      "title": "Prompt Engineering Mastery: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T18:37:08.129052"
+    },
+    {
+      "id": "37950e1020260128183710",
+      "shard": "shard_1.json",
+      "title": "MLOps Best Practices: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T18:37:10.431059"
+    },
+    {
+      "id": "d310748220260128183710",
+      "shard": "shard_1.json",
+      "title": "Prompt Engineering Mastery: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:10.979608"
+    },
+    {
+      "id": "4f490b7920260128183721",
+      "shard": "shard_1.json",
+      "title": "LangChain & Autogen: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T18:37:21.108931"
+    },
+    {
+      "id": "aaf8e45620260128183721",
+      "shard": "shard_2.json",
+      "title": "Edge AI Deployment: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-48"
+      ],
+      "created_at": "2026-01-28T18:37:21.152834"
+    },
+    {
+      "id": "0f25132120260128183725",
+      "shard": "shard_2.json",
+      "title": "Agentic Frameworks: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-28T18:37:25.163695"
+    },
+    {
+      "id": "983ba62d20260128183725",
+      "shard": "shard_2.json",
+      "title": "Prompt Engineering Mastery: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-28T18:37:25.329618"
+    },
+    {
+      "id": "2f2be5f420260128183729",
+      "shard": "shard_2.json",
+      "title": "Python Performance Optimization: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:37:29.447376"
+    },
+    {
+      "id": "23dbd86920260128183730",
+      "shard": "shard_2.json",
+      "title": "AI Model Compression: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T18:37:30.715143"
+    },
+    {
+      "id": "340e574620260128183731",
+      "shard": "shard_2.json",
+      "title": "LLM Fine-tuning: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T18:37:31.179117"
+    },
+    {
+      "id": "4b0a651720260128183734",
+      "shard": "shard_2.json",
+      "title": "Edge AI Deployment: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-28T18:37:34.879987"
+    },
+    {
+      "id": "3e5d6c8520260128183737",
+      "shard": "shard_2.json",
+      "title": "Microservices Architecture: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-28T18:37:37.630802"
+    },
+    {
+      "id": "2a3b351820260128183739",
+      "shard": "shard_2.json",
+      "title": "Prompt Engineering Mastery: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:37:39.053475"
+    },
+    {
+      "id": "2cf5345220260128183739",
+      "shard": "shard_2.json",
+      "title": "LLM Fine-tuning: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-28T18:37:39.481131"
+    },
+    {
+      "id": "f0019d4920260128183741",
+      "shard": "shard_2.json",
+      "title": "Streamlit Advanced UI/UX: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-28T18:37:41.012852"
+    },
+    {
+      "id": "9830a76520260128183741",
+      "shard": "shard_2.json",
+      "title": "Streamlit Advanced UI/UX: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:41.526746"
+    },
+    {
+      "id": "30994aa220260128183742",
+      "shard": "shard_2.json",
+      "title": "Python Performance Optimization: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T18:37:42.388915"
+    },
+    {
+      "id": "b579249c20260128183742",
+      "shard": "shard_2.json",
+      "title": "Cloud Native AI Solutions: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T18:37:42.685212"
+    },
+    {
+      "id": "b954c6f020260128183742",
+      "shard": "shard_2.json",
+      "title": "LangChain & Autogen: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T18:37:42.912055"
+    },
+    {
+      "id": "8ce2282820260128183745",
+      "shard": "shard_2.json",
+      "title": "MLOps Best Practices: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T18:37:45.334774"
+    },
+    {
+      "id": "f6b1e19720260128183747",
+      "shard": "shard_2.json",
+      "title": "RAG Systems: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-28T18:37:47.280774"
+    },
+    {
+      "id": "f08bc77820260128183749",
+      "shard": "shard_2.json",
+      "title": "Vector Databases: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:37:49.406758"
+    },
+    {
+      "id": "332cc03820260128183749",
+      "shard": "shard_2.json",
+      "title": "Vector Databases: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:49.918316"
+    },
+    {
+      "id": "39973f9220260128183750",
+      "shard": "shard_2.json",
+      "title": "Agentic Frameworks: Giải pháp tối ưu",
+      "category": "Kiến Thức",
       "tags": [
         "autonomous",
         "hyper-depth",
         "agent-39"
       ],
-      "created_at": "2026-01-28T21:40:00.447548"
+      "created_at": "2026-01-28T18:37:50.378580"
     },
     {
-      "id": "bddc428620260128214025",
-      "shard": "shard_1.json",
-      "title": "Kinh Dịch và Tâm Lý Học Công Việc",
-      "category": "Kinh Dịch & Dự Đoán",
+      "id": "75bdbba920260128183750",
+      "shard": "shard_2.json",
+      "title": "RAG Systems: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-28T18:37:50.579813"
+    },
+    {
+      "id": "ea5f95df20260128183750",
+      "shard": "shard_2.json",
+      "title": "MLOps Best Practices: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T18:37:50.704322"
+    },
+    {
+      "id": "f4a1950020260128183751",
+      "shard": "shard_2.json",
+      "title": "MLOps Best Practices: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T18:37:51.771496"
+    },
+    {
+      "id": "5fe7419b20260128183755",
+      "shard": "shard_2.json",
+      "title": "AI Security & Pentesting: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T18:37:55.991775"
+    },
+    {
+      "id": "89f41a1e20260128183805",
+      "shard": "shard_2.json",
+      "title": "DevOps cho AI: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-28T18:38:05.642609"
+    },
+    {
+      "id": "271b052820260128183819",
+      "shard": "shard_2.json",
+      "title": "Kubernetes for ML: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T18:38:19.908079"
+    },
+    {
+      "id": "d8654e4320260128183822",
+      "shard": "shard_2.json",
+      "title": "LangChain & Autogen: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-28T18:38:22.982876"
+    },
+    {
+      "id": "1b57bd3d20260128183832",
+      "shard": "shard_2.json",
+      "title": "Vector Databases: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-28T18:38:32.528785"
+    },
+    {
+      "id": "78e5306620260128183907",
+      "shard": "shard_2.json",
+      "title": "Cloud Native AI Solutions: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T18:39:07.483977"
+    },
+    {
+      "id": "7ac2899620260128192649",
+      "shard": "shard_2.json",
+      "title": "Genomics Research: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-28"
+      ],
+      "created_at": "2026-01-28T19:26:49.730162"
+    },
+    {
+      "id": "b740ae6c20260128192656",
+      "shard": "shard_2.json",
+      "title": "Exoplanet Research: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-01-28T19:26:56.336073"
+    },
+    {
+      "id": "985133e920260128192707",
+      "shard": "shard_2.json",
+      "title": "Neuroscience Breakthroughs: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:27:07.397588"
+    },
+    {
+      "id": "c972920620260128192708",
+      "shard": "shard_2.json",
+      "title": "Climate Change Solutions: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-28T19:27:08.898097"
+    },
+    {
+      "id": "03b3e3c120260128192708",
+      "shard": "shard_2.json",
+      "title": "Dark Matter Studies: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T19:27:08.939633"
+    },
+    {
+      "id": "a91dcec120260128192714",
+      "shard": "shard_2.json",
+      "title": "Materials Science: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T19:27:14.272907"
+    },
+    {
+      "id": "0054a75a20260128192719",
+      "shard": "shard_2.json",
+      "title": "Astrophysics Discoveries: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T19:27:19.973454"
+    },
+    {
+      "id": "679389e720260128192720",
+      "shard": "shard_2.json",
+      "title": "Climate Change Solutions: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-28T19:27:20.257719"
+    },
+    {
+      "id": "79904f0120260128192720",
+      "shard": "shard_2.json",
+      "title": "Exoplanet Research: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:27:20.801000"
+    },
+    {
+      "id": "20a78c7820260128192720",
+      "shard": "shard_2.json",
+      "title": "Ocean Exploration: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T19:27:20.982989"
+    },
+    {
+      "id": "82c7ab7a20260128192722",
+      "shard": "shard_2.json",
+      "title": "Astrophysics Discoveries: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-28T19:27:22.098577"
+    },
+    {
+      "id": "779d616120260128192726",
+      "shard": "shard_2.json",
+      "title": "Ocean Exploration: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-28T19:27:26.392038"
+    },
+    {
+      "id": "a7f9014e20260128192728",
+      "shard": "shard_2.json",
+      "title": "Genomics Research: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T19:27:28.967092"
+    },
+    {
+      "id": "3c4ae2d720260128192734",
+      "shard": "shard_2.json",
+      "title": "Climate Change Solutions: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-28T19:27:34.594959"
+    },
+    {
+      "id": "e561ab4420260128192738",
+      "shard": "shard_2.json",
+      "title": "Materials Science: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-28T19:27:38.106644"
+    },
+    {
+      "id": "64b958db20260128192739",
+      "shard": "shard_2.json",
+      "title": "Climate Change Solutions: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-28T19:27:39.156631"
+    },
+    {
+      "id": "bc587fe820260128192740",
+      "shard": "shard_2.json",
+      "title": "Astrophysics Discoveries: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T19:27:40.156676"
+    },
+    {
+      "id": "2ebb15a220260128192745",
+      "shard": "shard_2.json",
+      "title": "Particle Physics: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T19:27:45.018943"
+    },
+    {
+      "id": "43b6c4ae20260128192750",
+      "shard": "shard_2.json",
+      "title": "Renewable Energy Tech: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-28T19:27:50.752811"
+    },
+    {
+      "id": "3a84473820260128192751",
+      "shard": "shard_2.json",
+      "title": "Genomics Research: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-25"
+      ],
+      "created_at": "2026-01-28T19:27:51.443088"
+    },
+    {
+      "id": "501ffe3f20260128192751",
+      "shard": "shard_2.json",
+      "title": "Renewable Energy Tech: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
       "tags": [
         "autonomous",
         "hyper-depth",
         "agent-24"
       ],
-      "created_at": "2026-01-28T21:40:25.670666"
+      "created_at": "2026-01-28T19:27:51.543563"
+    },
+    {
+      "id": "2cbc1b5420260128192756",
+      "shard": "shard_2.json",
+      "title": "Ocean Exploration: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T19:27:56.197785"
+    },
+    {
+      "id": "aa57905e20260128192800",
+      "shard": "shard_2.json",
+      "title": "Particle Physics: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T19:28:00.528870"
+    },
+    {
+      "id": "5ba3d82f20260128192805",
+      "shard": "shard_2.json",
+      "title": "Climate Change Solutions: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-28T19:28:05.464534"
+    },
+    {
+      "id": "62949eda20260128192807",
+      "shard": "shard_2.json",
+      "title": "Particle Physics: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T19:28:07.753580"
+    },
+    {
+      "id": "4299fefa20260128192810",
+      "shard": "shard_2.json",
+      "title": "Dark Matter Studies: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:28:10.923758"
+    },
+    {
+      "id": "1633222120260128192811",
+      "shard": "shard_2.json",
+      "title": "Exoplanet Research: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T19:28:11.588495"
+    },
+    {
+      "id": "0b904f4020260128192814",
+      "shard": "shard_2.json",
+      "title": "Dark Matter Studies: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T19:28:14.932208"
+    },
+    {
+      "id": "fb243b5520260128192817",
+      "shard": "shard_2.json",
+      "title": "Neuroscience Breakthroughs: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-28T19:28:17.204576"
+    },
+    {
+      "id": "a0f24e5320260128192817",
+      "shard": "shard_2.json",
+      "title": "Climate Change Solutions: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T19:28:17.751099"
+    },
+    {
+      "id": "1e808b6d20260128192818",
+      "shard": "shard_2.json",
+      "title": "Ocean Exploration: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T19:28:18.838627"
+    },
+    {
+      "id": "80b5523a20260128192818",
+      "shard": "shard_2.json",
+      "title": "Genomics Research: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T19:28:18.905065"
+    },
+    {
+      "id": "4e7fcad520260128192823",
+      "shard": "shard_2.json",
+      "title": "Exoplanet Research: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-28T19:28:23.241989"
+    },
+    {
+      "id": "75aaadbd20260128192823",
+      "shard": "shard_2.json",
+      "title": "Astrophysics Discoveries: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T19:28:23.944641"
+    },
+    {
+      "id": "3d4c283820260128192826",
+      "shard": "shard_2.json",
+      "title": "Renewable Energy Tech: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T19:28:26.209135"
+    },
+    {
+      "id": "e3d42f6620260128192828",
+      "shard": "shard_2.json",
+      "title": "Renewable Energy Tech: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-28"
+      ],
+      "created_at": "2026-01-28T19:28:28.737978"
+    },
+    {
+      "id": "b9544ebd20260128192829",
+      "shard": "shard_2.json",
+      "title": "Dark Matter Studies: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T19:28:29.600950"
+    },
+    {
+      "id": "f73bca5220260128192848",
+      "shard": "shard_2.json",
+      "title": "Particle Physics: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-28T19:28:48.724696"
+    },
+    {
+      "id": "21c1947420260128192859",
+      "shard": "shard_2.json",
+      "title": "Neuroscience Breakthroughs: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-28T19:28:59.058352"
+    },
+    {
+      "id": "07d8df7a20260128192910",
+      "shard": "shard_2.json",
+      "title": "Neuroscience Breakthroughs: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-28T19:29:10.510573"
+    },
+    {
+      "id": "d22c984020260128192948",
+      "shard": "shard_2.json",
+      "title": "Neuroscience Breakthroughs: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-42"
+      ],
+      "created_at": "2026-01-28T19:29:48.044676"
+    },
+    {
+      "id": "09ea455f20260128195123",
+      "shard": "shard_2.json",
+      "title": "Literature Analysis: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T19:51:23.757089"
+    },
+    {
+      "id": "caa2c8cb20260128195125",
+      "shard": "shard_2.json",
+      "title": "Ancient Civilizations: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-40"
+      ],
+      "created_at": "2026-01-28T19:51:25.879587"
+    },
+    {
+      "id": "2af1b9da20260128195127",
+      "shard": "shard_2.json",
+      "title": "Art History: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-28T19:51:27.418742"
+    },
+    {
+      "id": "2975af6820260128195128",
+      "shard": "shard_2.json",
+      "title": "Philosophy Eastern vs Western: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-28T19:51:28.117064"
+    },
+    {
+      "id": "7405fb5820260128195129",
+      "shard": "shard_2.json",
+      "title": "Anthropology Studies: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-28T19:51:29.304846"
+    },
+    {
+      "id": "055c3e6c20260128195132",
+      "shard": "shard_2.json",
+      "title": "Art History: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-28T19:51:32.542368"
+    },
+    {
+      "id": "e2477de520260128195133",
+      "shard": "shard_2.json",
+      "title": "Art History: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-28T19:51:33.429385"
+    },
+    {
+      "id": "28645dcb20260128195133",
+      "shard": "shard_2.json",
+      "title": "Religious Studies: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T19:51:33.534890"
+    },
+    {
+      "id": "0eb33f7620260128195137",
+      "shard": "shard_2.json",
+      "title": "Language Evolution: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-28T19:51:37.462076"
+    },
+    {
+      "id": "a0f1465d20260128195140",
+      "shard": "shard_2.json",
+      "title": "Religious Studies: Bí quyết thực thi nhanh",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T19:51:40.797258"
+    },
+    {
+      "id": "b58c396320260128195145",
+      "shard": "shard_2.json",
+      "title": "Philosophy Eastern vs Western: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T19:51:45.344664"
+    },
+    {
+      "id": "7651777020260128195152",
+      "shard": "shard_2.json",
+      "title": "Music Theory Advanced: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-28T19:51:52.455919"
+    },
+    {
+      "id": "dc3efea620260128195156",
+      "shard": "shard_2.json",
+      "title": "Language Evolution: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-01-28T19:51:56.696064"
+    },
+    {
+      "id": "b9bb3b8f20260128195158",
+      "shard": "shard_2.json",
+      "title": "Philosophy Eastern vs Western: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T19:51:58.476283"
+    },
+    {
+      "id": "3364f8e120260128195202",
+      "shard": "shard_2.json",
+      "title": "Language Evolution: Ứng dụng sâu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-28T19:52:02.413601"
+    },
+    {
+      "id": "f76d61af20260128195204",
+      "shard": "shard_2.json",
+      "title": "Sociology Trends: Case study hiếm",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-28T19:52:04.624870"
+    },
+    {
+      "id": "f3d8781c20260128195212",
+      "shard": "shard_2.json",
+      "title": "Ancient Civilizations: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-28T19:52:12.062897"
+    },
+    {
+      "id": "00c7088820260128195212",
+      "shard": "shard_2.json",
+      "title": "Philosophy Eastern vs Western: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-28T19:52:12.796338"
+    },
+    {
+      "id": "0a9b6e1920260128195214",
+      "shard": "shard_2.json",
+      "title": "Literature Analysis: Hướng dẫn chi thực",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T19:52:14.518395"
+    },
+    {
+      "id": "9f9f72bf20260128195217",
+      "shard": "shard_2.json",
+      "title": "Ancient Civilizations: Dữ liệu gốc từ cổ tịch/papers",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-28T19:52:17.743821"
+    },
+    {
+      "id": "dadde2b820260128195218",
+      "shard": "shard_2.json",
+      "title": "Cultural Psychology: Giải pháp tối ưu",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-49"
+      ],
+      "created_at": "2026-01-28T19:52:18.965059"
+    },
+    {
+      "id": "2392ac1420260128195223",
+      "shard": "shard_2.json",
+      "title": "Anthropology Studies: Phân tích rủi ro",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-28T19:52:23.007696"
+    },
+    {
+      "id": "34ca262f20260128195223",
+      "shard": "shard_2.json",
+      "title": "Sociology Trends: Ví dụ thực tế 2026",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-35"
+      ],
+      "created_at": "2026-01-28T19:52:23.645872"
     }
   ],
   "stats": {
-    "total": 2,
+    "total": 193,
     "categories": {
-      "Kinh Dịch & Dự Đoán": 2
+      "Công Nghệ Mới & Tương Lai": 0,
+      "Kinh Dịch & Dự Đoán": 0,
+      "Kỳ Môn Độn Giáp (Sâu)": 0,
+      "Kiến Thức": 193
+    }
+  }
+}193
     }
   }
 }
