@@ -50,9 +50,33 @@ def get_can_chi_hour(day_can, hour):
     return CAN[hour_can_idx], CHI[hour_idx]
 
 def get_tiet_khi(dt):
-    """Calculate Solar Term (Approximate dates for 21st century)."""
+    """Calculate Solar Term (Precise for 2026, Approximate fallback)."""
     if dt.tzinfo is not None: dt = dt.replace(tzinfo=None)
     year = dt.year
+    
+    # Precise astronomical data for 2026
+    if year == 2026:
+        terms_2026 = [
+            (1, 5, "Tiểu Hàn"), (1, 20, "Đại Hàn"),
+            (2, 4, "Lập Xuân"), (2, 19, "Vũ Thủy"),
+            (3, 5, "Kinh Trập"), (3, 20, "Xuân Phân"),
+            (4, 5, "Thanh Minh"), (4, 20, "Cốc Vũ"),
+            (5, 5, "Lập Hạ"), (5, 21, "Tiểu Mãn"),
+            (6, 5, "Mang Chủng"), (6, 21, "Hạ Chí"),
+            (7, 7, "Tiểu Thử"), (7, 22, "Đại Thử"),
+            (8, 7, "Lập Thu"), (8, 23, "Xử Thử"),
+            (9, 7, "Bạch Lộ"), (9, 23, "Thu Phân"),
+            (10, 8, "Hàn Lộ"), (10, 23, "Sương Giáng"),
+            (11, 7, "Lập Đông"), (11, 22, "Tiểu Tuyết"),
+            (12, 7, "Đại Tuyết"), (12, 22, "Đông Chí")
+        ]
+        current_term = "Đông Chí"
+        for m, d, name in terms_2026:
+            if dt.month > m or (dt.month == m and dt.day >= d):
+                current_term = name
+        return current_term
+
+    # Approximate calculation for other years
     base_dates = {
         "Xuân Phân": (3, 20.6), "Thanh Minh": (4, 4.8), "Cốc Vũ": (4, 20.1),
         "Lập Hạ": (5, 5.5), "Tiểu Mãn": (5, 21.1), "Mang Chủng": (6, 5.7),
