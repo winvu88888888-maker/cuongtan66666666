@@ -213,6 +213,7 @@ except ImportError as e:
 # PREMIUM CUSTOM CSS
 # ======================================================================
 st.markdown("""
+<style>
     /* Imperial Silk & High-Contrast Theme */
     .stApp {
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
