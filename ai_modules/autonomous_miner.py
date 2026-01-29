@@ -174,19 +174,21 @@ def run_mining_cycle(api_key, category=None):
         # Wait for all
         concurrent.futures.wait(futures)
 
-    # 3. AUTONOMOUS CLEANUP (24/7 Cleanup Legion)
-    # Run cleanup every cycle (or every 3rd cycle to save IO)
-    if config["total_cycles"] % 3 == 0:
-        print("\n" + "-"*40)
-        print("🧹 Kích hoạt AI Dọn Dẹp (Sanitation Droid)...")
-        try:
-            maintenance = MaintenanceManager()
-            res = maintenance.run_cleanup_cycle()
-            print(f"✨ Báo cáo dọn dẹp: Xóa {res.get('removed',0)} trùng lặp, Đóng gói {res.get('bagged',0)} items.")
-        except Exception as e:
-            print(f"⚠️ Lỗi dọn dẹp: {e}")
-    else:
-        print("\n✨ Dữ liệu sạch sẽ. Bỏ qua bước dọn dẹp chu kỳ này.")
+    # 3. AUTONOMOUS CLEANUP (DISABLED BY USER REQUEST)
+    # User only wants basic deduplication, no AI-driven cleanup
+    # if config["total_cycles"] % 3 == 0:
+    #     print("\n" + "-"*40)
+    #     print("🧹 Kích hoạt AI Dọn Dẹp (Sanitation Droid)...")
+    #     try:
+    #         maintenance = MaintenanceManager()
+    #         res = maintenance.run_cleanup_cycle()
+    #         print(f"✨ Báo cáo dọn dẹp: Xóa {res.get('removed',0)} trùng lặp, Đóng gói {res.get('bagged',0)} items.")
+    #     except Exception as e:
+    #         print(f"⚠️ Lỗi dọn dẹp: {e}")
+    # else:
+    #     print("\n✨ Dữ liệu sạch sẽ. Bỏ qua bước dọn dẹp chu kỳ này.")
+    
+    print("\n✨ AI Cleanup đã bị vô hiệu hóa theo yêu cầu người dùng.")
 
     # 4. AUTO DEPLOY TO CLOUD (Git Push)
     # Tự động đồng bộ dữ liệu lên luồng Streamlit Cloud để web cập nhật
