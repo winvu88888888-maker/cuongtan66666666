@@ -36,7 +36,7 @@ class GeminiQMDGHelper:
     """Helper class with context awareness for QMDG analysis"""
     
     def __init__(self, api_key):
-        """Initialize Gemini with API key"""
+        """Initialize Gemini with API key and super intelligence features"""
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self._failed_models = set() # Track exhausted models
@@ -55,6 +55,13 @@ class GeminiQMDGHelper:
 
         # n8n endpoint (optional)
         self.n8n_url = None
+        
+        # SUPER INTELLIGENCE: Knowledge hub integration
+        try:
+            from ai_modules.hub_searcher import HubSearcher
+            self.hub_searcher = HubSearcher()
+        except:
+            self.hub_searcher = None
     
     def set_n8n_url(self, url):
         """Set n8n webhook URL for processing"""
@@ -243,6 +250,91 @@ class GeminiQMDGHelper:
         if context_parts:
             return "\n".join(["**NGỮ CẢNH VÀ KIẾN THỨC NÂNG CAO:**"] + context_parts) + "\n\n"
         return ""
+    
+    def classify_topic_intent(self, topic):
+        """Classify topic to determine analysis approach."""
+        topic_lower = topic.lower()
+        
+        # Gambling/Betting
+        if any(kw in topic_lower for kw in ['đánh', 'cá cược', 'đỏ đen', 'xổ số', 'cờ bạc', 'casino']):
+            return 'GAMBLING'
+        
+        # Health
+        if any(kw in topic_lower for kw in ['sức khỏe', 'bệnh', 'chữa', 'khám']):
+            return 'HEALTH'
+        
+        # Business/Investment
+        if any(kw in topic_lower for kw in ['kinh doanh', 'đầu tư', 'mua', 'bán', 'hợp tác']):
+            return 'BUSINESS'
+        
+        # Relationships
+        if any(kw in topic_lower for kw in ['tình', 'yêu', 'hôn nhân', 'chia tay']):
+            return 'RELATIONSHIP'
+        
+        return 'GENERAL'
+    
+    def search_knowledge_hub(self, query, category=None, max_results=3):
+        """Search knowledge hub for evidence and case studies."""
+        if not self.hub_searcher:
+            return []
+        
+        try:
+            return self.hub_searcher.search(query, category=category, max_results=max_results)
+        except:
+            return []
+    
+    def generate_quantitative_forecast(self, palace_data, topic, chart_data):
+        """Generate precise numerical predictions with risk assessment."""
+        topic_type = self.classify_topic_intent(topic)
+        
+        # Search for similar cases
+        case_studies = self.search_knowledge_hub(topic, category="Kỳ Môn Độn Giáp", max_results=2)
+        case_context = ""
+        if case_studies:
+            case_context = "\n\n**TIỀN LỆ THỰC TẾ:**\n"
+            for i, case in enumerate(case_studies, 1):
+                case_context += f"{i}. {case['title']}: {case['content_snippet'][:200]}...\n"
+        
+        # Build quantitative prompt based on topic type
+        if topic_type == 'GAMBLING':
+            prompt = f"""Bạn là chuyên gia Kỳ Môn Độn Giáp với 30 năm kinh nghiệm dự đoán cá cược.
+
+**CHỦ ĐỀ:** {topic}
+**CUNG PHÂN TÍCH:** {palace_data.get('num')}
+**CẤU HÌNH:**
+- Sao: {palace_data.get('sao')}
+- Môn: {palace_data.get('mon')}
+- Thần: {palace_data.get('than')}
+- Can Thiên: {palace_data.get('can_thien')}
+{case_context}
+
+**YÊU CẦU DỰ ĐOÁN ĐỊNH LƯỢNG (BẮT BUỘC):**
+1. **Xác Suất Thắng/Thua**: Đưa ra % cụ thể (Ví dụ: "Khả năng thắng: 65%, Khả năng thua: 35%")
+2. **Dự Toán Tiền**: Số tiền có thể thắng/thua (Ví dụ: "Nếu đặt 1 triệu, có thể thắng 2-4 triệu hoặc mất hết")
+3. **Mức Độ Rủi Ro**: Thang điểm 1-10 (1=An toàn, 10=Cực kỳ nguy hiểm)
+4. **Thời Điểm Tốt Nhất**: Giờ cụ thể (Ví dụ: "15h-17h hôm nay")
+5. **Lời Khuyên Hành Động**: Nên/Không nên + Lý do cụ thể
+
+TRẢ LỜI PHẢI CÓ CON SỐ CỤ THỂ, KHÔNG NÓI CHUNG CHUNG.
+"""
+        else:
+            prompt = f"""Bạn là chuyên gia Kỳ Môn Độn Giáp hàng đầu.
+
+**CHỦ ĐỀ:** {topic}
+**CUNG:** {palace_data.get('num')} - {palace_data.get('sao')}/{palace_data.get('mon')}/{palace_data.get('than')}
+{case_context}
+
+**YÊU CẦU:**
+1. **Khả Năng Thành Công**: % cụ thể
+2. **Mức Độ Thuận Lợi**: Điểm 1-10
+3. **Thời Điểm Tốt Nhất**: Ngày giờ cụ thể
+4. **Rủi Ro Cần Tránh**: Liệt kê 2-3 điều với mức độ nguy hiểm
+5. **Hành Động Cụ Thể**: 3 bước thực hiện ngay
+
+ĐƯA RA CON SỐ VÀ THỜI GIAN CỤ THỂ.
+"""
+        
+        return self._call_ai(prompt, use_hub=True, use_web_search=True)
 
     def summarize_with_depth(self, basic_analysis, topic):
         """Final polish: Adds depth, practical examples, and actionable advice."""
@@ -276,7 +368,7 @@ Trả lời dưới dạng danh sách gạch đầu dòng, không dẫn nhập.
     
     def analyze_palace(self, palace_data, topic):
         """
-        Analyze a specific palace with AI - FOCUS ON ESSENTIALS
+        Analyze a specific palace with SUPER INTELLIGENCE - Evidence-based with quantitative predictions
         """
         # Update context
         self.update_context(
@@ -285,21 +377,46 @@ Trả lời dưới dạng danh sách gạch đầu dòng, không dẫn nhập.
             last_action=f"Phân tích Cung {palace_data.get('num')}"
         )
         
+        # Classify topic for specialized analysis
+        topic_type = self.classify_topic_intent(topic)
+        
+        # Search for evidence
+        evidence = self.search_knowledge_hub(topic, max_results=2)
+        evidence_context = ""
+        if evidence:
+            evidence_context = "\n\n**CHỨNG CỨ TỪ KHO TRI THỨC:**\n"
+            for e in evidence:
+                evidence_context += f"- {e['title']}: {e['content_snippet'][:150]}...\n"
+        
         context = self.get_context_prompt()
         
-        prompt = f"""{context}Bạn là chuyên gia Kỳ Môn Độn Giáp hàng đầu. Hãy phân tích Cung {palace_data.get('num', 'N/A')} cho chủ đề: **{topic}**.
+        # Super intelligence prompt with quantitative demands
+        prompt = f"""{context}Bạn là Đại Pháp Sư Kỳ Môn Độn Giáp với 30 năm kinh nghiệm dự đoán chính xác.
 
-**NGUYÊN TẮC: NGẮN GỌN - ĐỦ Ý - KHÔNG LAN MAN.**
+**CHỦ ĐỀ:** {topic} (Loại: {topic_type})
+**CUNG PHÂN TÍCH:** {palace_data.get('num', 'N/A')}
+**CẤU HÌNH:**
+- Sao: {palace_data.get('sao')}
+- Môn: {palace_data.get('mon')}
+- Thần: {palace_data.get('than')}
+- Can Thiên: {palace_data.get('can_thien')}
+- Can Địa: {palace_data.get('can_dia')}
+- Hành: {palace_data.get('hanh')}
+{evidence_context}
 
-**Yêu cầu:**
-1. **Giá trị của cung**: Cung này là Thuận hay Nghịch cho việc "{topic}"?
-2. **Điểm nhấn chính**: Tổ hợp Sao/Môn/Thần/Can tại đây báo hiệu điều gì cốt lõi nhất?
-3. **Chiến thuật hành động**: Làm gì ngay tại cung này để đạt mục tiêu?
+**YÊU CẦU SIÊU TRÍ TUỆ (BẮT BUỘC):**
+1. **Đánh Giá Định Lượng**: Cung này thuận lợi bao nhiêu % cho "{topic}"? (Ví dụ: "Thuận lợi 75%")
+2. **Dự Đoán Cụ Thể**: Nếu hành động theo cung này, kết quả sẽ như thế nào? (Phải có con số hoặc mô tả rõ ràng)
+3. **Mức Độ Rủi Ro**: Điểm từ 1-10 (1=An toàn, 10=Cực nguy hiểm)
+4. **Thời Điểm Tốt Nhất**: Giờ/ngày cụ thể để hành động
+5. **Hành Động Ngay**: 2-3 việc làm được ngay lập tức
 
-Trả lời súc tích, đi thẳng vào vấn đề, không chào hỏi, không dẫn nhập."""
+**QUAN TRỌNG:** Trả lời PHẢI CÓ CON SỐ, THỜI GIAN CỤ THỂ. Không nói chung chung kiểu "có thể", "nên cân nhắc". Hãy đưa ra dự đoán chính xác dựa trên cấu hình Kỳ Môn.
+
+Trả lời ngắn gọn, đi thẳng vào vấn đề."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}\n\nVui lòng kiểm tra API key hoặc thử lại."
     
