@@ -2543,15 +2543,183 @@
         "agent-6"
       ],
       "created_at": "2026-01-29T19:01:07.710857"
+    },
+    {
+      "id": "1878cee120260129193819",
+      "shard": "shard_3.json",
+      "title": "Trạch Cát Kỳ Môn: Tuyển tập bí yếu nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-29T19:38:19.808184"
+    },
+    {
+      "id": "c90b7a1520260129193832",
+      "shard": "shard_3.json",
+      "title": "Phân tích 1080 cục Kỳ Môn Độn Giáp: Cách luận chuẩn nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-29T19:38:32.559648"
+    },
+    {
+      "id": "d92e824620260129193833",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Các cách cục quý hiếm nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-29T19:38:33.152656"
+    },
+    {
+      "id": "8fdef69920260129193834",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Giải mã Bát Môn thần đoán nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-16"
+      ],
+      "created_at": "2026-01-29T19:38:34.669956"
+    },
+    {
+      "id": "8cb02c3820260129193835",
+      "shard": "shard_3.json",
+      "title": "Cửu Tinh và Thần Sát trong Kỳ Môn: Nguyên lý gốc nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-29T19:38:35.668517"
+    },
+    {
+      "id": "5a13d11120260129193838",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Pháp thuật và tâm linh thực hành nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-4"
+      ],
+      "created_at": "2026-01-29T19:38:38.137546"
+    },
+    {
+      "id": "89626b0020260129193838",
+      "shard": "shard_3.json",
+      "title": "Bản dịch Kỳ Môn Độn Giáp chuẩn từ thư khố cổ nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-29T19:38:38.579553"
+    },
+    {
+      "id": "bdc8548120260129193840",
+      "shard": "shard_3.json",
+      "title": "Dụng Thần Kỳ Môn Độn Giáp: Ứng dụng bách biến nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-29T19:38:40.011122"
+    },
+    {
+      "id": "63c278ac20260129193840",
+      "shard": "shard_3.json",
+      "title": "Bản văn cổ Kỳ Môn Độn Giáp bí truyền nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-29T19:38:40.176805"
+    },
+    {
+      "id": "96e7ae7e20260129193841",
+      "shard": "shard_3.json",
+      "title": "Thần sát Thiên Mã, Thiên Võng trong Kỳ Môn nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-29T19:38:41.588554"
+    },
+    {
+      "id": "c77ba24220260129193843",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Chế sát và Hóa giải bí truyền nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-29T19:38:43.314778"
+    },
+    {
+      "id": "44bc6e9020260129193846",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Lộc Mã Quý Nhân bí pháp nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-29T19:38:46.880091"
+    },
+    {
+      "id": "79bbe6d220260129193850",
+      "shard": "shard_3.json",
+      "title": "Ứng dụng Kỳ Môn trong dự đoán vận hạn cao cấp nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-29T19:38:50.881172"
+    },
+    {
+      "id": "73378e4d20260129193852",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Khói mây biến hóa Cửu Cung nguyên lý bí truyền giải mã",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-17"
+      ],
+      "created_at": "2026-01-29T19:38:52.337850"
     }
   ],
   "stats": {
-    "total": 212,
+    "total": 226,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 212
+      "Kiến Thức": 226
     }
   }
 }
