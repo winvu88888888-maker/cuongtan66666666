@@ -221,10 +221,22 @@ st.markdown("""
         color: #000000 !important;
     }
     
-    /* Force color for all standard markdown and UI elements */
-    .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, .stCaption, li, span {
+    /* Force color for all standard markdown and UI elements, EXCEPT inside palaces */
+    .stMarkdown:not(.palace-inner *), 
+    .stText:not(.palace-inner *), 
+    [data-testid="stMarkdownContainer"] p:not(.palace-inner *), 
+    .stCaption:not(.palace-inner *), 
+    li:not(.palace-inner *), 
+    span:not(.palace-inner *) {
         color: #000000 !important;
     }
+    
+    /* RESTORE PALACE SPECIFIC COLORS */
+    .q-label { color: #64748b !important; }
+    .marker { color: #ffffff !important; }
+    .palace-row { color: #1e293b !important; }
+    .hex-title-pro { color: #b91c1c !important; }
+    .hex-subtitle { color: #92400e !important; }
     
     h1, h2, h3, h4, h5, h6 {
         color: #000000 !important;
