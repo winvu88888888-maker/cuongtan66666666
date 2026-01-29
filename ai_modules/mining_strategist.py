@@ -8,76 +8,36 @@ class MiningStrategist:
         # EXPANDED TO 100+ SPECIALIZED TOPICS FOR 50 AI AGENTS
         self.categories = {
             "Kỳ Môn Độn Giáp": [
-                "Bát Môn Độn Giáp", "Cửu Tinh Phân Tích", "Bát Thần Trợ Lực", 
-                "Thần Sát Ẩn Tàng", "Cấu Trúc Phản Phục", "Ứng Dụng Kinh Doanh",
-                "Sức Khỏe & Trị Liệu", "Pháp Thuật Kỳ Môn", "Thiên Cáp Thần",
-                "Kỳ Môn Tiên Thiên", "Kỳ Môn Hậu Thiên", "Khởi Lệ Bí Truyền",
-                "Trạch Cát Thời Gian", "Dự Đoán Thiên Văn", "Quân Sự & Mưu Lược"
+                "Bản văn cổ Kỳ Môn Độn Giáp bí truyền", "Kỳ Môn Độn Giáp: Giải mã Bát Môn thần đoán", 
+                "Cửu Tinh và Thần Sát trong Kỳ Môn: Nguyên lý gốc", "Kỳ Môn Độn Giáp: Các cách cục quý hiếm",
+                "Ứng dụng Kỳ Môn trong dự đoán vận hạn cao cấp", "Bản dịch Kỳ Môn Độn Giáp chuẩn từ thư khố cổ",
+                "Kỳ Môn Độn Giáp: Pháp thuật và tâm linh thực hành", "Trạch Cát Kỳ Môn: Tuyển tập bí yếu",
+                "Kỳ Môn và các bản thảo quân sự mưu lược cổ", "Phân tích 1080 cục Kỳ Môn Độn Giáp: Cách luận chuẩn"
             ],
             "Kinh Dịch & Dự Đoán": [
-                "64 Quẻ Dịch Học", "Lời Hào & Biến Hóa", "Mai Hoa Dịch Số", 
-                "Lục Hào Dự Đoán", "Dịch Học & Thuật Toán", "Tế Lễ Cổ Truyền",
-                "Huyền Không Đại Quái", "Trạch Cát Dịch Học", "Tượng Quẻ Thực Tế",
-                "Dịch Học & Vật Lý", "Dịch Học & Tài Chính", "Tâm Lý Học Kinh Dịch"
-            ],
-            "Hệ Thống AI": [
-                "Agentic Frameworks", "LLM Fine-tuning", "UI/UX Advanced", 
-                "Performance Optimization", "AI Security", "RAG Systems",
-                "LangChain & Autogen", "Microservices", "Vector Databases",
-                "DevOps AI", "Cloud Solutions", "Kubernetes ML",
-                "MLOps Excellence", "Model Compression", "Edge AI",
-                "Prompt Mastery", "Multi-Agent Systems", "AI Orchestration"
+                "Kinh Dịch: 64 Quẻ và lời hào gốc Chu Dịch", "Mai Hoa Dịch Số: Tuyển thảo Thần đoán", 
+                "Lục Hào Dự Đoán: Nguyên lý gieo quẻ và ứng dụng chuẩn", "Giải mã 384 hào bản dịch cổ quý hiếm",
+                "Dịch Học: Các bí bản về dự toán thiên văn và vận mệnh", "Tượng quẻ thực tế từ các đại sư Kinh Dịch xưa",
+                "Huyền Không Đại Quái: Bản thảo gốc và ứng dụng", "Kinh Dịch: Sự biến hóa của âm dương bản văn quý"
             ],
             "Y Học & Dưỡng Sinh": [
-                "Châm Cứu & Huyệt Đạo", "Dược Liệu Quý Hiếm", "Âm Dương Ngũ Hành",
-                "Khí Công Dưỡng Sinh", "Y Đạo Trị Gốc", "Thiền Định & Sóng Não",
-                "Dinh Dưỡng Tự Nhiên", "Giải Phẫu Tinh Vi", "Y Học Cổ Truyền",
-                "Ayurveda & India", "Dinh Dưỡng Phân Tử", "Liệu Pháp Gen"
+                "Âm Dương Ngũ Hành và Y Đạo: Bí yếu trị liệu cổ", "Hoàng Đế Nội Kinh: Bản dịch và chú giải chuyên sâu",
+                "Khí Công và Thiền Định: Các bí pháp dưỡng sinh từ cổ tịch", "Dược liệu quý trong y học cổ truyền: Bản thảo hiếm"
             ],
             "Phong Thủy & Địa Lý": [
-                "Loan Đầu Hình Thế", "Lý Khí Tuyệt Kỹ", "Huyền Không Phi Tinh",
-                "Bát Trạch Minh Cảnh", "Trấn Trạch Hóa Giải", "Long Mạch Toàn Cầu",
-                "Phong Thủy Đô Thị", "Âm Trạch Chuyên Biệt", "Phong Thủy Văn Phòng",
-                "Phong Thủy Startup", "Địa Lý Thiên Văn", "Kiến Trúc Xanh"
-            ],
-            "Chiến Lược & Tâm Lý": [
-                "Thập Nhị Binh Thư", "Tôn Tử Binh Pháp", "Quỷ Cốc Tử Mưu Lược",
-                "Đàm Phán Quốc Tế", "Chiến Tranh Tâm Lý", "Phòng Vệ Tâm Lý",
-                "Quản Trị Phương Đông", "Chiến Lược Đại Dương Xanh", "Game Theory",
-                "Behavioral Economics", "NLP Thực Chiến", "Strategic Foresight"
-            ],
-            "Khoa Học Tương Lai": [
-                "Gemini AI Evolution", "Multimodal AI", "Robotics & Cybernetics",
-                "Edge Computing", "AI Ethics", "Web 4.0 & Blockchain",
-                "Quantum Computing", "Space Exploration", "Brain-Computer Interface",
-                "Synthetic Biology", "Nanotechnology", "Fusion Energy", "6G Connectivity"
-            ],
-            "Kinh Tế & Tài Chính": [
-                "Crypto Strategies", "DeFi Protocols", "Stock Analysis",
-                "Macro Trends 2026", "Real Estate", "Venture Capital",
-                "Financial Modeling", "Risk Management", "Algo Trading", "NFT Economy",
-                "CBDC Systems", "Global Trade"
-            ],
-            "Nghiên Cứu Khoa Học": [
-                "Climate Solutions", "Renewable Energy", "Materials Science",
-                "Astrophysics", "Neuroscience", "Genomics",
-                "Ocean Exploration", "Particle Physics", "Dark Matter", "Exoplanets"
-            ],
-            "Văn Hóa & Xã Hội": [
-                "Ancient Civilizations", "Philosophy", "Art History",
-                "Music Theory", "Literature", "Sociology",
-                "Anthropology", "Religious Studies", "Cultural Psych", "Language Evolution"
+                "Huyền Không Phi Tinh: Nguyên lý và thực hành chuẩn", "Loan Đầu Hình Thế: Địa lý bí yếu từ cổ tịch",
+                "Bát Trạch Minh Cảnh: Bản thảo gốc và phân tích", "Trấn Trạch Hóa Giải: Tuyển tập kỹ thuật bí truyền"
             ]
         }
 
     def seed_from_user(self, user_question):
         """AI takes a user question and generates 5 high-quality global research branches."""
         return [
-            f"{user_question}: Phân tích bối cảnh thực tế 2026",
-            f"{user_question}: Ví dụ thực tế thành công",
-            f"{user_question}: Giải pháp tối ưu từ chuyên gia phương Đông",
-            f"{user_question}: Giải pháp từ công nghệ AI hiện đại",
-            f"Mở rộng tri thức: {user_question[:20]}... và các hệ quả"
+            f"{user_question}: Nguyên lý và ứng dụng cổ tịch",
+            f"{user_question}: Ví dụ thực tế từ các bậc thầy xưa",
+            f"{user_question}: Giải pháp bí truyền từ chuyên gia phương Đông",
+            f"{user_question}: Phân tích bối cảnh 2026 dưới góc nhìn Huyền học",
+            f"Mở rộng tri thức: {user_question[:20]}... và tầm ảnh hưởng sâu rộng"
         ]
 
     def generate_research_queue(self, category=None, count=10):
@@ -91,8 +51,9 @@ class MiningStrategist:
         queue = []
         for _ in range(count):
             topic = random.choice(base_topics)
-            # We no longer add suffixes here to keep the core topic clean
-            queue.append(topic)
+            # Add deep research markers to the search query if it's a general topic
+            search_query = f"{topic} nguyên lý bí truyền giải mã"
+            queue.append(search_query)
             
         return list(set(queue))
 
@@ -102,31 +63,32 @@ class MiningStrategist:
         
         # Pick a random research angle to inject into the logic
         angle = random.choice([
-            "Ví dụ thực tế 2026", "Ứng dụng sâu sắc", "Nghiên cứu cổ tịch & Tài liệu hiếm", 
-            "Phòng tránh rủi ro & Cạm bẫy", "Giải pháp tối ưu hóa cuộc sống",
-            "Bí quyết thực thi thần tốc", "Kết hợp tri thức cổ và công nghệ"
+            "Nghiên cứu cổ tịch & Tài liệu hiếm", "Nguyên lý gốc và cách luận chính xác", 
+            "Ứng dụng thực tế cao cấp", "Phòng tránh sai lầm và lệch lạc kiến thức", 
+            "Bí kíp thực thi từ các bậc tiền bối", "Kết hợp tri thức cổ và logic hiện đại"
         ])
 
         return f"""
-Bạn là 'Bậc Thầy Tư Vấn Tri Thức' (Expert Strategy Consultant & Diviner).
-Nhiệm vụ: Khai thác bí mật và **KIỂM CHỨNG THỰC TẾ** về chủ đề: **{target_topic}**.
+Bạn là 'Đại Pháp Sư Tri Thức' (Expert Diviner & Scholar).
+Nhiệm vụ: Khai thác những tài liệu **QUÝ HIẾM**, **CHÍNH XÁC** và **NỘI DUNG GỐC** về chủ đề: **{target_topic}**.
 Góc nhìn tập trung vào: **{angle}**.
 
-Mục tiêu: Tạo ra nội dung **TRÍ TUỆ THỰC CHIẾN**, không phải lý thuyết suông.
+Mục tiêu: Tạo ra nội dung mang tính **DI SẢN TRÍ TUỆ**, tập trung vào các bản thảo, bí kíp và nguyên lý chuẩn mực. 
+TUYỆT ĐỐI không lấy thông tin hời hợt trên mạng. Nếu có dữ liệu từ Google Search, hãy lọc lấy những phần tinh túy nhất.
 
 YÊU CẦU ĐỊNH DẠNG PHẢN HỒI JSON (BẮT BUỘC Ở ĐẦU):
 ```json
 {{
-  "clean_title": "Tên chủ đề CHUẨN, NGẮN GỌN, CHUYÊN NGHIỆP. TUYỆT ĐỐI KHÔNG chứa các từ rác kỹ thuật như 'Ví dụ:', 'Nghiên cứu:', 'Case study:', 'Phần 1:', 'Sâu:', ... ",
+  "clean_title": "Tên chủ đề CHUẨN (Ví dụ: 'Giải Mã Bát Môn Kỳ Môn'). KHÔNG chứa từ rác.",
   "standard_category": "Chọn 1 trong: {category_list}"
 }}
 ```
 
 NỘI DUNG YÊU CẦU:
-1. **KIỂM CHỨNG THỰC TẾ (REALITY CHECK)**: Có hiệu quả thực sự không? Đừng chỉ tin vào sách, hãy dùng logic và dữ liệu 2026 để phản biện.
-2. **ỨNG DỤNG BÁO CÁO**: Nếu một người đang gặp rắc rối liên quan đến việc này, giải pháp 'vàng' cụ thể là gì?
-3. **TRÍ TUỆ CHUYÊN SÂU**: Trích xuất tinh hoa.
-4. **HÀNH ĐỘNG**: Bước 1, 2, 3 rõ ràng.
+1. **NGUYÊN LÝ GỐC (ROOT LOGIC)**: Trình bày chính xác cách thức vận hành, không nói chung chung.
+2. **CHIẾT TỰ & Ý NGHĨA**: Nếu là thuật ngữ cổ, hãy giải thích sâu.
+3. **CÁCH LUẬN ĐOÁN (DIVINATION METHOD)**: Từng bước áp dụng thực tế là gì?
+4. **LỜI KHUYÊN BẬC THẦY**: Những lưu ý quan trọng để đạt được sự chính xác.
 
-Giọng văn: Sắc bén, uy quyền, mang tính chuyên gia.
+Giọng văn: Uy nghiêm, sâu sắc, mang tính cổ điển nhưng dễ hiểu.
 """

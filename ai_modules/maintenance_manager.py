@@ -22,11 +22,20 @@ class MaintenanceManager:
         # 1. Remove AI Error entries
         removed_errors = self.purge_ai_errors()
         
-        # 2. Deduplication
+        # 2. Deep AI Refinement (Classification & Off-topic removal)
+        refined_count = 0
+        try:
+            from deep_ai_cleanup import deep_ai_refinement
+            # This will update/delete entries via AI logic
+            deep_ai_refinement()
+        except Exception as e:
+            print(f"⚠️ AI Refinement failed: {e}")
+
+        # 3. Deduplication (after AI has standardized titles)
         removed_dupes = self.remove_duplicates()
         
-        # 3. Archiving (Bagging) if necessary
-        bagged_count = self.archive_old_data(threshold_mb=100)
+        # 4. Archiving (Bagging) if necessary
+        bagged_count = self.archive_old_data(threshold_mb=200) # Increased threshold
         
         print(f"✨ Hoàn tất dọn dẹp: Xóa {removed_errors} lỗi, {removed_dupes} mục trùng, đóng gói {bagged_count} mục.")
         return {"removed": removed_errors + removed_dupes, "bagged": bagged_count}
@@ -79,6 +88,9 @@ class MaintenanceManager:
         
         for entry in index:
             title_clean = entry['title'].strip().lower()
+            # Simple fuzzy check: ignore small variations in punctuation/spacing
+            title_clean = "".join(e for e in title_clean if e.isalnum())
+            
             if title_clean in seen_titles:
                 to_remove.append(entry)
             else:

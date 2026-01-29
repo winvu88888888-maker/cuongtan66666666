@@ -113,8 +113,32 @@ TRẢ VỀ JSON DUY NHẤT:
   }}
 }}
 """
+        prompt = f"""
+Bạn là chuyên gia phân loại nội dung cho hệ thống Kỳ Môn Độn Giáp & Kinh Dịch chuyên sâu.
+Hãy phân loại, lọc và chuẩn hóa danh sách sau đây.
+
+MỤC TIÊU:
+- **LOẠI BỎ** (Xóa): Những nội dung không liên quan đến Huyền học, Kỳ Môn, Kinh Dịch, Phong Thủy, Y học cổ truyền, Quân sự mưu lược cổ. Ví dụ: Các bài về code Python, AI Security, Crypto... nếu không phục vụ cho việc gieo quẻ.
+- **PHÂN LOẠI**:
+    - 'Lưu Trữ (Sách)': Dành cho các bản dịch sách cổ, tài liệu lý thuyết quý.
+    - 'Kỳ Môn Độn Giáp', 'Kinh Dịch & Dự Đoán', 'Phong Thủy & Địa Lý', 'Y Học & Dưỡng Sinh': Dành cho các nội dung thực hành/ngâm cứu chuyên sâu.
+- **DỌN DẸP**: Loại bỏ các tiền tố rác, giữ tiêu đề chuẩn xác.
+
+PHÂN LOẠI CHO PHÉP: {categories}
+
+DANH SÁCH (JSON):
+{json.dumps(entries_data, ensure_ascii=False, indent=2)}
+
+TRẢ VỀ JSON DUY NHẤT:
+{{
+  "id_cần_xử_lý": {{
+    "title": "Tiêu đề mới",
+    "category": "Phân loại mới (hoặc 'DELETE' nếu rác/không đúng trọng tâm)"
+  }}
+}}
+"""
         try:
-            from ai_modules.shard_manager import get_full_entry
+            from ai_modules.shard_manager import get_full_entry, delete_entry
             response = ai._call_ai(prompt)
             if "```json" in response:
                 response = response.split("```json")[1].split("```")[0].strip()
@@ -125,14 +149,19 @@ TRẢ VỀ JSON DUY NHẤT:
                 new_title = ref.get("title")
                 new_cat = ref.get("category")
                 
-                print(f"[*] Updating {eid}: Category -> {new_cat}")
-                update_entry(eid, title=new_title, category=new_cat)
-                refined_count += 1
+                if new_cat == "DELETE":
+                    print(f"[-] Deleting off-topic entry: {eid}")
+                    delete_entry(eid)
+                    removed_count += 1
+                else:
+                    print(f"[*] Updating {eid}: Category -> {new_cat}")
+                    update_entry(eid, title=new_title, category=new_cat)
+                    refined_count += 1
         except Exception as e:
             print(f"⚠️ Batch refinement failed: {e}")
 
     print(f"\n✨ Cleanup Complete!")
-    print(f"🗑️ Removed (Errors): {removed_count}")
+    print(f"🗑️ Removed (Errors/Off-topic): {removed_count}")
     print(f"🖋️ Processed (AI): {refined_count}")
 
 if __name__ == "__main__":
