@@ -467,6 +467,58 @@
         "agent-24"
       ],
       "created_at": "2026-01-29T20:00:53.478837"
+    },
+    "195ecef320260129204439": {
+      "id": "195ecef320260129204439",
+      "title": "Tàng thư bí truyền của các danh gia Huyền học nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #50 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-50"
+      ],
+      "created_at": "2026-01-29T20:44:39.060399"
+    },
+    "899f597820260129204448": {
+      "id": "899f597820260129204448",
+      "title": "Bản thảo hiếm về Thuật Số phương Đông nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #7 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-29T20:44:48.094593"
+    },
+    "6a4bd72820260129204449": {
+      "id": "6a4bd72820260129204449",
+      "title": "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #12 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-29T20:44:49.495940"
+    },
+    "96ef3b4820260129204450": {
+      "id": "96ef3b4820260129204450",
+      "title": "Tri thức từ các thư viện cổ quốc tế về Dịch Lý nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #5 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-5"
+      ],
+      "created_at": "2026-01-29T20:44:50.735837"
     }
   }
 }
