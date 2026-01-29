@@ -206,6 +206,26 @@ except ImportError as e:
     st.stop()
 
 # ======================================================================
+# DIAGNOSTIC BANNER (TEMPORARY)
+# ======================================================================
+try:
+    import qmdg_calc
+    import inspect
+    importlib.reload(qmdg_calc) # Force reload to be sure
+    calc_path = inspect.getfile(qmdg_calc)
+    from datetime import datetime
+    test_params = qmdg_calc.calculate_qmdg_params(datetime.now())
+    st.error(f"""
+    🆘 **DIAGNOSTIC MODE** 🆘
+    - Calc File: `{calc_path}`
+    - Raw Horse: `{test_params.get('ma')}`
+    - Raw Void: `{test_params.get('khong')}`
+    - Logic Check: {'✅ Horse/Void Keys Found' if 'ma' in test_params and 'khong' in test_params else '❌ Logic Outdated (No keys)'}
+    """)
+except Exception as e:
+    st.error(f"❌ Diagnostic Failure: {e}")
+
+# ======================================================================
 # PREMIUM CUSTOM CSS
 # ======================================================================
 
