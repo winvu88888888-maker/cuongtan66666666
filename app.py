@@ -286,7 +286,7 @@ st.markdown("""
     .glass-overlay {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.35); /* Darken bg image for readability */
+        background: rgba(0, 0, 0, 0.5); /* DEEPER OVERLAY FOR BETTER CONTRAST */
         z-index: 1;
     }
 
@@ -313,7 +313,7 @@ st.markdown("""
         left: 15px;
         font-size: 1.6rem;
         font-weight: 800;
-        text-shadow: 2px 2px 6px black;
+        text-shadow: 2px 2px 8px black, 0 0 5px black;
     }
 
     .mon-corner {
@@ -322,7 +322,7 @@ st.markdown("""
         right: 15px;
         font-size: 1.9rem;
         font-weight: 900;
-        text-shadow: 2px 2px 8px black;
+        text-shadow: 2px 2px 8px black, 0 0 5px black;
     }
 
     .thien-corner {
@@ -331,7 +331,7 @@ st.markdown("""
         right: 15px;
         font-size: 1.8rem;
         font-weight: 900;
-        text-shadow: 2px 2px 6px black;
+        text-shadow: 2px 2px 8px black, 0 0 5px black;
     }
 
     .dia-corner {
@@ -341,8 +341,19 @@ st.markdown("""
         font-size: 1.8rem;
         font-weight: 900;
         color: #ffffff !important;
-        text-shadow: 2px 2px 6px black;
+        text-shadow: 2px 2px 10px black, 0 0 5px black;
     }
+
+    .marker {
+        font-size: 1.6rem; /* HUGE MARKERS */
+        font-weight: 900;
+        color: white;
+        text-shadow: 2px 2px 4px black;
+        line-height: 1;
+    }
+    
+    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { color: #ffffff; }
+    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { color: #f59e0b; }
 
     .palace-markers {
         position: absolute;
@@ -1357,16 +1368,17 @@ if st.session_state.current_view == "ky_mon":
                         ma4 = chart.get('dich_ma_4', {})
                         
                         kv_markers = []
-                        if palace_num in kv4.get('nam', []): kv_markers.append('<span class="marker kv-nam" title="Không Vong Năm">K-N</span>')
-                        if palace_num in kv4.get('thang', []): kv_markers.append('<span class="marker kv-thang" title="Không Vong Tháng">K-T</span>')
-                        if palace_num in kv4.get('ngay', []): kv_markers.append('<span class="marker kv-ngay" title="Không Vong Ngày">K-Ng</span>')
-                        if palace_num in kv4.get('gio', []): kv_markers.append('<span class="marker kv-gio" title="Không Vong Giờ">K-G</span>')
-                        
                         ma_markers = []
-                        if palace_num == ma4.get('nam'): ma_markers.append('<span class="marker ma-nam" title="Mã Năm">M-N</span>')
-                        if palace_num == ma4.get('thang'): ma_markers.append('<span class="marker ma-thang" title="Mã Tháng">M-T</span>')
-                        if palace_num == ma4.get('ngay'): ma_markers.append('<span class="marker ma-ngay" title="Mã Ngày">M-Ng</span>')
-                        if palace_num == ma4.get('gio'): ma_markers.append('<span class="marker ma-gio" title="Mã Giờ">M-G</span>')
+                        if palace_num == ma4.get('nam'): ma_markers.append('<span class="marker ma-nam" title="Mã Năm">🐎N</span>')
+                        if palace_num == ma4.get('thang'): ma_markers.append('<span class="marker ma-thang" title="Mã Tháng">🐎T</span>')
+                        if palace_num == ma4.get('ngay'): ma_markers.append('<span class="marker ma-ngay" title="Mã Ngày">🐎Ng</span>')
+                        if palace_num == ma4.get('gio'): ma_markers.append('<span class="marker ma-gio" title="Mã Giờ">🐎G</span>')
+                        
+                        kv_markers = []
+                        if palace_num in kv4.get('nam', []): kv_markers.append('<span class="marker kv-nam" title="Không Vong Năm">💀N</span>')
+                        if palace_num in kv4.get('thang', []): kv_markers.append('<span class="marker kv-thang" title="Không Vong Tháng">💀T</span>')
+                        if palace_num in kv4.get('ngay', []): kv_markers.append('<span class="marker kv-ngay" title="Không Vong Ngày">💀Ng</span>')
+                        if palace_num in kv4.get('gio', []): kv_markers.append('<span class="marker kv-gio" title="Không Vong Giờ">💀G</span>')
 
                         # Palace Name & Alignment Refinement
                         p_full_name = f"{palace_num} {QUAI_TUONG.get(palace_num, '')}"
