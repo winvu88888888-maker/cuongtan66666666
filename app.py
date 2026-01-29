@@ -275,11 +275,19 @@ st.markdown("""
     
     .palace-inner {
         transform-style: preserve-3d;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 15px 45px rgba(0,0,0,0.3);
         transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         border-radius: 16px;
         position: relative;
-        background-color: white;
+        overflow: hidden;
+        background-color: #1e293b; /* Fallback for contrast */
+    }
+
+    .glass-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.35); /* Darken bg image for readability */
+        z-index: 1;
     }
 
     /* Palace Layout & Element Stacking */
@@ -293,23 +301,23 @@ st.markdown("""
     }
 
     .palace-row {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 85px 1fr;
         align-items: center;
         font-weight: 900;
-        font-size: 1.8rem; /* RESTORED ULTRA-LARGE */
-        border-bottom: 1px dashed rgba(0,0,0,0.1);
-        padding-bottom: 5px;
-        line-height: 1.1;
+        font-size: 1.85rem; /* ULTRA-LARGE */
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+        padding: 6px 0;
+        line-height: 1;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
     }
 
     .q-label {
-        font-size: 0.65rem;
-        color: #64748b;
+        font-size: 0.85rem;
+        color: #e2e8f0;
         text-transform: uppercase;
         font-weight: 800;
-        width: 50px;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
     }
 
     .palace-markers {
@@ -329,25 +337,33 @@ st.markdown("""
     }
 
     .marker {
-        font-size: 0.6rem;
-        padding: 2px 5px;
-        border-radius: 4px;
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        border-radius: 6px;
         font-weight: 900;
         color: white;
-        text-shadow: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        text-shadow: 1px 1px 2px black;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { background: #475569; }
-    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { background: #d97706; }
+    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { background: #64748b; }
+    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { background: #f59e0b; }
 
     .palace-header-row {
         display: flex;
         justify-content: space-between;
-        padding: 8px 12px;
-        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
         position: relative;
         z-index: 2;
+    }
+
+    .palace-title {
+        color: #f1c40f;
+        font-weight: 900;
+        font-size: 1.3rem;
+        text-shadow: 1px 1px 2px black;
     }
 
     .palace-footer-markers {
@@ -1298,7 +1314,7 @@ if st.session_state.current_view == "ky_mon":
                             elif category == "door": is_good = any(gd in name for gd in good_doors)
                             elif category == "deity": is_good = any(gt in name for gt in good_deities)
                             elif category == "stem": is_good = any(gs in name for gs in good_stems)
-                            return "#ef4444" if is_good else "#1e293b" # Red vs Dark Slate
+                            return "#ff4d4d" if is_good else "#ffffff" # Bright Red vs Pure White
 
                         c_sao = get_qmdg_color(sao, "star")
                         c_cua = get_qmdg_color(cua, "door")
