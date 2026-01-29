@@ -104,16 +104,16 @@ def render_dashboard_tab():
     
     col1, col2, col3, col4 = st.columns(4)
     s = 'padding:15px;border-radius:10px;border-left:5px solid '
-    bg_style = 'background: #ffffff; color: #000000; border: 1px solid #e2e8f0;' # High-contrast white
+    bg_style = 'background: #1e293b; color: #ffffff;' # Premium dark background
     
     # Show real Shard Hub total
-    col1.markdown(f'<div style="{s}#3b82f6;{bg_style}"><h3 style="color:#000000;">📁 {hub_stats.get("total", 0)}</h3><p style="color: #64748b; margin:0; font-weight:bold;">Shards Hub</p></div>', unsafe_allow_html=True)
-    col2.markdown(f'<div style="{s}#764ba2;{bg_style}"><h3 style="color:#000000;">📚 {stats.get("total_knowledge", 0)}</h3><p style="color: #64748b; margin:0; font-weight:bold;">Memory DB</p></div>', unsafe_allow_html=True)
-    col3.markdown(f'<div style="{s}#2ecc71;{bg_style}"><h3 style="color:#000000;">💾 {hub_stats.get("size_mb", 0.0)} MB</h3><p style="color: #64748b; margin:0; font-weight:bold;">Dung lượng</p></div>', unsafe_allow_html=True)
+    col1.markdown(f'<div style="{s}#3b82f6;{bg_style}"><h3>📁 {hub_stats.get("total", 0)}</h3><p style="color: #94a3b8; margin:0;">Shards Hub</p></div>', unsafe_allow_html=True)
+    col2.markdown(f'<div style="{s}#764ba2;{bg_style}"><h3>📚 {stats.get("total_knowledge", 0)}</h3><p style="color: #94a3b8; margin:0;">Memory DB</p></div>', unsafe_allow_html=True)
+    col3.markdown(f'<div style="{s}#2ecc71;{bg_style}"><h3>💾 {hub_stats.get("size_mb", 0.0)} MB</h3><p style="color: #94a3b8; margin:0;">Dung lượng</p></div>', unsafe_allow_html=True)
     
     success = stats.get("executions_by_status", {}).get("success", 0)
     total = max(1, stats.get("total_executions", 0))
-    col4.markdown(f'<div style="{s}#e74c3c;{bg_style}"><h3 style="color:#000000;">✅ {int(success/total*100)}%</h3><p style="color: #64748b; margin:0; font-weight:bold;">Hệ thống</p></div>', unsafe_allow_html=True)
+    col4.markdown(f'<div style="{s}#e74c3c;{bg_style}"><h3>✅ {int(success/total*100)}%</h3><p style="color: #94a3b8; margin:0;">Hệ thống</p></div>', unsafe_allow_html=True)
     
     st.markdown("---")
     c_clean1, c_clean2 = st.columns([2, 1])

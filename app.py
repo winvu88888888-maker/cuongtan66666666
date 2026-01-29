@@ -213,54 +213,36 @@ except ImportError as e:
 # PREMIUM CUSTOM CSS
 # ======================================================================
 st.markdown("""
-<style>
     /* Imperial Silk & High-Contrast Theme */
-    /* FORCE HIGH CONTRAST: BLACK TEXT ON WHITE BACKGROUND */
     .stApp {
-        background: #ffffff !important;
-        color: #000000 !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #1e293b;
     }
     
-    /* Force color for all standard markdown and UI elements, EXCEPT inside palaces */
-    .stMarkdown:not(.palace-inner *), 
-    .stText:not(.palace-inner *), 
-    [data-testid="stMarkdownContainer"] p:not(.palace-inner *), 
-    .stCaption:not(.palace-inner *), 
-    li:not(.palace-inner *), 
-    span:not(.palace-inner *) {
-        color: #000000 !important;
-    }
-    
-    /* RESTORE PALACE SPECIFIC COLORS */
-    .q-label { color: #64748b !important; }
-    .marker { color: #ffffff !important; }
-    .palace-row { color: #1e293b !important; }
-    .hex-title-pro { color: #b91c1c !important; }
-    .hex-subtitle { color: #92400e !important; }
-    
-    h1, h2, h3, h4, h5, h6 {
-        color: #000000 !important;
-        font-weight: 800 !important;
-    }
-    
-    /* TABLE READABILITY: PURE BLACK ON WHITE */
+    /* SPECIFIC HIGH-CONTRAST FOR EXPLANATIONS (TABLES & INFO) */
     [data-testid="stTable"] {
         background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 8px !important;
+        border: 2px solid #b91c1c !important;
+        border-radius: 12px !important;
     }
     
     [data-testid="stTable"] th {
-        background-color: #f8fafc !important;
-        color: #000000 !important;
+        background-color: #b91c1c !important;
+        color: #ffffff !important;
         font-weight: 900 !important;
-        border-bottom: 2px solid #000000 !important;
+        border-bottom: 2px solid #991b1b !important;
     }
     
     [data-testid="stTable"] td {
         color: #000000 !important;
+        font-weight: 700 !important;
+        border-bottom: 1px solid #fee2e2 !important;
+    }
+
+    /* Force readable color for info boxes in light mode */
+    .stAlert p {
+        color: #1e293b !important;
         font-weight: 600 !important;
-        border-bottom: 1px solid #e2e8f0 !important;
     }
     
     .stButton>button {
