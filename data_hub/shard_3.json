@@ -103,6 +103,58 @@
         "agent-24"
       ],
       "created_at": "2026-01-29T17:57:57.367717"
+    },
+    "661dcb2620260129190051": {
+      "id": "661dcb2620260129190051",
+      "title": "Trấn Trạch Hóa Giải: Tuyển tập kỹ thuật bí truyền nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #18 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-18"
+      ],
+      "created_at": "2026-01-29T19:00:51.290129"
+    },
+    "fbc4122220260129190056": {
+      "id": "fbc4122220260129190056",
+      "title": "Loan Đầu Hình Thế: Địa lý bí yếu từ cổ tịch nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #34 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-29T19:00:56.082315"
+    },
+    "a0cb4a3120260129190101": {
+      "id": "a0cb4a3120260129190101",
+      "title": "Bát Trạch Minh Cảnh: Bản thảo gốc và phân tích nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #7 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-7"
+      ],
+      "created_at": "2026-01-29T19:01:01.344687"
+    },
+    "82f5b56d20260129190107": {
+      "id": "82f5b56d20260129190107",
+      "title": "Huyền Không Phi Tinh: Nguyên lý và thực hành chuẩn nguyên lý bí truyền giải mã",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #6 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-6"
+      ],
+      "created_at": "2026-01-29T19:01:07.710857"
     }
   }
 }
