@@ -1063,12 +1063,14 @@ with st.sidebar:
     
     # 2. Filter topics based on category
     available_topics = []
+    divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
+    
     if selected_cat == "Tất cả":
-        # Filter out Archive/Book categories by default unless explicitly searching
-        available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] != "Lưu Trữ (Sách)"]
-        available_topics = sorted(list(set(core_topics + available_topics)))
+        # Default view: Only core topics + specific divination hub topics
+        hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
+        available_topics = sorted(list(set(core_topics + hub_divination)))
     else:
-        # Get hub topics in this category
+        # Get hub topics in this specific category
         available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
         
     # Search Filter
