@@ -206,26 +206,6 @@ except ImportError as e:
     st.stop()
 
 # ======================================================================
-# DIAGNOSTIC BANNER (TEMPORARY)
-# ======================================================================
-try:
-    import qmdg_calc
-    import inspect
-    importlib.reload(qmdg_calc) # Force reload to be sure
-    calc_path = inspect.getfile(qmdg_calc)
-    from datetime import datetime
-    test_params = qmdg_calc.calculate_qmdg_params(datetime.now())
-    st.error(f"""
-    🆘 **DIAGNOSTIC MODE** 🆘
-    - Calc File: `{calc_path}`
-    - Raw Horse: `{test_params.get('ma')}`
-    - Raw Void: `{test_params.get('khong')}`
-    - Logic Check: {'✅ Horse/Void Keys Found' if 'ma' in test_params and 'khong' in test_params else '❌ Logic Outdated (No keys)'}
-    """)
-except Exception as e:
-    st.error(f"❌ Diagnostic Failure: {e}")
-
-# ======================================================================
 # PREMIUM CUSTOM CSS
 # ======================================================================
 
@@ -406,6 +386,11 @@ st.markdown("""
         color: #000000 !important;
         border-color: #000000 !important;
     }
+
+    .marker-badge.pillar-nam { background: #1e3a8a !important; color: white !important; }
+    .marker-badge.pillar-thang { background: #166534 !important; color: white !important; }
+    .marker-badge.pillar-ngay { background: #991b1b !important; color: white !important; }
+    .marker-badge.pillar-gio { background: #854d0e !important; color: white !important; }
 
     .kv-group, .ma-group {
         display: flex;
@@ -1405,7 +1390,7 @@ if st.session_state.current_view == "ky_mon":
                             if can_thien == "N/A":
                                 can_thien = can_dia # Showing Earth Plate as a reference for "What is Heaven Plate in 5"
 
-                        # --- ROBUST MARKER LOGIC (HARDENED INT MATCHING) ---
+                        # --- ROBUST MARKER LOGIC (4-PILLAR REFINEMENT) ---
                         ma_data = params.get('ma', {})
                         kv_data = params.get('khong', {})
                         
@@ -1416,8 +1401,8 @@ if st.session_state.current_view == "ky_mon":
                         except:
                             curr_p_int = -99
 
-                        # Horse (Mã)
-                        for pillar, label in [('nam', 'Năm'), ('thang', 'Tháng'), ('ngay', 'Ngày'), ('gio', 'Giờ')]:
+                        # 1. Horse (Mã) - Pillar specific
+                        for pillar, label in [('nam', 'Mã Năm'), ('thang', 'Mã Tháng'), ('ngay', 'Mã Ngày'), ('gio', 'Mã Giờ')]:
                             val = ma_data.get(pillar)
                             if val is not None:
                                 try:
@@ -1425,14 +1410,25 @@ if st.session_state.current_view == "ky_mon":
                                         m_html.append(f'<div class="marker-badge ma">🐎 {label}</div>')
                                 except: pass
                         
-                        # Void (Tuần Không)
-                        for pillar, label in [('nam', 'N'), ('thang', 'T'), ('ngay', 'Ng'), ('gio', 'G')]:
+                        # 2. Void (Tuần Không) - Pillar specific
+                        for pillar, label in [('nam', 'Không Năm'), ('thang', 'Không Tháng'), ('ngay', 'Không Ngày'), ('gio', 'Không Giờ')]:
                             vals = kv_data.get(pillar, [])
                             try:
                                 if any(int(v) == curr_p_int for v in vals):
-                                    m_html.append(f'<div class="marker-badge kv">💀 Không-{label}</div>')
+                                    m_html.append(f'<div class="marker-badge kv">💀 {label}</div>')
                             except: pass
                         
+                        # 3. 4 Pillar Cans (Năm/Tháng/Ngày/Giờ) location on Earth Plate
+                        # We find where the 4 stems sit in the dia_can (Earth Plate)
+                        for pillar, (p_can, p_label) in {
+                            'nam': (params.get('can_nam'), 'Trụ Năm'),
+                            'thang': (params.get('can_thang'), 'Trụ Tháng'),
+                            'ngay': (params.get('can_ngay'), 'Trụ Ngày'),
+                            'gio': (params.get('can_gio'), 'Trụ Giờ')
+                        }.items():
+                            if p_can and can_dia == p_can:
+                                m_html.append(f'<div class="marker-badge pillar-{pillar}">📍 {p_label} ({p_can})</div>')
+
                         marker_display_html = "".join(m_html)
 
                         # Palace Name & Alignment Refinement
@@ -1448,7 +1444,6 @@ if st.session_state.current_view == "ky_mon":
 <div class="glass-overlay"></div>
 <div class="palace-header-row">
     <span class="palace-title">{p_full_name}</span>
-    <span style="font-size: 8px; color: rgba(255,255,255,0.3);">M:{ma_data.get('nam')} K:{kv_data.get('nam')}</span>
     {status_badge}
 </div>
 <div class="palace-content-v">
