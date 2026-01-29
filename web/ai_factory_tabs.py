@@ -246,17 +246,17 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     with col_status1:
         if is_recently_active:
             st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: #064e3b; text-align: center; border: 1px solid #059669;'>
-                <h3 style='color: #4ade80; margin: 0;'>🟢 50 AI AGENTS</h3>
-                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG KHAI THÁC</p>
-                <small style='color: #a7f3d0; opacity: 0.8;'>Lần cuối: """ + str(int(time_diff_minutes)) + """p trước</small>
+            <div style='padding: 15px; border-radius: 10px; background: #ffffff; text-align: center; border: 4px solid #4ade80;'>
+                <h3 style='color: #000000; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <p style='color: #000000; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG KHAI THÁC</p>
+                <small style='color: #64748b; opacity: 0.8;'>Lần cuối: """ + str(int(time_diff_minutes)) + """p trước</small>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: #450a0a; text-align: center; border: 1px solid #b91c1c;'>
-                <h3 style='color: #f87171; margin: 0;'>🔴 50 AI AGENTS</h3>
-                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG DỪNG</p>
+            <div style='padding: 15px; border-radius: 10px; background: #ffffff; text-align: center; border: 4px solid #f87171;'>
+                <h3 style='color: #000000; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <p style='color: #000000; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG DỪNG</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -265,16 +265,16 @@ def render_mining_summary_on_dashboard(key_suffix=""):
         cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
         if cleanup_active and is_recently_active:
             st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: #0c4a6e; text-align: center; border: 1px solid #0284c7;'>
-                <h3 style='color: #38bdf8; margin: 0;'>🔵 AI DỌN DẸP</h3>
-                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG TỐI ƯU</p>
+            <div style='padding: 15px; border-radius: 10px; background: #ffffff; text-align: center; border: 4px solid #38bdf8;'>
+                <h3 style='color: #000000; margin: 0;'>🔵 AI DỌN DẸP</h3>
+                <p style='color: #000000; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG TỐI ƯU</p>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: #1f2937; text-align: center; border: 1px solid #4b5563;'>
-                <h3 style='color: #9ca3af; margin: 0;'>⚪ AI DỌN DẸP</h3>
-                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>CHỜ CHU KỲ</p>
+            <div style='padding: 15px; border-radius: 10px; background: #ffffff; text-align: center; border: 4px solid #9ca3af;'>
+                <h3 style='color: #000000; margin: 0;'>⚪ AI DỌN DẸP</h3>
+                <p style='color: #000000; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>CHỜ CHU KỲ</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -282,16 +282,16 @@ def render_mining_summary_on_dashboard(key_suffix=""):
         github_actions_active = config.get("autonomous_247", False)
         if github_actions_active:
             st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: #064e3b; text-align: center; border: 1px solid #059669;'>
-                <h3 style='color: #4ade80; margin: 0;'>🟢 24/7 ACTIVE</h3>
-                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>MỖI 30 PHÚT</p>
+            <div style='padding: 15px; border-radius: 10px; background: #ffffff; text-align: center; border: 4px solid #4ade80;'>
+                <h3 style='color: #000000; margin: 0;'>🟢 24/7 ACTIVE</h3>
+                <p style='color: #000000; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>MỖI 30 PHÚT</p>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div style='padding: 15px; border-radius: 10px; background: #450a0a; text-align: center; border: 1px solid #b91c1c;'>
-                <h3 style='color: #f87171; margin: 0;'>🔴 24/7 OFF</h3>
-                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐÃ TẮT</p>
+            <div style='padding: 15px; border-radius: 10px; background: #ffffff; text-align: center; border: 4px solid #f87171;'>
+                <h3 style='color: #000000; margin: 0;'>🔴 24/7 OFF</h3>
+                <p style='color: #000000; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐÃ TẮT</p>
             </div>
             """, unsafe_allow_html=True)
 

@@ -215,9 +215,40 @@ except ImportError as e:
 st.markdown("""
 <style>
     /* Imperial Silk & High-Contrast Theme */
+    /* FORCE HIGH CONTRAST: BLACK TEXT ON WHITE BACKGROUND */
     .stApp {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        color: #1e293b;
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    
+    /* Force color for all standard markdown and UI elements */
+    .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, .stCaption, li, span {
+        color: #000000 !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+        font-weight: 800 !important;
+    }
+    
+    /* TABLE READABILITY: PURE BLACK ON WHITE */
+    [data-testid="stTable"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+    }
+    
+    [data-testid="stTable"] th {
+        background-color: #f8fafc !important;
+        color: #000000 !important;
+        font-weight: 900 !important;
+        border-bottom: 2px solid #000000 !important;
+    }
+    
+    [data-testid="stTable"] td {
+        color: #000000 !important;
+        font-weight: 600 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
     }
     
     .stButton>button {
