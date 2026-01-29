@@ -292,42 +292,66 @@ st.markdown("""
 
     /* Palace Layout & Element Stacking */
     .palace-content-v {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding: 10px 15px;
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
         z-index: 2;
-        position: relative;
     }
 
-    .palace-row {
-        display: grid;
-        grid-template-columns: 85px 1fr;
-        align-items: center;
+    .than-corner {
+        position: absolute;
+        top: 45px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.8rem;
         font-weight: 900;
-        font-size: 1.85rem; /* ULTRA-LARGE */
-        border-bottom: 1px solid rgba(255,255,255,0.15);
-        padding: 6px 0;
-        line-height: 1;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+        text-shadow: 2px 2px 8px black, 0 0 10px rgba(0,0,0,0.8);
     }
 
-    .q-label {
-        font-size: 0.85rem;
-        color: #e2e8f0;
-        text-transform: uppercase;
+    .sao-corner {
+        position: absolute;
+        top: 100px;
+        left: 15px;
+        font-size: 1.6rem;
         font-weight: 800;
-        letter-spacing: 1px;
+        text-shadow: 2px 2px 6px black;
+    }
+
+    .mon-corner {
+        position: absolute;
+        top: 100px;
+        right: 15px;
+        font-size: 1.9rem;
+        font-weight: 900;
+        text-shadow: 2px 2px 8px black;
+    }
+
+    .thien-corner {
+        position: absolute;
+        bottom: 50px;
+        right: 15px;
+        font-size: 1.8rem;
+        font-weight: 900;
+        text-shadow: 2px 2px 6px black;
+    }
+
+    .dia-corner {
+        position: absolute;
+        bottom: 12px;
+        right: 15px;
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #ffffff !important;
+        text-shadow: 2px 2px 6px black;
     }
 
     .palace-markers {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
         display: flex;
         flex-direction: column;
-        gap: 5px;
-        position: absolute;
-        bottom: 10px;
-        left: 12px;
-        z-index: 3;
+        gap: 6px;
+        z-index: 4;
     }
 
     .kv-group, .ma-group {
@@ -1351,17 +1375,17 @@ if st.session_state.current_view == "ky_mon":
                         # Status Badge
                         status_badge = f'<span class="status-badge" style="background: {strength_color}; color: white;">{strength}</span>'
 
-                        # --- RENDER PALACE CARD (NEW ORDER: Thần -> Sao -> Môn -> Thiên -> Địa) ---
+                        # --- RENDER TRADITIONAL CORNER LAYOUT (NO LABELS) ---
                         palace_html = f"""<div class="palace-3d animated-panel">
 <div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 320px; position: relative;">
 <div class="glass-overlay"></div>
 <div class="palace-header-row"><span class="palace-title">{p_full_name}</span>{status_badge}</div>
 <div class="palace-content-v">
-    <div class="palace-row than-row" style="color: {c_than};"><span class="q-label">Thần:</span> {than}</div>
-    <div class="palace-row sao-row" style="color: {c_sao};"><span class="q-label">Sao:</span> {sao.replace('Thiên ', '')}</div>
-    <div class="palace-row mon-row" style="color: {c_cua};"><span class="q-label">Môn:</span> {cua.replace(' Môn', '')}</div>
-    <div class="palace-row thien-row" style="color: {c_thien};"><span class="q-label">Thiên:</span> {can_thien}</div>
-    <div class="palace-row dia-row" style="color: {c_dia};"><span class="q-label">Địa:</span> {can_dia}</div>
+    <div class="than-corner" style="color: {c_than};">{than}</div>
+    <div class="sao-corner" style="color: {c_sao};">{sao.replace('Thiên ', '')}</div>
+    <div class="mon-corner" style="color: {c_cua};">{cua.replace(' Môn', '')}</div>
+    <div class="thien-corner" style="color: {c_thien};">{can_thien}</div>
+    <div class="dia-corner" style="color: {c_dia};">{can_dia}</div>
 </div>
 <div class="palace-markers">
     <div class="kv-group">{''.join(kv_markers)}</div>
