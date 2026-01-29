@@ -297,10 +297,10 @@ st.markdown("""
         justify-content: space-between;
         align-items: center;
         font-weight: 900;
-        font-size: 1.2rem;
-        border-bottom: 1px dashed rgba(0,0,0,0.08);
-        padding-bottom: 3px;
-        line-height: 1.2;
+        font-size: 1.8rem; /* RESTORED ULTRA-LARGE */
+        border-bottom: 1px dashed rgba(0,0,0,0.1);
+        padding-bottom: 5px;
+        line-height: 1.1;
     }
 
     .q-label {
@@ -421,9 +421,9 @@ st.markdown("""
     }
 
     .hex-subtitle {
-        font-size: 1.2rem;
+        font-size: 1.5rem; /* RESTORED LARGE SUBTITLE */
         color: #92400e;
-        font-weight: 700;
+        font-weight: 900;
         letter-spacing: 1px;
     }
 
@@ -597,10 +597,11 @@ st.markdown("""
         align-items: center;
     }
     .action-item {
-        margin: 8px 0;
+        margin: 12px 0;
         padding-left: 25px;
         position: relative;
-        font-weight: 600;
+        font-weight: 800; /* RESTORED EXTRA BOLD */
+        font-size: 1.1rem;
         color: #451a03;
         list-style: none;
     }
