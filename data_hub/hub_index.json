@@ -2711,15 +2711,135 @@
         "agent-17"
       ],
       "created_at": "2026-01-29T19:38:52.337850"
+    },
+    {
+      "id": "b5b106ed20260129200042",
+      "shard": "shard_3.json",
+      "title": "Dụng Thần Kỳ Môn Độn Giáp: Ứng dụng bách biến nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-19"
+      ],
+      "created_at": "2026-01-29T20:00:42.126340"
+    },
+    {
+      "id": "16c2ec1120260129200045",
+      "shard": "shard_3.json",
+      "title": "Thần sát Thiên Mã, Thiên Võng trong Kỳ Môn nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-47"
+      ],
+      "created_at": "2026-01-29T20:00:45.003045"
+    },
+    {
+      "id": "f12a682620260129200045",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Lộc Mã Quý Nhân bí pháp nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-29T20:00:45.063160"
+    },
+    {
+      "id": "754d301e20260129200046",
+      "shard": "shard_3.json",
+      "title": "Phân tích 1080 cục Kỳ Môn Độn Giáp: Cách luận chuẩn nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-29T20:00:46.350958"
+    },
+    {
+      "id": "a5d3894120260129200050",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Giải mã Bát Môn thần đoán nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-29T20:00:50.624727"
+    },
+    {
+      "id": "c90de05020260129200050",
+      "shard": "shard_3.json",
+      "title": "Bản văn cổ Kỳ Môn Độn Giáp bí truyền nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-29T20:00:50.971798"
+    },
+    {
+      "id": "a63e10a320260129200051",
+      "shard": "shard_3.json",
+      "title": "Trạch Cát Kỳ Môn: Tuyển tập bí yếu nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-29T20:00:51.598304"
+    },
+    {
+      "id": "7abdb74120260129200052",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Các cách cục quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-29T20:00:52.065691"
+    },
+    {
+      "id": "7db2712720260129200052",
+      "shard": "shard_3.json",
+      "title": "Bản dịch Kỳ Môn Độn Giáp chuẩn từ thư khố cổ nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-31"
+      ],
+      "created_at": "2026-01-29T20:00:52.703178"
+    },
+    {
+      "id": "453f3e6720260129200053",
+      "shard": "shard_3.json",
+      "title": "Kỳ Môn Độn Giáp: Pháp thuật và tâm linh thực hành nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-29T20:00:53.478837"
     }
   ],
   "stats": {
-    "total": 226,
+    "total": 236,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 226
+      "Kiến Thức": 236
     }
   }
 }
