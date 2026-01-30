@@ -142,6 +142,58 @@
         "agent-25"
       ],
       "created_at": "2026-01-30T21:02:44.643621"
+    },
+    "a7b1428320260130214507": {
+      "id": "a7b1428320260130214507",
+      "title": "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #39 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-30T21:45:07.559290"
+    },
+    "f20de12120260130214513": {
+      "id": "f20de12120260130214513",
+      "title": "Bản thảo hiếm về Thuật Số phương Đông nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #21 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-30T21:45:13.810660"
+    },
+    "715adedc20260130214523": {
+      "id": "715adedc20260130214523",
+      "title": "Tàng thư bí truyền của các danh gia Huyền học nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #44 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-30T21:45:23.058398"
+    },
+    "9b839e2d20260130214524": {
+      "id": "9b839e2d20260130214524",
+      "title": "Tri thức từ các thư viện cổ quốc tế về Dịch Lý nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #1 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-30T21:45:24.422607"
     }
   }
 }

@@ -4931,15 +4931,63 @@
         "agent-25"
       ],
       "created_at": "2026-01-30T21:02:44.643621"
+    },
+    {
+      "id": "a7b1428320260130214507",
+      "shard": "shard_5.json",
+      "title": "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-30T21:45:07.559290"
+    },
+    {
+      "id": "f20de12120260130214513",
+      "shard": "shard_5.json",
+      "title": "Bản thảo hiếm về Thuật Số phương Đông nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-21"
+      ],
+      "created_at": "2026-01-30T21:45:13.810660"
+    },
+    {
+      "id": "715adedc20260130214523",
+      "shard": "shard_5.json",
+      "title": "Tàng thư bí truyền của các danh gia Huyền học nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-44"
+      ],
+      "created_at": "2026-01-30T21:45:23.058398"
+    },
+    {
+      "id": "9b839e2d20260130214524",
+      "shard": "shard_5.json",
+      "title": "Tri thức từ các thư viện cổ quốc tế về Dịch Lý nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-30T21:45:24.422607"
     }
   ],
   "stats": {
-    "total": 411,
+    "total": 415,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 411
+      "Kiến Thức": 415
     }
   }
 }
