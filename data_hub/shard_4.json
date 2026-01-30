@@ -402,6 +402,58 @@
         "agent-43"
       ],
       "created_at": "2026-01-30T11:57:41.870591"
+    },
+    "c7515aa220260130131625": {
+      "id": "c7515aa220260130131625",
+      "title": "Tàng thư bí truyền của các danh gia Huyền học nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #11 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-30T13:16:25.781525"
+    },
+    "43c435b620260130131628": {
+      "id": "43c435b620260130131628",
+      "title": "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #13 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-01-30T13:16:28.820591"
+    },
+    "6e35343b20260130131652": {
+      "id": "6e35343b20260130131652",
+      "title": "Tri thức từ các thư viện cổ quốc tế về Dịch Lý nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #24 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-30T13:16:52.962424"
+    },
+    "77b0c99820260130131716": {
+      "id": "77b0c99820260130131716",
+      "title": "Bản thảo hiếm về Thuật Số phương Đông nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #38 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-38"
+      ],
+      "created_at": "2026-01-30T13:17:16.917363"
     }
   }
 }
