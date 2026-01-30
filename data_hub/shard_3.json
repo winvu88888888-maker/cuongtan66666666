@@ -1234,6 +1234,58 @@
         "agent-50"
       ],
       "created_at": "2026-01-30T07:30:03.674590"
+    },
+    "d07e6fc820260130080401": {
+      "id": "d07e6fc820260130080401",
+      "title": "Dược liệu quý trong y học cổ truyền: Bản thảo hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #29 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-29"
+      ],
+      "created_at": "2026-01-30T08:04:01.754339"
+    },
+    "8f656de620260130080403": {
+      "id": "8f656de620260130080403",
+      "title": "Âm Dương Ngũ Hành và Y Đạo: Bí yếu trị liệu cổ nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #11 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-30T08:04:03.048358"
+    },
+    "960255d220260130080403": {
+      "id": "960255d220260130080403",
+      "title": "Khí Công và Thiền Định: Các bí pháp dưỡng sinh từ cổ tịch nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #24 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-30T08:04:03.101739"
+    },
+    "9396b6bc20260130080404": {
+      "id": "9396b6bc20260130080404",
+      "title": "Hoàng Đế Nội Kinh: Bản dịch và chú giải chuyên sâu nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #26 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-30T08:04:04.800339"
     }
   }
 }
