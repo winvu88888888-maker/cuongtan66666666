@@ -12,6 +12,58 @@
         "agent-1"
       ],
       "created_at": "2026-01-31T09:47:25.780849"
+    },
+    "82cad40420260131103106": {
+      "id": "82cad40420260131103106",
+      "title": "Huyền Không Phi Tinh: Nguyên lý và thực hành chuẩn nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #2 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-31T10:31:06.044406"
+    },
+    "29f8bf5620260131103107": {
+      "id": "29f8bf5620260131103107",
+      "title": "Bát Trạch Minh Cảnh: Bản thảo gốc và phân tích nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #1 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-1"
+      ],
+      "created_at": "2026-01-31T10:31:07.369149"
+    },
+    "de057bc820260131103108": {
+      "id": "de057bc820260131103108",
+      "title": "Trấn Trạch Hóa Giải: Tuyển tập kỹ thuật bí truyền nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #3 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-3"
+      ],
+      "created_at": "2026-01-31T10:31:08.099400"
+    },
+    "bda677ad20260131103108": {
+      "id": "bda677ad20260131103108",
+      "title": "Loan Đầu Hình Thế: Địa lý bí yếu từ cổ tịch nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #12 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-12"
+      ],
+      "created_at": "2026-01-31T10:31:08.824299"
     }
   }
 }
