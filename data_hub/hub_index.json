@@ -6371,15 +6371,63 @@
         "agent-5"
       ],
       "created_at": "2026-01-31T13:48:38.388605"
+    },
+    {
+      "id": "e035ead520260131142955",
+      "shard": "shard_6.json",
+      "title": "Dược liệu quý trong y học cổ truyền: Bản thảo hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-31T14:29:55.659765"
+    },
+    {
+      "id": "d2a9d0fb20260131142956",
+      "shard": "shard_6.json",
+      "title": "Hoàng Đế Nội Kinh: Bản dịch và chú giải chuyên sâu nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-31T14:29:56.521256"
+    },
+    {
+      "id": "5d5ab6ea20260131142957",
+      "shard": "shard_6.json",
+      "title": "Khí Công và Thiền Định: Các bí pháp dưỡng sinh từ cổ tịch nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-2"
+      ],
+      "created_at": "2026-01-31T14:29:57.038741"
+    },
+    {
+      "id": "8acead8020260131142958",
+      "shard": "shard_6.json",
+      "title": "Âm Dương Ngũ Hành và Y Đạo: Bí yếu trị liệu cổ nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-34"
+      ],
+      "created_at": "2026-01-31T14:29:58.877514"
     }
   ],
   "stats": {
-    "total": 531,
+    "total": 535,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 531
+      "Kiến Thức": 535
     }
   }
 }
