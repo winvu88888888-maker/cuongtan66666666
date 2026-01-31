@@ -5315,15 +5315,63 @@
         "agent-22"
       ],
       "created_at": "2026-01-30T23:56:52.879363"
+    },
+    {
+      "id": "b353f42b20260131023630",
+      "shard": "shard_5.json",
+      "title": "Trấn Trạch Hóa Giải: Tuyển tập kỹ thuật bí truyền nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-31T02:36:30.168992"
+    },
+    {
+      "id": "f7253eed20260131023633",
+      "shard": "shard_5.json",
+      "title": "Bát Trạch Minh Cảnh: Bản thảo gốc và phân tích nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-31T02:36:33.227920"
+    },
+    {
+      "id": "fb231ecb20260131023640",
+      "shard": "shard_5.json",
+      "title": "Loan Đầu Hình Thế: Địa lý bí yếu từ cổ tịch nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-31T02:36:40.259385"
+    },
+    {
+      "id": "6fab153d20260131023644",
+      "shard": "shard_5.json",
+      "title": "Huyền Không Phi Tinh: Nguyên lý và thực hành chuẩn nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-31T02:36:44.161695"
     }
   ],
   "stats": {
-    "total": 443,
+    "total": 447,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 443
+      "Kiến Thức": 447
     }
   }
 }

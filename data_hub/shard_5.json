@@ -558,6 +558,58 @@
         "agent-22"
       ],
       "created_at": "2026-01-30T23:56:52.879363"
+    },
+    "b353f42b20260131023630": {
+      "id": "b353f42b20260131023630",
+      "title": "Trấn Trạch Hóa Giải: Tuyển tập kỹ thuật bí truyền nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #22 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-22"
+      ],
+      "created_at": "2026-01-31T02:36:30.168992"
+    },
+    "f7253eed20260131023633": {
+      "id": "f7253eed20260131023633",
+      "title": "Bát Trạch Minh Cảnh: Bản thảo gốc và phân tích nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #27 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-27"
+      ],
+      "created_at": "2026-01-31T02:36:33.227920"
+    },
+    "fb231ecb20260131023640": {
+      "id": "fb231ecb20260131023640",
+      "title": "Loan Đầu Hình Thế: Địa lý bí yếu từ cổ tịch nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #26 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-31T02:36:40.259385"
+    },
+    "6fab153d20260131023644": {
+      "id": "6fab153d20260131023644",
+      "title": "Huyền Không Phi Tinh: Nguyên lý và thực hành chuẩn nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #46 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-46"
+      ],
+      "created_at": "2026-01-31T02:36:44.161695"
     }
   }
 }
