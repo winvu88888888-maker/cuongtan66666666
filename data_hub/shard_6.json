@@ -454,6 +454,136 @@
         "agent-34"
       ],
       "created_at": "2026-01-31T14:29:58.877514"
+    },
+    "c9fe07a920260131145631": {
+      "id": "c9fe07a920260131145631",
+      "title": "Kỳ Môn Độn Giáp: Lộc Mã Quý Nhân bí pháp nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #41 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-41"
+      ],
+      "created_at": "2026-01-31T14:56:31.132685"
+    },
+    "99b4e2ce20260131145632": {
+      "id": "99b4e2ce20260131145632",
+      "title": "Dụng Thần Kỳ Môn Độn Giáp: Ứng dụng bách biến nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #36 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-01-31T14:56:32.111481"
+    },
+    "45b0781220260131145633": {
+      "id": "45b0781220260131145633",
+      "title": "Thần sát Thiên Mã, Thiên Võng trong Kỳ Môn nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #37 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-31T14:56:33.200247"
+    },
+    "7f79c1a820260131145633": {
+      "id": "7f79c1a820260131145633",
+      "title": "Kỳ Môn Độn Giáp: Giải mã Bát Môn thần đoán nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #45 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-45"
+      ],
+      "created_at": "2026-01-31T14:56:33.855132"
+    },
+    "441ab05020260131145635": {
+      "id": "441ab05020260131145635",
+      "title": "Kỳ Môn Độn Giáp: Các cách cục quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #9 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-9"
+      ],
+      "created_at": "2026-01-31T14:56:35.075040"
+    },
+    "766ed54720260131145639": {
+      "id": "766ed54720260131145639",
+      "title": "Kỳ Môn Độn Giáp: Chế sát và Hóa giải bí truyền nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 2",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #23 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-23"
+      ],
+      "created_at": "2026-01-31T14:56:39.552933"
+    },
+    "9375242f20260131145639": {
+      "id": "9375242f20260131145639",
+      "title": "Kỳ Môn Độn Giáp: Khói mây biến hóa Cửu Cung nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 3",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #10 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-10"
+      ],
+      "created_at": "2026-01-31T14:56:39.810275"
+    },
+    "db7e938320260131145639": {
+      "id": "db7e938320260131145639",
+      "title": "Ứng dụng Kỳ Môn trong dự đoán vận hạn cao cấp nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #11 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-11"
+      ],
+      "created_at": "2026-01-31T14:56:39.819058"
+    },
+    "02085dfb20260131145640": {
+      "id": "02085dfb20260131145640",
+      "title": "Bản văn cổ Kỳ Môn Độn Giáp bí truyền nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "❌ Lỗi AI: 400 google_search_retrieval is not supported. Please use google_search tool instead.\n\nVui lòng đợi hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #8 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-8"
+      ],
+      "created_at": "2026-01-31T14:56:40.821911"
+    },
+    "495c8f9120260131145642": {
+      "id": "495c8f9120260131145642",
+      "title": "Bản dịch Kỳ Môn Độn Giáp chuẩn từ thư khố cổ nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 4",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #30 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-01-31T14:56:42.688923"
     }
   }
 }
