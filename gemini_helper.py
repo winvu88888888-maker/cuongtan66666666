@@ -266,7 +266,7 @@ class GeminiQMDGHelper:
         tools = []
         if use_web_search:
             # Enable Google Search Retrieval
-            tools.append({'google_search_retrieval': {}})
+            tools.append({'google_search': {}})
 
 
         # Option 1: Use n8n if configured (with increased timeout)
