@@ -43,6 +43,7 @@ class GeminiQMDGHelper:
         """Initialize Gemini with API key and super intelligence features"""
         import hashlib
         self.api_key = api_key
+        self.version = "V1.7.2"
         genai.configure(api_key=api_key)
         self._failed_models = set() # Track exhausted models
         self._hashlib = hashlib  # Store for cache key generation

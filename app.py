@@ -932,7 +932,9 @@ with st.sidebar:
         st.session_state.ai_preference = "auto" # Default to auto discovery
 
     # Actual Initialization Logic
-    if 'gemini_helper' not in st.session_state or not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or not hasattr(st.session_state.gemini_helper, 'analyze_mai_hoa'):
+    if ('gemini_helper' not in st.session_state or 
+        not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
+        getattr(st.session_state.gemini_helper, 'version', '') != "V1.7.2"):
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
         
