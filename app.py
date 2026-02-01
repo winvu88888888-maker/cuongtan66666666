@@ -1961,18 +1961,23 @@ if st.session_state.current_view == "ky_mon":
                                     elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
                                     else: enriched_dung_than.append(dt)
                                 
-                                analysis = st.session_state.gemini_helper.comprehensive_analysis(
-                                    st.session_state.chart_data,
-                                    selected_topic,
-                                    enriched_dung_than,
-                                    topic_hints,
-                                    subj_stem=subj_stem,
-                                    obj_stem=obj_stem,
-                                    subj_label=role_label
+                                # Build a comprehensive prompt
+                                prompt = f"""Phân tích chi tiết về chủ đề: {selected_topic}
+
+**Đối tượng:** {role_label}
+**Dụng Thần:** {', '.join(enriched_dung_than)}
+**Gợi ý:** {topic_hints}
+
+Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cung Sự Việc (Can Giờ).
+"""
+                                analysis = st.session_state.gemini_helper.answer_question(
+                                    prompt,
+                                    chart_data=st.session_state.chart_data,
+                                    topic=selected_topic
                                 )
                                 
-                                # 2. GENERATE QUICK ACTIONS (High-impact tips)
-                                quick_actions = st.session_state.gemini_helper.generate_quick_actions(analysis, selected_topic)
+                                # 2. GENERATE QUICK ACTIONS
+                                quick_actions = "- Hãy hành động dựa trên kết luận trên\n- Chọn thời điểm phù hợp với ngũ hành"
                                 
                                 # Display Quick Actions First
                                 st.markdown(f"""
