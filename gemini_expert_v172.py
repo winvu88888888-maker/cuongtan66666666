@@ -65,7 +65,6 @@ class GeminiQMDGHelperV173:
             print("⚠️ Hub Searcher could not be initialized.")
 
         self.model_priority = [
-            "gemini-flash-latest",
             "gemini-pro-latest",
             "gemini-2.0-flash",
             "gemini-exp-1206",
