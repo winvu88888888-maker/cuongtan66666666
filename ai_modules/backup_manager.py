@@ -15,8 +15,9 @@ BACKUP_BASE_PATH = Path("E:/Antigravity_Storage/ai_modules_backup")
 DATA_HUB_PATH = AI_MODULES_PATH.parent / "data_hub"
 LOG_FILE = BACKUP_BASE_PATH / "backup_log.json"
 
-# Danh sách 22 AI modules cần bảo vệ (đã cập nhật)
+# Danh sách 40 AI modules cần bảo vệ (đã cập nhật)
 PROTECTED_MODULES = [
+    # Core modules (17)
     "autonomous_miner.py",
     "code_analyzer_ai.py",
     "code_fixer_ai.py",
@@ -35,12 +36,31 @@ PROTECTED_MODULES = [
     "web_searcher.py",
     "__init__.py",
     "backup_manager.py",
-    # 5 NEW Super Intelligent AI Modules
+    # 5 Super Intelligent AI (5)
     "chart_interpreter_ai.py",
     "scheduler_ai.py",
     "mai_hoa_expert_ai.py",
     "luc_hao_expert_ai.py",
-    "topic_advisor_ai.py"
+    "topic_advisor_ai.py",
+    # 18 New AI Modules
+    "history_tracker_ai.py",
+    "prediction_validator_ai.py",
+    "report_generator_ai.py",
+    "comparison_ai.py",
+    "notification_ai.py",
+    "learning_assistant_ai.py",
+    "case_study_ai.py",
+    "career_advisor_ai.py",
+    "health_advisor_ai.py",
+    "wealth_advisor_ai.py",
+    "relationship_ai.py",
+    "date_selector_ai.py",
+    "direction_advisor_ai.py",
+    "dream_interpreter_ai.py",
+    "feng_shui_ai.py",
+    "name_analyzer_ai.py",
+    "fortune_calendar_ai.py",
+    "voice_assistant_ai.py"
 ]
 
 def ensure_backup_dir():
