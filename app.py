@@ -1,5 +1,5 @@
 import streamlit as st
-# VERSION: 2026-02-01-V1.2-FIXED-GOOGLE-SEARCH
+# VERSION: 2026-02-01-V1.6-FORCED-FIX
 import sys
 import os
 import random
@@ -15,6 +15,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+st.sidebar.warning("🛠️ BUILD V1.6 - GOOGLE SEARCH FIX")
+st.sidebar.info("Hệ thống: [Đã cập nhật Code mới nhất]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
 st.sidebar.markdown("### 🔍 Hệ thống Giao diện")
