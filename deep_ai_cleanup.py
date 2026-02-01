@@ -13,7 +13,7 @@ if base_dir not in sys.path:
     sys.path.append(base_dir)
 
 from shard_manager import delete_entry, update_entry, BASE_HUB_DIR
-from gemini_helper import GeminiQMDGHelper
+from gemini_expert_v172 import GeminiQMDGHelper
 
 def get_api_key():
     config_path = os.path.join(BASE_HUB_DIR, "factory_config.json")

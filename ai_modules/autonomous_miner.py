@@ -22,14 +22,14 @@ try:
     from .shard_manager import add_entry
     from .mining_strategist import MiningStrategist
     from .maintenance_manager import MaintenanceManager
-    from .gemini_helper import GeminiQMDGHelper
+    from .gemini_expert_v172 import GeminiQMDGHelper
 except (ImportError, ValueError):
     # Fallback to direct imports
     try:
         from shard_manager import add_entry
         from mining_strategist import MiningStrategist
         from maintenance_manager import MaintenanceManager
-        from gemini_helper import GeminiQMDGHelper
+        from gemini_expert_v172 import GeminiQMDGHelper
     except ImportError:
         # Final fallback for Streamlit context
         import sys
@@ -38,7 +38,7 @@ except (ImportError, ValueError):
         from shard_manager import add_entry
         from mining_strategist import MiningStrategist
         from maintenance_manager import MaintenanceManager
-        from gemini_helper import GeminiQMDGHelper
+        from gemini_expert_v172 import GeminiQMDGHelper
 
 import streamlit as st
 

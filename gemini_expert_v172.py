@@ -891,6 +891,9 @@ Bỏ qua nguồn gốc, ví dụ hay dẫn giải dài dòng. Trả lời sắc 
         except Exception as e:
             return f"❌ Lỗi: {str(e)}"
 
+# Compatibility Alias
+GeminiQMDGHelper = GeminiQMDGHelperV172
+
 # Helper variables
 QUAI_NAMES = {1: "Khảm", 2: "Khôn", 3: "Chấn", 4: "Tốn", 6: "Càn", 7: "Đoài", 8: "Cấn", 9: "Ly"}
 QUAI_ELEMENTS = {1: "Thủy", 2: "Thổ", 3: "Mộc", 4: "Mộc", 6: "Kim", 7: "Kim", 8: "Thổ", 9: "Hỏa"}
