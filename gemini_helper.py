@@ -124,8 +124,16 @@ class GeminiQMDGHelper:
         last_error = "Unknown error"
         for model_name in models_to_try:
             if model_name in self._failed_models: continue # Skip known broken models
+            # Define relaxed safety settings for divination/analysis topics
+            safety_settings = [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"},
+            ]
+            
             try:
-                model = genai.GenerativeModel(model_name)
+                model = genai.GenerativeModel(model_name, safety_settings=safety_settings)
                 # Quick test with low tokens
                 model.generate_content("ping", generation_config={"max_output_tokens": 1})
                 return model
@@ -156,9 +164,10 @@ class GeminiQMDGHelper:
         """Quickly test if the API key and model are working"""
         try:
             response = self.model.generate_content("Xin chào?", generation_config={"max_output_tokens": 5})
-            if response.text:
+            text = self.safe_get_text(response)
+            if "🛡️" not in text and "⚠️" not in text:
                 return True, "Kết nối thành công!"
-            return False, "Không nhận được phản hồi từ AI."
+            return False, text
         except Exception as e:
             error_msg = str(e)
             if "API_KEY_INVALID" in error_msg:
@@ -188,6 +197,31 @@ class GeminiQMDGHelper:
                 hub_context += f"📌 [{full_data['category']}] {full_data['title']}: {content}\n\n"
         
         return hub_context
+
+    def safe_get_text(self, response):
+        """Safely extract text from Gemini response, handling safety blocks"""
+        try:
+            # Check if candidates exist
+            if not response.candidates:
+                return "⚠️ AI không tạo được kết quả. Có thể do lỗi kết nối."
+            
+            candidate = response.candidates[0]
+            
+            # Check finish reason
+            # FinishReason.SAFETY is 3 in some versions, 2 in others (based on user image)
+            # We'll check the text attribute or parts status
+            if candidate.finish_reason in [2, 3]: # 2 or 3 usually indicates safety block
+                return "🛡️ Nội dung bị chặn do quy tắc an toàn của AI (Chủ đề nhạy cảm). Thử đổi cách đặt câu hỏi."
+            
+            if response.text:
+                return response.text
+            
+            return "⚠️ AI trả về kết quả trống hoặc không xác định."
+        except Exception as e:
+            # Check if it's specifically a safety error
+            if "safety" in str(e).lower() or "blocked" in str(e).lower():
+                return "🛡️ Nội dung bị chặn do quy tắc an toàn. Hãy thử chủ đề khác."
+            return f"⚠️ Lỗi xử lý kết quả: {str(e)}"
 
     def _call_ai(self, prompt, use_hub=True, use_web_search=False):
         """Call AI with auto-switch fallback, caching, and improved retry logic."""
@@ -245,13 +279,17 @@ class GeminiQMDGHelper:
                     response = self.model.generate_content(prompt, tools=tools)
                 else:
                     response = self.model.generate_content(prompt)
-                    
-                if not response.text:
-                    return "⚠️ AI trả về kết quả trống."
                 
+                text = self.safe_get_text(response)
+                
+                if "⚠️" in text or "🛡️" in text:
+                    # If it's a safety block, maybe don't retry but switch if it's a specific model issue
+                    if "🛡️" in text: return text
+                    continue # Retry for other empty/error cases
+                    
                 # Cache successful response
-                self._cache_response(prompt, response.text)
-                return response.text
+                self._cache_response(prompt, text)
+                return text
                 
             except Exception as e:
                 error_msg = str(e)
