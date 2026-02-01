@@ -482,7 +482,7 @@ YÊU CẦU NÂNG CẤP:
 
 Phong cách: Sắc bén, thực dụng, ngôn ngữ của một bậc thầy tư vấn cấp cao.
 """
-        return self._call_ai(prompt, use_hub=True)
+        return self._call_ai(prompt, use_hub=True, use_web_search=True)
 
     def generate_quick_actions(self, analysis, topic):
         """Extracts 3-5 immediate, high-impact action steps."""
@@ -497,7 +497,7 @@ YÊU CẦU:
 
 Trả lời dưới dạng danh sách gạch đầu dòng, không dẫn nhập.
 """
-        return self._call_ai(prompt, use_hub=False)
+        return self._call_ai(prompt, use_hub=False, use_web_search=True)
     
     def analyze_palace(self, palace_data, topic):
         """
@@ -716,7 +716,7 @@ Trả lời ngắn gọn, đi thẳng vào vấn đề."""
 Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ giàu hình ảnh và sắc bén."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}"
     
@@ -764,7 +764,7 @@ Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ gi�
 **PHONG CÁCH**: Chuyên nghiệp, súc tích, giàu triết lý nhưng thực tế. Trả lời rõ ràng Cát hay Hung."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}"
     
@@ -808,7 +808,7 @@ Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ gi�
 **PHONG CÁCH**: Chuyên nghiệp, sắc bén, đi sâu vào mối quan hệ Sinh - Khắc giữa các hào và quẻ biến. Hãy luận giải CHI TIẾT quẻ biến."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}"
     
@@ -861,7 +861,7 @@ Hãy trả lời câu hỏi dựa trên:
 Trả lời CỰC KỲ NGẮN GỌN (tối đa 3-5 câu), tập trung vào thực tế, không lý thuyết suông."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi: {str(e)}"
     
@@ -895,6 +895,6 @@ Hãy giải thích CỐT LÕI về {type_map.get(element_type, element_type)}: *
 Bỏ qua nguồn gốc, ví dụ hay dẫn giải dài dòng. Trả lời sắc bén, súc tích."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi: {str(e)}"

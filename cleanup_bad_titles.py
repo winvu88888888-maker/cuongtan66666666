@@ -50,7 +50,8 @@ def cleanup_technical_titles():
         print("Hub index is still empty. Nothing to clean.")
         return
 
-    to_delete = []
+    from shard_manager import update_entry
+    
     # Identify titles with colons OR technical keywords
     technical_keywords = [
         "Ví dụ thực tế", "Ứng dụng sâu", "Case study", 
@@ -60,34 +61,33 @@ def cleanup_technical_titles():
         "Chuyên sâu", "Chi tiết", "Tổng hợp", "Ayurveda và Y học Ấn Độ:"
     ]
     
+    modified_count = 0
     for entry in index:
+        eid = entry.get("id")
         title = entry.get("title", "")
-        should_delete = False
+        new_title = title
         
-        # 1. Any title with a colon is likely a technical/draft title
+        # 1. Formatting: Remove parts after colon if it looks like technical junk
         if ":" in title:
-            should_delete = True
+            # Keep the main part before the colon as the title
+            new_title = title.split(":")[0].strip()
             
-        # 2. Any title containing these "filler" keywords
-        if any(kw.lower() in title.lower() for kw in technical_keywords):
-            should_delete = True
+        # 2. Formatting: Remove technical keywords from title
+        for kw in technical_keywords:
+            if kw.lower() in new_title.lower():
+                new_title = new_title.replace(kw, "").replace(kw.lower(), "").strip()
+                
+        # 3. Truncate if still too long (but keep the entry!)
+        if len(new_title) > 60:
+            new_title = new_title[:57] + "..."
             
-        # 3. Titles that are too long
-        if len(title) > 60:
-            should_delete = True
-            
-        if should_delete:
-            to_delete.append(entry["id"])
-            print(f"[-] Marking for deletion: {title}")
+        # Only update if title actually changed
+        if new_title and new_title != title:
+            print(f"[*] Formatting title: '{title}' -> '{new_title}'")
+            if update_entry(eid, title=new_title):
+                modified_count += 1
 
-    print(f"\nTargeting {len(to_delete)} messy entries for deletion.")
-
-    count = 0
-    for entry_id in to_delete:
-        if delete_entry(entry_id):
-            count += 1
-
-    print(f"✅ Successfully cleaned up {count} entries.")
+    print(f"✅ Successfully formatted {modified_count} titles. NO DATA WAS DELETED.")
 
 if __name__ == "__main__":
     cleanup_technical_titles()

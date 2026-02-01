@@ -19,26 +19,28 @@ class MaintenanceManager:
         """Main entry point for the maintenance cycle."""
         print("Paramedics: Running deep sanitation...")
         
-        # 1. Remove AI Error entries
+        # 1. Remove ONLY actual AI Error entries (Technical corruption)
         removed_errors = self.purge_ai_errors()
         
-        # 2. Deep AI Refinement (Classification & Off-topic removal)
+        # 2. Deep AI Refinement (Classification & Standardization - NO DELETION)
         refined_count = 0
         try:
             from deep_ai_cleanup import deep_ai_refinement
-            # This will update/delete entries via AI logic
+            # This now only refines/recategorizes, never deletes.
             deep_ai_refinement()
         except Exception as e:
             print(f"⚠️ AI Refinement failed: {e}")
 
-        # 3. Deduplication (after AI has standardized titles)
-        removed_dupes = self.remove_duplicates()
+        # 3. Deduplication - DISABLED AUTOMATICALLY (Safety first)
+        # removed_dupes = self.remove_duplicates()
+        removed_dupes = 0
         
-        # 4. Archiving (Bagging) if necessary
-        bagged_count = self.archive_old_data(threshold_mb=200) # Increased threshold
+        # 4. Archiving - DISABLED AUTOMATICALLY (To maintain "Infinite Warehouse")
+        # bagged_count = self.archive_old_data(threshold_mb=10000000) 
+        bagged_count = 0
         
-        print(f"✨ Hoàn tất dọn dẹp: Xóa {removed_errors} lỗi, {removed_dupes} mục trùng, đóng gói {bagged_count} mục.")
-        return {"removed": removed_errors + removed_dupes, "bagged": bagged_count}
+        print(f"✨ Hoàn tất dọn dẹp an toàn: Xóa {removed_errors} lỗi kỹ thuật. Dữ liệu quý được bảo tồn 100%.")
+        return {"removed": removed_errors, "bagged": bagged_count}
 
     def purge_ai_errors(self):
         """Removes entries containing AI error messages."""
@@ -126,7 +128,7 @@ class MaintenanceManager:
                     
         return len(to_remove)
 
-    def archive_old_data(self, threshold_mb=50):
+    def archive_old_data(self, threshold_mb=10000000): # Huge threshold to prevent automatic archiving
         """Moves oldest 20% of data to compressed Bags if hub directory is too large."""
         # Calculate size of data_hub
         total_size = sum(f.stat().st_size for f in self.data_hub_dir.glob('**/*') if f.is_file())

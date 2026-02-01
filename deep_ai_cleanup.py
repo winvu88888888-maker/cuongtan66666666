@@ -114,15 +114,13 @@ TRẢ VỀ JSON DUY NHẤT:
 }}
 """
         prompt = f"""
-Bạn là chuyên gia phân loại nội dung cho hệ thống Kỳ Môn Độn Giáp & Kinh Dịch chuyên sâu.
-Hãy phân loại, lọc và chuẩn hóa danh sách sau đây.
+Bạn là chuyên gia phân loại và tối ưu hóa nội dung cho hệ thống Kỳ Môn Độn Giáp & Kinh Dịch.
+Hãy phân loại và chuẩn hóa danh sách sau đây để Kho dữ liệu trở nên ngăn nắp và chuyên nghiệp hơn.
 
 MỤC TIÊU:
-- **LOẠI BỎ** (Xóa): Những nội dung không liên quan đến Huyền học, Kỳ Môn, Kinh Dịch, Phong Thủy, Y học cổ truyền, Quân sự mưu lược cổ. Ví dụ: Các bài về code Python, AI Security, Crypto... nếu không phục vụ cho việc gieo quẻ.
-- **PHÂN LOẠI**:
-    - 'Lưu Trữ (Sách)': Dành cho các bản dịch sách cổ, tài liệu lý thuyết quý.
-    - 'Kỳ Môn Độn Giáp', 'Kinh Dịch & Dự Đoán', 'Phong Thủy & Địa Lý', 'Y Học & Dưỡng Sinh': Dành cho các nội dung thực hành/ngâm cứu chuyên sâu.
-- **DỌN DẸP**: Loại bỏ các tiền tố rác, giữ tiêu đề chuẩn xác.
+- **PHÂN LOẠI CHÍNH XÁC**: Đưa nội dung vào đúng danh mục phù hợp nhất.
+- **BẢO TỒN DỮ LIỆU**: KHÔNG ĐƯỢC xóa bỏ nội dung. Nếu nội dung không thuộc các chuyên ngành chính, hãy đưa vào mục 'Khác'.
+- **DỌN DẸP TIÊU ĐỀ**: Loại bỏ các tiền tố rác (Ví dụ: 'Nghiên cứu:', 'AI Summary:', ...), giữ tiêu đề ngắn gọn, súc tích và đúng trọng tâm.
 
 PHÂN LOẠI CHO PHÉP: {categories}
 
@@ -132,8 +130,8 @@ DANH SÁCH (JSON):
 TRẢ VỀ JSON DUY NHẤT:
 {{
   "id_cần_xử_lý": {{
-    "title": "Tiêu đề mới",
-    "category": "Phân loại mới (hoặc 'DELETE' nếu rác/không đúng trọng tâm)"
+    "title": "Tiêu đề mới chuẩn hóa",
+    "category": "Phân loại mới (Dùng 'Khác' nếu không thuộc chuyên mục nào)"
   }}
 }}
 """
@@ -149,14 +147,13 @@ TRẢ VỀ JSON DUY NHẤT:
                 new_title = ref.get("title")
                 new_cat = ref.get("category")
                 
-                if new_cat == "DELETE":
-                    print(f"[-] Deleting off-topic entry: {eid}")
-                    delete_entry(eid)
-                    removed_count += 1
-                else:
-                    print(f"[*] Updating {eid}: Category -> {new_cat}")
-                    update_entry(eid, title=new_title, category=new_cat)
-                    refined_count += 1
+                # KHÔNG XÓA DỮ LIỆU CỦA NGƯỜI DÙNG - CHỈ PHÂN LOẠI LẠI
+                if new_cat == "DELETE" or not new_cat:
+                    new_cat = "Khác"
+                
+                print(f"[*] Updating {eid}: Category -> {new_cat}")
+                update_entry(eid, title=new_title, category=new_cat)
+                refined_count += 1
         except Exception as e:
             print(f"⚠️ Batch refinement failed: {e}")
 
