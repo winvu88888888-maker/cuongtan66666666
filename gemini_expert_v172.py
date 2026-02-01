@@ -64,11 +64,14 @@ class GeminiQMDGHelperV173:
         except:
             print("⚠️ Hub Searcher could not be initialized.")
 
-        # Default model priority list
         self.model_priority = [
+            "gemini-1.5-flash-002",
+            "gemini-1.5-flash-001",
             "gemini-1.5-flash",
-            "gemini-1.5-pro-latest",
-            "gemini-1.5-pro"
+            "gemini-1.5-pro-002",
+            "gemini-1.5-pro-001",
+            "gemini-1.5-pro",
+            "gemini-1.0-pro"
         ]
         self.model = self._get_best_model()
 
