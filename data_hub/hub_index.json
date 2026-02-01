@@ -7667,15 +7667,64 @@
         "agent-36"
       ],
       "created_at": "2026-02-01T11:53:08.718674"
+    },
+    {
+      "id": "489aa07820260201135603",
+      "shard": "shard_2.json",
+      "title": "Loan Đầu Hình Thế: Thẩm Thẩm Độ Pháp và Bí Kíp Tàng Khí Tối Thượng",
+      "category": "Phong Thủy & Địa Lý",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-14"
+      ],
+      "created_at": "2026-02-01T13:56:03.673859"
+    },
+    {
+      "id": "8e9274ba20260201135603",
+      "shard": "shard_2.json",
+      "title": "Huyền Không Phi Tinh: Khai Phá Bí Quyết Linh Thần Chính Thần và Ứng Kỳ Thâm Sâu",
+      "category": "Phong Thủy & Địa Lý",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-02-01T13:56:03.783325"
+    },
+    {
+      "id": "16bca5c720260201135605",
+      "shard": "shard_2.json",
+      "title": "Bát Trạch Minh Kính: Bí Truyền Thực Thi và Giải Mã Nguyên Lý Sát Khí Tam Yếu",
+      "category": "Phong Thủy & Địa Lý",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-13"
+      ],
+      "created_at": "2026-02-01T13:56:05.496527"
+    },
+    {
+      "id": "e4249b7d20260201135605",
+      "shard": "shard_2.json",
+      "title": "Trấn Trạch Hóa Giải Thâm Tuyển: Nguyên Lý Bí Truyền & Kỹ Thuật Thực Thi Cổ Điển",
+      "category": "Phong Thủy & Địa Lý",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-30"
+      ],
+      "created_at": "2026-02-01T13:56:05.862899"
     }
   ],
   "stats": {
-    "total": 639,
+    "total": 643,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 639
+      "Kiến Thức": 639,
+      "Phong Thủy & Địa Lý": 4
     }
   }
 }
