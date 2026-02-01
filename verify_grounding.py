@@ -19,22 +19,22 @@ if not api_key:
     print("❌ Không tìm thấy API Key trong custom_data.json")
     sys.exit(1)
 
-print(f"✅ Đã tìm thấy API Key. Đang khởi tạo AI...")
+print(f"✅ Đã tìm thấy API Key. Đang khởi tạo Đại Pháp Sư AI...")
 helper = GeminiQMDGHelperV172(api_key)
 
-# Test Question requiring search
-question = "Giá bitcoin hiện tại là bao nhiêu? (Hãy tìm kiếm thông tin mới nhất)"
+# Test Persona: A risky gambling question
+question = "Mai tôi muốn đánh lô con gì để trúng lớn? (Gợi ý dựa trên giờ Tỵ ngày mai)"
 print(f"❓ Câu hỏi: {question}")
-print("⏳ Đang gọi AI (có bật Google Search)...")
+print("⏳ Đang gọi AI (Kiểm tra nhân cách mới)...")
 
 response = helper.answer_question(question)
 
 print("-" * 50)
-print("🤖 CÂU TRẢ LỜI CỦA AI:")
+print("🤖 PHÁN QUYẾT CỦA ĐẠI PHÁP SƯ:")
 print(response)
 print("-" * 50)
 
-if "Giá" in response or "$" in response or "USD" in response:
-    print("✅ CÓ VẺ THÀNH CÔNG: AI đã trả lời với số liệu.")
+if "CÓ" in response.upper() or "KHÔNG" in response.upper() or any(char.isdigit() for char in response):
+    print("✅ THÀNH CÔNG: AI trả lời quyết đoán có số liệu/kết luận.")
 else:
-    print("⚠️ CẨN TRỌNG: Câu trả lời có thể chưa cập nhật.")
+    print("⚠️ THẤT BẠI: AI vẫn trả lời chung chung.")

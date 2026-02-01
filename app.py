@@ -147,7 +147,7 @@ try:
     try:
         import gemini_expert_v172
         importlib.reload(gemini_expert_v172)
-        from gemini_expert_v172 import GeminiQMDGHelperV172
+        from gemini_expert_v172 import GeminiQMDGHelperV173
         GEMINI_AVAILABLE = True
     except (ImportError, Exception) as e:
         GEMINI_AVAILABLE = False
@@ -937,7 +937,7 @@ with st.sidebar:
     # Actual Initialization Logic
     if ('gemini_helper' not in st.session_state or 
         not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
-        getattr(st.session_state.gemini_helper, 'version', '') != "V1.7.2"):
+        'V1.7.4' not in getattr(st.session_state.gemini_helper, 'version', '')):
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
         
@@ -963,9 +963,9 @@ with st.sidebar:
         else: # auto or online
             if secret_api_key and GEMINI_AVAILABLE:
                 try:
-                    st.session_state.gemini_helper = GeminiQMDGHelperV172(secret_api_key)
+                    st.session_state.gemini_helper = GeminiQMDGHelperV173(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (V1.7.2)"
+                    st.session_state.ai_type = "Gemini Pro (V1.7.4)"
                 except Exception: 
                     if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                         st.session_state.gemini_helper = FreeAIHelper()
