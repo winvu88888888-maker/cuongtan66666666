@@ -19,14 +19,12 @@ st.set_page_config(
 st.sidebar.markdown("### 🔍 Hệ thống Giao diện")
 st.sidebar.write(f"📁 Thư mục gốc: `{os.path.dirname(os.path.abspath(__file__))}`")
 try:
-    import mai_hoa_v2
-    st.sidebar.caption(f"🌸 Module Mai Hoa V2: `{mai_hoa_v2.__file__}`")
-    importlib.reload(mai_hoa_v2)
-    import luc_hao_v2
-    st.sidebar.caption(f"☯️ Module Lục Hào V2: `{luc_hao_v2.__file__}`")
-    importlib.reload(luc_hao_v2)
+    import mai_hoa_dich_so
+    st.sidebar.caption(f"🌸 Mai Hoa: ✅")
+    import luc_hao_kinh_dich
+    st.sidebar.caption(f"☯️ Lục Hào: ✅")
 except Exception as e:
-    st.sidebar.error(f"⚠️ Reload V2: {e}")
+    st.sidebar.error(f"⚠️ Module: {e}")
 
 # --- AI FACTORY STATUS (SIDEBAR) ---
 try:
