@@ -991,9 +991,9 @@ with st.sidebar:
             if st.button("Cập nhật Key mới"):
                 if new_key:
                     try:
-                        st.session_state.gemini_helper = GeminiQMDGHelperV172(new_key)
+                        st.session_state.gemini_helper = GeminiQMDGHelperV173(new_key)
                         st.session_state.gemini_key = new_key
-                        st.session_state.ai_type = "Gemini Pro (Updated V1.7.2)"
+                        st.session_state.ai_type = "Gemini Pro (Updated V1.7.4)"
                         
                         if save_permanently:
                             data = load_custom_data()
