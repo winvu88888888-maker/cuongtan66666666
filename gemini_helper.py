@@ -32,8 +32,8 @@ CUNG_TEN = {
     9: "Ly (Hỏa)"
 }
 
-class GeminiQMDGHelper:
-    """Helper class with context awareness for QMDG analysis"""
+class GeminiQMDGHelperV172:
+    """Helper class for Gemini AI with QMDG specific knowledge and grounding"""
     
     # Class-level cache to persist across instances
     _response_cache = {}

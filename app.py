@@ -145,10 +145,13 @@ try:
         print(f"⚠️ AI Factory modules not available: {e}")
     
     try:
-        from gemini_helper import GeminiQMDGHelper
+        import gemini_helper
+        importlib.reload(gemini_helper)
+        from gemini_helper import GeminiQMDGHelperV172
         GEMINI_AVAILABLE = True
-    except ImportError:
+    except (ImportError, Exception) as e:
         GEMINI_AVAILABLE = False
+        print(f"⚠️ Gemini helper reload error: {e}")
         
     # Import Free AI helper as fallback
     try:
@@ -960,9 +963,9 @@ with st.sidebar:
         else: # auto or online
             if secret_api_key and GEMINI_AVAILABLE:
                 try:
-                    st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
+                    st.session_state.gemini_helper = GeminiQMDGHelperV172(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (Online)"
+                    st.session_state.ai_type = "Gemini Pro (V1.7.2)"
                 except Exception: 
                     if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                         st.session_state.gemini_helper = FreeAIHelper()
@@ -988,9 +991,9 @@ with st.sidebar:
             if st.button("Cập nhật Key mới"):
                 if new_key:
                     try:
-                        st.session_state.gemini_helper = GeminiQMDGHelper(new_key)
+                        st.session_state.gemini_helper = GeminiQMDGHelperV172(new_key)
                         st.session_state.gemini_key = new_key
-                        st.session_state.ai_type = "Gemini Pro (Cá nhân)"
+                        st.session_state.ai_type = "Gemini Pro (Updated V1.7.2)"
                         
                         if save_permanently:
                             data = load_custom_data()
@@ -1026,9 +1029,9 @@ with st.sidebar:
             if st.button("Kích hoạt ngay", type="primary"):
                 if GEMINI_AVAILABLE and user_api_key:
                     try:
-                        st.session_state.gemini_helper = GeminiQMDGHelper(user_api_key)
+                        st.session_state.gemini_helper = GeminiQMDGHelperV172(user_api_key)
                         st.session_state.gemini_key = user_api_key
-                        st.session_state.ai_type = "Gemini Pro (Active)"
+                        st.session_state.ai_type = "Gemini Pro (V1.7.2 Active)"
                         
                         if save_key_permanently:
                             data = load_custom_data()
