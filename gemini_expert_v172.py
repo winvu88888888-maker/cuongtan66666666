@@ -264,10 +264,14 @@ class GeminiQMDGHelperV172:
                 prompt = hub_data + instruction + "-"*50 + "\n" + prompt
                 
         # Configure Tools (Google Search Grounding)
+        model_name_full = getattr(self.model, 'model_name', '').lower()
         tools = []
         if use_web_search:
-            # Enable Google Search Retrieval
-            tools.append({'google_search': {}})
+            # DYNAMIC TOOL SELECTION: 2.0 uses 'google_search', 1.5 uses 'google_search_retrieval'
+            if '2.0' in model_name_full:
+                tools.append({'google_search': {}})
+            else:
+                tools.append({'google_search_retrieval': {}})
 
         # Option 1: Use n8n if configured (with increased timeout)
         if self.n8n_url:
@@ -292,10 +296,19 @@ class GeminiQMDGHelperV172:
         last_error = None
         for attempt in range(self.max_retries):
             try:
-                if tools:
-                    response = self.model.generate_content(prompt, tools=tools)
-                else:
-                    response = self.model.generate_content(prompt)
+                # TRY WITH TOOLS FIRST
+                try:
+                    if tools:
+                        response = self.model.generate_content(prompt, tools=tools)
+                    else:
+                        response = self.model.generate_content(prompt)
+                except Exception as tool_e:
+                    # FALLBACK: If tools fail (e.g. SDK mismatch), try WITHOUT tools immediately
+                    if tools:
+                        print(f"⚠️ Tool error ({tool_e}), retrying without grounding...")
+                        response = self.model.generate_content(prompt)
+                    else:
+                        raise tool_e
                 
                 text = self.safe_get_text(response)
                 
