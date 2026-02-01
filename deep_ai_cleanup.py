@@ -58,7 +58,7 @@ def deep_ai_refinement():
             title = e_data.get("title", "")
             
             # Check for error indicators
-            error_keywords = ["❌ Lỗi AI", "🛑 **Hết hạn mức AI**", "400 google_search", "quota", "API Key leaked"]
+            error_keywords = ["❌ Lỗi AI", "🛑 **Hết hạn mức AI**", "400 google_search", "google_search_retrieval", "quota", "API Key leaked"]
             if any(kw in content for kw in error_keywords):
                 print(f"[-] Deleting error entry: {title}")
                 delete_entry(eid)

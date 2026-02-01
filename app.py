@@ -1,5 +1,5 @@
 import streamlit as st
-# VERSION: 2026-02-01-V1.6-FORCED-FIX
+# VERSION: 2026-02-01-V1.7-ULTRA-UNLOCK
 import sys
 import os
 import random
@@ -16,8 +16,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.sidebar.warning("🛠️ BUILD V1.6 - GOOGLE SEARCH FIX")
-st.sidebar.info("Hệ thống: [Đã cập nhật Code mới nhất]")
+st.sidebar.warning("🛠️ BUILD V1.7 - GOOGLE SEARCH FIX")
+st.sidebar.info("Hệ thống: [Đã cập nhật Code mới nhất - ULTRA UNLOCK]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
 st.sidebar.markdown("### 🔍 Hệ thống Giao diện")

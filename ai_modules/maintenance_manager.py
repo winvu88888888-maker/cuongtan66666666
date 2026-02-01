@@ -50,7 +50,7 @@ class MaintenanceManager:
         index = data.get("index", [])
         to_remove = []
         
-        error_keywords = ["❌ Lỗi AI", "🛑 **Hết hạn mức AI**", "400 google_search", "quota", "limit"]
+        error_keywords = ["❌ Lỗi AI", "🛑 **Hết hạn mức AI**", "400 google_search", "google_search_retrieval", "quota", "limit"]
         
         for entry in index:
             shard_file = self.data_hub_dir / entry['shard']
