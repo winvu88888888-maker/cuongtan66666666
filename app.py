@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.sidebar.warning("🛠️ BUILD V1.7.2 - GROUNDING FIX")
+st.sidebar.warning("🛠️ BUILD V1.7.3 - ULTIMATE STABILITY")
 st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
