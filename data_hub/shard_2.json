@@ -1117,6 +1117,32 @@
         "agent-26"
       ],
       "created_at": "2026-01-29T17:57:31.618189"
+    },
+    "7e444acd20260201115306": {
+      "id": "7e444acd20260201115306",
+      "title": "Tàng thư bí truyền của các danh gia Huyền học nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "❌ **Lỗi AI (V1.7.2) sau 5 lần thử:** Unknown field for FunctionDeclaration: google_search\n\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #33 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-02-01T11:53:06.416967"
+    },
+    "1bec00f020260201115308": {
+      "id": "1bec00f020260201115308",
+      "title": "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "content": "❌ **Lỗi AI (V1.7.2) sau 5 lần thử:** Unknown field for FunctionDeclaration: google_search\n\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key.",
+      "category": "Kiến Thức",
+      "source": "Agent #36 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-02-01T11:53:08.718674"
     }
   }
 }

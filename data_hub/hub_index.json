@@ -7643,15 +7643,39 @@
         "agent-5"
       ],
       "created_at": "2026-01-31T22:56:49.535518"
+    },
+    {
+      "id": "7e444acd20260201115306",
+      "shard": "shard_2.json",
+      "title": "Tàng thư bí truyền của các danh gia Huyền học nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-33"
+      ],
+      "created_at": "2026-02-01T11:53:06.416967"
+    },
+    {
+      "id": "1bec00f020260201115308",
+      "shard": "shard_2.json",
+      "title": "Phân tích các bản khắc gỗ Cổ Tịch quý hiếm nguyên lý bí truyền giải mã - Chuyên sâu Giai đoạn 5",
+      "category": "Kiến Thức",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-36"
+      ],
+      "created_at": "2026-02-01T11:53:08.718674"
     }
   ],
   "stats": {
-    "total": 637,
+    "total": 639,
     "categories": {
       "Công Nghệ Mới & Tương Lai": 0,
       "Kinh Dịch & Dự Đoán": 0,
       "Kỳ Môn Độn Giáp (Sâu)": 0,
-      "Kiến Thức": 637
+      "Kiến Thức": 639
     }
   }
 }
