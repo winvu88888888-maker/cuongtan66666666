@@ -334,7 +334,7 @@ class GeminiQMDGHelper:
                     time.sleep(delay)
                     continue
                     
-        return f"❌ **Lỗi AI sau {self.max_retries} lần thử:** {last_error}\\n\\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key."
+        return f"❌ **Lỗi AI (V1.7.2) sau {self.max_retries} lần thử:** {last_error}\\n\\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key."
     
     def update_context(self, **kwargs):
         """Update current context"""

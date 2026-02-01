@@ -16,8 +16,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.sidebar.warning("🛠️ BUILD V1.7 - GOOGLE SEARCH FIX")
-st.sidebar.info("Hệ thống: [Đã cập nhật Code mới nhất - ULTRA UNLOCK]")
+st.sidebar.warning("🛠️ BUILD V1.7.2 - GROUNDING FIX")
+st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
 st.sidebar.markdown("### 🔍 Hệ thống Giao diện")
