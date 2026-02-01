@@ -7,7 +7,7 @@ from pathlib import Path
 # Configuration
 BASE_HUB_DIR = "data_hub"
 INDEX_FILE = os.path.join(BASE_HUB_DIR, "hub_index.json")
-MAX_ENTRIES_PER_SHARD = 100 # Adjust based on performance needs
+MAX_ENTRIES_PER_SHARD = 500  # Increased from 100 for better efficiency
 
 def initialize_hub():
     """Initialize the directory and index if they don't exist."""
@@ -18,18 +18,47 @@ def initialize_hub():
         with open(INDEX_FILE, 'w', encoding='utf-8') as f:
             json.dump({"index": [], "stats": {"total": 0, "categories": {}}}, f, indent=2)
 
-def add_entry(title, content, category="Kiến Thức", source="AI Miner", tags=None):
-    """Add a new entry into a shard and update the index."""
+def _check_duplicate(title, index_data):
+    """Check if an entry with similar title already exists.
+    Returns the duplicate entry if found, None otherwise."""
+    title_lower = title.lower().strip()
+    for entry in index_data.get("index", []):
+        if entry.get("title", "").lower().strip() == title_lower:
+            return entry
+    return None
+
+def add_entry(title, content, category="Kiến Thức", source="AI Miner", tags=None, allow_duplicate=False):
+    """Add a new entry into a shard and update the index.
+    
+    Args:
+        title: Title of the entry
+        content: Full content
+        category: Category (default: "Kiến Thức")
+        source: Source of the entry (default: "AI Miner")
+        tags: List of tags (optional)
+        allow_duplicate: If False, skip adding if duplicate title exists
+        
+    Returns:
+        entry_id if added, None if skipped due to duplicate
+    """
     initialize_hub()
+    
+    # Load index
+    with open(INDEX_FILE, 'r', encoding='utf-8') as f:
+        index_data = json.load(f)
+    
+    # Check for duplicates unless explicitly allowed
+    if not allow_duplicate:
+        duplicate = _check_duplicate(title, index_data)
+        if duplicate:
+            print(f"⚠️ Skipped duplicate: '{title}' (existing ID: {duplicate['id']})")
+            return None
     
     entry_id = str(uuid.uuid4())[:8] + datetime.now().strftime("%Y%m%d%H%M%S")
     timestamp = datetime.now().isoformat()
     tags = tags or []
     
     # 1. Determine Shard
-    with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-        index_data = json.load(f)
-        
     total_entries = index_data['stats']['total']
     shard_id = (total_entries // MAX_ENTRIES_PER_SHARD) + 1
     shard_filename = f"shard_{shard_id}.json"
@@ -204,3 +233,86 @@ def get_hub_stats():
         return stats
     except:
         return {"total": 0, "categories": {}, "size_mb": 0.0}
+
+def cleanup_duplicates():
+    """Remove duplicate entries from the data hub.
+    Keeps the oldest entry and removes newer duplicates.
+    
+    Returns:
+        dict: Stats about cleanup operation
+    """
+    if not os.path.exists(INDEX_FILE):
+        return {"removed": 0, "error": "No index file"}
+    
+    try:
+        with open(INDEX_FILE, 'r', encoding='utf-8') as f:
+            index_data = json.load(f)
+        
+        seen_titles = {}
+        duplicates = []
+        
+        for entry in index_data.get("index", []):
+            title_key = entry.get("title", "").lower().strip()
+            if title_key in seen_titles:
+                duplicates.append(entry["id"])
+            else:
+                seen_titles[title_key] = entry["id"]
+        
+        # Remove duplicates
+        removed_count = 0
+        for dup_id in duplicates:
+            if delete_entry(dup_id):
+                removed_count += 1
+        
+        return {
+            "removed": removed_count,
+            "total_checked": len(index_data.get("index", [])),
+            "unique_entries": len(seen_titles)
+        }
+    except Exception as e:
+        return {"removed": 0, "error": str(e)}
+
+def find_similar_entries(query, threshold=0.8, max_results=10):
+    """Find entries with similar titles using simple matching.
+    
+    Args:
+        query: Search query string
+        threshold: Minimum similarity ratio (0.0 to 1.0)
+        max_results: Maximum number of results to return
+        
+    Returns:
+        List of similar entries with similarity scores
+    """
+    if not os.path.exists(INDEX_FILE):
+        return []
+    
+    try:
+        with open(INDEX_FILE, 'r', encoding='utf-8') as f:
+            index_data = json.load(f)
+        
+        query_lower = query.lower().strip()
+        query_words = set(query_lower.split())
+        results = []
+        
+        for entry in index_data.get("index", []):
+            title = entry.get("title", "").lower().strip()
+            title_words = set(title.split())
+            
+            # Calculate Jaccard similarity
+            if title_words or query_words:
+                intersection = len(query_words & title_words)
+                union = len(query_words | title_words)
+                similarity = intersection / union if union > 0 else 0
+                
+                if similarity >= threshold:
+                    results.append({
+                        **entry,
+                        "similarity": round(similarity, 2)
+                    })
+        
+        # Sort by similarity, descending
+        results.sort(key=lambda x: x["similarity"], reverse=True)
+        return results[:max_results]
+    except:
+        return []
+

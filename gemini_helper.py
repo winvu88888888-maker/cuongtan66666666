@@ -35,11 +35,17 @@ CUNG_TEN = {
 class GeminiQMDGHelper:
     """Helper class with context awareness for QMDG analysis"""
     
+    # Class-level cache to persist across instances
+    _response_cache = {}
+    _cache_max_size = 100
+    
     def __init__(self, api_key):
         """Initialize Gemini with API key and super intelligence features"""
+        import hashlib
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self._failed_models = set() # Track exhausted models
+        self._hashlib = hashlib  # Store for cache key generation
         
         # Context tracking
         self.current_context = {
@@ -49,6 +55,11 @@ class GeminiQMDGHelper:
             'last_action': None,
             'dung_than': []
         }
+        
+        # Retry configuration - IMPROVED
+        self.max_retries = 5  # Increased from 3
+        self.base_delay = 1.0  # Base delay in seconds
+        self.n8n_timeout = 120  # Increased from 60
         
         # Adaptive model selection
         self.model = self._get_best_model()
@@ -62,6 +73,36 @@ class GeminiQMDGHelper:
             self.hub_searcher = HubSearcher()
         except:
             self.hub_searcher = None
+    
+    def _get_cache_key(self, prompt):
+        """Generate cache key from prompt"""
+        return self._hashlib.md5(prompt.encode()).hexdigest()
+    
+    def _get_cached_response(self, prompt):
+        """Get cached response if exists and not expired"""
+        key = self._get_cache_key(prompt)
+        if key in self._response_cache:
+            cached = self._response_cache[key]
+            # Cache valid for 10 minutes
+            import time
+            if time.time() - cached['time'] < 600:
+                return cached['response']
+        return None
+    
+    def _cache_response(self, prompt, response):
+        """Cache a response"""
+        import time
+        # Cleanup old entries if cache is full
+        if len(self._response_cache) >= self._cache_max_size:
+            oldest_key = min(self._response_cache.keys(), 
+                           key=lambda k: self._response_cache[k]['time'])
+            del self._response_cache[oldest_key]
+        
+        key = self._get_cache_key(prompt)
+        self._response_cache[key] = {
+            'response': response,
+            'time': time.time()
+        }
     
     def set_n8n_url(self, url):
         """Set n8n webhook URL for processing"""
@@ -149,7 +190,14 @@ class GeminiQMDGHelper:
         return hub_context
 
     def _call_ai(self, prompt, use_hub=True, use_web_search=False):
-        """Call AI with auto-switch fallback and optional Hub data injection."""
+        """Call AI with auto-switch fallback, caching, and improved retry logic."""
+        import time
+        
+        # Check cache first (only for non-web-search queries)
+        if not use_web_search:
+            cached = self._get_cached_response(prompt)
+            if cached:
+                return cached
         
         # Inject relevant hub data if requested
         if use_hub and not use_web_search:
@@ -170,7 +218,7 @@ class GeminiQMDGHelper:
             tools.append({'google_search_retrieval': {}})
 
 
-        # Option 1: Use n8n if configured
+        # Option 1: Use n8n if configured (with increased timeout)
         if self.n8n_url:
             try:
                 payload = {
@@ -178,18 +226,20 @@ class GeminiQMDGHelper:
                     "api_key": self.api_key
                 }
                 headers = {"Content-Type": "application/json"}
-                response = requests.post(self.n8n_url, json=payload, headers=headers, timeout=60)
+                response = requests.post(self.n8n_url, json=payload, headers=headers, timeout=self.n8n_timeout)
                 if response.status_code == 200:
                     text = response.json().get('text', '')
-                    if text: return text
+                    if text:
+                        self._cache_response(prompt, text)  # Cache successful response
+                        return text
                 else:
                     print(f"n8n Error: {response.text}")
             except Exception as e:
                 print(f"n8n Exception: {e}")
         
-        # Option 2: Direct Gemini API with Swapping
-        import time
-        for attempt in range(3):
+        # Option 2: Direct Gemini API with Improved Retry (Exponential Backoff)
+        last_error = None
+        for attempt in range(self.max_retries):
             try:
                 if tools:
                     response = self.model.generate_content(prompt, tools=tools)
@@ -198,25 +248,38 @@ class GeminiQMDGHelper:
                     
                 if not response.text:
                     return "⚠️ AI trả về kết quả trống."
+                
+                # Cache successful response
+                self._cache_response(prompt, response.text)
                 return response.text
+                
             except Exception as e:
                 error_msg = str(e)
+                last_error = error_msg
                 model_name = getattr(self.model, 'model_name', 'unknown').split('/')[-1]
                 
+                # Rate limit / Quota exceeded
                 if "429" in error_msg or "quota" in error_msg.lower():
                     self._failed_models.add(model_name)
-                    print(f"Model {model_name} exhausted. Switching...")
+                    print(f"⚠️ Model {model_name} exhausted. Switching... (attempt {attempt+1}/{self.max_retries})")
                     self.model = self._get_best_model()
-                    time.sleep(1)
+                    # Exponential backoff
+                    delay = self.base_delay * (2 ** attempt)
+                    time.sleep(min(delay, 30))  # Cap at 30 seconds
                     continue
                 
+                # Safety filter
                 if "SAFETY" in error_msg or "blocked" in error_msg.lower():
                     return "🛡️ Nội dung bị chặn do quy tắc an toàn. Thử đổi chủ đề."
                 
-                if attempt == 2:
-                    return f"❌ Lỗi AI: {error_msg}\n\nVui lòng đợi hoặc đổi API Key."
-                time.sleep(0.5)
-        return "🛑 **Hết hạn mức AI:** Thử lại sau ít phút."
+                # Network/temporary errors - retry with backoff
+                if attempt < self.max_retries - 1:
+                    delay = self.base_delay * (2 ** attempt)
+                    print(f"⚠️ Retrying in {delay}s... (attempt {attempt+1}/{self.max_retries})")
+                    time.sleep(delay)
+                    continue
+                    
+        return f"❌ **Lỗi AI sau {self.max_retries} lần thử:** {last_error}\\n\\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key."
     
     def update_context(self, **kwargs):
         """Update current context"""
