@@ -80,8 +80,11 @@ def add_entry(title, content, category="Kiến Thức", source="AI Miner", tags=
         "created_at": timestamp
     }
     
-    with open(shard_path, 'w', encoding='utf-8') as f:
+    # Atomic Write to Shard
+    temp_shard_path = f"{shard_path}.tmp"
+    with open(temp_shard_path, 'w', encoding='utf-8') as f:
         json.dump(shard_data, f, indent=2, ensure_ascii=False)
+    os.replace(temp_shard_path, shard_path)
         
     # 3. Update Index (Lightweight Info)
     index_data["index"].append({
@@ -97,8 +100,11 @@ def add_entry(title, content, category="Kiến Thức", source="AI Miner", tags=
     index_data["stats"]["total"] += 1
     index_data["stats"]["categories"][category] = index_data["stats"]["categories"].get(category, 0) + 1
     
-    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
+    # Atomic Write to Index
+    temp_index_path = f"{INDEX_FILE}.tmp"
+    with open(temp_index_path, 'w', encoding='utf-8') as f:
         json.dump(index_data, f, indent=2, ensure_ascii=False)
+    os.replace(temp_index_path, INDEX_FILE)
         
     return entry_id
 
@@ -152,8 +158,11 @@ def delete_entry(entry_id):
             shard_data = json.load(f)
         if entry_id in shard_data["entries"]:
             del shard_data["entries"][entry_id]
-            with open(shard_path, 'w', encoding='utf-8') as f:
+            # Atomic Write to Shard
+            temp_shard_path = f"{shard_path}.tmp"
+            with open(temp_shard_path, 'w', encoding='utf-8') as f:
                 json.dump(shard_data, f, indent=2, ensure_ascii=False)
+            os.replace(temp_shard_path, shard_path)
                 
     # 2. Remove from Index
     index_data["index"] = [e for e in index_data["index"] if e["id"] != entry_id]
@@ -161,8 +170,11 @@ def delete_entry(entry_id):
     cat = entry_ref["category"]
     index_data["stats"]["categories"][cat] = max(0, index_data["stats"]["categories"].get(cat, 0) - 1)
     
-    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
+    # Atomic Write to Index
+    temp_index_path = f"{INDEX_FILE}.tmp"
+    with open(temp_index_path, 'w', encoding='utf-8') as f:
         json.dump(index_data, f, indent=2, ensure_ascii=False)
+    os.replace(temp_index_path, INDEX_FILE)
     
     return True
 
@@ -193,8 +205,11 @@ def update_entry(entry_id, title=None, category=None, tags=None, content=None):
             if tags: e["tags"] = tags
             if content: e["content"] = content
             
-            with open(shard_path, 'w', encoding='utf-8') as f:
+            # Atomic Write to Shard
+            temp_shard_path = f"{shard_path}.tmp"
+            with open(temp_shard_path, 'w', encoding='utf-8') as f:
                 json.dump(shard_data, f, indent=2, ensure_ascii=False)
+            os.replace(temp_shard_path, shard_path)
                 
     # 2. Update Index
     if title: entry_ref["title"] = title
@@ -206,8 +221,11 @@ def update_entry(entry_id, title=None, category=None, tags=None, content=None):
         index_data["stats"]["categories"][old_cat] = max(0, index_data["stats"]["categories"].get(old_cat, 0) - 1)
         index_data["stats"]["categories"][category] = index_data["stats"]["categories"].get(category, 0) + 1
     
-    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
+    # Atomic Write to Index
+    temp_index_path = f"{INDEX_FILE}.tmp"
+    with open(temp_index_path, 'w', encoding='utf-8') as f:
         json.dump(index_data, f, indent=2, ensure_ascii=False)
+    os.replace(temp_index_path, INDEX_FILE)
     
     return True
 
