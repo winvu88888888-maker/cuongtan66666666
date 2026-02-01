@@ -137,10 +137,22 @@ class GeminiQMDGHelperV173:
     def test_connection(self):
         """Quickly test if the API key and model are working"""
         try:
-            response = self.model.generate_content("Hello, are you ready?", request_options={"timeout": 10})
+            response = self.model.generate_content("Hello", request_options={"timeout": 10})
             return True, f"Kết nối thành công tới model {self.model.model_name}!"
         except Exception as e:
-            return False, f"Lỗi kết nối: {str(e)}"
+            try:
+                # DEBUG: List available models
+                available = []
+                for m in genai.list_models():
+                    if 'generateContent' in m.supported_generation_methods:
+                        available.append(m.name)
+                
+                if not available:
+                    return False, f"Lỗi: API Key này không thấy model nào cả. (Danh sách rỗng). Vui lòng tạo Key mới."
+                
+                return False, f"Lỗi kết nối: {str(e)}. Model khả dụng: {', '.join(available)}"
+            except Exception as e2:
+                return False, f"Lỗi kết nối: {str(e)}. Không thể liệt kê model: {str(e2)}"
 
     def _fetch_relevant_hub_data(self, query):
         """Fetch the most relevant context from the Sharded Hub."""
