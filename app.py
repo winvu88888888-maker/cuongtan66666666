@@ -145,13 +145,13 @@ try:
         print(f"⚠️ AI Factory modules not available: {e}")
     
     try:
-        import gemini_helper
-        importlib.reload(gemini_helper)
-        from gemini_helper import GeminiQMDGHelperV172
+        import gemini_expert_v172
+        importlib.reload(gemini_expert_v172)
+        from gemini_expert_v172 import GeminiQMDGHelperV172
         GEMINI_AVAILABLE = True
     except (ImportError, Exception) as e:
         GEMINI_AVAILABLE = False
-        print(f"⚠️ Gemini helper reload error: {e}")
+        print(f"⚠️ Gemini expert reload error: {e}")
         
     # Import Free AI helper as fallback
     try:
