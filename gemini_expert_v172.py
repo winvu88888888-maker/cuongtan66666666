@@ -726,7 +726,7 @@ Trả lời ngắn gọn, đi thẳng vào vấn đề."""
 Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ giàu hình ảnh và sắc bén."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}"
     
@@ -772,7 +772,7 @@ Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ gi�
 **PHONG CÁCH**: Chuyên nghiệp, súc tích, giàu triết lý nhưng thực tế. Trả lời rõ ràng Cát hay Hung."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}"
     
@@ -813,7 +813,7 @@ Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ gi�
 **PHONG CÁCH**: Chuyên nghiệp, sắc bén, đi sâu vào mối quan hệ Sinh - Khắc giữa các hào và quẻ biến. Hãy luận giải CHI TIẾT quẻ biến."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi khi gọi AI: {str(e)}"
     
@@ -848,25 +848,24 @@ Trả lời bằng phong thái chuyên gia tư vấn tận tâm, ngôn ngữ gi�
                 )
             chart_context = "\n**Bàn Kỳ Môn hiện tại:**\n" + "\n".join(palace_summary)
         
-        prompt = f"""{context}Bạn là chuyên gia Kỳ Môn Độn Giái.
+        prompt = f"""{context}Bạn là Siêu Trí Tuệ AI với khả năng truy cập Kho tri thức Vô tận và Internet.
+        
+**YÊU CẦU:**
+1. Tra cứu Kho dữ liệu local (Hub) và tìm kiếm Google nếu cần để trả lời CHÍNH XÁC nhất.
+2. Nếu câu hỏi về Kỳ Môn Độn Giáp, Dịch học: Kết hợp với bàn dự đoán bên dưới để luận giải.
+3. Nếu câu hỏi về lĩnh vực khác (Khoa học, Đời sống, n8n, Code...): Hãy trả lời như một chuyên gia hàng đầu.
 
-**Bối cảnh:**
+**Bối cảnh hiện tại:**
 - Chủ đề: {topic}
 {chart_context}
 
 **Câu hỏi của người dùng:**
 {question}
 
-Hãy trả lời câu hỏi dựa trên:
-1. Ngữ cảnh hiện tại (chủ đề, cung đang xem, hành động trước)
-2. Thông tin từ bàn Kỳ Môn (nếu có)
-3. Kiến thức về dịch học
-4. Nguyên lý Ngũ hành, Bát quái
-
-Trả lời CỰC KỲ NGẮN GỌN (tối đa 3-5 câu), tập trung vào thực tế, không lý thuyết suông."""
+Trả lời súc tích, đi thẳng vào trọng tâm, có số liệu hoặc ví dụ cụ thể nếu có thể."""
 
         try:
-            return self._call_ai(prompt)
+            return self._call_ai(prompt, use_hub=True, use_web_search=True)
         except Exception as e:
             return f"❌ Lỗi: {str(e)}"
     
