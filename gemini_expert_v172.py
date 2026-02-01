@@ -66,9 +66,9 @@ class GeminiQMDGHelperV173:
 
         # Default model priority list
         self.model_priority = [
-            "gemini-1.5-pro",
             "gemini-1.5-flash",
-            "gemini-pro"
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-pro"
         ]
         self.model = self._get_best_model()
 
@@ -114,20 +114,22 @@ class GeminiQMDGHelperV173:
 
     def _get_best_model(self):
         """Find the best available model for the current API key"""
+        # Try finding a working model from priority list
         for model_name in self.model_priority:
             if model_name in self._failed_models:
                 continue
             try:
                 m = genai.GenerativeModel(model_name)
                 # Quick test to see if we have access / quota
-                m.generate_content("Ping", request_options={"timeout": 5})
+                # We skip the network test to speed up startup, relying on lazy error handling during main call
+                # m.generate_content("Ping", request_options={"timeout": 5}) 
                 print(f"✅ Selected Model: {model_name}")
                 return m
             except Exception as e:
                 print(f"⚠️ Model {model_name} failed check: {e}")
                 
-        # If all checks fail (or timeout), just return the first one optimistically
-        return genai.GenerativeModel("gemini-pro")
+        # Fallback to flash if all else fails
+        return genai.GenerativeModel("gemini-1.5-flash")
 
     def test_connection(self):
         """Quickly test if the API key and model are working"""
