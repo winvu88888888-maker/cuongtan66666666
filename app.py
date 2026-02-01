@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.sidebar.success("🛠️ BUILD V1.7.4 - ULTIMATE STABILITY")
+st.sidebar.success("🛠️ BUILD V1.7.5 - QUOTA FIX")
 st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
@@ -937,7 +937,7 @@ with st.sidebar:
     # Actual Initialization Logic
     if ('gemini_helper' not in st.session_state or 
         not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
-        'V1.7.4' not in getattr(st.session_state.gemini_helper, 'version', '')):
+        'V1.7.5' not in getattr(st.session_state.gemini_helper, 'version', '')):
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
         
@@ -965,7 +965,7 @@ with st.sidebar:
                 try:
                     st.session_state.gemini_helper = GeminiQMDGHelperV173(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (V1.7.4)"
+                    st.session_state.ai_type = "Gemini Pro (V1.7.5)"
                 except Exception: 
                     if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                         st.session_state.gemini_helper = FreeAIHelper()

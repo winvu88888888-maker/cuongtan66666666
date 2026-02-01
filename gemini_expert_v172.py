@@ -49,7 +49,7 @@ class GeminiQMDGHelperV173:
     def __init__(self, api_key):
         """Initialize Gemini with API key and super intelligence features"""
         self.api_key = api_key
-        self.version = "V1.7.4"
+        self.version = "V1.7.5"
         genai.configure(api_key=api_key)
         self._failed_models = set() # Track exhausted models
         self.max_retries = 3
@@ -217,7 +217,7 @@ class GeminiQMDGHelperV173:
                 text = self.safe_get_text(response)
                 
                 # Prepend debug tag
-                text = "**🔮 [PYTHON V1.7.4 DIRECT]**\n\n" + text
+                text = "**🔮 [PYTHON V1.7.5 DIRECT]**\n\n" + text
                 
                 self._cache_response(prompt, text)
                 return text
