@@ -986,16 +986,110 @@ with st.sidebar:
                 st.session_state.gemini_helper = FreeAIHelper()
                 st.session_state.ai_type = "Free AI (Offline Mode)"
 
-    # AI Status Display
+    # AI Status Display with LED Indicator
     ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
+    
+    # Auto-check API status periodically (every 30 seconds)
+    if 'last_api_check_time' not in st.session_state:
+        st.session_state.last_api_check_time = 0
+    
+    import time
+    current_time = time.time()
+    
+    # Auto-check API status
+    if "Gemini" in ai_status and (current_time - st.session_state.last_api_check_time > 30):
+        try:
+            success, msg = st.session_state.gemini_helper.test_connection()
+            st.session_state.api_status_ok = success
+            st.session_state.api_status_msg = msg
+            st.session_state.last_api_check_time = current_time
+        except:
+            st.session_state.api_status_ok = False
+            st.session_state.api_status_msg = "Chưa kiểm tra"
+    
+    # Initialize status if not exists
+    if 'api_status_ok' not in st.session_state:
+        st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
+        st.session_state.api_status_msg = "Chưa kiểm tra"
+    
+    # LED Indicator Colors
+    if st.session_state.api_status_ok is True:
+        led_color = "🟢"  # Xanh = OK
+        status_color = "#10b981"
+        status_text = "HOẠT ĐỘNG TỐT"
+    elif st.session_state.api_status_ok is False:
+        led_color = "🔴"  # Đỏ = Lỗi
+        status_color = "#ef4444"
+        status_text = "LỖI KẾT NỐI"
+    else:
+        led_color = "🟡"  # Vàng = Chưa check
+        status_color = "#f59e0b"
+        status_text = "CHƯA KIỂM TRA"
+    
+    # Display with LED
     if "Gemini" in ai_status:
-        st.success(f"🤖 **{ai_status}**")
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, {status_color}22 0%, {status_color}11 100%);
+            border-left: 4px solid {status_color};
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">{led_color}</span>
+                <div style="flex: 1;">
+                    <div style="font-weight: 800; color: {status_color}; font-size: 0.9rem;">
+                        {status_text}
+                    </div>
+                    <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
+                        🤖 {ai_status}
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         with st.expander("⚙️ Quản lý Gemini"):
-            if st.button("🔄 Kiểm tra kết nối", key="test_ai_conn"):
-                with st.spinner("Đang thử kết nối..."):
-                    success, msg = st.session_state.gemini_helper.test_connection()
-                    if success: st.success(msg)
-                    else: st.error(msg)
+            # Manual check button
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if st.button("🔄 Kiểm tra kết nối ngay", key="test_ai_conn", use_container_width=True):
+                    with st.spinner("Đang thử kết nối..."):
+                        success, msg = st.session_state.gemini_helper.test_connection()
+                        st.session_state.api_status_ok = success
+                        st.session_state.api_status_msg = msg
+                        st.session_state.last_api_check_time = current_time
+                        if success: 
+                            st.success(f"✅ {msg}")
+                            st.rerun()  # Refresh to update LED
+                        else: 
+                            st.error(f"❌ {msg}")
+                            st.rerun()  # Refresh to update LED
+            
+            with col2:
+                if st.button("🔄", key="force_refresh", help="Làm mới", use_container_width=True):
+                    st.rerun()
+            
+            # Display current model info
+            if hasattr(st.session_state.gemini_helper, 'model'):
+                try:
+                    model_name = st.session_state.gemini_helper.model.model_name
+                    st.info(f"**Model đang dùng:** `{model_name}`")
+                    
+                    # Quota warning for Pro models
+                    if 'pro' in model_name.lower():
+                        st.warning("⚠️ **Cảnh báo:** Model Pro tốn quota rất nhiều. Nên chuyển sang Flash.")
+                    else:
+                        st.success(f"✅ **Model Flash** - Tiết kiệm quota")
+                except:
+                    pass
+            
+            # Display last check time
+            if st.session_state.last_api_check_time > 0:
+                import datetime
+                last_check = datetime.datetime.fromtimestamp(st.session_state.last_api_check_time)
+                st.caption(f"Lần check cuối: {last_check.strftime('%H:%M:%S')}")
             
             new_key = st.text_input("Thay đổi API Key (Tùy chọn):", type="password", key="new_api_key")
             save_permanently = st.checkbox("Lưu khóa này vĩnh viễn", value=True)
