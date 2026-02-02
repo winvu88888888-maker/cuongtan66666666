@@ -6,6 +6,7 @@ import random
 import time
 from collections import Counter
 from datetime import datetime
+import datetime as dt_module
 
 # --- ROBUST PATHING ---
 def setup_sub_paths():
@@ -71,15 +72,14 @@ def render_universal_data_hub_tab():
     st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
     
     # Check if systems are running
-    import datetime
     config = load_config()
     last_run_str = config.get("last_run")
     is_recently_active = False
     
     if last_run_str:
         try:
-            last_run = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
-            time_diff = datetime.datetime.now() - last_run
+            last_run = dt_module.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            time_diff = dt_module.datetime.now() - last_run
             # Consider active if ran within last 45 minutes (30min interval + 15min buffer)
             is_recently_active = time_diff.total_seconds() < 2700
         except:
@@ -235,8 +235,8 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     time_diff_minutes = 999
     if last_run_str:
         try:
-            last_run_dt = datetime.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
-            diff = datetime.datetime.now() - last_run_dt
+            last_run_dt = dt_module.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            diff = dt_module.datetime.now() - last_run_dt
             time_diff_minutes = diff.total_seconds() / 60
             if time_diff_minutes < 90: is_recently_active = True
         except: pass

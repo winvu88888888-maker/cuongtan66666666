@@ -6,6 +6,7 @@ Tích hợp tất cả tính năng từ code hiện có
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 from datetime import datetime
+import datetime as dt_module
 import sys
 import os
 
@@ -129,7 +130,7 @@ def search_topics():
 @app.route('/api/current-time', methods=['GET'])
 def get_current_time():
     """Get current time"""
-    now = datetime.now()
+    now = dt_module.datetime.now()
     return jsonify({
         'currentTime': now.strftime('%H:%M'),
         'fullTime': now.strftime('%Y-%m-%d %H:%M:%S')
@@ -138,7 +139,7 @@ def get_current_time():
 @app.route('/api/initial-data', methods=['GET'])
 def get_initial_data():
     """Get initial QMDG data"""
-    now = datetime.now()
+    now = dt_module.datetime.now()
     
     try:
         params = qmdg_calc.calculate_qmdg_params(now)
@@ -169,7 +170,7 @@ def calculate():
     
     try:
         # Get current time params
-        now = datetime.now()
+        now = dt_module.datetime.now()
         params = qmdg_calc.calculate_qmdg_params(now)
         
         # Get Can Gio for calculations
@@ -426,7 +427,7 @@ def mai_hoa():
     topic = data.get('topic', 'Tổng Quát')
     
     try:
-        now = datetime.now()
+        now = dt_module.datetime.now()
         qua_result = tinh_qua_theo_thoi_gian(now)
         
         # Get basic interpretation
@@ -467,7 +468,7 @@ def luc_hao():
     luc_than = data.get('luc_than', 'Bản thân')
     
     try:
-        now = datetime.now()
+        now = dt_module.datetime.now()
         lh_result = lap_qua_luc_hao(now)
         
         # Get topic-specific Dụng Thần

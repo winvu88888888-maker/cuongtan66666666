@@ -4,7 +4,7 @@ import sys
 import os
 import random
 import textwrap
-import datetime
+import datetime as dt_module
 try:
     import pytz
 except ImportError:
@@ -54,7 +54,7 @@ try:
             is_running = False
             if last_run:
                 try:
-                    diff = datetime.datetime.now() - datetime.datetime.strptime(last_run, "%Y-%m-%d %H:%M:%S")
+                    diff = dt_module.datetime.now() - dt_module.datetime.strptime(last_run, "%Y-%m-%d %H:%M:%S")
                     if diff.total_seconds() < 5400: # 90 mins
                         is_running = True
                 except: pass
@@ -1100,8 +1100,7 @@ with st.sidebar:
             
             # Display last check time
             if st.session_state.last_api_check_time > 0:
-                import datetime
-                last_check = datetime.datetime.fromtimestamp(st.session_state.last_api_check_time)
+                last_check = dt_module.datetime.fromtimestamp(st.session_state.last_api_check_time)
                 st.caption(f"Lần check cuối: {last_check.strftime('%H:%M:%S')}")
             
             new_key = st.text_input("Thay đổi API Key (Tùy chọn):", type="password", key="new_api_key")
@@ -1233,16 +1232,16 @@ with st.sidebar:
                 from zoneinfo import ZoneInfo
                 vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
             except:
-                vn_tz = datetime.timezone.utc
+                vn_tz = dt_module.timezone.utc
 
     if use_current_time:
-        now = datetime.datetime.now(vn_tz)
+        now = dt_module.datetime.now(vn_tz)
         selected_datetime = now
     else:
-        now_vn = datetime.datetime.now(vn_tz)
+        now_vn = dt_module.datetime.now(vn_tz)
         selected_date = st.date_input("Chọn ngày:", now_vn.date())
         selected_time = st.time_input("Chọn giờ:", now_vn.time())
-        selected_datetime = datetime.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
+        selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
     
     # Calculate QMDG parameters (Always calculate to show in sidebar)
     params = None
@@ -1498,7 +1497,7 @@ if st.session_state.current_view == "ky_mon":
                             has_dung_than = any(dt in [clean_cua] for dt in resolved_dt)
                         
                         # Determine Strength based on month
-                        now_dt = datetime.now()
+                        now_dt = dt_module.datetime.now()
                         month = now_dt.month
                         season_map = {1:"Xuân", 2:"Xuân", 3:"Xuân", 4:"Hạ", 5:"Hạ", 6:"Hạ", 7:"Thu", 8:"Thu", 9:"Thu", 10:"Đông", 11:"Đông", 12:"Đông"}
                         current_season = season_map.get(month, "Xuân")
@@ -2217,7 +2216,7 @@ Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cun
                                 'can_dia': chart['dia_can'].get(idx, 'N/A')
                             }
                         
-                        chu = get_p_info(chu_idx); khach = get_p_info(khach_idx); now = datetime.now()
+                        chu = get_p_info(chu_idx); khach = get_p_info(khach_cung_select); now = dt_module.datetime.now()
                         from super_detailed_analysis import phan_tich_sieu_chi_tiet_chu_de, tao_phan_tich_lien_mach
                         res_9pp = phan_tich_sieu_chi_tiet_chu_de(selected_topic, chu, khach, now)
                         mqh = tinh_ngu_hanh_sinh_khac(chu['hanh'], khach['hanh'])

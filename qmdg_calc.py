@@ -1,7 +1,7 @@
 
 # qmdg_calc.py - Core calculation engine for Kỳ Môn Độn Giáp
 import math
-from datetime import datetime, timedelta, time
+import datetime
 
 # Data for calculations
 CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
@@ -33,7 +33,7 @@ def get_can_chi_year(year):
 
 def get_can_chi_day(dt):
     """Calculate Can Chi for Day using reliable base. Jan 1, 2024 is Giáp Tý (index 0)."""
-    base_dt = datetime(2024, 1, 1)
+    base_dt = datetime.datetime(2024, 1, 1)
     diff = (dt.date() - base_dt.date()).days
     idx = (0 + diff) % 60
     if idx < 0: idx += 60
@@ -91,7 +91,7 @@ def get_tiet_khi(dt):
     for name, (month, day_ref) in base_dates.items():
         y_offset = (year - 2024) * 0.2422
         day = int(day_ref + y_offset)
-        t_dt = datetime(year, month, day)
+        t_dt = datetime.datetime(year, month, day)
         terms.append((t_dt, name))
     terms.sort()
     
@@ -146,7 +146,7 @@ def solar_to_lunar(dt):
 
     # Check if date belongs to previous lunar year
     ny_m, ny_d, leap_m, months = LUNAR_CONFIG.get(y, (1, 1, 0, []))
-    new_year_dt = datetime(y, ny_m, ny_d)
+    new_year_dt = datetime.datetime(y, ny_m, ny_d)
     
     calc_y = y
     if dt < new_year_dt:
@@ -154,7 +154,7 @@ def solar_to_lunar(dt):
         if calc_y not in LUNAR_CONFIG:
             return dt.day, dt.month, calc_y, False
         ny_m, ny_d, leap_m, months = LUNAR_CONFIG[calc_y]
-        new_year_dt = datetime(calc_y, ny_m, ny_d)
+        new_year_dt = datetime.datetime(calc_y, ny_m, ny_d)
     
     diff = (dt.date() - new_year_dt.date()).days
     curr_diff = diff
@@ -222,7 +222,7 @@ def calculate_qmdg_params(dt):
     month_can, month_chi = get_can_chi_month(year_can, tiet_khi)
     yang_terms = ["Đông Chí", "Tiểu Hàn", "Đại Hàn", "Lập Xuân", "Vũ Thủy", "Kinh Trập", "Xuân Phân", "Thanh Minh", "Cốc Vũ", "Lập Hạ", "Tiểu Mãn", "Mang Chủng"]
     is_duong_don = tiet_khi in yang_terms
-    base_dt = datetime(2024, 1, 1); diff = (dt.date() - base_dt.date()).days
+    base_dt = datetime.datetime(2024, 1, 1); diff = (dt.date() - base_dt.date()).days
     cycle_idx = (0 + diff) % 60; term_day_idx = cycle_idx % 15
     if term_day_idx < 5: yuan = 0
     elif term_day_idx < 10: yuan = 1
