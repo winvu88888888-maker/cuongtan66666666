@@ -938,10 +938,19 @@ with st.sidebar:
     if ('gemini_helper' not in st.session_state or 
         not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
         'V1.7.5' not in getattr(st.session_state.gemini_helper, 'version', '')):
+        
+        # ƯU TIÊN 1: Streamlit Cloud Secrets (Quan trọng nhất cho deployment)
+        st_secret = None
+        try:
+            st_secret = st.secrets.get("GEMINI_API_KEY", None)
+        except Exception:
+            pass
+        
+        # ƯU TIÊN 2: File custom_data.json (Local)
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
         
-        # KIỂM TRA THÊM TỪ FACTORY CONFIG (Cho sự đồng bộ cao nhất)
+        # ƯU TIÊN 3: Factory Config (Đồng bộ)
         factory_key = None
         try:
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
@@ -951,10 +960,13 @@ with st.sidebar:
                     factory_key = cfg.get("api_key")
         except: pass
         
-        # Tổng hợp các nguồn Key (Ưu tiên File nếu Secrets trống)
-        final_key = saved_key or factory_key
-        st_secret = st.secrets.get("GEMINI_API_KEY")
-        secret_api_key = st_secret if st_secret else final_key
+        # Tổng hợp: Ưu tiên Streamlit Secrets > Saved Key > Factory Key
+        secret_api_key = st_secret or saved_key or factory_key
+        
+        # Thông báo nếu chạy trên cloud nhưng chưa có secret
+        if not st_secret and not saved_key and not factory_key:
+            # Đang chạy trên cloud và không có API key nào
+            st.session_state.missing_cloud_secret = True
         
         if st.session_state.ai_preference == "offline":
             if FREE_AI_AVAILABLE:
@@ -1021,6 +1033,27 @@ with st.sidebar:
                     st.warning("Vui lòng nhập Key.")
     else:
         st.warning(f"ℹ️ {ai_status}")
+        
+        # CẢNH BÁO ĐẶC BIỆT CHO STREAMLIT CLOUD
+        if st.session_state.get('missing_cloud_secret', False):
+            st.error("""
+            ### ⚠️ CHƯA CẤU HÌNH API KEY TRÊN STREAMLIT CLOUD!
+            
+            **Ứng dụng đang chạy trên Streamlit Cloud nhưng chưa có API Key.**
+            
+            #### 🔧 Cách Sửa (2 phút):
+            1. Vào **Streamlit Cloud Dashboard**: https://share.streamlit.io/
+            2. Click vào app của bạn → **⚙️ Settings**
+            3. Chọn tab **"Secrets"**
+            4. Dán nội dung sau:
+            ```
+            GEMINI_API_KEY = "YOUR_API_KEY_HERE"
+            ```
+            5. Click **"Save"** → App sẽ tự động restart
+            
+            👉 [Lấy API Key miễn phí tại đây](https://aistudio.google.com/app/apikey)
+            """)
+        
         with st.expander("🔑 Kích hoạt Gemini Pro (Thông minh hơn)", expanded=True):
             st.markdown("👉 [Lấy API Key miễn phí](https://aistudio.google.com/app/apikey)")
             user_api_key = st.text_input("Dán API Key vào đây:", type="password", key="input_api_key_sidebar")
