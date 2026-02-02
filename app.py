@@ -1072,18 +1072,23 @@ with st.sidebar:
                     st.rerun()
             
             # Display current model info
-            if hasattr(st.session_state.gemini_helper, 'model'):
-                try:
-                    model_name = st.session_state.gemini_helper.model.model_name
-                    st.info(f"**Model đang dùng:** `{model_name}`")
-                    
-                    # Quota warning for Pro models
-                    if 'pro' in model_name.lower():
-                        st.warning("⚠️ **Cảnh báo:** Model Pro tốn quota rất nhiều. Nên chuyển sang Flash.")
-                    else:
-                        st.success(f"✅ **Model Flash** - Tiết kiệm quota")
-                except:
-                    pass
+            try:
+                if hasattr(st.session_state, 'gemini_helper') and st.session_state.gemini_helper:
+                    # Try to get model name safely
+                    model_obj = getattr(st.session_state.gemini_helper, 'model', None)
+                    if model_obj:
+                        model_name = getattr(model_obj, 'model_name', None)
+                        if model_name:
+                            st.info(f"**Model đang dùng:** `{model_name}`")
+                            
+                            # Quota warning for Pro models
+                            if 'pro' in model_name.lower():
+                                st.warning("⚠️ **Cảnh báo:** Model Pro tốn quota rất nhiều. Nên chuyển sang Flash.")
+                            else:
+                                st.success(f"✅ **Model Flash** - Tiết kiệm quota")
+            except Exception as e:
+                # Silently ignore model display errors
+                pass
             
             # Display last check time
             if st.session_state.last_api_check_time > 0:
