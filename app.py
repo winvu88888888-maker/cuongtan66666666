@@ -153,13 +153,11 @@ try:
         print(f"⚠️ AI Factory modules not available: {e}")
     
     try:
-        import gemini_expert_v172
-        importlib.reload(gemini_expert_v172)
-        from gemini_expert_v172 import GeminiQMDGHelperV173
+        from gemini_helper import GeminiQMDGHelperV172
         GEMINI_AVAILABLE = True
     except (ImportError, Exception) as e:
         GEMINI_AVAILABLE = False
-        print(f"⚠️ Gemini expert reload error: {e}")
+        print(f"⚠️ Gemini helper load error: {e}")
         
     # Import Free AI helper as fallback
     try:
@@ -983,9 +981,10 @@ with st.sidebar:
         else: # auto or online
             if secret_api_key and GEMINI_AVAILABLE:
                 try:
-                    st.session_state.gemini_helper = GeminiQMDGHelperV173(secret_api_key)
+                    from gemini_helper import GeminiQMDGHelperV172
+                    st.session_state.gemini_helper = GeminiQMDGHelperV172(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (V1.7.5)"
+                    st.session_state.ai_type = "Gemini Pro (V1.7.2)"
                 except Exception: 
                     if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                         st.session_state.gemini_helper = FreeAIHelper()
@@ -1109,9 +1108,10 @@ with st.sidebar:
             if st.button("Cập nhật Key mới"):
                 if new_key:
                     try:
-                        st.session_state.gemini_helper = GeminiQMDGHelperV173(new_key)
+                        from gemini_helper import GeminiQMDGHelperV172
+                        st.session_state.gemini_helper = GeminiQMDGHelperV172(new_key)
                         st.session_state.gemini_key = new_key
-                        st.session_state.ai_type = "Gemini Pro (Updated V1.7.4)"
+                        st.session_state.ai_type = "Gemini Pro (V1.7.2 Updated)"
                         
                         if save_permanently:
                             data = load_custom_data()
@@ -1168,6 +1168,7 @@ with st.sidebar:
             if st.button("Kích hoạt ngay", type="primary"):
                 if GEMINI_AVAILABLE and user_api_key:
                     try:
+                        from gemini_helper import GeminiQMDGHelperV172
                         st.session_state.gemini_helper = GeminiQMDGHelperV172(user_api_key)
                         st.session_state.gemini_key = user_api_key
                         st.session_state.ai_type = "Gemini Pro (V1.7.2 Active)"
