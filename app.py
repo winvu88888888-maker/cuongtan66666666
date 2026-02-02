@@ -4,8 +4,17 @@ import sys
 import os
 import random
 import textwrap
-from datetime import datetime
-from zoneinfo import ZoneInfo
+import datetime
+try:
+    import pytz
+except ImportError:
+    pytz = None
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None
+
 from PIL import Image
 import importlib
 
@@ -34,7 +43,6 @@ except Exception as e:
 try:
     # Quick check for status without importing everything
     import json
-    from datetime import datetime
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
     if os.path.exists(config_path):
         with open(config_path, "r", encoding="utf-8") as f:
@@ -46,7 +54,7 @@ try:
             is_running = False
             if last_run:
                 try:
-                    diff = datetime.now() - datetime.strptime(last_run, "%Y-%m-%d %H:%M:%S")
+                    diff = datetime.datetime.now() - datetime.datetime.strptime(last_run, "%Y-%m-%d %H:%M:%S")
                     if diff.total_seconds() < 5400: # 90 mins
                         is_running = True
                 except: pass
@@ -1208,15 +1216,33 @@ with st.sidebar:
     
     use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
     
-    vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+    # Timezone handling (Robust Purification)
+    vn_tz = None
+    if pytz is not None:
+        try:
+            vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+        except:
+            pass
+    
+    if vn_tz is None:
+        try:
+            import zoneinfo
+            vn_tz = zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh")
+        except:
+            try:
+                from zoneinfo import ZoneInfo
+                vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+            except:
+                vn_tz = datetime.timezone.utc
+
     if use_current_time:
-        now = datetime.now(vn_tz)
+        now = datetime.datetime.now(vn_tz)
         selected_datetime = now
     else:
-        now_vn = datetime.now(vn_tz)
+        now_vn = datetime.datetime.now(vn_tz)
         selected_date = st.date_input("Chọn ngày:", now_vn.date())
         selected_time = st.time_input("Chọn giờ:", now_vn.time())
-        selected_datetime = datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
+        selected_datetime = datetime.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
     
     # Calculate QMDG parameters (Always calculate to show in sidebar)
     params = None
