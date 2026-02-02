@@ -111,15 +111,29 @@ class GeminiQMDGHelperV172:
 
     def _get_best_model(self):
         """Find the best available model for the current API key"""
-        # Prioritize 1.5 Pro because "gemini tốt nhất"
+        # QUAN TRỌNG: Ưu tiên FLASH trước vì tiết kiệm quota hơn 10 lần so với Pro
+        # Flash vẫn đủ thông minh cho hầu hết các trường hợp sử dụng
         models_to_try = [
-            'gemini-2.0-flash-exp', # Try latest 2.0 flash
-            'gemini-1.5-pro-latest', 
-            'gemini-1.5-pro',
+            # Ưu tiên cao nhất: Models 2.5 Flash (mới nhất, ít tốn quota)
+            'gemini-2.5-flash',
+            'gemini-2.5-flash-preview-09-2025',
+            'gemini-2.5-flash-lite',
+            
+            # Tiếp theo: Models 2.0 Flash
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-001',
+            'gemini-2.0-flash-lite-001',
+            
+            # Fallback: Models 1.5 Flash
             'gemini-1.5-flash-latest', 
             'gemini-1.5-flash',
-            'gemini-pro', 
-            'gemini-1.0-pro'
+            'gemini-flash-latest',
+            
+            # Chỉ dùng Pro khi Flash không khả dụng (tốn quota nhiều)
+            'gemini-1.5-pro-latest', 
+            'gemini-1.5-pro',
+            'gemini-pro',
+            'gemini-pro-latest'
         ]
         
         last_error = "Unknown error"
