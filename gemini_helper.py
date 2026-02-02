@@ -846,6 +846,7 @@ Hãy lập hồ sơ tư vấn chiến lược cho **{subj_label}** về: **{topi
         """
         Answer with FULL CONTEXT AWARENESS
         """
+        use_web_search = True # DEFAULT ON FOR DEEP KNOWLEDGE
         # Use stored context if not provided
         if chart_data is None:
             chart_data = self.current_context.get('chart_data')
