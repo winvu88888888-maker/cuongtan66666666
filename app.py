@@ -166,8 +166,9 @@ try:
     except ImportError:
         FREE_AI_AVAILABLE = False
 
-
-    
+except Exception as e:
+    st.error(f"⚠️ Lỗi khởi tạo hệ thống: {e}")
+    st.stop()
 
 # ======================================================================
 # INITIALIZE SESSION STATE
@@ -189,6 +190,7 @@ if 'all_topics_full' not in st.session_state:
 if 'current_view' not in st.session_state:
     st.session_state.current_view = "ky_mon"  # ky_mon, mai_hoa, luc_hao
 
+# Additional Module Imports (Flattened)
 try:
     from dung_than_200_chu_de_day_du import (
         DUNG_THAN_200_CHU_DE,
@@ -233,9 +235,6 @@ SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
 THAN_8 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].keys())
 CUA_8 = list(BAT_MON_CO_DINH_DISPLAY.keys())
 
-except ImportError as e:
-    st.error(f"❌ Lỗi: Thiếu file dữ liệu hoặc module: {e}")
-    st.stop()
 
 # ======================================================================
 # PREMIUM CUSTOM CSS
