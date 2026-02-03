@@ -22,14 +22,14 @@ try:
     from .shard_manager import add_entry
     from .mining_strategist import MiningStrategist
     from .maintenance_manager import MaintenanceManager
-    from .gemini_helper import GeminiQMDGHelper
+    from .gemini_expert_v172 import GeminiQMDGHelper
 except (ImportError, ValueError):
     # Fallback to direct imports
     try:
         from shard_manager import add_entry
         from mining_strategist import MiningStrategist
         from maintenance_manager import MaintenanceManager
-        from gemini_helper import GeminiQMDGHelper
+        from gemini_expert_v172 import GeminiQMDGHelper
     except ImportError:
         # Final fallback for Streamlit context
         import sys
@@ -38,7 +38,7 @@ except (ImportError, ValueError):
         from shard_manager import add_entry
         from mining_strategist import MiningStrategist
         from maintenance_manager import MaintenanceManager
-        from gemini_helper import GeminiQMDGHelper
+        from gemini_expert_v172 import GeminiQMDGHelper
 
 import streamlit as st
 
@@ -81,15 +81,31 @@ def _single_agent_task(agent_id, topic, api_key):
         if web_data:
             mining_prompt = f"{mining_prompt}\n\n**DỮ LIỆU THU THẬP TỪ WEB:**\n{web_data[:3000]}"
         
-        content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
+        raw_content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
         
-        # Save to Hub
-        cat_match = next((k for k in strategist.categories if any(t in topic for t in strategist.categories[k])), "Kiến Thức")
+        # SMART FILTERING: Parse clean title and category from AI response
+        clean_title = topic
+        standard_category = "Kiến Thức"
+        final_content = raw_content
+        
+        try:
+            # Look for JSON block
+            if "```json" in raw_content:
+                parts = raw_content.split("```json")
+                if len(parts) > 1:
+                    json_str = parts[1].split("```")[0].strip()
+                    meta = json.loads(json_str)
+                    clean_title = meta.get("clean_title", topic)
+                    standard_category = meta.get("standard_category", "Kiến Thức")
+                    # Remove the JSON block from final content to keep it clean
+                    final_content = raw_content.replace(f"```json{json_str}```", "").strip()
+        except Exception as e:
+            print(f"⚠️ [Agent #{agent_id}] Smart filtering parse failed: {e}")
         
         id = add_entry(
-            title=topic,
-            content=content,
-            category=cat_match,
+            title=clean_title,
+            content=final_content,
+            category=standard_category,
             source=f"Agent #{agent_id} (Quân Đoàn AI)",
             tags=["autonomous", "hyper-depth", f"agent-{agent_id}"]
         )
@@ -124,15 +140,28 @@ def run_mining_cycle(api_key, category=None):
     print("="*60)
 
     # 1. Generate massive queue - UPGRADED TO 50 AGENTS
-    # Thực tế chạy 50 tasks, nhưng chia thành batches để tránh API quota
     queue_size = 50 # REAL 50 agents execution
-    queue = strategist.generate_research_queue(category, count=queue_size)
+    initial_queue = strategist.generate_research_queue(category, count=queue_size)
     
-    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho 50 Đặc Phái Viên...")
+    # DEDUPLICATION: Check hub_index to skip already researched topics
+    from shard_manager import search_index
+    existing_entries = search_index()
+    existing_titles = [e['title'].lower() for e in existing_entries]
     
-    # 2. Parallel Execution (Multi-threaded Agents) - OPTIMIZED
-    # Chạy 15 agents đồng thời (an toàn cho API limits)
-    active_agents = min(len(queue), 15)
+    queue = []
+    for t in initial_queue:
+        if t.lower() not in existing_titles and len(queue) < queue_size:
+            queue.append(t)
+    
+    if not queue:
+        print("✨ Tất cả chủ đề hiện tại đã được khai thác. Đang tạo chủ đề ngẫu nhiên mới...")
+        queue = [f"{t} - Chuyên sâu Giai đoạn {random.randint(2, 5)}" for t in initial_queue[:10]]
+
+    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho Quân đoàn AI...")
+    
+    # 2. Parallel Execution (Multi-threaded Agents) - SCALED UP
+    # Chạy 20 agents đồng thời (Tăng cường hiệu suất)
+    active_agents = min(len(queue), 20)
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=active_agents) as executor:
         futures = []
@@ -145,19 +174,21 @@ def run_mining_cycle(api_key, category=None):
         # Wait for all
         concurrent.futures.wait(futures)
 
-    # 3. AUTONOMOUS CLEANUP (24/7 Cleanup Legion)
-    # Run cleanup every cycle (or every 3rd cycle to save IO)
-    if config["total_cycles"] % 3 == 0:
-        print("\n" + "-"*40)
-        print("🧹 Kích hoạt AI Dọn Dẹp (Sanitation Droid)...")
-        try:
-            maintenance = MaintenanceManager()
-            res = maintenance.run_cleanup_cycle()
-            print(f"✨ Báo cáo dọn dẹp: Xóa {res.get('removed',0)} trùng lặp, Đóng gói {res.get('bagged',0)} items.")
-        except Exception as e:
-            print(f"⚠️ Lỗi dọn dẹp: {e}")
-    else:
-        print("\n✨ Dữ liệu sạch sẽ. Bỏ qua bước dọn dẹp chu kỳ này.")
+    # 3. AUTONOMOUS CLEANUP (DISABLED BY USER REQUEST)
+    # User only wants basic deduplication, no AI-driven cleanup
+    # if config["total_cycles"] % 3 == 0:
+    #     print("\n" + "-"*40)
+    #     print("🧹 Kích hoạt AI Dọn Dẹp (Sanitation Droid)...")
+    #     try:
+    #         maintenance = MaintenanceManager()
+    #         res = maintenance.run_cleanup_cycle()
+    #         print(f"✨ Báo cáo dọn dẹp: Xóa {res.get('removed',0)} trùng lặp, Đóng gói {res.get('bagged',0)} items.")
+    #     except Exception as e:
+    #         print(f"⚠️ Lỗi dọn dẹp: {e}")
+    # else:
+    #     print("\n✨ Dữ liệu sạch sẽ. Bỏ qua bước dọn dẹp chu kỳ này.")
+    
+    print("\n✨ AI Cleanup đã bị vô hiệu hóa theo yêu cầu người dùng.")
 
     # 4. AUTO DEPLOY TO CLOUD (Git Push)
     # Tự động đồng bộ dữ liệu lên luồng Streamlit Cloud để web cập nhật
@@ -237,14 +268,28 @@ def run_daemon():
         if not api_key:
             print("\n❌ CHƯA TÌM THẤY API KEY.")
             print("👉 Vui lòng nhập Gemini API Key của bạn vào bên dưới để cấu hình một lần duy nhất.")
-            print("(Key sẽ được lưu vào factory_config.json để tự động chạy các lần sau)")
+            print("(Key sẽ được lưu vào factory_config.json và custom_data.json để tự động chạy các lần sau)")
             try:
                 user_input_key = input("🔑 Nhập API Key: ").strip()
                 if user_input_key and len(user_input_key) > 10:
                     api_key = user_input_key
                     config["api_key"] = api_key
                     save_config(config)
-                    print("✅ Đã lưu cấu hình thành công! Bắt đầu khởi động...")
+                    
+                    # CỰC KỲ QUAN TRỌNG: Lưu đồng thời vào custom_data.json cho app.py thấy
+                    try:
+                        custom_data_path = os.path.join(os.path.dirname(current_dir), "custom_data.json")
+                        c_data = {}
+                        if os.path.exists(custom_data_path):
+                            with open(custom_data_path, 'r', encoding='utf-8') as f:
+                                c_data = json.load(f)
+                        c_data["GEMINI_API_KEY"] = api_key
+                        with open(custom_data_path, 'w', encoding='utf-8') as f:
+                            json.dump(c_data, f, ensure_ascii=False, indent=4)
+                        print(f"✅ Đã lưu cấu hình và đồng bộ sang custom_data.json")
+                    except: pass
+                    
+                    print("✅ Khởi động thành công!")
                 else:
                     print("⚠️ Key không hợp lệ. Đang thử lại sau 60s...")
                     time.sleep(60)

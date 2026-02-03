@@ -6,6 +6,7 @@ import random
 import time
 from collections import Counter
 from datetime import datetime
+import datetime as dt_module
 
 # --- ROBUST PATHING ---
 def setup_sub_paths():
@@ -31,22 +32,9 @@ except ImportError:
     from ai_modules.factory_manager import init_global_factory
     from qmdg_data import load_custom_data # Should be in root
 
-# --- TOP 5 HOT TOPICS LOGIC ---
-def get_top_5_hot_topics():
-    """Analyze the index to find most active research areas."""
-    try:
-        index_path = os.path.join(ROOT_DIR, "data_hub", "hub_index.json")
-        if not os.path.exists(index_path): return []
-        
-        with open(index_path, 'r', encoding='utf-8') as f:
-            index = json.load(f)
-        
-        # Count frequency of titles (each mining run creates an entry)
-        topic_counts = Counter([e['title'] for e in index])
-        top_5 = topic_counts.most_common(5)
-        return top_5
-    except Exception:
-        return []
+
+
+
 
 # --- EXPANDED MINER DATA (50 AGENTS) ---
 def get_50_miners():
@@ -77,31 +65,124 @@ def get_50_miners():
 
 def render_universal_data_hub_tab():
     st.subheader("🌐 Kho Dữ Liệu Vô Tận (Scalable Hub)")
+    
+    # ═══════════════════════════════════════════════════════════
+    # REAL-TIME STATUS INDICATORS
+    # ═══════════════════════════════════════════════════════════
+    st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
+    
+    # Check if systems are running
+    config = load_config()
+    last_run_str = config.get("last_run")
+    is_recently_active = False
+    
+    if last_run_str:
+        try:
+            last_run = dt_module.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            time_diff = dt_module.datetime.now() - last_run
+            # Consider active if ran within last 45 minutes (30min interval + 15min buffer)
+            is_recently_active = time_diff.total_seconds() < 2700
+        except:
+            pass
+    
+    # MASTER STATUS CARD (As requested by user)
+    st.markdown(f"""
+    <div style='padding: 20px; border-radius: 12px; background-color: #2e4a45; border: 1px solid #3e5a55; margin-bottom: 20px;'>
+        <div style='display: flex; align-items: center; gap: 10px;'>
+            <div style='width: 15px; height: 15px; background-color: #00ff00; border-radius: 50%; box-shadow: 0 0 10px #00ff00;'></div>
+            <h3 style='color: #4ade80; margin: 0; font-size: 1.2rem;'>AI Factory: {'ONLINE' if is_recently_active else 'OFFLINE'}</h3>
+        </div>
+        <p style='color: #4ade80; margin: 10px 0 0 0; font-size: 0.9rem; opacity: 0.8;'>
+            (Chạy lúc: {last_run_str if last_run_str else 'Chưa có thông tin'})
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Status indicators
+    col_status1, col_status2, col_status3 = st.columns(3)
+    
+    with col_status1:
+        if is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>KHÔNG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col_status2:
+        total_cycles = config.get("total_cycles", 0)
+        cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
+        
+        if cleanup_active and is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 AI DỌN DẸP</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>CHỜ CHU KỲ</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col_status3:
+        github_actions_active = config.get("autonomous_247", False)
+        
+        if github_actions_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🟢 GITHUB ACTIONS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>24/7 ACTIVE</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
+                <h3 style='color: white; margin: 0;'>🔴 GITHUB ACTIONS</h3>
+                <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>TẮT</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    # ═══════════════════════════════════════════════════════════
+    
     st.info("Hệ thống lưu trữ Đa Tầng: Tốc độ xử lý vĩnh cửu.")
+
 
     # Data Volume Stats Button
     if st.button("📊 KIỂM TRA DỮ LIỆU ĐÃ TẢI", use_container_width=True, type="primary"):
         stats = get_hub_stats()
         st.markdown(f"""
-        <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; border-left: 8px solid #3b82f6; margin: 10px 0;">
-            <h3 style="color: #1e293b; margin-top: 0;">📈 Báo Cáo Lưu Trữ AI Factory</h3>
+        <div style="background: #0f172a; padding: 20px; border-radius: 12px; border-left: 8px solid #3b82f6; margin: 10px 0; color: #ffffff;">
+            <h3 style="color: #47a1ff; margin-top: 0;">📈 Báo Cáo Lưu Trữ AI Factory</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Tổng số bản ghi</p>
+                <div style="background: #1e293b; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Tổng số bản ghi</p>
                     <h2 style="color: #3b82f6; margin: 5px 0;">{stats['total']}</h2>
                 </div>
-                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Tổng dung lượng</p>
+                <div style="background: #1e293b; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Tổng dung lượng</p>
                     <h2 style="color: #10b981; margin: 5px 0;">{stats['size_mb']} MB</h2>
                 </div>
             </div>
             <div style="margin-top: 15px;">
-                <p style="font-weight: 700; color: #1e293b; margin-bottom: 5px;">📂 Phân bổ theo phân loại:</p>
+                <p style="font-weight: 700; color: #cbd5e1; margin-bottom: 5px;">📂 Phân bổ theo phân loại:</p>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    {" ".join([f'<span style="background:#e2e8f0; padding:4px 10px; border-radius:20px; font-size:0.8rem;">{k}: {v}</span>' for k,v in stats['categories'].items()])}
+                    {" ".join([f'<span style="background:#334155; color:#f1f5f9; padding:4px 10px; border-radius:20px; font-size:0.8rem;">{k}: {v}</span>' for k,v in stats['categories'].items()])}
                 </div>
             </div>
-            <p style="font-style: italic; font-size: 0.8rem; color: #94a3b8; margin-top: 15px;">* Dữ liệu được tính toán thời gian thực từ Sharded Hub.</p>
+            <p style="font-style: italic; font-size: 0.8rem; color: #64748b; margin-top: 15px;">* Dữ liệu được tính toán thời gian thực từ Sharded Hub.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -141,73 +222,95 @@ def render_universal_data_hub_tab():
                 if delete_entry(e['id']): st.success("Đã xóa!"); st.rerun()
 
 def render_mining_summary_on_dashboard(key_suffix=""):
-    # 1. CLEANUP LEGION STATUS
-    st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu (Autonomous 24/7)")
+    config = load_config()
+    last_run_str = config.get("last_run")
+    
+    # ═══════════════════════════════════════════════════════════
+    # 📊 TRẠNG THÁT HỆ THỐNG (TOP PRIORITY)
+    # ═══════════════════════════════════════════════════════════
+    st.markdown("### 📊 Trạng Thái Hệ Thống Real-time")
+    
+    # Status Check Logic
+    is_recently_active = False
+    time_diff_minutes = 999
+    if last_run_str:
+        try:
+            last_run_dt = dt_module.datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            diff = dt_module.datetime.now() - last_run_dt
+            time_diff_minutes = diff.total_seconds() / 60
+            if time_diff_minutes < 90: is_recently_active = True
+        except: pass
+    
+    col_status1, col_status2, col_status3 = st.columns(3)
+    
+    with col_status1:
+        if is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: #064e3b; text-align: center; border: 1px solid #059669;'>
+                <h3 style='color: #4ade80; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG KHAI THÁC</p>
+                <small style='color: #a7f3d0; opacity: 0.8;'>Lần cuối: """ + str(int(time_diff_minutes)) + """p trước</small>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: #450a0a; text-align: center; border: 1px solid #b91c1c;'>
+                <h3 style='color: #f87171; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG DỪNG</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    with col_status2:
+        total_cycles = config.get("total_cycles", 0)
+        cleanup_active = total_cycles > 0 and (total_cycles % 3 == 0)
+        if cleanup_active and is_recently_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: #0c4a6e; text-align: center; border: 1px solid #0284c7;'>
+                <h3 style='color: #38bdf8; margin: 0;'>🔵 AI DỌN DẸP</h3>
+                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG TỐI ƯU</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: #1f2937; text-align: center; border: 1px solid #4b5563;'>
+                <h3 style='color: #9ca3af; margin: 0;'>⚪ AI DỌN DẸP</h3>
+                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>CHỜ CHU KỲ</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    with col_status3:
+        github_actions_active = config.get("autonomous_247", False)
+        if github_actions_active:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: #064e3b; text-align: center; border: 1px solid #059669;'>
+                <h3 style='color: #4ade80; margin: 0;'>🟢 24/7 ACTIVE</h3>
+                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>MỖI 30 PHÚT</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='padding: 15px; border-radius: 10px; background: #450a0a; text-align: center; border: 1px solid #b91c1c;'>
+                <h3 style='color: #f87171; margin: 0;'>🔴 24/7 OFF</h3>
+                <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐÃ TẮT</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # 1. CLEANUP LEGION INFO
+    st.markdown("### 🧹 Quân Đoàn Dọn Dẹp & Tối Ưu")
     c_m1, c_m2, c_m3 = st.columns(3)
     c_m1.metric("Bản ghi trùng đã xóa", "0", delta="0")
     c_m2.metric("Túi nén (Bags)", "0")
-    c_m3.info("🛡️ Trạng thái: **🟢 Sẵn sàng dọn dẹp**")
+    c_m3.info("🛡️ Dọn dẹp tự động định kỳ.")
     
     st.markdown("---")
-
-    # 2. TOP 5 HOT TOPICS (NEW)
-    st.markdown("### 🔥 Top 5 Chủ Đề 'Nóng' Nhất (Hệ thống đang đào sâu)")
-    hot_topics = get_top_5_hot_topics()
-    if hot_topics:
-        cols = st.columns(5)
-        for i, (topic, count) in enumerate(hot_topics):
-            with cols[i]:
-                st.markdown(f"""
-                <div style="background:linear-gradient(135deg, #FF512F 0%, #DD2476 100%); 
-                            padding:15px; border-radius:12px; color:white; text-align:center;">
-                    <h4 style="margin:0; font-size:0.9rem;">{topic[:20]}...</h4>
-                    <p style="font-size:1.5rem; font-weight:bold; margin:5px 0;">{count}</p>
-                    <small>Dữ liệu nạp</small>
-                </div>
-                """, unsafe_allow_html=True)
-    else:
-        st.write("Đang phân tích dữ liệu xu hướng...")
-
-    st.markdown("---")
     
-    # 3. 50 MINING AGENTS STATUS
-    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7 + Web Search)")
+    # 2. 50 MINING AGENTS INFO
+    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI")
     st.caption("✨ **NÂNG CẤP MỚI**: Mỗi agent tìm kiếm trên Google/Internet + Gemini AI Grounding")
     
-    config = load_config()
-    is_active = config.get("autonomous_247", False) # Keep original variable name
-    last_run_str = config.get("last_run")
-    
-    # --- STATUS CHECK LOGIC ---
-    is_running_realtime = False
-    time_diff_minutes = 999
-    
-    if last_run_str:
-        try:
-            last_run_dt = datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
-            # Calculate diff
-            now = datetime.now()
-            diff = now - last_run_dt
-            time_diff_minutes = diff.total_seconds() / 60
-            
-            # If last run was within 90 mins (allow 1h cycle + buffer), consider RUNNING
-            if time_diff_minutes < 90:
-                is_running_realtime = True
-        except: pass
-        
-    # DISPLAY VISUAL STATUS
-    st1, st2 = st.columns(2)
-    with st1:
-        if is_running_realtime:
-            st.success(f"🟢 **NHÀ MÁY AI: ĐANG HOẠT ĐỘNG**\n\n(Lần cuối: {int(time_diff_minutes)} phút trước)")
-        else:
-            st.error(f"🔴 **NHÀ MÁY AI: ĐÃ DỪNG**\n\n(Lần cuối: {last_run_str if last_run_str else 'Chưa chạy'})")
-            
-    with st2:
-        if is_running_realtime:
-             st.success("🟢 **AI DỌN DẸP: SẴN SÀNG**\n\n(Tự động kích hoạt mỗi 3 chu kỳ)")
-        else:
-             st.error("🔴 **AI DỌN DẸP: NGHỈ NGƠI**\n\n(Chờ Nhà máy hoạt động lại)")
+    # --- Removed redundant status check and display ---
 
     # 24/7 Control Panel
     c1_24, c2_24 = st.columns([2, 1])
@@ -225,8 +328,22 @@ def render_mining_summary_on_dashboard(key_suffix=""):
                 if current_key:
                     st.session_state.gemini_key = current_key
             except: pass
+    
+
+    
+    # 24/7 Autonomous Mode Toggle
+    c1_24, c2_24 = st.columns([1, 1])
+    
+    with c1_24:
+        is_active = config.get("autonomous_247", False)
+        current_key = config.get("api_key") or (st.session_state.get('gemini_key') if 'gemini_key' in st.session_state else None)
         
-        new_status = st.toggle("⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7", value=is_active, key=toggle_key)
+        new_status = st.toggle(
+            "⚡ KÍCH HOẠT CHẾ ĐỘ TỰ TRỊ 24/7",
+            value=is_active,
+            key=f"toggle_247_mode{key_suffix}",
+            help="Bật để hệ thống tự động chạy liên tục mỗi 30 phút qua GitHub Actions"
+        )
         
         if new_status != is_active:
             if new_status and not current_key:
@@ -309,18 +426,34 @@ def render_system_management_tab():
     t1, t2, t3 = st.tabs(["🤖 Command Center", "🏥 System Health", "🧬 DB Interaction"])
     
     with t1:
-        render_mining_summary_on_dashboard(key_suffix="_mgmt")
-        st.markdown("---")
-        if st.button("♻️ Kích hoạt Bảo trì Thủ công (Manual Sync)", key="btn_manual_sync"):
+        # --- TOP ACTION BUTTON ---
+        st.info("✨ **AI Smart Cleanup**: Tự động lọc, chuẩn hóa và phân loại các chủ đề 'Rác' hoặc 'Sách vở' vào mục Lưu Trữ.")
+        if st.button("🚀 Kích Hoạt AI Lọc Chủ Đề NGAY BÂY GIỜ", key="btn_ai_smart_cleanup_top", type="primary", use_container_width=True):
             try:
-                from ai_modules.maintenance_manager import MaintenanceManager
-                mm = MaintenanceManager()
-                res = mm.run_cleanup_cycle()
-                st.success(f"✅ Bảo trì hoàn tất! (Xóa: {res['removed']}, Đóng gói: {res['bagged']})")
-                time.sleep(0.5)
+                from deep_ai_cleanup import deep_ai_refinement
+                with st.spinner("🤖 AI đang quét và dọn dẹp hệ thống..."):
+                    deep_ai_refinement()
+                st.success("✅ Đã dọn dẹp xong! Các chủ đề không phù hợp đã được di chuyển hoặc xóa.")
+                time.sleep(1)
                 st.rerun()
             except Exception as e:
                 st.error(f"Lỗi: {e}")
+        
+        st.markdown("---")
+        render_mining_summary_on_dashboard(key_suffix="_mgmt")
+        st.markdown("---")
+        
+        if st.button("♻️ Kích hoạt Bảo trì Thủ công (Manual Sync)", key="btn_manual_sync", use_container_width=True):
+            try:
+                from ai_modules.maintenance_manager import MaintenanceManager
+                mm = MaintenanceManager()
+                with st.spinner("🏥 Đang chạy bảo trì hệ thống..."):
+                    res = mm.run_cleanup_cycle()
+                st.success(f"✅ Bảo trì hoàn tất! (Xóa: {res['removed']}, Đóng gói: {res['bagged']})")
+                time.sleep(1)
+                st.rerun()
+            except Exception as e:
+                st.error(f"Lỗi bảo trì: {e}")
         
     with t2:
         st.success("Tình trạng Shards: 🟢 Hoạt động tốt.")

@@ -17,16 +17,61 @@ class MaintenanceManager:
 
     def run_cleanup_cycle(self):
         """Main entry point for the maintenance cycle."""
-        print("🧹 Khởi chạy Quân đoàn Dọn dẹp (Cleanup Legion)...")
+        print("Paramedics: Running deep sanitation...")
         
-        # 1. Deduplication
-        removed_count = self.remove_duplicates()
+        # 1. Remove ONLY actual AI Error entries (Technical corruption)
+        removed_errors = self.purge_ai_errors()
         
-        # 2. Archiving (Bagging) if necessary
-        bagged_count = self.archive_old_data(threshold_mb=100) # Archive if total hub > 100MB for web speed
+        # 2. Deep AI Refinement (Classification & Standardization - NO DELETION)
+        refined_count = 0
+        try:
+            from deep_ai_cleanup import deep_ai_refinement
+            # This now only refines/recategorizes, never deletes.
+            deep_ai_refinement()
+        except Exception as e:
+            print(f"⚠️ AI Refinement failed: {e}")
+
+        # 3. Deduplication - DISABLED AUTOMATICALLY (Safety first)
+        # removed_dupes = self.remove_duplicates()
+        removed_dupes = 0
         
-        print(f"✨ Hoàn tất dọn dẹp: Đã xóa {removed_count} mục trùng, đóng gói {bagged_count} mục vào kho lưu trữ.")
-        return {"removed": removed_count, "bagged": bagged_count}
+        # 4. Archiving - DISABLED AUTOMATICALLY (To maintain "Infinite Warehouse")
+        # bagged_count = self.archive_old_data(threshold_mb=10000000) 
+        bagged_count = 0
+        
+        print(f"✨ Hoàn tất dọn dẹp an toàn: Xóa {removed_errors} lỗi kỹ thuật. Dữ liệu quý được bảo tồn 100%.")
+        return {"removed": removed_errors, "bagged": bagged_count}
+
+    def purge_ai_errors(self):
+        """Removes entries containing AI error messages."""
+        if not self.index_path.exists(): return 0
+        
+        with open(self.index_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        index = data.get("index", [])
+        to_remove = []
+        
+        error_keywords = ["❌ Lỗi AI", "🛑 **Hết hạn mức AI**", "400 google_search", "google_search_retrieval", "quota", "limit"]
+        
+        for entry in index:
+            shard_file = self.data_hub_dir / entry['shard']
+            if shard_file.exists():
+                try:
+                    with open(shard_file, 'r', encoding='utf-8') as f:
+                        s_data = json.load(f)
+                    e_data = s_data.get("entries", {}).get(entry['id'], {})
+                    content = e_data.get("content", "")
+                    if any(kw in content for kw in error_keywords):
+                        to_remove.append(entry['id'])
+                except: pass
+        
+        if to_remove:
+            from shard_manager import delete_entry
+            for eid in to_remove:
+                delete_entry(eid)
+        
+        return len(to_remove)
 
     def remove_duplicates(self):
         """Removes entries with identical or nearly identical titles/content."""
@@ -45,6 +90,9 @@ class MaintenanceManager:
         
         for entry in index:
             title_clean = entry['title'].strip().lower()
+            # Simple fuzzy check: ignore small variations in punctuation/spacing
+            title_clean = "".join(e for e in title_clean if e.isalnum())
+            
             if title_clean in seen_titles:
                 to_remove.append(entry)
             else:
@@ -80,7 +128,7 @@ class MaintenanceManager:
                     
         return len(to_remove)
 
-    def archive_old_data(self, threshold_mb=50):
+    def archive_old_data(self, threshold_mb=10000000): # Huge threshold to prevent automatic archiving
         """Moves oldest 20% of data to compressed Bags if hub directory is too large."""
         # Calculate size of data_hub
         total_size = sum(f.stat().st_size for f in self.data_hub_dir.glob('**/*') if f.is_file())
