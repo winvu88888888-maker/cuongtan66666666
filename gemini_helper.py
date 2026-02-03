@@ -275,8 +275,19 @@ class GeminiQMDGHelperV172:
         # Configure Tools (Google Search Grounding)
         tools = []
         if use_web_search:
-            # FIX: Use 'google_search' for grounding
-            tools = [{'google_search': {}}]
+            # DYNAMIC TOOL SELECTION based on model
+            model_name_lower = getattr(self.model, 'model_name', '').lower()
+            if '2.0' in model_name_lower or '2.5' in model_name_lower:
+                # New models use 'google_search'
+                # Use class if possible, or try dict for older SDKs
+                try:
+                    from google.generativeai.types import content_types
+                    tools = [content_types.Tool(google_search=content_types.GoogleSearch())]
+                except (ImportError, AttributeError):
+                    tools = [{'google_search': {}}]
+            else:
+                # Legacy grounding for 1.5 (though unified in latest)
+                tools = [{'google_search_retrieval': {}}]
 
 
         # Option 1: Use n8n if configured (with increased timeout)
