@@ -981,8 +981,8 @@ with st.sidebar:
         else: # auto or online
             if secret_api_key and GEMINI_AVAILABLE:
                 try:
-                    from gemini_helper import GeminiQMDGHelperV172
-                    st.session_state.gemini_helper = GeminiQMDGHelperV172(secret_api_key)
+                    from gemini_helper import GeminiQMDGHelper
+                    st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
                     st.session_state.ai_type = "Gemini Pro (V1.7.5)"
                 except Exception: 
@@ -1097,8 +1097,8 @@ with st.sidebar:
                 # Silently ignore model display errors
                 pass
             
-            # Display last check time
             if st.session_state.last_api_check_time > 0:
+                import datetime as dt_module
                 last_check = dt_module.datetime.fromtimestamp(st.session_state.last_api_check_time)
                 st.caption(f"Lần check cuối: {last_check.strftime('%H:%M:%S')}")
             
@@ -1108,8 +1108,8 @@ with st.sidebar:
             if st.button("Cập nhật Key mới"):
                 if new_key:
                     try:
-                        from gemini_helper import GeminiQMDGHelperV172
-                        st.session_state.gemini_helper = GeminiQMDGHelperV172(new_key)
+                        from gemini_helper import GeminiQMDGHelper
+                        st.session_state.gemini_helper = GeminiQMDGHelper(new_key)
                         st.session_state.gemini_key = new_key
                         st.session_state.ai_type = "Gemini Pro (V1.7.5 Updated)"
                         
