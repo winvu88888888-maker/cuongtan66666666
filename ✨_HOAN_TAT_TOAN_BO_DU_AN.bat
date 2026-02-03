@@ -23,7 +23,7 @@ echo ----------------------------------------------------
 echo.
 echo BAY GIO CHI CON 1 BUOC CUOI CUNG:
 echo 1. Vao https://share.streamlit.io/
-echo 2. Tim app "cuongtan888888" -> Reboot app 🔄
+echo 2. Tim app "cuongtan66666666" -> Reboot app 🔄
 echo.
 echo * Luu y: Ban co the xoa cac file .bat cu tren Desktop cho gon.
 echo.
