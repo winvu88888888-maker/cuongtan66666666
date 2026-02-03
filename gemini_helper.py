@@ -275,7 +275,7 @@ class GeminiQMDGHelperV172:
         # Configure Tools (Google Search Grounding)
         tools = []
         if use_web_search:
-            # Fix: The API requires 'google_search' for grounding in this version
+            # FIX: Use 'google_search' for grounding
             tools = [{'google_search': {}}]
 
 
