@@ -1168,8 +1168,8 @@ with st.sidebar:
             if st.button("Kích hoạt ngay", type="primary"):
                 if GEMINI_AVAILABLE and user_api_key:
                     try:
-                        from gemini_helper import GeminiQMDGHelperV172
-                        st.session_state.gemini_helper = GeminiQMDGHelperV172(user_api_key)
+                        from gemini_helper import GeminiQMDGHelper
+                        st.session_state.gemini_helper = GeminiQMDGHelper(user_api_key)
                         st.session_state.gemini_key = user_api_key
                         st.session_state.ai_type = "Gemini Pro (V1.7.5 Active)"
                         
