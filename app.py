@@ -984,7 +984,7 @@ with st.sidebar:
                     from gemini_helper import GeminiQMDGHelperV172
                     st.session_state.gemini_helper = GeminiQMDGHelperV172(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (V1.7.2)"
+                    st.session_state.ai_type = "Gemini Pro (V1.7.5)"
                 except Exception: 
                     if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                         st.session_state.gemini_helper = FreeAIHelper()
@@ -1111,7 +1111,7 @@ with st.sidebar:
                         from gemini_helper import GeminiQMDGHelperV172
                         st.session_state.gemini_helper = GeminiQMDGHelperV172(new_key)
                         st.session_state.gemini_key = new_key
-                        st.session_state.ai_type = "Gemini Pro (V1.7.2 Updated)"
+                        st.session_state.ai_type = "Gemini Pro (V1.7.5 Updated)"
                         
                         if save_permanently:
                             data = load_custom_data()
@@ -1171,7 +1171,7 @@ with st.sidebar:
                         from gemini_helper import GeminiQMDGHelperV172
                         st.session_state.gemini_helper = GeminiQMDGHelperV172(user_api_key)
                         st.session_state.gemini_key = user_api_key
-                        st.session_state.ai_type = "Gemini Pro (V1.7.2 Active)"
+                        st.session_state.ai_type = "Gemini Pro (V1.7.5 Active)"
                         
                         if save_key_permanently:
                             data = load_custom_data()

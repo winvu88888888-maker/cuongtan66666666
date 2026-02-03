@@ -43,7 +43,7 @@ class GeminiQMDGHelperV172:
         """Initialize Gemini with API key and super intelligence features"""
         import hashlib
         self.api_key = api_key
-        self.version = "V1.7.2"
+        self.version = "V1.7.5"
         genai.configure(api_key=api_key)
         self._failed_models = set() # Track exhausted models
         self._hashlib = hashlib  # Store for cache key generation
@@ -114,26 +114,18 @@ class GeminiQMDGHelperV172:
         # QUAN TRỌNG: Ưu tiên FLASH trước vì tiết kiệm quota hơn 10 lần so với Pro
         # Flash vẫn đủ thông minh cho hầu hết các trường hợp sử dụng
         models_to_try = [
-            # Ưu tiên cao nhất: Models 2.5 Flash (mới nhất, ít tốn quota)
-            'gemini-2.5-flash',
-            'gemini-2.5-flash-preview-09-2025',
-            'gemini-2.5-flash-lite',
-            
-            # Tiếp theo: Models 2.0 Flash
+            # Ưu tiên cao nhất: Models 2.0 Flash (Mới và ổn định)
             'gemini-2.0-flash',
             'gemini-2.0-flash-001',
             'gemini-2.0-flash-lite-001',
             
-            # Fallback: Models 1.5 Flash
+            # Tiếp theo: Models 1.5 Flash
             'gemini-1.5-flash-latest', 
             'gemini-1.5-flash',
-            'gemini-flash-latest',
             
             # Chỉ dùng Pro khi Flash không khả dụng (tốn quota nhiều)
             'gemini-1.5-pro-latest', 
-            'gemini-1.5-pro',
-            'gemini-pro',
-            'gemini-pro-latest'
+            'gemini-1.5-pro'
         ]
         
         last_error = "Unknown error"
@@ -283,8 +275,8 @@ class GeminiQMDGHelperV172:
         # Configure Tools (Google Search Grounding)
         tools = []
         if use_web_search:
-            # Enable Google Search Retrieval
-            tools.append({'google_search_retrieval': {}})
+            # Fix: The API requires 'google_search' for grounding in this version
+            tools = [{'google_search': {}}]
 
 
         # Option 1: Use n8n if configured (with increased timeout)
@@ -352,7 +344,7 @@ class GeminiQMDGHelperV172:
                     time.sleep(delay)
                     continue
                     
-        return f"❌ **Lỗi AI (V1.7.2) sau {self.max_retries} lần thử:** {last_error}\\n\\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key."
+        return f"❌ **Lỗi AI ({self.version}) sau {self.max_retries} lần thử:** {last_error}\\n\\n💡 Gợi ý: Đợi 1-2 phút rồi thử lại hoặc đổi API Key."
     
     def update_context(self, **kwargs):
         """Update current context"""
