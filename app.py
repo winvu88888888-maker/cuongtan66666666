@@ -153,7 +153,7 @@ try:
         print(f"⚠️ AI Factory modules not available: {e}")
     
     try:
-        from gemini_helper import GeminiQMDGHelperV172
+        from gemini_helper import GeminiQMDGHelper
         GEMINI_AVAILABLE = True
     except (ImportError, Exception) as e:
         GEMINI_AVAILABLE = False
