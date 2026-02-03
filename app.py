@@ -1,29 +1,36 @@
 import streamlit as st
-# VERSION: 2026-02-01-V1.7-ULTRA-UNLOCK
+
+# VERSION: 2026-02-03-V1.7.6-BULLETPROOF
+try:
+    st.set_page_config(
+        page_title="🔮 Kỳ Môn Độn Giáp 🔮",
+        page_icon="🔮",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+except Exception:
+    pass
+
 import sys
 import os
-import random
-import textwrap
-import datetime as dt_module
+import traceback
+
+def show_fatal_error(e):
+    st.error("🛑 LỖI HỆ THỐNG NGHIÊM TRỌNG")
+    st.write("Ứng dụng gặp sự cố khi khởi động. Chi tiết kỹ thuật bên dưới:")
+    st.code(traceback.format_exc())
+    st.stop()
+
+# ALL MISSION CRITICAL LOGIC GOES INSIDE THIS BLOCK
 try:
-    import pytz
-except ImportError:
-    pytz = None
-
-try:
-    from zoneinfo import ZoneInfo
-except ImportError:
-    ZoneInfo = None
-
-from PIL import Image
-import importlib
-
-st.set_page_config(
-    page_title="🔮 Kỳ Môn Độn Giáp 🔮",
-    page_icon="🔮",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+    import random
+    import textwrap
+    import datetime as dt_module
+    
+    try:
+        import pytz
+    except ImportError:
+        pytz = None
 
 st.sidebar.success("🛠️ BUILD V1.7.5 - QUOTA FIX")
 st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
@@ -2782,3 +2789,5 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
  
+e x c e p t   E x c e p t i o n   a s   e :   s h o w _ f a t a l _ e r r o r ( e )  
+ 
