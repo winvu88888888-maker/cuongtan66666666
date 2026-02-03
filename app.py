@@ -188,47 +188,50 @@ if 'all_topics_full' not in st.session_state:
     st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
 if 'current_view' not in st.session_state:
     st.session_state.current_view = "ky_mon"  # ky_mon, mai_hoa, luc_hao
-            DUNG_THAN_200_CHU_DE,
-            hien_thi_dung_than_200,
-            lay_dung_than_200
-        )
-        USE_200_TOPICS = True
-    except ImportError:
-        USE_200_TOPICS = False
-    
-    try:
-        from database_tuong_tac import (
-            LUC_THAN_MAPPING,
-            SINH_KHAC_MATRIX,
-            TUONG_TAC_SAO_MON,
-            QUY_TAC_CHON_DUNG_THAN,
-            ANH_HUONG_MUA,
-            TRONG_SO_PHAN_TICH,
-            TRONG_SO_YEU_TO,
-            LUC_THAN_THEO_CHU_DE,
-            goi_y_doi_tuong_theo_chu_de
-        )
-        from phan_tich_da_tang import (
-            chon_dung_than_theo_chu_de,
-            xac_dinh_luc_than,
-            phan_tich_sinh_khac_hop,
-            phan_tich_tuong_tac_trong_cung,
-            phan_tich_tuong_tac_giua_cac_cung,
-            phan_tich_yeu_to_thoi_gian,
-            tinh_diem_tong_hop,
-            phan_tich_toan_dien
-        )
-        USE_MULTI_LAYER_ANALYSIS = True
-    except (ImportError, Exception):
-        USE_MULTI_LAYER_ANALYSIS = False
-        # Fallback if import fails
-        def phan_tich_yeu_to_thoi_gian(hanh, mua):
-            return "Bình"
 
-    CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
-    SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
-    THAN_8 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].keys())
-    CUA_8 = list(BAT_MON_CO_DINH_DISPLAY.keys())
+try:
+    from dung_than_200_chu_de_day_du import (
+        DUNG_THAN_200_CHU_DE,
+        hien_thi_dung_than_200,
+        lay_dung_than_200
+    )
+    USE_200_TOPICS = True
+except ImportError:
+    USE_200_TOPICS = False
+
+try:
+    from database_tuong_tac import (
+        LUC_THAN_MAPPING,
+        SINH_KHAC_MATRIX,
+        TUONG_TAC_SAO_MON,
+        QUY_TAC_CHON_DUNG_THAN,
+        ANH_HUONG_MUA,
+        TRONG_SO_PHAN_TICH,
+        TRONG_SO_YEU_TO,
+        LUC_THAN_THEO_CHU_DE,
+        goi_y_doi_tuong_theo_chu_de
+    )
+    from phan_tich_da_tang import (
+        chon_dung_than_theo_chu_de,
+        xac_dinh_luc_than,
+        phan_tich_sinh_khac_hop,
+        phan_tich_tuong_tac_trong_cung,
+        phan_tich_tuong_tac_giua_cac_cung,
+        phan_tich_yeu_to_thoi_gian,
+        tinh_diem_tong_hop,
+        phan_tich_toan_dien
+    )
+    USE_MULTI_LAYER_ANALYSIS = True
+except (ImportError, Exception):
+    USE_MULTI_LAYER_ANALYSIS = False
+    # Fallback if import fails
+    def phan_tich_yeu_to_thoi_gian(hanh, mua):
+        return "Bình"
+
+CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
+THAN_8 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].keys())
+CUA_8 = list(BAT_MON_CO_DINH_DISPLAY.keys())
 
 except ImportError as e:
     st.error(f"❌ Lỗi: Thiếu file dữ liệu hoặc module: {e}")
