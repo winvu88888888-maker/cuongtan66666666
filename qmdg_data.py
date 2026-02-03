@@ -105,7 +105,7 @@ BAT_MON_CO_DINH_DISPLAY = {
 
 # Vị trí Bát Môn Cố Định theo Cung (không dùng cung 5)
 BAT_MON_CO_DINH_CUNG = {
-    1: "Hưu", 2: "Tử", 3: "Thương", 4: "Đỗ", 6: "Kinh", 7: "Khai", 8: "Sinh", 9: "Cảnh"
+    1: "Hưu", 2: "Tử", 3: "Thương", 4: "Đỗ", 6: "Khai", 7: "Kinh", 8: "Sinh", 9: "Cảnh"
 }
 
 # Địa Chi Giờ

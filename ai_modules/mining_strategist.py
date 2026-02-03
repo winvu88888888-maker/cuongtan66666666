@@ -5,44 +5,69 @@ class MiningStrategist:
     """The Mega-Brain managing 50 specialized AI Mining Agents."""
     
     def __init__(self):
-        # Expanded to 50+ specialized niches across categories
+        # EXPANDED TO 100+ SPECIALIZED TOPICS FOR 50 AI AGENTS
         self.categories = {
             "Kỳ Môn Độn Giáp (Sâu)": [
                 "Bát Môn chuyên sâu", "Cửu Tinh biến hóa", "Bát Thần trợ lực", 
                 "Thần sát ẩn tàng", "Cấu trúc phản phục", "Ứng dụng trong kinh doanh",
                 "Kỳ Môn và sức khỏe", "Pháp thuật Kỳ Môn cổ", "Thiên Cáp Thần",
-                "Kỳ Môn Tiên Thiên", "Kỳ Môn Hậu Thiên", "Độn Giáp khởi lệ bí truyền"
+                "Kỳ Môn Tiên Thiên", "Kỳ Môn Hậu Thiên", "Độn Giáp khởi lệ bí truyền",
+                "Kỳ Môn chọn ngày giờ", "Kỳ Môn dự đoán thời tiết", "Kỳ Môn quân sự"
             ],
             "Kinh Dịch & Dự Đoán": [
                 "64 Quẻ và biến hóa", "Lời hào bí ẩn", "Mai Hoa Dịch Số nâng cao", 
                 "Lục Hào chuyên sâu", "Dịch học và thuật toán AI", "Tế lễ và Kinh Dịch",
-                "Huyền Không Đại Quái", "Trạch Cát theo Kinh Dịch", "Tượng quẻ thực tế"
+                "Huyền Không Đại Quái", "Trạch Cát theo Kinh Dịch", "Tượng quẻ thực tế",
+                "Kinh Dịch và vật lý lượng tử", "Ứng dụng Kinh Dịch trong tài chính",
+                "Kinh Dịch và tâm lý học hiện đại"
             ],
             "Lập Trình & Hệ Thống AI": [
-                "Agentic Frameworks", "LLM Fine-tuning", "Streamlit UI/UX UI/UX", 
-                "Python Performance", "AI Security & Pentesting", "RAG Systems",
+                "Agentic Frameworks", "LLM Fine-tuning", "Streamlit Advanced UI/UX", 
+                "Python Performance Optimization", "AI Security & Pentesting", "RAG Systems",
                 "LangChain & Autogen", "Microservices Architecture", "Vector Databases",
-                "DevOps cho AI", "Cloud Native AI Solutions"
+                "DevOps cho AI", "Cloud Native AI Solutions", "Kubernetes for ML",
+                "MLOps Best Practices", "AI Model Compression", "Edge AI Deployment",
+                "Prompt Engineering Mastery", "Multi-Agent Systems", "AI Orchestration"
             ],
             "Y Học & Dưỡng Sinh": [
                 "Châm cứu và hệ thống huyệt đạo", "Dược liệu quý hiếm toàn cầu", "Âm dương ngũ hành tạng phủ",
                 "Khí công dưỡng sinh cổ truyền", "Trị bệnh từ gốc (Y đạo)", "Thiền định và sóng não",
-                "Thực phẩm chức năng tự nhiên", "Giải phẫu học tinh vi"
+                "Thực phẩm chức năng tự nhiên", "Giải phẫu học tinh vi", "Y học cổ truyền Trung Quốc",
+                "Ayurveda và Y học Ấn Độ", "Dinh dưỡng phân tử", "Liệu pháp gen"
             ],
             "Phong Thủy & Địa Lý": [
                 "Loan Đầu (Hình thế)", "Lý Khí (Tính toán)", "Huyền Không Phi Tinh",
                 "Bát Trạch Minh Cảnh", "Trấn trạch và hóa giải", "Long mạch toàn cầu",
-                "Phong thủy đô thị hiện đại", "Âm trạch chuyên sâu"
+                "Phong thủy đô thị hiện đại", "Âm trạch chuyên sâu", "Phong thủy văn phòng",
+                "Phong thủy cho startup", "Địa lý thiên văn", "Phong thủy và kiến trúc xanh"
             ],
             "Chiến Lược & Tâm Lý": [
                 "Thập Nhị Binh Thư", "Tôn Tử Binh Pháp", "Quỷ Cốc Tử mưu lược",
                 "Chiến lược đàm phán quốc tế", "Tâm lý học chiến tranh", "Thao túng và phòng vệ tâm lý",
-                "Quản trị học phương Đông", "Chiến lược Blue Ocean"
+                "Quản trị học phương Đông", "Chiến lược Blue Ocean", "Game Theory ứng dụng",
+                "Behavioral Economics", "Neuro-Linguistic Programming", "Strategic Foresight"
             ],
             "Công Nghệ Mới & Tương Lai": [
                 "Gemini 3.0/4.0 Speculations", "Multimodal AI breakthroughs", "Robotics & Cybernetics",
                 "Edge Computing", "AI Ethics & Global Policy", "Web 4.0 & Blockchain",
-                "Quantum Computing", "Space Tech & Colonization"
+                "Quantum Computing", "Space Tech & Colonization", "Brain-Computer Interfaces",
+                "Synthetic Biology", "Nanotechnology", "Fusion Energy", "6G Networks"
+            ],
+            "Kinh Tế & Tài Chính": [
+                "Cryptocurrency Trading Strategies", "DeFi Protocols", "Stock Market Analysis",
+                "Macroeconomics Trends 2026", "Real Estate Investment", "Venture Capital",
+                "Financial Modeling", "Risk Management", "Algorithmic Trading", "NFT Economics",
+                "Central Bank Digital Currencies", "Global Trade Dynamics"
+            ],
+            "Khoa Học & Nghiên Cứu": [
+                "Climate Change Solutions", "Renewable Energy Tech", "Materials Science",
+                "Astrophysics Discoveries", "Neuroscience Breakthroughs", "Genomics Research",
+                "Ocean Exploration", "Particle Physics", "Dark Matter Studies", "Exoplanet Research"
+            ],
+            "Văn Hóa & Xã Hội": [
+                "Ancient Civilizations", "Philosophy Eastern vs Western", "Art History",
+                "Music Theory Advanced", "Literature Analysis", "Sociology Trends",
+                "Anthropology Studies", "Religious Studies", "Cultural Psychology", "Language Evolution"
             ]
         }
 

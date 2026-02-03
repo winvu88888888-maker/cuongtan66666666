@@ -2,11 +2,20 @@ import sys
 import os
 import time
 import random
+import concurrent.futures
+from datetime import datetime
+import json
 
 # Add paths for local import
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_dir, 'ai_modules'))
-sys.path.append(current_dir)
+current_dir = os.path.dirname(os.path.abspath(__file__)) # .../ai_modules
+parent_dir = os.path.dirname(current_dir) # .../UPLOAD_TO_STREAMLIT
+
+# Add parent dir to path to find gemini_helper.py
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
 
 try:
     # Try relative imports first for when run as module
@@ -49,99 +58,263 @@ def save_config(config):
             json.dump(config, f, indent=2)
     except: pass
 
-def run_mining_cycle(api_key, category=None):
-    """Executes one full cycle of autonomous mining."""
-    if not api_key:
-        print("⚠️ Thiếu API Key.")
-        return
-        
-    strategist = MiningStrategist()
-    ai_helper = GeminiQMDGHelper(api_key)
+def _single_agent_task(agent_id, topic, api_key):
+    """Công việc của một Agent đơn lẻ - UPGRADED với Web Search."""
+    print(f"🤖 [Agent #{agent_id}] Đang tiếp nhận mục tiêu: {topic}...")
     
-    # Update last run in config
-    config = load_config()
-    config["last_run"] = time.strftime("%Y-%m-%d %H:%M:%S")
-    config["total_cycles"] = config.get("total_cycles", 0) + 1
-    save_config(config)
-
-    # 1. Generate autonomous research queue
-    queue = strategist.generate_research_queue(category, count=3)
-    print(f"📡 Quân đoàn AI đã xác định mục tiêu khai thác: {queue}")
-    
-    for topic in queue:
-        status_msg = f"🤖 Đang khai thác sâu: {topic}..."
-        print(status_msg)
-        if 'st' in globals() and hasattr(st, 'toast'): 
-            try: st.toast(status_msg)
-            except: pass
+    try:
+        strategist = MiningStrategist()
+        ai_helper = GeminiQMDGHelper(api_key)
         
-        # 2. Synthesize deep-dive content using Gemini
+        # PHASE 1: Web Search để thu thập dữ liệu thô
+        try:
+            from web_searcher import get_web_searcher
+            searcher = get_web_searcher()
+            web_data = searcher.deep_research(topic, num_sources=3)
+            print(f"✅ [Agent #{agent_id}] Đã thu thập dữ liệu web")
+        except Exception as e:
+            print(f"⚠️ [Agent #{agent_id}] Web search failed: {e}")
+            web_data = ""
+        
+        # PHASE 2: AI Synthesis với dữ liệu web + Gemini Search
         mining_prompt = strategist.synthesize_mining_prompt(topic)
-        content = ai_helper._call_ai(mining_prompt, use_hub=False) # Skip hub search to avoid circularity during mining
+        if web_data:
+            mining_prompt = f"{mining_prompt}\n\n**DỮ LIỆU THU THẬP TỪ WEB:**\n{web_data[:3000]}"
         
-        # 3. Save to Sharded Hub
+        content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
+        
+        # Save to Hub
         cat_match = next((k for k in strategist.categories if any(t in topic for t in strategist.categories[k])), "Kiến Thức")
         
         id = add_entry(
             title=topic,
             content=content,
             category=cat_match,
-            source=f"Quân Đoàn AI - Agent {random.randint(1,50)}",
-            tags=["autonomous", "hyper-depth", topic.split(':')[0].strip()]
+            source=f"Agent #{agent_id} (Quân Đoàn AI)",
+            tags=["autonomous", "hyper-depth", f"agent-{agent_id}"]
         )
         
         if id:
-            success_msg = f"✅ Đã nạp thành công: {topic}"
-            print(success_msg)
-            if 'st' in globals() and hasattr(st, 'success'): 
-                try: st.success(success_msg)
-                except: pass
+            print(f"✅ [Agent #{agent_id}] KHAI THÁC THÀNH CÔNG: {topic}")
+            return True
         else:
-            print(f"❌ Lỗi nạp dữ liệu cho: {topic}")
+            print(f"❌ [Agent #{agent_id}] Thất bại khi lưu: {topic}")
+            return False
             
-        time.sleep(1) # Prevent rate limits
+    except Exception as e:
+        print(f"⚠️ [Agent #{agent_id}] Gặp sự cố: {e}")
+        return False
 
-    # 4. AUTONOMOUS CLEANUP (24/7 Cleanup Legion)
-    print("🧹 Kích hoạt Quân đoàn Dọn dẹp tự động...")
-    maintenance = MaintenanceManager()
-    maintenance.run_cleanup_cycle()
+def run_mining_cycle(api_key, category=None):
+    """Executes one full cycle of autonomous mining with THE 50 AI LEGION."""
+    if not api_key:
+        print("⚠️ Thiếu API Key.")
+        return
+        
+    strategist = MiningStrategist()
+    
+    # Update stats
+    config = load_config()
+    config["last_run"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    config["total_cycles"] = config.get("total_cycles", 0) + 1
+    save_config(config)
+
+    print("\n" + "="*60)
+    print(f"🚀 KÍCH HOẠT QUÂN ĐOÀN 50 AI - CHU KỲ #{config['total_cycles']}")
+    print("="*60)
+
+    # 1. Generate massive queue - UPGRADED TO 50 AGENTS
+    # Thực tế chạy 50 tasks, nhưng chia thành batches để tránh API quota
+    queue_size = 50 # REAL 50 agents execution
+    queue = strategist.generate_research_queue(category, count=queue_size)
+    
+    print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho 50 Đặc Phái Viên...")
+    
+    # 2. Parallel Execution (Multi-threaded Agents) - OPTIMIZED
+    # Chạy 15 agents đồng thời (an toàn cho API limits)
+    active_agents = min(len(queue), 15)
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=active_agents) as executor:
+        futures = []
+        for i, topic in enumerate(queue):
+            # Assign random Agent ID from 1-50
+            agent_id = random.randint(1, 50) 
+            futures.append(executor.submit(_single_agent_task, agent_id, topic, api_key))
+            time.sleep(1) # Stagger start to be nice to API
+            
+        # Wait for all
+        concurrent.futures.wait(futures)
+
+    # 3. AUTONOMOUS CLEANUP (24/7 Cleanup Legion)
+    # Run cleanup every cycle (or every 3rd cycle to save IO)
+    if config["total_cycles"] % 3 == 0:
+        print("\n" + "-"*40)
+        print("🧹 Kích hoạt AI Dọn Dẹp (Sanitation Droid)...")
+        try:
+            maintenance = MaintenanceManager()
+            res = maintenance.run_cleanup_cycle()
+            print(f"✨ Báo cáo dọn dẹp: Xóa {res.get('removed',0)} trùng lặp, Đóng gói {res.get('bagged',0)} items.")
+        except Exception as e:
+            print(f"⚠️ Lỗi dọn dẹp: {e}")
+    else:
+        print("\n✨ Dữ liệu sạch sẽ. Bỏ qua bước dọn dẹp chu kỳ này.")
+
+    # 4. AUTO DEPLOY TO CLOUD (Git Push)
+    # Tự động đồng bộ dữ liệu lên luồng Streamlit Cloud để web cập nhật
+    print("\n" + "-"*40)
+    print("☁️ Đang đồng bộ dữ liệu lên Đám Mây (Auto-Deploy)...")
+    try:
+        import subprocess
+        # Gọi script sync_and_push.bat ở thư mục cha
+        sync_script = os.path.join(parent_dir, "sync_and_push.bat")
+        if os.path.exists(sync_script):
+            subprocess.run([sync_script], shell=True, check=False)
+            print("✅ Đã gửi lệnh đồng bộ thành công.")
+        else:
+            print(f"⚠️ Không tìm thấy script đồng bộ tại: {sync_script}")
+    except Exception as e:
+        print(f"⚠️ Lỗi đồng bộ đám mây: {e}")
 
 def run_daemon():
     """Persistent 24/7 Loop"""
-    print("🚀 ĐANG KHỞI CHẠY QUÂN ĐOÀN KHAI THÁC 24/7 (DAEMON MODE)...")
+    print("""
+    ╔══════════════════════════════════════════════════════╗
+    ║      🏭 NHÀ MÁY AI VÔ TẬN (INFINITE AI FACTORY)      ║
+    ║           Chế độ: 24/7 Autonomous Daemon             ║
+    ║      Tình trạng: 🟢 ĐANG CHẠY (Background Mode)      ║
+    ╚══════════════════════════════════════════════════════╝
+    """)
+    
+    error_count = 0
+    
     while True:
+        # Reload config to check for stop signal (BUT default to TRUE if running from CLI daemon)
         config = load_config()
-        if not config.get("autonomous_247"):
-            print("💤 Chế độ 24/7 đang TẮT. Dừng daemon...")
-            break
         
-        api_key = config.get("api_key")
+        # Logic: If config says False, we pause but don't exit script completely (wait for enable)
+        # unless user kills script.
+        
+        api_key = config.get("api_key") or os.getenv("GEMINI_API_KEY")
+        
+        # 1. Truy tìm Key trong secrets.toml của Streamlit
         if not api_key:
-            print("❌ Lỗi: Chưa cấu hình API Key trong factory_config.json. Đang chờ...")
-            time.sleep(60)
-            continue
+            try:
+                secrets_path = os.path.join(os.path.dirname(current_dir), ".streamlit", "secrets.toml")
+                if os.path.exists(secrets_path):
+                    with open(secrets_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            if "GEMINI_API_KEY" in line or "gemini_key" in line:
+                                parts = line.split("=")
+                                if len(parts) >= 2:
+                                    found_key = parts[1].strip().strip('"').strip("'")
+                                    if found_key:
+                                        api_key = found_key
+                                        print(f"✅ Đã tìm thấy API Key từ secrets.toml")
+                                        # Save to factory config for future
+                                        config["api_key"] = api_key
+                                        save_config(config)
+                                        break
+            except: pass
+
+        # 2. Truy tìm Key trong custom_data.json (Do app.py lưu)
+        if not api_key:
+            try:
+                custom_data_path = os.path.join(os.path.dirname(current_dir), "custom_data.json")
+                if os.path.exists(custom_data_path):
+                    with open(custom_data_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        found_key = data.get("GEMINI_API_KEY")
+                        if found_key:
+                            api_key = found_key
+                            print(f"✅ Đã tìm thấy API Key từ custom_data.json")
+                            # AUTO-SYNC: Lưu vào factory config để dùng cho các lần sau
+                            config["api_key"] = api_key
+                            save_config(config)
+                            print(f"🔄 Đã đồng bộ API Key vào factory_config.json")
+            except: pass
+
+        # 3. Nếu vẫn chưa có, hỏi người dùng NHẬP TRỰC TIẾP
+        if not api_key:
+            print("\n❌ CHƯA TÌM THẤY API KEY.")
+            print("👉 Vui lòng nhập Gemini API Key của bạn vào bên dưới để cấu hình một lần duy nhất.")
+            print("(Key sẽ được lưu vào factory_config.json để tự động chạy các lần sau)")
+            try:
+                user_input_key = input("🔑 Nhập API Key: ").strip()
+                if user_input_key and len(user_input_key) > 10:
+                    api_key = user_input_key
+                    config["api_key"] = api_key
+                    save_config(config)
+                    print("✅ Đã lưu cấu hình thành công! Bắt đầu khởi động...")
+                else:
+                    print("⚠️ Key không hợp lệ. Đang thử lại sau 60s...")
+                    time.sleep(60)
+                    continue
+            except Exception:
+                # Trường hợp không input được (ví dụ chạy ngầm hoàn toàn không tương tác)
+                time.sleep(60)
+                continue
             
-        print(f"⏰ Bắt đầu chu kỳ mới: {time.strftime('%H:%M:%S')}")
+        # Run Cycle
         try:
             run_mining_cycle(api_key)
+            error_count = 0 # Reset error count on success
         except Exception as e:
-            print(f"🔥 Lỗi trong chu kỳ: {e}")
+            error_count += 1
+            print(f"🔥 Lỗi hệ thống: {e}")
+            if error_count > 10:
+                print("⚠️ Quá nhiều lỗi liên tiếp. Tạm dừng 10 phút...")
+                time.sleep(600)
+                error_count = 0
             
-        interval = config.get("interval_minutes", 30) * 60
-        print(f"⏳ Hoàn tất. Nghỉ {config.get('interval_minutes')} phút...")
-        time.sleep(interval)
+        # Sleep
+        interval = config.get("interval_minutes", 15) # Default faster (15 mins)
+        if interval < 1: interval = 1
+        
+        next_run = time.time() + (interval * 60)
+        print(f"\n⏳ Quân đoàn AI nghỉ ngơi {interval} phút...")
+        print(f"⏰ Chu kỳ tiếp theo: {datetime.fromtimestamp(next_run).strftime('%H:%M:%S')}")
+        
+        # Countdown visual (optional)
+        time.sleep(interval * 60)
 
 if __name__ == "__main__":
-    import threading
-    # Command line check
-    if "--daemon" in sys.argv:
+    # Check if running in GitHub Actions
+    is_github_action = os.getenv("GITHUB_ACTIONS") == "true"
+    
+    if "--daemon" in sys.argv and not is_github_action:
+        # Force enable in config if running explicitly
+        c = load_config()
+        c["autonomous_247"] = True
+        save_config(c)
         run_daemon()
     else:
-        # For local testing, attempt to find a key
+        # One-off run (Local or GitHub Action)
+        print("🚀 Chạy chế độ One-Off (Khai thác 1 lần rồi nghỉ)...")
+        
+        # Priority: Env Var (GitHub Secrets) -> Config -> Custom Data
         key = os.environ.get("GEMINI_API_KEY")
+        
         if not key:
-            print("⚠️ Vui lòng đặt biến môi trường GEMINI_API_KEY để chạy script này.")
-        else:
-            print("🚀 Khởi chạy chu kỳ Khai thác Tự trị (Hyper-Depth)...")
+            # Try load from config
+            c = load_config()
+            key = c.get("api_key")
+            
+        if not key:
+             # Try custom_data.json
+             try:
+                custom_data_path = os.path.join(os.path.dirname(current_dir), "custom_data.json")
+                if os.path.exists(custom_data_path):
+                    with open(custom_data_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        key = data.get("GEMINI_API_KEY")
+             except: pass
+
+        if key:
             run_mining_cycle(key)
-            print("✨ Hoàn tất chu kỳ.")
+        else:
+            print("❌ Không tìm thấy Key. (Nếu chạy trên GitHub, hãy set Secret GEMINI_API_KEY)")
+            # Trên GitHub Actions, không error exit để tránh báo đỏ cả workflow nếu chỉ thiếu key
+            if is_github_action:
+                print("⚠️ Bỏ qua chu kỳ này do thiếu Key.")
+            else:
+                sys.exit(1)

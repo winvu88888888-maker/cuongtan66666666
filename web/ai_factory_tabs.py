@@ -171,11 +171,44 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     st.markdown("---")
     
     # 3. 50 MINING AGENTS STATUS
-    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7)")
+    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI (Khai thác 24/7 + Web Search)")
+    st.caption("✨ **NÂNG CẤP MỚI**: Mỗi agent tìm kiếm trên Google/Internet + Gemini AI Grounding")
     
     config = load_config()
-    is_active = config.get("autonomous_247", False)
+    is_active = config.get("autonomous_247", False) # Keep original variable name
+    last_run_str = config.get("last_run")
     
+    # --- STATUS CHECK LOGIC ---
+    is_running_realtime = False
+    time_diff_minutes = 999
+    
+    if last_run_str:
+        try:
+            last_run_dt = datetime.strptime(last_run_str, "%Y-%m-%d %H:%M:%S")
+            # Calculate diff
+            now = datetime.now()
+            diff = now - last_run_dt
+            time_diff_minutes = diff.total_seconds() / 60
+            
+            # If last run was within 90 mins (allow 1h cycle + buffer), consider RUNNING
+            if time_diff_minutes < 90:
+                is_running_realtime = True
+        except: pass
+        
+    # DISPLAY VISUAL STATUS
+    st1, st2 = st.columns(2)
+    with st1:
+        if is_running_realtime:
+            st.success(f"🟢 **NHÀ MÁY AI: ĐANG HOẠT ĐỘNG**\n\n(Lần cuối: {int(time_diff_minutes)} phút trước)")
+        else:
+            st.error(f"🔴 **NHÀ MÁY AI: ĐÃ DỪNG**\n\n(Lần cuối: {last_run_str if last_run_str else 'Chưa chạy'})")
+            
+    with st2:
+        if is_running_realtime:
+             st.success("🟢 **AI DỌN DẸP: SẴN SÀNG**\n\n(Tự động kích hoạt mỗi 3 chu kỳ)")
+        else:
+             st.error("🔴 **AI DỌN DẸP: NGHỈ NGƠI**\n\n(Chờ Nhà máy hoạt động lại)")
+
     # 24/7 Control Panel
     c1_24, c2_24 = st.columns([2, 1])
     with c1_24:
@@ -221,24 +254,44 @@ def render_mining_summary_on_dashboard(key_suffix=""):
 
     # Real Trigger Button (Manual override)
     btn_key = f"activate_mining_legion_btn{key_suffix}"
-    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG", use_container_width=True, key=btn_key):
+    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG (50 AGENTS THẬT)", use_container_width=True, key=btn_key, type="primary"):
+        # AUTO-DETECT API KEY FROM MULTIPLE SOURCES
+        api_key = None
+        
+        # Source 1: Session state
         if 'gemini_key' in st.session_state and st.session_state.gemini_key:
-            with st.spinner("🤖 Quân đoàn AI đang xuất quân..."):
+            api_key = st.session_state.gemini_key
+        
+        # Source 2: custom_data.json
+        if not api_key:
+            try:
+                import json, os
+                custom_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "custom_data.json")
+                if os.path.exists(custom_path):
+                    with open(custom_path, "r", encoding="utf-8") as f:
+                        api_key = json.load(f).get("GEMINI_API_KEY")
+            except: pass
+        
+        # RUN OR ERROR
+        if api_key:
+            with st.spinner("🤖 50 AI AGENTS ĐANG CHẠY THẬT... (2-5 phút)"):
                 try:
-                    run_mining_cycle(st.session_state.gemini_key)
-                    st.success("✅ Chu kỳ khai thác hoàn tất! Dữ liệu đã được nạp vào Shard Hub.")
+                    run_mining_cycle(api_key)
+                    st.success("✅ HOÀN TẤT! 50 agents đã thu thập dữ liệu THẬT từ Google + Gemini AI!")
+                    st.balloons()
+                    time.sleep(1)
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Lỗi khai thác: {e}")
+                    st.error(f"❌ Lỗi: {e}")
         else:
-            st.warning("⚠️ Vui lòng cấu hình Gemini API Key để kích hoạt quân đoàn.")
+            st.error("❌ THIẾU API KEY! Paste Gemini API Key ở sidebar trước (phần '🤖 Cấu hình AI')")
 
     stats = get_hub_stats()
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Tổng Đặc phái viên", "50")
-    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0))
-    col3.metric("Lưu trữ Shard", f"{stats['size_mb']} MB")
-    col4.metric("Dữ liệu nạp", f"{stats['total']} bản ghi")
+    col1.metric("Tổng Đặc phái viên", "50", help="50 AI agents tìm kiếm trên Google + Internet")
+    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0), help="Mỗi chu kỳ = 50 tasks")
+    col3.metric("Lưu trữ Shard", f"{stats['size_mb']} MB", help="Dữ liệu từ web + AI synthesis")
+    col4.metric("Dữ liệu nạp", f"{stats['total']} bản ghi", help="Tự động cập nhật 24/7")
     
     if config.get("last_run"):
         st.caption(f"🕒 Lần cuối hoạt động: {config['last_run']} | Giãn cách: {config.get('interval_minutes')} phút")

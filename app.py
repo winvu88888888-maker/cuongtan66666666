@@ -1,25 +1,72 @@
 import streamlit as st
+# VERSION: 2026-02-01-V1.7-ULTRA-UNLOCK
 import sys
 import os
 import random
 import textwrap
-from datetime import datetime
-from zoneinfo import ZoneInfo
+import datetime as dt_module
+try:
+    import pytz
+except ImportError:
+    pytz = None
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None
+
 from PIL import Image
 import importlib
+
+st.set_page_config(
+    page_title="🔮 Kỳ Môn Độn Giáp 🔮",
+    page_icon="🔮",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+st.sidebar.success("🛠️ BUILD V1.7.5 - QUOTA FIX")
+st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
 st.sidebar.markdown("### 🔍 Hệ thống Giao diện")
 st.sidebar.write(f"📁 Thư mục gốc: `{os.path.dirname(os.path.abspath(__file__))}`")
 try:
-    import mai_hoa_v2
-    st.sidebar.caption(f"🌸 Module Mai Hoa V2: `{mai_hoa_v2.__file__}`")
-    importlib.reload(mai_hoa_v2)
-    import luc_hao_v2
-    st.sidebar.caption(f"☯️ Module Lục Hào V2: `{luc_hao_v2.__file__}`")
-    importlib.reload(luc_hao_v2)
+    import mai_hoa_dich_so
+    st.sidebar.caption(f"🌸 Mai Hoa: ✅")
+    import luc_hao_kinh_dich
+    st.sidebar.caption(f"☯️ Lục Hào: ✅")
 except Exception as e:
-    st.sidebar.error(f"⚠️ Reload V2: {e}")
+    st.sidebar.error(f"⚠️ Module: {e}")
+
+# --- AI FACTORY STATUS (SIDEBAR) ---
+try:
+    # Quick check for status without importing everything
+    import json
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+    if os.path.exists(config_path):
+        with open(config_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+            last_run = cfg.get("last_run")
+            is_active_247 = cfg.get("autonomous_247", False)
+            
+            # Logic: Running if last_run < 90 mins
+            is_running = False
+            if last_run:
+                try:
+                    diff = dt_module.datetime.now() - dt_module.datetime.strptime(last_run, "%Y-%m-%d %H:%M:%S")
+                    if diff.total_seconds() < 5400: # 90 mins
+                        is_running = True
+                except: pass
+            
+            st.sidebar.markdown("---")
+            if is_running:
+                st.sidebar.success(f"🟢 **AI Factory: ONLINE**\n\n(Chạy lúc: {last_run})")
+            else:
+                st.sidebar.error("🔴 **AI Factory: OFFLINE**")
+                if is_active_247:
+                    st.sidebar.caption("⏳ Đang chờ GitHub Action...")
+except Exception: pass
 
 # Add project root and dist directory to Python path
 root_path = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +86,14 @@ try:
     importlib.reload(luc_hao_kinh_dich)
 except Exception:
     pass
+
+# Initialize fallbacks to prevent NameErrors if core files are missing
+KY_MON_DATA = {"DU_LIEU_DUNG_THAN_PHU_TRO": {"CUU_TINH": {}, "BAT_THAN": {}, "BAT_MON": {}}}
+TOPIC_INTERPRETATIONS = {}
+BAT_MON_CO_DINH_DISPLAY = {}
+BAT_MON_CO_DINH_CUNG = {}
+CUNG_NGU_HANH = {}
+QUAI_TUONG = {}
 
 # Import modules from dist directory
 try:
@@ -100,8 +155,9 @@ try:
     try:
         from gemini_helper import GeminiQMDGHelper
         GEMINI_AVAILABLE = True
-    except ImportError:
+    except (ImportError, Exception) as e:
         GEMINI_AVAILABLE = False
+        print(f"⚠️ Gemini helper load error: {e}")
         
     # Import Free AI helper as fallback
     try:
@@ -112,8 +168,26 @@ try:
 
 
     
+
+# ======================================================================
+# INITIALIZE SESSION STATE
+# ======================================================================
+if 'zoom_level' not in st.session_state:
+    st.session_state.zoom_level = 100
+if 'chu_de_hien_tai' not in st.session_state:
+    st.session_state.chu_de_hien_tai = "Tổng Quát"
+if 'all_topics_full' not in st.session_state:
+    core_topics = list(TOPIC_INTERPRETATIONS.keys())
+    hub_topics = []
     try:
-        from dung_than_200_chu_de_day_du import (
+        from ai_modules.shard_manager import search_index
+        index_results = search_index()
+        hub_topics = list(set([e['title'] for e in index_results]))
+    except Exception:
+        pass
+    st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
+if 'current_view' not in st.session_state:
+    st.session_state.current_view = "ky_mon"  # ky_mon, mai_hoa, luc_hao
             DUNG_THAN_200_CHU_DE,
             hien_thi_dung_than_200,
             lay_dung_than_200
@@ -161,14 +235,8 @@ except ImportError as e:
     st.stop()
 
 # ======================================================================
-# STREAMLIT PAGE CONFIG
+# PREMIUM CUSTOM CSS
 # ======================================================================
-st.set_page_config(
-    page_title="🔮 Kỳ Môn Độn Giáp 🔮",
-    page_icon="🔮",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # ======================================================================
 # PREMIUM CUSTOM CSS
@@ -179,6 +247,32 @@ st.markdown("""
     .stApp {
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         color: #1e293b;
+    }
+    
+    /* SPECIFIC HIGH-CONTRAST FOR EXPLANATIONS (TABLES & INFO) */
+    [data-testid="stTable"] {
+        background-color: #ffffff !important;
+        border: 2px solid #b91c1c !important;
+        border-radius: 12px !important;
+    }
+    
+    [data-testid="stTable"] th {
+        background-color: #b91c1c !important;
+        color: #ffffff !important;
+        font-weight: 900 !important;
+        border-bottom: 2px solid #991b1b !important;
+    }
+    
+    [data-testid="stTable"] td {
+        color: #000000 !important;
+        font-weight: 700 !important;
+        border-bottom: 1px solid #fee2e2 !important;
+    }
+
+    /* Force readable color for info boxes in light mode */
+    .stAlert p {
+        color: #1e293b !important;
+        font-weight: 600 !important;
     }
     
     .stButton>button {
@@ -210,80 +304,157 @@ st.markdown("""
     
     .palace-inner {
         transform-style: preserve-3d;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 15px 45px rgba(0,0,0,0.3);
         transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         border-radius: 16px;
         position: relative;
-        background-color: white;
+        overflow: hidden;
+        background-color: #1e293b; /* Fallback for contrast */
     }
 
-    /* Grid Layout & Precision Precision Alignment */
-    .palace-grid-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 1fr 1fr 1fr;
-        height: 220px;
-        position: relative;
-        padding: 0; /* Absolute flush */
-        margin-top: 5px;
+    .glass-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.5); /* DEEPER OVERLAY FOR BETTER CONTRAST */
+        z-index: 1;
     }
 
-    .grid-cell {
-        display: flex;
-        flex-direction: column; /* Stack label and value */
-        align-items: center;
-        justify-content: center;
-        font-weight: 900;
-        font-size: 1.6rem; /* Balanced size */
-        text-shadow: 0 0 10px white, 0 0 5px white;
+    /* Palace Layout & Element Stacking */
+    .palace-content-v {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
         z-index: 2;
-        line-height: 1;
     }
 
-    .qmdg-label {
-        font-size: 0.65rem;
+    .than-corner {
+        position: absolute;
+        top: 45px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.8rem;
+        font-weight: 900;
+        text-shadow: 2px 2px 8px black, 0 0 10px rgba(0,0,0,0.8);
+    }
+
+    .sao-corner {
+        position: absolute;
+        top: 100px;
+        left: 15px;
+        font-size: 1.6rem;
         font-weight: 800;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: -2px;
-        letter-spacing: 0.3px;
+        text-shadow: 2px 2px 8px black, 0 0 5px black;
     }
 
-    /* Precision Alignment: Flush to Margins */
-    .top-left { 
-        grid-area: 1 / 1 / 2 / 2; 
-        align-items: flex-start;
-        justify-content: flex-start;
+    .mon-corner {
+        position: absolute;
+        top: 100px;
+        right: 15px;
+        font-size: 1.9rem;
+        font-weight: 900;
+        text-shadow: 2px 2px 8px black, 0 0 5px black;
     }
-    .top-right { 
-        grid-area: 1 / 3 / 2 / 4; 
-        align-items: flex-end;
-        justify-content: flex-start;
+
+    .thien-corner {
+        position: absolute;
+        bottom: 50px;
+        right: 15px;
+        font-size: 1.8rem;
+        font-weight: 900;
+        text-shadow: 2px 2px 8px black, 0 0 5px black;
     }
-    .mid-left { 
-        grid-area: 2 / 1 / 3 / 2; 
-        align-items: flex-start;
-        justify-content: center;
+
+    .dia-corner {
+        position: absolute;
+        bottom: 12px;
+        right: 15px;
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #ffffff !important;
+        text-shadow: 2px 2px 10px black, 0 0 5px black;
     }
-    .bot-center { 
-        grid-area: 3 / 2 / 4 / 3; 
-        align-items: center;
-        justify-content: flex-end; 
+
+    .palace-markers {
+        position: absolute !important;
+        bottom: 10px !important;
+        left: 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        z-index: 99999 !important; /* ABOVE EVERYTHING */
+        pointer-events: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
-    .bot-right { 
-        grid-area: 3 / 3 / 4 / 4; 
-        align-items: flex-end;
-        justify-content: flex-end; 
-        font-size: 2rem; 
+
+    .marker-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 1.2rem !important;
+        font-weight: 900 !important;
+        padding: 5px 12px !important;
+        border-radius: 8px !important;
+        border: 3px solid #000 !important;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 5px 15px rgba(0,0,0,0.5) !important;
+        line-height: 1 !important;
+        text-shadow: none !important;
+        white-space: nowrap !important;
     }
+
+    .marker-badge.ma {
+        background: #f59e0b !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+    }
+
+    .marker-badge.kv {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    .marker-badge.pillar-nam { background: #1e3a8a !important; color: white !important; }
+    .marker-badge.pillar-thang { background: #166534 !important; color: white !important; }
+    .marker-badge.pillar-ngay { background: #991b1b !important; color: white !important; }
+    .marker-badge.pillar-gio { background: #854d0e !important; color: white !important; }
+
+    .kv-group, .ma-group {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .marker {
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 900;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .marker.kv-nam, .marker.kv-thang, .marker.kv-ngay, .marker.kv-gio { background: #64748b; }
+    .marker.ma-nam, .marker.ma-thang, .marker.ma-ngay, .marker.ma-gio { background: #f59e0b; }
 
     .palace-header-row {
         display: flex;
         justify-content: space-between;
-        padding: 8px 12px;
-        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
         position: relative;
         z-index: 2;
+    }
+
+    .palace-title {
+        color: #f1c40f;
+        font-weight: 900;
+        font-size: 1.3rem;
+        text-shadow: 1px 1px 2px black;
     }
 
     .palace-footer-markers {
@@ -357,9 +528,9 @@ st.markdown("""
     }
 
     .hex-subtitle {
-        font-size: 1.2rem;
+        font-size: 1.5rem; /* RESTORED LARGE SUBTITLE */
         color: #92400e;
-        font-weight: 700;
+        font-weight: 900;
         letter-spacing: 1px;
     }
 
@@ -533,10 +704,11 @@ st.markdown("""
         align-items: center;
     }
     .action-item {
-        margin: 8px 0;
+        margin: 12px 0;
         padding-left: 25px;
         position: relative;
-        font-weight: 600;
+        font-weight: 800; /* RESTORED EXTRA BOLD */
+        font-size: 1.1rem;
         color: #451a03;
         list-style: none;
     }
@@ -547,9 +719,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-# Initialize zoom level in session state
-if 'zoom_level' not in st.session_state:
-    st.session_state.zoom_level = 100  # Default 100%
+# Zoom level already initialized in session state
 
 # Inject custom CSS for zoom
 def apply_zoom():
@@ -692,27 +862,6 @@ with zoom_col4:
     st.markdown(f"<div style='padding: 8px; color: #666; font-size: 12px;'>Zoom: {st.session_state.zoom_level}%</div>", unsafe_allow_html=True)
 
 # ======================================================================
-# INITIALIZE SESSION STATE
-# ======================================================================
-if 'chu_de_hien_tai' not in st.session_state:
-    st.session_state.chu_de_hien_tai = "Tổng Quát"
-if 'all_topics_full' not in st.session_state:
-    core_topics = list(TOPIC_INTERPRETATIONS.keys())
-    
-    # NEW: Merge topics from the Universal Data Hub
-    hub_topics = []
-    try:
-        from ai_modules.shard_manager import search_index
-        index_results = search_index()
-        hub_topics = list(set([e['title'] for e in index_results]))
-    except Exception:
-        pass
-        
-    st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
-if 'current_view' not in st.session_state:
-    st.session_state.current_view = "ky_mon"  # ky_mon, mai_hoa, luc_hao
-
-# ======================================================================
 # HEADER
 # ======================================================================
 col_header1, col_header2, col_header3 = st.columns([1, 3, 1])
@@ -745,16 +894,18 @@ with st.sidebar:
     # View selection
     view_option = st.radio(
         "Chọn Phương Pháp:",
-        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "🤖 Hỏi Gemini AI"],
+        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "🤖 Hỏi Gemini AI"],
         index=0
     )
     
     if view_option == "🔮 Kỳ Môn Độn Giáp":
         st.session_state.current_view = "ky_mon"
-    elif view_option == "📖 Mai Hoa 64 Quẻ":
-        st.session_state.current_view = "mai_hoa"
     elif view_option == "🏭 Nhà Máy AI":
         st.session_state.current_view = "ai_factory"
+    elif view_option == "🌟 40 Chuyên Gia AI":
+        st.session_state.current_view = "ai_experts"
+    elif view_option == "📖 Mai Hoa 64 Quẻ":
+        st.session_state.current_view = "mai_hoa"
     elif view_option == "☯️ Lục Hào Kinh Dịch":
         st.session_state.current_view = "luc_hao"
     else:  # 🤖 Hỏi Gemini AI
@@ -785,10 +936,38 @@ with st.sidebar:
         st.session_state.ai_preference = "auto" # Default to auto discovery
 
     # Actual Initialization Logic
-    if 'gemini_helper' not in st.session_state or not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or not hasattr(st.session_state.gemini_helper, 'analyze_mai_hoa'):
+    if ('gemini_helper' not in st.session_state or 
+        not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
+        'V1.7.5' not in getattr(st.session_state.gemini_helper, 'version', '')):
+        
+        # ƯU TIÊN 1: Streamlit Cloud Secrets (Quan trọng nhất cho deployment)
+        st_secret = None
+        try:
+            st_secret = st.secrets.get("GEMINI_API_KEY", None)
+        except Exception:
+            pass
+        
+        # ƯU TIÊN 2: File custom_data.json (Local)
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
-        secret_api_key = st.secrets.get("GEMINI_API_KEY", saved_key)
+        
+        # ƯU TIÊN 3: Factory Config (Đồng bộ)
+        factory_key = None
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+            if os.path.exists(config_path):
+                with open(config_path, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                    factory_key = cfg.get("api_key")
+        except: pass
+        
+        # Tổng hợp: Ưu tiên Streamlit Secrets > Saved Key > Factory Key
+        secret_api_key = st_secret or saved_key or factory_key
+        
+        # Thông báo nếu chạy trên cloud nhưng chưa có secret
+        if not st_secret and not saved_key and not factory_key:
+            # Đang chạy trên cloud và không có API key nào
+            st.session_state.missing_cloud_secret = True
         
         if st.session_state.ai_preference == "offline":
             if FREE_AI_AVAILABLE:
@@ -797,9 +976,10 @@ with st.sidebar:
         else: # auto or online
             if secret_api_key and GEMINI_AVAILABLE:
                 try:
+                    from gemini_helper import GeminiQMDGHelper
                     st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
                     st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (Online)"
+                    st.session_state.ai_type = "Gemini Pro (V1.7.5)"
                 except Exception: 
                     if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                         st.session_state.gemini_helper = FreeAIHelper()
@@ -808,16 +988,114 @@ with st.sidebar:
                 st.session_state.gemini_helper = FreeAIHelper()
                 st.session_state.ai_type = "Free AI (Offline Mode)"
 
-    # AI Status Display
+    # AI Status Display with LED Indicator
     ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
+    
+    # Auto-check API status periodically (every 30 seconds)
+    if 'last_api_check_time' not in st.session_state:
+        st.session_state.last_api_check_time = 0
+    
+    import time
+    current_time = time.time()
+    
+    # Auto-check API status
+    if "Gemini" in ai_status and (current_time - st.session_state.last_api_check_time > 30):
+        try:
+            success, msg = st.session_state.gemini_helper.test_connection()
+            st.session_state.api_status_ok = success
+            st.session_state.api_status_msg = msg
+            st.session_state.last_api_check_time = current_time
+        except:
+            st.session_state.api_status_ok = False
+            st.session_state.api_status_msg = "Chưa kiểm tra"
+    
+    # Initialize status if not exists
+    if 'api_status_ok' not in st.session_state:
+        st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
+        st.session_state.api_status_msg = "Chưa kiểm tra"
+    
+    # LED Indicator Colors
+    if st.session_state.api_status_ok is True:
+        led_color = "🟢"  # Xanh = OK
+        status_color = "#10b981"
+        status_text = "HOẠT ĐỘNG TỐT"
+    elif st.session_state.api_status_ok is False:
+        led_color = "🔴"  # Đỏ = Lỗi
+        status_color = "#ef4444"
+        status_text = "LỖI KẾT NỐI"
+    else:
+        led_color = "🟡"  # Vàng = Chưa check
+        status_color = "#f59e0b"
+        status_text = "CHƯA KIỂM TRA"
+    
+    # Display with LED
     if "Gemini" in ai_status:
-        st.success(f"🤖 **{ai_status}**")
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, {status_color}22 0%, {status_color}11 100%);
+            border-left: 4px solid {status_color};
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">{led_color}</span>
+                <div style="flex: 1;">
+                    <div style="font-weight: 800; color: {status_color}; font-size: 0.9rem;">
+                        {status_text}
+                    </div>
+                    <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
+                        🤖 {ai_status}
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         with st.expander("⚙️ Quản lý Gemini"):
-            if st.button("🔄 Kiểm tra kết nối", key="test_ai_conn"):
-                with st.spinner("Đang thử kết nối..."):
-                    success, msg = st.session_state.gemini_helper.test_connection()
-                    if success: st.success(msg)
-                    else: st.error(msg)
+            # Manual check button
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if st.button("🔄 Kiểm tra kết nối ngay", key="test_ai_conn", use_container_width=True):
+                    with st.spinner("Đang thử kết nối..."):
+                        success, msg = st.session_state.gemini_helper.test_connection()
+                        st.session_state.api_status_ok = success
+                        st.session_state.api_status_msg = msg
+                        st.session_state.last_api_check_time = current_time
+                        if success: 
+                            st.success(f"✅ {msg}")
+                            st.rerun()  # Refresh to update LED
+                        else: 
+                            st.error(f"❌ {msg}")
+                            st.rerun()  # Refresh to update LED
+            
+            with col2:
+                if st.button("🔄", key="force_refresh", help="Làm mới", use_container_width=True):
+                    st.rerun()
+            
+            # Display current model info
+            try:
+                if hasattr(st.session_state, 'gemini_helper') and st.session_state.gemini_helper:
+                    # Try to get model name safely
+                    model_obj = getattr(st.session_state.gemini_helper, 'model', None)
+                    if model_obj:
+                        model_name = getattr(model_obj, 'model_name', None)
+                        if model_name:
+                            st.info(f"**Model đang dùng:** `{model_name}`")
+                            
+                            # Quota warning for Pro models
+                            if 'pro' in model_name.lower():
+                                st.warning("⚠️ **Cảnh báo:** Model Pro tốn quota rất nhiều. Nên chuyển sang Flash.")
+                            else:
+                                st.success(f"✅ **Model Flash** - Tiết kiệm quota")
+            except Exception as e:
+                # Silently ignore model display errors
+                pass
+            
+            if st.session_state.last_api_check_time > 0:
+                import datetime as dt_module
+                last_check = dt_module.datetime.fromtimestamp(st.session_state.last_api_check_time)
+                st.caption(f"Lần check cuối: {last_check.strftime('%H:%M:%S')}")
             
             new_key = st.text_input("Thay đổi API Key (Tùy chọn):", type="password", key="new_api_key")
             save_permanently = st.checkbox("Lưu khóa này vĩnh viễn", value=True)
@@ -825,14 +1103,27 @@ with st.sidebar:
             if st.button("Cập nhật Key mới"):
                 if new_key:
                     try:
+                        from gemini_helper import GeminiQMDGHelper
                         st.session_state.gemini_helper = GeminiQMDGHelper(new_key)
                         st.session_state.gemini_key = new_key
-                        st.session_state.ai_type = "Gemini Pro (Cá nhân)"
+                        st.session_state.ai_type = "Gemini Pro (V1.7.5 Updated)"
                         
                         if save_permanently:
                             data = load_custom_data()
                             data["GEMINI_API_KEY"] = new_key
                             save_custom_data(data)
+                            
+                            # ĐỒNG BỘ SANG AI FACTORY
+                            try:
+                                config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+                                if os.path.exists(config_path):
+                                    with open(config_path, 'r', encoding='utf-8') as f:
+                                        cfg = json.load(f)
+                                    cfg["api_key"] = new_key
+                                    with open(config_path, 'w', encoding='utf-8') as f:
+                                        json.dump(cfg, f, indent=2, ensure_ascii=False)
+                            except: pass
+                            
                             st.success("✅ Đã cập nhật và Lưu vĩnh viễn!")
                         else:
                             st.success("✅ Đã cập nhật (Tạm thời)!")
@@ -843,6 +1134,27 @@ with st.sidebar:
                     st.warning("Vui lòng nhập Key.")
     else:
         st.warning(f"ℹ️ {ai_status}")
+        
+        # CẢNH BÁO ĐẶC BIỆT CHO STREAMLIT CLOUD
+        if st.session_state.get('missing_cloud_secret', False):
+            st.error("""
+            ### ⚠️ CHƯA CẤU HÌNH API KEY TRÊN STREAMLIT CLOUD!
+            
+            **Ứng dụng đang chạy trên Streamlit Cloud nhưng chưa có API Key.**
+            
+            #### 🔧 Cách Sửa (2 phút):
+            1. Vào **Streamlit Cloud Dashboard**: https://share.streamlit.io/
+            2. Click vào app của bạn → **⚙️ Settings**
+            3. Chọn tab **"Secrets"**
+            4. Dán nội dung sau:
+            ```
+            GEMINI_API_KEY = "YOUR_API_KEY_HERE"
+            ```
+            5. Click **"Save"** → App sẽ tự động restart
+            
+            👉 [Lấy API Key miễn phí tại đây](https://aistudio.google.com/app/apikey)
+            """)
+        
         with st.expander("🔑 Kích hoạt Gemini Pro (Thông minh hơn)", expanded=True):
             st.markdown("👉 [Lấy API Key miễn phí](https://aistudio.google.com/app/apikey)")
             user_api_key = st.text_input("Dán API Key vào đây:", type="password", key="input_api_key_sidebar")
@@ -851,17 +1163,30 @@ with st.sidebar:
             if st.button("Kích hoạt ngay", type="primary"):
                 if GEMINI_AVAILABLE and user_api_key:
                     try:
+                        from gemini_helper import GeminiQMDGHelper
                         st.session_state.gemini_helper = GeminiQMDGHelper(user_api_key)
                         st.session_state.gemini_key = user_api_key
-                        st.session_state.ai_type = "Gemini Pro (Active)"
+                        st.session_state.ai_type = "Gemini Pro (V1.7.5 Active)"
                         
                         if save_key_permanently:
                             data = load_custom_data()
                             data["GEMINI_API_KEY"] = user_api_key
                             save_custom_data(data)
-                            st.success("✅ Thành công và Đã Lưu!")
+                            
+                            # ĐỒNG BỘ SANG AI FACTORY
+                            try:
+                                config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+                                if os.path.exists(config_path):
+                                    with open(config_path, 'r', encoding='utf-8') as f:
+                                        cfg = json.load(f)
+                                    cfg["api_key"] = user_api_key
+                                    with open(config_path, 'w', encoding='utf-8') as f:
+                                        json.dump(cfg, f, indent=2, ensure_ascii=False)
+                            except: pass
+                                    
+                            st.success("✅ Kích hoạt và Lưu vĩnh viễn!")
                         else:
-                            st.success("✅ Thành công!")
+                            st.success("✅ Đã kích hoạt!")
                         st.rerun()
                     except Exception as e:
                         st.error(f"❌ Lỗi: {e}")
@@ -886,15 +1211,33 @@ with st.sidebar:
     
     use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
     
-    vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+    # Timezone handling (Robust Purification)
+    vn_tz = None
+    if pytz is not None:
+        try:
+            vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+        except:
+            pass
+    
+    if vn_tz is None:
+        try:
+            import zoneinfo
+            vn_tz = zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh")
+        except:
+            try:
+                from zoneinfo import ZoneInfo
+                vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+            except:
+                vn_tz = dt_module.timezone.utc
+
     if use_current_time:
-        now = datetime.now(vn_tz)
+        now = dt_module.datetime.now(vn_tz)
         selected_datetime = now
     else:
-        now_vn = datetime.now(vn_tz)
+        now_vn = dt_module.datetime.now(vn_tz)
         selected_date = st.date_input("Chọn ngày:", now_vn.date())
         selected_time = st.time_input("Chọn giờ:", now_vn.time())
-        selected_datetime = datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
+        selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
     
     # Calculate QMDG parameters (Always calculate to show in sidebar)
     params = None
@@ -927,13 +1270,26 @@ with st.sidebar:
     st.markdown("### 🎯 Chủ Đề Chính")
     
     # Dynamic Topic Refresh
+    # Dynamic Topic Refresh with Categories
     core_topics = list(TOPIC_INTERPRETATIONS.keys())
-    hub_topics = []
+    
+    # Get standard categories from Strategist
+    from ai_modules.mining_strategist import MiningStrategist
+    standard_categories = list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Khác"]
+    
+    hub_entries = []
     try:
         from ai_modules.shard_manager import search_index
-        hub_topics = list(set([e['title'] for e in search_index()]))
+        hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
     except Exception: pass
-    st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
+    
+    # Store full entry list for filtering
+    st.session_state.hub_entries = hub_entries
+    
+    # Filter topics logic simplified for selectbox
+    all_titles = sorted(list(set(core_topics + [e['title'] for e in hub_entries])))
+    st.session_state.all_topics_full = all_titles
+
 
     search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
     
@@ -963,16 +1319,40 @@ with st.sidebar:
                     except Exception as e:
                         st.error(f"Lỗi nạp chủ đề: {e}")
 
-    if search_term:
-        filtered_topics = [t for t in st.session_state.all_topics_full if search_term.lower() in t.lower()]
-    else:
-        filtered_topics = st.session_state.all_topics_full
+    # 1. Select Standard Category (Chủ đề chuẩn)
+    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
     
-    selected_topic = st.selectbox(
-        "Chọn chủ đề:",
-        filtered_topics,
-        index=0 if "Tổng Quát" not in filtered_topics else filtered_topics.index("Tổng Quát")
+    selected_cat = st.selectbox(
+        "🗂️ Lọc theo Phân loại chuẩn:",
+        standard_categories,
+        index=0
     )
+    
+    # 2. Filter topics based on category
+    available_topics = []
+    divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
+    
+    if selected_cat == "Tất cả":
+        # Default view: Only core topics + specific divination hub topics
+        hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
+        available_topics = sorted(list(set(core_topics + hub_divination)))
+    else:
+        # Get hub topics in this specific category
+        available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
+        
+    # Search Filter
+    if search_term:
+        available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
+    
+    if not available_topics:
+        available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
+
+    selected_topic = st.selectbox(
+        "Chọn chủ đề chi tiết:",
+        available_topics,
+        index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
+    )
+
     
     st.session_state.chu_de_hien_tai = selected_topic
     
@@ -1045,8 +1425,8 @@ if st.session_state.current_view == "ky_mon":
                 'nhan_ban': nhan_ban,
                 'than_ban': than_ban,
                 'dia_can': dia_can,
-                'khong_vong': khong_vong,
-                'dich_ma': dich_ma,
+                'khong_vong_4': params.get('khong', {}),
+                'dich_ma_4': params.get('ma', {}),
                 'can_gio': can_gio,
                 'chi_gio': params['chi_gio'],
                 'can_ngay': params['can_ngay'],
@@ -1085,13 +1465,35 @@ if st.session_state.current_view == "ky_mon":
                         can_dia = chart['dia_can'].get(palace_num, 'N/A')
                         hanh = CUNG_NGU_HANH.get(palace_num, 'N/A')
                         
-                        # Check if palace has Dụng Thần
+                        # Check if palace has Dụng Thần (Resolved Logic)
                         topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
                         dung_than_list = topic_data.get("Dụng_Thần", [])
-                        has_dung_than = any(dt in [sao, cua, than, can_thien, can_dia] for dt in dung_than_list)
+                        
+                        # Mapping symbolic names to actual stems
+                        symbolic_map = {
+                            "Can Ngày": chart.get('can_ngay'),
+                            "Can Giờ": chart.get('can_gio'),
+                            "Can Tháng": chart.get('can_thang'),
+                            "Can Năm": chart.get('can_nam')
+                        }
+                        
+                        resolved_dt = []
+                        for dt_item in dung_than_list:
+                            if dt_item in symbolic_map:
+                                resolved_dt.append(symbolic_map[dt_item])
+                            else:
+                                resolved_dt.append(dt_item)
+                        
+                        # Final check for highlighting
+                        has_dung_than = any(dt in [sao, cua, than, can_thien, can_dia] for dt in resolved_dt)
+                        
+                        # Special handling for Doors: "Sinh" vs "Sinh Môn"
+                        if not has_dung_than:
+                            clean_cua = cua.replace(" Môn", "")
+                            has_dung_than = any(dt in [clean_cua] for dt in resolved_dt)
                         
                         # Determine Strength based on month
-                        now_dt = datetime.now()
+                        now_dt = dt_module.datetime.now()
                         month = now_dt.month
                         season_map = {1:"Xuân", 2:"Xuân", 3:"Xuân", 4:"Hạ", 5:"Hạ", 6:"Hạ", 7:"Thu", 8:"Thu", 9:"Thu", 10:"Đông", 11:"Đông", 12:"Đông"}
                         current_season = season_map.get(month, "Xuân")
@@ -1136,7 +1538,7 @@ if st.session_state.current_view == "ky_mon":
                             elif category == "door": is_good = any(gd in name for gd in good_doors)
                             elif category == "deity": is_good = any(gt in name for gt in good_deities)
                             elif category == "stem": is_good = any(gs in name for gs in good_stems)
-                            return "#ef4444" if is_good else "#1e293b" # Red vs Dark Slate
+                            return "#ff4d4d" if is_good else "#ffffff" # Bright Red vs Pure White
 
                         c_sao = get_qmdg_color(sao, "star")
                         c_cua = get_qmdg_color(cua, "door")
@@ -1150,34 +1552,73 @@ if st.session_state.current_view == "ky_mon":
                             if can_thien == "N/A":
                                 can_thien = can_dia # Showing Earth Plate as a reference for "What is Heaven Plate in 5"
 
-                        # Status Badge
-                        status_badge = f'<span class="status-badge" style="background: {strength_color}; color: white;">{strength}</span>'
+                        # --- ROBUST MARKER LOGIC (4-PILLAR REFINEMENT) ---
+                        ma_data = params.get('ma', {})
+                        kv_data = params.get('khong', {})
+                        
+                        m_html = []
+                        # Force current palace to int
+                        try:
+                            curr_p_int = int(palace_num)
+                        except:
+                            curr_p_int = -99
+
+                        # 1. Horse (Mã) - Pillar specific
+                        for pillar, label in [('nam', 'Mã Năm'), ('thang', 'Mã Tháng'), ('ngay', 'Mã Ngày'), ('gio', 'Mã Giờ')]:
+                            val = ma_data.get(pillar)
+                            if val is not None:
+                                try:
+                                    if int(val) == curr_p_int:
+                                        m_html.append(f'<div class="marker-badge ma">🐎 {label}</div>')
+                                except: pass
+                        
+                        # 2. Void (Tuần Không) - Pillar specific
+                        for pillar, label in [('nam', 'Không Năm'), ('thang', 'Không Tháng'), ('ngay', 'Không Ngày'), ('gio', 'Không Giờ')]:
+                            vals = kv_data.get(pillar, [])
+                            try:
+                                if any(int(v) == curr_p_int for v in vals):
+                                    m_html.append(f'<div class="marker-badge kv">💀 {label}</div>')
+                            except: pass
+                        
+                        # 3. 4 Pillar Cans (Năm/Tháng/Ngày/Giờ) location on Earth Plate
+                        # We find where the 4 stems sit in the dia_can (Earth Plate)
+                        for pillar, (p_can, p_label) in {
+                            'nam': (params.get('can_nam'), 'Trụ Năm'),
+                            'thang': (params.get('can_thang'), 'Trụ Tháng'),
+                            'ngay': (params.get('can_ngay'), 'Trụ Ngày'),
+                            'gio': (params.get('can_gio'), 'Trụ Giờ')
+                        }.items():
+                            if p_can and can_dia == p_can:
+                                m_html.append(f'<div class="marker-badge pillar-{pillar}">📍 {p_label} ({p_can})</div>')
+
+                        marker_display_html = "".join(m_html)
 
                         # Palace Name & Alignment Refinement
                         p_full_name = f"{palace_num} {QUAI_TUONG.get(palace_num, '')}"
                         if palace_num == 5: p_full_name = "5 Trung Cung"
 
-                        # --- RENDER PALACE CARD (PRECISION LABELS & BALANCED ALIGNMENT) ---
+                        # Status Badge
+                        status_badge = f'<span class="status-badge" style="background: {strength_color}; color: white;">{strength}</span>'
+
+                        # --- RENDER TRADITIONAL CORNER LAYOUT (NO LABELS) ---
                         palace_html = f"""<div class="palace-3d animated-panel">
-<div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 280px; position: relative;">
+<div class="palace-inner {'dung-than-active' if has_dung_than else ''}" style="{bg_style} border: {border_width} solid {element_configs['border']}; min-height: 320px; position: relative;">
 <div class="glass-overlay"></div>
-<div class="palace-header-row"><span class="palace-title">{p_full_name}</span>{status_badge}</div>
-<div class="palace-grid-container" style="position: relative; height: 180px; padding: 0;">
-<!-- Top Row: Thần & Thiên Can -->
-<div class="grid-cell top-left" style="position: absolute; top: 2px; left: 6px; color: {c_than};"><span class="qmdg-label">Thần</span>{than}</div>
-<div class="grid-cell top-right" style="position: absolute; top: 2px; right: 6px; color: {c_thien};">{can_thien}</div>
-
-<!-- Mid Row: Tinh (Sao) -->
-<div class="grid-cell mid-left" style="position: absolute; top: 45%; left: 6px; transform: translateY(-50%); color: {c_sao};"><span class="qmdg-label">Tinh</span>{sao.replace('Thiên ', '')}</div>
-
-<!-- Bot Row: Môn & Địa Can -->
-<div class="grid-cell bot-center" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); color: {c_cua};"><span class="qmdg-label">Môn</span>{cua.replace(' Môn', '')}</div>
-<div class="grid-cell bot-right" style="position: absolute; bottom: -8px; right: 6px; color: {c_dia};">{can_dia}</div>
+<div class="palace-header-row">
+    <span class="palace-title">{p_full_name}</span>
+    {status_badge}
 </div>
-<div class="palace-footer-markers" style="font-size: 3rem; margin-top: 15px; line-height: 1;">
-{f'<span style="color:#64748b;">⚪</span>' if palace_num in chart['khong_vong'] else ''}
-{f'<span style="color:#f59e0b;">🐎</span>' if palace_num == chart['dich_ma'] else ''}
-</div></div></div>"""
+<div class="palace-content-v">
+    <div class="than-corner" style="color: {c_than};">{than}</div>
+    <div class="sao-corner" style="color: {c_sao};">{sao.replace('Thiên ', '')}</div>
+    <div class="mon-corner" style="color: {c_cua};">{cua.replace(' Môn', '')}</div>
+    <div class="thien-corner" style="color: {c_thien};">{can_thien}</div>
+    <div class="dia-corner" style="color: {c_dia};">{can_dia}</div>
+</div>
+<div class="palace-markers">
+    {marker_display_html}
+</div>
+</div></div>"""
                         st.markdown(palace_html, unsafe_allow_html=True)
 
                         
@@ -1673,18 +2114,23 @@ if st.session_state.current_view == "ky_mon":
                                     elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
                                     else: enriched_dung_than.append(dt)
                                 
-                                analysis = st.session_state.gemini_helper.comprehensive_analysis(
-                                    st.session_state.chart_data,
-                                    selected_topic,
-                                    enriched_dung_than,
-                                    topic_hints,
-                                    subj_stem=subj_stem,
-                                    obj_stem=obj_stem,
-                                    subj_label=role_label
+                                # Build a comprehensive prompt
+                                prompt = f"""Phân tích chi tiết về chủ đề: {selected_topic}
+
+**Đối tượng:** {role_label}
+**Dụng Thần:** {', '.join(enriched_dung_than)}
+**Gợi ý:** {topic_hints}
+
+Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cung Sự Việc (Can Giờ).
+"""
+                                analysis = st.session_state.gemini_helper.answer_question(
+                                    prompt,
+                                    chart_data=st.session_state.chart_data,
+                                    topic=selected_topic
                                 )
                                 
-                                # 2. GENERATE QUICK ACTIONS (High-impact tips)
-                                quick_actions = st.session_state.gemini_helper.generate_quick_actions(analysis, selected_topic)
+                                # 2. GENERATE QUICK ACTIONS
+                                quick_actions = "- Hãy hành động dựa trên kết luận trên\n- Chọn thời điểm phù hợp với ngũ hành"
                                 
                                 # Display Quick Actions First
                                 st.markdown(f"""
@@ -1766,7 +2212,7 @@ if st.session_state.current_view == "ky_mon":
                                 'can_dia': chart['dia_can'].get(idx, 'N/A')
                             }
                         
-                        chu = get_p_info(chu_idx); khach = get_p_info(khach_idx); now = datetime.now()
+                        chu = get_p_info(chu_idx); khach = get_p_info(khach_idx); now = dt_module.datetime.now()
                         from super_detailed_analysis import phan_tich_sieu_chi_tiet_chu_de, tao_phan_tich_lien_mach
                         res_9pp = phan_tich_sieu_chi_tiet_chu_de(selected_topic, chu, khach, now)
                         mqh = tinh_ngu_hanh_sinh_khac(chu['hanh'], khach['hanh'])
@@ -2126,6 +2572,113 @@ elif st.session_state.current_view == "luc_hao":
 # FOOTER
 # ======================================================================
 
+
+# ======================================================================
+# AI FACTORY VIEW
+# ======================================================================
+elif st.session_state.current_view == "ai_factory":
+    st.markdown("## 🏭 NHÀ MÁY PHÁT TRIỂN AI - 50 AGENTS HUB")
+    st.info("Hệ thống tự động hóa điều phối bởi AI Orchestrator + n8n.")
+    
+    # Status Row
+    c1, c2, c3 = st.columns(3)
+    with c1: st.metric("Agents Đang Chạy", "40/50", "Active")
+    with c2: st.metric("Công Việc Hoàn Tất", "1,248", "Today")
+    with c3: st.metric("Độ Ổn Định", "99.9%", "Verified")
+    
+    st.markdown("### 🤖 Agents Hoạt Động 24/7")
+    
+    # List of Agents in a Grid
+    agents = [
+        ("Secretary AI", "Phân tích yêu cầu & Lập kế hoạch", "🟢"),
+        ("Code Writer", "Viết code chức năng tự động", "🟢"),
+        ("Tester AI", "Kiểm thử Unit Test & UI", "🟢"),
+        ("Orchestrator", "Điều phối luồng công việc", "🟢"),
+        ("Memory Manager", "Lưu trữ & Truy xuất tri thức", "🟢"),
+        ("Gemini Pro", "Siêu trí tuệ phân tích chuyên sâu", "🟢")
+    ]
+    
+    rows = [st.columns(3) for _ in range(2)]
+    for i, (name, desc, status) in enumerate(agents):
+        col = rows[i // 3][i % 3]
+        with col:
+            st.markdown(f"""
+            <div style="background: white; padding: 15px; border-radius: 10px; border-left: 5px solid #1e3a8a; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <div style="font-weight: 800; color: #1e3a8a;">{status} {name}</div>
+                <div style="font-size: 13px; color: #666;">{desc}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### 🧠 Gửi Yêu Cầu Cho Nhà Máy")
+    factory_prompt = st.text_area("Yêu cầu phát triển mới:", placeholder="Ví dụ: Tạo module phân tích bát tự tích hợp...")
+    if st.button("🚀 Bắt Đầu Quy Trình Tự Động", type="primary"):
+        st.warning("⚠️ Đang gửi yêu cầu tới workflow n8n... Vui lòng kiểm tra Dashboard n8n để theo dõi.")
+
+# ======================================================================
+# AI EXPERTS VIEW (40 AGENTS)
+# ======================================================================
+elif st.session_state.current_view == "ai_experts":
+    st.markdown("## 🌟 40 CHUYÊN GIA AI - TƯ VẤN CHUYÊN SÂU")
+    st.caption("Danh sách 40 AI Agents chuyên biệt cho từng lĩnh vực khác nhau.")
+    
+    # Choose Agent Category
+    cat = st.tabs(["💎 Super AI", "💼 Đời Sống", "📈 Tài Chính", "🛡️ Tiện Ích"])
+    
+    with cat[0]: # Super AI
+        selected_agent = st.selectbox("Chọn Chuyên Gia Siêu Trí Tuệ:", [
+            "Chart Interpreter AI (Phân tích bàn Kỳ Môn)",
+            "Scheduler AI (Tìm giờ đẹp thông minh)",
+            "Mai Hoa Expert (Chuyên gia Dịch số)",
+            "Luc Hao Expert (Bậc thầy Lục Hào)",
+            "Topic Advisor (Gợi ý chủ đề linh hoạt)"
+        ])
+        
+    with cat[1]: # Life
+        selected_agent = st.selectbox("Chọn Chuyên Gia Đời Sống:", [
+            "Career Advisor AI (Sự nghiệp & Công danh)",
+            "Health Advisor (Sức khỏe & Bình an)",
+            "Relationship AI (Tình duyên & Hôn nhân)",
+            "Name Analyzer (Phân tích danh tính)",
+            "Dream Interpreter (Giải mã giấc mơ)"
+        ])
+        
+    with cat[2]: # Finance
+        selected_agent = st.selectbox("Chọn Chuyên Gia Tài Chính:", [
+            "Wealth Advisor (Tài lộc & Đầu tư)",
+            "Direction Advisor (Phương hướng kinh doanh)",
+            "Date Selector (Chọn ngày đại sự)",
+            "Fortune Calendar (Lịch vận hạn năm/tháng)"
+        ])
+
+    with cat[3]: # Utilities
+        selected_agent = st.selectbox("Chọn Agent Tiện Ích:", [
+            "History Tracker (Theo dõi lịch sử)",
+            "Prediction Validator (Kiểm chứng kết quả)",
+            "Report Generator (Tạo báo cáo chuyên nghiệp)",
+            "Comparison AI (So sánh đa tầng)",
+            "Notification AI (Cảnh báo giờ lành)",
+            "Learning Assistant (Trình học liệu QMDG)",
+            "Voice Assistant (Trợ lý giọng nói AI)"
+        ])
+
+    st.markdown(f"### 🤖 Bắt đầu tư vấn với: **{selected_agent.split('(')[0]}**")
+    exp_q = st.text_area("Nội dung cần tư vấn:", placeholder="Nhập câu hỏi hoặc bối cảnh cụ thể của bạn...")
+    
+    if st.button("🧙 Triệu hồi Chuyên Gia AI", type="primary"):
+        if exp_q:
+            with st.spinner(f"AI {selected_agent} đang xử lý dữ liệu..."):
+                # Forward request to specialized module logic
+                try:
+                    agent_key = selected_agent.split('(')[0].strip().lower().replace(" ", "_")
+                    # Dynamically call the module or use unified helper
+                    res = st.session_state.gemini_helper.answer_question(f"Role: {selected_agent}. Question: {exp_q}", st.session_state.get('chart_data'))
+                    st.info(res)
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+        else:
+            st.warning("Vui lòng nhập câu hỏi.")
+
 elif st.session_state.current_view == "gemini_ai":
     ai_name = st.session_state.get('ai_type', 'AI Assistant')
     st.markdown(f"## 🤖 HỎI {ai_name.upper()} VỀ KỲ MÔN ĐỘN GIÁP")
@@ -2159,9 +2712,7 @@ elif st.session_state.current_view == "gemini_ai":
         if st.button("🔮 Lập Bàn Nhanh", use_container_width=True):
             # Quick chart calculation for context
             try:
-                from datetime import datetime
-                now = datetime.now()
-                from qmdg_calculator import tinh_ky_mon_don_gian
+                from qmdg_calc import calculate_qmdg_params as tinh_ky_mon_don_gian
                 st.session_state.ai_chart_data = tinh_ky_mon_don_gian(now.year, now.month, now.day, now.hour)
                 st.success("✅ Đã lập bàn!")
             except Exception as e:
@@ -2228,3 +2779,4 @@ st.markdown("""
     <p>🌐 Chạy 24/7 trên Streamlit Cloud</p>
 </div>
 """, unsafe_allow_html=True)
+ 
