@@ -121,10 +121,30 @@ class GeminiQMDGHelper:
                     self._cache_response(prompt, text)
                     return text
             except Exception as e:
-                if "quota" in str(e).lower():
-                    time.sleep(self.base_delay * (2 ** attempt))
-                    continue
-        return "🛑 Hết hạn mức."
+                err_str = str(e).lower()
+                if "quota" in err_str or "429" in err_str or "resource" in err_str:
+                    print(f"⚠️ Quota hit on {self.model.model_name}, switching model...")
+                    # Try to switch model to next available
+                    try:
+                        # Define rotation list again
+                        models = [
+                            'gemini-1.5-flash', 'gemini-1.5-flash-latest', 
+                            'gemini-2.0-flash', 'gemini-2.0-flash-lite-001',
+                            'gemini-1.5-pro'
+                        ]
+                        # Find current index or random
+                        import random
+                        next_model = random.choice(models)
+                        self.model = genai.GenerativeModel(next_model)
+                        print(f"🔄 Switched to {next_model}")
+                        time.sleep(1) # Brief pause before retry
+                        continue
+                    except:
+                        pass
+
+                time.sleep(self.base_delay * (2 ** attempt))
+                continue
+        return "🛑 Hết hạn mức (Quota Exceeded). Vui lòng thử lại sau hoặc đổi API Key."
 
     def answer_question(self, question, chart_data=None, topic=None):
         return self._call_ai(f"Câu hỏi: {question}", use_web_search=True)
