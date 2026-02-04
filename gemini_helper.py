@@ -24,15 +24,24 @@ class GeminiQMDGHelper:
     _response_cache = {}
     _cache_max_size = 100
     
-    def __init__(self, api_key):
+    def __init__(self, api_key_input):
         import hashlib
-        # Handle multiple keys (comma separated)
-        self.api_keys = [k.strip() for k in api_key.split(',') if k.strip()]
+        import re
+        
+        # ROBUST KEY EXTRACTION (REGEX)
+        # Finds anything looking liek a Google API Key: AIzaSy... (39 chars)
+        self.api_keys = re.findall(r"AIza[0-9A-Za-z-_]{35}", str(api_key_input))
+        
+        # Fallback if regex fails (e.g. valid key but unusual format)
+        if not self.api_keys and api_key_input:
+             self.api_keys = [k.strip() for k in str(api_key_input).split(',') if k.strip()]
+
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V1.9.0-KeyRotation"
-        genai.configure(api_key=self.api_key)
+        self.version = "V1.9.1-SmartParser"
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
         
         self._failed_models = set()
         self._hashlib = hashlib
@@ -54,7 +63,7 @@ class GeminiQMDGHelper:
 
     def _rotate_key(self):
         """Switch to next available API Key"""
-        if len(self.api_keys) <= 1:
+        if not self.api_keys or len(self.api_keys) <= 1:
             return False
             
         self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)

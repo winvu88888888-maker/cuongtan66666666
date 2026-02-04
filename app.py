@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-02-04-V1.9.0-UNLIMITED-ROTATION
+# VERSION: 2026-02-04-V1.9.1-SMART-KEYS
 try:
     st.set_page_config(
-        page_title="Kỳ Môn Độn Giáp Pro - V1.9.0 (Unlimited)",
+        page_title="Kỳ Môn Độn Giáp Pro - V1.9.1 (Smart)",
         page_icon="☯️",
         layout="wide",
         initial_sidebar_state="expanded"
@@ -14,6 +14,7 @@ except Exception:
 import sys
 import os
 import traceback
+import re
 
 def show_fatal_error(e):
     st.error("🛑 LỖI HỆ THỐNG NGHIÊM TRỌNG")
@@ -39,11 +40,11 @@ except ImportError:
 from PIL import Image
 import importlib
 
-st.sidebar.success("✅ V1.9.0: UNLIMITED KEYS")
+st.sidebar.success("✅ V1.9.1: SMART KEY PARSER")
 st.sidebar.markdown("""
-<div style="background: #065f46; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-    <b>🔄 MULTI-KEY ROTATION</b><br>
-    <span style="font-size: 0.8em;">Auto-Switch Keys & No Pro Limit</span>
+<div style="background: #047857; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+    <b>🧠 AI KEY DETECTOR</b><br>
+    <span style="font-size: 0.8em;">Auto-find keys in sloppy text</span>
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.info("Hệ thống: [READY]")
@@ -2634,9 +2635,9 @@ elif st.session_state.current_view == "ai_factory":
 
     # Sidebar Header
     st.sidebar.markdown("""
-    <div style="text-align: center; padding: 10px; background: linear-gradient(to right, #1e3a8a, #3b82f6); border-radius: 10px; color: white; margin-bottom: 20px;">
+    <div style="text-align: center; padding: 10px; background: linear-gradient(to right, #047857, #6ee7b7); border-radius: 10px; color: white; margin-bottom: 20px;">
         <h2 style="margin:0; font-size: 1.5rem;">KỲ MÔN PRO</h2>
-        <p style="margin:0; font-size: 0.8rem; opacity: 0.9;">✨ V1.8.0 (ANTI-QUOTA)</p>
+        <p style="margin:0; font-size: 0.8rem; opacity: 0.9;">✨ V1.9.1 (SMART KEYS)</p>
     </div>
     """, unsafe_allow_html=True)
 
