@@ -69,10 +69,11 @@ class GeminiQMDGHelper:
 
     def _get_best_model(self):
         models_to_try = [
-            'gemini-1.5-flash', 'gemini-1.5-flash-latest', 
-            'gemini-1.5-flash-8b', 'gemini-1.5-flash-002', # Added ultra-low cost models
-            'gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-2.0-flash-lite-001',
-            'gemini-1.5-pro-latest', 'gemini-1.5-pro'
+            'gemini-1.5-flash', # Primary - High Quota, Low Latency
+            'gemini-1.5-flash-8b', # Backup - Even higher quota
+            'gemini-1.5-flash-latest', 
+            'gemini-2.0-flash-lite-001',
+            'gemini-1.5-pro' # Last resort only
         ]
         # First pass: try with a simple ping
         for name in models_to_try:
@@ -138,7 +139,7 @@ class GeminiQMDGHelper:
                     try:
                         models = [
                             'gemini-1.5-flash', 'gemini-1.5-flash-8b', 
-                            'gemini-2.0-flash', 'gemini-1.5-pro'
+                            'gemini-1.5-flash-latest'
                         ]
                         import random
                         next_model = random.choice(models)
