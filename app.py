@@ -1,10 +1,10 @@
 import streamlit as st
 
-# VERSION: 2026-02-03-V1.7.6-BULLETPROOF
+# VERSION: 2026-02-04-V1.8.0-NUCLEAR-FALLBACK
 try:
     st.set_page_config(
-        page_title="🔮 Kỳ Môn Độn Giáp 🔮",
-        page_icon="🔮",
+        page_title="Kỳ Môn Độn Giáp Pro - V1.8.0 (No Quota)",
+        page_icon="☯️",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -39,8 +39,14 @@ except ImportError:
 from PIL import Image
 import importlib
 
-st.sidebar.success("🛠️ BUILD V1.7.5 - QUOTA FIX")
-st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
+st.sidebar.success("✅ V1.8.0: NUCLEAR MODE ACTIVE")
+st.sidebar.markdown("""
+<div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+    <b>🛡️ ANTI-QUOTA SYSTEM</b><br>
+    <span style="font-size: 0.8em;">Google API Block -> Auto Offline</span>
+</div>
+""", unsafe_allow_html=True)
+st.sidebar.info("Hệ thống: [READY]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
 st.sidebar.markdown("### 🖥️ Hệ thống Giao diện")
@@ -2625,6 +2631,14 @@ elif st.session_state.current_view == "ai_factory":
                 <div style="font-size: 13px; color: #666;">{desc}</div>
             </div>
             """, unsafe_allow_html=True)
+
+    # Sidebar Header
+    st.sidebar.markdown("""
+    <div style="text-align: center; padding: 10px; background: linear-gradient(to right, #1e3a8a, #3b82f6); border-radius: 10px; color: white; margin-bottom: 20px;">
+        <h2 style="margin:0; font-size: 1.5rem;">KỲ MÔN PRO</h2>
+        <p style="margin:0; font-size: 0.8rem; opacity: 0.9;">✨ V1.8.0 (ANTI-QUOTA)</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### 🧪 Gửi Yêu Cầu Cho Nhà Máy")
