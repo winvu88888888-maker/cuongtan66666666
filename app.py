@@ -1172,43 +1172,59 @@ with st.sidebar:
             👉 [Lấy API Key miễn phí tại đây](https://aistudio.google.com/app/apikey)
             """)
         
-        with st.expander("🔑 Kích hoạt Gemini Pro (Thông minh hơn)", expanded=True):
-            st.markdown("👉 [Lấy API Key miễn phí](https://aistudio.google.com/app/apikey)")
-            user_api_key = st.text_input("Dán API Key vào đây:", type="password", key="input_api_key_sidebar")
-            save_key_permanently = st.checkbox("Lưu khóa này vĩnh viễn", value=True, key="save_key_checkbox")
+        # OLD INPUT REMOVED - REPLACED WITH SMART INPUT V1.9.1
+        with st.expander("🔑 Cấu Hình AI (Smart Input)", expanded=True):
+            st.markdown("👉 [Lấy API Key Google miễn phí](https://aistudio.google.com/app/apikey)")
+            st.info("💡 Mẹo: Bạn có thể copy cả danh sách chục key dán vào đây. Hệ thống tự lọc!")
             
-            if st.button("Kích hoạt ngay", type="primary"):
-                if GEMINI_AVAILABLE and user_api_key:
-                    try:
-                        from gemini_helper import GeminiQMDGHelper
-                        st.session_state.gemini_helper = GeminiQMDGHelper(user_api_key)
-                        st.session_state.gemini_key = user_api_key
-                        st.session_state.ai_type = "Gemini Pro (V1.7.5 Active)"
-                        
-                        if save_key_permanently:
-                            data = load_custom_data()
-                            data["GEMINI_API_KEY"] = user_api_key
-                            save_custom_data(data)
+            # Simple Text Area for messy input
+            user_api_input = st.text_area("Dán Key vào đây (Tự động lọc):", height=100, key="input_api_key_smart")
+            
+            if st.button("🚀 KÍCH HOẠT & KIỂM TRA NGAY", type="primary"):
+                if user_api_input:
+                    with st.spinner("🤖 Đang quét Key & Test kết nối..."):
+                        try:
+                            # 1. Initialize Helper (It filters keys inside __init__)
+                            from gemini_helper import GeminiQMDGHelper
+                            temp_helper = GeminiQMDGHelper(user_api_input)
                             
-                            # ĐỒNG BỘ SANG AI FACTORY
-                            try:
-                                config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
-                                if os.path.exists(config_path):
-                                    with open(config_path, 'r', encoding='utf-8') as f:
-                                        cfg = json.load(f)
-                                    cfg["api_key"] = user_api_key
-                                    with open(config_path, 'w', encoding='utf-8') as f:
-                                        json.dump(cfg, f, indent=2, ensure_ascii=False)
-                            except: pass
+                            # 2. Check if any valid keys found
+                            if not temp_helper.api_keys:
+                                st.error("❌ Không tìm thấy API Key nào hợp lệ (AIza...) trong văn bản bạn nhập.")
+                            else:
+                                # 3. Test Connection
+                                success, msg = temp_helper.test_connection()
+                                if success:
+                                    # SUCCESS! Save and Apply
+                                    st.session_state.gemini_helper = temp_helper
+                                    st.session_state.gemini_key = temp_helper.api_key
+                                    st.session_state.ai_type = f"Gemini Ultra ({len(temp_helper.api_keys)} Keys Active)"
                                     
-                            st.success("✅ Kích hoạt và Lưu vĩnh viễn!")
-                        else:
-                            st.success("✅ Đã kích hoạt!")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Lỗi: {e}")
+                                    # Save to disk
+                                    data = load_custom_data()
+                                    data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys) # Save all valid keys
+                                    save_custom_data(data)
+                                    
+                                    # Sync to Factory
+                                    try:
+                                        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+                                        if os.path.exists(config_path):
+                                            with open(config_path, 'r', encoding='utf-8') as f:
+                                                cfg = json.load(f)
+                                            cfg["api_key"] = ",".join(temp_helper.api_keys)
+                                            with open(config_path, 'w', encoding='utf-8') as f:
+                                                json.dump(cfg, f, indent=2, ensure_ascii=False)
+                                    except: pass
+
+                                    st.success(f"✅ KẾT NỐI THÀNH CÔNG! (Đã nạp {len(temp_helper.api_keys)} Key)")
+                                    time.sleep(1)
+                                    st.rerun()
+                                else:
+                                    st.error(f"❌ Key đúng định dạng nhưng Google từ chối kết nối: {msg}")
+                        except Exception as e:
+                            st.error(f"❌ Lỗi xử lý: {e}")
                 else:
-                    st.error("Vui lòng nhập Key hoặc thiếu thư viện.")
+                    st.warning("⚠️ Vui lòng dán Key vào ô trống.")
 
     # n8n Configuration
     with st.expander("🔗 Kết nối n8n (Advanced AI)"):
