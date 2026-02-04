@@ -228,7 +228,8 @@ try:
         phan_tich_tuong_tac_giua_cac_cung,
         phan_tich_yeu_to_thoi_gian,
         tinh_diem_tong_hop,
-        phan_tich_toan_dien
+        phan_tich_toan_dien,
+        tinh_ngu_hanh_sinh_khac
     )
     USE_MULTI_LAYER_ANALYSIS = True
 except (ImportError, Exception):
