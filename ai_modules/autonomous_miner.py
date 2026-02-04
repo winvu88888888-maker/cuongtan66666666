@@ -24,6 +24,11 @@ try:
     from .maintenance_manager import MaintenanceManager
     from .gemini_expert_v172 import GeminiQMDGHelper
 except (ImportError, ValueError):
+    try:
+        from gemini_helper import GeminiQMDGHelper
+    except ImportError:
+        pass
+except (ImportError, ValueError):
     # Fallback to direct imports
     try:
         from shard_manager import add_entry
