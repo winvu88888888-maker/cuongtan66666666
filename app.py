@@ -3,8 +3,8 @@ import streamlit as st
 # VERSION: 2026-02-03-V1.7.6-BULLETPROOF
 try:
     st.set_page_config(
-        page_title="ðŸ”® Ká»³ MÃ´n Äá»™n GiÃ¡p ðŸ”®",
-        page_icon="ðŸ”®",
+        page_title="🔮 Kỳ Môn Độn Giáp 🔮",
+        page_icon="🔮",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -16,8 +16,8 @@ import os
 import traceback
 
 def show_fatal_error(e):
-    st.error("ðŸ›‘ Lá»–I Há»† THá»NG NGHIÃŠM TRá»ŒNG")
-    st.write("á»¨ng dá»¥ng gáº·p sá»± cá»‘ khi khá»Ÿi Ä‘á»™ng. Chi tiáº¿t ká»¹ thuáº­t bÃªn dÆ°á»›i:")
+    st.error("🛑 LỖI HỆ THỐNG NGHIÊM TRỌNG")
+    st.write("Ứng dụng gặp sự cố khi khởi động. Chi tiết kỹ thuật bên dưới:")
     st.code(traceback.format_exc())
     st.stop()
 
@@ -39,19 +39,19 @@ except ImportError:
 from PIL import Image
 import importlib
 
-st.sidebar.success("ðŸ› ï¸ BUILD V1.7.5 - QUOTA FIX")
-st.sidebar.info("Há»‡ thá»‘ng: [DEBUG MODE - GROUNDING UPDATED]")
+st.sidebar.success("🛠️ BUILD V1.7.5 - QUOTA FIX")
+st.sidebar.info("Hệ thống: [DEBUG MODE - GROUNDING UPDATED]")
 
 # --- DIAGNOSTIC INFO (SIDEBAR) ---
-st.sidebar.markdown("### ðŸ” Há»‡ thá»‘ng Giao diá»‡n")
-st.sidebar.write(f"ðŸ“ ThÆ° má»¥c gá»‘c: `{os.path.dirname(os.path.abspath(__file__))}`")
+st.sidebar.markdown("### 🖥️ Hệ thống Giao diện")
+st.sidebar.write(f"📂 Thư mục gốc: `{os.path.dirname(os.path.abspath(__file__))}`")
 try:
     import mai_hoa_dich_so
-    st.sidebar.caption(f"ðŸŒ¸ Mai Hoa: âœ…")
+    st.sidebar.caption(f"🌸 Mai Hoa: ✅")
     import luc_hao_kinh_dich
-    st.sidebar.caption(f"â˜¯ï¸ Lá»¥c HÃ o: âœ…")
+    st.sidebar.caption(f"☯️ Lục Hào: ✅")
 except Exception as e:
-    st.sidebar.error(f"âš ï¸ Module: {e}")
+    st.sidebar.error(f"⚠️ Module: {e}")
 
 # --- AI FACTORY STATUS (SIDEBAR) ---
 try:
@@ -75,11 +75,11 @@ try:
             
             st.sidebar.markdown("---")
             if is_running:
-                st.sidebar.success(f"ðŸŸ¢ **AI Factory: ONLINE**\n\n(Cháº¡y lÃºc: {last_run})")
+                st.sidebar.success(f"🟢 **AI Factory: ONLINE**\n\n(Chạy lúc: {last_run})")
             else:
-                st.sidebar.error("ðŸ”´ **AI Factory: OFFLINE**")
+                st.sidebar.error("🔴 **AI Factory: OFFLINE**")
                 if is_active_247:
-                    st.sidebar.caption("â³ Äang chá» GitHub Action...")
+                    st.sidebar.caption("⌛ Đang chờ GitHub Action...")
 except Exception: pass
 
 # Add project root and dist directory to Python path
@@ -236,9 +236,9 @@ except (ImportError, Exception):
     USE_MULTI_LAYER_ANALYSIS = False
     # Fallback if import fails
     def phan_tich_yeu_to_thoi_gian(hanh, mua):
-        return "BÃ¬nh"
+        return "Bình"
 
-CAN_10 = ["GiÃ¡p", "áº¤t", "BÃ­nh", "Äinh", "Máº­u", "Ká»·", "Canh", "TÃ¢n", "NhÃ¢m", "QuÃ½"]
+CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
 SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
 THAN_8 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].keys())
 CUA_8 = list(BAT_MON_CO_DINH_DISPLAY.keys())
@@ -723,7 +723,7 @@ st.markdown("""
         list-style: none;
     }
     .action-item::before {
-        content: "âš¡";
+        content: "⚡";
         position: absolute;
         left: 0;
     }
@@ -821,9 +821,9 @@ def check_password():
 
     if "password_correct" not in st.session_state:
         # First run, show input for password.
-        st.markdown("### ðŸ” XÃ¡c Thá»±c Truy Cáº­p - Ká»³ MÃ´n Äá»™n GiÃ¡p")
+        st.markdown("### 🔑 Xác Thực Truy Cập - Kỳ Môn Độn Giáp")
         st.text_input(
-            "Vui lÃ²ng nháº­p máº­t kháº©u Ä‘á»ƒ sá»­ dá»¥ng:",
+            "Vui lòng nhập mật khẩu để sử dụng:",
             type="password",
             on_change=password_entered,
             key="password",
@@ -831,14 +831,14 @@ def check_password():
         return False
     elif not st.session_state["password_correct"]:
         # Password not correct, show input + error.
-        st.markdown("### ðŸ” XÃ¡c Thá»±c Truy Cáº­p - Ká»³ MÃ´n Äá»™n GiÃ¡p")
+        st.markdown("### 🔑 Xác Thực Truy Cập - Kỳ Môn Độn Giáp")
         st.text_input(
-            "Vui lÃ²ng nháº­p máº­t kháº©u Ä‘á»ƒ sá»­ dá»¥ng:",
+            "Vui lòng nhập mật khẩu để sử dụng:",
             type="password",
             on_change=password_entered,
             key="password",
         )
-        st.error("âŒ Máº­t kháº©u khÃ´ng chÃ­nh xÃ¡c! Vui lÃ²ng liÃªn há»‡ tÃ¡c giáº£ VÅ© Viá»‡t CÆ°á»ng.")
+        st.error("❌ Mật khẩu không chính xác! Vui lòng liên hệ tác giả Vũ Việt Cường.")
         return False
     else:
         # Password correct.
@@ -854,17 +854,17 @@ if not check_password():
 zoom_col1, zoom_col2, zoom_col3, zoom_col4, zoom_col5 = st.columns([1, 1, 1, 1, 6])
 
 with zoom_col1:
-    if st.button("ðŸ”âˆ’", key="zoom_out", help="Thu nhá» (Zoom Out)"):
+    if st.button("🔍 −", key="zoom_out", help="Thu nhỏ (Zoom Out)"):
         st.session_state.zoom_level = max(50, st.session_state.zoom_level - 10)
         st.rerun()
 
 with zoom_col2:
-    if st.button(f"{st.session_state.zoom_level}%", key="zoom_reset", help="Äáº·t láº¡i 100%"):
+    if st.button(f"{st.session_state.zoom_level}%", key="zoom_reset", help="Đặt lại 100%"):
         st.session_state.zoom_level = 100
         st.rerun()
 
 with zoom_col3:
-    if st.button("ðŸ”+", key="zoom_in", help="PhÃ³ng to (Zoom In)"):
+    if st.button("🔍 +", key="zoom_in", help="Phóng to (Zoom In)"):
         st.session_state.zoom_level = min(200, st.session_state.zoom_level + 10)
         st.rerun()
 
@@ -887,11 +887,11 @@ with col_header1:
             pass
 
 with col_header2:
-    st.markdown("<h1 style='text-align: center; color: #f1c40f;'>ðŸ”® Ká»² MÃ”N Äá»˜N GIÃP ðŸ”®</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #f1c40f;'>🔮 KỲ MÔN ĐỘN GIÁP 🔮</h1>", unsafe_allow_html=True)
 
 with col_header3:
-    st.markdown("**TÃ¡c giáº£**")
-    st.markdown("**VÅ© Viá»‡t CÆ°á»ng**")
+    st.markdown("**Tác giả**")
+    st.markdown("**Vũ Việt Cường**")
 
 st.markdown("---")
 
@@ -899,44 +899,44 @@ st.markdown("---")
 # SIDEBAR - CONTROLS
 # ======================================================================
 with st.sidebar:
-    st.markdown("### âš™ï¸ Äiá»u Khiá»ƒn")
+    st.markdown("### ⚙️ Điều Khiển")
     
     # View selection
     view_option = st.radio(
-        "Chá»n PhÆ°Æ¡ng PhÃ¡p:",
-        ["ðŸ”® Ká»³ MÃ´n Äá»™n GiÃ¡p", "ðŸ­ NhÃ  MÃ¡y AI", "ðŸŒŸ 40 ChuyÃªn Gia AI", "ðŸ“– Mai Hoa 64 Quáº»", "â˜¯ï¸ Lá»¥c HÃ o Kinh Dá»‹ch", "ðŸ¤– Há»i Gemini AI"],
+        "Chọn Phương Pháp:",
+        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "🤖 Hỏi Gemini AI"],
         index=0
     )
     
-    if view_option == "ðŸ”® Ká»³ MÃ´n Äá»™n GiÃ¡p":
+    if view_option == "🔮 Kỳ Môn Độn Giáp":
         st.session_state.current_view = "ky_mon"
-    elif view_option == "ðŸ­ NhÃ  MÃ¡y AI":
+    elif view_option == "🏭 Nhà Máy AI":
         st.session_state.current_view = "ai_factory"
-    elif view_option == "ðŸŒŸ 40 ChuyÃªn Gia AI":
+    elif view_option == "🌟 40 Chuyên Gia AI":
         st.session_state.current_view = "ai_experts"
-    elif view_option == "ðŸ“– Mai Hoa 64 Quáº»":
+    elif view_option == "📖 Mai Hoa 64 Quẻ":
         st.session_state.current_view = "mai_hoa"
-    elif view_option == "â˜¯ï¸ Lá»¥c HÃ o Kinh Dá»‹ch":
+    elif view_option == "☯️ Lục Hào Kinh Dịch":
         st.session_state.current_view = "luc_hao"
-    else:  # ðŸ¤– Há»i Gemini AI
+    else:  # 🤖 Hỏi Gemini AI
         st.session_state.current_view = "gemini_ai"
     
     
     st.markdown("---")
     
     # --- AI Initialization & Mode Switcher ---
-    st.markdown("### ðŸ¤– Cáº¥u hÃ¬nh AI")
+    st.markdown("### 🤖 Cấu hình AI")
     ai_col1, ai_col2 = st.columns(2)
     
     with ai_col1:
-        if st.button("ðŸŒ Online AI", help="Sá»­ dá»¥ng Gemini Pro (YÃªu cáº§u API Key)", use_container_width=True):
+        if st.button("🌐 Online AI", help="Sử dụng Gemini Pro (Yêu cầu API Key)", use_container_width=True):
             st.session_state.ai_preference = "online"
             # Clear existing to force re-init
             if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
             st.rerun()
             
     with ai_col2:
-        if st.button("ðŸ’¾ Offline AI", help="Sá»­ dá»¥ng Free AI (Dá»± phÃ²ng)", use_container_width=True):
+        if st.button("💾 Offline AI", help="Sử dụng Free AI (Dự phòng)", use_container_width=True):
             st.session_state.ai_preference = "offline"
             # Clear existing to force re-init
             if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
@@ -950,18 +950,18 @@ with st.sidebar:
         not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
         'V1.7.5' not in getattr(st.session_state.gemini_helper, 'version', '')):
         
-        # Æ¯U TIÃŠN 1: Streamlit Cloud Secrets (Quan trá»ng nháº¥t cho deployment)
+        # ƯU TIÊN 1: Streamlit Cloud Secrets (Quan trọng nhất cho deployment)
         st_secret = None
         try:
             st_secret = st.secrets.get("GEMINI_API_KEY", None)
         except Exception:
             pass
         
-        # Æ¯U TIÃŠN 2: File custom_data.json (Local)
+        # ƯU TIÊN 2: File custom_data.json (Local)
         custom_data = load_custom_data()
         saved_key = custom_data.get("GEMINI_API_KEY")
         
-        # Æ¯U TIÃŠN 3: Factory Config (Äá»“ng bá»™)
+        # ƯU TIÊN 3: Factory Config (Đồng bộ)
         factory_key = None
         try:
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
@@ -971,12 +971,12 @@ with st.sidebar:
                     factory_key = cfg.get("api_key")
         except: pass
         
-        # Tá»•ng há»£p: Æ¯u tiÃªn Streamlit Secrets > Saved Key > Factory Key
+        # Tổng hợp: Ưu tiên Streamlit Secrets > Saved Key > Factory Key
         secret_api_key = st_secret or saved_key or factory_key
         
-        # ThÃ´ng bÃ¡o náº¿u cháº¡y trÃªn cloud nhÆ°ng chÆ°a cÃ³ secret
+        # Thông báo nếu chạy trên cloud nhưng chưa có secret
         if not st_secret and not saved_key and not factory_key:
-            # Äang cháº¡y trÃªn cloud vÃ  khÃ´ng cÃ³ API key nÃ o
+            # Đang chạy trên cloud và không có API key nào
             st.session_state.missing_cloud_secret = True
         
         if st.session_state.ai_preference == "offline":
@@ -999,7 +999,7 @@ with st.sidebar:
                 st.session_state.ai_type = "Free AI (Offline Mode)"
 
     # AI Status Display with LED Indicator
-    ai_status = st.session_state.get('ai_type', 'ChÆ°a sáºµn sÃ ng')
+    ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
     
     # Auto-check API status periodically (every 30 seconds)
     if 'last_api_check_time' not in st.session_state:
@@ -1017,26 +1017,26 @@ with st.sidebar:
             st.session_state.last_api_check_time = current_time
         except:
             st.session_state.api_status_ok = False
-            st.session_state.api_status_msg = "ChÆ°a kiá»ƒm tra"
+            st.session_state.api_status_msg = "Chưa kiểm tra"
     
     # Initialize status if not exists
     if 'api_status_ok' not in st.session_state:
-        st.session_state.api_status_ok = None  # None = chÆ°a check, True = OK, False = Lá»—i
-        st.session_state.api_status_msg = "ChÆ°a kiá»ƒm tra"
+        st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
+        st.session_state.api_status_msg = "Chưa kiểm tra"
     
     # LED Indicator Colors
     if st.session_state.api_status_ok is True:
-        led_color = "ðŸŸ¢"  # Xanh = OK
+        led_color = "🟢"  # Xanh = OK
         status_color = "#10b981"
-        status_text = "HOáº T Äá»˜NG Tá»T"
+        status_text = "HOẠT ĐỘNG TỐT"
     elif st.session_state.api_status_ok is False:
-        led_color = "ðŸ”´"  # Äá» = Lá»—i
+        led_color = "🔴"  # Đỏ = Lỗi
         status_color = "#ef4444"
-        status_text = "Lá»–I Káº¾T Ná»I"
+        status_text = "LỖI KẾT NỐI"
     else:
-        led_color = "ðŸŸ¡"  # VÃ ng = ChÆ°a check
+        led_color = "🟡"  # Vàng = Chưa check
         status_color = "#f59e0b"
-        status_text = "CHÆ¯A KIá»‚M TRA"
+        status_text = "CHƯA KIỂM TRA"
     
     # Display with LED
     if "Gemini" in ai_status:
@@ -1055,32 +1055,32 @@ with st.sidebar:
                         {status_text}
                     </div>
                     <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
-                        ðŸ¤– {ai_status}
+                        🤖 {ai_status}
                     </div>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        with st.expander("âš™ï¸ Quáº£n lÃ½ Gemini"):
+        with st.expander("⚙️ Quản lý Gemini"):
             # Manual check button
             col1, col2 = st.columns([3, 1])
             with col1:
-                if st.button("ðŸ”„ Kiá»ƒm tra káº¿t ná»‘i ngay", key="test_ai_conn", use_container_width=True):
-                    with st.spinner("Äang thá»­ káº¿t ná»‘i..."):
+                if st.button("🔄 Kiểm tra kết nối ngay", key="test_ai_conn", use_container_width=True):
+                    with st.spinner("Đang thử kết nối..."):
                         success, msg = st.session_state.gemini_helper.test_connection()
                         st.session_state.api_status_ok = success
                         st.session_state.api_status_msg = msg
                         st.session_state.last_api_check_time = current_time
                         if success: 
-                            st.success(f"âœ… {msg}")
+                            st.success(f"✅ {msg}")
                             st.rerun()  # Refresh to update LED
                         else: 
-                            st.error(f"âŒ {msg}")
+                            st.error(f"❌ {msg}")
                             st.rerun()  # Refresh to update LED
             
             with col2:
-                if st.button("ðŸ”„", key="force_refresh", help="LÃ m má»›i", use_container_width=True):
+                if st.button("🔄", key="force_refresh", help="Làm mới", use_container_width=True):
                     st.rerun()
             
             # Display current model info
@@ -1091,13 +1091,13 @@ with st.sidebar:
                     if model_obj:
                         model_name = getattr(model_obj, 'model_name', None)
                         if model_name:
-                            st.info(f"**Model Ä‘ang dÃ¹ng:** `{model_name}`")
+                            st.info(f"**Model đang dùng:** `{model_name}`")
                             
                             # Quota warning for Pro models
                             if 'pro' in model_name.lower():
-                                st.warning("âš ï¸ **Cáº£nh bÃ¡o:** Model Pro tá»‘n quota ráº¥t nhiá»u. NÃªn chuyá»ƒn sang Flash.")
+                                st.warning("⚠️ **Cảnh báo:** Model Pro tốn quota rất nhiều. Nên chuyển sang Flash.")
                             else:
-                                st.success(f"âœ… **Model Flash** - Tiáº¿t kiá»‡m quota")
+                                st.success(f"✅ **Model Flash** - Tiết kiệm quota")
             except Exception as e:
                 # Silently ignore model display errors
                 pass
@@ -1105,12 +1105,12 @@ with st.sidebar:
             if st.session_state.last_api_check_time > 0:
                 import datetime as dt_module
                 last_check = dt_module.datetime.fromtimestamp(st.session_state.last_api_check_time)
-                st.caption(f"Láº§n check cuá»‘i: {last_check.strftime('%H:%M:%S')}")
+                st.caption(f"Lần check cuối: {last_check.strftime('%H:%M:%S')}")
             
-            new_key = st.text_input("Thay Ä‘á»•i API Key (TÃ¹y chá»n):", type="password", key="new_api_key")
-            save_permanently = st.checkbox("LÆ°u khÃ³a nÃ y vÄ©nh viá»…n", value=True)
+            new_key = st.text_input("Thay đổi API Key (Tùy chọn):", type="password", key="new_api_key")
+            save_permanently = st.checkbox("Lưu khóa này vĩnh viễn", value=True)
             
-            if st.button("Cáº­p nháº­t Key má»›i"):
+            if st.button("Cập nhật Key mới"):
                 if new_key:
                     try:
                         from gemini_helper import GeminiQMDGHelper
@@ -1123,7 +1123,7 @@ with st.sidebar:
                             data["GEMINI_API_KEY"] = new_key
                             save_custom_data(data)
                             
-                            # Äá»’NG Bá»˜ SANG AI FACTORY
+                            # ĐỒNG BỘ SANG AI FACTORY
                             try:
                                 config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
                                 if os.path.exists(config_path):
@@ -1134,43 +1134,43 @@ with st.sidebar:
                                         json.dump(cfg, f, indent=2, ensure_ascii=False)
                             except: pass
                             
-                            st.success("âœ… ÄÃ£ cáº­p nháº­t vÃ  LÆ°u vÄ©nh viá»…n!")
+                            st.success("✅ Đã cập nhật và Lưu vĩnh viễn!")
                         else:
-                            st.success("âœ… ÄÃ£ cáº­p nháº­t (Táº¡m thá»i)!")
+                            st.success("✅ Đã cập nhật (Tạm thời)!")
                         st.rerun()
                     except Exception as e:
-                        st.error(f"âŒ Lá»—i: {e}")
+                        st.error(f"❌ Lỗi: {e}")
                 else:
-                    st.warning("Vui lÃ²ng nháº­p Key.")
+                    st.warning("Vui lòng nhập Key.")
     else:
-        st.warning(f"â„¹ï¸ {ai_status}")
+        st.warning(f"ℹ️ {ai_status}")
         
-        # Cáº¢NH BÃO Äáº¶C BIá»†T CHO STREAMLIT CLOUD
+        # CẢNH BÁO ĐẶC BIỆT CHO STREAMLIT CLOUD
         if st.session_state.get('missing_cloud_secret', False):
             st.error("""
-            ### âš ï¸ CHÆ¯A Cáº¤U HÃŒNH API KEY TRÃŠN STREAMLIT CLOUD!
+            ### ⚠️ CHƯA CẤU HÌNH API KEY TRÊN STREAMLIT CLOUD!
             
-            **á»¨ng dá»¥ng Ä‘ang cháº¡y trÃªn Streamlit Cloud nhÆ°ng chÆ°a cÃ³ API Key.**
+            **Ứng dụng đang chạy trên Streamlit Cloud nhưng chưa có API Key.**
             
-            #### ðŸ”§ CÃ¡ch Sá»­a (2 phÃºt):
-            1. VÃ o **Streamlit Cloud Dashboard**: https://share.streamlit.io/
-            2. Click vÃ o app cá»§a báº¡n â†’ **âš™ï¸ Settings**
-            3. Chá»n tab **"Secrets"**
-            4. DÃ¡n ná»™i dung sau:
+            #### 🛠️ Cách Sửa (2 phút):
+            1. Vào **Streamlit Cloud Dashboard**: https://share.streamlit.io/
+            2. Click vào app của bạn → **⚙️ Settings**
+            3. Chọn tab **"Secrets"**
+            4. Dán nội dung sau:
             ```
             GEMINI_API_KEY = "YOUR_API_KEY_HERE"
             ```
-            5. Click **"Save"** â†’ App sáº½ tá»± Ä‘á»™ng restart
+            5. Click **"Save"** → App sẽ tự động restart
             
-            ðŸ‘‰ [Láº¥y API Key miá»…n phÃ­ táº¡i Ä‘Ã¢y](https://aistudio.google.com/app/apikey)
+            👉 [Lấy API Key miễn phí tại đây](https://aistudio.google.com/app/apikey)
             """)
         
-        with st.expander("ðŸ”‘ KÃ­ch hoáº¡t Gemini Pro (ThÃ´ng minh hÆ¡n)", expanded=True):
-            st.markdown("ðŸ‘‰ [Láº¥y API Key miá»…n phÃ­](https://aistudio.google.com/app/apikey)")
-            user_api_key = st.text_input("DÃ¡n API Key vÃ o Ä‘Ã¢y:", type="password", key="input_api_key_sidebar")
-            save_key_permanently = st.checkbox("LÆ°u khÃ³a nÃ y vÄ©nh viá»…n", value=True, key="save_key_checkbox")
+        with st.expander("🔑 Kích hoạt Gemini Pro (Thông minh hơn)", expanded=True):
+            st.markdown("👉 [Lấy API Key miễn phí](https://aistudio.google.com/app/apikey)")
+            user_api_key = st.text_input("Dán API Key vào đây:", type="password", key="input_api_key_sidebar")
+            save_key_permanently = st.checkbox("Lưu khóa này vĩnh viễn", value=True, key="save_key_checkbox")
             
-            if st.button("KÃ­ch hoáº¡t ngay", type="primary"):
+            if st.button("Kích hoạt ngay", type="primary"):
                 if GEMINI_AVAILABLE and user_api_key:
                     try:
                         from gemini_helper import GeminiQMDGHelper
@@ -1183,7 +1183,7 @@ with st.sidebar:
                             data["GEMINI_API_KEY"] = user_api_key
                             save_custom_data(data)
                             
-                            # Äá»’NG Bá»˜ SANG AI FACTORY
+                            # ĐỒNG BỘ SANG AI FACTORY
                             try:
                                 config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
                                 if os.path.exists(config_path):
@@ -1194,17 +1194,17 @@ with st.sidebar:
                                         json.dump(cfg, f, indent=2, ensure_ascii=False)
                             except: pass
                                     
-                            st.success("âœ… KÃ­ch hoáº¡t vÃ  LÆ°u vÄ©nh viá»…n!")
+                            st.success("✅ Kích hoạt và Lưu vĩnh viễn!")
                         else:
-                            st.success("âœ… ÄÃ£ kÃ­ch hoáº¡t!")
+                            st.success("✅ Đã kích hoạt!")
                         st.rerun()
                     except Exception as e:
-                        st.error(f"âŒ Lá»—i: {e}")
+                        st.error(f"❌ Lỗi: {e}")
                 else:
-                    st.error("Vui lÃ²ng nháº­p Key hoáº·c thiáº¿u thÆ° viá»‡n.")
+                    st.error("Vui lòng nhập Key hoặc thiếu thư viện.")
 
     # n8n Configuration
-    with st.expander("ðŸ”— Káº¿t ná»‘i n8n (Advanced AI)"):
+    with st.expander("🔗 Kết nối n8n (Advanced AI)"):
         n8n_url = st.secrets.get("N8N_WEBHOOK_URL", "")
         n8n_input = st.text_input("n8n Webhook URL:", value=st.session_state.get('n8n_url', n8n_url))
         if n8n_input:
@@ -1217,9 +1217,9 @@ with st.sidebar:
     st.markdown("---")
     
     # Time controls (GLOBAL for all views)
-    st.markdown("### ðŸ• Thá»i Gian")
+    st.markdown("### 🕒 Thời Gian")
     
-    use_current_time = st.checkbox("Sá»­ dá»¥ng giá» hiá»‡n táº¡i", value=True)
+    use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
     
     # Timezone handling (Robust Purification)
     vn_tz = None
@@ -1245,8 +1245,8 @@ with st.sidebar:
         selected_datetime = now
     else:
         now_vn = dt_module.datetime.now(vn_tz)
-        selected_date = st.date_input("Chá»n ngÃ y:", now_vn.date())
-        selected_time = st.time_input("Chá»n giá»:", now_vn.time())
+        selected_date = st.date_input("Chọn ngày:", now_vn.date())
+        selected_time = st.time_input("Chọn giờ:", now_vn.time())
         selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
     
     # Calculate QMDG parameters (Always calculate to show in sidebar)
@@ -1261,23 +1261,23 @@ with st.sidebar:
         l_year_name = f"{l_year_can} {l_year_chi}"
         
         st.info(f"""
-        **Thá»i gian:** {selected_datetime.strftime("%H:%M - %d/%m/%Y")}
+        **Thời gian:** {selected_datetime.strftime("%H:%M - %d/%m/%Y")}
         
-        **Ã‚m lá»‹ch:**
-        - NgÃ y: **{lday}/{lmonth} nÄƒm {l_year_name}** {'(Nhuáº­n)' if is_leap else ''}
-        - Giá»: {params['can_gio']} {params['chi_gio']}
-        - NgÃ y: {params['can_ngay']} {params['chi_ngay']}
-        - ThÃ¡ng: {params['can_thang']} {params['chi_thang']}
+        **Âm lịch:**
+        - Ngày: **{lday}/{lmonth} năm {l_year_name}** {'(Nhuận)' if is_leap else ''}
+        - Giờ: {params['can_gio']} {params['chi_gio']}
+        - Ngày: {params['can_ngay']} {params['chi_ngay']}
+        - Tháng: {params['can_thang']} {params['chi_thang']}
         
-        **Cá»¥c:** {params['cuc']} ({'DÆ°Æ¡ng' if params.get('is_duong_don', True) else 'Ã‚m'} Äá»™n)
+        **Cục:** {params['cuc']} ({'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn)
         """)
     except Exception as e:
-        st.error(f"Lá»—i tÃ­nh toÃ¡n: {e}")
+        st.error(f"Lỗi tính toán: {e}")
     
     st.markdown("---")
     
     # Topic selection
-    st.markdown("### ðŸŽ¯ Chá»§ Äá» ChÃ­nh")
+    st.markdown("### 🎯 Chủ Đề Chính")
     
     # Dynamic Topic Refresh
     # Dynamic Topic Refresh with Categories
@@ -1301,48 +1301,48 @@ with st.sidebar:
     st.session_state.all_topics_full = all_titles
 
 
-    search_term = st.text_input("ðŸ” TÃ¬m kiáº¿m chá»§ Ä‘á»:", "")
+    search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
     
     # NEW: Topic Counter Button
-    if st.button("ðŸ“Š Äáº¿m tá»•ng sá»‘ chá»§ Ä‘á» Ä‘ang cÃ³"):
+    if st.button("📊 Đếm tổng số chủ đề đang có"):
         total_count = len(st.session_state.all_topics_full)
-        st.success(f"ðŸ“ˆ Hiá»‡n há»‡ thá»‘ng Ä‘ang cÃ³ tá»•ng cá»™ng: **{total_count}** chá»§ Ä‘á» tri thá»©c!")
+        st.success(f"📈 Hiện hệ thống đang có tổng cộng: **{total_count}** chủ đề tri thức!")
     
-    with st.expander("âœï¸ Äáº·t cÃ¢u há»i riÃªng & KÃ­ch hoáº¡t AI Mining"):
+    with st.expander("✍️ Đặt câu hỏi riêng & Kích hoạt AI Mining"):
         with st.form("custom_topic_form"):
-            new_q = st.text_area("Nháº­p váº¥n Ä‘á»/cÃ¢u há»i báº¡n Ä‘ang quan tÃ¢m:", placeholder="VÃ­ dá»¥: Äáº§u tÆ° vÃ ng nÄƒm 2026, PhÃ¢n tÃ­ch quáº» gieo cho sá»©c khá»e bá»‘ máº¹...")
-            if st.form_submit_button("ðŸš€ Gá»­i & LÆ°u lÃ m Chá»§ Ä‘á» má»›i"):
+            new_q = st.text_area("Nhập vấn đề/câu hỏi bạn đang quan tâm:", placeholder="Ví dụ: Đầu tư vàng năm 2026, Phân tích quẻ gieo cho sức khỏe bố mẹ...")
+            if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
                 if new_q:
                     try:
                         from ai_modules.shard_manager import add_entry
                         # Save as a SEED topic
                         id = add_entry(
                             title=new_q, 
-                            content=f"CÃ¢u há»i gá»‘c ngÆ°á»i dÃ¹ng: {new_q}\n(Chá»§ Ä‘á» nÃ y Ä‘Ã£ Ä‘Æ°á»£c náº¡p lÃ m háº¡t giá»‘ng Ä‘á»ƒ AI quÃ¢n Ä‘oÃ n Ä‘i khai thÃ¡c Internet.)",
-                            category="Kiáº¿n Thá»©c",
+                            content=f"Câu hỏi gốc người dùng: {new_q}\n(Chủ đề này đã được nạp làm hạt giống để AI quân đoàn đi khai thác Internet.)",
+                            category="Kiến Thức",
                             source="User Inquiry"
                         )
                         if id:
-                            st.success(f"âœ… ÄÃ£ náº¡p thÃ nh cÃ´ng! AI sáº½ báº¯t Ä‘áº§u tÃ¬m kiáº¿m thÃ´ng tin liÃªn quan cho báº¡n.")
+                            st.success(f"✅ Đã nạp thành công! AI sẽ bắt đầu tìm kiếm thông tin liên quan cho bạn.")
                             st.session_state.chu_de_hien_tai = new_q
                             st.rerun()
                     except Exception as e:
-                        st.error(f"Lá»—i náº¡p chá»§ Ä‘á»: {e}")
+                        st.error(f"Lỗi nạp chủ đề: {e}")
 
-    # 1. Select Standard Category (Chá»§ Ä‘á» chuáº©n)
-    standard_categories = ["Táº¥t cáº£"] + list(MiningStrategist().categories.keys()) + ["Kiáº¿n Thá»©c", "LÆ°u Trá»¯ (SÃ¡ch)", "KhÃ¡c"]
+    # 1. Select Standard Category (Chủ đề chuẩn)
+    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
     
     selected_cat = st.selectbox(
-        "ðŸ—‚ï¸ Lá»c theo PhÃ¢n loáº¡i chuáº©n:",
+        "📂 Lọc theo Phân loại chuẩn:",
         standard_categories,
         index=0
     )
     
     # 2. Filter topics based on category
     available_topics = []
-    divination_categories = ["Ká»³ MÃ´n Äá»™n GiÃ¡p", "Kinh Dá»‹ch & Dá»± ÄoÃ¡n", "Phong Thá»§y & Äá»‹a LÃ½"]
+    divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
     
-    if selected_cat == "Táº¥t cáº£":
+    if selected_cat == "Tất cả":
         # Default view: Only core topics + specific divination hub topics
         hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
         available_topics = sorted(list(set(core_topics + hub_divination)))
@@ -1355,38 +1355,38 @@ with st.sidebar:
         available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
     
     if not available_topics:
-        available_topics = ["(ChÆ°a cÃ³ dá»¯ liá»‡u cho phÃ¢n loáº¡i nÃ y)"]
+        available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
 
     selected_topic = st.selectbox(
-        "Chá»n chá»§ Ä‘á» chi tiáº¿t:",
+        "Chọn chủ đề chi tiết:",
         available_topics,
-        index=0 if "Tá»•ng QuÃ¡t" not in available_topics else available_topics.index("Tá»•ng QuÃ¡t")
+        index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
     )
 
     
     st.session_state.chu_de_hien_tai = selected_topic
     
-    st.info(f"ðŸ“Œ ÄÃ£ chá»n: **{selected_topic}**")
+    st.info(f"📌 Đã chọn: **{selected_topic}**")
     
     # Multi-layer analysis (if available)
     if USE_MULTI_LAYER_ANALYSIS:
         st.markdown("---")
-        st.markdown("### ðŸŽ¯ Äá»‘i TÆ°á»£ng (Lá»¥c ThÃ¢n)")
+        st.markdown("### 🎯 Đối Tượng (Lục Thân)")
         
         doi_tuong_options = [
-            "ðŸ§‘ Báº£n thÃ¢n",
-            "ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ Anh chá»‹ em",
-            "ðŸ‘´ðŸ‘µ Bá»‘ máº¹",
-            "ðŸ‘¶ Con cÃ¡i",
-            "ðŸ¤ NgÆ°á»i láº¡ (theo Can sinh)"
+            "👤 Bản thân",
+            "👨‍👩‍👧 Anh chị em",
+            "👴👵 Bố mẹ",
+            "👶 Con cái",
+            "🤝 Người lạ (theo Can sinh)"
         ]
         
-        selected_doi_tuong = st.selectbox("Chá»n Ä‘á»‘i tÆ°á»£ng:", doi_tuong_options, index=0)
+        selected_doi_tuong = st.selectbox("Chọn đối tượng:", doi_tuong_options, index=0)
         
-        target_stem_name = "GiÃ¡p" # Default
-        if selected_doi_tuong == "ðŸ¤ NgÆ°á»i láº¡ (theo Can sinh)":
-            target_stem_name = st.selectbox("Chá»n ThiÃªn Can nÄƒm sinh cá»§a ngÆ°á»i Ä‘Ã³:", 
-                                           ["KhÃ´ng rÃµ (DÃ¹ng Can Giá»)", "GiÃ¡p", "áº¤t", "BÃ­nh", "Äinh", "Máº­u", "Ká»·", "Canh", "TÃ¢n", "NhÃ¢m", "QuÃ½"])
+        target_stem_name = "Giáp" # Default
+        if selected_doi_tuong == "🤝 Người lạ (theo Can sinh)":
+            target_stem_name = st.selectbox("Chọn Thiên Can năm sinh của người đó:", 
+                                           ["Không rõ (Dùng Can Giờ)", "Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"])
         
         st.session_state.selected_doi_tuong = selected_doi_tuong
         st.session_state.target_stem_name_custom = target_stem_name
@@ -1400,11 +1400,11 @@ if st.session_state.current_view == "ai_factory":
         from web.ai_factory_view import render_ai_factory_view
         render_ai_factory_view()
     except ImportError as e:
-        st.error(f"KhÃ´ng thá»ƒ táº£i module AI Factory: {e}")
-        st.info("Vui lÃ²ng kiá»ƒm tra láº¡i file web/ai_factory_view.py")
+        st.error(f"Không thể tải module AI Factory: {e}")
+        st.info("Vui lòng kiểm tra lại file web/ai_factory_view.py")
 
 if st.session_state.current_view == "ky_mon":
-    st.markdown("## ðŸ”® Báº¢NG Ká»² MÃ”N Äá»˜N GIÃP")
+    st.markdown("## 🔮 BẢNG KỲ MÔN ĐỘN GIÁP")
     
     if params:
         # Calculate full chart
@@ -1446,12 +1446,12 @@ if st.session_state.current_view == "ky_mon":
             }
             
         except Exception as e:
-            st.error(f"Lá»—i tÃ­nh toÃ¡n bÃ n: {e}")
+            st.error(f"Lỗi tính toán bàn: {e}")
             st.session_state.chart_data = None
         
         # Display 9 palaces grid with full information
         if st.session_state.chart_data:
-            st.markdown("### ðŸ“Š ChÃ­n Cung Ká»³ MÃ´n")
+            st.markdown("### 📊 Chín Cung Kỳ Môn")
             
             chart = st.session_state.chart_data
             
@@ -1475,16 +1475,16 @@ if st.session_state.current_view == "ky_mon":
                         can_dia = chart['dia_can'].get(palace_num, 'N/A')
                         hanh = CUNG_NGU_HANH.get(palace_num, 'N/A')
                         
-                        # Check if palace has Dá»¥ng Tháº§n (Resolved Logic)
+                        # Check if palace has Dụng Thần (Resolved Logic)
                         topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
-                        dung_than_list = topic_data.get("Dá»¥ng_Tháº§n", [])
+                        dung_than_list = topic_data.get("Dụng_Thần", [])
                         
                         # Mapping symbolic names to actual stems
                         symbolic_map = {
-                            "Can NgÃ y": chart.get('can_ngay'),
-                            "Can Giá»": chart.get('can_gio'),
-                            "Can ThÃ¡ng": chart.get('can_thang'),
-                            "Can NÄƒm": chart.get('can_nam')
+                            "Can Ngày": chart.get('can_ngay'),
+                            "Can Giờ": chart.get('can_gio'),
+                            "Can Tháng": chart.get('can_thang'),
+                            "Can Năm": chart.get('can_nam')
                         }
                         
                         resolved_dt = []
@@ -1497,34 +1497,35 @@ if st.session_state.current_view == "ky_mon":
                         # Final check for highlighting
                         has_dung_than = any(dt in [sao, cua, than, can_thien, can_dia] for dt in resolved_dt)
                         
-                        # Special handling for Doors: "Sinh" vs "Sinh MÃ´n"
+                        # Special handling for Doors: "Sinh" vs "Sinh Môn"
                         if not has_dung_than:
-                            clean_cua = cua.replace(" MÃ´n", "")
+                            clean_cua = cua.replace(" Môn", "")
+                            clean_cua = cua.replace(" Môn", "")
                             has_dung_than = any(dt in [clean_cua] for dt in resolved_dt)
                         
                         # Determine Strength based on month
                         now_dt = dt_module.datetime.now()
                         month = now_dt.month
-                        season_map = {1:"XuÃ¢n", 2:"XuÃ¢n", 3:"XuÃ¢n", 4:"Háº¡", 5:"Háº¡", 6:"Háº¡", 7:"Thu", 8:"Thu", 9:"Thu", 10:"ÄÃ´ng", 11:"ÄÃ´ng", 12:"ÄÃ´ng"}
-                        current_season = season_map.get(month, "XuÃ¢n")
-                        strength = phan_tich_yeu_to_thoi_gian(hanh, current_season) if USE_MULTI_LAYER_ANALYSIS else "BÃ¬nh"
+                        season_map = {1:"Xuân", 2:"Xuân", 3:"Xuân", 4:"Hạ", 5:"Hạ", 6:"Hạ", 7:"Thu", 8:"Thu", 9:"Thu", 10:"Đông", 11:"Đông", 12:"Đông"}
+                        current_season = season_map.get(month, "Xuân")
+                        strength = phan_tich_yeu_to_thoi_gian(hanh, current_season) if USE_MULTI_LAYER_ANALYSIS else "Bình"
                         
                         strength_color = {
-                            "VÆ°á»£ng": "#ef4444", "TÆ°á»›ng": "#f59e0b", "HÆ°u": "#10b981", "TÃ¹": "#3b82f6", "Tá»­": "#64748b"
+                            "Vượng": "#ef4444", "Tướng": "#f59e0b", "Hưu": "#10b981", "Tù": "#3b82f6", "Tử": "#64748b"
                         }.get(strength, "#475569")
 
                         # Get door properties for analysis (Required for NameError fix)
-                        door_data = KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_MON"].get(cua if " MÃ´n" in cua else cua + " MÃ´n", {})
-                        cat_hung = door_data.get("CÃ¡t_Hung", "BÃ¬nh")
+                        door_data = KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_MON"].get(cua if " Môn" in cua else cua + " Môn", {})
+                        cat_hung = door_data.get("Cát_Hung", "Bình")
 
                         # Element Styles & Aesthetics
                         element_configs = {
-                            "Má»™c": {"border": "#10b981", "icon": "ðŸŒ¿", "img": "moc.png"},
-                            "Há»a": {"border": "#ef4444", "icon": "ðŸ”¥", "img": "hoa.png"},
-                            "Thá»•": {"border": "#f59e0b", "icon": "â›°ï¸", "img": "tho.png"},
-                            "Kim": {"border": "#94a3b8", "icon": "âš”ï¸", "img": "kim.png"},
-                            "Thá»§y": {"border": "#3b82f6", "icon": "ðŸ’§", "img": "thuy.png"}
-                        }.get(hanh, {"border": "#475569", "icon": "âœ¨", "img": "tho.png"})
+                            "Mộc": {"border": "#10b981", "icon": "🌿", "img": "moc.png"},
+                            "Hỏa": {"border": "#ef4444", "icon": "🔥", "img": "hoa.png"},
+                            "Thổ": {"border": "#f59e0b", "icon": "⛰️", "img": "tho.png"},
+                            "Kim": {"border": "#94a3b8", "icon": "⚔️", "img": "kim.png"},
+                            "Thủy": {"border": "#3b82f6", "icon": "💧", "img": "thuy.png"}
+                        }.get(hanh, {"border": "#475569", "icon": "✨", "img": "tho.png"})
 
                         # Base64 Background Logic
                         bg_path = os.path.join(os.path.dirname(__file__), "web", "static", "img", "elements", element_configs.get('img', 'tho.png'))
@@ -1539,10 +1540,10 @@ if st.session_state.current_view == "ky_mon":
 
                         # Color Mapping
                         def get_qmdg_color(name, category):
-                            good_stars = ["ThiÃªn Phá»¥", "ThiÃªn Nháº­m", "ThiÃªn TÃ¢m", "ThiÃªn Cáº§m"]
-                            good_doors = ["Khai", "HÆ°u", "Sinh", "Khai MÃ´n", "HÆ°u MÃ´n", "Sinh MÃ´n"]
-                            good_deities = ["Trá»±c PhÃ¹", "ThÃ¡i Ã‚m", "Lá»¥c Há»£p", "Cá»­u Äá»‹a", "Cá»­u ThiÃªn"]
-                            good_stems = ["GiÃ¡p", "áº¤t", "BÃ­nh", "Äinh", "Máº­u"]
+                            good_stars = ["Thiên Phụ", "Thiên Nhậm", "Thiên Tâm", "Thiên Cầm"]
+                            good_doors = ["Khai", "Hưu", "Sinh", "Khai Môn", "Hưu Môn", "Sinh Môn"]
+                            good_deities = ["Trực Phù", "Thái Âm", "Lục Hợp", "Cửu Địa", "Cửu Thiên"]
+                            good_stems = ["Giáp", "Ất", "Bính", "Đinh", "Mậu"]
                             is_good = False
                             if category == "star": is_good = any(gs in name for gs in good_stars)
                             elif category == "door": is_good = any(gd in name for gd in good_doors)
@@ -1573,33 +1574,33 @@ if st.session_state.current_view == "ky_mon":
                         except:
                             curr_p_int = -99
 
-                        # 1. Horse (MÃ£) - Pillar specific
-                        for pillar, label in [('nam', 'MÃ£ NÄƒm'), ('thang', 'MÃ£ ThÃ¡ng'), ('ngay', 'MÃ£ NgÃ y'), ('gio', 'MÃ£ Giá»')]:
+                        # 1. Horse (Mã) - Pillar specific
+                        for pillar, label in [('nam', 'Mã Năm'), ('thang', 'Mã Tháng'), ('ngay', 'Mã Ngày'), ('gio', 'Mã Giờ')]:
                             val = ma_data.get(pillar)
                             if val is not None:
                                 try:
                                     if int(val) == curr_p_int:
-                                        m_html.append(f'<div class="marker-badge ma">ðŸŽ {label}</div>')
+                                        m_html.append(f'<div class="marker-badge ma">🐎 {label}</div>')
                                 except: pass
                         
-                        # 2. Void (Tuáº§n KhÃ´ng) - Pillar specific
-                        for pillar, label in [('nam', 'KhÃ´ng NÄƒm'), ('thang', 'KhÃ´ng ThÃ¡ng'), ('ngay', 'KhÃ´ng NgÃ y'), ('gio', 'KhÃ´ng Giá»')]:
+                        # 2. Void (Tuần Không) - Pillar specific
+                        for pillar, label in [('nam', 'Không Năm'), ('thang', 'Không Tháng'), ('ngay', 'Không Ngày'), ('gio', 'Không Giờ')]:
                             vals = kv_data.get(pillar, [])
                             try:
                                 if any(int(v) == curr_p_int for v in vals):
-                                    m_html.append(f'<div class="marker-badge kv">ðŸ’€ {label}</div>')
+                                    m_html.append(f'<div class="marker-badge kv">💀 {label}</div>')
                             except: pass
                         
-                        # 3. 4 Pillar Cans (NÄƒm/ThÃ¡ng/NgÃ y/Giá») location on Earth Plate
+                        # 3. 4 Pillar Cans (Năm/Tháng/Ngày/Giờ) location on Earth Plate
                         # We find where the 4 stems sit in the dia_can (Earth Plate)
                         for pillar, (p_can, p_label) in {
-                            'nam': (params.get('can_nam'), 'Trá»¥ NÄƒm'),
-                            'thang': (params.get('can_thang'), 'Trá»¥ ThÃ¡ng'),
-                            'ngay': (params.get('can_ngay'), 'Trá»¥ NgÃ y'),
-                            'gio': (params.get('can_gio'), 'Trá»¥ Giá»')
+                            'nam': (params.get('can_nam'), 'Trụ Năm'),
+                            'thang': (params.get('can_thang'), 'Trụ Tháng'),
+                            'ngay': (params.get('can_ngay'), 'Trụ Ngày'),
+                            'gio': (params.get('can_gio'), 'Trụ Giờ')
                         }.items():
                             if p_can and can_dia == p_can:
-                                m_html.append(f'<div class="marker-badge pillar-{pillar}">ðŸ“ {p_label} ({p_can})</div>')
+                                m_html.append(f'<div class="marker-badge pillar-{pillar}">📍 {p_label} ({p_can})</div>')
 
                         marker_display_html = "".join(m_html)
 
@@ -1620,8 +1621,8 @@ if st.session_state.current_view == "ky_mon":
 </div>
 <div class="palace-content-v">
     <div class="than-corner" style="color: {c_than};">{than}</div>
-    <div class="sao-corner" style="color: {c_sao};">{sao.replace('ThiÃªn ', '')}</div>
-    <div class="mon-corner" style="color: {c_cua};">{cua.replace(' MÃ´n', '')}</div>
+    <div class="sao-corner" style="color: {c_sao};">{sao.replace('Thiên ', '')}</div>
+    <div class="mon-corner" style="color: {c_cua};">{cua.replace(' Môn', '')}</div>
     <div class="thien-corner" style="color: {c_thien};">{can_thien}</div>
     <div class="dia-corner" style="color: {c_dia};">{can_dia}</div>
 </div>
@@ -1633,21 +1634,21 @@ if st.session_state.current_view == "ky_mon":
 
                         
                         # Expander for detailed analysis
-                        with st.expander(f"ðŸ“– Chi tiáº¿t Cung {palace_num}"):
+                        with st.expander(f"📖 Chi tiết Cung {palace_num}"):
                             # Basic info
                             col_info1, col_info2 = st.columns(2)
                             with col_info1:
-                                st.markdown(f"**QuÃ¡i tÆ°á»£ng:** {QUAI_TUONG.get(palace_num, 'N/A')}")
-                                st.markdown(f"**NgÅ© hÃ nh:** {hanh}")
+                                st.markdown(f"**Quái tượng:** {QUAI_TUONG.get(palace_num, 'N/A')}")
+                                st.markdown(f"**Ngũ hành:** {hanh}")
                             with col_info2:
-                                st.markdown(f"**CÃ¡t/Hung:** {cat_hung}")
-                                st.markdown(f"**Tráº¡ng thÃ¡i:** {strength}")
+                                st.markdown(f"**Cát/Hung:** {cat_hung}")
+                                st.markdown(f"**Trạng thái:** {strength}")
                             
                             st.markdown("---")
                             
-                            # Check Dá»¥ng Tháº§n with clearer explanation
+                            # Check Dụng Thần with clearer explanation
                             topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
-                            dung_than_list = topic_data.get("Dá»¥ng_Tháº§n", [])
+                            dung_than_list = topic_data.get("Dụng_Thần", [])
                             
                             # --- PRE-CALCULATE CORE VARIABLES (FIXES NAMEERROR) ---
                             actual_can_gio = chart.get('can_gio', 'N/A')
@@ -1655,33 +1656,33 @@ if st.session_state.current_view == "ky_mon":
                             actual_can_thang = chart.get('can_thang', 'N/A')
                             actual_can_nam = chart.get('can_nam', 'N/A')
                             
-                            # Resolve Relation (Lá»¥c ThÃ¢n) stem
-                            rel_type = st.session_state.get('selected_doi_tuong', "ðŸ§‘ Báº£n thÃ¢n")
+                            # Resolve Relation (Lục Thân) stem
+                            rel_type = st.session_state.get('selected_doi_tuong', "👤 Bản thân")
                             target_can_representative = actual_can_ngay # Default to Self
-                            rel_label = "Báº£n thÃ¢n"
+                            rel_label = "Bản thân"
                             
-                            if "Anh chá»‹ em" in rel_type:
+                            if "Anh chị em" in rel_type:
                                 target_can_representative = actual_can_thang
-                                rel_label = "Anh chá»‹ em"
-                            elif "Bá»‘ máº¹" in rel_type:
+                                rel_label = "Anh chị em"
+                            elif "Bố mẹ" in rel_type:
                                 target_can_representative = actual_can_nam
-                                rel_label = "Bá»‘ máº¹"
-                            elif "Con cÃ¡i" in rel_type:
+                                rel_label = "Bố mẹ"
+                            elif "Con cái" in rel_type:
                                 target_can_representative = actual_can_gio
-                                rel_label = "Con cÃ¡i"
-                            elif "NgÆ°á»i láº¡" in rel_type:
-                                custom_val = st.session_state.get('target_stem_name_custom', "GiÃ¡p")
-                                if "KhÃ´ng rÃµ" in custom_val:
+                                rel_label = "Con cái"
+                            elif "Người lạ" in rel_type:
+                                custom_val = st.session_state.get('target_stem_name_custom', "Giáp")
+                                if "Không rõ" in custom_val:
                                     target_can_representative = actual_can_gio
-                                    rel_label = "Äá»‘i tÆ°á»£ng (Can Giá»)"
+                                    rel_label = "Đối tượng (Can Giờ)"
                                 else:
                                     target_can_representative = custom_val
-                                    rel_label = f"Äá»‘i tÆ°á»£ng ({target_can_representative})"
+                                    rel_label = f"Đối tượng ({target_can_representative})"
 
                             # --- PART 1: RELATIONSHIP ANALYSIS (SUBJECT VS OBJECT) ---
-                            st.subheader("ðŸŽ¯ PhÃ¢n tÃ­ch TÆ°Æ¡ng tÃ¡c Dá»¥ng Tháº§n")
+                            st.subheader("🎯 Phân tích Tương tác Dụng Thần")
                             
-                            # Determine Subject (Báº£n thÃ¢n) Stem Palace
+                            # Determine Subject (Bản thân) Stem Palace
                             subject_palace = 0
                             # Assuming 'dia_can' holds the Earth Stems for each palace
                             # We need to find the palace where the 'can_ngay' (subject's stem) resides
@@ -1690,62 +1691,68 @@ if st.session_state.current_view == "ky_mon":
                                     subject_palace = p_num
                                     break
                             
-                            # Determine Object (Dá»¥ng Tháº§n) Palace (Current Palace)
+                            # Determine Object (Dụng Thần) Palace (Current Palace)
                             object_palace = palace_num
                             
-                            s_hanh = CUNG_NGU_HANH.get(subject_palace, "Thá»•")
-                            o_hanh = CUNG_NGU_HANH.get(object_palace, "Thá»•")
+                            s_hanh = CUNG_NGU_HANH.get(subject_palace, "Thổ")
+                            o_hanh = CUNG_NGU_HANH.get(object_palace, "Thổ")
                             
-                            interaction = SINH_KHAC_MATRIX.get(s_hanh, {}).get(o_hanh, "BÃ¬nh HÃ²a")
+                            s_hanh = CUNG_NGU_HANH.get(subject_palace, "Thổ")
+                            o_hanh = CUNG_NGU_HANH.get(object_palace, "Thổ")
+                            
+                            interaction = SINH_KHAC_MATRIX.get(s_hanh, {}).get(o_hanh, "Bình Hòa")
                             
                             # Visual Interaction Report
                             col_rel1, col_rel2, col_rel3 = st.columns([2, 1, 2])
                             with col_rel1:
-                                st.info(f"ðŸ‘¤ **Báº£n thÃ¢n**\n\nCung {subject_palace} ({s_hanh})")
+                                st.info(f"👥 **Bản thân**\n\nCung {subject_palace} ({s_hanh})")
                             with col_rel2:
-                                st.markdown(f"<div style='text-align:center; font-size:1.5rem; padding-top:10px;'>{'âž¡ï¸' if 'Sinh' in interaction else 'âš”ï¸' if 'Kháº¯c' in interaction else 'ðŸ¤'}</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='text-align:center; font-size:1.5rem; padding-top:10px;'>{'➡️' if 'Sinh' in interaction else '⚔️' if 'Khắc' in interaction else '🤝'}</div>", unsafe_allow_html=True)
                                 st.caption(f"<div style='text-align:center;'>{interaction}</div>", unsafe_allow_html=True)
                             with col_rel3:
-                                st.success(f"ðŸŽ¯ **Äá»‘i tÆ°á»£ng**\n\nCung {object_palace} ({o_hanh})")
+                                st.success(f"🎯 **Đối tượng**\n\nCung {object_palace} ({o_hanh})")
                             
-                            st.write(f"**Káº¿t luáº­n nhanh:** {rel_label} vÃ  Äá»‘i tÆ°á»£ng cÃ³ má»‘i quan há»‡ **{interaction}**. " + 
-                                     ("ÄÃ¢y lÃ  dáº¥u hiá»‡u thuáº­n lá»£i, nÄƒng lÆ°á»£ng lÆ°u thÃ´ng." if "Sinh" in interaction or "BÃ¬nh" in interaction 
-                                      else "Cáº§n tháº­n trá»ng vÃ¬ cÃ³ sá»± xung Ä‘á»™t hoáº·c cáº£n trá»Ÿ vá» máº·t nÄƒng lÆ°á»£ng."))
+                            st.write(f"**Kết luận nhanh:** {rel_label} và Đối tượng có mối quan hệ **{interaction}**. " + 
+                                     ("Đây là dấu hiệu thuận lợi, năng lượng lưu thông." if "Sinh" in interaction or "Bình" in interaction 
+                                      else "Cần thận trọng vì có sự xung đột hoặc cản trở về mặt năng lượng."))
 
                             st.markdown("---")
                             
                             # --- PART 2: TECHNICAL ELEMENT LOOKUPS ---
-                            st.subheader("ðŸ” Chi tiáº¿t TÃ¡c Ä‘á»™ng cá»§a Tháº§n - Tinh - MÃ´n")
+                            st.subheader("🔍 Chi tiết Tác động của Thần - Tinh - Môn")
                             
                             # Create a clean table for lookups
                             tech_data = {
-                                "Yáº¿u tá»‘": ["Tháº§n (Deity)", "Tinh (Star)", "MÃ´n (Door)", "ThiÃªn Can", "Äá»‹a Can"],
-                                "TÃªn": [than, sao, cua, can_thien, can_dia],
-                                "Ã nghÄ©a & TÃ¡c Ä‘á»™ng": [
-                                    KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].get(than, {}).get("TÃ­nh_Cháº¥t", "N/A"),
-                                    KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].get(sao, {}).get("TÃ­nh_Cháº¥t", "N/A"),
-                                    KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_MON"].get(cua if " MÃ´n" in cua else cua + " MÃ´n", {}).get("Luáº­n_ÄoÃ¡n", "N/A"),
-                                    KY_MON_DATA["CAN_CHI_LUAN_GIAI"].get(can_thien, {}).get("TÃ­nh_Cháº¥t", "N/A"),
-                                    KY_MON_DATA["CAN_CHI_LUAN_GIAI"].get(can_dia, {}).get("TÃ­nh_Cháº¥t", "N/A")
+                                "Yếu tố": ["Thần (Deity)", "Tinh (Star)", "Môn (Door)", "Thiên Can", "Địa Can"],
+                                "Tên": [than, sao, cua, can_thien, can_dia],
+                                "Ý nghĩa & Tác động": [
+                                    KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].get(than, {}).get("Tính_Chất", "N/A"),
+                                    KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].get(sao, {}).get("Tính_Chất", "N/A"),
+                                    KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_MON"].get(cua if " Môn" in cua else cua + " Môn", {}).get("Luận_Đoán", "N/A"),
+                                    KY_MON_DATA["CAN_CHI_LUAN_GIAI"].get(can_thien, {}).get("Tính_Chất", "N/A"),
+                                    KY_MON_DATA["CAN_CHI_LUAN_GIAI"].get(can_dia, {}).get("Tính_Chất", "N/A")
                                 ]
                             }
                             st.table(tech_data)
                             
                             # --- PART 3: TOPIC-SPECIFIC ANALYSIS ---
-                            st.subheader(f"ðŸ’¡ PhÃ¢n tÃ­ch theo chá»§ Ä‘á»: {selected_topic}")
-                            topic_detail = topic_data.get("Diá»…n_Giáº£i", "Äang cáº­p nháº­t...")
+                            st.subheader(f"💡 Phân tích theo chủ đề: {selected_topic}")
+                            topic_detail = topic_data.get("Diễn_Giải", topic_data.get("Diễn_Giải", "Đang cập nhật..."))
                             st.write(topic_detail)
                             
-                            # Combinatorial Analysis (CÃ¡ch Cá»¥c)
+                            # Combinatorial Analysis (Cách Cục)
                             combo_key = f"{can_thien}{can_dia}"
-                            combo_info = KY_MON_DATA["TRUCTU_TRANH"].get(combo_key)
+                            combo_info = KY_MON_DATA.get("TRUCTU_TRANH", {}).get(combo_key)
                             if combo_info:
-                                st.warning(f"ðŸŽ­ **CÃ¡ch cá»¥c: {combo_info['TÃªn_CÃ¡ch_Cá»¥c']} ({combo_info['CÃ¡t_Hung']})**")
-                                st.write(combo_info['Luáº­n_Giáº£i'])
+                                ten_cach = combo_info.get('Tên_Cách_Cục') or combo_info.get('Tên_Cách_Cục') or "N/A"
+                                cat_hung = combo_info.get('Cát_Hung') or combo_info.get('Cát_Hung') or "N/A"
+                                luan_giai = combo_info.get('Luận_Giải') or combo_info.get('Luận_Giải') or "N/A"
+                                st.warning(f"🎭 **Cách cục: {ten_cach} ({cat_hung})**")
+                                st.write(luan_giai)
                             
                             # Final Advice
                             st.markdown("---")
-                            st.info("**Lá»i khuyÃªn tá»« chuyÃªn gia:** Dá»±a trÃªn sá»± tÆ°Æ¡ng tÃ¡c giá»¯a Báº£n thÃ¢n vÃ  Dá»¥ng Tháº§n, báº¡n nÃªn chá»§ Ä‘á»™ng náº¯m báº¯t cÆ¡ há»™i náº¿u cÃ³ sá»± tÆ°Æ¡ng sinh, hoáº·c lÃ¹i láº¡i quan sÃ¡t náº¿u gáº·p sá»± hÃ¬nh kháº¯c máº¡nh.")
+                            st.info("**Lời khuyên từ chuyên gia:** Dựa trên sự tương tác giữa Bản thân và Dụng Thần, bạn nên chủ động nắm bắt cơ hội nếu có sự tương sinh, hoặc lùi lại quan sát nếu gặp sự hình khắc mạnh.")
                             
                             # Advanced Matching Logic
                             found_dt = []
@@ -1756,29 +1763,29 @@ if st.session_state.current_view == "ky_mon":
                                 # 1. Check direct matches (Star, Deity, Stems)
                                 if dt in [sao, than]:
                                     is_match = True
-                                # 2. Check Doors (Normalize "Sinh" vs "Sinh MÃ´n")
-                                elif dt == cua or dt == f"{cua} MÃ´n" or (cua and dt.startswith(cua)):
+                                # 2. Check Doors (Normalize "Sinh" vs "Sinh Môn")
+                                elif dt == cua or dt == f"{cua} Môn" or (cua and dt.startswith(cua)):
                                     is_match = True
                                 # 3. Check Symbolic Stems (PRECISION: Only Heaven Plate)
-                                elif dt == "Can Giá»" and (actual_can_gio == can_thien):
-                                    display_name = f"Can Giá» ({actual_can_gio} - Sá»± viá»‡c)"
+                                elif dt == "Can Giờ" and (actual_can_gio == can_thien):
+                                    display_name = f"Can Giờ ({actual_can_gio} - Sự việc)"
                                     is_match = True
-                                elif dt == "Can NgÃ y" and (actual_can_ngay == can_thien):
-                                    display_name = f"Can NgÃ y ({actual_can_ngay})"
+                                elif dt == "Can Ngày" and (actual_can_ngay == can_thien):
+                                    display_name = f"Can Ngày ({actual_can_ngay})"
                                     is_match = True
-                                elif dt == "Can ThÃ¡ng" and (actual_can_thang == can_thien):
-                                    display_name = f"Can ThÃ¡ng ({actual_can_thang})"
+                                elif dt == "Can Tháng" and (actual_can_thang == can_thien):
+                                    display_name = f"Can Tháng ({actual_can_thang})"
                                     is_match = True
-                                elif dt == "Can NÄƒm" and (actual_can_nam == can_thien):
-                                    display_name = f"Can NÄƒm ({actual_can_nam})"
+                                elif dt == "Can Năm" and (actual_can_nam == can_thien):
+                                    display_name = f"Can Năm ({actual_can_nam})"
                                     is_match = True
                                 # 4. Check Stems directly if they are on Heaven Plate
-                                elif dt in ["NhÃ¢m", "QuÃ½", "áº¤t", "BÃ­nh", "Äinh", "Máº­u", "Ká»·", "Canh", "TÃ¢n"] and (dt == can_thien):
+                                elif dt in ["Nhâm", "Quý", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân"] and (dt == can_thien):
                                     is_match = True
                                 # 5. Check Special Markers
-                                elif dt == "MÃ£ Tinh" and palace_num == chart.get('dich_ma'):
+                                elif dt == "Mã Tinh" and palace_num == chart.get('dich_ma'):
                                     is_match = True
-                                elif dt == "KhÃ´ng Vong" and palace_num in chart.get('khong_vong', []):
+                                elif dt == "Không Vong" and palace_num in chart.get('khong_vong', []):
                                     is_match = True
                                 
                                 if is_match:
@@ -1786,15 +1793,15 @@ if st.session_state.current_view == "ky_mon":
                                     
                             # ADD RELATIONSHIP HIGHLIGHT
                             if target_can_representative == can_thien:
-                                found_dt.append(f"ðŸ“ {rel_label}")
+                                found_dt.append(f"📍 {rel_label}")
                             
                             dt_html = f"""
                             <div class="dung-than-box">
-                                <div style="font-weight: 800; color: #92400e; margin-bottom: 5px;">ðŸ“ PHÃ‚N TÃCH Dá»¤NG THáº¦N</div>
-                                <div style="font-size: 14px;"><strong>Chá»§ Ä‘á»:</strong> {selected_topic}</div>
-                                <div style="font-size: 14px;"><strong>Dá»¥ng tháº§n cáº§n tÃ¬m:</strong> {', '.join(dung_than_list)}</div>
+                                <div style="font-weight: 800; color: #92400e; margin-bottom: 5px;">📍 PHÂN TÍCH DỤNG THẦN</div>
+                                <div style="font-size: 14px;"><strong>Chủ đề:</strong> {selected_topic}</div>
+                                <div style="font-size: 14px;"><strong>Dụng thần cần tìm:</strong> {', '.join(dung_than_list)}</div>
                                 <div style="margin-top: 10px; font-weight: 700; color: {'#15803d' if found_dt else '#b91c1c'};">
-                                    {f'âœ… TÃ¬m tháº¥y: {", ".join(found_dt)}' if found_dt else 'âš ï¸ Cung nÃ y khÃ´ng chá»©a Dá»¥ng Tháº§n chÃ­nh'}
+                                    {f'✅ Tìm thấy: {", ".join(found_dt)}' if found_dt else '⚠️ Cung này không chứa Dụng Thần chính'}
                                 </div>
                             </div>
                             """
@@ -1803,8 +1810,8 @@ if st.session_state.current_view == "ky_mon":
                             # UNIFIED AI EXPERT BUTTON
                             if 'gemini_helper' in st.session_state:
                                 st.markdown("---")
-                                if st.button(f"ðŸ§™ AI ChuyÃªn Gia TÆ° Váº¥n Cung {palace_num}", key=f"ai_palace_expert_btn_{palace_num}", use_container_width=True, type="primary"):
-                                    with st.spinner(f"ChuyÃªn gia AI Ä‘ang phÃ¢n tÃ­ch Cung {palace_num} theo chá»§ Ä‘á» {selected_topic}..."):
+                                if st.button(f"🧙 AI Chuyên Gia Tư Vấn Cung {palace_num}", key=f"ai_palace_expert_btn_{palace_num}", use_container_width=True, type="primary"):
+                                    with st.spinner(f"Chuyên gia AI đang phân tích Cung {palace_num} theo chủ đề {selected_topic}..."):
                                         analysis = st.session_state.gemini_helper.analyze_palace(
                                             {
                                                 "num": palace_num,
@@ -1820,7 +1827,7 @@ if st.session_state.current_view == "ky_mon":
                                         )
                                         st.markdown(f"""
                                         <div class="interpret-box">
-                                            <div class="interpret-title">ðŸ”® PhÃ¢n TÃ­ch ChuyÃªn SÃ¢u Cung {palace_num}</div>
+                                            <div class="interpret-title">🔮 Phân Tích Chuyên Sâu Cung {palace_num}</div>
                                             <div style="font-size: 15px; line-height: 1.6; color: #1e293b;">{analysis}</div>
                                         </div>
                                         """, unsafe_allow_html=True)
@@ -1829,14 +1836,14 @@ if st.session_state.current_view == "ky_mon":
                             st.markdown("---")
                             star_data = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['CUU_TINH'].get(sao, {})
                             if star_data:
-                                st.markdown(f"**â­ Sao {sao}:** {star_data.get('TÃ­nh_Cháº¥t', 'N/A')}")
+                                st.markdown(f"**⭐ Sao {sao}:** {star_data.get('Tính_Chất', 'N/A')}")
                             
                             if door_data:
-                                st.markdown(f"**ðŸšª Cá»­a {cua}:** {door_data.get('TÃ­nh_Cháº¥t', 'N/A')}")
+                                st.markdown(f"**🚪 Cửa {cua}:** {door_data.get('Tính_Chất', 'N/A')}")
                             
                             deity_data = KY_MON_DATA['DU_LIEU_DUNG_THAN_PHU_TRO']['BAT_THAN'].get(than, {})
                             if deity_data:
-                                st.markdown(f"**ðŸ›¡ï¸ Tháº§n {than}:** {deity_data.get('TÃ­nh_Cháº¥t', 'N/A')}")
+                                st.markdown(f"**🛡️ Thần {than}:** {deity_data.get('Tính_Chất', 'N/A')}")
                             
                             # Stem combination
                             cach_cuc_key = can_thien + can_dia
@@ -1844,21 +1851,21 @@ if st.session_state.current_view == "ky_mon":
                             if combination_data:
                                 col_can_1, col_can_2 = st.columns([3, 1])
                                 with col_can_1:
-                                    st.markdown(f"**ðŸ”— {can_thien}/{can_dia}:** {combination_data.get('Luáº­n_Giáº£i', 'ChÆ°a cÃ³ ná»™i dung')}")
-                                    st.caption(f"CÃ¡t/Hung: {combination_data.get('CÃ¡t_Hung', 'BÃ¬nh')}")
+                                    st.markdown(f"**🔗 {can_thien}/{can_dia}:** {combination_data.get('Luận_Giải', 'Chưa có nội dung')}")
+                                    st.caption(f"Cát/Hung: {combination_data.get('Cát_Hung', 'Bình')}")
                                 with col_can_2:
                                     show_can_exp = False
                                     if 'gemini_helper' in st.session_state:
-                                        if st.button(f"ðŸ”® Giáº£i ThÃ­ch", key=f"ai_can_{palace_num}_{can_thien}_{can_dia}", use_container_width=True):
+                                        if st.button(f"🔮 Giải Thích", key=f"ai_can_{palace_num}_{can_thien}_{can_dia}", use_container_width=True):
                                             show_can_exp = True
                                 
                                 # Move explanation out of columns for full width
                                 if show_can_exp:
-                                    with st.spinner(f"AI Ä‘ang phÃ¢n giáº£i tá»• há»£p {can_thien}/{can_dia}..."):
+                                    with st.spinner(f"AI đang phân giải tổ hợp {can_thien}/{can_dia}..."):
                                         explanation = st.session_state.gemini_helper.explain_element('stem', f"{can_thien}/{can_dia}")
                                         st.markdown(f"""
                                         <div class="interpret-box">
-                                            <div class="interpret-title">ðŸ“– Luáº­n Giáº£i Cáº·p Can: {can_thien}/{can_dia}</div>
+                                            <div class="interpret-title">📖 Luận Giải Cặp Can: {can_thien}/{can_dia}</div>
                                             <div style="font-size: 15px; line-height: 1.6; color: #1e293b;">{explanation}</div>
                                         </div>
                                         """, unsafe_allow_html=True)
@@ -1867,48 +1874,48 @@ if st.session_state.current_view == "ky_mon":
                             # End of Palace Details
 
         
-        # Display Dá»¥ng Tháº§n info
+        # Display Dụng Thần info
         st.markdown("---")
-        st.markdown("### ðŸŽ¯ THÃ”NG TIN Dá»¤NG THáº¦N")
+        st.markdown("### 🎯 THÔNG TIN DỤNG THẦN")
         
         topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
-        dung_than_list = topic_data.get("Dá»¥ng_Tháº§n", [])
-        luan_giai = topic_data.get("Luáº­n_Giáº£i_Gá»£i_Ã", "")
+        dung_than_list = topic_data.get("Dụng_Thần", [])
+        luan_giai = topic_data.get("Luận_Giải_Gợi_Ý", "")
         
         if dung_than_list:
-            st.success(f"**Dá»¥ng Tháº§n cáº§n xem:** {', '.join(dung_than_list)}")
+            st.success(f"**Dụng Thần cần xem:** {', '.join(dung_than_list)}")
         
         if luan_giai:
-            st.info(f"**Gá»£i Ã½ luáº­n giáº£i:** {luan_giai}")
+            st.info(f"**Gợi ý luận giải:** {luan_giai}")
         
-        # Display detailed Dá»¥ng Tháº§n from 200+ database
+        # Display detailed Dụng Thần from 200+ database
         if USE_200_TOPICS:
             dt_data = lay_dung_than_200(selected_topic)
             if dt_data and 'ky_mon' in dt_data:
                 km = dt_data['ky_mon']
-                st.markdown("#### ðŸ”® Dá»¥ng Tháº§n Ká»³ MÃ´n Chi Tiáº¿t")
-                st.write(f"**Dá»¥ng Tháº§n:** {km.get('dung_than', 'N/A')}")
-                st.write(f"**Giáº£i thÃ­ch:** {km.get('giai_thich', 'N/A')}")
-                st.write(f"**CÃ¡ch xem:** {km.get('cach_xem', 'N/A')}")
+                st.markdown("#### 🔮 Dụng Thần Kỳ Môn Chi Tiết")
+                st.write(f"**Dụng Thần:** {km.get('dung_than', 'N/A')}")
+                st.write(f"**Giải thích:** {km.get('giai_thich', 'N/A')}")
+                st.write(f"**Cách xem:** {km.get('cach_xem', 'N/A')}")
                 if 'vi_du' in km:
-                    st.write(f"**VÃ­ dá»¥:** {km['vi_du']}")
+                    st.write(f"**Ví dụ:** {km['vi_du']}")
         
         # ===== COMPREHENSIVE AI REPORT SECTION =====
         if st.session_state.chart_data and 'gemini_helper' in st.session_state:
             st.markdown("---")
-            st.markdown("### ðŸ† BÃO CÃO Tá»”NG Há»¢P CHUYÃŠN SÃ‚U (AI)")
+            st.markdown("### 🏆 BÁO CÁO TỔNG HỢP CHUYÊN SÂU (AI)")
             
             with st.container():
                 st.markdown(f"""
                 <div class="ai-response-panel animated-panel">
                     <div style="font-size: 1.2rem; font-weight: 800; color: #1e3a8a; margin-bottom: 15px;">
-                        ðŸ¤– Káº¾T LUáº¬N CUá»I CÃ™NG Tá»ª AI
+                        🤖 KẾT LUẬN CUỐI CÙNG TỪ AI
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button("ðŸ”® Báº¯t Ä‘áº§u PhÃ¢n TÃ­ch Tá»•ng Há»£p", type="primary", use_container_width=True):
-                    with st.spinner("AI Ä‘ang tá»•ng há»£p dá»¯ liá»‡u tá»« 9 cung vÃ  tÃ­nh toÃ¡n káº¿t quáº£..."):
+                if st.button("🔮 Bắt đầu Phân Tích Tổng Hợp", type="primary", use_container_width=True):
+                    with st.spinner("AI đang tổng hợp dữ liệu từ 9 cung và tính toán kết quả..."):
                         # Prepare data for AI
                         chart = st.session_state.chart_data
                         topic = selected_topic
@@ -1924,29 +1931,29 @@ if st.session_state.current_view == "ky_mon":
                             t = chart['than_ban'].get(pn, 'N/A')
                             
                             # Just send all palaces as they are rich data
-                            key_palaces_info.append(f"Cung {pn}: Sao {s}, MÃ´n {c}, Tháº§n {t}, Can {can_t}/{can_d}")
+                            key_palaces_info.append(f"Cung {pn}: Sao {s}, Môn {c}, Thần {t}, Can {can_t}/{can_d}")
                         
-                        rel_type = st.session_state.get('selected_doi_tuong', "ðŸ§‘ Báº£n thÃ¢n")
+                        rel_type = st.session_state.get('selected_doi_tuong', "👤 Bản thân")
                         custom_stem = st.session_state.get('target_stem_name_custom', "N/A")
                         
                         prompt = f"""
-                        Báº¡n lÃ  má»™t Ä‘áº¡i sÆ° Ká»³ MÃ´n Äá»™n GiÃ¡p. HÃ£y phÃ¢n tÃ­ch Tá»”NG Há»¢P cho chá»§ Ä‘á»: {topic}.
+                        Bạn là một đại sư Kỳ Môn Độn Giáp. Hãy phân tích TỔNG HỢP cho chủ đề: {topic}.
                         
-                        **Ngá»¯ cáº£nh Äá»‘i tÆ°á»£ng (Lá»¥c ThÃ¢n):** {rel_type} (Can má»¥c tiÃªu: {custom_stem if 'ngÆ°á»i láº¡' in rel_type.lower() else 'Theo Lá»¥c ThÃ¢n'})
+                        **Ngữ cảnh Đối tượng (Lục Thân):** {rel_type} (Can mục tiêu: {custom_stem if 'người lạ' in rel_type.lower() else 'Theo Lục Thân'})
                         
-                        **Dá»¯ liá»‡u 9 Cung:**
+                        **Dữ liệu 9 Cung:**
                         {chr(10).join(key_palaces_info)}
                         
-                        **Tráº¡ng thÃ¡i Can:** Giá»: {chart['can_gio']}, NgÃ y: {chart['can_ngay']}, ThÃ¡ng: {chart.get('can_thang')}, NÄƒm: {chart.get('can_nam')}
+                        **Trạng thái Can:** Giờ: {chart['can_gio']}, Ngày: {chart['can_ngay']}, Tháng: {chart.get('can_thang')}, Năm: {chart.get('can_nam')}
                         
-                        **YÃŠU Cáº¦U PHÃ‚N TÃCH CHUYÃŠN SÃ‚U:**
-                        1. XÃ¡c Ä‘á»‹nh Cung Báº£n ThÃ¢n (ngÆ°á»i há»i) vÃ  Cung Sá»± Viá»‡c (Káº¿t quáº£) hoáº·c Cung Äá»‘i tÃ¡c/NgÆ°á»i mua (Can Giá»).
-                        2. PhÃ¢n tÃ­ch sá»± tÆ°Æ¡ng tÃ¡c Sinh-Kháº¯c-Há»£p-Xung giá»¯a cÃ¡c Cung nÃ y.
-                        3. ÄÃ¡nh giÃ¡ sá»©c máº¡nh cá»§a cÃ¡c Sao vÃ  Cá»­a táº¡i cÃ¡c cung trá»ng yáº¿u.
-                        4. **Káº¾T LUáº¬N Dá»¨T KHOÃT:** CÃ³ Ä‘áº¡t Ä‘Æ°á»£c má»¥c Ä‘Ã­ch khÃ´ng? (BÃ¡n Ä‘Æ°á»£c khÃ´ng? GiÃ¡ tá»‘t khÃ´ng? Káº¿t hÃ´n Ä‘Æ°á»£c khÃ´ng?...).
-                        5. **Lá»œI KHUYÃŠN HÃ€NH Äá»˜NG:** Cáº§n lÃ m gÃ¬ ngay bÃ¢y giá»? 
+                        **YÊU CẦU PHÂN TÍCH CHUYÊN SÂU:**
+                        1. Xác định Cung Bản Thân (người hỏi) và Cung Sự Việc (Kết quả) hoặc Cung Đối tác/Người mua (Can Giờ).
+                        2. Phân tích sự tương tác Sinh-Khắc-Hợp-Xung giữa các Cung này.
+                        3. Đánh giá sức mạnh của các Sao và Cửa tại các cung trọng yếu.
+                        4. **KẾT LUẬN DỨT KHOÁT:** Có đạt được mục đích không? (Bán được không? Giá tốt không? Kết hôn được không?...).
+                        5. **LỜI KHUYÊN HÀNH ĐỘNG:** Cần làm gì ngay bây giờ? 
                         
-                        Viáº¿t theo phong cÃ¡ch chuyÃªn nghiá»‡p, thá»±c táº¿, khÃ´ng dÃ¹ng thuáº­t ngá»¯ quÃ¡ khÃ³ hiá»ƒu náº¿u khÃ´ng giáº£i thÃ­ch kÃ¨m theo.
+                        Viết theo phong cách chuyên nghiệp, thực tế, không dùng thuật ngữ quá khó hiểu nếu không giải thích kèm theo.
                         """
                         
                         try:
@@ -1958,18 +1965,18 @@ if st.session_state.current_view == "ky_mon":
                             </div>
                             """, unsafe_allow_html=True)
                         except Exception as e:
-                            st.error(f"Lá»—i phÃ¢n tÃ­ch: {e}")
+                            st.error(f"Lỗi phân tích: {e}")
 
         # ===== PALACE COMPARISON SECTION =====
         if st.session_state.chart_data:
             st.markdown("---")
-            st.markdown("### âš–ï¸ SO SÃNH CHá»¦ - KHÃCH")
+            st.markdown("### ⚖️ SO SÁNH CHỦ - KHÁCH")
             
             col1, col2, col3 = st.columns([2, 2, 1])
             
             with col1:
                 chu_cung = st.selectbox(
-                    "Chá»n Cung Chá»§ (Báº£n thÃ¢n):",
+                    "Chọn Cung Chủ (Bản thân):",
                     options=[1, 2, 3, 4, 5, 6, 7, 8, 9],
                     format_func=lambda x: f"Cung {x} - {QUAI_TUONG.get(x, '')}",
                     key="chu_cung_select"
@@ -1977,7 +1984,7 @@ if st.session_state.current_view == "ky_mon":
             
             with col2:
                 khach_cung = st.selectbox(
-                    "Chá»n Cung KhÃ¡ch (Äá»‘i phÆ°Æ¡ng):",
+                    "Chọn Cung Khách (Đối phương):",
                     options=[1, 2, 3, 4, 5, 6, 7, 8, 9],
                     index=1,
                     format_func=lambda x: f"Cung {x} - {QUAI_TUONG.get(x, '')}",
@@ -1986,7 +1993,7 @@ if st.session_state.current_view == "ky_mon":
             
             with col3:
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("ðŸ” So SÃ¡nh", type="primary", use_container_width=True):
+                if st.button("🔍 So Sánh", type="primary", use_container_width=True):
                     st.session_state.show_comparison = True
             
             # Display comparison results
@@ -2015,123 +2022,123 @@ if st.session_state.current_view == "ky_mon":
                         if USE_DETAILED_ANALYSIS:
                             comparison_result = so_sanh_chi_tiet_chu_khach(selected_topic, chu, khach)
                             
-                            st.markdown("#### ðŸ“Š Káº¾T QUáº¢ SO SÃNH CHI TIáº¾T")
+                            st.markdown("#### 📊 KẾT QUẢ SO SÁNH CHI TIẾT")
                             
                             # Display palace info side by side
                             col_chu, col_khach = st.columns(2)
                             
                             with col_chu:
-                                st.markdown(f"**ðŸ  CUNG CHá»¦ - Cung {chu['so']} ({chu['ten']})**")
-                                st.write(f"- NgÅ© HÃ nh: {chu['hanh']}")
-                                st.write(f"- â­ Tinh: {chu['sao']}")
-                                st.write(f"- ðŸšª MÃ´n: {chu['cua']}")
+                                st.markdown(f"**🏠 CUNG CHỦ - Cung {chu['so']} ({chu['ten']})**")
+                                st.write(f"- Ngũ Hành: {chu['hanh']}")
+                                st.write(f"- ⭐ Tinh: {chu['sao']}")
+                                st.write(f"- 🚪 Môn: {chu['cua']}")
                             
                             with col_khach:
-                                st.markdown(f"**ðŸ‘¥ CUNG KHÃCH - Cung {khach['so']} ({khach['ten']})**")
-                                st.write(f"- NgÅ© HÃ nh: {khach['hanh']}")
-                                st.write(f"- â­ Tinh: {khach['sao']}")
-                                st.write(f"- ðŸšª MÃ´n: {khach['cua']}")
+                                st.markdown(f"**👥 CUNG KHÁCH - Cung {khach['so']} ({khach['ten']})**")
+                                st.write(f"- Ngũ Hành: {khach['hanh']}")
+                                st.write(f"- ⭐ Tinh: {khach['sao']}")
+                                st.write(f"- 🚪 Môn: {khach['cua']}")
                             
                             # Element interaction
                             st.markdown("---")
                             interaction = comparison_result.get('ngu_hanh_sinh_khac', 'N/A')
-                            st.info(f"**PhÃ¢n tÃ­ch NgÅ© HÃ nh:** {interaction}")
+                            st.info(f"**Phân tích Ngũ Hành:** {interaction}")
                             
                             # AI Comparison Analysis
                             if 'gemini_helper' in st.session_state:
-                                if st.button("ðŸ¤– AI PhÃ¢n TÃ­ch So SÃ¡nh", key="ai_compare_btn", type="primary"):
-                                    with st.spinner("ðŸ¤– AI Ä‘ang phÃ¢n tÃ­ch..."):
-                                        prompt = f"So sÃ¡nh Cung {chu['so']} ({chu['hanh']}) vÃ  Cung {khach['so']} ({khach['hanh']}) cho chá»§ Ä‘á» {selected_topic}."
+                                if st.button("🤖 AI Phân Tích So Sánh", key="ai_compare_btn", type="primary"):
+                                    with st.spinner("🤖 AI Đang phân tích..."):
+                                        prompt = f"So sánh Cung {chu['so']} ({chu['hanh']}) và Cung {khach['so']} ({khach['hanh']}) cho chủ đề {selected_topic}."
                                         analysis = st.session_state.gemini_helper.answer_question(prompt)
                                         st.markdown(analysis)
                         else:
                             raise ImportError
                     except (ImportError, NameError, Exception):
                         # Fallback to simple comparison
-                        st.markdown("#### ðŸ“Š Káº¾T QUáº¢ SO SÃNH CÆ  Báº¢N")
+                        st.markdown("#### 📊 KẾT QUẢ SO SÁNH CƠ BẢN")
                         
                         col_chu, col_khach = st.columns(2)
                         
                         with col_chu:
-                            st.markdown(f"**ðŸ  Cung Chá»§ {chu['so']}**")
-                            st.write(f"NgÅ© HÃ nh: {chu['hanh']}")
+                            st.markdown(f"**🏠 Cung Chủ {chu['so']}**")
+                            st.write(f"Ngũ Hành: {chu['hanh']}")
                             st.write(f"Sao: {chu['sao']}")
-                            st.write(f"MÃ´n: {chu['cua']}")
+                            st.write(f"Môn: {chu['cua']}")
                         
                         with col_khach:
-                            st.markdown(f"**ðŸ‘¥ Cung KhÃ¡ch {khach['so']}**")
-                            st.write(f"NgÅ© HÃ nh: {khach['hanh']}")
+                            st.markdown(f"**👥 Cung Khách {khach['so']}**")
+                            st.write(f"Ngũ Hành: {khach['hanh']}")
                             st.write(f"Sao: {khach['sao']}")
-                            st.write(f"MÃ´n: {khach['cua']}")
+                            st.write(f"Môn: {khach['cua']}")
                         
                         # Simple element interaction
                         interaction = tinh_ngu_hanh_sinh_khac(chu['hanh'], khach['hanh'])
-                        st.info(f"**NgÅ© hÃ nh:** {interaction}")
+                        st.info(f"**Ngũ hành:** {interaction}")
                         
                 except Exception as e:
-                    st.error(f"Lá»—i so sÃ¡nh: {e}")
+                    st.error(f"Lỗi so sánh: {e}")
         
         # ===== UNIFIED EXPERT ANALYSIS SYSTEM =====
         if st.session_state.chart_data:
             st.markdown("---")
-            st.markdown("## ðŸ† Há»† THá»NG LUáº¬N GIáº¢I Tá»”NG Há»¢P CHUYÃŠN SÃ‚U")
+            st.markdown("## 🏆 HỆ THỐNG LUẬN GIẢI TỔNG HỢP CHUYÊN SÂU")
             
-            # 1. PRIMARY AI EXPERT REPORT (Dá»¥ng Tháº§n focus)
+            # 1. PRIMARY AI EXPERT REPORT (Dụng Thần focus)
             if 'gemini_helper' in st.session_state:
                 with st.container():
-                    st.markdown("### ðŸŽ¯ Káº¾T LUáº¬N Tá»”NG Há»¢P Tá»ª AI (Dá»¥ng Tháº§n)")
-                    if st.button("ðŸ”´ â­ Báº®T Äáº¦U LUáº¬N GIáº¢I CHUYÃŠN SÃ‚U (Æ¯U TIÃŠN Äá»ŒC TRÆ¯á»šC) â­ ðŸ”´", type="primary", key="ai_final_report_btn", use_container_width=True):
-                        with st.spinner("ðŸ¤– AI Ä‘ang thá»±c hiá»‡n luáº­n giáº£i trá»ng tÃ¢m..."):
+                    st.markdown("### 🎯 KẾT LUẬN TỔNG HỢP TỪ AI (Dụng Thần)")
+                    if st.button("🔴 ⭐ BẮT ĐẦU LUẬN GIẢI CHUYÊN SÂU (ƯU TIÊN ĐỌC TRƯỚC) ⭐ 🔴", type="primary", key="ai_final_report_btn", use_container_width=True):
+                        with st.spinner("🤖 AI Đang thực hiện luận giải trọng tâm..."):
                             try:
-                                # Get Dá»¥ng Tháº§n info from the best available source
+                                # Get Dụng Thần info from the best available source
                                 dung_than_list = []
                                 if 'USE_200_TOPICS' in globals() and USE_200_TOPICS:
                                     dung_than_list = lay_dung_than_200(selected_topic)
                                 
                                 if not dung_than_list:
                                     topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
-                                    dung_than_list = topic_data.get("Dá»¥ng_Tháº§n", [])
+                                    dung_than_list = topic_data.get("Dụng_Thần", [])
                                 
                                 # Get interpretation hints
-                                topic_hints = TOPIC_INTERPRETATIONS.get(selected_topic, {}).get("Luáº­n_Giáº£i_Gá»£i_Ã", "")
+                                topic_hints = TOPIC_INTERPRETATIONS.get(selected_topic, {}).get("Luận_Giải_Gợi_Ý", "")
                                 
-                                # Resolve Dynamic Actors (Chá»§ - KhÃ¡ch)
-                                # The Subject (Chá»§ thá»ƒ/NgÆ°á»i thá»±c hiá»‡n) is the person we are asking ABOUT.
-                                rel_type = st.session_state.get('selected_doi_tuong', "ðŸ§‘ Báº£n thÃ¢n")
+                                # Resolve Dynamic Actors (Chủ - Khách)
+                                # The Subject (Chủ thể/Người thực hiện) is the person we are asking ABOUT.
+                                rel_type = st.session_state.get('selected_doi_tuong', "👩‍👧‍👦 Bản thân")
                                 subj_stem = st.session_state.chart_data.get('can_ngay') # Default to Self
                                 obj_stem = st.session_state.chart_data.get('can_gio') # Default to General Matter/Other Party
                                 
-                                role_label = "Báº£n thÃ¢n báº¡n"
-                                if "Anh chá»‹ em" in rel_type:
+                                role_label = "Bản thân bạn"
+                                if "Anh chị em" in rel_type:
                                     subj_stem = st.session_state.chart_data.get('can_thang')
-                                    role_label = "Anh chá»‹ báº¡n"
-                                elif "Bá»‘ máº¹" in rel_type:
+                                    role_label = "Anh chị bạn"
+                                elif "Bố mẹ" in rel_type:
                                     subj_stem = st.session_state.chart_data.get('can_nam')
-                                    role_label = "Bá»‘ máº¹ báº¡n"
-                                elif "Con cÃ¡i" in rel_type:
+                                    role_label = "Bố mẹ bạn"
+                                elif "Con cái" in rel_type:
                                     subj_stem = st.session_state.chart_data.get('can_gio')
-                                    role_label = "Con cÃ¡i báº¡n"
-                                elif "NgÆ°á»i láº¡" in rel_type:
-                                    custom_val = st.session_state.get('target_stem_name_custom', "GiÃ¡p")
-                                    if "KhÃ´ng rÃµ" not in custom_val:
+                                    role_label = "Con cái bạn"
+                                elif "Người lạ" in rel_type:
+                                    custom_val = st.session_state.get('target_stem_name_custom', "Giáp")
+                                    if "Không rõ" not in custom_val:
                                         subj_stem = custom_val
-                                    role_label = "Äá»‘i phÆ°Æ¡ng (NgÆ°á»i ngoÃ i)"
+                                    role_label = "Đối phương (Người ngoài)"
                                 
-                                # Process Dá»¥ng Tháº§n labels for better context
+                                # Process Dụng Thần labels for better context
                                 enriched_dung_than = []
                                 for dt in dung_than_list:
-                                    if dt == "Sinh MÃ´n": enriched_dung_than.append("Sinh MÃ´n (Lá»£i nhuáº­n/NgÃ´i nhÃ )")
-                                    elif dt == "Khai MÃ´n": enriched_dung_than.append("Khai MÃ´n (CÃ´ng viá»‡c/Sá»± khá»Ÿi Ä‘áº§u)")
+                                    if dt == "Sinh Môn": enriched_dung_than.append("Sinh Môn (Lợi nhuận/Ngôi nhà)")
+                                    elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
                                     else: enriched_dung_than.append(dt)
                                 
                                 # Build a comprehensive prompt
-                                prompt = f"""PhÃ¢n tÃ­ch chi tiáº¿t vá» chá»§ Ä‘á»: {selected_topic}
+                                prompt = f"""Phân tích chi tiết về chủ đề: {selected_topic}
 
-**Äá»‘i tÆ°á»£ng:** {role_label}
-**Dá»¥ng Tháº§n:** {', '.join(enriched_dung_than)}
-**Gá»£i Ã½:** {topic_hints}
+**Đối tượng:** {role_label}
+**Dụng Thần:** {', '.join(enriched_dung_than)}
+**Gợi ý:** {topic_hints}
 
-HÃ£y luáº­n giáº£i tÃ¬nh hÃ¬nh dá»±a trÃªn Cung Báº£n Má»‡nh (Can NgÃ y) vÃ  Cung Sá»± Viá»‡c (Can Giá»).
+Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cung Sự Việc (Can Giờ).
 """
                                 analysis = st.session_state.gemini_helper.answer_question(
                                     prompt,
@@ -2140,12 +2147,12 @@ HÃ£y luáº­n giáº£i tÃ¬nh hÃ¬nh dá»±a trÃªn Cung Báº£n Má»�
                                 )
                                 
                                 # 2. GENERATE QUICK ACTIONS
-                                quick_actions = "- HÃ£y hÃ nh Ä‘á»™ng dá»±a trÃªn káº¿t luáº­n trÃªn\n- Chá»n thá»i Ä‘iá»ƒm phÃ¹ há»£p vá»›i ngÅ© hÃ nh"
+                                quick_actions = "- Hãy hành động dựa trên kết luận trên\n- Chọn thời điểm phù hợp với ngũ hành"
                                 
                                 # Display Quick Actions First
                                 st.markdown(f"""
                                 <div class="action-card">
-                                    <div class="action-title">ðŸš€ HÃ€NH Äá»˜NG NHANH Cáº¦N LÃ€M NGAY</div>
+                                    <div class="action-title">🚀 HÀNH ĐỘNG NHANH CẦN LÀM NGAY</div>
                                     {chr(10).join([f'<div class="action-item">{line.strip("- ").strip()}</div>' for line in quick_actions.strip().split(chr(10)) if line.strip()])}
                                 </div>
                                 """, unsafe_allow_html=True)
@@ -2153,16 +2160,16 @@ HÃ£y luáº­n giáº£i tÃ¬nh hÃ¬nh dá»±a trÃªn Cung Báº£n Má»�
                                 # Display Detailed Analysis
                                 st.markdown(f'<div class="expert-box">{analysis}</div>', unsafe_allow_html=True)
                             except Exception as e:
-                                st.error(f"âŒ Lá»—i AI: {str(e)}")
+                                st.error(f"❌ Lỗi AI: {str(e)}")
 
-            # 2. COMPARISON SECTION (Chá»§ - KhÃ¡ch Interaction)
+            # 2. COMPARISON SECTION (Chủ - Khách Interaction)
             st.markdown("---")
-            st.markdown("### âš–ï¸ SO SÃNH CHá»¦ - KHÃCH")
+            st.markdown("### ⚖️ SO SÁNH CHỦ - KHÁCH")
             col_comp1, col_comp2 = st.columns([3, 1])
             with col_comp1:
-                st.caption("PhÃ¢n tÃ­ch tÆ°Æ¡ng quan giá»¯a Báº£n thÃ¢n (Chá»§) vÃ  Äá»‘i tÆ°á»£ng/Sá»± viá»‡c (KhÃ¡ch)")
+                st.caption("Phân tích tương quan giữa Bản thân (Chủ) và Đối tượng/Sự việc (Khách)")
             with col_comp2:
-                if st.button("ðŸ“Š Cháº¡y So SÃ¡nh", key="run_comp_btn", use_container_width=True):
+                if st.button("📊 Chạy So Sánh", key="run_comp_btn", use_container_width=True):
                     st.session_state.show_comparison = True
             
             if st.session_state.get('show_comparison'):
@@ -2179,7 +2186,7 @@ HÃ£y luáº­n giáº£i tÃ¬nh hÃ¬nh dá»±a trÃªn Cung Báº£n Má»�
                     def get_mini_info(idx):
                         return {
                             'so': idx,
-                            'hanh': CUNG_NGU_HANH.get(idx, 'Thá»•'),
+                            'hanh': CUNG_NGU_HANH.get(idx, 'Thổ'),
                             'sao': chart['thien_ban'].get(idx, 'N/A'),
                             'cua': chart['nhan_ban'].get(idx, 'N/A')
                         }
@@ -2188,24 +2195,24 @@ HÃ£y luáº­n giáº£i tÃ¬nh hÃ¬nh dá»±a trÃªn Cung Báº£n Má»�
                     c_khach = get_mini_info(khach_idx)
                     
                     c1, c2 = st.columns(2)
-                    with c1: st.info(f"**Báº£n ThÃ¢n (Cung {chu_idx}):** {c_chu['sao']} - {c_chu['cua']}")
-                    with c2: st.warning(f"**Äá»‘i TÆ°á»£ng (Cung {khach_idx}):** {c_khach['sao']} - {c_khach['cua']}")
+                    with c1: st.info(f"**Bản Thân (Cung {chu_idx}):** {c_chu['sao']} - {c_chu['cua']}")
+                    with c2: st.warning(f"**Đối Tượng (Cung {khach_idx}):** {c_khach['sao']} - {c_khach['cua']}")
                     
                     res_mqh = tinh_ngu_hanh_sinh_khac(c_chu['hanh'], c_khach['hanh'])
-                    st.success(f"**TÆ°Æ¡ng tÃ¡c NgÅ© HÃ nh:** {res_mqh}")
+                    st.success(f"**Tương tác Ngũ Hành:** {res_mqh}")
                     
-                    if st.button("ðŸ¤– AI PhÃ¢n TÃ­ch So SÃ¡nh", key="ai_compare_details"):
-                        with st.spinner("AI Ä‘ang so sÃ¡nh..."):
-                            p = f"So sÃ¡nh chi tiáº¿t Cung {chu_idx} vÃ  Cung {khach_idx} cho {selected_topic}."
+                    if st.button("🤖 AI Phân Tích So Sánh", key="ai_compare_details"):
+                        with st.spinner("AI Đang so sánh..."):
+                            p = f"So sánh chi tiết Cung {chu_idx} và Cung {khach_idx} cho {selected_topic}."
                             ans = st.session_state.gemini_helper.answer_question(p)
                             st.info(ans)
                 except Exception as e:
-                    st.error(f"Lá»—i: {e}")
+                    st.error(f"Lỗi: {e}")
 
             # 3. DETAILED TECHNICAL REPORT (Existing multi-layer analysis)
             st.markdown("---")
-            with st.expander("ðŸ” Xem PhÃ¢n TÃ­ch Ká»¹ Thuáº­t (Ká»³ MÃ´n + Mai Hoa + Lá»¥c HÃ o)"):
-                if USE_SUPER_DETAILED and st.button("ðŸš€ Táº¡o BÃ¡o CÃ¡o Ká»¹ Thuáº­t", key="tech_report_btn"):
+            with st.expander("🔎 Xem Phân Tích Kỹ Thuật (Kỳ Môn + Mai Hoa + Lục Hào)"):
+                if USE_SUPER_DETAILED and st.button("🚀 Tạo Báo Cáo Kỹ Thuật", key="tech_report_btn"):
                     try:
                         # ... (original logic from line 1245-1362)
                         chart = st.session_state.chart_data
@@ -2228,115 +2235,115 @@ HÃ£y luáº­n giáº£i tÃ¬nh hÃ¬nh dá»±a trÃªn Cung Báº£n Má»�
                         mqh = tinh_ngu_hanh_sinh_khac(chu['hanh'], khach['hanh'])
                         res_lien_mach = tao_phan_tich_lien_mach(selected_topic, chu, khach, now, res_9pp, mqh)
                         
-                        st.success("âœ… ÄÃ£ táº¡o bÃ¡o cÃ¡o tá»•ng há»£p!")
+                        st.success("✅ Đã tạo báo cáo tổng hợp!")
                         
                         # Display 9 aspects analysis
-                        st.markdown("#### ðŸ“Š PHÃ‚N TÃCH 9 PHÆ¯Æ NG DIá»†N")
+                        st.markdown("#### 📊 PHÂN TÍCH 9 PHƯƠNG DIỆN")
                         
                         aspects = [
-                            ('thai_at', 'âš–ï¸ ThÃ¡i áº¤t'),
-                            ('thanh_cong', 'ðŸŽ¯ ThÃ nh CÃ´ng'),
-                            ('tai_loc', 'ðŸ’° TÃ i Lá»™c'),
-                            ('quan_he', 'ðŸ¤ Quan Há»‡'),
-                            ('suc_khoe', 'â¤ï¸ Sá»©c Khá»e'),
-                            ('tranh_chap', 'âš”ï¸ Tranh Cháº¥p'),
-                            ('di_chuyen', 'ðŸš— Di Chuyá»ƒn'),
-                            ('hoc_van', 'ðŸ“š Há»c Váº¥n'),
-                            ('tam_linh', 'ðŸ”® TÃ¢m Linh')
+                            ('thai_at', '⚔️ Thái Ất'),
+                            ('thanh_cong', '🎯 Thành Công'),
+                            ('tai_loc', '💰 Tài Lộc'),
+                            ('quan_he', '🤝 Quan Hệ'),
+                            ('suc_khoe', '❤️ Sức Khỏe'),
+                            ('tranh_chap', '⚖️ Tranh Chấp'),
+                            ('di_chuyen', '🚌 Di Chuyển'),
+                            ('hoc_van', '📚 Học Vấn'),
+                            ('tam_linh', '⚛️ Tâm Linh')
                         ]
                         
                         for key, label in aspects:
                             if key in res_9pp:
                                 data = res_9pp[key]
-                                with st.expander(f"{label} - Äiá»ƒm: {data.get('diem', 'N/A')}/10"):
-                                    st.write(f"**ThÃ¡i Ä‘á»™:** {data.get('thai_do', 'N/A')}")
-                                    st.write(f"**PhÃ¢n tÃ­ch:** {data.get('phan_tich', 'N/A')}")
+                                with st.expander(f"{label} - Điểm: {data.get('diem', 'N/A')}/10"):
+                                    st.write(f"**Thái độ:** {data.get('thai_do', 'N/A')}")
+                                    st.write(f"**Phân tích:** {data.get('phan_tich', 'N/A')}")
                         
                         # Overall score
                         if 'tong_ket' in res_9pp:
                             st.markdown("---")
-                            st.markdown("#### ðŸŽ¯ Tá»”NG Káº¾T")
+                            st.markdown("#### 🎯 TỔNG KẾT")
                             tong_ket = res_9pp['tong_ket']
                             
                             col1, col2 = st.columns(2)
                             with col1:
-                                st.metric("Äiá»ƒm Tá»•ng Há»£p", f"{tong_ket.get('diem_tong', 'N/A')}/100")
+                                st.metric("Điểm Tổng Hợp", f"{tong_ket.get('diem_tong', 'N/A')}/100")
                             with col2:
-                                st.metric("ThÃ¡i Äá»™", tong_ket.get('thai_do_chung', 'N/A'))
+                                st.metric("Thái Độ", tong_ket.get('thai_do_chung', 'N/A'))
                             
                             if 'loi_khuyen_tong_quat' in tong_ket:
-                                st.info(f"**ðŸ’¡ Lá»i khuyÃªn:** {tong_ket['loi_khuyen_tong_quat']}")
+                                st.info(f"**💡 Lời khuyên:** {tong_ket['loi_khuyen_tong_quat']}")
                         
                         # Coherent analysis
                         if res_lien_mach:
                             st.markdown("---")
-                            st.markdown("#### ðŸ”— PHÃ‚N TÃCH LIÃŠN Máº CH")
+                            st.markdown("#### 📜 PHÂN TÍCH LIÊN MẠCH")
                             st.write(res_lien_mach)
                         
                         # Download report
                         report_text = f"""
-BÃO CÃO PHÃ‚N TÃCH Ká»² MÃ”N Äá»˜N GIÃP
-Chá»§ Ä‘á»: {selected_topic}
-Thá»i gian: {now.strftime('%H:%M - %d/%m/%Y')}
+BÁO CÁO PHÂN TÍCH KỲ MÔN ĐỘN GIÁP
+Chủ Đề: {selected_topic}
+Thời gian: {now.strftime('%H:%M - %d/%m/%Y')}
 
-THÃ”NG TIN CUNG CHá»¦ (Cung {chu['so']}):
-- QuÃ¡i: {chu['ten']}
-- NgÅ© HÃ nh: {chu['hanh']}
+THÔNG TIN CUNG CHỦ (Cung {chu['so']}):
+- Quái: {chu['ten']}
+- Ngũ Hành: {chu['hanh']}
 - Sao: {chu['sao']}
-- MÃ´n: {chu['cua']}
-- Tháº§n: {chu['than']}
+- Môn: {chu['cua']}
+- Thần: {chu['than']}
 - Can: {chu['can_thien']}/{chu['can_dia']}
 
-THÃ”NG TIN CUNG KHÃCH (Cung {khach['so']}):
-- QuÃ¡i: {khach['ten']}
-- NgÅ© HÃ nh: {khach['hanh']}
+THÔNG TIN CUNG KHÁCH (Cung {khach['so']}):
+- Quái: {khach['ten']}
+- Ngũ Hành: {khach['hanh']}
 - Sao: {khach['sao']}
-- MÃ´n: {khach['cua']}
-- Tháº§n: {khach['than']}
+- Môn: {khach['cua']}
+- Thần: {khach['than']}
 - Can: {khach['can_thien']}/{khach['can_dia']}
 
-PHÃ‚N TÃCH LIÃŠN Máº CH:
+PHÂN TÍCH LIÊN MẠCH:
 {res_lien_mach}
                         """
                         
                         st.download_button(
-                            label="ðŸ“¥ Táº£i BÃ¡o CÃ¡o (TXT)",
+                            label="📄 Tải Báo Cáo (TXT)",
                             data=report_text,
                             file_name=f"bao_cao_qmdg_{selected_topic}_{now.strftime('%Y%m%d_%H%M')}.txt",
                             mime="text/plain"
                         )
                         
                     except Exception as e:
-                        st.error(f"Lá»—i táº¡o bÃ¡o cÃ¡o: {e}")
+                        st.error(f"Lỗi tạo báo cáo: {e}")
                         import traceback
                         st.code(traceback.format_exc())
 
             # 4. AI Q&A SECTION
             st.markdown("---")
-            st.markdown("### â“ Há»ŽI AI Vá»€ BÃ€N NÃ€Y")
-            user_question = st.text_area("Äáº·t cÃ¢u há»i cho ChuyÃªn gia AI:", placeholder="Há»i thÃªm vá» thá»i Ä‘iá»ƒm, cÃ¡ch hÃ³a giáº£i...", key="ai_q_input")
-            if st.button("ðŸ¤– Gá»­i CÃ¢u Há»i", key="ai_ask_final"):
+            st.markdown("### ❓ HỎI AI VỀ BÀN NÀY")
+            user_question = st.text_area("Đặt câu hỏi cho Chuyên gia AI:", placeholder="Hỏi thêm về thời điểm, cách hóa giải...", key="ai_q_input")
+            if st.button("🤖 Gửi Câu Hỏi", key="ai_ask_final"):
                 if user_question:
-                    with st.spinner("Äang tráº£ lá»i..."):
+                    with st.spinner("Đang trả lời..."):
                         a = st.session_state.gemini_helper.answer_question(user_question, st.session_state.chart_data, selected_topic)
                         st.info(a)
 
 
 
 elif st.session_state.current_view == "mai_hoa":
-    st.markdown("## ðŸŒ¸ MAI HOA Dá»ŠCH Sá» - TAM TÃ€I Há»¢P NHáº¤T")
+    st.markdown("## 🌸 MAI HOA DỊCH SỐ - TAM TÀI HỢP NHẤT")
     
     if not USE_MAI_HOA:
-        st.error("âŒ Module Mai Hoa Dá»‹ch Sá»‘ khÃ´ng kháº£ dá»¥ng.")
+        st.error("❌ Module Mai Hoa Dịch Số không khả dụng.")
         st.stop()
     
-    st.markdown(f"### ðŸŽ¯ Chá»§ Ä‘á»: **{selected_topic}**")
+    st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
     
-    method = st.radio("PhÆ°Æ¡ng phÃ¡p:", ["Thá»i gian", "Ngáº«u há»©ng"], horizontal=True, key="mh_method")
+    method = st.radio("Phương pháp:", ["Thời gian", "Ngẫu hứng"], horizontal=True, key="mh_method")
     
-    if st.button("ðŸŒ¸ Láº¬P QUáºº MAI HOA PRO", type="primary", use_container_width=True):
+    if st.button("🌸 LẬP QUẺ MAI HOA PRO", type="primary", use_container_width=True):
         dt = selected_datetime
-        if method == "Thá»i gian":
+        if method == "Thời gian":
             res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
         else:
             res = tinh_qua_ngau_nhien()
@@ -2351,21 +2358,21 @@ elif st.session_state.current_view == "mai_hoa":
         st.markdown(f"""
         <div class="hex-header-row">
             <div>
-                <div class="hex-title-pro">{res.get('ten', 'Quáº» ChÃ­nh')}</div>
+                <div class="hex-title-pro">{res.get('ten', 'Quẻ Chính')}</div>
                 <div class="hex-subtitle">{res.get('upper_symbol')} / {res.get('lower_symbol')}</div>
             </div>
             <div>
-                <div class="hex-title-pro">{res.get('ten_qua_bien', 'BIáº¾N CÃT TÆ¯á»œNG')}</div>
-                <div class="hex-subtitle">Äá»™ng hÃ o {res.get('dong_hao', '?')}</div>
+                <div class="hex-title-pro">{res.get('ten_qua_bien', 'BIẾN CÁT TƯỢNG')}</div>
+                <div class="hex-subtitle">Động hào {res.get('dong_hao', '?')}</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # Display Imagery (TÆ°á»£ng Quáº»)
+        # Display Imagery (Tượng Quẻ)
         st.markdown(f"""
         <div class="tuong-que-box">
-            <strong>ðŸ–¼ï¸ TÆ°á»£ng Quáº»:</strong> {res.get('tuong', 'Äang cáº­p nháº­t...')} <br>
-            <strong>ðŸ“– Ã nghÄ©a:</strong> {res.get('nghÄ©a', 'Äang phÃ¢n tÃ­ch...')}
+            <strong>🖼️ Tượng Quẻ:</strong> {res.get('tuong', 'Đang cập nhật...')} <br>
+            <strong>📖 Ý nghĩa:</strong> {res.get('nghĩa', 'Đang phân tích...')}
         </div>
         """, unsafe_allow_html=True)
 
@@ -2373,7 +2380,7 @@ elif st.session_state.current_view == "mai_hoa":
         col_mh_v1, col_mh_v_ho, col_mh_v2 = st.columns(3)
         with col_mh_v1:
             if 'lines' in res:
-                st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUáºº CHá»¦ ({res["upper_element"]}/{res["lower_element"]})</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUẺ CHỦ ({res["upper_element"]}/{res["lower_element"]})</div>', unsafe_allow_html=True)
                 st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
                 for i, line in enumerate(reversed(res['lines'])):
                     h_idx = 6 - i
@@ -2383,7 +2390,7 @@ elif st.session_state.current_view == "mai_hoa":
                     dong_cls = "hao-moving-red" if is_dong else ""
                     
                     st.markdown('<div style="display:flex; align-items:center;">', unsafe_allow_html=True)
-                    st.markdown(f'<div class="hao-label-pro">HÃ o {h_idx}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
                     if line == 1:
                         st.markdown(f'<div class="hao-line-pro {cls} {dong_cls}"></div>', unsafe_allow_html=True)
                     else:
@@ -2393,14 +2400,14 @@ elif st.session_state.current_view == "mai_hoa":
         
         with col_mh_v_ho:
             if 'lines_ho' in res:
-                st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">Há»– QUáºº</div>', unsafe_allow_html=True)
-                st.markdown(f'<div style="text-align:center; font-size:0.9rem; font-weight:700;">{res.get("ten_ho", "") or "Quáº» Há»—"}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">HỖ QUẺ</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="text-align:center; font-size:0.9rem; font-weight:700;">{res.get("ten_ho", "") or "Quẻ Hỗ"}</div>', unsafe_allow_html=True)
                 st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
                 for i, line in enumerate(reversed(res['lines_ho'])):
                     h_idx = 6 - i
                     cls = "yang-line-pro" if line == 1 else "yin-line-pro"
                     st.markdown('<div style="display:flex; align-items:center;">', unsafe_allow_html=True)
-                    st.markdown(f'<div class="hao-label-pro">HÃ o {h_idx}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
                     if line == 1:
                         st.markdown(f'<div class="hao-line-pro {cls}"></div>', unsafe_allow_html=True)
                     else:
@@ -2410,14 +2417,14 @@ elif st.session_state.current_view == "mai_hoa":
 
         with col_mh_v2:
             if 'lines_bien' in res:
-                st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUáºº BIáº¾N</div>', unsafe_allow_html=True)
-                st.markdown(f'<div style="text-align:center; font-size:0.9rem; font-weight:700;">{res.get("ten_qua_bien", "") or "Quáº» Biáº¿n"}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUẺ BIẾN</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="text-align:center; font-size:0.9rem; font-weight:700;">{res.get("ten_qua_bien", "") or "Quẻ Biến"}</div>', unsafe_allow_html=True)
                 st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
                 for i, line in enumerate(reversed(res['lines_bien'])):
                     h_idx = 6 - i
                     cls = "yang-line-pro" if line == 1 else "yin-line-pro"
                     st.markdown('<div style="display:flex; align-items:center;">', unsafe_allow_html=True)
-                    st.markdown(f'<div class="hao-label-pro">HÃ o {h_idx}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
                     if line == 1:
                         st.markdown(f'<div class="hao-line-pro {cls}"></div>', unsafe_allow_html=True)
                     else:
@@ -2425,10 +2432,10 @@ elif st.session_state.current_view == "mai_hoa":
                     st.markdown('</div>', unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
         
-        st.info(f"ðŸ’¡ **Luáº­n giáº£i chi tiáº¿t:** {res.get('interpretation', 'Äang phÃ¢n tÃ­ch...')}")
+        st.info(f"💡 **Luận giải chi tiết:** {res.get('interpretation', 'Đang phân tích...')}")
 
-        if st.button("ðŸ¤– AI Luáº­n Quáº» Mai Hoa", key="ai_mai_hoa_btn"):
-            with st.spinner("AI Ä‘ang giáº£i mÃ£ Mai Hoa..."):
+        if st.button("🤖 AI Luận Quẻ Mai Hoa", key="ai_mai_hoa_btn"):
+            with st.spinner("AI Đang giải mã Mai Hoa..."):
                 ans = st.session_state.gemini_helper.analyze_mai_hoa(res, selected_topic)
                 st.markdown(f"""
                 <div class="interpret-box" style="background: white; border-top: 5px solid #b91c1c;">
@@ -2436,27 +2443,27 @@ elif st.session_state.current_view == "mai_hoa":
                 </div>
                 """, unsafe_allow_html=True)
 
-        st.markdown('<div class="footer-stamp">Copyright Â© 2026 MAI HOA DICH SO PRO</div>', unsafe_allow_html=True)
+        st.markdown('<div class="footer-stamp">Copyright © 2026 MAI HOA DICH SO PRO</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
 elif st.session_state.current_view == "luc_hao":
-    st.markdown("## â˜¯ï¸ Lá»¤C HÃ€O KINH Dá»ŠCH - CHUYÃŠN SÃ‚U")
+    st.markdown("## ☯️ LỤC HÀO KINH DỊCH - CHUYÊN SÂU")
     
     if not USE_LUC_HAO:
-        st.error("âŒ Module Lá»¥c HÃ o Kinh Dá»‹ch khÃ´ng kháº£ dá»¥ng.")
+        st.error("❌ Module Lục Hào Kinh Dịch không khả dụng.")
         st.stop()
     
-    st.markdown(f"### ðŸŽ¯ Chá»§ Ä‘á»: **{selected_topic}**")
+    st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
     
-    show_debug_ih = st.checkbox("ðŸž Cháº¿ Ä‘á»™ Kiá»ƒm tra Dá»¯ liá»‡u", key="debug_iching_mode")
+    show_debug_ih = st.checkbox("🐛 Chế độ Kiểm tra Dữ liệu", key="debug_iching_mode")
     
-    if st.button("ðŸŽ² Láº¬P QUáºº Lá»¤C HÃ€O PRO", type="primary", use_container_width=True):
+    if st.button("🎲 LẬP QUẺ LỤC HÀO PRO", type="primary", use_container_width=True):
         try:
             # Use the global selected_datetime
             dt = selected_datetime
-            can_ngay = params.get('can_ngay', 'GiÃ¡p') if params else "GiÃ¡p"
-            chi_ngay = params.get('chi_ngay', 'TÃ½') if params else "TÃ½"
+            can_ngay = params.get('can_ngay', 'Giáp') if params else "Giáp"
+            chi_ngay = params.get('chi_ngay', 'Tý') if params else "Tý"
             
             st.session_state.luc_hao_result = lap_qua_luc_hao(
                 dt.year, dt.month, dt.day, dt.hour, 
@@ -2465,7 +2472,7 @@ elif st.session_state.current_view == "luc_hao":
                 chi_ngay=chi_ngay
             )
         except Exception as e:
-            st.error(f"Lá»—i láº­p quáº»: {e}")
+            st.error(f"Lỗi lập quẻ: {e}")
 
     if 'luc_hao_result' in st.session_state:
         res = st.session_state.luc_hao_result
@@ -2475,18 +2482,18 @@ elif st.session_state.current_view == "luc_hao":
         <div class="hex-header-row">
             <div>
                 <div class="hex-title-pro">{res['ban']['name']}</div>
-                <div class="hex-subtitle">Há» {res['ban']['palace']}</div>
+                <div class="hex-subtitle">Họ {res['ban']['palace']}</div>
             </div>
             <div>
                 <div class="hex-title-pro">{res['bien']['name']}</div>
-                <div class="hex-subtitle">Quáº» Biáº¿n</div>
+                <div class="hex-subtitle">Quẻ Biến</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUáºº CHá»¦ ({res["ban"]["palace"]})</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUẺ CHỦ ({res["ban"]["palace"]})</div>', unsafe_allow_html=True)
             st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
             moving_hao = res.get('dong_hao', [])
             detail_map_ban = {d['hao']: d for d in res['ban']['details']}
@@ -2498,7 +2505,7 @@ elif st.session_state.current_view == "luc_hao":
                 d = detail_map_ban.get(h_idx, {})
                 
                 st.markdown('<div class="hao-row-pro">', unsafe_allow_html=True)
-                st.markdown(f'<div class="hao-label-pro">HÃ o {h_idx}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
                 if line == 1:
                     st.markdown(f'<div class="hao-line-pro {cls} {dong_cls}"></div>', unsafe_allow_html=True)
                 else:
@@ -2508,9 +2515,9 @@ elif st.session_state.current_view == "luc_hao":
                 s = d.get("strength")
                 val_s = s if s else "N/A"
                 if s:
-                    s_label = f"<span style='color: #15803d;'>{s}</span>" if s in ["VÆ°á»£ng", "TÆ°á»›ng"] else f"<span style='color: #b91c1c;'>{s} (Suy)</span>" if s in ["HÆ°u", "TÃ¹", "Tá»­"] else s
+                    s_label = f"<span style='color: #15803d;'>{s}</span>" if s in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{s} (Suy)</span>" if s in ["Hưu", "Tù", "Tử"] else s
                 else:
-                    s_label = "âš ï¸ Thiáº¿u"
+                    s_label = "⚠️ Thiếu"
                 
                 lt = d.get("luc_thu", "N/A")
                 m = d.get("marker", "")
@@ -2520,20 +2527,20 @@ elif st.session_state.current_view == "luc_hao":
             st.markdown('</div>', unsafe_allow_html=True)
             
             if show_debug_ih:
-                st.write("DEBUG (HÃ o 1):", res['ban']['details'][0])
-                st.write(f"ðŸ“ Module Path: `{luc_hao_kinh_dich.__file__}`")
-                st.write(f"ðŸ·ï¸ Version: `{getattr(luc_hao_kinh_dich, 'VERSION_LH', 'Unknown')}`")
+                st.write("DEBUG (Hào 1):", res['ban']['details'][0])
+                st.write(f"📊 Module Path: `{luc_hao_kinh_dich.__file__}`")
+                st.write(f"⚙️ Version: `{getattr(luc_hao_kinh_dich, 'VERSION_LH', 'Unknown')}`")
 
-            st.markdown('<table class="hao-table-pro"><tr><th>HÃ€O</th><th>Lá»¤C THÃ‚N</th><th>CAN CHI</th><th>Äá»ŠNH Vá»Š</th></tr>', unsafe_allow_html=True)
+            st.markdown('<table class="hao-table-pro"><tr><th>HÀO</th><th>LỤC THÂN</th><th>CAN CHI</th><th>ĐỊNH VỊ</th></tr>', unsafe_allow_html=True)
             for d in reversed(res['ban']['details']):
                 h_cls = "highlight-red" if d['is_moving'] else ""
                 marker = d.get('marker', '')
                 
-                st.markdown(f'<tr class="{h_cls}"><td>HÃ o {d["hao"]} {marker}</td><td>{d["luc_than"]}</td><td>{d["can_chi"]}</td><td>{d.get("loc_ma", "-")}</td></tr>', unsafe_allow_html=True)
+                st.markdown(f'<tr class="{h_cls}"><td>Hào {d["hao"]} {marker}</td><td>{d["luc_than"]}</td><td>{d["can_chi"]}</td><td>{d.get("loc_ma", "-")}</td></tr>', unsafe_allow_html=True)
             st.markdown('</table>', unsafe_allow_html=True)
 
         with col2:
-            st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUáºº BIáº¾N</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUẺ BIẾN</div>', unsafe_allow_html=True)
             st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
             detail_map_bien = {d['hao']: d for d in res['bien'].get('details', [])}
             for i, line in enumerate(reversed(res['bien']['lines'])):
@@ -2542,7 +2549,7 @@ elif st.session_state.current_view == "luc_hao":
                 d = detail_map_bien.get(h_idx, {})
                 
                 st.markdown('<div class="hao-row-pro">', unsafe_allow_html=True)
-                st.markdown(f'<div class="hao-label-pro">HÃ o {h_idx}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
                 if line == 1:
                     st.markdown(f'<div class="hao-line-pro {cls}"></div>', unsafe_allow_html=True)
                 else:
@@ -2550,30 +2557,30 @@ elif st.session_state.current_view == "luc_hao":
                 
                 # Enhanced Label (Converted Hexagram usually doesn't show strength/marker in some schools but user asked for it)
                 sb = d.get("strength","")
-                sb_label = f"<span style='color: #15803d;'>{sb}</span>" if sb in ["VÆ°á»£ng", "TÆ°á»›ng"] else f"<span style='color: #b91c1c;'>{sb} (Suy)</span>" if sb in ["HÆ°u", "TÃ¹", "Tá»­"] else sb
+                sb_label = f"<span style='color: #15803d;'>{sb}</span>" if sb in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{sb} (Suy)</span>" if sb in ["Hưu", "Tù", "Tử"] else sb
                 st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {sb_label} {d.get("marker","")}</div>', unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown('<table class="hao-table-pro"><tr><th>HÃ€O</th><th>Lá»¤C THÃ‚N</th><th>CAN CHI</th><th>Lá»¤C THÃš</th></tr>', unsafe_allow_html=True)
+            st.markdown('<table class="hao-table-pro"><tr><th>HÀO</th><th>LỤC THÂN</th><th>CAN CHI</th><th>LỤC THÚ</th></tr>', unsafe_allow_html=True)
             for d in reversed(res['bien']['details']):
-                st.markdown(f'<tr><td>HÃ o {d["hao"]}</td><td>{d["luc_than"]}</td><td>{d["can_chi"]}</td><td>{d["luc_thu"]}</td></tr>', unsafe_allow_html=True)
+                st.markdown(f'<tr><td>Hào {d["hao"]}</td><td>{d["luc_than"]}</td><td>{d["can_chi"]}</td><td>{d["luc_thu"]}</td></tr>', unsafe_allow_html=True)
             st.markdown('</table>', unsafe_allow_html=True)
 
 
         # Expert Footer
         st.markdown(f"""
         <div class="status-footer-pro">
-            <span>ðŸ”¹ {res['the_ung']}</span>
-            <span>ðŸ“ Dá»¥ng Tháº§n: {res['ban']['details'][2]['luc_than']}</span>
-            <span>ðŸ“Œ {res['conclusion'].split('.')[1]}</span>
+            <span>💡 {res['the_ung']}</span>
+            <span>📝 Dụng Thần: {res['ban']['details'][2]['luc_than']}</span>
+            <span>📜 {res['conclusion'].split('.')[1]}</span>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown('<div class="footer-stamp">Copyright Â© 2026 KY MON DON GIAP PRO</div>', unsafe_allow_html=True)
+        st.markdown('<div class="footer-stamp">Copyright © 2026 KY MON DON GIAP PRO</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        if st.button("ðŸ¤– AI Luáº­n Quáº»", key="ai_iching_btn"):
-            with st.spinner("AI Ä‘ang giáº£i mÃ£..."):
+        if st.button("🤖 AI Luận Quẻ", key="ai_iching_btn"):
+            with st.spinner("AI Đang giải mã..."):
                 ans = st.session_state.gemini_helper.analyze_luc_hao(res, selected_topic)
                 st.info(ans)
 
@@ -2587,25 +2594,25 @@ elif st.session_state.current_view == "luc_hao":
 # AI FACTORY VIEW
 # ======================================================================
 elif st.session_state.current_view == "ai_factory":
-    st.markdown("## ðŸ­ NHÃ€ MÃY PHÃT TRIá»‚N AI - 50 AGENTS HUB")
-    st.info("Há»‡ thá»‘ng tá»± Ä‘á»™ng hÃ³a Ä‘iá»u phá»‘i bá»Ÿi AI Orchestrator + n8n.")
+    st.markdown("## 🏭 NHÀ MÁY PHÁT TRIỂN AI - 50 AGENTS HUB")
+    st.info("Hệ thống tự động hóa điều phối bởi AI Orchestrator + n8n.")
     
     # Status Row
     c1, c2, c3 = st.columns(3)
-    with c1: st.metric("Agents Äang Cháº¡y", "40/50", "Active")
-    with c2: st.metric("CÃ´ng Viá»‡c HoÃ n Táº¥t", "1,248", "Today")
-    with c3: st.metric("Äá»™ á»”n Äá»‹nh", "99.9%", "Verified")
+    with c1: st.metric("Agents Đang Chạy", "40/50", "Active")
+    with c2: st.metric("Công Việc Hoàn Tất", "1,248", "Today")
+    with c3: st.metric("Độ Ổn Định", "99.9%", "Verified")
     
-    st.markdown("### ðŸ¤– Agents Hoáº¡t Äá»™ng 24/7")
+    st.markdown("### 🤖 Agents Hoạt Động 24/7")
     
     # List of Agents in a Grid
     agents = [
-        ("Secretary AI", "PhÃ¢n tÃ­ch yÃªu cáº§u & Láº­p káº¿ hoáº¡ch", "ðŸŸ¢"),
-        ("Code Writer", "Viáº¿t code chá»©c nÄƒng tá»± Ä‘á»™ng", "ðŸŸ¢"),
-        ("Tester AI", "Kiá»ƒm thá»­ Unit Test & UI", "ðŸŸ¢"),
-        ("Orchestrator", "Äiá»u phá»‘i luá»“ng cÃ´ng viá»‡c", "ðŸŸ¢"),
-        ("Memory Manager", "LÆ°u trá»¯ & Truy xuáº¥t tri thá»©c", "ðŸŸ¢"),
-        ("Gemini Pro", "SiÃªu trÃ­ tuá»‡ phÃ¢n tÃ­ch chuyÃªn sÃ¢u", "ðŸŸ¢")
+        ("Secretary AI", "Phân tích yêu cầu & Lập kế hoạch", "🟢"),
+        ("Code Writer", "Viết code chức năng tự động", "🟢"),
+        ("Tester AI", "Kiểm thử Unit Test & UI", "🟢"),
+        ("Orchestrator", "Điều phối luồng công việc", "🟢"),
+        ("Memory Manager", "Lưu trữ & Truy xuất tri thức", "🟢"),
+        ("Gemini Pro", "Siêu trí tuệ phân tích chuyên sâu", "🟢")
     ]
     
     rows = [st.columns(3) for _ in range(2)]
@@ -2620,64 +2627,64 @@ elif st.session_state.current_view == "ai_factory":
             """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### ðŸ§  Gá»­i YÃªu Cáº§u Cho NhÃ  MÃ¡y")
-    factory_prompt = st.text_area("YÃªu cáº§u phÃ¡t triá»ƒn má»›i:", placeholder="VÃ­ dá»¥: Táº¡o module phÃ¢n tÃ­ch bÃ¡t tá»± tÃ­ch há»£p...")
-    if st.button("ðŸš€ Báº¯t Äáº§u Quy TrÃ¬nh Tá»± Äá»™ng", type="primary"):
-        st.warning("âš ï¸ Äang gá»­i yÃªu cáº§u tá»›i workflow n8n... Vui lÃ²ng kiá»ƒm tra Dashboard n8n Ä‘á»ƒ theo dÃµi.")
+    st.markdown("### 🧪 Gửi Yêu Cầu Cho Nhà Máy")
+    factory_prompt = st.text_area("Yêu cầu phát triển mới:", placeholder="Ví dụ: Tạo module phân tích bát tự tích hợp...")
+    if st.button("🚀 Bắt Đầu Quy Trình Tự Động", type="primary"):
+        st.warning("⚠️ Đang gửi yêu cầu tới workflow n8n... Vui lòng kiểm tra Dashboard n8n để theo dõi.")
 
 # ======================================================================
 # AI EXPERTS VIEW (40 AGENTS)
 # ======================================================================
 elif st.session_state.current_view == "ai_experts":
-    st.markdown("## ðŸŒŸ 40 CHUYÃŠN GIA AI - TÆ¯ Váº¤N CHUYÃŠN SÃ‚U")
-    st.caption("Danh sÃ¡ch 40 AI Agents chuyÃªn biá»‡t cho tá»«ng lÄ©nh vá»±c khÃ¡c nhau.")
+    st.markdown("## 🌟 40 CHUYÊN GIA AI - TƯ VẤN CHUYÊN SÂU")
+    st.caption("Danh sách 40 AI Agents chuyên biệt cho từng lĩnh vực khác nhau.")
     
     # Choose Agent Category
-    cat = st.tabs(["ðŸ’Ž Super AI", "ðŸ’¼ Äá»i Sá»‘ng", "ðŸ“ˆ TÃ i ChÃ­nh", "ðŸ›¡ï¸ Tiá»‡n Ãch"])
+    cat = st.tabs(["💎 Super AI", "🏡 Đời Sống", "📈 Tài Chính", "🛠️ Tiện Ích"])
     
     with cat[0]: # Super AI
-        selected_agent = st.selectbox("Chá»n ChuyÃªn Gia SiÃªu TrÃ­ Tuá»‡:", [
-            "Chart Interpreter AI (PhÃ¢n tÃ­ch bÃ n Ká»³ MÃ´n)",
-            "Scheduler AI (TÃ¬m giá» Ä‘áº¹p thÃ´ng minh)",
-            "Mai Hoa Expert (ChuyÃªn gia Dá»‹ch sá»‘)",
-            "Luc Hao Expert (Báº­c tháº§y Lá»¥c HÃ o)",
-            "Topic Advisor (Gá»£i Ã½ chá»§ Ä‘á» linh hoáº¡t)"
+        selected_agent = st.selectbox("Chọn Chuyên Gia Siêu Trí Tuệ:", [
+            "Chart Interpreter AI (Phân tích bàn Kỳ Môn)",
+            "Scheduler AI (Tìm giờ đẹp thông minh)",
+            "Mai Hoa Expert (Chuyên gia Dịch số)",
+            "Luc Hao Expert (Bậc thầy Lục Hào)",
+            "Topic Advisor (Gợi ý chủ đề linh hoạt)"
         ])
         
     with cat[1]: # Life
-        selected_agent = st.selectbox("Chá»n ChuyÃªn Gia Äá»i Sá»‘ng:", [
-            "Career Advisor AI (Sá»± nghiá»‡p & CÃ´ng danh)",
-            "Health Advisor (Sá»©c khá»e & BÃ¬nh an)",
-            "Relationship AI (TÃ¬nh duyÃªn & HÃ´n nhÃ¢n)",
-            "Name Analyzer (PhÃ¢n tÃ­ch danh tÃ­nh)",
-            "Dream Interpreter (Giáº£i mÃ£ giáº¥c mÆ¡)"
+        selected_agent = st.selectbox("Chọn Chuyên Gia Đời Sống:", [
+            "Career Advisor AI (Sự nghiệp & Công danh)",
+            "Health Advisor (Sức khỏe & Bình an)",
+            "Relationship AI (Tình duyên & Hôn nhân)",
+            "Name Analyzer (Phân tích danh tính)",
+            "Dream Interpreter (Giải mã giấc mơ)"
         ])
         
     with cat[2]: # Finance
-        selected_agent = st.selectbox("Chá»n ChuyÃªn Gia TÃ i ChÃ­nh:", [
-            "Wealth Advisor (TÃ i lá»™c & Äáº§u tÆ°)",
-            "Direction Advisor (PhÆ°Æ¡ng hÆ°á»›ng kinh doanh)",
-            "Date Selector (Chá»n ngÃ y Ä‘áº¡i sá»±)",
-            "Fortune Calendar (Lá»‹ch váº­n háº¡n nÄƒm/thÃ¡ng)"
+        selected_agent = st.selectbox("Chọn Chuyên Gia Tài Chính:", [
+            "Wealth Advisor (Tài lộc & Đầu tư)",
+            "Direction Advisor (Phương hướng kinh doanh)",
+            "Date Selector (Chọn ngày đại sự)",
+            "Fortune Calendar (Lịch vận hạn năm/tháng)"
         ])
 
     with cat[3]: # Utilities
-        selected_agent = st.selectbox("Chá»n Agent Tiá»‡n Ãch:", [
-            "History Tracker (Theo dÃµi lá»‹ch sá»­)",
-            "Prediction Validator (Kiá»ƒm chá»©ng káº¿t quáº£)",
-            "Report Generator (Táº¡o bÃ¡o cÃ¡o chuyÃªn nghiá»‡p)",
-            "Comparison AI (So sÃ¡nh Ä‘a táº§ng)",
-            "Notification AI (Cáº£nh bÃ¡o giá» lÃ nh)",
-            "Learning Assistant (TrÃ¬nh há»c liá»‡u QMDG)",
-            "Voice Assistant (Trá»£ lÃ½ giá»ng nÃ³i AI)"
+        selected_agent = st.selectbox("Chọn Agent Tiện Ích:", [
+            "History Tracker (Theo dõi lịch sử)",
+            "Prediction Validator (Kiểm chứng kết quả)",
+            "Report Generator (Tạo báo cáo chuyên nghiệp)",
+            "Comparison AI (So sánh đa tầng)",
+            "Notification AI (Cảnh báo giờ lành)",
+            "Learning Assistant (Trình học liệu QMDG)",
+            "Voice Assistant (Trợ lý giọng nói AI)"
         ])
 
-    st.markdown(f"### ðŸ¤– Báº¯t Ä‘áº§u tÆ° váº¥n vá»›i: **{selected_agent.split('(')[0]}**")
-    exp_q = st.text_area("Ná»™i dung cáº§n tÆ° váº¥n:", placeholder="Nháº­p cÃ¢u há»i hoáº·c bá»‘i cáº£nh cá»¥ thá»ƒ cá»§a báº¡n...")
+    st.markdown(f"### 🤖 Bắt đầu tư vấn với: **{selected_agent.split('(')[0]}**")
+    exp_q = st.text_area("Nội dung cần tư vấn:", placeholder="Nhập câu hỏi hoặc bối cảnh cụ thể của bạn...")
     
-    if st.button("ðŸ§™ Triá»‡u há»“i ChuyÃªn Gia AI", type="primary"):
+    if st.button("🧙 Triệu hồi Chuyên Gia AI", type="primary"):
         if exp_q:
-            with st.spinner(f"AI {selected_agent} Ä‘ang xá»­ lÃ½ dá»¯ liá»‡u..."):
+            with st.spinner(f"AI {selected_agent} đang xử lý dữ liệu..."):
                 # Forward request to specialized module logic
                 try:
                     agent_key = selected_agent.split('(')[0].strip().lower().replace(" ", "_")
@@ -2685,73 +2692,73 @@ elif st.session_state.current_view == "ai_experts":
                     res = st.session_state.gemini_helper.answer_question(f"Role: {selected_agent}. Question: {exp_q}", st.session_state.get('chart_data'))
                     st.info(res)
                 except Exception as e:
-                    st.error(f"Lá»—i: {e}")
+                    st.error(f"Lỗi: {e}")
         else:
-            st.warning("Vui lÃ²ng nháº­p cÃ¢u há»i.")
+            st.warning("Vui lòng nhập câu hỏi.")
 
 elif st.session_state.current_view == "gemini_ai":
     ai_name = st.session_state.get('ai_type', 'AI Assistant')
-    st.markdown(f"## ðŸ¤– Há»ŽI {ai_name.upper()} Vá»€ Ká»² MÃ”N Äá»˜N GIÃP")
+    st.markdown(f"## 🤖 HỎI {ai_name.upper()} VỀ KỲ MÔN ĐỘN GIÁP")
     
     if not GEMINI_AVAILABLE and not FREE_AI_AVAILABLE:
-        st.error("âŒ KhÃ´ng cÃ³ module AI nÃ o kháº£ dá»¥ng.")
+        st.error("❌ Không có module AI nào khả dụng.")
         st.stop()
     
     # Check if API key is configured
     if 'gemini_helper' not in st.session_state:
-        st.error("âŒ KhÃ´ng thá»ƒ káº¿t ná»‘i vá»›i mÃ¡y chá»§ AI. Vui lÃ²ng thá»­ láº¡i sau.")
+        st.error("❌ Không thể kết nối với máy chủ AI. Vui lòng thử lại sau.")
         st.stop()
     
-    st.success(f"âœ… {ai_name} Ä‘Ã£ sáºµn sÃ ng! HÃ£y Ä‘áº·t cÃ¢u há»i bÃªn dÆ°á»›i.")
+    st.success(f"✅ {ai_name} đã sẵn sàng! Hãy đặt câu hỏi bên dưới.")
     
     # Topic selection for context
-    st.markdown("### ðŸŽ¯ Chá»n Chá»§ Äá» (TÃ¹y chá»n)")
-    st.caption("Chá»n chá»§ Ä‘á» Ä‘á»ƒ AI cÃ³ ngá»¯ cáº£nh tá»‘t hÆ¡n, hoáº·c Ä‘á»ƒ trá»‘ng Ä‘á»ƒ há»i chung")
+    st.markdown("### 🎯 Chọn Chủ Đề (Tùy chọn)")
+    st.caption("Chọn chủ đề để AI có ngữ cảnh tốt hơn, hoặc để trống để hỏi chung")
     
     col_topic1, col_topic2 = st.columns([3, 1])
     
     with col_topic1:
         selected_topic_ai = st.selectbox(
-            "Chá»§ Ä‘á»:",
-            ["KhÃ´ng chá»n (Há»i chung)"] + st.session_state.all_topics_full,
+            "Chủ đề:",
+            ["Không chọn (Hỏi chung)"] + st.session_state.all_topics_full,
             key="ai_topic_select"
         )
     
     with col_topic2:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("ðŸ”® Láº­p BÃ n Nhanh", use_container_width=True):
+        if st.button("⚛️ Lập Bàn Nhanh", use_container_width=True):
             # Quick chart calculation for context
             try:
                 from qmdg_calc import calculate_qmdg_params as tinh_ky_mon_don_gian
                 st.session_state.ai_chart_data = tinh_ky_mon_don_gian(now.year, now.month, now.day, now.hour)
-                st.success("âœ… ÄÃ£ láº­p bÃ n!")
+                st.success("✅ Đã lập bàn!")
             except Exception as e:
-                st.error(f"Lá»—i: {e}")
+                st.error(f"Lỗi: {e}")
     
     st.markdown("---")
     
     # Question input area
-    st.markdown("### âœï¸ CÃ¢u Há»i Cá»§a Báº¡n")
+    st.markdown("### ✍️ Câu Hỏi Của Bạn")
     user_question = st.text_area(
-        "Nháº­p cÃ¢u há»i:",
-        placeholder="VÃ­ dá»¥: TÃ´i muá»‘n biáº¿t vá» Ã½ nghÄ©a cá»§a ThiÃªn TÃ¢m Tinh trong Ká»³ MÃ´n Äá»™n GiÃ¡p?",
+        "Nhập câu hỏi:",
+        placeholder="Ví dụ: Tôi muốn biết về ý nghĩa của Thiên Tâm Tinh trong Kỳ Môn Độn Giáp?",
         height=150,
         key="ai_free_question"
     )
     
-    if st.button(f"ðŸ¤– Há»i {ai_name}", type="primary", use_container_width=True, key="ask_gemini_btn"):
+    if st.button(f"🤖 Hỏi {ai_name}", type="primary", use_container_width=True, key="ask_gemini_btn"):
         if user_question:
-            with st.spinner(f"ðŸ¤– {ai_name} Ä‘ang suy nghÄ©..."):
+            with st.spinner(f"🤖 {ai_name} đang suy nghĩ..."):
                 try:
-                    # Sá»­ dá»¥ng phÆ°Æ¡ng thá»©c answer_question thá»‘ng nháº¥t cho cáº£ 2 helper
+                    # Sử dụng phương thức answer_question thống nhất cho cả 2 helper
                     response_text = st.session_state.gemini_helper.answer_question(
                         user_question, 
-                        topic=selected_topic_ai if selected_topic_ai != 'KhÃ´ng chá»n (Há»i chung)' else 'Chung'
+                        topic=selected_topic_ai if selected_topic_ai != 'Không chọn (Hỏi chung)' else 'Chung'
                     )
                     
                     # Display response in a nice panel
                     st.markdown("---")
-                    st.markdown(f"### ðŸ¤– Tráº£ Lá»i Tá»« {ai_name}")
+                    st.markdown(f"### 🤖 Trả Lời Từ {ai_name}")
                     st.markdown(f"""
                     <div style="
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -2760,7 +2767,7 @@ elif st.session_state.current_view == "gemini_ai":
                         color: white;
                         margin: 10px 0;
                     ">
-                        <h4 style="color: white; margin-top: 0;">ðŸ’¡ CÃ¢u Há»i</h4>
+                        <h4 style="color: white; margin-top: 0;">💡 Câu Hỏi</h4>
                         <p style="font-size: 16px;">{user_question}</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -2778,14 +2785,15 @@ elif st.session_state.current_view == "gemini_ai":
                     """, unsafe_allow_html=True)
                     
                 except Exception as e:
-                    st.error(f"âŒ Lá»—i: {str(e)}")
+                    st.error(f"❌ Lỗi: {str(e)}")
         else:
-            st.warning("âš ï¸ Vui lÃ²ng nháº­p cÃ¢u há»i")
+            st.warning("⚠️ Vui lòng nhập câu hỏi")
 
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #7f8c8d;'>
-    <p>Â© 2026 VÅ© Viá»‡t CÆ°á»ng - Ká»³ MÃ´n Äá»™n GiÃ¡p Web Application</p>
-    <p>ðŸŒ Cháº¡y 24/7 trÃªn Streamlit Cloud</p>
+    <p>© 2026 Vũ Việt Cường - Kỳ Môn Độn Giáp Web Application</p>
+    <p>🌐 Chạy 24/7 trên Streamlit Cloud</p>
 </div>
 """, unsafe_allow_html=True)
+```

@@ -57,16 +57,23 @@ class GeminiQMDGHelper:
 
     def _get_best_model(self):
         models_to_try = [
+            'gemini-1.5-flash', 'gemini-1.5-flash-latest', 
             'gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-2.0-flash-lite-001',
-            'gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-1.5-pro-latest', 'gemini-1.5-pro'
+            'gemini-1.5-pro-latest', 'gemini-1.5-pro'
         ]
+        # First pass: try with a simple ping
         for name in models_to_try:
             if name in self._failed_models: continue
             try:
                 m = genai.GenerativeModel(name)
+                # Quick check without tool configuration first
                 m.generate_content("ping", generation_config={"max_output_tokens": 1})
                 return m
-            except: continue
+            except Exception as e:
+                print(f"Model {name} check failed: {e}")
+                continue
+        
+        # Fallback to a guaranteed model
         return genai.GenerativeModel('gemini-1.5-flash')
 
     def test_connection(self):
@@ -93,18 +100,15 @@ class GeminiQMDGHelper:
             cached = self._get_cached_response(prompt)
             if cached: return cached
         
-        # dynamic tool selection
+        # dynamic tool selection - Updated for SDK 0.8.3+
         tools = []
         if use_web_search:
-            model_name_lower = getattr(self.model, 'model_name', '').lower()
-            if '2.0' in model_name_lower or '2.5' in model_name_lower:
-                try:
-                    from google.generativeai.types import content_types
-                    tools = [content_types.Tool(google_search=content_types.GoogleSearch())]
-                except:
-                    tools = [{'google_search': {}}]
-            else:
-                tools = [{'google_search_retrieval': {}}]
+            # Standard way to enable Google Search for 1.5 and 2.0 models in modern SDK
+            try:
+                tools = [{"google_search": {}}]
+            except:
+                # Fallback format if needed
+                tools = [{"google_search_retrieval": {}}]
 
         for attempt in range(self.max_retries):
             try:
@@ -128,5 +132,14 @@ class GeminiQMDGHelper:
     def analyze_palace(self, palace_data, topic):
         return self._call_ai(f"Phân tích cung Kỳ Môn: {topic} - Data: {json.dumps(palace_data)}", use_web_search=True)
 
+    def explain_element(self, element_type, element_name):
+        return self._call_ai(f"Giải thích chi tiết yếu tố {element_type} trong Kỳ Môn Độn Giáp: {element_name}", use_web_search=True)
+
+    def analyze_mai_hao(self, res, topic="Chung"):
+        return self._call_ai(f"Luận giải quẻ Mai Hoa Dịch Số cho chủ đề '{topic}': {json.dumps(res)}", use_web_search=True)
+
+    def analyze_luc_hao(self, res, topic="Chung"):
+        return self._call_ai(f"Luận giải quẻ Lục Hào cho chủ đề '{topic}': {json.dumps(res)}", use_web_search=True)
+
     def comprehensive_analysis(self, chart_data, topic, dung_than_info=None):
-        return self._call_ai(f"Phân tích tổng quan bàn Kỳ Môn: {topic}", use_web_search=True)
+        return self._call_ai(f"Phân tích tổng quan bàn Kỳ Môn: {topic}. Dữ liệu: {json.dumps(chart_data)}", use_web_search=True)
