@@ -9,6 +9,15 @@ import requests
 import json
 import time
 
+# Robust Fallback Import
+try:
+    from free_ai_helper import FreeAIHelper
+except ImportError:
+    # If fails (rare), define a dummy
+    class FreeAIHelper:
+        def __getattr__(self, name):
+            return lambda *args, **kwargs: "⚠️ Chế độ Offline không khả dụng (Lỗi Import)."
+
 class GeminiQMDGHelper:
     """Helper class for Gemini AI with QMDG specific knowledge and grounding"""
     
@@ -33,7 +42,10 @@ class GeminiQMDGHelper:
         self.base_delay = 2
         self.n8n_url = None
         self.n8n_timeout = 90
+        
+        # Initialize Helpers
         self.model = self._get_best_model()
+        self.fallback_helper = FreeAIHelper()
 
     def _get_cached_response(self, prompt):
         try:
@@ -58,6 +70,7 @@ class GeminiQMDGHelper:
     def _get_best_model(self):
         models_to_try = [
             'gemini-1.5-flash', 'gemini-1.5-flash-latest', 
+            'gemini-1.5-flash-8b', 'gemini-1.5-flash-002', # Added ultra-low cost models
             'gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-2.0-flash-lite-001',
             'gemini-1.5-pro-latest', 'gemini-1.5-pro'
         ]
@@ -70,7 +83,7 @@ class GeminiQMDGHelper:
                 m.generate_content("ping", generation_config={"max_output_tokens": 1})
                 return m
             except Exception as e:
-                print(f"Model {name} check failed: {e}")
+                # print(f"Model {name} check failed: {e}")
                 continue
         
         # Fallback to a guaranteed model
@@ -103,11 +116,9 @@ class GeminiQMDGHelper:
         # dynamic tool selection - Updated for SDK 0.8.3+
         tools = []
         if use_web_search:
-            # Standard way to enable Google Search for 1.5 and 2.0 models in modern SDK
             try:
                 tools = [{"google_search": {}}]
             except:
-                # Fallback format if needed
                 tools = [{"google_search_retrieval": {}}]
 
         for attempt in range(self.max_retries):
@@ -123,43 +134,58 @@ class GeminiQMDGHelper:
             except Exception as e:
                 err_str = str(e).lower()
                 if "quota" in err_str or "429" in err_str or "resource" in err_str:
-                    print(f"⚠️ Quota hit on {self.model.model_name}, switching model...")
-                    # Try to switch model to next available
+                    # Switch Model Strategy
                     try:
-                        # Define rotation list again
                         models = [
-                            'gemini-1.5-flash', 'gemini-1.5-flash-latest', 
-                            'gemini-2.0-flash', 'gemini-2.0-flash-lite-001',
-                            'gemini-1.5-pro'
+                            'gemini-1.5-flash', 'gemini-1.5-flash-8b', 
+                            'gemini-2.0-flash', 'gemini-1.5-pro'
                         ]
-                        # Find current index or random
                         import random
                         next_model = random.choice(models)
                         self.model = genai.GenerativeModel(next_model)
-                        print(f"🔄 Switched to {next_model}")
-                        time.sleep(1) # Brief pause before retry
+                        time.sleep(1)
                         continue
-                    except:
-                        pass
+                    except: pass
 
                 time.sleep(self.base_delay * (2 ** attempt))
                 continue
-        return "🛑 Hết hạn mức (Quota Exceeded). Vui lòng thử lại sau hoặc đổi API Key."
+        
+        return "🛑 Hết hạn mức"
+
+    # --- WRAPPED METHODS FOR OFFLINE RESILIENCE ---
 
     def answer_question(self, question, chart_data=None, topic=None):
-        return self._call_ai(f"Câu hỏi: {question}", use_web_search=True)
+        res = self._call_ai(f"Câu hỏi: {question}", use_web_search=True)
+        if "🛑" in res:
+            return self.fallback_helper.answer_question(question, chart_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
+        return res
 
     def analyze_palace(self, palace_data, topic):
-        return self._call_ai(f"Phân tích cung Kỳ Môn: {topic} - Data: {json.dumps(palace_data)}", use_web_search=True)
+        res = self._call_ai(f"Phân tích cung Kỳ Môn: {topic} - Data: {json.dumps(palace_data)}", use_web_search=True)
+        if "🛑" in res:
+            return self.fallback_helper.analyze_palace(palace_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
+        return res
 
     def explain_element(self, element_type, element_name):
-        return self._call_ai(f"Giải thích chi tiết yếu tố {element_type} trong Kỳ Môn Độn Giáp: {element_name}", use_web_search=True)
+        res = self._call_ai(f"Giải thích chi tiết yếu tố {element_type} trong Kỳ Môn Độn Giáp: {element_name}", use_web_search=True)
+        if "🛑" in res:
+            return self.fallback_helper.explain_element(element_type, element_name) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
+        return res
 
-    def analyze_mai_hao(self, res, topic="Chung"):
-        return self._call_ai(f"Luận giải quẻ Mai Hoa Dịch Số cho chủ đề '{topic}': {json.dumps(res)}", use_web_search=True)
+    def analyze_mai_hao(self, res_data, topic="Chung"):
+        res = self._call_ai(f"Luận giải quẻ Mai Hoa Dịch Số cho chủ đề '{topic}': {json.dumps(res_data)}", use_web_search=True)
+        if "🛑" in res:
+            return self.fallback_helper.analyze_mai_hao(res_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
+        return res
 
-    def analyze_luc_hao(self, res, topic="Chung"):
-        return self._call_ai(f"Luận giải quẻ Lục Hào cho chủ đề '{topic}': {json.dumps(res)}", use_web_search=True)
+    def analyze_luc_hao(self, res_data, topic="Chung"):
+        res = self._call_ai(f"Luận giải quẻ Lục Hào cho chủ đề '{topic}': {json.dumps(res_data)}", use_web_search=True)
+        if "🛑" in res:
+            return self.fallback_helper.analyze_luc_hao(res_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
+        return res
 
     def comprehensive_analysis(self, chart_data, topic, dung_than_info=None):
-        return self._call_ai(f"Phân tích tổng quan bàn Kỳ Môn: {topic}. Dữ liệu: {json.dumps(chart_data)}", use_web_search=True)
+        res = self._call_ai(f"Phân tích tổng quan bàn Kỳ Môn: {topic}. Dữ liệu: {json.dumps(chart_data)}", use_web_search=True)
+        if "🛑" in res:
+            return self.fallback_helper.comprehensive_analysis(chart_data, topic, dung_than_info) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
+        return res
