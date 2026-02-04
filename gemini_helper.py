@@ -98,6 +98,14 @@ class GeminiQMDGHelper:
         # Fallback to a guaranteed model
         return genai.GenerativeModel('gemini-1.5-flash')
 
+    def test_connection(self):
+        try:
+            resp = self.model.generate_content("ping", generation_config={"max_output_tokens": 1})
+            return True, "Kết nối thành công!"
+        except Exception as e:
+            return False, f"Lỗi kết nối: {str(e)}"
+
+
     # ... (cached response methods remain same) ...
 
     def safe_get_text(self, response):
