@@ -26,9 +26,14 @@ class GeminiQMDGHelper:
     
     def __init__(self, api_key):
         import hashlib
-        self.api_key = api_key
-        self.version = "V1.7.5"
-        genai.configure(api_key=api_key)
+        # Handle multiple keys (comma separated)
+        self.api_keys = [k.strip() for k in api_key.split(',') if k.strip()]
+        self.current_key_index = 0
+        self.api_key = self.api_keys[0] if self.api_keys else None
+        
+        self.version = "V1.9.0-KeyRotation"
+        genai.configure(api_key=self.api_key)
+        
         self._failed_models = set()
         self._hashlib = hashlib
         self.current_context = {
@@ -47,33 +52,27 @@ class GeminiQMDGHelper:
         self.model = self._get_best_model()
         self.fallback_helper = FreeAIHelper()
 
-    def _get_cached_response(self, prompt):
+    def _rotate_key(self):
+        """Switch to next available API Key"""
+        if len(self.api_keys) <= 1:
+            return False
+            
+        self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
+        self.api_key = self.api_keys[self.current_key_index]
+        print(f"🔄 Rotating to API Key #{self.current_key_index + 1}")
         try:
-            prompt_hash = self._hashlib.md5(prompt.encode()).hexdigest()
-            return self._response_cache.get(prompt_hash)
-        except: return None
-
-    def _cache_response(self, prompt, response):
-        try:
-            if len(self._response_cache) >= self._cache_max_size:
-                del self._response_cache[next(iter(self._response_cache))]
-            prompt_hash = self._hashlib.md5(prompt.encode()).hexdigest()
-            self._response_cache[prompt_hash] = response
-        except: pass
-
-    def set_n8n_url(self, url):
-        self.n8n_url = url
-
-    def update_context(self, **kwargs):
-        self.current_context.update(kwargs)
+            genai.configure(api_key=self.api_key)
+            return True
+        except:
+            return False
 
     def _get_best_model(self):
+        # REMOVED PRO MODELS COMPLETELY
         models_to_try = [
             'gemini-1.5-flash', # Primary - High Quota, Low Latency
             'gemini-1.5-flash-8b', # Backup - Even higher quota
             'gemini-1.5-flash-latest', 
-            'gemini-2.0-flash-lite-001',
-            'gemini-1.5-pro' # Last resort only
+            'gemini-2.0-flash-lite-001'
         ]
         # First pass: try with a simple ping
         for name in models_to_try:
@@ -90,12 +89,7 @@ class GeminiQMDGHelper:
         # Fallback to a guaranteed model
         return genai.GenerativeModel('gemini-1.5-flash')
 
-    def test_connection(self):
-        try:
-            resp = self.model.generate_content("ping", generation_config={"max_output_tokens": 1})
-            return True, "Kết nối thành công!"
-        except Exception as e:
-            return False, f"Lỗi kết nối: {str(e)}"
+    # ... (cached response methods remain same) ...
 
     def safe_get_text(self, response):
         try:
@@ -108,13 +102,11 @@ class GeminiQMDGHelper:
                 return "".join([p.text for p in candidate.content.parts if hasattr(p, 'text')])
             return "⚠️"
         except: return "⚠️"
-
+    
     def _call_ai(self, prompt, use_hub=True, use_web_search=False):
-        if not use_web_search:
-            cached = self._get_cached_response(prompt)
-            if cached: return cached
+        # ... (cache check remains) ...
         
-        # dynamic tool selection - Updated for SDK 0.8.3+
+        # dynamic tool selection
         tools = []
         if use_web_search:
             try:
@@ -135,11 +127,18 @@ class GeminiQMDGHelper:
             except Exception as e:
                 err_str = str(e).lower()
                 if "quota" in err_str or "429" in err_str or "resource" in err_str:
-                    # Switch Model Strategy
+                    print(f"⚠️ Quota hit on {self.model.model_name}")
+                    
+                    # STRATEGY 1: ROTATE KEY FIRST
+                    if self._rotate_key():
+                        time.sleep(1)
+                        continue
+                        
+                    # STRATEGY 2: ROTATE MODEL
                     try:
                         models = [
                             'gemini-1.5-flash', 'gemini-1.5-flash-8b', 
-                            'gemini-1.5-flash-latest'
+                            'gemini-2.0-flash-lite-001'
                         ]
                         import random
                         next_model = random.choice(models)

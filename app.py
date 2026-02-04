@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-02-04-V1.8.0-NUCLEAR-FALLBACK
+# VERSION: 2026-02-04-V1.9.0-UNLIMITED-ROTATION
 try:
     st.set_page_config(
-        page_title="Kỳ Môn Độn Giáp Pro - V1.8.0 (No Quota)",
+        page_title="Kỳ Môn Độn Giáp Pro - V1.9.0 (Unlimited)",
         page_icon="☯️",
         layout="wide",
         initial_sidebar_state="expanded"
@@ -39,11 +39,11 @@ except ImportError:
 from PIL import Image
 import importlib
 
-st.sidebar.success("✅ V1.8.0: NUCLEAR MODE ACTIVE")
+st.sidebar.success("✅ V1.9.0: UNLIMITED KEYS")
 st.sidebar.markdown("""
-<div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-    <b>🛡️ ANTI-QUOTA SYSTEM</b><br>
-    <span style="font-size: 0.8em;">Google API Block -> Auto Offline</span>
+<div style="background: #065f46; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+    <b>🔄 MULTI-KEY ROTATION</b><br>
+    <span style="font-size: 0.8em;">Auto-Switch Keys & No Pro Limit</span>
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.info("Hệ thống: [READY]")
