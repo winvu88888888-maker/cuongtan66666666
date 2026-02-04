@@ -76,13 +76,16 @@ class GeminiQMDGHelper:
             return False
 
     def _get_best_model(self):
-        # REMOVED PRO MODELS COMPLETELY
+        # 404 ERROR FIX: Use specific version codes first, then generics
+        # Re-added gemini-1.0-pro as ultimate fallback if Flash fails
         models_to_try = [
-            'gemini-1.5-flash', # Primary - High Quota, Low Latency
-            'gemini-1.5-flash-8b', # Backup - Even higher quota
-            'gemini-1.5-flash-latest', 
-            'gemini-2.0-flash-lite-001'
+            'gemini-1.5-flash-001',   # Specific stable version
+            'gemini-1.5-flash-002',   # Newer specific version
+            'gemini-1.5-flash',       # Generic alias
+            'gemini-1.5-flash-8b',    # Specialized
+            'gemini-pro',             # V1.0 Stable (Last Resort)
         ]
+        
         # First pass: try with a simple ping
         for name in models_to_try:
             if name in self._failed_models: continue
@@ -92,10 +95,12 @@ class GeminiQMDGHelper:
                 m.generate_content("ping", generation_config={"max_output_tokens": 1})
                 return m
             except Exception as e:
+                # 404 or other errors -> mark as failed and try next
                 # print(f"Model {name} check failed: {e}")
+                self._failed_models.add(name)
                 continue
         
-        # Fallback to a guaranteed model
+        # Fallback to a guaranteed model (even if it might fail 429 later, better than 404 crash)
         return genai.GenerativeModel('gemini-1.5-flash')
 
     def test_connection(self):
