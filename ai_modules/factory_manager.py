@@ -28,16 +28,20 @@ class GlobalFactoryManager:
 
     def ensure_running(self):
         """Checks config and starts thread if needed."""
-        config = load_config()
-        if config.get("autonomous_247"):
-            with self._lock:
-                if self._thread is None or not self._thread.is_alive():
-                    print("⚙️ [GlobalFactoryManager] Khởi động tiến trình chạy ngầm 24/7...")
-                    self._thread = threading.Thread(target=run_daemon, daemon=True)
-                    self._thread.start()
-                    return "Started"
-                return "Running"
-        return "Disabled"
+        try:
+            config = load_config()
+            if config.get("autonomous_247"):
+                with self._lock:
+                    if self._thread is None or not self._thread.is_alive():
+                        print("⚙️ [GlobalFactoryManager] Khởi động tiến trình chạy ngầm 24/7...")
+                        self._thread = threading.Thread(target=run_daemon, daemon=True)
+                        self._thread.start()
+                        return "Started"
+                    return "Running"
+            return "Disabled"
+        except Exception as e:
+            print(f"❌ [GlobalFactoryManager] Error: {e}")
+            return "Error"
 
     def stop(self):
         """The daemon checks config in its loop, so we just set config to false and it stops itself."""

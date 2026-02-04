@@ -367,4 +367,4 @@ if __name__ == "__main__":
             if is_github_action:
                 print("⚠️ Bỏ qua chu kỳ này do thiếu Key.")
             else:
-                sys.exit(1)
+                print("❌ Startup bypassed: Missing Key.")
