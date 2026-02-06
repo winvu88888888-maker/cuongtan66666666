@@ -1398,8 +1398,11 @@ with st.sidebar:
                     factory_key = cfg.get("api_key")
         except: pass
         
-        # Tổng hợp: Ưu tiên Streamlit Secrets > Saved Key > Factory Key
-        secret_api_key = st_secret or saved_key or factory_key
+        # ƯU TIÊN 0: User Manual Input (Session State) - QUAN TRỌNG NHẤT
+        manual_key = st.session_state.get("gemini_key")
+        
+        # Tổng hợp: Ưu tiên Manual > Streamlit Secrets > Saved Key > Factory Key
+        secret_api_key = manual_key or st_secret or saved_key or factory_key
         
         # Thông báo nếu chạy trên cloud nhưng chưa có secret
         if not st_secret and not saved_key and not factory_key:
