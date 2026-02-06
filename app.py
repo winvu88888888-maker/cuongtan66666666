@@ -1485,7 +1485,7 @@ else: # auto or online
                 with st.spinner("🤖 Đang quét Key & Test kết nối..."):
                     try:
                         # 1. Initialize Helper (It filters keys inside __init__)
-                        from gemini_helper import GeminiQMDGHelper
+                        # from gemini_helper import GeminiQMDGHelper <--- REMOVED TO USE INLINED CLASS
                         temp_helper = GeminiQMDGHelper(user_api_input)
                         
                         # 2. Check if any valid keys found
