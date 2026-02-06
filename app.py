@@ -1520,6 +1520,10 @@ class GeminiQMDGHelper:
                 
         return f"🛑 AI Failed. Last Error: {last_error}"
 
+    # COMPATIBILITY WRAPPER FOR ORCHESTRATOR
+    def _call_ai(self, prompt, use_hub=True, use_web_search=False):
+        return self._call_ai_raw(prompt)
+
     def answer_question(self, question, chart_data=None, topic=None): 
         intent = self.classify_intent(question)
         if intent == 'social':
