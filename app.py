@@ -1726,40 +1726,37 @@ else: # auto or online
                         temp_helper = GeminiQMDGHelper(user_api_input)
                         
                         # 2. Check if any valid keys found
+                        # 2. Check if any valid keys found
                         if not temp_helper.api_keys:
                             st.error("❌ Không tìm thấy API Key nào hợp lệ (AIza...) trong văn bản bạn nhập.")
                         else:
-                            # 3. Test Connection
+                            # 3. FORCE SAVE FIRST (Trust the User)
+                            # Update Session State immediately so next run uses this key
+                            st.session_state.gemini_helper = temp_helper
+                            st.session_state.gemini_key = temp_helper.api_key
+                            st.session_state.ai_type = f"Gemini (Updated)"
+                            
+                            # Update Persistent Storage immediately
+                            try:
+                                data = load_custom_data()
+                                data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys)
+                                save_custom_data(data)
+                            except: pass
+
+                            # 4. Test Connection (Just for info)
                             success, msg = temp_helper.test_connection()
+                            
                             if success:
-                                # SUCCESS! Save and Apply
-                                st.session_state.gemini_helper = temp_helper
-                                st.session_state.gemini_key = temp_helper.api_key
-                                st.session_state.ai_type = f"Gemini Ultra ({len(temp_helper.api_keys)} Keys Active)"
                                 st.session_state.api_status_ok = True
                                 st.session_state.api_status_msg = "Kết nối thành công"
-                                
-                                # Save to disk
-                                data = load_custom_data()
-                                data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys) # Save all valid keys
-                                save_custom_data(data)
-                                
-                                # Sync to Factory
-                                try:
-                                    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
-                                    if os.path.exists(config_path):
-                                        with open(config_path, 'r', encoding='utf-8') as f:
-                                            cfg = json.load(f)
-                                        cfg["api_key"] = ",".join(temp_helper.api_keys)
-                                        with open(config_path, 'w', encoding='utf-8') as f:
-                                            json.dump(cfg, f, indent=2, ensure_ascii=False)
-                                except: pass
-
-                                st.success(f"✅ KẾT NỐI THÀNH CÔNG! (Đã nạp {len(temp_helper.api_keys)} Key)")
-                                time.sleep(1)
-                                st.rerun()
+                                st.success(f"✅ ĐÃ LƯU & KẾT NỐI: {len(temp_helper.api_keys)} Key")
                             else:
-                                st.error(f"❌ {msg}")
+                                st.session_state.api_status_ok = False
+                                st.session_state.api_status_msg = f"Lưu thành công, nhưng test lỗi: {msg}"
+                                st.warning(f"⚠️ Đã lưu Key mới, nhưng kết nối chập chờn: {msg}. (Đừng lo, Web sẽ tự thử lại)")
+                            
+                            time.sleep(1)
+                            st.rerun()
                     except Exception as e:
                         st.error(f"❌ Lỗi xử lý: {e}")
             else:
