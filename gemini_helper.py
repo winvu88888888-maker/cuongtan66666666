@@ -1,6 +1,5 @@
 """
-Enhanced Gemini Helper with Context Awareness
-Gemini sẽ tự động biết ngữ cảnh: cung nào, chủ đề gì, đang xem phần nào
+Enhanced Gemini Helper with Context Awareness (V2.0 - Secretary Mode)
 """
 
 import google.generativeai as genai
@@ -8,12 +7,13 @@ import os
 import requests
 import json
 import time
+import hashlib
+import re
 
 # Robust Fallback Import
 try:
     from free_ai_helper import FreeAIHelper
 except ImportError:
-    # If fails (rare), define a dummy
     class FreeAIHelper:
         def __getattr__(self, name):
             return lambda *args, **kwargs: "⚠️ Chế độ Offline không khả dụng (Lỗi Import)."
@@ -25,189 +25,158 @@ class GeminiQMDGHelper:
     _cache_max_size = 100
     
     def __init__(self, api_key_input):
-        import hashlib
-        import re
-        
-        # ROBUST KEY EXTRACTION (REGEX)
-        # Finds anything looking liek a Google API Key: AIzaSy... (39 chars)
+        # ROBUST KEY EXTRACTION
         self.api_keys = re.findall(r"AIza[0-9A-Za-z-_]{35}", str(api_key_input))
-        
-        # Fallback if regex fails (e.g. valid key but unusual format)
         if not self.api_keys and api_key_input:
              self.api_keys = [k.strip() for k in str(api_key_input).split(',') if k.strip()]
 
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V1.9.1-SmartParser"
+        self.version = "V2.0-Secretary" # Marked to verify update
         if self.api_key:
             genai.configure(api_key=self.api_key)
         
         self._failed_models = set()
         self._hashlib = hashlib
-        self.current_context = {
-            'topic': None, 
-            'palace': None, 
-            'chart_data': None, 
-            'last_action': None, 
-            'dung_than': []
-        }
-        self.max_retries = 3
-        self.base_delay = 2
+        self.max_retries = 2
+        self.base_delay = 1
         self.n8n_url = None
-        self.n8n_timeout = 90
+        self.n8n_timeout = 8
         
-        # Initialize Helpers
         self.model = self._get_best_model()
         self.fallback_helper = FreeAIHelper()
 
-    def _rotate_key(self):
-        """Switch to next available API Key"""
-        if not self.api_keys or len(self.api_keys) <= 1:
-            return False
-            
-        self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
-        self.api_key = self.api_keys[self.current_key_index]
-        print(f"🔄 Rotating to API Key #{self.current_key_index + 1}")
-        try:
-            genai.configure(api_key=self.api_key)
-            return True
-        except:
-            return False
-
     def _get_best_model(self):
-        # 404 ERROR FIX: Use specific version codes first, then generics
-        # Re-added gemini-1.0-pro as ultimate fallback if Flash fails
-        models_to_try = [
-            'gemini-1.5-flash-001',   # Specific stable version
-            'gemini-1.5-flash-002',   # Newer specific version
-            'gemini-1.5-flash',       # Generic alias
-            'gemini-1.5-flash-8b',    # Specialized
-            'gemini-pro',             # V1.0 Stable (Last Resort)
-        ]
-        
-        # First pass: try with a simple ping
-        for name in models_to_try:
-            if name in self._failed_models: continue
+        models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+        for m_name in models:
             try:
-                m = genai.GenerativeModel(name)
-                # Quick check without tool configuration first
-                m.generate_content("ping", generation_config={"max_output_tokens": 1})
+                m = genai.GenerativeModel(m_name)
                 return m
-            except Exception as e:
-                # 404 or other errors -> mark as failed and try next
-                # print(f"Model {name} check failed: {e}")
-                self._failed_models.add(name)
-                continue
-        
-        # Fallback to a guaranteed model (even if it might fail 429 later, better than 404 crash)
-        return genai.GenerativeModel('gemini-1.5-flash')
+            except: continue
+        return genai.GenerativeModel('gemini-pro')
 
     def test_connection(self):
         try:
-            resp = self.model.generate_content("ping", generation_config={"max_output_tokens": 1})
-            return True, "Kết nối thành công!"
+            self.model.generate_content("ping")
+            return True, "Kết nối OK"
         except Exception as e:
-            return False, f"Lỗi kết nối: {str(e)}"
+            return False, str(e)
+            
+    def set_n8n_url(self, url):
+        self.n8n_url = url
 
+    # --- CORE INTELLIGENCE: INTENT CLASSIFIER ---
+    def classify_intent(self, text):
+        """Phân loại ý định: 'social' vs 'question'"""
+        text = text.lower().strip()
+        social_keywords = ["chào", "hello", "hi", "bạn ơi", "alo", "có đó không", "giỏi quá", "hay quá", "tạm biệt", "cảm ơn"]
+        if len(text.split()) < 5 and any(k in text for k in social_keywords): return 'social'
+        return 'question'
 
-    # ... (cached response methods remain same) ...
-
-    def safe_get_text(self, response):
+    def call_n8n_webhook(self, question, context_summary):
+        """Gọi n8n để lấy dữ liệu thực tế"""
+        if not self.n8n_url: return None
         try:
-            if not response.candidates: return "⚠️"
-            candidate = response.candidates[0]
+            # Standard Schema
+            payload = {
+                "question": question,
+                "context": context_summary,
+                "timestamp": str(self._hashlib.sha256(question.encode()).hexdigest())[:10]
+            }
+            resp = requests.post(self.n8n_url, json=payload, timeout=self.n8n_timeout)
+            if resp.status_code == 200:
+                data = resp.json()
+                # Support multiple schema variations
+                return data.get('output') or data.get('text') or data.get('result')
+            return None
+        except Exception as e:
+            print(f"n8n Error: {e}")
+            return None
+
+    # --- MASTERMIND: PROMPT ENGINEERING ---
+    def _create_expert_prompt(self, user_input):
+        import streamlit as st
+        
+        # 1. Gather State
+        try:
+            current_topic = st.session_state.get('chu_de_hien_tai', 'Chung')
+        except: current_topic = "Chung"
+
+        is_def = any(k in user_input.lower() for k in ["là gì", "nghĩa là", "ý nghĩa"])
+        
+        # 2. Intent Classification
+        intent = self.classify_intent(user_input)
+        
+        # 3. Knowledge Retrieval
+        knowledge = ""
+        
+        # A. Social
+        if intent == 'social':
+            knowledge += "[CHẾ ĐỘ XÃ GIAO]: Người dùng chào hỏi. Hãy đáp lại ngắn gọn, thân thiện, không phân tích."
+        
+        # B. Definition (Dictionary)
+        elif is_def:
             try:
-                if response.text: return response.text
+                from skill_library import lookup_concept
+                defin = lookup_concept(user_input)
+                if defin:
+                    knowledge += f"\n[TỪ ĐIỂN]: {defin['summary']}\n(YÊU CẦU: Trả lời đúng định nghĩa này.)"
             except: pass
-            if candidate.content and candidate.content.parts:
-                return "".join([p.text for p in candidate.content.parts if hasattr(p, 'text')])
-            return "⚠️"
-        except: return "⚠️"
-    
-    def _call_ai(self, prompt, use_hub=True, use_web_search=False):
-        # ... (cache check remains) ...
-        
-        # dynamic tool selection
-        tools = []
-        if use_web_search:
-            try:
-                tools = [{"google_search": {}}]
-            except:
-                tools = [{"google_search_retrieval": {}}]
+            
+        # C. Topic Binding (Only if not definition)
+        if intent == 'question' and not is_def:
+             knowledge += f"\n[CHỦ ĐỀ UI]: {current_topic}\n"
+             
+        # D. n8n
+        if intent == 'question' and self.n8n_url:
+             n8n_data = self.call_n8n_webhook(user_input, f"Topic: {current_topic}")
+             if n8n_data:
+                 knowledge += f"\n[DỮ LIỆU THỰC TẾ N8N]: {n8n_data}\n"
 
-        for attempt in range(self.max_retries):
-            try:
-                if tools:
-                    resp = self.model.generate_content(prompt, tools=tools)
-                else:
-                    resp = self.model.generate_content(prompt)
-                text = self.safe_get_text(resp)
-                if "⚠️" not in text:
-                    self._cache_response(prompt, text)
-                    return text
-            except Exception as e:
-                err_str = str(e).lower()
-                if "quota" in err_str or "429" in err_str or "resource" in err_str:
-                    print(f"⚠️ Quota hit on {self.model.model_name}")
-                    
-                    # STRATEGY 1: ROTATE KEY FIRST
-                    if self._rotate_key():
-                        time.sleep(1)
-                        continue
-                        
-                    # STRATEGY 2: ROTATE MODEL
-                    try:
-                        models = [
-                            'gemini-1.5-flash', 'gemini-1.5-flash-8b', 
-                            'gemini-2.0-flash-lite-001'
-                        ]
-                        import random
-                        next_model = random.choice(models)
-                        self.model = genai.GenerativeModel(next_model)
-                        time.sleep(1)
-                        continue
-                    except: pass
-
-                time.sleep(self.base_delay * (2 ** attempt))
-                continue
-        
-        return "🛑 Hết hạn mức"
-
-    # --- WRAPPED METHODS FOR OFFLINE RESILIENCE ---
+        # 4. System Prompt
+        sys_prompt = (
+            "VAI TRÒ: Trợ lý Huyền Học Thông Minh.\n"
+            "NGUYÊN TẮC: \n"
+            "1. 'social' -> Chào hỏi ngắn gọn.\n"
+            "2. Hỏi định nghĩa -> Trả lời định nghĩa ngay.\n"
+            "3. Hỏi vấn đề (Tài lộc, Tình duyên) -> Dùng kiến thức Huyền Học để giải quyết.\n"
+            f"THÔNG TIN BỔ SUNG: {knowledge}\n"
+        )
+        return sys_prompt + f"\nUSER: {user_input}"
 
     def answer_question(self, question, chart_data=None, topic=None):
-        res = self._call_ai(f"Câu hỏi: {question}", use_web_search=True)
-        if "🛑" in res:
-            return self.fallback_helper.answer_question(question, chart_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
-        return res
+        final_prompt = self._create_expert_prompt(question)
+        return self._call_ai_raw(final_prompt)
 
-    def analyze_palace(self, palace_data, topic):
-        res = self._call_ai(f"Phân tích cung Kỳ Môn: {topic} - Data: {json.dumps(palace_data)}", use_web_search=True)
-        if "🛑" in res:
-            return self.fallback_helper.analyze_palace(palace_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
-        return res
+    # --- BASIC AI CALLER ---
+    def _call_ai_raw(self, prompt):
+        try:
+            # Use 'google_search_retrieval' for grounding if possible
+            tools = [{"google_search_retrieval": {}}]
+            try:
+                resp = self.model.generate_content(prompt, tools=tools)
+            except:
+                # Fallback no tools
+                resp = self.model.generate_content(prompt)
+                
+            if resp.text: return resp.text
+            return "⚠️ AI không phản hồi."
+        except Exception as e:
+            return f"🛑 Lỗi: {e}"
 
-    def explain_element(self, element_type, element_name):
-        res = self._call_ai(f"Giải thích chi tiết yếu tố {element_type} trong Kỳ Môn Độn Giáp: {element_name}", use_web_search=True)
-        if "🛑" in res:
-            return self.fallback_helper.explain_element(element_type, element_name) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
-        return res
-
-    def analyze_mai_hao(self, res_data, topic="Chung"):
-        res = self._call_ai(f"Luận giải quẻ Mai Hoa Dịch Số cho chủ đề '{topic}': {json.dumps(res_data)}", use_web_search=True)
-        if "🛑" in res:
-            return self.fallback_helper.analyze_mai_hao(res_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
-        return res
-
-    def analyze_luc_hao(self, res_data, topic="Chung"):
-        res = self._call_ai(f"Luận giải quẻ Lục Hào cho chủ đề '{topic}': {json.dumps(res_data)}", use_web_search=True)
-        if "🛑" in res:
-            return self.fallback_helper.analyze_luc_hao(res_data, topic) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
-        return res
-
+    # --- WRAPPERS FOR COMPATIBILITY ---
     def comprehensive_analysis(self, chart_data, topic, dung_than_info=None):
-        res = self._call_ai(f"Phân tích tổng quan bàn Kỳ Môn: {topic}. Dữ liệu: {json.dumps(chart_data)}", use_web_search=True)
-        if "🛑" in res:
-            return self.fallback_helper.comprehensive_analysis(chart_data, topic, dung_than_info) + "\n\n_(⚠️ Chế độ Offline do Quota)_"
-        return res
+        return self.answer_question(f"Phân tích bàn cờ chủ đề {topic}: {json.dumps(chart_data)}")
+        
+    def analyze_palace(self, data, topic):
+        return self.answer_question(f"Phân tích cung {topic}: {json.dumps(data)}")
+
+    def analyze_mai_hao(self, data, topic):
+        return self.answer_question(f"Phân tích Mai Hoa {topic}: {json.dumps(data)}")
+
+    def analyze_luc_hao(self, data, topic):
+        return self.answer_question(f"Phân tích Lục Hào {topic}: {json.dumps(data)}")
+
+    def explain_element(self, type, name):
+         return self.answer_question(f"Giải thích {type} {name}")

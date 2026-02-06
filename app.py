@@ -1045,186 +1045,104 @@ with st.sidebar:
         status_color = "#f59e0b"
         status_text = "CHƯA KIỂM TRA"
     
-    # Display with LED
-    if "Gemini" in ai_status:
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, {status_color}22 0%, {status_color}11 100%);
-            border-left: 4px solid {status_color};
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        ">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 24px;">{led_color}</span>
-                <div style="flex: 1;">
-                    <div style="font-weight: 800; color: {status_color}; font-size: 0.9rem;">
-                        {status_text}
-                    </div>
-                    <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
-                        🤖 {ai_status}
-                    </div>
+    # Display with LED & Unified Configuration
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, {status_color}22 0%, {status_color}11 100%);
+        border-left: 4px solid {status_color};
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    ">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">{led_color}</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 800; color: {status_color}; font-size: 0.9rem;">
+                    {status_text}
+                </div>
+                <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
+                    🤖 {ai_status}
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-        
-        with st.expander("⚙️ Quản lý Gemini"):
-            # Manual check button
+    </div>
+    """, unsafe_allow_html=True)
+
+    # UNIFIED SETTINGS (One place for everything)
+    is_connected = st.session_state.api_status_ok is True
+    expander_title = "🔑 Thay đổi API Key / Cấu hình" if is_connected else "🔑 Cấu Hình AI (Yêu cầu Key)"
+    
+    with st.expander(expander_title, expanded=not is_connected):
+        # 1. Connection Controls (Only if connected)
+        if is_connected:
             col1, col2 = st.columns([3, 1])
             with col1:
-                if st.button("🔄 Kiểm tra kết nối ngay", key="test_ai_conn", use_container_width=True):
+                if st.button("🔄 Test Kết Nối Lại", key="test_ai_conn_unified", use_container_width=True):
                     with st.spinner("Đang thử kết nối..."):
                         success, msg = st.session_state.gemini_helper.test_connection()
                         st.session_state.api_status_ok = success
                         st.session_state.api_status_msg = msg
                         st.session_state.last_api_check_time = current_time
-                        if success: 
-                            st.success(f"✅ {msg}")
-                            st.rerun()  # Refresh to update LED
-                        else: 
-                            st.error(f"❌ {msg}")
-                            st.rerun()  # Refresh to update LED
-            
-            with col2:
-                if st.button("🔄", key="force_refresh", help="Làm mới", use_container_width=True):
-                    st.rerun()
-            
-            # Display current model info
-            try:
-                if hasattr(st.session_state, 'gemini_helper') and st.session_state.gemini_helper:
-                    # Try to get model name safely
-                    model_obj = getattr(st.session_state.gemini_helper, 'model', None)
-                    if model_obj:
-                        model_name = getattr(model_obj, 'model_name', None)
-                        if model_name:
-                            st.info(f"**Model đang dùng:** `{model_name}`")
-                            
-                            # Quota warning for Pro models
-                            if 'pro' in model_name.lower():
-                                st.warning("⚠️ **Cảnh báo:** Model Pro tốn quota rất nhiều. Nên chuyển sang Flash.")
-                            else:
-                                st.success(f"✅ **Model Flash** - Tiết kiệm quota")
-            except Exception as e:
-                # Silently ignore model display errors
-                pass
-            
-            if st.session_state.last_api_check_time > 0:
-                import datetime as dt_module
-                last_check = dt_module.datetime.fromtimestamp(st.session_state.last_api_check_time)
-                st.caption(f"Lần check cuối: {last_check.strftime('%H:%M:%S')}")
-            
-            new_key = st.text_input("Thay đổi API Key (Tùy chọn):", type="password", key="new_api_key")
-            save_permanently = st.checkbox("Lưu khóa này vĩnh viễn", value=True)
-            
-            if st.button("Cập nhật Key mới"):
-                if new_key:
-                    try:
-                        from gemini_helper import GeminiQMDGHelper
-                        st.session_state.gemini_helper = GeminiQMDGHelper(new_key)
-                        st.session_state.gemini_key = new_key
-                        st.session_state.ai_type = "Gemini Pro (V1.7.5 Updated)"
-                        
-                        if save_permanently:
-                            data = load_custom_data()
-                            data["GEMINI_API_KEY"] = new_key
-                            save_custom_data(data)
-                            
-                            # ĐỒNG BỘ SANG AI FACTORY
-                            try:
-                                config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
-                                if os.path.exists(config_path):
-                                    with open(config_path, 'r', encoding='utf-8') as f:
-                                        cfg = json.load(f)
-                                    cfg["api_key"] = new_key
-                                    with open(config_path, 'w', encoding='utf-8') as f:
-                                        json.dump(cfg, f, indent=2, ensure_ascii=False)
-                            except: pass
-                            
-                            st.success("✅ Đã cập nhật và Lưu vĩnh viễn!")
-                        else:
-                            st.success("✅ Đã cập nhật (Tạm thời)!")
                         st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Lỗi: {e}")
-                else:
-                    st.warning("Vui lòng nhập Key.")
-    else:
-        st.warning(f"ℹ️ {ai_status}")
-        
-        # CẢNH BÁO ĐẶC BIỆT CHO STREAMLIT CLOUD
-        if st.session_state.get('missing_cloud_secret', False):
-            st.error("""
-            ### ⚠️ CHƯA CẤU HÌNH API KEY TRÊN STREAMLIT CLOUD!
-            
-            **Ứng dụng đang chạy trên Streamlit Cloud nhưng chưa có API Key.**
-            
-            #### 🛠️ Cách Sửa (2 phút):
-            1. Vào **Streamlit Cloud Dashboard**: https://share.streamlit.io/
-            2. Click vào app của bạn → **⚙️ Settings**
-            3. Chọn tab **"Secrets"**
-            4. Dán nội dung sau:
-            ```
-            GEMINI_API_KEY = "YOUR_API_KEY_HERE"
-            ```
-            5. Click **"Save"** → App sẽ tự động restart
-            
-            👉 [Lấy API Key miễn phí tại đây](https://aistudio.google.com/app/apikey)
-            """)
-        
-        # OLD INPUT REMOVED - REPLACED WITH SMART INPUT V1.9.1
-        with st.expander("🔑 Cấu Hình AI (Smart Input)", expanded=True):
-            st.markdown("👉 [Lấy API Key Google miễn phí](https://aistudio.google.com/app/apikey)")
-            st.info("💡 Mẹo: Bạn có thể copy cả danh sách chục key dán vào đây. Hệ thống tự lọc!")
-            
-            # Simple Text Area for messy input
-            user_api_input = st.text_area("Dán Key vào đây (Tự động lọc):", height=100, key="input_api_key_smart")
-            
-            if st.button("🚀 KÍCH HOẠT & KIỂM TRA NGAY", type="primary"):
-                if user_api_input:
-                    with st.spinner("🤖 Đang quét Key & Test kết nối..."):
-                        try:
-                            # 1. Initialize Helper (It filters keys inside __init__)
-                            from gemini_helper import GeminiQMDGHelper
-                            temp_helper = GeminiQMDGHelper(user_api_input)
-                            
-                            # 2. Check if any valid keys found
-                            if not temp_helper.api_keys:
-                                st.error("❌ Không tìm thấy API Key nào hợp lệ (AIza...) trong văn bản bạn nhập.")
-                            else:
-                                # 3. Test Connection
-                                success, msg = temp_helper.test_connection()
-                                if success:
-                                    # SUCCESS! Save and Apply
-                                    st.session_state.gemini_helper = temp_helper
-                                    st.session_state.gemini_key = temp_helper.api_key
-                                    st.session_state.ai_type = f"Gemini Ultra ({len(temp_helper.api_keys)} Keys Active)"
-                                    
-                                    # Save to disk
-                                    data = load_custom_data()
-                                    data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys) # Save all valid keys
-                                    save_custom_data(data)
-                                    
-                                    # Sync to Factory
-                                    try:
-                                        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
-                                        if os.path.exists(config_path):
-                                            with open(config_path, 'r', encoding='utf-8') as f:
-                                                cfg = json.load(f)
-                                            cfg["api_key"] = ",".join(temp_helper.api_keys)
-                                            with open(config_path, 'w', encoding='utf-8') as f:
-                                                json.dump(cfg, f, indent=2, ensure_ascii=False)
-                                    except: pass
+            with col2:
+                if st.button("R", key="force_refresh_unified", help="Reload App", use_container_width=True):
+                    st.rerun()
+                    
+            st.markdown("---")
 
-                                    st.success(f"✅ KẾT NỐI THÀNH CÔNG! (Đã nạp {len(temp_helper.api_keys)} Key)")
-                                    time.sleep(1)
-                                    st.rerun()
-                                else:
-                                    st.error(f"❌ Key đúng định dạng nhưng Google từ chối kết nối: {msg}")
-                        except Exception as e:
-                            st.error(f"❌ Lỗi xử lý: {e}")
-                else:
-                    st.warning("⚠️ Vui lòng dán Key vào ô trống.")
+        # 2. Main Input Area (ALWAYS VISIBLE HERE)
+        st.markdown("👉 [Lấy API Key Google miễn phí](https://aistudio.google.com/app/apikey)")
+        st.info("💡 Mẹo: Dán đè Key mới vào đây để thay đổi. Hỗ trợ dán nhiều Key cùng lúc.")
+        
+        user_api_input = st.text_area("Dán Key vào đây (Tự động lọc):", height=100, key="input_api_key_smart_unified")
+        
+        if st.button("🚀 CẬP NHẬT & KÍCH HOẠT", type="primary", use_container_width=True):
+            if user_api_input:
+                with st.spinner("🤖 Đang quét Key & Test kết nối..."):
+                    try:
+                        # 1. Initialize Helper (It filters keys inside __init__)
+                        from gemini_helper import GeminiQMDGHelper
+                        temp_helper = GeminiQMDGHelper(user_api_input)
+                        
+                        # 2. Check if any valid keys found
+                        if not temp_helper.api_keys:
+                            st.error("❌ Không tìm thấy API Key nào hợp lệ (AIza...) trong văn bản bạn nhập.")
+                        else:
+                            # 3. Test Connection
+                            success, msg = temp_helper.test_connection()
+                            if success:
+                                # SUCCESS! Save and Apply
+                                st.session_state.gemini_helper = temp_helper
+                                st.session_state.gemini_key = temp_helper.api_key
+                                st.session_state.ai_type = f"Gemini Ultra ({len(temp_helper.api_keys)} Keys Active)"
+                                st.session_state.api_status_ok = True
+                                st.session_state.api_status_msg = "Kết nối thành công"
+                                
+                                # Save to disk
+                                data = load_custom_data()
+                                data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys) # Save all valid keys
+                                save_custom_data(data)
+                                
+                                # Sync to Factory
+                                try:
+                                    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+                                    if os.path.exists(config_path):
+                                        with open(config_path, 'r', encoding='utf-8') as f:
+                                            cfg = json.load(f)
+                                        cfg["api_key"] = ",".join(temp_helper.api_keys)
+                                        with open(config_path, 'w', encoding='utf-8') as f:
+                                            json.dump(cfg, f, indent=2, ensure_ascii=False)
+                                except: pass
+
+                                st.success(f"✅ KẾT NỐI THÀNH CÔNG! (Đã nạp {len(temp_helper.api_keys)} Key)")
+                                time.sleep(1)
+                                st.rerun()
+                            else:
+                                st.error(f"❌ Key đúng định dạng nhưng Google từ chối kết nối: {msg}")
+                    except Exception as e:
+                        st.error(f"❌ Lỗi xử lý: {e}")
+            else:
+                st.warning("⚠️ Vui lòng dán Key vào ô trống.")
 
     # n8n Configuration
     with st.expander("🔗 Kết nối n8n (Advanced AI)"):
