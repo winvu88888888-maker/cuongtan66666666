@@ -52,31 +52,49 @@ class GeminiQMDGHelper:
         return genai.GenerativeModel('gemini-1.5-flash')
 
     def test_connection(self):
-        candidate_models = [
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-1.5-pro',
-            'gemini-1.5-pro-latest',
-            'gemini-pro',
-            'gemini-1.0-pro'
-        ]
-        
-        last_error = ""
-        for m_name in candidate_models:
+        try:
+            # 1. Ask Google: "What models do I have?"
+            # This is the most robust way to avoid 404s on names.
+            valid_models = []
             try:
-                temp_model = genai.GenerativeModel(m_name)
-                # Active Test
-                resp = temp_model.generate_content("ping")
-                if resp:
-                    # Found a working one!
-                    self.model = temp_model
-                    self.active_model_name = m_name
-                    return True, f"Kết nối OK (Model: {m_name})"
+                available = list(genai.list_models())
+                for m in available:
+                    if 'generateContent' in m.supported_generation_methods:
+                        valid_models.append(m.name)
             except Exception as e:
-                last_error = str(e)
-                continue
-                
-        return False, f"Không tìm thấy model nào hoạt động. Lỗi cuối: {last_error}"
+                return False, f"Lỗi liệt kê model (API Key hỏng?): {str(e)}"
+
+            if not valid_models:
+                return False, "Key này không có quyền truy cập bất kỳ Model nào!"
+
+            # 2. Prioritize modern models
+            # We sort/filter to pick the best one.
+            # Names come like 'models/gemini-1.5-flash-001'
+            priority_order = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+            
+            chosen_model_name = None
+            
+            # Simple match logic
+            for p in priority_order:
+                for vm in valid_models:
+                    if p in vm:
+                        chosen_model_name = vm
+                        break
+                if chosen_model_name: break
+            
+            # Fallback to FIRST valid model if no priority match
+            if not chosen_model_name:
+                chosen_model_name = valid_models[0]
+
+            # 3. Final Test
+            self.model = genai.GenerativeModel(chosen_model_name)
+            self.model.generate_content("ping")
+            self.active_model_name = chosen_model_name
+            
+            return True, f"Kết nối OK! (Model: {chosen_model_name})"
+
+        except Exception as e:
+            return False, f"Lỗi kết nối cuối cùng: {str(e)}"
 
 
             
