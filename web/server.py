@@ -82,8 +82,7 @@ try:
         except: pass
         
 except ImportError as e:
-    print(f"Import error: {e}")
-    sys.exit(1)
+    print(f"Import error in server: {e}")
 
 app = Flask(__name__, static_folder='static', template_folder='.')
 CORS(app)
