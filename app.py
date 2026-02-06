@@ -206,7 +206,7 @@ try:
             self.current_key_index = 0
             self.api_key = self.api_keys[0] if self.api_keys else None
             
-            self.version = "V2.2-SmartRouter-AutoDiscover" # Marked to verify update
+            self.version = "V2.5 - TITAN (GEMINI 2.0)" # Marked to verify update
             if self.api_key:
                 genai.configure(api_key=self.api_key)
             
