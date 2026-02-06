@@ -3,11 +3,11 @@ import streamlit as st
 # VERSION: 2026-02-04-V1.9.1-SMART-KEYS
 try:
     st.set_page_config(
-        page_title="Kỳ Môn Độn Giáp Pro - v2.0 FIXED",
-        page_icon="✅",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
+    page_title="🔴 SYSTEM DIAGNOSTIC MODE 🔴",
+    page_icon="☯️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 except Exception:
     pass
 
@@ -222,7 +222,8 @@ try:
 
         def _get_best_model(self):
             # Default placeholder, actual model is found in test_connection
-            return genai.GenerativeModel('gemini-1.5-flash')
+            # Prefer 2.0 as safe default if detection fails
+            return genai.GenerativeModel('gemini-2.0-flash')
 
         def test_connection(self):
             # DIAGNOSTIC DATA
@@ -244,8 +245,17 @@ try:
                 if not valid_models:
                     return False, f"Key OK nhưng 0 Model (SDK {sdk_version})"
 
-                # 2. Prioritize modern models
-                priority_order = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+                # 2. Prioritize modern models (UPDATED FOR 2026/User's Account)
+                priority_order = [
+                    'gemini-2.5-flash', 
+                    'gemini-2.5-pro',
+                    'gemini-2.0-flash',
+                    'gemini-2.0-pro',
+                    'gemini-1.5-flash', 
+                    'gemini-1.5-pro', 
+                    'gemini-pro'
+                ]
+                
                 chosen_model_name = None
                 
                 for p in priority_order:
@@ -256,6 +266,7 @@ try:
                     if chosen_model_name: break
                 
                 if not chosen_model_name:
+                    # Fallback to whatever IS available if strict match fails
                     chosen_model_name = valid_models[0]
 
                 # 3. Final Test
