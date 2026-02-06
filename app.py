@@ -1,6 +1,6 @@
 import streamlit as st
 
-# VERSION: 2026-02-04-V1.9.1-SMART-KEYS
+# VERSION: 2026-02-06-V2.5-TITAN-FORCE-REBUILD-01
 try:
     st.set_page_config(
     page_title="🔴 SYSTEM DIAGNOSTIC MODE 🔴",
@@ -206,7 +206,7 @@ try:
             self.current_key_index = 0
             self.api_key = self.api_keys[0] if self.api_keys else None
             
-            self.version = "V2.5 - TITAN (GEMINI 2.0)" # Marked to verify update
+            self.version = "V2.6 - PHOENIX [STABLE]" # Resurrection
             if self.api_key:
                 genai.configure(api_key=self.api_key)
             
