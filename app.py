@@ -1524,6 +1524,39 @@ class GeminiQMDGHelper:
     def _call_ai(self, prompt, use_hub=True, use_web_search=False):
         return self._call_ai_raw(prompt)
 
+    def _process_response(self, text):
+        import re
+        import streamlit as st
+        
+        thinking = ""
+        answer = text
+        
+        # Regex search for the thinking block
+        match_thinking = re.search(r'\[SUY_LUAN\](.*?)\[/SUY_LUAN\]', text, re.DOTALL)
+        if match_thinking:
+            thinking = match_thinking.group(1).strip()
+            answer = text.replace(match_thinking.group(0), "").strip()
+            
+            # Display the thinking process visually
+            st.markdown("""
+            <style>
+            .ag-thinking {
+                background-color: #f0f9ff;
+                border: 1px solid #7dd3fc;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: monospace;
+                font-size: 0.9em;
+                color: #0369a1;
+                margin-bottom: 10px;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            with st.expander("⚡ Logic Suy Luận (Click để xem)", expanded=False):
+                st.markdown(f'<div class="ag-thinking">{thinking}</div>', unsafe_allow_html=True)
+
+        return answer
+
     def answer_question(self, question, chart_data=None, topic=None): 
         intent = self.classify_intent(question)
         if intent == 'social':
