@@ -1490,14 +1490,20 @@ class GeminiQMDGHelper:
     def _call_ai_raw(self, prompt):
         import google.generativeai as genai
         
-        # CASCADE STRATEGY: High -> Low
+        # CASCADE STRATEGY: High -> Low -> Ancient
         cascade_models = [
             'gemini-2.5-pro',
             'gemini-2.0-flash', 
-            'gemini-1.5-flash'
+            'gemini-2.0-flash-exp',
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-flash-001',
+            'gemini-1.5-pro',
+            'gemini-pro' # The cockroach of models (hard to kill)
         ]
         
         last_error = None
+        error_log = []
         for model_name in cascade_models:
             try:
                 active_model = genai.GenerativeModel(model_name)
@@ -1510,6 +1516,14 @@ class GeminiQMDGHelper:
                 
                 if resp.text: return resp.text
             except Exception as e:
+                # CATCH ALL ERRORS TO CONTINUE FALLBACK
+                err = str(e).lower()
+                error_log.append(f"{model_name}: {err}")
+                print(f"⚠️ {model_name} failed: {err}. Switching...")
+                last_error = e
+                continue
+                
+        return f"🛑 AI Failed. Debug Log: {'; '.join(error_log)}"
                 # CATCH QUOTA ERRORS HERE
                 err = str(e).lower()
                 if "429" in err or "quota" in err:
