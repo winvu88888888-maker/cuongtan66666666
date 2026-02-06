@@ -43,7 +43,7 @@ import importlib
 # GLOBAL INIT
 params = None
 
-st.sidebar.success("✅ V2.1: FIXED & STABLE")
+st.sidebar.success("✅ V2.2 - SMART ROUTER & FIXED")
 st.sidebar.markdown("""
 <div style="background: #047857; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
     <b>🧠 AI KEY DETECTOR</b><br>
