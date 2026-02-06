@@ -225,9 +225,13 @@ try:
             return genai.GenerativeModel('gemini-1.5-flash')
 
         def test_connection(self):
+            # DIAGNOSTIC DATA
+            sdk_version = "Unknown"
+            try: sdk_version = genai.__version__
+            except: pass
+            
             try:
                 # 1. Ask Google: "What models do I have?"
-                # This is the most robust way to avoid 404s on names.
                 valid_models = []
                 try:
                     available = list(genai.list_models())
@@ -235,19 +239,15 @@ try:
                         if 'generateContent' in m.supported_generation_methods:
                             valid_models.append(m.name)
                 except Exception as e:
-                    return False, f"Lỗi liệt kê model (API Key hỏng?): {str(e)}"
+                    return False, f"Lỗi liệt kê (SDK {sdk_version}): {str(e)}"
 
                 if not valid_models:
-                    return False, "Key này không có quyền truy cập bất kỳ Model nào!"
+                    return False, f"Key OK nhưng 0 Model (SDK {sdk_version})"
 
                 # 2. Prioritize modern models
-                # We sort/filter to pick the best one.
-                # Names come like 'models/gemini-1.5-flash-001'
                 priority_order = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
-                
                 chosen_model_name = None
                 
-                # Simple match logic
                 for p in priority_order:
                     for vm in valid_models:
                         if p in vm:
@@ -255,7 +255,6 @@ try:
                             break
                     if chosen_model_name: break
                 
-                # Fallback to FIRST valid model if no priority match
                 if not chosen_model_name:
                     chosen_model_name = valid_models[0]
 
@@ -264,10 +263,11 @@ try:
                 self.model.generate_content("ping")
                 self.active_model_name = chosen_model_name
                 
-                return True, f"Kết nối OK! (Model: {chosen_model_name})"
+                return True, f"OK! Model: {chosen_model_name} (SDK {sdk_version})"
 
             except Exception as e:
-                return False, f"Lỗi kết nối cuối cùng: {str(e)}"
+                # DUMP EVERYTHING FOR DEBUGGING
+                return False, f"Lỗi: {str(e)} | SDK: {sdk_version} | Models: {valid_models}"
 
         def set_n8n_url(self, url):
             self.n8n_url = url
