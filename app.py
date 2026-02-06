@@ -43,7 +43,7 @@ import importlib
 # GLOBAL INIT
 params = None
 
-st.sidebar.success("✅ V2.2 - SMART ROUTER & FIXED")
+st.sidebar.success("🦅 V2.6 - PHOENIX [STABLE]")
 st.sidebar.markdown("""
 <div style="background: #047857; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
     <b>🧠 AI KEY DETECTOR</b><br>
@@ -1387,7 +1387,7 @@ else: # auto or online
             # INSTANTIATE INLINED CLASS DIRECTLY
             st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
             st.session_state.gemini_key = secret_api_key
-            st.session_state.ai_type = "Gemini Pro (V2.2 - Smart Router)"
+            st.session_state.ai_type = "Gemini Pro (V2.6 - Phoenix)"
         except Exception: 
             if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                 st.session_state.gemini_helper = FreeAIHelper()
