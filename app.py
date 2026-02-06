@@ -206,7 +206,7 @@ try:
             self.current_key_index = 0
             self.api_key = self.api_keys[0] if self.api_keys else None
             
-            self.version = "V2.5 - TITAN [LUNAR+]" # Marked to verify update
+            self.version = "V2.5 - TITAN [SAFE MODE]" # Stability First
             if self.api_key:
                 genai.configure(api_key=self.api_key)
             
