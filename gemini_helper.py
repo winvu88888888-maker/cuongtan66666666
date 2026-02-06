@@ -48,13 +48,17 @@ class GeminiQMDGHelper:
         self.fallback_helper = FreeAIHelper()
 
     def _get_best_model(self):
-        models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+        # gemini-pro (1.0) is effectively DEAD. Force 1.5.
+        models = ['gemini-1.5-flash', 'gemini-1.5-pro']
         for m_name in models:
             try:
                 m = genai.GenerativeModel(m_name)
+                # Try simple property access to check if obj is valid logic? 
+                # No, just return the flash one. It is most stable.
                 return m
             except: continue
-        return genai.GenerativeModel('gemini-pro')
+        # Robust Fallback
+        return genai.GenerativeModel('gemini-1.5-flash')
 
     def test_connection(self):
         try:
