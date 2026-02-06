@@ -1524,15 +1524,7 @@ class GeminiQMDGHelper:
                 continue
                 
         return f"🛑 AI Failed. Debug Log: {'; '.join(error_log)}"
-                # CATCH QUOTA ERRORS HERE
-                err = str(e).lower()
-                if "429" in err or "quota" in err:
-                    print(f"⚠️ {model_name} exhausted. Switching...")
-                    continue
-                last_error = e
-                continue
-                
-        return f"🛑 AI Failed. Last Error: {last_error}"
+
 
     # COMPATIBILITY WRAPPER FOR ORCHESTRATOR
     def _call_ai(self, prompt, use_hub=True, use_web_search=False):
