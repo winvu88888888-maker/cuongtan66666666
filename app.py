@@ -1,6 +1,6 @@
 import streamlit as st
 
-# VERSION: 2026-02-04-V1.9.1-SMART-KEYS
+# VERSION: 2026-02-06-V2.5-TITAN-FORCE-REBUILD-01
 try:
     st.set_page_config(
     page_title="🔴 SYSTEM DIAGNOSTIC MODE 🔴",
