@@ -48,24 +48,37 @@ class GeminiQMDGHelper:
         self.fallback_helper = FreeAIHelper()
 
     def _get_best_model(self):
-        # gemini-pro (1.0) is effectively DEAD. Force 1.5.
-        models = ['gemini-1.5-flash', 'gemini-1.5-pro']
-        for m_name in models:
-            try:
-                m = genai.GenerativeModel(m_name)
-                # Try simple property access to check if obj is valid logic? 
-                # No, just return the flash one. It is most stable.
-                return m
-            except: continue
-        # Robust Fallback
+        # Default placeholder, actual model is found in test_connection
         return genai.GenerativeModel('gemini-1.5-flash')
 
     def test_connection(self):
-        try:
-            self.model.generate_content("ping")
-            return True, "Kết nối OK"
-        except Exception as e:
-            return False, str(e)
+        candidate_models = [
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-pro',
+            'gemini-1.5-pro-latest',
+            'gemini-pro',
+            'gemini-1.0-pro'
+        ]
+        
+        last_error = ""
+        for m_name in candidate_models:
+            try:
+                temp_model = genai.GenerativeModel(m_name)
+                # Active Test
+                resp = temp_model.generate_content("ping")
+                if resp:
+                    # Found a working one!
+                    self.model = temp_model
+                    self.active_model_name = m_name
+                    return True, f"Kết nối OK (Model: {m_name})"
+            except Exception as e:
+                last_error = str(e)
+                continue
+                
+        return False, f"Không tìm thấy model nào hoạt động. Lỗi cuối: {last_error}"
+
+
             
     def set_n8n_url(self, url):
         self.n8n_url = url
