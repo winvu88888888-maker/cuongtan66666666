@@ -3,8 +3,8 @@ import streamlit as st
 # VERSION: 2026-02-04-V1.9.1-SMART-KEYS
 try:
     st.set_page_config(
-        page_title="Kỳ Môn Độn Giáp Pro - V1.9.1 (Smart)",
-        page_icon="☯️",
+        page_title="Kỳ Môn Độn Giáp Pro - v2.0 FIXED",
+        page_icon="✅",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -40,7 +40,10 @@ except ImportError:
 from PIL import Image
 import importlib
 
-st.sidebar.success("✅ V1.9.1: SMART KEY PARSER")
+# GLOBAL INIT
+params = None
+
+st.sidebar.success("✅ V2.1: FIXED & STABLE")
 st.sidebar.markdown("""
 <div style="background: #047857; color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
     <b>🧠 AI KEY DETECTOR</b><br>
@@ -244,6 +247,59 @@ except (ImportError, Exception):
     # Fallback if import fails
     def phan_tich_yeu_to_thoi_gian(hanh, mua):
         return "Bình"
+
+# --- HELPER: LEARNING MODE ---
+import os
+import json
+
+def load_custom_learning():
+    try:
+        if os.path.exists("custom_learning.json"):
+            with open("custom_learning.json", "r", encoding="utf-8") as f:
+                return json.load(f)
+    except: pass
+    return {}
+
+def save_custom_learning(data):
+    try:
+        with open("custom_learning.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except: pass
+
+def render_brain_training_ui():
+    st.sidebar.markdown("---")
+    with st.sidebar.expander("🧠 Huấn Luyện Antigravity", expanded=False):
+        st.markdown("""
+        <div style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">
+            Dạy cho AI những thuật ngữ mới. Nó sẽ áp dụng ngay lập tức.
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Initialize if needed
+        if 'custom_keywords' not in st.session_state:
+            st.session_state.custom_keywords = load_custom_learning()
+            
+        with st.form("training_form"):
+            new_kw = st.text_input("Từ khóa (VD: Bitcoin, bóng đá...)")
+            
+            # Get topics dynamically
+            topics = list(TOPIC_INTERPRETATIONS.keys()) if 'TOPIC_INTERPRETATIONS' in globals() else ["Chung"]
+            target_topic = st.selectbox("Gán vào Chủ đề:", topics)
+            
+            submitted = st.form_submit_button("Lưu Vào Não Bộ 💾")
+            
+            if submitted and new_kw:
+                st.session_state.custom_keywords[new_kw.lower()] = target_topic
+                save_custom_learning(st.session_state.custom_keywords)
+                st.success(f"✅ Đã dạy: '{new_kw}' -> '{target_topic}'")
+                st.rerun()
+
+        # Show learned items
+        if st.session_state.custom_keywords:
+            st.markdown("---")
+            st.caption("📚 Các thuật ngữ đã học:")
+            for k, v in list(st.session_state.custom_keywords.items())[-5:]: 
+                st.markdown(f"- **{k}**: {v}")
 
 CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
 SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
@@ -986,24 +1042,37 @@ with st.sidebar:
             # Đang chạy trên cloud và không có API key nào
             st.session_state.missing_cloud_secret = True
         
-        if st.session_state.ai_preference == "offline":
-            if FREE_AI_AVAILABLE:
+import google.generativeai as genai
+
+# --- IMPORT GEMINI HELPER FROM EXTERNAL MODULE (Unified Logic) ---
+try:
+    from gemini_helper import GeminiQMDGHelper
+except ImportError:
+    st.error("⚠️ Critical Error: gemini_helper.py not found! Vui lòng kiểm tra lại thư mục.")
+
+
+# -----------------------------------------------
+
+# Auto-Init logic
+if st.session_state.ai_preference == "offline":
+    if FREE_AI_AVAILABLE:
+        st.session_state.gemini_helper = FreeAIHelper()
+        st.session_state.ai_type = "Free AI (Manual Offline)"
+else: # auto or online
+    if secret_api_key and GEMINI_AVAILABLE:
+        try:
+            # INSTANTIATE INLINED CLASS DIRECTLY
+            st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
+            st.session_state.gemini_key = secret_api_key
+            st.session_state.ai_type = "Gemini Pro (V2.2 - Smart Router)"
+        except Exception: 
+            if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
                 st.session_state.gemini_helper = FreeAIHelper()
-                st.session_state.ai_type = "Free AI (Manual Offline)"
-        else: # auto or online
-            if secret_api_key and GEMINI_AVAILABLE:
-                try:
-                    from gemini_helper import GeminiQMDGHelper
-                    st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
-                    st.session_state.gemini_key = secret_api_key
-                    st.session_state.ai_type = "Gemini Pro (V1.7.5)"
-                except Exception: 
-                    if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
-                        st.session_state.gemini_helper = FreeAIHelper()
-                        st.session_state.ai_type = "Free AI (Fallback)"
-            elif FREE_AI_AVAILABLE:
-                st.session_state.gemini_helper = FreeAIHelper()
-                st.session_state.ai_type = "Free AI (Offline Mode)"
+                st.session_state.ai_type = "Free AI (Fallback)"
+    elif FREE_AI_AVAILABLE:
+        st.session_state.gemini_helper = FreeAIHelper()
+        st.session_state.ai_type = "Free AI (Offline Mode)"
+
 
     # AI Status Display with LED Indicator
     ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
@@ -2265,9 +2334,19 @@ PHÂN TÍCH LIÊN MẠCH:
             user_question = st.text_area("Đặt câu hỏi cho Chuyên gia AI:", placeholder="Hỏi thêm về thời điểm, cách hóa giải...", key="ai_q_input")
             if st.button("🤖 Gửi Câu Hỏi", key="ai_ask_final"):
                 if user_question:
-                    with st.spinner("Đang trả lời..."):
-                        a = st.session_state.gemini_helper.answer_question(user_question, st.session_state.chart_data, selected_topic)
-                        st.info(a)
+                    with st.spinner("🤖 Chuyên gia AI đang phân tích dữ liệu..."):
+                        from qmdg_orchestrator import AIOrchestrator
+                        orc = AIOrchestrator(st.session_state.gemini_helper)
+                        raw = orc.run_pipeline(
+                            user_question, 
+                            current_topic=selected_topic,
+                            chart_data=st.session_state.get('chart_data'),
+                            mai_hoa_data=st.session_state.get('mai_hoa_result'),
+                            luc_hao_data=st.session_state.get('luc_hao_result')
+                        )
+                        final_ans = st.session_state.gemini_helper._process_response(raw)
+                        st.info(final_ans)
+                        orc.render_logs()
 
 
 
@@ -2633,13 +2712,31 @@ elif st.session_state.current_view == "ai_experts":
     
     if st.button("🧙 Triệu hồi Chuyên Gia AI", type="primary"):
         if exp_q:
-            with st.spinner(f"AI {selected_agent} đang xử lý dữ liệu..."):
-                # Forward request to specialized module logic
+            with st.spinner(f"AI {selected_agent} đang chạy quy trình xử lý chuyên sâu..."):
                 try:
-                    agent_key = selected_agent.split('(')[0].strip().lower().replace(" ", "_")
-                    # Dynamically call the module or use unified helper
-                    res = st.session_state.gemini_helper.answer_question(f"Role: {selected_agent}. Question: {exp_q}", st.session_state.get('chart_data'))
+                    # INITIALIZE ORCHESTRATOR
+                    from orchestrator import AIOrchestrator
+                    orc = AIOrchestrator(st.session_state.gemini_helper)
+                    
+                    # RUN PIPELINE with Role Injected
+                    safe_topic = selected_agent.split('(')[0].strip()
+                    full_query = f"Bạn đang đóng vai chuyên gia: {selected_agent}. Hãy trả lời câu hỏi: {exp_q}"
+                    
+                    raw_response = orc.run_pipeline(
+                        full_query, 
+                        current_topic=safe_topic,
+                        chart_data=st.session_state.get('chart_data'),
+                        mai_hoa_data=st.session_state.get('mai_hoa_result'),
+                        luc_hao_data=st.session_state.get('luc_hao_result')
+                    )
+                    
+                    # PROCESS & DISPLAY
+                    res = st.session_state.gemini_helper._process_response(raw_response)
                     st.info(res)
+                    
+                    # SHOW LOGS
+                    orc.render_logs()
+                    
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
         else:
@@ -2697,13 +2794,24 @@ elif st.session_state.current_view == "gemini_ai":
     
     if st.button(f"🤖 Hỏi {ai_name}", type="primary", use_container_width=True, key="ask_gemini_btn"):
         if user_question:
-            with st.spinner(f"🤖 {ai_name} đang suy nghĩ..."):
+            with st.spinner(f"🤖 {ai_name} đang chạy quy trình xử lý..."):
                 try:
-                    # Sử dụng phương thức answer_question thống nhất cho cả 2 helper
-                    response_text = st.session_state.gemini_helper.answer_question(
+                    # INITIALIZE ORCHESTRATOR (N8N STYLE SYSTEM)
+                    from orchestrator import AIOrchestrator
+                    orc = AIOrchestrator(st.session_state.gemini_helper)
+                    
+                    # RUN PIPELINE
+                    safe_topic = selected_topic_ai if selected_topic_ai != 'Không chọn (Hỏi chung)' else 'Chung'
+                    raw_response = orc.run_pipeline(
                         user_question, 
-                        topic=selected_topic_ai if selected_topic_ai != 'Không chọn (Hỏi chung)' else 'Chung'
+                        current_topic=safe_topic,
+                        chart_data=st.session_state.get('chart_data'),
+                        mai_hoa_data=st.session_state.get('mai_hoa_result'),
+                        luc_hao_data=st.session_state.get('luc_hao_result')
                     )
+                    
+                    # PROCESS & DISPLAY
+                    response_text = st.session_state.gemini_helper._process_response(raw_response)
                     
                     # Display response in a nice panel
                     st.markdown("---")
@@ -2732,6 +2840,9 @@ elif st.session_state.current_view == "gemini_ai":
                         {response_text.replace(chr(10), '<br>')}
                     </div>
                     """, unsafe_allow_html=True)
+                    
+                    # RENDER WORKFLOW LOGS (User requested n8n visibility)
+                    orc.render_logs()
                     
                 except Exception as e:
                     st.error(f"❌ Lỗi: {str(e)}")
