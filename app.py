@@ -246,14 +246,14 @@ try:
                     return False, f"Key OK nhưng 0 Model (SDK {sdk_version})"
 
                 # 2. Prioritize modern models (UPDATED FOR 2026/User's Account)
+                # "Flash" models come first because they are FREE and FAST (avoiding 429 Quota errors)
                 priority_order = [
-                    'gemini-2.5-flash', 
-                    'gemini-2.5-pro',
-                    'gemini-2.0-flash',
-                    'gemini-2.0-pro',
-                    'gemini-1.5-flash', 
-                    'gemini-1.5-pro', 
-                    'gemini-pro'
+                    'gemini-2.0-flash',        # BEST BALANCE (Smart + Free)
+                    'gemini-2.0-flash-exp',    # Experimental (Often higher limits)
+                    'gemini-1.5-flash',        # Solid Backup
+                    'gemini-2.5-flash',        # If available
+                    'gemini-2.5-pro',          # Powerful but Expensive (Quota Risk)
+                    'gemini-pro',              # Legacy
                 ]
                 
                 chosen_model_name = None
@@ -369,21 +369,62 @@ try:
             except: pass
             return "⚠️"
 
-        # --- BASIC AI CALLER ---
+        # --- BASIC AI CALLER WITH CASCADE FALLBACK ---
         def _call_ai_raw(self, prompt):
-            try:
-                # Use 'google_search_retrieval' for grounding if possible
-                tools = [{"google_search_retrieval": {}}]
+            # Strategy: "High to Low" as requested by user.
+            # 1. Try currently selected model (e.g. 2.5 Pro)
+            # 2. If 429/Quota -> Fallback to 2.0 Flash (Free & Fast)
+            # 3. If that fails -> Fallback to 1.5 Flash
+            
+            primary_name = 'gemini-2.5-pro'
+            if hasattr(self.model, 'model_name'):
+                primary_name = self.model.model_name.lower().replace('models/', '')
+
+            cascade_models = [
+                primary_name,
+                'gemini-2.0-flash',
+                'gemini-1.5-flash'
+            ]
+            
+            # Remove duplicates
+            seen = set()
+            cascade_models = [x for x in cascade_models if not (x in seen or seen.add(x))]
+
+            last_error = None
+            
+            for i, model_name in enumerate(cascade_models):
                 try:
-                    resp = self.model.generate_content(prompt, tools=tools)
-                except:
-                    # Fallback no tools
-                    resp = self.model.generate_content(prompt)
+                    # Dynamic instantiation
+                    active_model = genai.GenerativeModel(model_name)
                     
-                if resp.text: return resp.text
-                return "⚠️ AI không phản hồi."
-            except Exception as e:
-                return f"🛑 Lỗi: {e}"
+                    # Tools setup (Only for primary/capable models)
+                    tools = [{"google_search_retrieval": {}}] 
+                    
+                    try:
+                        # Try with search tools first
+                        resp = active_model.generate_content(prompt, tools=tools)
+                    except:
+                        # Fallback to pure text (no tools)
+                        resp = active_model.generate_content(prompt)
+                        
+                    if resp.text: 
+                        if i > 0: return f"[FALLBACK {model_name}] {resp.text}"
+                        return resp.text
+                    
+                except Exception as e:
+                    last_error = e
+                    err_str = str(e).lower()
+                    is_quota = "429" in err_str or "quota" in err_str or "exhausted" in err_str
+                    
+                    if is_quota:
+                        print(f"⚠️ Model {model_name} exhausted. Switching to next...")
+                        continue # Try next model
+                    else:
+                        # Other errors (blocked content, etc) - try next just in case
+                        print(f"❌ Model {model_name} error: {e}")
+                        continue
+
+            return f"🛑 AI Failed (All Models Exhausted). Last Error: {last_error}"
         
         # --- WRAPPED METHODS FOR OFFLINE RESILIENCE ---
         def _call_ai(self, prompt, use_hub=True, use_web_search=False):
