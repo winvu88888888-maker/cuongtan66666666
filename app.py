@@ -1132,6 +1132,9 @@ else: # auto or online
                 <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
                     🤖 {ai_status}
                 </div>
+                <div style="font-size: 0.75rem; color: #dc2626; margin-top: 5px; font-style: italic;">
+                    {st.session_state.api_status_msg if st.session_state.api_status_ok is False else ""}
+                </div>
             </div>
         </div>
     </div>
