@@ -1439,7 +1439,20 @@ class GeminiQMDGHelper:
         self.n8n_timeout = 8
         
         # Default placeholder
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        self.model = self._get_best_model()
+
+    def _get_best_model(self):
+        # Always default to Flash 2.0 for stability
+        import google.generativeai as genai
+        return genai.GenerativeModel('gemini-2.0-flash')
+
+    def test_connection(self):
+        try:
+            import google.generativeai as genai
+            list(genai.list_models())
+            return True, "Kết nối thành công (Inlined)"
+        except Exception as e:
+            return False, f"Lỗi kết nối: {str(e)}"
 
     def classify_intent(self, text):
         text = text.lower()
