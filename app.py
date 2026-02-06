@@ -1522,7 +1522,7 @@ else: # auto or online
                                 time.sleep(1)
                                 st.rerun()
                             else:
-                                st.error(f"❌ Key đúng định dạng nhưng Google từ chối kết nối: {msg}")
+                                st.error(f"❌ {msg}")
                     except Exception as e:
                         st.error(f"❌ Lỗi xử lý: {e}")
             else:
