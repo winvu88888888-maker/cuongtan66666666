@@ -1519,6 +1519,21 @@ class GeminiQMDGHelper:
                 # CATCH ALL ERRORS TO CONTINUE FALLBACK
                 err = str(e).lower()
                 error_log.append(f"{model_name}: {err}")
+                
+                # CRITICAL: IF KEY IS LEAKED/REVOKED, STOP TRYING.
+                if "leaked" in err or "403" in err or "key" in err and "invalid" in err:
+                    return "🛑 LỖI API KEY: Key của bạn đã bị Google khóa (Leaked/Revoked). Vui lòng đổi Key mới!"
+                
+                # QUOTA EXCEEDED (429) - Suggest Waiting
+                if "429" in err or "quota" in err:
+                     print(f"⚠️ {model_name} exhausted. Switching...")
+                     # If this was the last viable model (Flash), we might want to warn user
+                     if "flash" in model_name:
+                         last_error = f"Hết lượt miễn phí (429). Vui lòng đợi 1 phút rồi thử lại! ({model_name})"
+                     else:
+                         last_error = e
+                     continue
+
                 print(f"⚠️ {model_name} failed: {err}. Switching...")
                 last_error = e
                 continue
