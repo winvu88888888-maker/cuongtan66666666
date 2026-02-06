@@ -1537,8 +1537,13 @@ class GeminiQMDGHelper:
                 print(f"⚠️ {model_name} failed: {err}. Switching...")
                 last_error = e
                 continue
-                
-        return f"🛑 AI Failed. Debug Log: {'; '.join(error_log)}"
+        
+        # ANALYZE FAILURE REASONS
+        error_text = "; ".join(error_log)
+        if "429" in error_text or "quota" in error_text:
+            return "⏳ <b>HỆ THỐNG ĐANG BẬN (Hết lượt miễn phí)</b><br>Vui lòng đợi <b>60 giây</b> rồi thử lại!<br><i>(Mẹo: Google giới hạn số lần hỏi/phút với Key miễn phí)</i>"
+            
+        return f"🛑 AI Failed. Debug Log: {error_text}"
 
 
     # COMPATIBILITY WRAPPER FOR ORCHESTRATOR
