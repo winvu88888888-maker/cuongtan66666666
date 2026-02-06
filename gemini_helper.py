@@ -1,5 +1,5 @@
 """
-Enhanced Gemini Helper with Context Awareness (V2.0 - Secretary Mode)
+Enhanced Gemini Helper with Context Awareness (V2.2 - Smart Router)
 """
 
 import google.generativeai as genai
@@ -33,7 +33,7 @@ class GeminiQMDGHelper:
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V2.0-Secretary" # Marked to verify update
+        self.version = "V2.2-SmartRouter" # Marked to verify update
         if self.api_key:
             genai.configure(api_key=self.api_key)
         
@@ -145,9 +145,12 @@ class GeminiQMDGHelper:
         )
         return sys_prompt + f"\nUSER: {user_input}"
 
-    def answer_question(self, question, chart_data=None, topic=None):
-        final_prompt = self._create_expert_prompt(question)
-        return self._call_ai_raw(final_prompt)
+    def safe_get_text(self, response):
+        try:
+            if not response.candidates: return "⚠️"
+            if response.text: return response.text
+        except: pass
+        return "⚠️"
 
     # --- BASIC AI CALLER ---
     def _call_ai_raw(self, prompt):
@@ -164,19 +167,120 @@ class GeminiQMDGHelper:
             return "⚠️ AI không phản hồi."
         except Exception as e:
             return f"🛑 Lỗi: {e}"
+    
+    # --- WRAPPED METHODS FOR OFFLINE RESILIENCE ---
+    def _call_ai(self, prompt, use_hub=True, use_web_search=False):
+        return self._call_ai_raw(prompt)
 
-    # --- WRAPPERS FOR COMPATIBILITY ---
-    def comprehensive_analysis(self, chart_data, topic, dung_than_info=None):
-        return self.answer_question(f"Phân tích bàn cờ chủ đề {topic}: {json.dumps(chart_data)}")
+    # --- PROCESS RESPONSE (Parsing logic) ---
+    def _process_response(self, text):
+        import re
+        import streamlit as st
         
-    def analyze_palace(self, data, topic):
-        return self.answer_question(f"Phân tích cung {topic}: {json.dumps(data)}")
+        thinking = ""
+        answer = text
+        
+        # Regex search for the thinking block
+        match_thinking = re.search(r'\[SUY_LUAN\](.*?)\[/SUY_LUAN\]', text, re.DOTALL)
+        if match_thinking:
+            thinking = match_thinking.group(1).strip()
+            answer = text.replace(match_thinking.group(0), "").strip()
+            
+            # Display the thinking process visually (AntiGravity Style)
+            st.markdown("""
+            <style>
+            .ag-thinking {
+                background-color: #f0f9ff;
+                border: 1px solid #7dd3fc;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: monospace;
+                font-size: 0.9em;
+                color: #0369a1;
+                margin-bottom: 10px;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            with st.expander("⚡ Antigravity Quy Trình Tư Duy (Click để xem)", expanded=False):
+                st.markdown(f'<div class="ag-thinking">{thinking}</div>', unsafe_allow_html=True)
 
-    def analyze_mai_hao(self, data, topic):
-        return self.answer_question(f"Phân tích Mai Hoa {topic}: {json.dumps(data)}")
+        # Regex search for the Conclusion block (New Standard)
+        match_conclusion = re.search(r'\[KET_LUAN\](.*?)\[/KET_LUAN\]', answer, re.DOTALL)
+        if match_conclusion:
+            answer = match_conclusion.group(1).strip()
+        
+        # Fallback: If AI put everything in thinking block and answer is empty
+        if not answer.strip() and thinking:
+            answer = "ℹ️ **Kết quả từ quy trình suy luận:**\n\n" + thinking
+            
+        return answer
 
-    def analyze_luc_hao(self, data, topic):
-        return self.answer_question(f"Phân tích Lục Hào {topic}: {json.dumps(data)}")
+
+    def answer_question(self, question, chart_data=None, topic=None): 
+        # 1. CLASSIFY INTENT
+        import streamlit as st
+        
+        intent = self.classify_intent(question)
+        
+        # 2. FAST PATH: SOCIAL & GREETING
+        if intent == 'social':
+            # Bypass Orchestrator for simple greetings
+            return self._call_ai_raw(f"User nói: '{question}'. Hãy đáp lại thật ngắn gọn, thân thiện (1 câu). Ví dụ: 'Chào bạn, tôi có thể giúp gì cho bạn?'")
+
+        # 3. KNOWLEDGE PATH: DEFINITIONS
+        is_def = any(k in question.lower() for k in ["là gì", "nghĩa là", "ý nghĩa", "giải thích"])
+        if is_def:
+             prompt = self._create_expert_prompt(question)
+             return self._call_ai_raw(prompt)
+
+        # 4. EXTERNAL PATH: N8N (News, Real-time Data)
+        n8n_result = None
+        # Only call n8n if url is set AND not a pure metaphysical term lookup
+        # (This prevents calling n8n for "Sinh Môn là gì")
+        if self.n8n_url and not any(k in question.lower() for k in ["bàn cờ", "dụng thần", "cung", "quẻ", "sao", "cửa"]):
+             try:
+                n8n_result = self.call_n8n_webhook(question, f"User Interest: {topic}")
+             except: pass
+        
+        # If n8n gave a clear result, use it directly!
+        if n8n_result:
+             # Synthesize n8n result simply
+             prompt = (
+                 f"User hỏi: {question}\n"
+                 f"Thông tin tìm được từ Internet (N8N): {n8n_result}\n"
+                 f"Yêu cầu: Trả lời câu hỏi user dựa trên thông tin trên. Ngắn gọn, súc tích."
+             )
+             return self.safe_get_text(self.model.generate_content(prompt))
+
+        # 5. DEEP PATH: CALCULATOR & ANALYST (Orchestrator)
+        from qmdg_orchestrator import AIOrchestrator
+        orc = AIOrchestrator(self)
+        
+        raw = orc.run_pipeline(
+            question, 
+            current_topic=topic or "Chung", 
+            chart_data=chart_data or st.session_state.get('chart_data'),
+            mai_hoa_data=st.session_state.get('mai_hoa_result'),
+            luc_hao_data=st.session_state.get('luc_hao_result')
+        )
+        return self._process_response(raw)
+
+    def analyze_palace(self, palace_data, topic): 
+        prompt = self._create_expert_prompt(f"Phân tích Cung chi tiết ({topic})")
+        # Reuse logic? No, specific analysis needs tools.
+        # Ideally this should also use orchestrator for consistency, but for now raw is fine or Orchestrator.
+        # Let's keep it using _create_expert which injects context.
+        prompt = f"Phân tích Cung: {topic}. Data: {json.dumps(palace_data)}"
+        return self._call_ai_raw(prompt)
 
     def explain_element(self, type, name):
          return self.answer_question(f"Giải thích {type} {name}")
+    
+    def analyze_mai_hao(self, res_data, topic="Chung"): 
+        return self.answer_question(f"Luận quẻ Mai Hoa ({topic}): {json.dumps(res_data)}")
+
+    def analyze_luc_hao(self, res_data, topic="Chung"): 
+         return self.answer_question(f"Luận quẻ Lục Hào ({topic}): {json.dumps(res_data)}")
+
+    def comprehensive_analysis(self, chart_data, topic, dung_than_info=None): 
+         return self.answer_question(f"Tổng quan bàn Kỳ Môn ({topic})")
