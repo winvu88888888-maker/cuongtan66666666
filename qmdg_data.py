@@ -111,6 +111,78 @@ BAT_MON_CO_DINH_CUNG = {
 # Địa Chi Giờ
 CAN_CHI_Gio = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
 
+# ======================================================================
+# BẢNG TRA CỨU HƯỚNG - KHOẢNG CÁCH - GIỚI TÍNH (CHO TÌM ĐỒ MẤT)
+# ======================================================================
+
+# Hướng theo từng Cung (Hậu Thiên Bát Quái)
+CUNG_HUONG = {
+    1: {"Hướng": "Bắc", "Góc": "337.5° - 22.5°", "Quái": "Khảm"},
+    2: {"Hướng": "Tây Nam", "Góc": "202.5° - 247.5°", "Quái": "Khôn"},
+    3: {"Hướng": "Đông", "Góc": "67.5° - 112.5°", "Quái": "Chấn"},
+    4: {"Hướng": "Đông Nam", "Góc": "112.5° - 157.5°", "Quái": "Tốn"},
+    5: {"Hướng": "Trung Tâm", "Góc": "N/A (Tại chỗ)", "Quái": "Trung Cung"},
+    6: {"Hướng": "Tây Bắc", "Góc": "292.5° - 337.5°", "Quái": "Càn"},
+    7: {"Hướng": "Tây", "Góc": "247.5° - 292.5°", "Quái": "Đoài"},
+    8: {"Hướng": "Đông Bắc", "Góc": "22.5° - 67.5°", "Quái": "Cấn"},
+    9: {"Hướng": "Nam", "Góc": "157.5° - 202.5°", "Quái": "Ly"}
+}
+
+# Khoảng cách theo Ngũ Hành của Cung (Ước tính dựa theo lý thuyết QMDG)
+CUNG_KHOANG_CACH = {
+    1: {"Xa_Gan": "Trung bình - Xa", "Moc_Ta": "Nơi có nước, ao hồ, nhà vệ sinh, hầm ngầm", "Số_Lý": "1-6 đơn vị (km/100m/bước)"},
+    2: {"Xa_Gan": "Gần", "Moc_Ta": "Đất trống, kho, nhà cấp 4, đồng ruộng", "Số_Lý": "2-5 đơn vị"},
+    3: {"Xa_Gan": "Trung bình", "Moc_Ta": "Nơi có cây xanh, rừng, chợ, phố đông", "Số_Lý": "3-8 đơn vị"},
+    4: {"Xa_Gan": "Trung bình - Xa", "Moc_Ta": "Nơi cao, cây lớn, văn phòng, bưu điện", "Số_Lý": "4-8 đơn vị"},
+    5: {"Xa_Gan": "Rất gần (Tại chỗ)", "Moc_Ta": "Trong nhà, trung tâm, nơi quen thuộc", "Số_Lý": "0-2 đơn vị"},
+    6: {"Xa_Gan": "Xa", "Moc_Ta": "Nhà cao tầng, cơ quan nhà nước, đền chùa", "Số_Lý": "6-11 đơn vị"},
+    7: {"Xa_Gan": "Trung bình", "Moc_Ta": "Nơi giải trí, quán xá, ao đầm", "Số_Lý": "7-10 đơn vị"},
+    8: {"Xa_Gan": "Gần", "Moc_Ta": "Núi đồi, cửa hàng, nhà ở, kho bãi", "Số_Lý": "8-3 đơn vị"},
+    9: {"Xa_Gan": "Xa - Rất xa", "Moc_Ta": "Phương Nam, nơi nóng, nhà hàng, trường học", "Số_Lý": "9-4 đơn vị"}
+}
+
+# Giới tính người lấy đồ (Dựa theo Ngũ Hành và Quái Tượng)
+# Âm = Nữ, Dương = Nam
+GIOI_TINH_PHAN_LOAI = {
+    # Theo Quái
+    "Khảm": {"Giới_Tính": "Nam (Trung Nam)", "Tuổi": "Người trung niên, 30-45 tuổi", "Đặc_Điểm": "Da ngăm, nhanh nhẹn, hay đi đêm"},
+    "Khôn": {"Giới_Tính": "Nữ (Mẹ/Già)", "Tuổi": "Phụ nữ lớn tuổi, trên 45", "Đặc_Điểm": "Thấp béo, tham lam, sống gần đó"},
+    "Chấn": {"Giới_Tính": "Nam (Trưởng Nam)", "Tuổi": "Thanh niên, 18-35 tuổi", "Đặc_Điểm": "Cao, gầy, nhanh nhẹn, vội vã"},
+    "Tốn": {"Giới_Tính": "Nữ (Trưởng Nữ)", "Tuổi": "Phụ nữ trẻ, 20-35 tuổi", "Đặc_Điểm": "Cao, tóc dài, đẹp, khéo léo"},
+    "Trung Cung": {"Giới_Tính": "Không xác định", "Tuổi": "Có thể là người thân quen", "Đặc_Điểm": "Đồ ở ngay trong nhà, không bị mất"},
+    "Càn": {"Giới_Tính": "Nam (Cha/Già)", "Tuổi": "Đàn ông lớn tuổi, trên 50", "Đặc_Điểm": "Cao to, mạnh mẽ, có quyền lực"},
+    "Đoài": {"Giới_Tính": "Nữ (Thiếu Nữ)", "Tuổi": "Cô gái trẻ, dưới 25 tuổi", "Đặc_Điểm": "Xinh đẹp, hay cười, thích ăn diện"},
+    "Cấn": {"Giới_Tính": "Nam (Thiếu Nam)", "Tuổi": "Trẻ em hoặc thanh niên dưới 25", "Đặc_Điểm": "Thấp, chắc, ít nói, cố chấp"},
+    "Ly": {"Giới_Tính": "Nữ (Trung Nữ)", "Tuổi": "Phụ nữ trung niên, 30-45 tuổi", "Đặc_Điểm": "Da sáng, đẹp, hay nói, văn chương"},
+    
+    # Theo Thiên Can (bổ sung)
+    "Ất": {"Giới_Tính": "Nữ", "Đặc_Điểm": "Phụ nữ, nữ giới"},
+    "Canh": {"Giới_Tính": "Nam", "Đặc_Điểm": "Đàn ông, kẻ cứng rắn, hung dữ"},
+    "Bính": {"Giới_Tính": "Nam hoặc Nữ trẻ", "Đặc_Điểm": "Nhanh nhẹn, hay di chuyển"},
+    "Đinh": {"Giới_Tính": "Nữ", "Đặc_Điểm": "Phụ nữ thông minh, khéo léo"},
+    "Mậu": {"Giới_Tính": "Nam", "Đặc_Điểm": "Đàn ông trung thực, mập mạp"},
+    "Kỷ": {"Giới_Tính": "Nữ", "Đặc_Điểm": "Phụ nữ xấu tính, gian lận"},
+    "Nhâm": {"Giới_Tính": "Nam", "Đặc_Điểm": "Đàn ông trộm cướp, hay đi đêm"},
+    "Quý": {"Giới_Tính": "Nữ", "Đặc_Điểm": "Phụ nữ lừa lọc, bí mật"},
+    
+    # Theo Bát Thần
+    "Huyền Vũ": {"Giới_Tính": "Có khả năng là Nam trộm cắp", "Đặc_Điểm": "Kẻ lén lút, trộm cắp chuyên nghiệp"},
+    "Thiên Bồng": {"Giới_Tính": "Nam cường bạo", "Đặc_Điểm": "Kẻ cướp, hung dữ, hay dùng vũ lực"},
+    "Đằng Xà": {"Giới_Tính": "Không rõ (biến hóa)", "Đặc_Điểm": "Kẻ lừa đảo, hay thay đổi hình dạng"}
+}
+
+# Luận đoán khả năng tìm được đồ
+TIM_DO_KHA_NANG = {
+    "Sinh Môn": {"Kha_Nang": "Cao", "Mo_Ta": "Đồ vật còn nguyên vẹn, có thể tìm lại được"},
+    "Hưu Môn": {"Kha_Nang": "Cao", "Mo_Ta": "Đồ đang ở yên, dễ tìm, chưa bị di chuyển xa"},
+    "Khai Môn": {"Kha_Nang": "Trung bình cao", "Mo_Ta": "Đồ ở nơi công cộng, có thể nhờ người tìm"},
+    "Cảnh Môn": {"Kha_Nang": "Trung bình", "Mo_Ta": "Đồ có thể đổi chủ, cần tìm nhanh"},
+    "Đỗ Môn": {"Kha_Nang": "Trung bình thấp", "Mo_Ta": "Đồ bị giấu kín, khó tìm"},
+    "Thương Môn": {"Kha_Nang": "Thấp", "Mo_Ta": "Đồ có thể đã hỏng hoặc bị bán đi"},
+    "Kinh Môn": {"Kha_Nang": "Thấp", "Mo_Ta": "Đồ đã bị di chuyển xa, khó lấy lại"},
+    "Tử Môn": {"Kha_Nang": "Rất thấp", "Mo_Ta": "Đồ có thể đã mất vĩnh viễn hoặc bị hủy"}
+}
+
 # DỮ LIỆU CHÍNH
 KY_MON_DATA = {
     # Dữ liệu từ Excel sẽ được trộn vào đây nếu có
