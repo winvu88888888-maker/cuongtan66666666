@@ -1,0 +1,16 @@
+# Optimized requirements for AI-powered QMDG web app
+streamlit>=1.30.0
+python-dateutil>=2.8.2
+Pillow>=10.0.0
+
+# AI Development System
+google-generativeai>=0.8.4
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+
+# Utilities
+python-dotenv>=1.0.0
+pytz>=2023.3
+tzdata
+backports.zoneinfo;python_version<"3.9"
+# Safe Mode: No external lunar libs

@@ -1,0 +1,771 @@
+{
+    "LUC_THAP_HOA_GIAP_NAP_AM": {
+        "Giáp Tý": {
+            "Nạp_Âm": "Hải Trung Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng trong biển, tiềm ẩn giá trị lớn"
+        },
+        "Ất Sửu": {
+            "Nạp_Âm": "Hải Trung Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng trong biển, cần thời cơ để phát"
+        },
+        "Bính Dần": {
+            "Nạp_Âm": "Lô Trung Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa trong lò, mạnh mẽ nhưng bị kiềm chế"
+        },
+        "Đinh Mão": {
+            "Nạp_Âm": "Lô Trung Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa trong lò, cần người giúp đỡ"
+        },
+        "Mậu Thìn": {
+            "Nạp_Âm": "Đại Lâm Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ rừng lớn, cao lớn vững chãi"
+        },
+        "Kỷ Tị": {
+            "Nạp_Âm": "Đại Lâm Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ rừng lớn, trụ cột vững vàng"
+        },
+        "Canh Ngọ": {
+            "Nạp_Âm": "Lộ Bàng Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất ven đường, rộng rãi phơi bày"
+        },
+        "Tân Mùi": {
+            "Nạp_Âm": "Lộ Bàng Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất ven đường, dễ bị xâm lấn"
+        },
+        "Nhâm Thân": {
+            "Nạp_Âm": "Kiếm Phong Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng mũi kiếm, sắc bén quyết đoán"
+        },
+        "Quý Dậu": {
+            "Nạp_Âm": "Kiếm Phong Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng mũi kiếm, cương trực thẳng thắn"
+        },
+        "Giáp Tuất": {
+            "Nạp_Âm": "Sơn Đầu Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa đỉnh núi, rực rỡ nhưng cô đơn"
+        },
+        "Ất Hợi": {
+            "Nạp_Âm": "Sơn Đầu Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa đỉnh núi, ánh sáng soi xa"
+        },
+        "Bính Tý": {
+            "Nạp_Âm": "Giản Hạ Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước dưới khe, trong trẻo tinh khiết"
+        },
+        "Đinh Sửu": {
+            "Nạp_Âm": "Giản Hạ Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước dưới khe, nhu mềm kiên trì"
+        },
+        "Mậu Dần": {
+            "Nạp_Âm": "Thành Đầu Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trên thành, vững chắc bảo vệ"
+        },
+        "Kỷ Mão": {
+            "Nạp_Âm": "Thành Đầu Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trên thành, che chở an toàn"
+        },
+        "Canh Thìn": {
+            "Nạp_Âm": "Bạch Lạp Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng sáp trắng, mềm mại linh hoạt"
+        },
+        "Tân Tị": {
+            "Nạp_Âm": "Bạch Lạp Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng sáp trắng, biến hóa khéo léo"
+        },
+        "Nhâm Ngọ": {
+            "Nạp_Âm": "Dương Liễu Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ cây liễu, mềm mại nhưng dẻo dai"
+        },
+        "Quý Mùi": {
+            "Nạp_Âm": "Dương Liễu Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ cây liễu, uyển chuyển thích nghi"
+        },
+        "Giáp Thân": {
+            "Nạp_Âm": "Tuyền Trung Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước trong suối, trong sạch thanh cao"
+        },
+        "Ất Dậu": {
+            "Nạp_Âm": "Tuyền Trung Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước trong suối, nhẹ nhàng lặng lẽ"
+        },
+        "Bính Tuất": {
+            "Nạp_Âm": "Ốc Thượng Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trên nóc nhà, cao quý an ổn"
+        },
+        "Đinh Hợi": {
+            "Nạp_Âm": "Ốc Thượng Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trên nóc nhà, bền vững lâu dài"
+        },
+        "Mậu Tý": {
+            "Nạp_Âm": "Tích Lịch Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa sấm sét, bùng nổ mãnh liệt"
+        },
+        "Kỷ Sửu": {
+            "Nạp_Âm": "Tích Lịch Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa sấm sét, uy lực khủng khiếp"
+        },
+        "Canh Dần": {
+            "Nạp_Âm": "Tùng Bách Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ tùng bách, bất khuất trường tồn"
+        },
+        "Tân Mão": {
+            "Nạp_Âm": "Tùng Bách Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ tùng bách, kiên cường chịu đựng"
+        },
+        "Nhâm Thìn": {
+            "Nạp_Âm": "Trường Lưu Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước sông dài, cuồn cuộn không ngừng"
+        },
+        "Quý Tị": {
+            "Nạp_Âm": "Trường Lưu Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước sông dài, bền bỉ trường cửu"
+        },
+        "Giáp Ngọ": {
+            "Nạp_Âm": "Sa Trung Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng trong cát, ẩn tàng chờ phát hiện"
+        },
+        "Ất Mùi": {
+            "Nạp_Âm": "Sa Trung Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng trong cát, cần gạn lọc mới thấy"
+        },
+        "Bính Thân": {
+            "Nạp_Âm": "Sơn Hạ Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa dưới núi, âm ỉ chờ bùng"
+        },
+        "Đinh Dậu": {
+            "Nạp_Âm": "Sơn Hạ Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa dưới núi, ẩn sâu nội lực"
+        },
+        "Mậu Tuất": {
+            "Nạp_Âm": "Bình Địa Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ đồng bằng, phát triển tự do"
+        },
+        "Kỷ Hợi": {
+            "Nạp_Âm": "Bình Địa Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ đồng bằng, thuận lợi sinh sôi"
+        },
+        "Canh Tý": {
+            "Nạp_Âm": "Bích Thượng Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trên vách, cần nền tảng vững"
+        },
+        "Tân Sửu": {
+            "Nạp_Âm": "Bích Thượng Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trên vách, bề ngoài mỏng manh"
+        },
+        "Nhâm Dần": {
+            "Nạp_Âm": "Kim Bạch Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng lá bạc, quý hiếm tinh xảo"
+        },
+        "Quý Mão": {
+            "Nạp_Âm": "Kim Bạch Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng lá bạc, sang trọng thanh cao"
+        },
+        "Giáp Thìn": {
+            "Nạp_Âm": "Phú Đăng Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa đèn lồng, soi sáng dẫn đường"
+        },
+        "Ất Tị": {
+            "Nạp_Âm": "Phú Đăng Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa đèn lồng, ấm áp gần gũi"
+        },
+        "Bính Ngọ": {
+            "Nạp_Âm": "Thiên Hà Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước Ngân Hà, thanh khiết vô cùng"
+        },
+        "Đinh Mùi": {
+            "Nạp_Âm": "Thiên Hà Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước Ngân Hà, cao quý phi thường"
+        },
+        "Mậu Thân": {
+            "Nạp_Âm": "Đại Dịch Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất bãi lớn, rộng rãi bao la"
+        },
+        "Kỷ Dậu": {
+            "Nạp_Âm": "Đại Dịch Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất bãi lớn, cần khai phá"
+        },
+        "Canh Tuất": {
+            "Nạp_Âm": "Thoa Xuyến Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng trang sức, đẹp đẽ tinh xảo"
+        },
+        "Tân Hợi": {
+            "Nạp_Âm": "Thoa Xuyến Kim",
+            "Hành": "Kim",
+            "Ý_Nghĩa": "Vàng trang sức, có giá trị thẩm mỹ"
+        },
+        "Nhâm Tý": {
+            "Nạp_Âm": "Tang Đố Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ cây dâu, ích lợi thiết thực"
+        },
+        "Quý Sửu": {
+            "Nạp_Âm": "Tang Đố Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ cây dâu, nuôi dưỡng sinh linh"
+        },
+        "Giáp Dần": {
+            "Nạp_Âm": "Đại Khê Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước khe lớn, mạnh mẽ chảy xiết"
+        },
+        "Ất Mão": {
+            "Nạp_Âm": "Đại Khê Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước khe lớn, cuốn trôi chướng ngại"
+        },
+        "Bính Thìn": {
+            "Nạp_Âm": "Sa Trung Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trong cát, tiềm ẩn tài nguyên"
+        },
+        "Đinh Tị": {
+            "Nạp_Âm": "Sa Trung Thổ",
+            "Hành": "Thổ",
+            "Ý_Nghĩa": "Đất trong cát, cần kiên trì khai phá"
+        },
+        "Mậu Ngọ": {
+            "Nạp_Âm": "Thiên Thượng Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa trên trời, rực rỡ tối thượng"
+        },
+        "Kỷ Mùi": {
+            "Nạp_Âm": "Thiên Thượng Hỏa",
+            "Hành": "Hỏa",
+            "Ý_Nghĩa": "Lửa trên trời, oai nghiêm bao trùm"
+        },
+        "Canh Thân": {
+            "Nạp_Âm": "Thạch Lựu Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ cây lựu, quả ngọt cành cứng"
+        },
+        "Tân Dậu": {
+            "Nạp_Âm": "Thạch Lựu Mộc",
+            "Hành": "Mộc",
+            "Ý_Nghĩa": "Gỗ cây lựu, bền bỉ ra hoa"
+        },
+        "Nhâm Tuất": {
+            "Nạp_Âm": "Đại Hải Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước biển lớn, bao la vô tận"
+        },
+        "Quý Hợi": {
+            "Nạp_Âm": "Đại Hải Thủy",
+            "Hành": "Thủy",
+            "Ý_Nghĩa": "Nước biển lớn, sâu thẳm bí ẩn"
+        }
+    },
+    "TRUONG_SINH_12_GIAI_DOAN": {
+        "Mô_Tả": "12 giai đoạn vòng đời Ngũ Hành - dùng để đánh giá sức mạnh của từng Hành tại mỗi cung",
+        "Giai_Đoạn": {
+            "Trường Sinh": {
+                "Mức": 9,
+                "Ý_Nghĩa": "Khởi đầu mới, sinh ra, năng lượng tươi mới",
+                "Luận": "Cát - Bắt đầu thuận lợi"
+            },
+            "Mộc Dục": {
+                "Mức": 8,
+                "Ý_Nghĩa": "Tắm gội, non nớt, cần sự bảo vệ",
+                "Luận": "Bình - Dễ bị tổn thương"
+            },
+            "Quan Đới": {
+                "Mức": 7,
+                "Ý_Nghĩa": "Đội mũ, trưởng thành dần, được công nhận",
+                "Luận": "Cát - Phát triển tốt"
+            },
+            "Lâm Quan": {
+                "Mức": 10,
+                "Ý_Nghĩa": "Ra làm quan, đỉnh cao sự nghiệp",
+                "Luận": "Đại Cát - Vượng nhất"
+            },
+            "Đế Vượng": {
+                "Mức": 10,
+                "Ý_Nghĩa": "Cực thịnh, sung mãn nhất, nhưng cực thịnh tất suy",
+                "Luận": "Đại Cát nhưng cần cẩn trọng"
+            },
+            "Suy": {
+                "Mức": 5,
+                "Ý_Nghĩa": "Bắt đầu suy giảm, mệt mỏi",
+                "Luận": "Hung - Năng lượng giảm"
+            },
+            "Bệnh": {
+                "Mức": 3,
+                "Ý_Nghĩa": "Ốm đau, trục trặc, gặp khó khăn",
+                "Luận": "Hung - Nhiều trở ngại"
+            },
+            "Tử": {
+                "Mức": 1,
+                "Ý_Nghĩa": "Chấm dứt, kết thúc, không còn sức lực",
+                "Luận": "Đại Hung - Thất bại"
+            },
+            "Mộ": {
+                "Mức": 2,
+                "Ý_Nghĩa": "Chôn cất, tích trữ, ẩn tàng",
+                "Luận": "Hung nhưng có tích lũy"
+            },
+            "Tuyệt": {
+                "Mức": 0,
+                "Ý_Nghĩa": "Đứt đoạn hoàn toàn, không còn gì",
+                "Luận": "Đại Hung - Tuyệt đường"
+            },
+            "Thai": {
+                "Mức": 4,
+                "Ý_Nghĩa": "Mang thai, ấp ủ, chuẩn bị mầm mới",
+                "Luận": "Bình - Chờ cơ hội"
+            },
+            "Dưỡng": {
+                "Mức": 6,
+                "Ý_Nghĩa": "Nuôi dưỡng, chăm sóc, phát triển dần",
+                "Luận": "Cát - Tiến triển từ từ"
+            }
+        },
+        "Ngũ_Hành_Trường_Sinh_Tại": {
+            "Kim": {
+                "Trường_Sinh": "Tị",
+                "Mộc_Dục": "Ngọ",
+                "Quan_Đới": "Mùi",
+                "Lâm_Quan": "Thân",
+                "Đế_Vượng": "Dậu",
+                "Suy": "Tuất",
+                "Bệnh": "Hợi",
+                "Tử": "Tý",
+                "Mộ": "Sửu",
+                "Tuyệt": "Dần",
+                "Thai": "Mão",
+                "Dưỡng": "Thìn"
+            },
+            "Mộc": {
+                "Trường_Sinh": "Hợi",
+                "Mộc_Dục": "Tý",
+                "Quan_Đới": "Sửu",
+                "Lâm_Quan": "Dần",
+                "Đế_Vượng": "Mão",
+                "Suy": "Thìn",
+                "Bệnh": "Tị",
+                "Tử": "Ngọ",
+                "Mộ": "Mùi",
+                "Tuyệt": "Thân",
+                "Thai": "Dậu",
+                "Dưỡng": "Tuất"
+            },
+            "Thủy": {
+                "Trường_Sinh": "Thân",
+                "Mộc_Dục": "Dậu",
+                "Quan_Đới": "Tuất",
+                "Lâm_Quan": "Hợi",
+                "Đế_Vượng": "Tý",
+                "Suy": "Sửu",
+                "Bệnh": "Dần",
+                "Tử": "Mão",
+                "Mộ": "Thìn",
+                "Tuyệt": "Tị",
+                "Thai": "Ngọ",
+                "Dưỡng": "Mùi"
+            },
+            "Hỏa": {
+                "Trường_Sinh": "Dần",
+                "Mộc_Dục": "Mão",
+                "Quan_Đới": "Thìn",
+                "Lâm_Quan": "Tị",
+                "Đế_Vượng": "Ngọ",
+                "Suy": "Mùi",
+                "Bệnh": "Thân",
+                "Tử": "Dậu",
+                "Mộ": "Tuất",
+                "Tuyệt": "Hợi",
+                "Thai": "Tý",
+                "Dưỡng": "Sửu"
+            },
+            "Thổ": {
+                "Trường_Sinh": "Thân",
+                "Mộc_Dục": "Dậu",
+                "Quan_Đới": "Tuất",
+                "Lâm_Quan": "Hợi",
+                "Đế_Vượng": "Tý",
+                "Suy": "Sửu",
+                "Bệnh": "Dần",
+                "Tử": "Mão",
+                "Mộ": "Thìn",
+                "Tuyệt": "Tị",
+                "Thai": "Ngọ",
+                "Dưỡng": "Mùi"
+            }
+        }
+    },
+    "THAN_SAT_LOOKUP": {
+        "Thiên_Ất_Quý_Nhân": {
+            "Loại": "Cát Thần",
+            "Tác_Dụng": "Quý nhân phù trợ, gặp hung hóa cát, được giúp đỡ kịp thời",
+            "Cách_An": "Theo Can Ngày: Giáp Mậu→Sửu Mùi, Ất Kỷ→Tý Thân, Bính Đinh→Hợi Dậu, Nhâm Quý→Tị Mão, Canh Tân→Ngọ Dần"
+        },
+        "Thiên_Đức": {
+            "Loại": "Cát Thần",
+            "Tác_Dụng": "Trời ban phúc đức, giảm hung tăng cát, bảo vệ khỏi tai họa",
+            "Cách_An": "Theo Tháng: T1→Đinh, T2→Thân, T3→Nhâm, T4→Tân, T5→Hợi, T6→Giáp, T7→Quý, T8→Dần, T9→Bính, T10→Ất, T11→Tị, T12→Canh"
+        },
+        "Nguyệt_Đức": {
+            "Loại": "Cát Thần",
+            "Tác_Dụng": "Trời ban lộc, tiêu tai giải nạn, mọi việc thuận lợi",
+            "Cách_An": "Dần Ngọ Tuất→Bính, Thân Tý Thìn→Nhâm, Hợi Mão Mùi→Giáp, Tị Dậu Sửu→Canh"
+        },
+        "Lộc_Thần": {
+            "Loại": "Cát Thần",
+            "Tác_Dụng": "Tài lộc dồi dào, thu nhập tốt, gặp may về tiền bạc",
+            "Cách_An": "Giáp→Dần, Ất→Mão, Bính Mậu→Tị, Đinh Kỷ→Ngọ, Canh→Thân, Tân→Dậu, Nhâm→Hợi, Quý→Tý"
+        },
+        "Đào_Hoa": {
+            "Loại": "Trung Tính",
+            "Tác_Dụng": "Duyên tình cảm, hấp dẫn, quan hệ xã hội tốt; quá nhiều → dâm dục, scandal",
+            "Cách_An": "Dần Ngọ Tuất→Mão, Thân Tý Thìn→Dậu, Tị Dậu Sửu→Ngọ, Hợi Mão Mùi→Tý"
+        },
+        "Văn_Xương": {
+            "Loại": "Cát Thần",
+            "Tác_Dụng": "Thông minh, học giỏi, thi cử đỗ đạt, văn chương xuất sắc",
+            "Cách_An": "Giáp→Tị, Ất→Ngọ, Bính→Thân, Đinh→Dậu, Mậu→Thân, Kỷ→Dậu, Canh→Hợi, Tân→Tý, Nhâm→Dần, Quý→Mão"
+        },
+        "Dịch_Mã": {
+            "Loại": "Trung Tính",
+            "Tác_Dụng": "Di chuyển, xuất hành, thay đổi nơi ở/công việc, năng động",
+            "Cách_An": "Dần Ngọ Tuất→Thân, Thân Tý Thìn→Dần, Tị Dậu Sửu→Hợi, Hợi Mão Mùi→Tị"
+        },
+        "Kiếp_Sát": {
+            "Loại": "Hung Thần",
+            "Tác_Dụng": "Tai họa bất ngờ, mất mát, bị cướp giật, tai nạn đột ngột",
+            "Cách_An": "Dần Ngọ Tuất→Hợi, Thân Tý Thìn→Tị, Tị Dậu Sửu→Dần, Hợi Mão Mùi→Thân"
+        },
+        "Hoa_Cái": {
+            "Loại": "Trung Tính",
+            "Tác_Dụng": "Cô đơn, tôn giáo, nghệ thuật; được thì thanh cao, xấu thì cô lập",
+            "Cách_An": "Dần Ngọ Tuất→Tuất, Thân Tý Thìn→Thìn, Tị Dậu Sửu→Sửu, Hợi Mão Mùi→Mùi"
+        },
+        "Thiên_La": {
+            "Loại": "Hung Thần",
+            "Tác_Dụng": "Lưới trời, bị vây hãm từ trên, kiện tụng bất lợi",
+            "Cách_An": "Tại Tuất cung (cung 6)"
+        },
+        "Địa_Võng": {
+            "Loại": "Hung Thần",
+            "Tác_Dụng": "Lưới đất, bị giam giữ từ dưới, khó thoát hiểm",
+            "Cách_An": "Tại Thìn cung (cung 4)"
+        },
+        "Không_Vong": {
+            "Loại": "Hung Thần",
+            "Tác_Dụng": "Mất mát, hao tổn, sự việc không thành, rỗng tuếch",
+            "Cách_An": "Theo Tuần Giáp: chi 11 và 12 trong tuần 10 Can"
+        },
+        "Phục_Ngâm": {
+            "Loại": "Hung Thần",
+            "Tác_Dụng": "Quay về chỗ cũ, ủ rũ, lặp lại sai lầm, trì trệ",
+            "Cách_An": "Sao/Môn lâm lại cung gốc của mình"
+        },
+        "Phản_Ngâm": {
+            "Loại": "Hung Thần",
+            "Tác_Dụng": "Đối lập, phản bội, bị chống lại, hung hơn Phục Ngâm",
+            "Cách_An": "Sao/Môn lâm cung đối diện cung gốc (1↔9, 2↔8, 3↔7, 4↔6)"
+        }
+    },
+    "CUNG_LUAN_DOAN_CHI_TIET": {
+        "Cung_1_Khảm": {
+            "Quái": "Khảm ☵",
+            "Hành": "Thủy",
+            "Hướng": "Bắc",
+            "Mùa": "Đông",
+            "Thân_Thể": "Thận, tai, máu, hệ bài tiết, bàng quang",
+            "Tính_Cách": "Mưu trí, linh hoạt, khéo léo, nhưng dễ lo lắng, đa nghi",
+            "Sự_Việc": "Mưa, nước, trộm cắp, lừa dối, bí mật, rượu chè",
+            "Nghề": "Thủy sản, vận tải đường thủy, nước giải khát, thanh tra",
+            "Màu": "Đen, tím đen",
+            "Số": "1, 6",
+            "Luận_Đoán": "Cung Khảm chủ về sự hiểm trở, khó khăn nhưng có trí tuệ. Vượng thì mưu lớn thành, suy thì bị lừa gạt mất mát."
+        },
+        "Cung_2_Khôn": {
+            "Quái": "Khôn ☷",
+            "Hành": "Thổ",
+            "Hướng": "Tây Nam",
+            "Mùa": "Cuối Hạ",
+            "Thân_Thể": "Bụng, dạ dày, lá lách, da thịt, tử cung",
+            "Tính_Cách": "Hiền hậu, nhẫn nại, bao dung, nhưng thụ động, thiếu quyết đoán",
+            "Sự_Việc": "Đất đai, nông nghiệp, mẹ, vợ, nữ nhân, quần áo vải vóc",
+            "Nghề": "Bất động sản, nông nghiệp, xây dựng, chăm sóc sức khỏe",
+            "Màu": "Vàng, nâu đất",
+            "Số": "2, 8",
+            "Luận_Đoán": "Cung Khôn chủ về đất mẹ, sự bao dung. Vượng thì điền sản phát, suy thì bệnh dạ dày tiêu hóa."
+        },
+        "Cung_3_Chấn": {
+            "Quái": "Chấn ☳",
+            "Hành": "Mộc",
+            "Hướng": "Đông",
+            "Mùa": "Xuân",
+            "Thân_Thể": "Chân, gan, tóc, thanh quản, thần kinh",
+            "Tính_Cách": "Năng động, tiên phong, dũng cảm, nhưng nóng nảy, bồng bột",
+            "Sự_Việc": "Sấm sét, tiếng động, xe cộ, đường xá, rừng cây, trưởng nam",
+            "Nghề": "Quân đội, thể thao, lâm nghiệp, âm nhạc, công nghệ",
+            "Màu": "Xanh lá, xanh ngọc",
+            "Số": "3, 8",
+            "Luận_Đoán": "Cung Chấn chủ về sự nhanh nhẹn, hành động. Vượng thì phấn chấn thắng lợi, suy thì kinh hãi lo lắng."
+        },
+        "Cung_4_Tốn": {
+            "Quái": "Tốn ☴",
+            "Hành": "Mộc",
+            "Hướng": "Đông Nam",
+            "Mùa": "Đầu Hạ",
+            "Thân_Thể": "Đùi, hông, phổi, khí quản, tóc (gió)",
+            "Tính_Cách": "Nhu hòa, khéo léo, linh hoạt, nhưng thiếu kiên định, hay thay đổi",
+            "Sự_Việc": "Gió, mùi hương, tin tức, thương mại, hôn nhân, trưởng nữ",
+            "Nghề": "Thương mại, vận tải hàng không, truyền thông, giáo dục",
+            "Màu": "Xanh lá nhạt, trắng xanh",
+            "Số": "4, 5",
+            "Luận_Đoán": "Cung Tốn chủ về giao tiếp, buôn bán. Vượng thì lợi nhuận cao, tin vui đến; suy thì bị gió cuốn, thiệt hại."
+        },
+        "Cung_5_Trung_Cung": {
+            "Quái": "Không quái (Trung tâm)",
+            "Hành": "Thổ",
+            "Hướng": "Trung tâm",
+            "Mùa": "Tứ quý",
+            "Thân_Thể": "Tỳ vị, trung tâm cơ thể",
+            "Tính_Cách": "Trung lập, điều hòa, cần bằng",
+            "Sự_Việc": "Chủ tể, trung tâm, quyền lực, điều phối tất cả",
+            "Nghề": "Lãnh đạo, quản lý, điều phối",
+            "Màu": "Vàng",
+            "Số": "5",
+            "Luận_Đoán": "Trung Cung không an sao, không an môn. Ký gửi vào Cung 2 (Khôn). Khi dụng thần rơi vào Trung Cung = bị nhốt, không ai cứu."
+        },
+        "Cung_6_Càn": {
+            "Quái": "Càn ☰",
+            "Hành": "Kim",
+            "Hướng": "Tây Bắc",
+            "Mùa": "Cuối Thu",
+            "Thân_Thể": "Đầu, xương, phổi, ruột già, não",
+            "Tính_Cách": "Cương quyết, chính trực, lãnh đạo, nhưng cứng nhắc, kiêu ngạo",
+            "Sự_Việc": "Cha, vua, quan, kim loại, đá quý, xe hơi, máy móc",
+            "Nghề": "Chính trị, quân đội, kim khí, ô tô, ngân hàng, lãnh đạo",
+            "Màu": "Trắng, bạc, vàng kim",
+            "Số": "6, 4",
+            "Luận_Đoán": "Cung Càn chủ về quyền lực, cha. Vượng thì danh lợi song toàn, suy thì cha ốm, đầu đau, mất tiền."
+        },
+        "Cung_7_Đoài": {
+            "Quái": "Đoài ☱",
+            "Hành": "Kim",
+            "Hướng": "Tây",
+            "Mùa": "Thu",
+            "Thân_Thể": "Miệng, lưỡi, răng, phổi, thanh quản, hệ hô hấp",
+            "Tính_Cách": "Vui vẻ, ăn nói duyên dáng, nhưng nông cạn, thích hưởng thụ",
+            "Sự_Việc": "Ăn uống, ca hát, hoan lạc, thiếu nữ, tranh cãi, kiện tụng",
+            "Nghề": "Nhà hàng, ca sĩ, luật sư, phát ngôn viên, nha sĩ",
+            "Màu": "Trắng, hồng",
+            "Số": "7, 2",
+            "Luận_Đoán": "Cung Đoài chủ về miệng lưỡi, vui vẻ. Vượng thì ăn nói tốt, thắng kiện; suy thì miệng tiếng thị phi."
+        },
+        "Cung_8_Cấn": {
+            "Quái": "Cấn ☶",
+            "Hành": "Thổ",
+            "Hướng": "Đông Bắc",
+            "Mùa": "Cuối Đông",
+            "Thân_Thể": "Tay, ngón tay, mũi, lưng, xương sống",
+            "Tính_Cách": "Cẩn thận, kiên nhẫn, trầm tĩnh, nhưng bướng bỉnh, chậm chạp",
+            "Sự_Việc": "Núi, đường mòn, thiếu nam, cửa, chỗ dừng, kết thúc và bắt đầu",
+            "Nghề": "Xây dựng, khai khoáng, bất động sản, bảo an, tu hành",
+            "Màu": "Vàng nhạt, nâu",
+            "Số": "8, 5",
+            "Luận_Đoán": "Cung Cấn chủ về sự dừng lại, chờ đợi. Vượng thì bất động sản phát, suy thì bế tắc, chậm trễ đau lưng."
+        },
+        "Cung_9_Ly": {
+            "Quái": "Ly ☲",
+            "Hành": "Hỏa",
+            "Hướng": "Nam",
+            "Mùa": "Hạ",
+            "Thân_Thể": "Mắt, tim, huyết mạch, đầu (phần trên)",
+            "Tính_Cách": "Thông minh, sáng tạo, nổi bật, nhưng nóng nảy, hay ghen tức",
+            "Sự_Việc": "Lửa, ánh sáng, văn chương, thi cử, danh vọng, trung nữ, chiến tranh",
+            "Nghề": "Giáo dục, truyền thông, điện tử, hóa chất, nghệ thuật, quân sự",
+            "Màu": "Đỏ, cam, tía",
+            "Số": "9, 3",
+            "Luận_Đoán": "Cung Ly chủ về văn minh, danh vọng. Vượng thì danh tiếng tỏa sáng, suy thì hỏa hoạn, mắt kém, thị phi."
+        }
+    },
+    "NGU_HANH_TUONG_QUAN": {
+        "Kim": {
+            "Màu": "Trắng, Bạc, Vàng kim",
+            "Hướng": "Tây",
+            "Mùa": "Thu",
+            "Vị": "Cay",
+            "Tạng": "Phổi",
+            "Phủ": "Ruột già",
+            "Tình": "Buồn, Bi",
+            "Hình_Dạng": "Tròn",
+            "Số": "4, 9",
+            "Âm_Thanh": "Thương (sáo)",
+            "Ngày": "Canh, Tân"
+        },
+        "Mộc": {
+            "Màu": "Xanh lá",
+            "Hướng": "Đông",
+            "Mùa": "Xuân",
+            "Vị": "Chua",
+            "Tạng": "Gan",
+            "Phủ": "Mật",
+            "Tình": "Giận",
+            "Hình_Dạng": "Dài, Thẳng",
+            "Số": "3, 8",
+            "Âm_Thanh": "Giốc (nhạc gõ)",
+            "Ngày": "Giáp, Ất"
+        },
+        "Thủy": {
+            "Màu": "Đen, Tím đen",
+            "Hướng": "Bắc",
+            "Mùa": "Đông",
+            "Vị": "Mặn",
+            "Tạng": "Thận",
+            "Phủ": "Bàng quang",
+            "Tình": "Sợ",
+            "Hình_Dạng": "Uốn lượn, Không cố định",
+            "Số": "1, 6",
+            "Âm_Thanh": "Vũ (trống)",
+            "Ngày": "Nhâm, Quý"
+        },
+        "Hỏa": {
+            "Màu": "Đỏ, Cam, Tía",
+            "Hướng": "Nam",
+            "Mùa": "Hạ",
+            "Vị": "Đắng",
+            "Tạng": "Tim",
+            "Phủ": "Ruột non",
+            "Tình": "Vui",
+            "Hình_Dạng": "Nhọn, Tam giác",
+            "Số": "2, 7",
+            "Âm_Thanh": "Chủy (đàn dây)",
+            "Ngày": "Bính, Đinh"
+        },
+        "Thổ": {
+            "Màu": "Vàng, Nâu đất",
+            "Hướng": "Trung tâm",
+            "Mùa": "Tứ quý (18 ngày cuối mỗi mùa)",
+            "Vị": "Ngọt",
+            "Tạng": "Tỳ (Lá lách)",
+            "Phủ": "Dạ dày",
+            "Tình": "Tư lự",
+            "Hình_Dạng": "Vuông",
+            "Số": "5, 10",
+            "Âm_Thanh": "Cung (đàn tơ)",
+            "Ngày": "Mậu, Kỷ"
+        }
+    },
+    "PHUC_NGAM_PHAN_NGAM": {
+        "Mô_Tả": "Phục Ngâm: Sao/Môn quay lại cung gốc → trì trệ, lặp lại. Phản Ngâm: Sao/Môn đến cung đối diện → phản bội, đối kháng.",
+        "Cung_Gốc_Bát_Môn": {
+            "Hưu Môn": 1,
+            "Tử Môn": 2,
+            "Thương Môn": 3,
+            "Đỗ Môn": 4,
+            "Khai Môn": 6,
+            "Kinh Môn": 7,
+            "Sinh Môn": 8,
+            "Cảnh Môn": 9
+        },
+        "Cung_Gốc_Cửu_Tinh": {
+            "Thiên Bồng": 1,
+            "Thiên Nhuế": 2,
+            "Thiên Xung": 3,
+            "Thiên Phụ": 4,
+            "Thiên Cầm": 5,
+            "Thiên Tâm": 6,
+            "Thiên Trụ": 7,
+            "Thiên Nhậm": 8,
+            "Thiên Anh": 9
+        },
+        "Cặp_Đối_Xung": {
+            "1": 9,
+            "9": 1,
+            "2": 8,
+            "8": 2,
+            "3": 7,
+            "7": 3,
+            "4": 6,
+            "6": 4
+        },
+        "Luận_Giải": {
+            "Sao_Phục_Ngâm": "Sao quay về cung gốc → sự việc bế tắc, khẩn trương nhưng không có đường ra, nên tĩnh không nên động",
+            "Môn_Phục_Ngâm": "Môn quay về cung gốc → sự việc lặp lại lần nữa, quay lại vấn đề cũ, khó tiến lên",
+            "Sao_Phản_Ngâm": "Sao đến cung đối diện → sự việc đảo ngược hoàn toàn, bị phản bội, đi ngược kỳ vọng",
+            "Môn_Phản_Ngâm": "Môn đến cung đối diện → kế hoạch bị lật đổ, người thân phản bội, hung hơn Phục Ngâm"
+        }
+    },
+    "QUY_TAC_LUAN_DOAN_NANG_CAO": {
+        "Tam_Kỳ_Đắc_Sử": {
+            "Mô_Tả": "Ất Bính Đinh (Tam Kỳ) lâm cung Cát Môn → Đại Cát",
+            "Quy_Tắc": "Ất + Khai/Hưu/Sinh Môn = Đại Cát. Bính + Khai/Hưu/Sinh Môn = Đại Cát. Đinh + Cảnh Môn = Cát cho văn chương."
+        },
+        "Ngũ_Bất_Ngộ_Thời": {
+            "Mô_Tả": "5 trường hợp không nên hành động dù bàn tốt",
+            "Quy_Tắc": [
+                "Giáp Kỷ hợp → Sự việc bị ràng buộc",
+                "Canh lâm Khai Môn → Thất bại chắc chắn",
+                "Tuế Kiến (Can Năm) nhập Tử Môn → Hung",
+                "Thiên Bồng + Tử Môn → Đại Hung",
+                "Can Ngày nhập Mộ → Không nên làm gì"
+            ]
+        },
+        "Bát_Môn_Hữu_Thời": {
+            "Mô_Tả": "8 Môn phối hợp với thời gian tốt xấu",
+            "Khai_Môn": "Tốt nhất vào mùa Thu Kim vượng → sự nghiệp hanh thông",
+            "Sinh_Môn": "Tốt nhất cuối mùa → tài lộc dồi dào",
+            "Hưu_Môn": "Tốt nhất mùa Đông Thủy vượng → nghỉ ngơi hồi sức",
+            "Cảnh_Môn": "Tốt nhất mùa Hạ Hỏa vượng → văn chương tỏa sáng",
+            "Tử_Môn": "Luôn xấu → chỉ hợp chôn cất và chặt phá",
+            "Kinh_Môn": "Xấu → chỉ hợp kiện tụng phòng thủ",
+            "Thương_Môn": "Xấu → chỉ hợp đòi nợ săn bắt",
+            "Đỗ_Môn": "Trung bình → hợp ẩn náu phòng thủ"
+        },
+        "Cửu_Tinh_Sáng_Tối": {
+            "Mô_Tả": "Sao sáng = vượng khí, sao tối = suy khí. Ảnh hưởng lớn đến kết quả luận đoán.",
+            "Sáng": "Sao ở cung Sinh hoặc Vượng so với Hành của sao → Sáng = Cát",
+            "Tối": "Sao ở cung Tử hoặc Tuyệt so với Hành của sao → Tối = Hung"
+        }
+    }
+}

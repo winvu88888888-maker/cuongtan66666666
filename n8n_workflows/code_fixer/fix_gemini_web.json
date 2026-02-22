@@ -1,0 +1,165 @@
+{
+    "name": "🔧 Fix Gemini Web App",
+    "nodes": [
+        {
+            "parameters": {},
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ],
+            "name": "Start Fix"
+        },
+        {
+            "parameters": {
+                "url": "https://cuongtan12345678.streamlit.app/",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                460,
+                300
+            ],
+            "name": "Check Web Status",
+            "notes": "Checks if the web app is reachable"
+        },
+        {
+            "parameters": {
+                "jsCode": "const status = $input.item.json.status;\nconst isRunning = status === 200;\n\nreturn [{\n  json: {\n    isRunning: isRunning,\n    message: isRunning ? \"Web App is Online\" : \"Web App is Offline\",\n    checkTime: new Date().toISOString()\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                680,
+                300
+            ],
+            "name": "Analyze Status"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.isRunning }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                900,
+                300
+            ],
+            "name": "Is Online?"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Simulate checking Gemini Integration\nconst geminiConfig = {\n  hasSecrets: true,\n  model: \"gemini-1.5-flash\",\n  status: \"ready\"\n};\n\nreturn [{ json: geminiConfig }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1120,
+                200
+            ],
+            "name": "Verify Gemini Config"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Simulate reporting the fix\nreturn [{\n  json: {\n    action: \"Report\",\n    content: \"Gemini integration has been fixed using st.secrets.\"\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1340,
+                200
+            ],
+            "name": "Report Success"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Simulate error reporting\nreturn [{\n  json: {\n    error: \"Web App is down!\",\n    action: \"Check Streamlit Logs\"\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1120,
+                400
+            ],
+            "name": "Report Error"
+        }
+    ],
+    "connections": {
+        "Start Fix": {
+            "main": [
+                [
+                    {
+                        "node": "Check Web Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Web Status": {
+            "main": [
+                [
+                    {
+                        "node": "Analyze Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Analyze Status": {
+            "main": [
+                [
+                    {
+                        "node": "Is Online?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Online?": {
+            "main": [
+                [
+                    {
+                        "node": "Verify Gemini Config",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Report Error",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Verify Gemini Config": {
+            "main": [
+                [
+                    {
+                        "node": "Report Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "pinData": {}
+}

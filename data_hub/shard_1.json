@@ -1,0 +1,121 @@
+{
+  "entries": {
+    "e18c368720260128214000": {
+      "id": "e18c368720260128214000",
+      "title": "Mai Hoa Dịch Số Nâng Cao",
+      "content": "Mai Hoa Dịch Số là môn bói toán dựa trên các con số và hình tượng quẻ. Để thực thi nhanh, người học cần nắm chắc 8 quẻ đơn và phép tính số dư cho 8 và 6. Trí tuệ thực chiến nằm ở việc quan sát ngoại ứng để quyết đoán kết quả ngay lập tức.",
+      "category": "Kinh Dịch & Dự Đoán",
+      "source": "Agent #39 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-39"
+      ],
+      "created_at": "2026-01-28T21:40:00.447548"
+    },
+    "bddc428620260128214025": {
+      "id": "bddc428620260128214025",
+      "title": "Kinh Dịch và Tâm Lý Học Công Việc",
+      "content": "Sự kết hợp giữa Kinh Dịch và tâm lý học hiện đại giúp giải mã các xung đột nội tâm thông qua các quẻ như Khảm (khó khăn) và Ly (sáng suốt). Ứng dụng thực tế là dùng quẻ để nhận diện trạng thái tinh thần của bản thân và đối tác để đưa ra chiến lược đàm phán phù hợp.",
+      "category": "Kinh Dịch & Dự Đoán",
+      "source": "Agent #24 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-24"
+      ],
+      "created_at": "2026-01-28T21:40:25.670666"
+    },
+    "a5c92ebc20260128170628": {
+      "id": "a5c92ebc20260128170628",
+      "title": "Exoplanet Research: Giải pháp tối ưu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #20 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-20"
+      ],
+      "created_at": "2026-01-28T17:06:28.362081"
+    },
+    "72b0ac1b20260128175659": {
+      "id": "72b0ac1b20260128175659",
+      "title": "Fusion Energy: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #15 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-15"
+      ],
+      "created_at": "2026-01-28T17:56:59.051443"
+    },
+    "f301705c20260128175716": {
+      "id": "f301705c20260128175716",
+      "title": "Space Tech & Colonization: Giải pháp tối ưu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #37 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-37"
+      ],
+      "created_at": "2026-01-28T17:57:16.236055"
+    },
+    "ce5a531d20260128175721": {
+      "id": "ce5a531d20260128175721",
+      "title": "Fusion Energy: Ví dụ thực tế 2026",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #26 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T17:57:21.825529"
+    },
+    "63b7df9120260128175726": {
+      "id": "63b7df9120260128175726",
+      "title": "AI Ethics & Global Policy: Hướng dẫn chi thực",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #43 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-43"
+      ],
+      "created_at": "2026-01-28T17:57:26.081515"
+    },
+    "ea2c87a320260128183654": {
+      "id": "ea2c87a320260128183654",
+      "title": "MLOps Best Practices: Ứng dụng sâu",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #26 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-26"
+      ],
+      "created_at": "2026-01-28T18:36:54.406834"
+    },
+    "590c489b20260128183708": {
+      "id": "590c489b20260128183708",
+      "title": "Prompt Engineering Mastery: Bí quyết thực thi nhanh",
+      "content": "🛑 **Hết hạn mức AI:** Thử lại sau ít phút.",
+      "category": "Kiến Thức",
+      "source": "Agent #32 (Quân Đoàn AI)",
+      "tags": [
+        "autonomous",
+        "hyper-depth",
+        "agent-32"
+      ],
+      "created_at": "2026-01-28T18:37:08.129052"
+    }
+  }
+}

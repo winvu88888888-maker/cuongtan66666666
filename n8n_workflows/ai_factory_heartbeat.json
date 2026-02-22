@@ -1,0 +1,108 @@
+{
+    "name": "💓 AI Factory 24/7 Heartbeat",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "minutes",
+                            "minutesInterval": 15
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ],
+            "name": "Every 15 Minutes"
+        },
+        {
+            "parameters": {
+                "url": "https://cuongtan12345678.streamlit.app/api/factory/stats",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                460,
+                300
+            ],
+            "name": "Check Factory Status"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.autonomous_active }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                680,
+                300
+            ],
+            "name": "Is Autonomous Active?"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://cuongtan12345678.streamlit.app/api/factory/run-cycle",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                900,
+                200
+            ],
+            "name": "Trigger Backup Cycle"
+        }
+    ],
+    "connections": {
+        "Every 15 Minutes": {
+            "main": [
+                [
+                    {
+                        "node": "Check Factory Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Factory Status": {
+            "main": [
+                [
+                    {
+                        "node": "Is Autonomous Active?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Autonomous Active?": {
+            "main": [
+                [
+                    {
+                        "node": "Trigger Backup Cycle",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    }
+}
