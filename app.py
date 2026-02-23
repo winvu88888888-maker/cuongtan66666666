@@ -16,6 +16,16 @@ import os
 import traceback
 import re
 
+import extra_streamlit_components as stx
+from streamlit_autorefresh import st_autorefresh
+
+@st.cache_resource(experimental_allow_widgets=True)
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
+
 def show_fatal_error(e):
     st.error("🛑 LỖI HỆ THỐNG NGHIÊM TRỌNG")
     st.write("Ứng dụng gặp sự cố khi khởi động. Chi tiết kỹ thuật bên dưới:")
@@ -1054,7 +1064,9 @@ with st.sidebar:
         
         # ƯU TIÊN 2: File custom_data.json (Local)
         custom_data = load_custom_data()
-        saved_key = custom_data.get("GEMINI_API_KEY")
+        saved_key = cookie_manager.get(cookie="GEMINI_API_KEY")
+        if not saved_key:
+            saved_key = custom_data.get("GEMINI_API_KEY")
         
         # ƯU TIÊN 3: Factory Config (Đồng bộ)
         factory_key = None
@@ -1104,6 +1116,16 @@ class GeminiQMDGHelper:
     
     def __init__(self, api_key_input):
         import re
+
+import extra_streamlit_components as stx
+from streamlit_autorefresh import st_autorefresh
+
+@st.cache_resource(experimental_allow_widgets=True)
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
         import hashlib
         import google.generativeai as genai
         
@@ -1339,6 +1361,16 @@ class GeminiQMDGHelper:
 
     def _process_response(self, text):
         import re
+
+import extra_streamlit_components as stx
+from streamlit_autorefresh import st_autorefresh
+
+@st.cache_resource(experimental_allow_widgets=True)
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
         import streamlit as st
         
         thinking = ""
@@ -1632,6 +1664,16 @@ class PhoenixOrchestrator:
         # --- NODE 1: INTENT ROUTER (Regex Enhanced) ---
         self.log_step("Intent Analysis", "RUNNING", "Analyzing user question...")
         import re
+
+import extra_streamlit_components as stx
+from streamlit_autorefresh import st_autorefresh
+
+@st.cache_resource(experimental_allow_widgets=True)
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
         q_lower = f" {user_question.lower()} " # Padding for boundary matching
         intent = "GENERAL"
 
@@ -2330,6 +2372,7 @@ else: # auto or online
                                 data = load_custom_data()
                                 data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys)
                                 save_custom_data(data)
+                                cookie_manager.set("GEMINI_API_KEY", ",".join(temp_helper.api_keys), expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
                             except: pass
 
                             # 4. Test Connection (Just for info)
@@ -3531,20 +3574,14 @@ elif st.session_state.current_view == "mai_hoa":
         st.error("❌ Module Mai Hoa Dịch Số không khả dụng.")
         st.stop()
     
-    st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
-    
-    method = st.radio("Phương pháp:", ["Thời gian", "Ngẫu hứng"], horizontal=True, key="mh_method")
-    
-    if st.button("🌸 LẬP QUẺ MAI HOA PRO", type="primary", use_container_width=True):
-        dt = selected_datetime
-        if method == "Thời gian":
-            res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
-        else:
-            res = tinh_qua_ngau_nhien()
-        
-        # Add interpretation
-        res['interpretation'] = giai_qua(res, selected_topic)
-        st.session_state.mai_hoa_result = res
+    st.markdown("### 🎯 Chủ đề: **{selected_topic}**")
+
+    # AUTO CAST TIME
+    dt = dt_module.datetime.now(vn_tz)
+    st.info(f"🕒 Giờ hiện tại: {dt.strftime('%H:%M - %d/%m/%Y')}. Quẻ tự động cập nhật theo thời gian thực.")
+    res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
+    res['interpretation'] = giai_qua(res, selected_topic)
+    st.session_state.mai_hoa_result = res
 
     if 'mai_hoa_result' in st.session_state:
         res = st.session_state.mai_hoa_result
@@ -3648,25 +3685,24 @@ elif st.session_state.current_view == "luc_hao":
         st.error("❌ Module Lục Hào Kinh Dịch không khả dụng.")
         st.stop()
     
-    st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
-    
+    st.markdown("### 🎯 Chủ đề: **{selected_topic}**")
+
     show_debug_ih = st.checkbox("🐛 Chế độ Kiểm tra Dữ liệu", key="debug_iching_mode")
-    
-    if st.button("🎲 LẬP QUẺ LỤC HÀO PRO", type="primary", use_container_width=True):
-        try:
-            # Use the global selected_datetime
-            dt = selected_datetime
-            can_ngay = params.get('can_ngay', 'Giáp') if params else "Giáp"
-            chi_ngay = params.get('chi_ngay', 'Tý') if params else "Tý"
-            
-            st.session_state.luc_hao_result = lap_qua_luc_hao(
-                dt.year, dt.month, dt.day, dt.hour, 
-                topic=selected_topic, 
-                can_ngay=can_ngay, 
-                chi_ngay=chi_ngay
-            )
-        except Exception as e:
-            st.error(f"Lỗi lập quẻ: {e}")
+
+    # AUTO CAST TIME
+    dt = dt_module.datetime.now(vn_tz)
+    st.info(f"🕒 Giờ hiện tại: {dt.strftime('%H:%M - %d/%m/%Y')}. Quẻ tự động cập nhật theo thời gian thực.")
+    can_ngay = params.get('can_ngay', 'Giáp') if params else "Giáp"
+    chi_ngay = params.get('chi_ngay', 'Tý') if params else "Tý"
+    try:
+        st.session_state.luc_hao_result = lap_qua_luc_hao(
+            dt.year, dt.month, dt.day, dt.hour,
+            topic=selected_topic,
+            can_ngay=can_ngay,
+            chi_ngay=chi_ngay
+        )
+    except Exception as e:
+        st.error(f"Lỗi lập quẻ Lục Hào: {e}")
 
     if 'luc_hao_result' in st.session_state:
         res = st.session_state.luc_hao_result
