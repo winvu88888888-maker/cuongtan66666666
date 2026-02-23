@@ -3795,36 +3795,38 @@ elif st.session_state.current_view == "thiet_ban":
     
     st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
     
-    if st.button("📜 TRA CỨU MỆNH CỤC CHI TIẾT", type="primary", use_container_width=True):
-        import qmdg_data
-        from qmdg_calc import calculate_qmdg_params
-        tb_data = getattr(qmdg_data, 'KY_MON_DATA', {}).get("THIET_BAN_THAN_TOAN", {})
-        hoa_giap = tb_data.get("LUC_THAP_HOA_GIAP_NAP_AM", {})
+    # AUTO CAST TIME
+    dt = dt_module.datetime.now(vn_tz)
+    st.info(f"🕒 Giờ hiện tại: {dt.strftime('%H:%M - %d/%m/%Y')}. Kết quả tự động cập nhật theo thời gian thực.")
+    now = dt
+
+    import qmdg_data
+    from qmdg_calc import calculate_qmdg_params
+    tb_data = getattr(qmdg_data, 'KY_MON_DATA', {}).get("THIET_BAN_THAN_TOAN", {})
+    hoa_giap = tb_data.get("LUC_THAP_HOA_GIAP_NAP_AM", {})
+    
+    # Calculate params based on now
+    params = calculate_qmdg_params(now)
+    nam_tru = f"{params.get('can_nam')} {params.get('chi_nam')}"
+    ngay_tru = f"{params.get('can_ngay')} {params.get('chi_ngay')}"
+    
+    na_nam = hoa_giap.get(nam_tru, {}).get("Nạp_Âm", "Không rõ")
+    na_ngay = hoa_giap.get(ngay_tru, {}).get("Nạp_Âm", "Không rõ")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.info(f"**🍁 Mệnh Năm (Thái Tuế):**\n- {nam_tru}\n- Nạp Âm: {na_nam}")
+    with col2:
+        st.warning(f"**☀️ Mệnh Ngày (Chủ Sự):**\n- {ngay_tru}\n- Nạp Âm: {na_ngay}")
         
-        # Calculate params based on now
-        params = calculate_qmdg_params(now)
-        nam_tru = f"{params.get('can_nam')} {params.get('chi_nam')}"
-        ngay_tru = f"{params.get('can_ngay')} {params.get('chi_ngay')}"
-        
-        na_nam = hoa_giap.get(nam_tru, {}).get("Nạp_Âm", "Không rõ")
-        na_ngay = hoa_giap.get(ngay_tru, {}).get("Nạp_Âm", "Không rõ")
-        
-        st.success("✅ Cập nhật Tứ Trụ Sinh Thần thành công!")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.info(f"**🍁 Mệnh Năm (Thái Tuế):**\n- {nam_tru}\n- Nạp Âm: {na_nam}")
-        with col2:
-            st.warning(f"**☀️ Mệnh Ngày (Chủ Sự):**\n- {ngay_tru}\n- Nạp Âm: {na_ngay}")
-            
-        st.markdown(f'''
-        <div style="background:#1e293b; padding:15px; border-radius:10px; color:white; border-left:4px solid #f59e0b; margin-top:20px;">
-            <h4>🔍 TÍCH HỢP ĐẠI TIÊN TRI</h4>
-            - Thiết Bản Thần Toán là môn thuật số đề cao Nạp Âm của Năm và Ngày để định đoạt cát hung đại cục.<br>
-            - AI Tiên Tri đã được trang bị toàn bộ hơn 100 quy tắc Phản Ngâm, Phục Ngâm, Trường Sinh 12 Giai Đoạn, và Thần Sát của Thiết Bản.<br>
-            👉 Hãy chuyển sang Tab <b>"🤖 Hỏi Gemini AI"</b> và chọn <b>"🌟 TỨ THUẬT HỢP NHẤT"</b> để dung hợp Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản vào một câu trả lời duy nhất!
-        </div>
-        ''', unsafe_allow_html=True)
+    st.markdown(f'''
+    <div style="background:#1e293b; padding:15px; border-radius:10px; color:white; border-left:4px solid #f59e0b; margin-top:20px;">
+        <h4>🔍 TÍCH HỢP ĐẠI TIÊN TRI</h4>
+        - Thiết Bản Thần Toán là môn thuật số đề cao Nạp Âm của Năm và Ngày để định đoạt cát hung đại cục.<br>
+        - AI Tiên Tri đã được trang bị toàn bộ hơn 100 quy tắc Phản Ngâm, Phục Ngâm, Trường Sinh 12 Giai Đoạn, và Thần Sát của Thiết Bản.<br>
+        👉 Hãy chuyển sang Tab <b>"🤖 Hỏi Gemini AI"</b> và chọn <b>"🌟 TỨ THUẬT HỢP NHẤT"</b> để dung hợp Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản vào một câu trả lời duy nhất!
+    </div>
+    ''', unsafe_allow_html=True)
 
 
 # ======================================================================
