@@ -3974,29 +3974,14 @@ elif st.session_state.current_view == "gemini_ai":
     
     st.success(f"✅ {ai_name} đã sẵn sàng! Hãy đặt câu hỏi bên dưới.")
     
-    # Topic selection for context
     st.markdown("### 🎯 Chọn Chủ Đề (Tùy chọn)")
     st.caption("Chọn chủ đề để AI có ngữ cảnh tốt hơn, hoặc để trống để hỏi chung")
     
-    col_topic1, col_topic2 = st.columns([3, 1])
-    
-    with col_topic1:
-        selected_topic_ai = st.selectbox(
-            "Chủ đề:",
-            ["Không chọn (Hỏi chung)"] + st.session_state.all_topics_full,
-            key="ai_topic_select"
-        )
-    
-    with col_topic2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⚛️ Lập Bàn Nhanh", use_container_width=True):
-            # Quick chart calculation for context
-            try:
-                from qmdg_calc import calculate_qmdg_params as tinh_ky_mon_don_gian
-                st.session_state.ai_chart_data = tinh_ky_mon_don_gian(now.year, now.month, now.day, now.hour)
-                st.success("✅ Đã lập bàn!")
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
+    selected_topic_ai = st.selectbox(
+        "Chủ đề:",
+        ["Không chọn (Hỏi chung)"] + st.session_state.all_topics_full,
+        key="ai_topic_select"
+    )
     
     st.markdown("---")
     
@@ -4021,13 +4006,22 @@ elif st.session_state.current_view == "gemini_ai":
                 try:
                     safe_topic = selected_topic_ai if selected_topic_ai != 'Không chọn (Hỏi chung)' else 'Chung'
                     
-                    # --- ENSURE QMDG CHART IS FULLY POPULATED BEFORE AI RUNS ---
+                    # --- AUTO GENERATE ALL 4 CHARTS (KỲ MÔN, MAI HOA, LỤC HÀO, THIẾT BẢN) FOR AI ---
+                    import datetime
+                    import random
+                    import hashlib
+                    
+                    current_dt = now # Use the real-time auto-refresh datetime
+                    
+                    # 1. KỲ MÔN ĐỘN GIÁP
                     try:
+                        from qmdg_calc import calculate_qmdg_params
                         from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg
-                        dia_can = an_bai_luc_nghi(params['cuc'], params['is_duong_don'])
+                        q_params = calculate_qmdg_params(current_dt)
+                        dia_can = an_bai_luc_nghi(q_params['cuc'], q_params['is_duong_don'])
                         thien_ban, can_thien_ban, nhan_ban, than_ban, truc_phu_cung = lap_ban_qmdg(
-                            params['cuc'], params['truc_phu'], params['truc_su'], 
-                            params['can_gio'], params['chi_gio'], params['is_duong_don']
+                            q_params['cuc'], q_params['truc_phu'], q_params['truc_su'], 
+                            q_params['can_gio'], q_params['chi_gio'], q_params['is_duong_don']
                         )
                         st.session_state.chart_data = {
                             'thien_ban': thien_ban,
@@ -4035,60 +4029,55 @@ elif st.session_state.current_view == "gemini_ai":
                             'nhan_ban': nhan_ban,
                             'than_ban': than_ban,
                             'dia_can': dia_can,
-                            'cuc': params['cuc'],
-                            'tiet_khi': params.get('tiet_khi', ''),
-                            'can_ngay': params['can_ngay'],
-                            'chi_ngay': params['chi_ngay'],
-                            'can_nam': params.get('can_nam', 'N/A'),
-                            'chi_nam': params.get('chi_nam', 'N/A'),
-                            'can_thang': params.get('can_thang', 'N/A'),
-                            'chi_thang': params.get('chi_thang', 'N/A'),
-                            'can_gio': params['can_gio'],
-                            'chi_gio': params['chi_gio']
+                            'cuc': q_params['cuc'],
+                            'tiet_khi': q_params.get('tiet_khi', ''),
+                            'can_ngay': q_params['can_ngay'],
+                            'chi_ngay': q_params['chi_ngay'],
+                            'can_nam': q_params.get('can_nam', 'N/A'),
+                            'chi_nam': q_params.get('chi_nam', 'N/A'),
+                            'can_thang': q_params.get('can_thang', 'N/A'),
+                            'chi_thang': q_params.get('chi_thang', 'N/A'),
+                            'can_gio': q_params['can_gio'],
+                            'chi_gio': q_params['chi_gio']
                         }
+                    except Exception as e:
+                        pass
+                        
+                    # 2. MAI HOA DỊCH SỐ
+                    try:
+                        from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
+                        st.session_state.mai_hoa_result = tinh_qua_theo_thoi_gian(current_dt.year, current_dt.month, current_dt.day, current_dt.hour)
+                        st.session_state.mai_hoa_result['interpretation'] = giai_qua(st.session_state.mai_hoa_result, safe_topic)
+                    except Exception as e:
+                        pass
+                        
+                    # 3. LỤC HÀO KINH DỊCH
+                    try:
+                        seed = int(hashlib.md5(f"{user_question}_{current_dt}".encode()).hexdigest(), 16) % 100000
+                        random.seed(seed)
+                        hao_list = [random.choice([6, 7, 8, 9]) for _ in range(6)]
+                        from luc_hao_kinh_dich import lap_que
+                        st.session_state.luc_hao_result = lap_que(hao_list, current_dt, safe_topic)
+                    except Exception as e:
+                        pass
+                        
+                    # 4. THIẾT BẢN THẦN TOÁN (Context Injection)
+                    tb_context = ""
+                    try:
+                        from qmdg_data import KY_MON_DATA
+                        from qmdg_calc import get_can_chi_year
+                        hoa_giap = KY_MON_DATA.get("THIET_BAN_THAN_TOAN", {}).get("LUC_THAP_HOA_GIAP_NAP_AM", {})
+                        tb_year_can, tb_year_chi = get_can_chi_year(current_dt.year)
+                        tb_year_key = f"{tb_year_can} {tb_year_chi}"
+                        tb_day_key = f"{q_params['can_ngay']} {q_params['chi_ngay']}"
+                        nap_am_nam = hoa_giap.get(tb_year_key, {}).get("Nạp_Âm", "Không rõ")
+                        nap_am_ngay = hoa_giap.get(tb_day_key, {}).get("Nạp_Âm", "Không rõ")
+                        tb_context = f"\n[DỮ LIỆU THIẾT BẢN THẦN TOÁN]:\n- Nạp Âm Trụ Năm Mở Quẻ: {nap_am_nam} ({tb_year_key})\n- Nạp Âm Trụ Ngày Mở Quẻ: {nap_am_ngay} ({tb_day_key})\nLƯU Ý THẦN TOÁN: ĐÂY LÀ KHÍ CHẤT CỦA THỜI GIAN HIỆN TẠI, TUYỆT ĐỐI KHÔNG LẤY NÓ LÀM MỆNH (NĂM SINH) CỦA NGƯỜI DÙNG.\n"
                     except Exception as e:
                         pass
                     
                     if btn_ask_supreme:
-                        # 1. AUTO GENERATE ALL CHARTS BASED ON USER'S SELECTED TIME
-                        import datetime
-                        import random
-                        import hashlib
-                        
-                        # Use the globally selected datetime
-                        current_dt = selected_datetime
-                        
-                        try:
-                            from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
-                            st.session_state.mai_hoa_result = tinh_qua_theo_thoi_gian(current_dt.year, current_dt.month, current_dt.day, current_dt.hour)
-                            st.session_state.mai_hoa_result['interpretation'] = giai_qua(st.session_state.mai_hoa_result, safe_topic)
-                        except Exception as e:
-                            pass
-                            
-                        try:
-                            seed = int(hashlib.md5(f"{user_question}_{current_dt}".encode()).hexdigest(), 16) % 100000
-                            random.seed(seed)
-                            hao_list = [random.choice([6, 7, 8, 9]) for _ in range(6)]
-                            from luc_hao_kinh_dich import lap_que
-                            st.session_state.luc_hao_result = lap_que(hao_list, current_dt, safe_topic)
-                        except Exception as e:
-                            pass
-                            
-                        # THIẾT BẢN THẦN TOÁN (Context Injection)
-                        tb_context = ""
-                        try:
-                            from qmdg_data import THIET_BAN_THAN_TOAN
-                            from qmdg_calc import get_can_chi_year
-                            tb_year_can, tb_year_chi = get_can_chi_year(lyear)
-                            tb_year = f"{tb_year_can} {tb_year_chi}"
-                            tb_day = f"{params['can_ngay']} {params['chi_ngay']}"
-                            nap_am_nam = THIET_BAN_THAN_TOAN["nap_am_60_hoa_giap"].get(tb_year, {}).get("nap_am", "?")
-                            nap_am_ngay = THIET_BAN_THAN_TOAN["nap_am_60_hoa_giap"].get(tb_day, {}).get("nap_am", "?")
-                            tb_context = f"\n[DỮ LIỆU THIẾT BẢN THẦN TOÁN]:\n- Nạp Âm Trụ Năm Mở Quẻ: {nap_am_nam} ({tb_year})\n- Nạp Âm Trụ Ngày Mở Quẻ: {nap_am_ngay} ({tb_day})\nLƯU Ý THẦN TOÁN: ĐÂY LÀ KHÍ CHẤT CỦA THỜI GIAN HIỆN TẠI, TUYỆT ĐỐI KHÔNG LẤY NÓ LÀM MỆNH (NĂM SINH) CỦA NGƯỜI DÙNG.\n"
-                        except Exception:
-                            pass
-                        
-                        # 2. CALL PHOENIX MASTER
+                        # CALL PHOENIX MASTER
                         orc = PhoenixOrchestrator(st.session_state.gemini_helper)
                         
                         raw_response = orc.run_pipeline(
@@ -4100,9 +4089,10 @@ elif st.session_state.current_view == "gemini_ai":
                             tb_context=tb_context
                         )
                     else:
-                        # Call the upgraded answer_question method with ALL charts
+                        # Append tb_context to question for basic answer_question
+                        enhanced_question = user_question + tb_context if tb_context else user_question
                         raw_response = st.session_state.gemini_helper.answer_question(
-                            user_question, 
+                            enhanced_question, 
                             topic=safe_topic,
                             chart_data=st.session_state.get('chart_data'),
                             mai_hoa_data=st.session_state.get('mai_hoa_result'),
