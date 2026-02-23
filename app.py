@@ -19,7 +19,7 @@ import re
 import extra_streamlit_components as stx
 from streamlit_autorefresh import st_autorefresh
 
-@st.cache_resource(experimental_allow_widgets=True)
+@st.cache_resource
 def get_cookie_manager():
     return stx.CookieManager()
 
