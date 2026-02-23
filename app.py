@@ -19,11 +19,8 @@ import re
 import extra_streamlit_components as stx
 from streamlit_autorefresh import st_autorefresh
 
-@st.cache_resource
-def get_cookie_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_cookie_manager()
+# Initialize CookieManager without cache to avoid CachedWidgetWarning
+cookie_manager = stx.CookieManager(key="cookie_mgr")
 st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
 
 def show_fatal_error(e):
