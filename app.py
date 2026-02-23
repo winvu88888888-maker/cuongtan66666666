@@ -1116,16 +1116,6 @@ class GeminiQMDGHelper:
     
     def __init__(self, api_key_input):
         import re
-
-import extra_streamlit_components as stx
-from streamlit_autorefresh import st_autorefresh
-
-@st.cache_resource(experimental_allow_widgets=True)
-def get_cookie_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_cookie_manager()
-st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
         import hashlib
         import google.generativeai as genai
         
@@ -1361,16 +1351,6 @@ st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
 
     def _process_response(self, text):
         import re
-
-import extra_streamlit_components as stx
-from streamlit_autorefresh import st_autorefresh
-
-@st.cache_resource(experimental_allow_widgets=True)
-def get_cookie_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_cookie_manager()
-st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
         import streamlit as st
         
         thinking = ""
@@ -1664,16 +1644,6 @@ class PhoenixOrchestrator:
         # --- NODE 1: INTENT ROUTER (Regex Enhanced) ---
         self.log_step("Intent Analysis", "RUNNING", "Analyzing user question...")
         import re
-
-import extra_streamlit_components as stx
-from streamlit_autorefresh import st_autorefresh
-
-@st.cache_resource(experimental_allow_widgets=True)
-def get_cookie_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_cookie_manager()
-st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
         q_lower = f" {user_question.lower()} " # Padding for boundary matching
         intent = "GENERAL"
 
