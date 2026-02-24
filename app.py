@@ -3148,18 +3148,19 @@ if st.session_state.current_view == "ky_mon":
                         5. **LỜI KHUYÊN HÀNH ĐỘNG:** Cần làm gì ngay bây giờ? 
                         
                         Viết theo phong cách chuyên nghiệp, thực tế, không dùng thuật ngữ quá khó hiểu nếu không giải thích kèm theo.
-                        """
-                        
                         try:
                             # Use comprehensive_analysis if suitable, or answer_question for flexibility
                             final_report = st.session_state.gemini_helper.answer_question(prompt)
-                            st.markdown(f"""
-                            <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
-                                {final_report}
-                            </div>
-                            """, unsafe_allow_html=True)
+                            st.session_state.final_ai_report = final_report
                         except Exception as e:
                             st.error(f"Lỗi phân tích: {e}")
+                
+                if st.session_state.get('final_ai_report'):
+                    st.markdown(f"""
+                    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
+                        {st.session_state.final_ai_report}
+                    </div>
+                    """, unsafe_allow_html=True)
 
         # ===== PALACE COMPARISON SECTION =====
         if st.session_state.chart_data:
