@@ -1082,24 +1082,27 @@ with st.sidebar:
         secret_api_key = manual_key or st_secret or saved_key or factory_key
         
         # Thông báo nếu chạy trên cloud nhưng chưa có secret
-        if not st_secret and not saved_key and not factory_key:
+        if not secret_api_key:
             # Đang chạy trên cloud và không có API key nào
             st.session_state.missing_cloud_secret = True
+        else:
+            st.session_state.missing_cloud_secret = False
         
 import google.generativeai as genai
 
 # --- MANUAL KEY OVERRIDE (CRITICAL FOR LEAKED KEYS) ---
 with st.sidebar:
     with st.expander("🔑 Cấu hình API Key (Nâng cao)", expanded=st.session_state.get("missing_cloud_secret", False)):
-        new_key = st.text_input("Nhập Gemini API Key mới:", type="password", key="manual_gemini_key_input", help="Nhập key mới nếu key cũ bị lỗi 403/Quota.")
-        if new_key:
-            st.session_state.gemini_key = new_key
-            st.session_state.missing_cloud_secret = False
-            # Clear helper to force reload
-            if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
-            st.success("Đã lưu Key! Vui lòng bấm 'Rerun' hoặc F5.")
-            if st.button("🔄 Kích hoạt ngay"):
+        new_key_input = st.text_input("Nhập Gemini API Key mới:", type="password", key="temp_manual_gemini_key", help="Nhập key mới nếu key cũ bị lỗi 403/Quota.")
+        if st.button("💾 Lưu và Kích hoạt", use_container_width=True):
+            if new_key_input:
+                st.session_state.gemini_key = new_key_input
+                st.session_state.missing_cloud_secret = False
+                # Clear helper to force reload
+                if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
                 st.rerun()
+        if st.session_state.get("gemini_key"):
+            st.success("✅ Đã có API Key trong phiên!")
 
 # --- IMPORT GEMINI HELPER FROM EXTERNAL MODULE (Unified Logic) ---
 # try:

@@ -14,6 +14,10 @@ class FreeAIHelper:
         """Alias for offline compatibility"""
         return self.answer_question(prompt)
 
+    def _process_response(self, text):
+        """Mock process response for offline mode"""
+        return text if text else "Không có phản hồi."
+
     def analyze_palace(self, palace_data, topic):
         """
         Generate detailed analysis for a palace using rule-based template.
