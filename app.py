@@ -1081,6 +1081,8 @@ with st.sidebar:
         # Tổng hợp: Ưu tiên Manual > Streamlit Secrets > Saved Key > Factory Key
         secret_api_key = manual_key or st_secret or saved_key or factory_key
         
+        st.session_state._resolved_api_key = secret_api_key
+        
         # Thông báo nếu chạy trên cloud nhưng chưa có secret
         if not secret_api_key:
             # Đang chạy trên cloud và không có API key nào
@@ -2291,8 +2293,16 @@ else: # auto or online
     </div>
     """, unsafe_allow_html=True)
 
+    # --- DEFERRED AI INITIALIZATION (Because classes are defined above) ---
+    if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_api_key'):
+        temp_helper = GeminiQMDGHelper(st.session_state._resolved_api_key)
+        st.session_state.gemini_helper = temp_helper
+        st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+        st.session_state.api_status_ok = True
+        st.session_state.api_status_msg = "Sẵn sàng"
+
     # UNIFIED SETTINGS (One place for everything)
-    is_connected = st.session_state.api_status_ok is True
+    is_connected = st.session_state.get("api_status_ok", False) is True
     expander_title = "🔑 Thay đổi API Key / Cấu hình" if is_connected else "🔑 Cấu Hình AI (Yêu cầu Key)"
     
     with st.expander(expander_title, expanded=not is_connected):
