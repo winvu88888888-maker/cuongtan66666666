@@ -1101,6 +1101,16 @@ with st.sidebar:
             if submitted and new_key_input:
                 st.session_state.gemini_key = new_key_input
                 st.session_state.missing_cloud_secret = False
+                
+                # Update Persistent Storage immediately
+                try:
+                    data = load_custom_data()
+                    data["GEMINI_API_KEY"] = new_key_input
+                    save_custom_data(data)
+                    import datetime as dt_module
+                    cookie_manager.set("GEMINI_API_KEY", new_key_input, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
+                except: pass
+
                 # Clear helper to force reload
                 if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
                 st.rerun()
@@ -3148,6 +3158,8 @@ if st.session_state.current_view == "ky_mon":
                         5. **LỜI KHUYÊN HÀNH ĐỘNG:** Cần làm gì ngay bây giờ? 
                         
                         Viết theo phong cách chuyên nghiệp, thực tế, không dùng thuật ngữ quá khó hiểu nếu không giải thích kèm theo.
+                        """
+                        
                         try:
                             # Use comprehensive_analysis if suitable, or answer_question for flexibility
                             final_report = st.session_state.gemini_helper.answer_question(prompt)
