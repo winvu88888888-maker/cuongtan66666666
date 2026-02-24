@@ -3343,13 +3343,14 @@ Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cun
                                 )
                                 
                                 # 2. GENERATE QUICK ACTIONS
-                                quick_actions = "- Hãy hành động dựa trên kết luận trên\n- Chọn thời điểm phù hợp với ngũ hành"
+                                quick_actions = ["Hãy hành động dựa trên kết luận trên", "Chọn thời điểm phù hợp với ngũ hành"]
+                                actions_html = "".join([f'<div class="action-item">{act}</div>' for act in quick_actions])
                                 
                                 # Display Quick Actions First
                                 st.markdown(f"""
                                 <div class="action-card">
-                                    <div class="action-title">🚀 HÀNH ĐỘNG NHANH CẦN LÀM NGAY</div>
-                                    {chr(10).join([f'<div class="action-item">{line.strip("- ").strip()}</div>' for line in quick_actions.strip().split(chr(10)) if line.strip()])}
+                                    <div class="action-title">&#128640; HÀNH ĐỘNG NHANH CẦN LÀM NGAY</div>
+                                    {actions_html}
                                 </div>
                                 """, unsafe_allow_html=True)
                                 
