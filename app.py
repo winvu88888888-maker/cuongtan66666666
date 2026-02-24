@@ -1093,9 +1093,10 @@ import google.generativeai as genai
 # --- MANUAL KEY OVERRIDE (CRITICAL FOR LEAKED KEYS) ---
 with st.sidebar:
     with st.expander("🔑 Cấu hình API Key (Nâng cao)", expanded=st.session_state.get("missing_cloud_secret", False)):
-        new_key_input = st.text_input("Nhập Gemini API Key mới:", type="password", key="temp_manual_gemini_key", help="Nhập key mới nếu key cũ bị lỗi 403/Quota.")
-        if st.button("💾 Lưu và Kích hoạt", use_container_width=True):
-            if new_key_input:
+        with st.form("api_key_form"):
+            new_key_input = st.text_input("Nhập Gemini API Key mới:", type="password", help="Nhập key mới nếu key cũ bị lỗi 403/Quota.")
+            submitted = st.form_submit_button("💾 Lưu và Kích hoạt", use_container_width=True)
+            if submitted and new_key_input:
                 st.session_state.gemini_key = new_key_input
                 st.session_state.missing_cloud_secret = False
                 # Clear helper to force reload
