@@ -334,6 +334,135 @@ def render_brain_training_ui():
             for k, v in list(st.session_state.custom_keywords.items())[-5:]: 
                 st.markdown(f"- **{k}**: {v}")
 
+# ======================================================================
+# UNIFIED AI RESULT DISPLAY FUNCTION
+# ======================================================================
+def display_ai_result(text, title="🤖 Kết Quả AI"):
+    """Hiển thị kết quả AI với format đẹp, dễ đọc, có điểm nhấn."""
+    if not text:
+        st.warning("⚠️ AI không trả về kết quả.")
+        return
+    
+    text = str(text).strip()
+    
+    # Header card
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+        padding: 18px 24px;
+        border-radius: 16px 16px 0 0;
+        margin-top: 16px;
+    ">
+        <div style="color: #ffffff; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.5px;">
+            {title}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Split by major sections (# headings)
+    import re as _re_display
+    sections = _re_display.split(r'(?m)^(#{1,3}\s+.+)$', text)
+    
+    # Color palette for sections
+    section_colors = [
+        ("#1e40af", "#dbeafe", "#1e3a8a"),  # Blue
+        ("#065f46", "#d1fae5", "#047857"),  # Green 
+        ("#9a3412", "#ffedd5", "#c2410c"),  # Orange
+        ("#7c2d12", "#fef3c7", "#b45309"),  # Amber
+        ("#581c87", "#f3e8ff", "#7c3aed"),  # Purple
+        ("#1e3a5f", "#e0f2fe", "#0369a1"),  # Sky
+    ]
+    color_idx = 0
+    
+    # Container start
+    st.markdown('<div style="background: #ffffff; border: 2px solid #e2e8f0; border-top: none; border-radius: 0 0 16px 16px; padding: 8px 0 16px 0; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);">', unsafe_allow_html=True)
+    
+    has_sections = False
+    i = 0
+    while i < len(sections):
+        part = sections[i].strip()
+        
+        # Check if this is a heading
+        heading_match = _re_display.match(r'^(#{1,3})\s+(.+)$', part)
+        if heading_match:
+            has_sections = True
+            level = len(heading_match.group(1))
+            heading_text = heading_match.group(2).strip()
+            
+            # Get body text (next element)
+            body = sections[i + 1].strip() if i + 1 < len(sections) else ""
+            i += 2
+            
+            # Pick color
+            text_c, bg_c, border_c = section_colors[color_idx % len(section_colors)]
+            color_idx += 1
+            
+            # Detect special sections for highlight
+            is_conclusion = any(kw in heading_text.upper() for kw in ["KẾT QUẢ", "KẾT LUẬN", "DỰ BÁO", "PHÁN ĐOÁN"])
+            is_advice = any(kw in heading_text.upper() for kw in ["LỜI KHUYÊN", "HÀNH ĐỘNG", "KHUYẾN NGHỊ"])
+            
+            if is_conclusion:
+                text_c, bg_c, border_c = ("#991b1b", "#fef2f2", "#dc2626")
+            elif is_advice:
+                text_c, bg_c, border_c = ("#065f46", "#ecfdf5", "#059669")
+            
+            # Section heading
+            font_size = "1.2rem" if level == 1 else "1.05rem" if level == 2 else "0.95rem"
+            st.markdown(f"""
+            <div style="
+                background: {bg_c};
+                border-left: 5px solid {border_c};
+                margin: 12px 16px 0 16px;
+                padding: 12px 18px;
+                border-radius: 0 10px 10px 0;
+            ">
+                <div style="color: {text_c}; font-size: {font_size}; font-weight: 900; letter-spacing: 0.3px;">
+                    {heading_text}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Section body - render via native st.markdown for proper markdown support
+            if body:
+                # Wrap in a styled container but use st.markdown for content
+                st.markdown(f"""
+                <div style="
+                    margin: 0 16px 4px 16px;
+                    padding: 14px 20px;
+                    background: #ffffff;
+                    border-left: 2px solid {border_c}33;
+                    font-size: 1.05rem;
+                    line-height: 1.85;
+                    color: #1e293b;
+                    font-weight: 500;
+                ">
+                </div>
+                """, unsafe_allow_html=True)
+                # Use native markdown for body (supports **bold**, lists, etc.)
+                with st.container():
+                    st.markdown(f"<div style='padding: 0 20px 0 38px; font-size: 1.05rem; line-height: 1.85; color: #1e293b; font-weight: 500;'>", unsafe_allow_html=True)
+                    st.markdown(body)
+                    st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            # Non-heading content (intro text or content without headings)
+            if part:
+                with st.container():
+                    st.markdown(f"<div style='padding: 12px 24px; font-size: 1.05rem; line-height: 1.85; color: #1e293b; font-weight: 500;'>", unsafe_allow_html=True)
+                    st.markdown(part)
+                    st.markdown("</div>", unsafe_allow_html=True)
+            i += 1
+    
+    # If no headings found, render the whole text nicely
+    if not has_sections:
+        with st.container():
+            st.markdown(f"<div style='padding: 16px 24px; font-size: 1.05rem; line-height: 1.85; color: #1e293b; font-weight: 500;'>", unsafe_allow_html=True)
+            st.markdown(text)
+            st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Container end
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
 CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
 SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
 THAN_8 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["BAT_THAN"].keys())
@@ -3168,11 +3297,7 @@ if st.session_state.current_view == "ky_mon":
                             st.error(f"Lỗi phân tích: {e}")
                 
                 if st.session_state.get('final_ai_report'):
-                    st.markdown(f"""
-                    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
-                        {st.session_state.final_ai_report}
-                    </div>
-                    """, unsafe_allow_html=True)
+                    display_ai_result(st.session_state.final_ai_report, title="🏆 KẾT LUẬN AI TỔNG HỢP")
 
         # ===== PALACE COMPARISON SECTION =====
         if st.session_state.chart_data:
@@ -3367,7 +3492,7 @@ Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cun
                                 """, unsafe_allow_html=True)
                                 
                                 # Display Detailed Analysis
-                                st.markdown(f'<div class="expert-box">{analysis}</div>', unsafe_allow_html=True)
+                                display_ai_result(analysis, title="🎯 KẾT LUẬN CHUYÊN SÂU (Dụng Thần)")
                             except Exception as e:
                                 st.error(f"❌ Lỗi AI: {str(e)}")
 
@@ -3550,7 +3675,7 @@ PHÂN TÍCH LIÊN MẠCH:
                                 st.error(f"❌ Lỗi: AI trả về rỗng (Empty Response) - [DEBUG_V3.0].\\nType: {type(raw)}\\nContent: {repr(raw)}")
                             else:
                                 final_ans = st.session_state.gemini_helper._process_response(raw)
-                                st.info(final_ans)
+                                display_ai_result(final_ans, title="🤖 Trả Lời AI")
                             
                             orc.render_logs()
                         except Exception as e:
@@ -4132,7 +4257,6 @@ elif st.session_state.current_view == "gemini_ai":
                     
                     # Display response in a nice panel
                     st.markdown("---")
-                    st.markdown(f"### 🤖 Trả Lời Từ {ai_name}")
                     st.markdown(f"""
                     <div style="
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -4146,17 +4270,7 @@ elif st.session_state.current_view == "gemini_ai":
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    st.markdown(f"""
-                    <div style="
-                        background: #f8f9fa;
-                        padding: 20px;
-                        border-radius: 15px;
-                        border-left: 5px solid #667eea;
-                        margin: 10px 0;
-                    ">
-                        {response_text.replace(chr(10), '<br>')}
-                    </div>
-                    """, unsafe_allow_html=True)
+                    display_ai_result(response_text, title=f"🤖 Trả Lời Từ {ai_name}")
                     
                     # RENDER WORKFLOW LOGS (User requested n8n visibility)
                     if hasattr(st.session_state.gemini_helper, 'render_logs'):
