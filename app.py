@@ -1126,194 +1126,147 @@ except ImportError:
 # V19.0: DISPLAY AI RESULT — Beautiful answer layout
 # ════════════════════════════════════════════════════
 def display_ai_result(text, key_prefix="ai"):
-    """V19.0: Hiển thị kết quả AI với bố cục đẹp, chữ to/nhỏ, nút ẩn/hiện."""
+    """V20.4: Hiển thị kết quả AI với format đẹp, dễ đọc, headings có màu, markdown render đúng."""
     if not text:
         st.warning("❌ Không có kết quả")
         return
     
     import re
     
-    # Tách kết quả thành các phần theo markers
-    lines = text.split('\n')
+    text = str(text).strip()
     
-    # Tìm KẾT LUẬN CHÍNH (dòng quán trọng nhất)
+    # ═══ PHÁT HIỆN KẾT LUẬN CHÍNH ═══
     conclusion = ""
     verdict_badge = ""
-    detail_blocks = []
-    current_block_title = ""
-    current_block_lines = []
-    
-    for line in lines:
+    for line in text.split('\n'):
         stripped = line.strip()
         if not stripped:
             continue
-        
-        # Detect main conclusion (CÁT/HUNG/BÌNH patterns)
         is_conclusion = False
         if re.search(r'(?:KẾT LUẬN|PHÁN QUYẾT|TỔNG KẾT|VERDICT|CÂU TRẢ LỜI)', stripped, re.IGNORECASE):
             is_conclusion = True
         elif re.search(r'^\*\*.*(?:CÁT|ĐẠI CÁT|HUNG|ĐẠI HUNG|THUẬN LỢI|KHÓ KHĂN|TỐT|XẤU).*\*\*', stripped, re.IGNORECASE):
             is_conclusion = True
-        
         if is_conclusion and not conclusion:
             conclusion = stripped
-            # Xác định loại verdict
             if re.search(r'CÁT|ĐẠI CÁT|THUẬN LỢI|TỐT|THÀNH CÔNG|\bCÓ\b', stripped, re.IGNORECASE):
                 verdict_badge = "cat"
             elif re.search(r'HUNG|ĐẠI HUNG|KHÓ|XẤU|THẤT BẠI|\bKHÔNG\b', stripped, re.IGNORECASE):
                 verdict_badge = "hung"
             else:
                 verdict_badge = "binh"
-            continue
-        
-        # Detect block headers (##, ###, Bước, numbered items like "1.", "2.")
-        is_header = False
-        if stripped.startswith('#'):
-            is_header = True
-            current_block_title = stripped.lstrip('#').strip()
-        elif re.match(r'^\*\*(?:Bước|B\d|Phần|Giai đoạn)', stripped, re.IGNORECASE):
-            is_header = True
-            current_block_title = stripped.replace('**', '').strip()
-        elif re.match(r'^(?:BƯỚC|PHÂN TÍCH|TIMELINE|THÁM TỬ|MANH MỐI|SĐHCD)', stripped, re.IGNORECASE):
-            is_header = True
-            current_block_title = stripped
-        
-        if is_header:
-            if current_block_lines:
-                detail_blocks.append((current_block_title or "Chi tiết", '\n'.join(current_block_lines)))
-            current_block_lines = []
-        else:
-            current_block_lines.append(stripped)
+            break
     
-    # Flush last block
-    if current_block_lines:
-        detail_blocks.append((current_block_title or "Chi tiết", '\n'.join(current_block_lines)))
-    
-    # ═══ RENDER ═══
-    
-    # 1. KET LUAN box (chữ TO, nổi bật)
+    # ═══ 1. VERDICT BOX (nổi bật nhất) ═══
     if conclusion:
         if verdict_badge == "cat":
             gradient = "linear-gradient(135deg, #065f46, #047857)"
             border_color = "#10b981"
-            icon = "✅"
-            label = "THUẬN LỢI"
+            v_icon = "✅"; label = "THUẬN LỢI"
         elif verdict_badge == "hung":
             gradient = "linear-gradient(135deg, #7f1d1d, #b91c1c)"
             border_color = "#ef4444"
-            icon = "⚠️"
-            label = "KHÓ KHĂN"
+            v_icon = "⚠️"; label = "KHÓ KHĂN"
         else:
             gradient = "linear-gradient(135deg, #78350f, #b45309)"
             border_color = "#f59e0b"
-            icon = "⚖️"
-            label = "CÂN NHẮC"
+            v_icon = "⚖️"; label = "CÂN NHẮC"
         
-        # Clean markdown chars from conclusion
         clean_conclusion = conclusion.replace('**', '').replace('##', '').replace('#', '').strip()
-        
         st.markdown(f"""
-        <div style="
-            background: {gradient};
-            border-radius: 16px;
-            padding: 24px 28px;
-            margin: 16px 0;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            border-left: 6px solid {border_color};
-        ">
-            <div style="
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin-bottom: 12px;
-            ">
-                <span style="font-size: 28px;">{icon}</span>
-                <span style="
-                    background: {border_color};
-                    color: white;
-                    padding: 4px 16px;
-                    border-radius: 20px;
-                    font-weight: 800;
-                    font-size: 13px;
-                    letter-spacing: 1px;
-                ">{label}</span>
+        <div style="background:{gradient}; border-radius:16px; padding:24px 28px; margin:16px 0; box-shadow:0 8px 32px rgba(0,0,0,0.15); border-left:6px solid {border_color};">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <span style="font-size:28px;">{v_icon}</span>
+                <span style="background:{border_color}; color:white; padding:4px 16px; border-radius:20px; font-weight:800; font-size:13px; letter-spacing:1px;">{label}</span>
             </div>
-            <div style="
-                color: white;
-                font-size: 1.3rem;
-                font-weight: 700;
-                line-height: 1.6;
-                text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            ">{clean_conclusion}</div>
+            <div style="color:white; font-size:1.3rem; font-weight:700; line-height:1.6; text-shadow:0 1px 3px rgba(0,0,0,0.3);">{clean_conclusion}</div>
         </div>
         """, unsafe_allow_html=True)
     
-    # 2. Nếu không parse được block nào, hiển thị toàn bộ trong expander
-    if not detail_blocks and not conclusion:
-        # Fallback: hiển thị raw text nhưng với styling đẹp
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border-radius: 12px;
-            padding: 20px 24px;
-            border-left: 4px solid #3b82f6;
-            margin: 12px 0;
-            font-size: 15px;
-            line-height: 1.8;
-            color: #1e293b;
-        ">{text}</div>
-        """, unsafe_allow_html=True)
-        return
+    # ═══ 2. TÁCH SECTIONS THEO HEADINGS & RENDER ĐẸP ═══
+    sections = re.split(r'(?m)^(#{1,3}\s+.+)$', text)
     
-    # 3. Detail blocks trong expander (ẩn/hiện)
-    if detail_blocks:
-        # Group blocks into categories cho gắn gọn hơn
-        block_icons = {
-            'Thám Tử': '🔍', 'Manh Mối': '🔎', 'Timeline': '📅',
-            'Ứng Kỳ': '⏰', 'Bước': '📌', 'Phân Tích': '📊',
-            'Kỳ Môn': '🏰', 'Lục Hào': '☯️', 'Mai Hoa': '🌸',
-            'Thiết Bản': '📜', 'Lục Nhâm': '🐉', 'Thái Ất': '⭐',
-            'Lời Khuyên': '💡', 'Tóm Tắt': '📝', 'Score': '💯',
-            'PP CHÍNH': '🥇', 'Routing': '🛤️', 'Đồng Thuận': '🤝',
-        }
+    section_colors = [
+        ("#1e40af", "#dbeafe", "#1e3a8a"),
+        ("#065f46", "#d1fae5", "#047857"),
+        ("#9a3412", "#ffedd5", "#c2410c"),
+        ("#7c2d12", "#fef3c7", "#b45309"),
+        ("#581c87", "#f3e8ff", "#7c3aed"),
+        ("#1e3a5f", "#e0f2fe", "#0369a1"),
+    ]
+    color_idx = 0
+    has_sections = False
+    
+    # Container
+    st.markdown('<div style="background:#ffffff; border:2px solid #e2e8f0; border-radius:16px; padding:8px 0 16px 0; margin:12px 0 20px 0; box-shadow:0 8px 30px rgba(0,0,0,0.08);">', unsafe_allow_html=True)
+    
+    i = 0
+    while i < len(sections):
+        part = sections[i].strip()
+        heading_match = re.match(r'^(#{1,3})\s+(.+)$', part)
         
-        for idx, (title, content) in enumerate(detail_blocks):
-            # Match icon
-            icon = '📌'
-            for key, ic in block_icons.items():
-                if key.lower() in title.lower():
-                    icon = ic
-                    break
+        if heading_match:
+            has_sections = True
+            level = len(heading_match.group(1))
+            heading_text = heading_match.group(2).strip()
+            body = sections[i + 1].strip() if i + 1 < len(sections) else ""
+            i += 2
             
-            # Determine if this is a key block (auto-expand)
-            is_key = any(k in title.lower() for k in ['kết luận', 'lời khuyên', 'pp chính', 'thám tử', 'routing'])
+            text_c, bg_c, border_c = section_colors[color_idx % len(section_colors)]
+            color_idx += 1
             
-            with st.expander(f"{icon} {title}", expanded=is_key):
-                # Render content với styling đẹp
-                st.markdown(f"""
-                <div style="
-                    font-size: 14px;
-                    line-height: 1.8;
-                    color: #334155;
-                    padding: 8px 0;
-                ">{content}</div>
-                """, unsafe_allow_html=True)
+            # Highlight đặc biệt cho KẾT LUẬN / LỜI KHUYÊN
+            if any(kw in heading_text.upper() for kw in ["KẾT QUẢ", "KẾT LUẬN", "DỰ BÁO", "PHÁN ĐOÁN"]):
+                text_c, bg_c, border_c = ("#991b1b", "#fef2f2", "#dc2626")
+            elif any(kw in heading_text.upper() for kw in ["LỜI KHUYÊN", "HÀNH ĐỘNG", "KHUYẾN NGHỊ"]):
+                text_c, bg_c, border_c = ("#065f46", "#ecfdf5", "#059669")
+            
+            font_size = "1.15rem" if level == 1 else "1.05rem" if level == 2 else "0.95rem"
+            st.markdown(f"""
+            <div style="background:{bg_c}; border-left:5px solid {border_c}; margin:12px 16px 0 16px; padding:12px 18px; border-radius:0 10px 10px 0;">
+                <div style="color:{text_c}; font-size:{font_size}; font-weight:900; letter-spacing:0.3px;">{heading_text}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if body:
+                # Loại bỏ dòng kết luận đã hiển thị ở verdict box
+                if conclusion:
+                    body = body.replace(conclusion, '').strip()
+                # Dùng st.markdown() native để render markdown đúng (bold, list, sub-headers)
+                with st.container():
+                    st.markdown(f"<div style='padding:2px 20px 2px 38px; font-size:1.05rem; line-height:1.85; color:#1e293b;'>", unsafe_allow_html=True)
+                    st.markdown(body)
+                    st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            if part:
+                # Loại bỏ conclusion đã hiển thị
+                display_part = part
+                if conclusion:
+                    display_part = part.replace(conclusion, '').strip()
+                if display_part:
+                    with st.container():
+                        st.markdown(f"<div style='padding:8px 24px; font-size:1.05rem; line-height:1.85; color:#1e293b;'>", unsafe_allow_html=True)
+                        st.markdown(display_part)
+                        st.markdown("</div>", unsafe_allow_html=True)
+            i += 1
     
-    # 4. Raw output (for transparency)
+    # Nếu không có heading sections → render toàn bộ text với markdown native
+    if not has_sections:
+        display_text = text
+        if conclusion:
+            display_text = text.replace(conclusion, '').strip()
+        if display_text:
+            with st.container():
+                st.markdown(f"<div style='padding:16px 24px; font-size:1.05rem; line-height:1.85; color:#1e293b;'>", unsafe_allow_html=True)
+                st.markdown(display_text)
+                st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Container end
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Raw output (for transparency)
     with st.expander("📄 Xem toàn bộ văn bản gốc", expanded=False):
-        st.markdown(f"""
-        <div style="
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-            font-size: 13px;
-            line-height: 1.7;
-            color: #475569;
-            max-height: 400px;
-            overflow-y: auto;
-        ">{text}</div>
-        """, unsafe_allow_html=True)
+        st.code(text, language=None)
 
 
 class PhoenixOrchestrator:
