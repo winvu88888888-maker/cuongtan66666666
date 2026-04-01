@@ -113,6 +113,13 @@ def build_res(upper, lower, dong_hao):
     res['ten_qua_bien'] = HEXAGRAM_DATA.get((bien_upper, bien_lower), {}).get('ten', "Quẻ Biến")
     
     res['interpretation'] = f"Quẻ {res['ten']}: {res['nghĩa']}"
+    
+    # V20.5: Thêm ten_thuong/ten_ha để AI context builder dùng cho Thể-Dụng analysis
+    res['ten_thuong'] = QUAI_NAMES.get(upper, f"Quái {upper}")
+    res['ten_ha'] = QUAI_NAMES.get(lower, f"Quái {lower}")
+    res['hanh_thuong'] = QUAI_ELEMENTS.get(upper, "Thổ")
+    res['hanh_ha'] = QUAI_ELEMENTS.get(lower, "Thổ")
+    
     return res
 
 def lines_to_quai(l):

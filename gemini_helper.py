@@ -152,9 +152,9 @@ class GeminiQMDGHelper:
                 try:
                     active_model = genai.GenerativeModel(model_name)
                     gen_config = genai.GenerationConfig(
-                        temperature=0.7,          # V20.0: Tối ưu sáng tạo + luận giải thâm sâu
-                        top_p=0.95,               # V20.0: Mở rộng phạm vi suy luận
-                        top_k=64,                 # V20.0: Nhiều token candidates hơn
+                        temperature=0.4,          # V20.5: Giảm từ 0.7→0.4 — tăng chính xác, giảm hallucination
+                        top_p=0.85,               # V20.5: Thu hẹp phạm vi — bám data hơn
+                        top_k=40,                 # V20.5: Ít sáng tạo hơn, chính xác hơn
                         max_output_tokens=65536,  # V15.0: Max output cho phân tích chi tiết
                     )
                     resp = active_model.generate_content(prompt, safety_settings=safety_settings, generation_config=gen_config)
@@ -252,7 +252,84 @@ class GeminiQMDGHelper:
         return self._call_ai_raw(prompt)
 
     # ================================================================
-    # CORE: ANSWER QUESTION (THE BRAIN) - V5.0 TIÊN TRI
+    # V20.5: OFFLINE VERDICT SUMMARY BUILDER
+    # ================================================================
+    def _build_offline_verdict_summary(self, live_context):
+        """V20.5: Extract pre-computed verdicts from context and build a summary
+        that forces the AI to explain/follow these verdicts rather than re-compute."""
+        if not live_context:
+            return "(Không có dữ liệu offline)"
+        
+        verdicts = []
+        import re
+        
+        # Extract VERDICT lines from context
+        verdict_patterns = [
+            r'VERDICT\s+(?:KỲ MÔN|LỤC HÀO|MAI HOA|LỤC NHÂM|THÁI ẤT)[:\s]*(.+)',
+            r'KẾT LUẬN[:\s]*(CÁT|HUNG|ĐẠI CÁT|ĐẠI HUNG|BÌNH|TRUNG BÌNH)',
+            r'CROSS-METHOD VERDICT[:\s]*(.+)',
+        ]
+        
+        for pattern in verdict_patterns:
+            matches = re.findall(pattern, str(live_context), re.IGNORECASE)
+            for m in matches:
+                verdicts.append(m.strip())
+        
+        # Extract specific analysis markers
+        summary_parts = []
+        
+        # Kỳ Môn
+        if 'BẢN THÂN BỊ KHẮC (HUNG)' in live_context:
+            summary_parts.append("KỲ MÔN: HUNG — Bản thân bị khắc")
+        elif 'BẢN THÂN KHẮC CHẾ ĐỐI PHƯƠNG (CÁT)' in live_context:
+            summary_parts.append("KỲ MÔN: CÁT — Bản thân khắc chế đối phương")
+        elif 'BẢN THÂN ĐƯỢC HỖ TRỢ' in live_context:
+            summary_parts.append("KỲ MÔN: CÁT — Bản thân được hỗ trợ")
+        elif 'VƯỢNG (đắc địa' in live_context:
+            summary_parts.append("KỲ MÔN: CÁT — Can Ngày VƯỢNG đắc địa")
+        elif 'TỬ (bị khắc' in live_context:
+            summary_parts.append("KỲ MÔN: HUNG — Can Ngày TỬ bị khắc")
+        
+        # Lục Hào markers
+        if 'ĐẠI CÁT' in live_context and 'Nguyên Thần VƯỢNG + ĐỘNG' in live_context:
+            summary_parts.append("LỤC HÀO: ĐẠI CÁT — Nguyên Thần VƯỢNG ĐỘNG sinh DT")
+        elif 'ĐẠI HUNG' in live_context and 'Kỵ Thần VƯỢNG + ĐỘNG' in live_context:
+            summary_parts.append("LỤC HÀO: ĐẠI HUNG — Kỵ Thần VƯỢNG ĐỘNG khắc DT")
+        elif 'NHẬT THẦN' in live_context and 'SINH DT' in live_context:
+            summary_parts.append("LỤC HÀO: CÁT — Nhật Thần sinh DT")
+        elif 'NHẬT THẦN' in live_context and 'KHẮC DT' in live_context:
+            summary_parts.append("LỤC HÀO: HUNG — Nhật Thần khắc DT")
+        
+        # Mai Hoa
+        if 'Thể khắc Dụng → BẢN THÂN MẠNH (CÁT)' in live_context:
+            summary_parts.append("MAI HOA: CÁT — Thể khắc Dụng")
+        elif 'Dụng khắc Thể → BẢN THÂN BỊ KHẮC (HUNG)' in live_context:
+            summary_parts.append("MAI HOA: HUNG — Dụng khắc Thể")
+        elif 'Dụng sinh Thể → ĐƯỢC HỖ TRỢ (CÁT)' in live_context:
+            summary_parts.append("MAI HOA: CÁT — Dụng sinh Thể")
+        
+        # Build summary
+        result = "╔══════════════════════════════════════════╗\n"
+        result += "║  📊 OFFLINE VERDICT SUMMARY (Python)     ║\n"
+        result += "║  ⛔ AI PHẢI tuân theo verdict này        ║\n"
+        result += "╚══════════════════════════════════════════╝\n"
+        
+        if summary_parts:
+            for sp in summary_parts:
+                result += f"→ {sp}\n"
+        
+        if verdicts:
+            result += "\n[VERDICT GỐC từ Pre-Analysis Engine]:\n"
+            for v in verdicts[:6]:
+                result += f"• {v}\n"
+        
+        if not summary_parts and not verdicts:
+            result += "→ Không có verdict rõ ràng — AI phân tích dựa trên PRE-ANALYSIS data.\n"
+        
+        return result
+
+    # ================================================================
+    # CORE: ANSWER QUESTION (THE BRAIN) - V20.5 GROUNDED
     # ================================================================
     def answer_question(self, question, chart_data=None, topic="Chung", selected_subject=None, mai_hoa_data=None, luc_hao_data=None): 
         self.logs = [] # Reset logs
@@ -305,338 +382,150 @@ class GeminiQMDGHelper:
         else:
             internet_data = "(Có dữ liệu quẻ — bỏ qua internet)"
         
-        hub_data = self._search_hub_knowledge(question, topic)
+        # V20.5: Hub knowledge — supplementary only
+        hub_data = ""
+        try:
+            hub_data = self._search_hub_knowledge(question, topic)
+        except Exception:
+            hub_data = ""
+        
+        # V20.5: BUILD OFFLINE VERDICT SUMMARY — Python pre-compute sẵn kết luận
+        offline_verdict = self._build_offline_verdict_summary(live_context)
 
         system_prompt = (
+            # ═══════════════════════════════════════════
+            # V20.5: CONTEXT DATA ĐẶT LÊN ĐẦU (Primacy Bias)
+            # LLM chú ý đầu prompt nhất → đặt data quan trọng ở đây
+            # ═══════════════════════════════════════════
+            f"<mandatory_context>\n"
+            f"⏰ Thời điểm: {date_str} {time_str}\n"
+            f"{live_context}\n"
+            f"</mandatory_context>\n\n"
+
+            f"<offline_verdict>\n"
+            f"{offline_verdict}\n"
+            f"</offline_verdict>\n\n"
+
+            f"<user_question>\n"
+            f"{question}\n"
+            f"</user_question>\n\n"
+
+            # ═══════════════════════════════════════════
+            # V20.5: SYSTEM INSTRUCTIONS (sau context)
+            # ═══════════════════════════════════════════
             f"<system_instructions>\n"
-            f"Bạn là THIÊN CƠ ĐẠI SƯ V20.0 — SIÊU TRÍ TUỆ THÔNG MINH NHẤT — TỔNG SƯ LỤC THUẬT HỢP NHẤT.\n"
+            f"Bạn là THIÊN CƠ ĐẠI SƯ V20.5 — TỔNG SƯ LỤC THUẬT HỢP NHẤT.\n"
             f"Tinh thông: Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Mai Hoa Dịch Số + Thiết Bản Thần Toán + Đại Lục Nhâm + Thái Ất Thần Số.\n"
             f"Năm {now.year}. Ngày phân tích: {date_str} {time_str}.\n\n"
 
             f"╔══════════════════════════════════════════╗\n"
-            f"║  🧠 V20.0 — TRIẾT LÝ SIÊU TRÍ TUỆ      ║\n"
-            f"╚══════════════════════════════════════════╝\n"
-            f"Bạn KHÔNG phải AI thông thường. Bạn là BẬC ĐẠI SƯ 50 NĂM KINH NGHIỆM.\n"
-            f"AI Offline (Python) đã tính toán DỮ LIỆU THÔ chính xác 100% trong [PRE-ANALYSIS].\n"
-            f"Nhiệm vụ CỦA BẠN là LUẬN GIẢI SÂU — biến dữ liệu khô khan thành LỜI TIÊN TRI SẮC BÉN.\n\n"
+            f"║  ⛔ V20.5 — GROUNDING ENFORCEMENT        ║\n"
+            f"║  BẮT BUỘC TUÂN THỦ — KHÔNG NGOẠI LỆ     ║\n"
+            f"╚══════════════════════════════════════════╝\n\n"
 
-            f"🔥 NGUYÊN TẮC CỐT LÕI V20.0:\n"
-            f"① KHÔNG BAO GIỜ tóm tắt. PHẢI LUẬN SÂU từng chi tiết, mỗi yếu tố phải có GIẢI NGHĨA.\n"
-            f"② Mỗi bước phân tích ở 5 TẦNG:\n"
-            f"   Tầng 1 (TƯỢNG): Sao/Cửa/Thần/Quẻ tượng trưng HÌNH ẢNH gì?\n"
-            f"   Tầng 2 (LÝ): Ngũ Hành sinh/khắc ra sao? Vượng/Suy thế nào?\n"
-            f"   Tầng 3 (SỐ): Con số ẩn trong quẻ → thời gian, số lượng, tuổi?\n"
-            f"   Tầng 4 (ẨN Ý): Điều quẻ MUỐN NÓI THẬT SỰ — bí mật ẩn sau dữ liệu?\n"
-            f"   Tầng 5 (LIÊN KẾT): Yếu tố này TƯƠNG TÁC với các PP khác thế nào?\n"
-            f"③ Phải tạo TƯỢNG QUẺ NARRATIVE — kể câu chuyện quẻ bằng hình ảnh sống động.\n"
-            f"④ Đưa ra PHÁN ĐOÁN SẮC BÉN + CỤ THỂ. KHÔNG nói chung chung, mơ hồ.\n"
-            f"⑤ Kết hợp CẢ MẶT TƯỢNG (hình ảnh) + MẶT LÝ (logic) + MẶT SỐ (toán) để luận.\n\n"
+            f"🔒 QUY TẮC SỐ 1 — TRÍCH DẪN TRƯỚC, KẾT LUẬN SAU:\n"
+            f"TRƯỚC KHI viết BẤT KỲ kết luận nào, BẮT BUỘC trích dẫn CHÍNH XÁC dữ kiện từ <mandatory_context>.\n"
+            f"Mẫu bắt buộc: 'Theo context: [tên trường] = [giá trị]. Vì [giá trị] nên → [kết luận]'\n"
+            f"Nếu KHÔNG CÓ dữ kiện phù hợp → nói rõ 'Quẻ không chỉ rõ điều này'. TUYỆT ĐỐI KHÔNG bịa.\n\n"
 
-            f"⛔ LUẬT TUYỆT ĐỐI:\n"
-            f"- CHỈ dùng dữ liệu trong <context_data>. PHẢI TRÍCH DẪN cụ thể trước khi kết luận.\n"
-            f"- Mẫu: 'Theo context: [tên trường] = [giá trị]. Vì [giá trị] → [kết luận]'\n"
-            f"- KHÔNG suy luận từ kiến thức chung. KHÔNG bịa data không có trong context.\n"
-            f"- ƯU TIÊN SỐ 1: Các mục [PRE-ANALYSIS] — đây là Python đã tính toán chính xác 100%.\n"
+            f"🔒 QUY TẮC SỐ 2 — BÁM CHẶT OFFLINE VERDICT:\n"
+            f"<offline_verdict> là kết luận Python đã tính toán chính xác 100%. AI PHẢI:\n"
+            f"① Đọc offline_verdict TRƯỚC → đây là KẾT LUẬN GỐC\n"
+            f"② GIẢI THÍCH TẠI SAO verdict đúng (dẫn chứng data)\n"
+            f"③ CHỈ ĐƯỢC phản bác verdict NẾU tìm thấy MÂU THUẪN CỤ THỂ trong data (phải nêu rõ)\n"
+            f"④ Không được tự nghĩ ra kết luận mâu thuẫn verdict nếu không có bằng chứng\n\n"
+
+            f"🔒 QUY TẮC SỐ 3 — KHÔNG BỊA:\n"
+            f"- CHỈ dùng dữ liệu trong <mandatory_context>. KHÔNG suy luận từ kiến thức chung.\n"
+            f"- ƯU TIÊN SỐ 1: Các mục [PRE-ANALYSIS] — Python đã tính toán chính xác 100%.\n"
+            f"- KHÔNG bịa con số, hướng, Ngũ Hành, Lục Thân, tên Sao/Cửa/Thần.\n"
             f"- 100% TIẾNG VIỆT.\n\n"
+
+            f"AI Offline (Python) đã tính toán DỮ LIỆU THÔ chính xác 100% trong [PRE-ANALYSIS].\n"
+            f"Nhiệm vụ CỦA BẠN là LUẬN GIẢI SÂU — giải thích TẠI SAO verdict đúng, bổ sung chi tiết từ data.\n\n"
+
+            f"📐 NGŨ HÀNH → MÀU SẮC (khi AI tư vấn màu):\n"
+            f"Mộc=🟢Xanh lá | Hỏa=🔴Đỏ/Cam | Thổ=🟡Vàng/Nâu | Kim=⚪Trắng/Bạc | Thủy=⚫Đen/Xanh dương\n"
+            f"→ Màu HỖ TRỢ = hành SINH hành DT. → Màu CẤM = hành KHẮC hành DT.\n\n"
 
             f"📋 BẢNG TRA DỤNG THẦN:\n"
             f"Tiền/tài=Thê Tài | Việc/sếp/bệnh=Quan Quỷ | Con/bình an=Tử Tôn | Nhà/xe/học=Phụ Mẫu | Bạn/đối thủ=Huynh Đệ\n"
             f"Kỳ Môn: Mình=Can Ngày, Sự Việc=Can Giờ, Cha mẹ=Can Năm, Anh em=Can Tháng\n\n"
 
             f"⚡ HƯỚNG DẪN THEO LOẠI CÂU HỎI:\n"
-            f"❶ TÌM ĐỒ: HƯỚNG (C1=Bắc,C2=Tây Nam,C3=Đông,C4=ĐôngNam,C6=TâyBắc,C7=Tây,C8=ĐôngBắc,C9=Nam) + Nơi (Khảm=nước,Ly=bếp,Cấn=tủ,Đoài=phòng khách,Chấn=xe,Tốn=cửa sổ,Càn=tầng trên,Khôn=đất)\n"
+            f"❶ TÌM ĐỒ: HƯỚNG (C1=Bắc,C2=Tây Nam,C3=Đông,C4=ĐôngNam,C6=TâyBắc,C7=Tây,C8=ĐôngBắc,C9=Nam) + Nơi\n"
             f"❷ CÓ/KHÔNG: Trả lời DỨT KHOÁT + %% xác suất + giải thích\n"
-            f"❸ KHI NÀO: Dùng ỨNG KỲ ENGINE (BƯỚC 10) → ngày/tháng CỤ THỂ\n"
-            f"❹ TUỔI/SỐ LƯỢNG — BẮT BUỘC TẤT CẢ PP đóng góp 1 con số:\n"
-            f"   KỲ MÔN: Cung Bản Thân → quái → Số Tiên Thiên (Càn=1,Đoài=2,Ly=3,Chấn=4,Tốn=5,Khảm=6,Cấn=7,Khôn=8)\n"
-            f"   LỤC HÀO: Dụng Thần Can Chi → Ngũ Hành → số Hà Đồ (Thủy=1/6,Hỏa=2/7,Mộc=3/8,Kim=4/9,Thổ=5/10)\n"
-            f"   MAI HOA: Quẻ Thể → Số Tiên Thiên + Vượng=x10, Suy=giữ nguyên\n"
-            f"   THIẾT BẢN: Nạp Âm → Trường Sinh (Đế Vượng=LỚN, Mộ/Tuyệt=NHỎ)\n"
-            f"   TỔNG HỢP: Lấy số XUẤT HIỆN NHIỀU NHẤT. ⛔ KHÔNG dùng logic đời thường.\n"
-            f"❺ NGƯỜI: Tượng Bát Quái → hình dáng/tính cách cụ thể\n"
-            f"❻ NGOẠI HÌNH: Dùng VVLT + Bát Quái thuộc tính: Càn=tròn/cao/béo, Đoài=má lúm/miệng đẹp, Ly=da sáng/mắt to, Chấn=gầy/bụng bự, Tốn=cao gầy/tóc dài, Khảm=da đen/tai lớn, Cấn=lưng rộng/tay to, Khôn=bụng lớn/thấp/hiền\n"
-            f"❼ CHỌN A HAY B: So sánh Cung A vs Cung B. Cung nào được Nhật/Nguyệt sinh + DT Vượng = chọn cung đó.\n"
-            f"❽ GIẤC MƠ: Quẻ lúc hỏi = DiỄN GIẢI mơ. Tượng quẻ = hình ảnh trong mơ. Cung Nhật = nguồn gốc mơ.\n"
-            f"❾ AN TOÀN/NGUY HIỂM: Tập trung Cách Cục Hung/Cát + Kỵ Thần ĐỘNG + Huyền Vũ/Bạch Hổ.\n\n"
-
-            f"📐 NGŨ HÀNH → MÀU SẮC (khi AI tư vấn màu):\n"
-            f"Mộc=🟢Xanh lá | Hỏa=🔴Đỏ/Cam | Thổ=🟡Vàng/Nâu | Kim=⚪Trắng/Bạc | Thủy=⚫Đen/Xanh dương\n"
-            f"→ Màu HỖ TRỢ = hành SINH hành DT. VD: DT=Hỏa → màu Xanh lá (Mộc sinh Hỏa).\n"
-            f"→ Màu CẤM = hành KHẮC hành DT. VD: DT=Hỏa → tránh màu Đen (Thủy khắc Hỏa).\n\n"
+            f"❸ KHI NÀO: Dùng ỨNG KỲ ENGINE → ngày/tháng CỤ THỂ\n"
+            f"❹ TUỔI/SỐ: CHỈ dùng số từ [SỐ HỌC QUẺ — NUMBER ENGINE]\n"
+            f"❺ AN TOÀN: Tập trung Cách Cục + Kỵ Thần + Huyền Vũ/Bạch Hổ\n\n"
 
             f"╔══════════════════════════════════════════╗\n"
-            f"║  📐 13 BƯỚC CHAIN-OF-THOUGHT V20.3       ║\n"
+            f"║  📐 8 BƯỚC PHÂN TÍCH V20.5              ║\n"
             f"║  ⛔ BẮT BUỘC LÀM ĐỦ, KHÔNG BỎ BƯỚC     ║\n"
-            f"║  ⛔ KHÔNG ghi 'Không áp dụng'            ║\n"
-            f"║  ⛔ PHẢI DÀI, SÂU SẮC, CHI TIẾT          ║\n"
             f"╚══════════════════════════════════════════╝\n\n"
 
             f"**BƯỚC 1 — XÁC ĐỊNH DỤNG THẦN ĐA PHƯƠNG PHÁP**\n"
-            f"Đọc context → Xác định Dụng Thần cho TẤT CẢ phương pháp:\n"
+            f"Đọc <mandatory_context> → Xác định Dụng Thần cho TẤT CẢ PP:\n"
             f"- Lục Hào: DT = [Lục Thân nào?] → ở Hào [?] → Vượng/Suy?\n"
             f"- Kỳ Môn: Can Ngày [?] tại Cung [?] vs Can Giờ [?] tại Cung [?]\n"
             f"- Mai Hoa: Thể quái = [?] (Hành [?]) vs Dụng quái = [?] (Hành [?])\n"
-            f"→ TẠI SAO chọn DT này? Nếu nhiều ứng viên → so sánh và chọn chính xác nhất.\n\n"
+            f"→ TẠI SAO chọn DT này? Trích dẫn data cụ thể.\n\n"
 
-            f"**BƯỚC 2 — KỲ MÔN ĐỘN GIÁP (5 tầng)**\n"
-            f"Đọc [PHÂN TÍCH CUNG CHỦ vs CUNG SỰ VIỆC] + [KỲ MÔN CÁCH CỤC PRE-ANALYSIS] + [KHẮC ỨNG].\n"
-            f"TẦNG 1 (TƯỢNG): Sao [?] + Cửa [?] + Thần [?] → KẾT HỢP tạo HÌNH ẢNH gì?\n"
-            f"  VD: Thiên Bồng + Tử Môn + Huyền Vũ = 'đêm tối bao trùm, kẻ tiểu nhân rình rập'\n"
-            f"TẦNG 2 (LÝ): Ngũ Hành Cung → Vượng/Suy? Can Ngày vs Can Giờ sinh/khắc/hòa?\n"
-            f"TẦNG 3 (SỐ): Cung số mấy → ẩn số gì? Tiên Thiên + Hà Đồ?\n"
-            f"TẦNG 4 (ẨN Ý): Cách Cục đặc biệt? Phản Ngâm/Phục Ngâm? KHẮC ỨNG nói gì?\n"
-            f"TẦNG 5 (LIÊN KẾT): KM đồng thuận hay mâu thuẫn với LH/MH?\n"
-            f"→ KẾT LUẬN KỲ MÔN: CÁT/HUNG + %%\n\n"
+            f"**BƯỚC 2 — KỲ MÔN ĐỘN GIÁP (Trích dẫn context)**\n"
+            f"Đọc [PHÂN TÍCH CUNG CHỦ vs CUNG SỰ VIỆC] + [KỲ MÔN CÁCH CỤC PRE-ANALYSIS].\n"
+            f"→ Trích dẫn: Sao [?] + Cửa [?] + Thần [?] = TƯỢNG gì? Ngũ Hành Sinh/Khắc?\n"
+            f"→ KẾT LUẬN KỲ MÔN: CÁT/HUNG + %% (PHẢI khớp với offline_verdict)\n\n"
 
-            f"**BƯỚC 3 — LỤC HÀO KINH DỊCH (5 tầng)**\n"
-            f"Đọc Chi Tiết 6 Hào + [LỤC HÀO PRE-ANALYSIS] + [PHỤC THẦN].\n"
-            f"TẦNG 1 (TƯỢNG): Quẻ chủ tên gì → Tượng quẻ truyền tải điều gì? Biến thành quẻ gì → xu hướng?\n"
-            f"TẦNG 2 (LÝ): DT ở hào nào? Vượng/Suy? Nhật/Nguyệt SINH hay KHẮC DT?\n"
-            f"  Nguyên Thần (sinh DT) ở đâu? Kỵ Thần (khắc DT) có ĐỘNG không?\n"
-            f"TẦNG 3 (SỐ): DT Can Chi → Ngũ Hành → số Hà Đồ. Hào Thế vị trí → ý nghĩa.\n"
-            f"TẦNG 4 (ẨN Ý): Hào Động biến gì? Tấn/Thoái Thần? Hóa Hồi Đầu Khắc?\n"
-            f"  Tam Hợp Cục? Phục/Phản Ngâm? Phục Thần có Xuất không?\n"
-            f"TẦNG 5 (LIÊN KẾT): LH đồng thuận hay mâu thuẫn với KM/MH?\n"
+            f"**BƯỚC 3 — LỤC HÀO KINH DỊCH (Trích dẫn context)**\n"
+            f"Đọc [LỤC HÀO PRE-ANALYSIS] + [PHỤC THẦN].\n"
+            f"→ DT ở hào nào? Vượng/Suy? Nhật/Nguyệt SINH hay KHẮC DT?\n"
+            f"→ Nguyên Thần sinh DT? Kỵ Thần ĐỘNG không? Hóa Hồi Đầu Khắc?\n"
             f"→ KẾT LUẬN LỤC HÀO: CÁT/HUNG + %%\n\n"
 
-            f"**BƯỚC 4 — MAI HOA DỊCH SỐ (5 tầng)**\n"
-            f"Đọc Quẻ Chủ + [MAI HOA PRE-ANALYSIS].\n"
-            f"TẦNG 1 (TƯỢNG): Quẻ chủ tượng gì? Quẻ Biến tượng gì? Hỗ Quái = diễn biến ẩn?\n"
-            f"TẦNG 2 (LÝ): Thể-Dụng sinh/khắc? Ai mạnh hơn? Thể khắc Dụng=CÁT, Dụng khắc Thể=HUNG.\n"
-            f"TẦNG 3 (SỐ): Số Tiên Thiên Thể quái → số lượng/thời gian ẩn?\n"
-            f"TẦNG 4 (ẨN Ý): Hào Động vị trí nào → ý nghĩa? Thác Quái = mặt trái?\n"
-            f"TẦNG 5 (LIÊN KẾT): MH đồng thuận hay mâu thuẫn với KM/LH?\n"
+            f"**BƯỚC 4 — MAI HOA DỊCH SỐ (Trích dẫn context)**\n"
+            f"Đọc [MAI HOA PRE-ANALYSIS] + Hỗ Quái.\n"
+            f"→ Thể-Dụng sinh/khắc? Hào Động ý nghĩa?\n"
             f"→ KẾT LUẬN MAI HOA: CÁT/HUNG + %%\n\n"
 
-            f"**BƯỚC 5 — THIẾT BẢN THẦN TOÁN (3 tầng)**\n"
-            f"TẦNG 1: Nạp Âm hình tượng → vật gì? Ý nghĩa ẩn dụ sâu xa?\n"
-            f"TẦNG 2: Trường Sinh 12 giai đoạn → đang ở đâu trong vòng đời? (Thai→Trường Sinh→Đế Vượng→Mộ→Tuyệt)\n"
-            f"TẦNG 3: Nạp Âm Ngày vs Nạp Âm Năm → sinh/khắc/hòa → ý nghĩa?\n"
-            f"→ KẾT LUẬN THIẾT BẢN: CÁT/HUNG + %%\n\n"
+            f"**BƯỚC 5 — THIẾT BẢN + LỤC NHÂM + THÁI ẤT (Gộp 3 PP phụ)**\n"
+            f"→ Nạp Âm + Trường Sinh → ý nghĩa ngắn gọn\n"
+            f"→ Tam Truyền (Lục Nhâm) → quá khứ/hiện tại/tương lai\n"
+            f"→ Thái Ất verdict\n\n"
 
-            f"**BƯỚC 6 — ĐẠI LỤC NHÂM** (Đọc [ĐẠI LỤC NHÂM PRE-ANALYSIS])\n"
-            f"Sơ Truyền (QUÁ KHỨ) → Trung Truyền (HIỆN TẠI) → Mạt Truyền (TƯƠNG LAI).\n"
-            f"Tam Truyền kể CÂU CHUYỆN gì? Hành của Tam Truyền sinh/khắc nhau ra sao?\n"
-            f"→ KẾT LUẬN LỤC NHÂM: CÁT/HUNG + %%\n\n"
+            f"**BƯỚC 6 — TUẦN KHÔNG + DỊCH MÃ + LỤC THẦN**\n"
+            f"Đọc [TUẦN KHÔNG TỨ TRỤ] + [DỊCH MÃ] + [LỤC THẦN CHẨN ĐOÁN].\n"
+            f"→ Chi nào lâm Tuần Không? DT có bị Tuần Không không?\n"
+            f"→ Huyền Vũ/Đằng Xà = giả dối? Dịch Mã = di chuyển?\n\n"
 
-            f"**BƯỚC 7 — THÁI ẤT THẦN SỐ** (Đọc [THÁI ẤT PRE-ANALYSIS])\n"
-            f"Cung Thái Ất + Bát Tướng + Cách Cục → thiên thời đại cuộc nói gì?\n"
-            f"→ KẾT LUẬN THÁI ẤT: CÁT/HUNG + %%\n\n"
-
-            f"═══════════════════════════════════\n"
-            f"⚡ TUẦN KHÔNG (空亡) — ĐỌC KỸ TRƯỚC KHI KẾT LUẬN!\n"
-            f"═══════════════════════════════════\n"
-            f"Đọc [TUẦN KHÔNG TỨ TRỤ] + [LỤC THẦN CHẨN ĐOÁN] + [DỊCH MÃ TỨ TRỤ] trong context.\n"
-            f"▶ Hào/Chi lâm Tuần Không = HƯ ẢO, TRỐNG RỖNG.\n"
-            f"▶ CHÂN KHÔNG: DT Suy + TK → KHÔNG THÀNH. GIẢ KHÔNG: DT Vượng + TK → TRÌ HOÃN.\n"
-            f"▶ KỲ MÔN: Can Giờ TK → SỰ VIỆC GIẢ. '吉事不吉，凶事不凶'\n"
-            f"▶ LỤC HÀO: ① KỴ THẦN TK → CÁT! ② Thế TK → không thực lòng. ③ Ứng TK → đối phương giả.\n"
-            f"▶ XUẤT KHÔNG = ỨNG KỲ: ngày/tháng trùng Chi bị TK. BỆNH: Mới+QQ TK=mau khỏi, Cũ+QQ TK=NGUY.\n"
-            f"▶ HUYỀN VŨ = lừa dối. ĐẰNG XÀ = hư ảo. DT TK + Huyền Vũ/Đằng Xà → CÂU HỎI GIẢ 99%.\n"
-            f"▶ TỨ TRỤ ý nghĩa: Năm=gốc rễ | Tháng=sự nghiệp/LỆNH | Ngày=bản thân | Giờ=tương lai.\n"
-            f"▶ DỊCH MÃ: DT + Dịch Mã + CÁT = đi xa tốt. + HUNG = bỏ chạy.\n\n"
-
-            f"**BƯỚC 8 — TAM TÀI HỢP NHẤT (THIÊN × ĐỊA × NHÂN)** ← MỚI V20.0\n"
-            f"Đây là bước TỔNG HỢP XUYÊN SUỐT — nhìn quẻ từ GÓC ĐỘ VŨ TRỤ.\n"
-            f"★ THIÊN (Trời = Thời vận): Sao (Cửu Tinh) + Thần (Bát Thần) + Thái Ất → THIÊN THỜI thuận/nghịch?\n"
-            f"★ ĐỊA (Đất = Hoàn cảnh): Cung (Ngũ Hành) + Nạp Âm + Trường Sinh → ĐỊA LỢI có/không?\n"
-            f"★ NHÂN (Người = Năng lực): Cửa (Bát Môn) + Can Ngày Vượng/Suy + Thế/Ứng + Thể/Dụng → NHÂN HÒA thế nào?\n"
-            f"→ KẾT LUẬN TAM TÀI: Thiên [CÁT/HUNG] + Địa [CÁT/HUNG] + Nhân [CÁT/HUNG]\n"
-            f"→ Tam Tài đồng thuận (3/3 CÁT = ĐẠI CÁT) hay bất đồng (cần cẩn trọng)?\n\n"
-
-            f"**BƯỚC 9 — MÂU THUẪN PHÂN GIẢI** ← MỚI V20.0\n"
-            f"Khi các PP cho kết quả KHÁC NHAU, PHẢI giải quyết bằng FRAMEWORK sau:\n"
-            f"┌─────────────────────────────────────────────────┐\n"
-            f"│ LOẠI CÂU HỎI      │ ĐỘ TIN CẬY GIẢM DẦN     │\n"
-            f"│ Thời vận/tổng quát │ KỲ MÔN > LỤC HÀO > MH   │\n"
-            f"│ Tình cảm/quan hệ   │ LỤC HÀO > MAI HOA > KM   │\n"
-            f"│ Tìm đồ/hướng       │ KỲ MÔN > MAI HOA > LH    │\n"
-            f"│ Bệnh/sức khỏe      │ LỤC HÀO > THIẾT BẢN > KM │\n"
-            f"│ Số lượng/tuổi       │ MAI HOA > LỤC HÀO > KM   │\n"
-            f"│ Thời điểm/khi nào   │ LỤC HÀO > KỲ MÔN > MH   │\n"
-            f"└─────────────────────────────────────────────────┘\n"
-            f"→ Xác định câu hỏi thuộc LOẠI NÀO → PP nào được ƯU TIÊN → giải thích TẠI SAO.\n"
-            f"→ Nếu PP phụ cho kết quả ngược: ghi rõ là BỔ SUNG/CẢNH BÁO, không phải phủ nhận.\n\n"
-
-            f"**BƯỚC 10 — ỨNG KỲ CHÍNH XÁC** ← MỚI V20.0\n"
-            f"Tính THỜI ĐIỂM sự việc ứng nghiệm:\n"
-            f"LỤC HÀO: DT Vượng=1-3 ngày | Tướng=1 tuần | Hưu=1 tháng | Tù=3 tháng+ | Tuyệt=chờ Xuất Không\n"
-            f"  Xuất Không: ngày/tháng trùng Chi Tuần Không → lúc đó sự việc mới ứng.\n"
-            f"  Lục Xung quẻ: ứng nhanh (3-7 ngày). Lục Hợp quẻ: ứng chậm (1-3 tháng).\n"
-            f"KỲ MÔN: Cung Can Giờ → Chi tương ứng → ngày/tháng trùng Chi đó.\n"
-            f"MAI HOA: Số Thể quái → ứng kỳ (Vượng=ngày/tuần, Suy=tháng/năm).\n"
-            f"→ TỔNG HỢP: Đưa ra KHOẢNG THỜI GIAN cụ thể dựa trên ngày hôm nay ({date_str}).\n\n"
-
-            f"**BƯỚC 11 — TỔNG HỢP SIÊU THÂM SÂU**\n"
-            f"Dùng [CROSS-METHOD VERDICT] + kết luận từ BƯỚC 2-10 → Lập bảng:\n"
-            f"| PP | Kết luận | Dữ kiện chính | Độ tin cậy |\n"
+            f"**BƯỚC 7 — TỔNG HỢP DỰA TRÊN DỮ KIỆN**\n"
+            f"Dùng [CROSS-METHOD VERDICT] + kết luận BƯỚC 2-6 → Lập bảng:\n"
+            f"| PP | Kết luận | Dữ kiện chính (TRÍCH DẪN) | Độ tin cậy |\n"
             f"|:--|:--|:--|:--|\n"
-            f"| KỲ MÔN | CÁT/HUNG | [trích dữ liệu] | ??% |\n"
-            f"| LỤC HÀO | CÁT/HUNG | [trích dữ liệu] | ??% |\n"
-            f"| MAI HOA | CÁT/HUNG | [trích dữ liệu] | ??% |\n"
-            f"| THIẾT BẢN | CÁT/HUNG | [trích dữ liệu] | ??% |\n"
-            f"| LỤC NHÂM | CÁT/HUNG | [trích dữ liệu] | ??% |\n"
-            f"| THÁI ẤT | CÁT/HUNG | [trích dữ liệu] | ??% |\n"
-            f"→ TAM TÀI: Thiên [?] + Địa [?] + Nhân [?]\n"
             f"→ 🏆 KẾT LUẬN CUỐI: ĐẠI CÁT/CÁT/BÌNH/HUNG/ĐẠI HUNG\n"
-            f"→ Xác suất: ??% | Ứng kỳ: [ngày/tháng cụ thể]\n\n"
+            f"→ Xác suất: ??% | Ứng kỳ: [ngày/tháng cụ thể từ NUMBER ENGINE]\n\n"
 
-            f"**★ TƯỢNG QUẺ NHƯ MỘT CÂU CHUYỆN** ← MỚI V20.0\n"
-            f"Kết hợp TƯỢNG từ TẤT CẢ PP thành MỘT hình ảnh SỐNG ĐỘNG:\n"
-            f"VD: 'Như người đứng trước ngã ba (Thương Môn), tay cầm ngọn đuốc (Bính Hỏa), "
-            f"nhưng gió lớn từ phương Bắc (Khảm Thủy khắc) muốn thổi tắt. "
-            f"Bên trong có quý nhân (Nguyên Thần Vượng) đang mở cánh cửa nhỏ (Khai Môn). "
-            f"Nếu biết nhanh chân bước vào, lửa sẽ sáng hơn bao giờ hết...'\n"
-            f"→ Câu chuyện này PHẢI phản ánh ĐÚNG dữ liệu quẻ, không phải bịa đặt.\n\n"
-
-            f"**BƯỚC 12 — TIÊN TRI & TỰ PHẢN BIỆN** ← NÂNG CẤP V20.0\n"
-            f"A. TIÊN TRI:\n"
-            f"  → Ngắn hạn (1-7 ngày): Hành động CỤ THỂ nên/không nên làm.\n"
-            f"  → Trung hạn (1-3 tháng): Xu hướng + Cảnh báo khẩn.\n"
-            f"  → ẨN TƯỢNG: Điều quẻ TIẾT LỘ mà người hỏi CHƯA NGHĨ TỚI.\n"
-            f"  → NHÂN QUẢ: Nguyên nhân sâu xa từ Sơ Truyền + Trụ Năm + Nạp Âm.\n\n"
-            f"B. TỰ PHẢN BIỆN SÂU:\n"
-            f"  → SCENARIO A (xác suất cao): Nếu quẻ đúng → điều gì xảy ra cụ thể?\n"
-            f"  → SCENARIO B (xác suất thấp): Yếu tố nào có thể LÀM NGƯỢC kết quả?\n"
-            f"  → BLIND SPOT: Điều quẻ KHÔNG NÓI — chỗ trống cần cảnh giác.\n"
-            f"  → 🎯 MỨC ĐỘ TIN CẬY: 🟢 Rất cao (>85%) / 🟡 Cao (70-85%) / 🟠 TB (50-70%) / 🔴 Thấp (<50%)\n\n"
-
-            f"**BƯỚC 13 — SỰ PHÁT SINH TƯƠNG LAI** ← MỚI V20.2\n"
-            f"⛔ BƯỚC NÀY BẮT BUỘC — PHẢI VIẾT DÀI, CHI TIẾT. Đây là phần MỞ RỘNG sau câu trả lời chính.\n"
-            f"Sau khi trả lời câu hỏi chính, PHẢI dự đoán CHUỖI SỰ KIỆN PHÁT SINH tiếp theo:\n\n"
-            f"🔗 A. CHUỖI NGUYÊN NHÂN - KẾT QUẢ (Domino Effect):\n"
-            f"  Dựa trên quẻ Biến + Hào Động + Tam Truyền (Lục Nhâm):\n"
-            f"  → SỰ KIỆN 1 (ngay sau đó): Kết quả trực tiếp của sự việc chính → dẫn tới gì?\n"
-            f"  → SỰ KIỆN 2 (tiếp theo): Sự kiện 1 sẽ kéo theo điều gì? (tài chính/sức khỏe/quan hệ)\n"
-            f"  → SỰ KIỆN 3 (xa hơn): Nếu không can thiệp → viễn cảnh cuối cùng?\n"
-            f"  Mỗi sự kiện PHẢI trích dẫn dữ liệu quẻ cụ thể.\n\n"
-            f"⚠️ B. NGUY HIỂM TIỀM ẨN (Hidden Dangers):\n"
-            f"  Đọc KỸ các tín hiệu sau trong quẻ:\n"
-            f"  → Kỵ Thần ĐỘNG + Vượng = Nguy hiểm ĐÃ bắt đầu\n"
-            f"  → Huyền Vũ/Đằng Xà trên Hào Động = Lừa đảo/ám hại đang xảy ra\n"
-            f"  → Quan Quỷ ĐỘNG = Tai họa/bệnh tật/kiện tụng phát sinh\n"
-            f"  → Huynh Đệ ĐỘNG = Mất tài/người quen phản bội\n"
-            f"  → Thái Tuế/Nguyệt Kiến khắc DT = Áp lực từ trên (cấp trên, pháp luật)\n"
-            f"  → Quẻ Biến là quẻ HUNG (Bĩ/Bác/Khốn/Minh Di) = Tình hình SẼ XẤU ĐI\n"
-            f"  Mỗi nguy hiểm: MÔ TẢ cụ thể + THỜI ĐIỂM có thể xảy ra + CÁCH PHÒNG TRÁNH.\n\n"
-            f"🛡️ C. LỜI KHUYÊN PHÒNG NGỪA (Proactive Advice):\n"
-            f"  → HÀNH ĐỘNG ngay: 3 việc CỤ THỂ nên làm trong 3 ngày tới\n"
-            f"  → TRÁNH: 3 việc TUYỆT ĐỐI không nên làm\n"
-            f"  → PHƯƠNG HƯỚNG: Hướng CÁT để xuất hành (Sinh Môn/Khai Môn ở Cung nào?)\n"
-            f"  → THỜI ĐIỂM TỐT: Giờ/ngày nào thuận lợi? (dựa trên Chi hợp DT)\n"
-            f"  → SỐ MAY MẮN: Dựa trên Cung + Quẻ + Hà Đồ\n"
-            f"  → MÀU SẮC: Ngũ Hành tương sinh DT → màu nào hỗ trợ?\n\n"
-            f"📊 D. DỰ BÁO 3 MỐC THỜI GIAN:\n"
-            f"  → MỐC 1 (1-7 ngày): Sự việc sẽ diễn biến thế nào? % xác suất?\n"
-            f"  → MỐC 2 (1 tháng): Xu hướng + sự phát sinh mới?\n"
-            f"  → MỐC 3 (3 tháng): Kết quả cuối cùng + bài học?\n"
-            f"  Mỗi mốc PHẢI có: dữ kiện quẻ + lý do + hành động khuyên.\n\n"
-
-            f"═══════════════════════════════════\n"
-            f"📌 VÍ DỤ MẪU — Cách luận ĐÚNG V20.0 (5 tầng):\n"
-            f"═══════════════════════════════════\n"
-            f"BƯỚC 2: Theo context: Can Ngày Bính (Hỏa) tại Cung 3 (Mộc).\n"
-            f"  TẦNG 1 (TƯỢNG): Sao Thiên Xung = sấm sét bùng nổ. Cửa Thương Môn = xông pha có tổn thương. Thần Đằng Xà = lo lắng ẩn.\n"
-            f"  → HÌNH ẢNH: Như chiến binh xông vào bão — cơ hội lớn nhưng phải chịu đòn.\n"
-            f"  TẦNG 2 (LÝ): Mộc sinh Hỏa → Can Ngày VƯỢNG. Can Ngày được cung sinh = mạnh.\n"
-            f"  TẦNG 3 (SỐ): Cung 3 = Chấn = số 4 (Tiên Thiên) → ứng kỳ 4 ngày/4 tháng.\n"
-            f"  TẦNG 4 (ẨN Ý): Thiên Xung+Thương Môn = 'phá cũ xây mới'. KHẮC ỨNG: [trích dẫn cụ thể].\n"
-            f"  TẦNG 5 (LIÊN KẾT): KM CÁT 65% — khớp với LH (DT Vượng) nhưng MH (Dụng khắc Thể) cảnh báo.\n\n"
-
-            f"╔══════════════════════════════════════════╗\n"
-            f"║  🎨 FORMAT OUTPUT — BỐ CỤC TRÌNH BÀY    ║\n"
-            f"║  ⛔ BẮT BUỘC THEO ĐÚNG CẤU TRÚC NÀY    ║\n"
-            f"╚══════════════════════════════════════════╝\n\n"
-
-            f"NGUYÊN TẮC: TRỌNG TÂM TRƯỚC, CHI TIẾT SAU. Người đọc phải hiểu KẾT QUẢ trong 10 giây đầu.\n\n"
-
-            f"📋 CẤU TRÚC BẮT BUỘC (theo thứ tự):\n\n"
-
-            f"━━━ PHẦN 1: KẾT LUẬN NHANH (đặt ĐẦU TIÊN) ━━━\n"
-            f"## 🏆 KẾT QUẢ TỔNG HỢP\n"
-            f"→ Kết luận 1 câu DỨT KHOÁT (VD: '🟢 ĐẠI CÁT — Việc này THÀNH CÔNG 85%')\n"
-            f"→ Bảng tóm tắt 6 PP (dùng markdown table)\n"
-            f"→ Tam Tài: Thiên [?] Địa [?] Nhân [?]\n"
-            f"→ Ứng kỳ: [ngày/tháng cụ thể]\n\n"
-
-            f"━━━ PHẦN 2: CÂU CHUYỆN QUẺ (ngắn gọn, sinh động) ━━━\n"
-            f"## 🖼️ TƯỢNG QUẺ\n"
-            f"→ 1 đoạn văn ngắn (3-5 câu) kể câu chuyện quẻ bằng hình ảnh.\n"
-            f"→ Phải ĐỌC LÀ HIỂU NGAY ý nghĩa chính.\n\n"
-
-            f"━━━ PHẦN 2.5: TRỰC GIÁC ĐẠI SƯ (bắt buộc) ━━━\n"
-            f"## 👁️ TRỰC GIÁC ĐẠI SƯ\n"
-            f"Bạn là vị Đại Sư 50 năm kinh nghiệm. Nhìn vào TƯỢNG QUẺ, bạn phải:\n"
-            f"→ **CẢM NHẬN ĐẦU TIÊN**: 1 câu ngắn — điều đầu tiên 'chạm' vào trực giác khi nhìn quẻ. VD: 'Quẻ này cho cảm giác NGẬM NGÙI — như chim muốn bay mà bị cắt cánh.'\n"
-            f"→ **NGOẠI ỨNG**: Nhìn vào thời điểm hỏi (giờ, ngày, tháng trong context) → liên hệ thiên nhiên. VD: Hỏi lúc giờ Mùi (13-15h) → nắng chiều đã nghiêng = việc đã qua giai đoạn đỉnh.\n"
-            f"→ **ĐIỀM ẨN**: Phát hiện 1 chi tiết BẤT THƯỜNG trong quẻ mà phân tích kỹ thuật có thể bỏ qua. VD: 'Hào 3 và Hào 5 đều TĨNH — im lặng bất thường = bão trước lặng gió.'\n"
-            f"→ **TỔNG LINH CẢM**: 1 câu kết — linh cảm tổng thể. VD: '🔔 Linh cảm: Việc này THÀNH nhưng sẽ có 1 bất ngờ ở giữa đường.'\n\n"
-
-            f"📐 QUY TẮC TRỰC GIÁC:\n"
-            f"✅ Viết như LỜI NÓI của vị thầy — ấm áp, sâu sắc, không khô khan.\n"
-            f"✅ Dùng hình ảnh ẩn dụ từ thiên nhiên (mây, gió, sông, núi, mùa...).\n"
-            f"✅ KHÔNG lặp lại phân tích kỹ thuật — đây là CẢM NHẬN, không phải PHÂN TÍCH.\n"
-            f"✅ Phải khác biệt với Phần 2 (Tượng Quẻ) — Phần 2 = kể chuyện, Phần 2.5 = linh cảm.\n\n"
-
-            f"━━━ PHẦN 3: PHÂN TÍCH TỪNG PP (rõ ràng, có heading) ━━━\n"
-            f"Dùng heading ### cho mỗi PP. Mỗi PP viết TỐI ĐA 8-10 dòng trọng tâm:\n"
-            f"### 🔮 1. KỲ MÔN ĐỘN GIÁP\n"
-            f"  → 2-3 dòng phân tích chính + emoji kết luận\n"
-            f"### 📊 2. LỤC HÀO KINH DỊCH\n"
-            f"  → DT + Nguyên/Kỵ Thần + Nhật/Nguyệt → kết luận\n"
-            f"### 🌸 3. MAI HOA DỊCH SỐ\n"
-            f"  → Thể Dụng + kết luận\n"
-            f"### 📜 4. THIẾT BẢN | 5. LỤC NHÂM | 6. THÁI ẤT\n"
-            f"  → Gộp 3 PP phụ thành 1 section ngắn.\n\n"
-
-            f"━━━ PHẦN 4: TIÊN TRI & PHÁT SINH ━━━\n"
-            f"### ⚡ TIÊN TRI\n"
-            f"→ Dùng bullet points ngắn gọn. Mỗi điểm 1-2 câu.\n"
-            f"### ⚠️ NGUY HIỂM TIỀM ẨN\n"
-            f"→ Liệt kê 2-3 nguy hiểm chính + cách phòng.\n"
-            f"### 🛡️ LỜI KHUYÊN\n"
-            f"→ 3 NÊN + 3 KHÔNG NÊN + Hướng/Giờ/Màu/Số may mắn.\n"
-            f"### 📊 DỰ BÁO 3 MỐC\n"
-            f"→ Bảng 3 dòng: 1 tuần | 1 tháng | 3 tháng.\n\n"
-
-            f"━━━ PHẦN 5: TỰ PHẢN BIỆN (cuối cùng) ━━━\n"
-            f"### 🔍 PHẢN BIỆN\n"
-            f"→ Scenario A/B ngắn gọn + Blind Spot + 🎯 Tin cậy ??%\n\n"
-
-            f"📐 QUY TẮC FORMAT:\n"
-            f"✅ Dùng emoji đầu mỗi heading để dễ scan.\n"
-            f"✅ Dùng **in đậm** cho từ khóa quan trọng (CÁT, HUNG, VƯỢNG, SUY).\n"
-            f"✅ Dùng → cho mỗi luận điểm. KHÔNG viết paragraph dài.\n"
-            f"✅ Dùng bảng markdown khi so sánh nhiều PP.\n"
-            f"✅ Mỗi section cách nhau bằng --- (horizontal rule).\n"
-            f"⛔ KHÔNG lặp lại dữ liệu đã nói. KHÔNG viết mở bài/kết bài thừa.\n"
-            f"⛔ KHÔNG viết 'Theo context:' quá nhiều lần — trích 1 lần, luận ngay.\n"
-            f"⛔ TỔNG CHIỀU DÀI: Vừa đủ chi tiết nhưng KHÔNG lê thê. Quality > Quantity.\n\n"
+            f"**BƯỚC 8 — TIÊN TRI & LỜI KHUYÊN**\n"
+            f"→ Ngắn hạn (1-7 ngày): Hành động CỤ THỂ\n"
+            f"→ Trung hạn (1-3 tháng): Xu hướng + Cảnh báo\n"
+            f"→ 3 NÊN + 3 KHÔNG NÊN + Hướng/Giờ/Màu/Số may mắn\n"
+            f"→ Scenario A (cao) vs B (thấp) + Blind Spot\n"
+            f"→ 🎯 Tin cậy tổng: ??%\n\n"
 
             f"╔══════════════════════════════════════════╗\n"
             f"║  🔢 QUY TẮC SỐ HỌC — CẤM BỊA SỐ       ║\n"
             f"╚══════════════════════════════════════════╝\n\n"
 
             f"⛔ TUYỆT ĐỐI KHÔNG tự bịa con số (tuổi, chiều cao, tiền, khoảng cách, số lượng).\n"
-            f"✅ CHỈ dùng số từ [SỐ HỌC QUẺ — NUMBER ENGINE] trong context_data.\n"
-            f"✅ Nếu KHÔNG có NUMBER ENGINE → nói 'Số liên quan: [số Tiên Thiên/Hậu Thiên của quái liên quan]'.\n\n"
+            f"✅ CHỈ dùng số từ [SỐ HỌC QUẺ — NUMBER ENGINE] trong mandatory_context.\n"
+            f"✅ Nếu KHÔNG có NUMBER ENGINE → nói 'Số liên quan: [số Tiên Thiên/Hậu Thiên]'.\n\n"
 
-            f"📐 CÁCH DÙNG SỐ:\n"
-            f"→ HỎI TUỔI: Dùng TUỔI (range) từ NUMBER ENGINE. LUÔN nói khoảng (VD: '30-38 tuổi'), KHÔNG nói chính xác.\n"
-            f"→ HỎI CHIỀU CAO: Dùng CHIỀU CAO (range). LUÔN nói khoảng.\n"
-            f"→ HỎI TIỀN: Dùng SỐ TIỀN (cơ sở) × đơn vị phù hợp context. VD: số gốc 3,8 → '3-8 triệu' hoặc '30-80 triệu'.\n"
-            f"→ HỎI THỜI GIAN: Dùng THỜI GIAN + kết hợp DT Vượng/Suy. VD: DT Vượng + số 3 → '3 ngày'. DT Suy + số 3 → '3 tháng'.\n"
-            f"→ HỎI SỐ LƯỢNG: Dùng SỐ LƯỢNG từ NUMBER ENGINE.\n"
-            f"→ HỎI SỐ MAY MẮN: Dùng SỐ MAY MẮN.\n\n"
-
-            f"⛔ NẾU KHÔNG CÓ SỐ PHÙ HỢP: Nói rõ 'Quẻ không chỉ rõ con số cụ thể cho câu hỏi này' thay vì bịa.\n\n"
+            f"📐 FORMAT OUTPUT:\n"
+            f"✅ Dùng emoji đầu mỗi heading. ✅ **In đậm** từ khóa. ✅ Dùng → cho mỗi luận điểm.\n"
+            f"✅ Dùng bảng markdown khi so sánh PP. ✅ Mỗi section cách nhau bằng ---\n"
+            f"⛔ KHÔNG lặp lại dữ liệu. ⛔ KHÔNG viết mở bài thừa. Quality > Quantity.\n\n"
 
             f"</system_instructions>\n\n"
 
-            f"<context_data>\n"
-            f"⏰ Thời điểm: {date_str} {time_str}\n"
-            f"{live_context}\n"
-            f"</context_data>\n\n"
             f"<conversation_history>\n"
             f"{self._get_chat_history()}\n"
             f"</conversation_history>\n\n"
@@ -644,23 +533,18 @@ class GeminiQMDGHelper:
             f"{internet_data}\n"
             f"{hub_data}\n"
             f"</supplementary_data>\n"
-            f"LƯU Ý: ƯU TIÊN TUYỆT ĐỐI dữ liệu quẻ + PRE-ANALYSIS trong context_data. Supplementary chỉ THAM KHẢO.\n\n"
-            f"<user_question>\n"
-            f"{question}\n"
-            f"</user_question>"
+            f"LƯU Ý: ƯU TIÊN TUYỆT ĐỐI dữ liệu trong <mandatory_context> + <offline_verdict>. Supplementary chỉ THAM KHẢO.\n"
         )
         
         # 5. CALL AI
-        self.log_step("AI Generation", "RUNNING", "Gửi prompt V20.2 Siêu Trí Tuệ (13-Step CoT + Tam Tài + Ứng Kỳ + Phát Sinh Tương Lai) đến Gemini Pro...")
+        self.log_step("AI Generation", "RUNNING", "Gửi prompt V20.5 (8-Step Grounded CoT + Offline Verdict) đến Gemini...")
         raw_response = self._call_ai_raw(system_prompt)
         
         # V13.0: Verification đã tích hợp vào prompt chính → tiết kiệm 50% quota
-        # (Không cần gọi Gemini lần 2 để verify nữa)
-        self.log_step("Verification", "OK", "Tích hợp trong prompt V13.0 (không cần gọi lại)")
+        self.log_step("Verification", "OK", "Tích hợp trong prompt V20.5 (không cần gọi lại)")
         
         # 6. PROCESS RESPONSE
         if not raw_response:
-            # V13.0: Hiện lỗi chi tiết thay vì thông báo chung chung
             err_detail = getattr(self, '_last_error_log', 'Không rõ lý do')
             return f"⚠️ AI không trả lời được.\n\n**Lý do:** {err_detail}\n\n💡 **Giải pháp:** Tạo API key mới tại [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → bấm 🗑️ XÓA KEY CŨ → dán key mới → ⚡ KÍCH HOẠT"
         return self._process_response(raw_response)
@@ -1224,19 +1108,20 @@ class GeminiQMDGHelper:
                     f"→ Thể sinh Dụng = Cát (tốt cho mình), Dụng khắc Thể = Hung (bất lợi).\n"
                 )
                 
-                # V20.3: HỖ QUÁI (互卦) — diễn biến ẩn giữa quá trình
+                # V20.5 FIX GAP 3: HỖ QUÁI (互卦) — dùng đúng ho_upper/ho_lower đã tính sẵn
                 try:
-                    mh_upper_num = mai_hoa_data.get('upper', 0)
-                    mh_lower_num = mai_hoa_data.get('lower', 0)
-                    if mh_upper_num and mh_lower_num:
-                        # Tính Hỗ Quái: Hào 2,3,4 → Hạ Hỗ | Hào 3,4,5 → Thượng Hỗ
-                        QUAI_NUM = {1:'Càn',2:'Đoài',3:'Ly',4:'Chấn',5:'Tốn',6:'Khảm',7:'Cấn',8:'Khôn'}
-                        QUAI_HANH = {'Càn':'Kim','Đoài':'Kim','Ly':'Hỏa','Chấn':'Mộc','Tốn':'Mộc','Khảm':'Thủy','Cấn':'Thổ','Khôn':'Thổ'}
-                        ho_upper_n = QUAI_NUM.get(mh_upper_num, '?')
-                        ho_lower_n = QUAI_NUM.get(mh_lower_num, '?')
-                        ho_upper_h = QUAI_HANH.get(ho_upper_n, '?')
-                        ho_lower_h = QUAI_HANH.get(ho_lower_n, '?')
-                        info += f"HỖ QUÁI (互卦 — diễn biến ẨN): Thượng {ho_upper_n}({ho_upper_h}) / Hạ {ho_lower_n}({ho_lower_h})\n"
+                    QUAI_NUM_HQ = {1:'Càn',2:'Đoài',3:'Ly',4:'Chấn',5:'Tốn',6:'Khảm',7:'Cấn',8:'Khôn'}
+                    QUAI_HANH_HQ = {'Càn':'Kim','Đoài':'Kim','Ly':'Hỏa','Chấn':'Mộc','Tốn':'Mộc','Khảm':'Thủy','Cấn':'Thổ','Khôn':'Thổ'}
+                    # V20.5: Dùng ho_upper/ho_lower đã tính sẵn thay vì dùng nhầm upper/lower
+                    ho_up = mai_hoa_data.get('ho_upper', 0)
+                    ho_lo = mai_hoa_data.get('ho_lower', 0)
+                    ho_ten = mai_hoa_data.get('ten_ho', '?')
+                    if ho_up and ho_lo:
+                        ho_upper_n = QUAI_NUM_HQ.get(ho_up, '?')
+                        ho_lower_n = QUAI_NUM_HQ.get(ho_lo, '?')
+                        ho_upper_h = QUAI_HANH_HQ.get(ho_upper_n, '?')
+                        ho_lower_h = QUAI_HANH_HQ.get(ho_lower_n, '?')
+                        info += f"HỖ QUÁI (互卦 — diễn biến ẨN): {ho_ten} — Thượng {ho_upper_n}({ho_upper_h}) / Hạ {ho_lower_n}({ho_lower_h})\n"
                         info += f"→ Hỗ Quái cho biết DIỄN BIẾN GIỮA QUÁ TRÌNH, những điều chưa lộ rõ.\n"
                 except:
                     pass
@@ -1579,10 +1464,34 @@ class GeminiQMDGHelper:
             
             # ============================================
             # PART 6: V14.0 PRE-ANALYSIS ENGINE (Python-computed)
+            # V20.5: Auto-detect Dụng Thần Label trước khi pre-analyze
             # ============================================
             luc_nham_pre = ""
             thai_at_pre = ""
             try:
+                # V20.5 FIX GAP 1: Auto-detect dung_than_label từ câu hỏi
+                if luc_hao_data and not luc_hao_data.get('dung_than_label'):
+                    q_lower = question.lower() if question else ''
+                    t_lower = topic.lower() if topic else ''
+                    combined = q_lower + ' ' + t_lower
+                    if any(k in combined for k in ['tiền', 'tài', 'lãi', 'lỗ', 'đầu tư', 'giá', 'bán', 'mua', 'lương', 'vốn', 'nợ']):
+                        luc_hao_data['dung_than_label'] = 'Thê Tài'
+                    elif any(k in combined for k in ['bệnh', 'ốm', 'khỏe', 'sức khỏe', 'viện', 'thuốc', 'đau', 'sốt']):
+                        luc_hao_data['dung_than_label'] = 'Quan Quỷ'
+                    elif any(k in combined for k in ['con', 'sinh', 'bình an', 'vui', 'sướng', 'phúc', 'bảo hộ', 'may mắn']):
+                        luc_hao_data['dung_than_label'] = 'Tử Tôn'
+                    elif any(k in combined for k in ['nhà', 'xe', 'học', 'thi', 'bằng', 'giấy tờ', 'hợp đồng', 'văn bản', 'sách', 'trường']):
+                        luc_hao_data['dung_than_label'] = 'Phụ Mẫu'
+                    elif any(k in combined for k in ['sếp', 'quan', 'việc', 'kiện', 'tòa', 'công việc', 'thăng', 'chức', 'cơ quan']):
+                        luc_hao_data['dung_than_label'] = 'Quan Quỷ'
+                    elif any(k in combined for k in ['yêu', 'vợ', 'chồng', 'tình', 'kết hôn', 'hôn nhân', 'người yêu', 'đám cưới']):
+                        luc_hao_data['dung_than_label'] = 'Thê Tài'
+                    elif any(k in combined for k in ['bạn', 'đối thủ', 'anh em', 'cạnh tranh']):
+                        luc_hao_data['dung_than_label'] = 'Huynh Đệ'
+                    else:
+                        # Fallback: dùng Thế hào
+                        luc_hao_data['dung_than_label'] = '__THE_HAO__'
+                
                 ky_mon_pre = self._pre_analyze_ky_mon(qmdg_input)
                 luc_hao_pre = self._pre_analyze_luc_hao(luc_hao_data)
                 mai_hoa_pre = self._pre_analyze_mai_hoa(mai_hoa_data)
@@ -2184,13 +2093,21 @@ class GeminiQMDGHelper:
             dt_strength = ''
             dt_hao_num = ''
             
-            # Xác định DT trong 6 hào
+            # V20.5 FIX GAP 1: Xác định DT trong 6 hào — dùng luc_than (KHÔNG phải luc_thu)
             for d in ban_details:
-                luc_thu = str(d.get('luc_thu', ''))
+                luc_than = str(d.get('luc_than', ''))  # V20.5: Fix — dùng luc_than thay vì luc_thu
                 marker = str(d.get('marker', ''))
-                # DT match: by label or by Thế hào
-                if dt_label and dt_label in luc_thu:
-                    dt_luc_than = luc_thu
+                # DT match: by label hoặc by Thế hào (fallback)
+                if dt_label == '__THE_HAO__':
+                    # Fallback: dùng Thế hào làm DT
+                    if 'Thế' in marker:
+                        dt_luc_than = luc_than
+                        dt_hanh = get_hanh(d.get('can_chi', ''))
+                        dt_strength = str(d.get('strength', ''))
+                        dt_hao_num = str(d.get('hao', ''))
+                        break
+                elif dt_label and dt_label in luc_than:
+                    dt_luc_than = luc_than
                     dt_hanh = get_hanh(d.get('can_chi', ''))
                     dt_strength = str(d.get('strength', ''))
                     dt_hao_num = str(d.get('hao', ''))
