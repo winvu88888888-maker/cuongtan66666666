@@ -38,7 +38,7 @@ class GeminiQMDGHelper:
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V20.1-SuperIntelligence"
+        self.version = "V20.5-DataFirst-Grounded"
         if self.api_key:
             genai.configure(api_key=self.api_key)
         
@@ -441,6 +441,17 @@ class GeminiQMDGHelper:
             f"- KHÔNG bịa con số, hướng, Ngũ Hành, Lục Thân, tên Sao/Cửa/Thần.\n"
             f"- 100% TIẾNG VIỆT.\n\n"
 
+            f"🔒 QUY TẮC SỐ 4 — BÁM ĐÚNG DỤNG THẦN (TUYỆT ĐỐI):\n"
+            f"⛔ NGHIÊM CẤM tự ý thay đổi Dụng Thần đã xác định!\n"
+            f"- Nếu câu hỏi về TIỀN/ĐẦU TƯ → DT = Thê Tài → PHẢI phân tích Thê Tài. KHÔNG được nhảy sang Tử Tôn/Quan Quỷ.\n"
+            f"- Nếu câu hỏi về BỆNH → DT = Quan Quỷ → PHẢI phân tích Quan Quỷ. KHÔNG nhảy sang PP khác.\n"
+            f"- Nếu câu hỏi về CON CÁI → DT = Tử Tôn → mới được phân tích Tử Tôn.\n"
+            f"- TOÀN BỘ phân tích Lục Hào PHẢI tập trung vào DT đã xác định:\n"
+            f"  → DT Vượng/Suy? Nhật/Nguyệt sinh/khắc DT? Nguyên Thần hỗ trợ DT?\n"
+            f"  → Kết luận PHẢI dựa vào trạng thái DT, KHÔNG dựa vào Lục Thân khác.\n"
+            f"- VÍ DỤ SAI: Câu hỏi 'đầu tư tiền' → AI nhảy sang Tử Tôn (con cái) = SAI 100%!\n"
+            f"- VÍ DỤ ĐÚNG: Câu hỏi 'đầu tư tiền' → Thê Tài ở Hào X, Vượng/Suy, Nhật sinh/khắc = ĐÚNG.\n\n"
+
             f"AI Offline (Python) đã tính toán DỮ LIỆU THÔ chính xác 100% trong [PRE-ANALYSIS].\n"
             f"Nhiệm vụ CỦA BẠN là LUẬN GIẢI SÂU — giải thích TẠI SAO verdict đúng, bổ sung chi tiết từ data.\n\n"
 
@@ -465,11 +476,16 @@ class GeminiQMDGHelper:
             f"╚══════════════════════════════════════════╝\n\n"
 
             f"**BƯỚC 1 — XÁC ĐỊNH DỤNG THẦN ĐA PHƯƠNG PHÁP**\n"
-            f"Đọc <mandatory_context> → Xác định Dụng Thần cho TẤT CẢ PP:\n"
+            f"Đọc <user_question> → Xác định CHỦ ĐỀ → Chọn DT ĐÚNG:\n"
+            f"- Tiền/đầu tư/mua bán → DT = THÊ TÀI. ⛔ KHÔNG nhảy sang Tử Tôn!\n"
+            f"- Bệnh/sức khỏe → DT = QUAN QUỶ. ⛔ KHÔNG nhảy sang Phụ Mẫu!\n"
+            f"- Con cái → DT = TỬ TÔN. Chỉ khi câu hỏi RÕ RÀNG về con cái!\n"
+            f"Sau khi chọn DT → KHÓA LẠI. TOÀN BỘ bước 2-8 PHẢI dùng DT này.\n"
+            f"Đọc <mandatory_context> → Tìm DT trong quẻ:\n"
             f"- Lục Hào: DT = [Lục Thân nào?] → ở Hào [?] → Vượng/Suy?\n"
             f"- Kỳ Môn: Can Ngày [?] tại Cung [?] vs Can Giờ [?] tại Cung [?]\n"
             f"- Mai Hoa: Thể quái = [?] (Hành [?]) vs Dụng quái = [?] (Hành [?])\n"
-            f"→ TẠI SAO chọn DT này? Trích dẫn data cụ thể.\n\n"
+            f"→ TẠI SAO chọn DT này? Trích dẫn câu hỏi + data cụ thể.\n\n"
 
             f"**BƯỚC 2 — KỲ MÔN ĐỘN GIÁP (Trích dẫn context)**\n"
             f"Đọc [PHÂN TÍCH CUNG CHỦ vs CUNG SỰ VIỆC] + [KỲ MÔN CÁCH CỤC PRE-ANALYSIS].\n"
@@ -477,10 +493,11 @@ class GeminiQMDGHelper:
             f"→ KẾT LUẬN KỲ MÔN: CÁT/HUNG + %% (PHẢI khớp với offline_verdict)\n\n"
 
             f"**BƯỚC 3 — LỤC HÀO KINH DỊCH (Trích dẫn context)**\n"
+            f"⛔ BẮT BUỘC phân tích DT đã xác định ở BƯỚC 1. KHÔNG được nhảy sang Lục Thân khác!\n"
             f"Đọc [LỤC HÀO PRE-ANALYSIS] + [PHỤC THẦN].\n"
-            f"→ DT ở hào nào? Vượng/Suy? Nhật/Nguyệt SINH hay KHẮC DT?\n"
+            f"→ DT (đã khóa ở Bước 1) ở hào nào? Vượng/Suy? Nhật/Nguyệt SINH hay KHẮC DT?\n"
             f"→ Nguyên Thần sinh DT? Kỵ Thần ĐỘNG không? Hóa Hồi Đầu Khắc?\n"
-            f"→ KẾT LUẬN LỤC HÀO: CÁT/HUNG + %%\n\n"
+            f"→ KẾT LUẬN LỤC HÀO: CÁT/HUNG + %% (dựa trên DT, KHÔNG phải Lục Thân khác)\n\n"
 
             f"**BƯỚC 4 — MAI HOA DỊCH SỐ (Trích dẫn context)**\n"
             f"Đọc [MAI HOA PRE-ANALYSIS] + Hỗ Quái.\n"
