@@ -41,14 +41,9 @@ MUA_VUONG_SUY = {
     'Đông': {'Thủy': 'VƯỢNG', 'Mộc': 'TƯỚNG', 'Hỏa': 'TỬ', 'Thổ': 'TÙ', 'Kim': 'HƯU'},
 }
 
-# Vượng/Suy → khoảng tuổi ước lượng
-VUONG_SUY_TUOI = {
-    'VƯỢNG': (25, 40, 'đang sung sức, trẻ trung'),
-    'TƯỚNG': (30, 45, 'lực sung mãn, trung niên'),
-    'HƯU':   (40, 55, 'đã qua đỉnh cao'),
-    'TÙ':    (50, 65, 'suy giảm, lớn tuổi'),
-    'TỬ':    (55, 70, 'cao tuổi'),
-}
+# V5.2: KHÔNG dùng Vượng/Suy để đoán tuổi — phương pháp này SAI HOÀN TOÀN
+# Tuổi chỉ có thể ước lượng bằng Hà Đồ số Cung + Tiên Thiên Bát Quái số
+# AI sẽ tự tính từ dữ liệu quẻ, không cần module này đoán trước
 
 
 def get_season_vuong_suy(hanh, tiet_khi):
@@ -112,25 +107,13 @@ def blind_read(chart_data=None, mai_hoa_data=None, luc_hao_data=None):
         result['gioi_tinh'] = f"NỮ (Can Ngày {can_ngay} - Âm Can)"
     
     # ================================
-    # 2. TUỔI (Season Vượng/Suy + Cục number)
+    # 2. TUỔI — V5.2: CHỈ cung cấp dữ liệu thô, KHÔNG đoán tuổi
     # ================================
     vuong_suy = get_season_vuong_suy(can_ngay_hanh, tiet_khi)
-    tuoi_info = VUONG_SUY_TUOI.get(vuong_suy, (30, 50, 'trung niên'))
-    tuoi_min, tuoi_max, tuoi_desc = tuoi_info
-    
-    # Refine with Cục number
-    if isinstance(cuc, int):
-        # Cục số nhỏ (1-3) → trẻ hơn, lớn (7-9) → già hơn
-        cuc_adjust = (cuc - 5) * 2  # -8 to +8
-        tuoi_min += cuc_adjust
-        tuoi_max += cuc_adjust
-        tuoi_min = max(15, tuoi_min)
-        tuoi_max = min(80, tuoi_max)
-    
     result['tuoi'] = (
-        f"Khoảng {tuoi_min}-{tuoi_max} tuổi "
-        f"(Can {can_ngay} hành {can_ngay_hanh}, mùa {mua}: {vuong_suy} - {tuoi_desc}. "
-        f"Cục {cuc})"
+        f"KHÔNG XÁC ĐỊNH ĐƯỢC từ Mang Đoán. "
+        f"AI hãy dùng Hà Đồ số Cung + Tiên Thiên số Quẻ để tính. "
+        f"Dữ liệu thô: Can {can_ngay}({can_ngay_hanh}), mùa {mua}, Vượng/Suy={vuong_suy}, Cục={cuc}"
     )
     
     # ================================

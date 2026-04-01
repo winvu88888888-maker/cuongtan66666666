@@ -21,20 +21,17 @@ try:
     # Try relative imports first for when run as module
     from .shard_manager import add_entry
     from .mining_strategist import MiningStrategist
-    from .maintenance_manager import MaintenanceManager
     from .gemini_expert_v172 import GeminiQMDGHelper
 except (ImportError, ValueError):
     # Fallback to direct imports (GitHub Actions / CLI / Streamlit)
     try:
         from shard_manager import add_entry
         from mining_strategist import MiningStrategist
-        from maintenance_manager import MaintenanceManager
     except ImportError:
         # Final fallback: add current dir to path
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         from shard_manager import add_entry
         from mining_strategist import MiningStrategist
-        from maintenance_manager import MaintenanceManager
     
     # GeminiQMDGHelper: try multiple sources
     try:
@@ -97,10 +94,17 @@ def _single_agent_task(agent_id, topic, api_key):
         
         # PHASE 2: AI Synthesis với dữ liệu web + Gemini Search
         mining_prompt = strategist.synthesize_mining_prompt(topic)
+        # V13.0: Giới hạn web_data để tránh response quá lớn gây lỗi parsing
         if web_data:
-            mining_prompt = f"{mining_prompt}\n\n**DỮ LIỆU THU THẬP TỪ WEB:**\n{web_data[:3000]}"
+            mining_prompt = f"{mining_prompt}\n\n**DỮ LIỆU THU THẬP TỪ WEB:**\n{str(web_data)[:2000]}"
         
+        # V13.0: Thêm hướng dẫn format gọn cho AI
+        mining_prompt += "\n\nTRẢ LỜI TRONG 800 CHỮ. KHÔNG viết quá dài."
         raw_content = ai_helper._call_ai(mining_prompt, use_hub=False, use_web_search=True)
+        
+        # V13.0: Cắt giới hạn response để tránh lỗi parsing JSON (Extra data error)
+        if raw_content and len(raw_content) > 10000:
+            raw_content = raw_content[:10000]
         
         # SMART FILTERING: Parse clean title and category from AI response
         clean_title = topic
@@ -141,7 +145,7 @@ def _single_agent_task(agent_id, topic, api_key):
         return False
 
 def run_mining_cycle(api_key, category=None):
-    """Executes one full cycle of autonomous mining with THE 50 AI LEGION."""
+    """Executes one full cycle of autonomous mining with THE 10 AI LEGION."""
     if not api_key:
         print("⚠️ Thiếu API Key.")
         return
@@ -155,11 +159,11 @@ def run_mining_cycle(api_key, category=None):
     save_config(config)
 
     print("\n" + "="*60)
-    print(f"🚀 KÍCH HOẠT QUÂN ĐOÀN 50 AI - CHU KỲ #{config['total_cycles']}")
+    print(f"🚀 KÍCH HOẠT QUÂN ĐOÀN 10 AI - CHU KỲ #{config['total_cycles']}")
     print("="*60)
 
-    # 1. Generate massive queue - UPGRADED TO 50 AGENTS
-    queue_size = 50 # REAL 50 agents execution
+    # 1. Generate queue - V13.0: 4 AGENTS (tiết kiệm API, trước đó 10 agents quá nhiều)
+    queue_size = 4
     initial_queue = strategist.generate_research_queue(category, count=queue_size)
     
     # DEDUPLICATION: Check hub_index to skip already researched topics
@@ -193,36 +197,21 @@ def run_mining_cycle(api_key, category=None):
 
     print(f"📡 Trung tâm chỉ huy đã phân phối {len(queue)} nhiệm vụ cho Quân đoàn AI...")
     
-    # 2. Parallel Execution (Multi-threaded Agents) - SCALED UP
-    # Chạy 20 agents đồng thời (Tăng cường hiệu suất)
-    active_agents = min(len(queue), 20)
+    # 2. Parallel Execution - V13.0: Giảm xuống 4 agents (tiết kiệm API quota)
+    active_agents = min(len(queue), 4)
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=active_agents) as executor:
         futures = []
         for i, topic in enumerate(queue):
             # Assign random Agent ID from 1-50
-            agent_id = random.randint(1, 50) 
+            agent_id = random.randint(1, 10) 
             futures.append(executor.submit(_single_agent_task, agent_id, topic, api_key))
             time.sleep(1) # Stagger start to be nice to API
             
         # Wait for all
         concurrent.futures.wait(futures)
 
-    # 3. AUTONOMOUS CLEANUP (DISABLED BY USER REQUEST)
-    # User only wants basic deduplication, no AI-driven cleanup
-    # if config["total_cycles"] % 3 == 0:
-    #     print("\n" + "-"*40)
-    #     print("🧹 Kích hoạt AI Dọn Dẹp (Sanitation Droid)...")
-    #     try:
-    #         maintenance = MaintenanceManager()
-    #         res = maintenance.run_cleanup_cycle()
-    #         print(f"✨ Báo cáo dọn dẹp: Xóa {res.get('removed',0)} trùng lặp, Đóng gói {res.get('bagged',0)} items.")
-    #     except Exception as e:
-    #         print(f"⚠️ Lỗi dọn dẹp: {e}")
-    # else:
-    #     print("\n✨ Dữ liệu sạch sẽ. Bỏ qua bước dọn dẹp chu kỳ này.")
-    
-    print("\n✨ AI Cleanup đã bị vô hiệu hóa theo yêu cầu người dùng.")
+    # Cleanup đã bị xóa vĩnh viễn theo yêu cầu người dùng.
 
     # 4. AUTO DEPLOY TO CLOUD (Git Push)
     # Tự động đồng bộ dữ liệu lên luồng Streamlit Cloud để web cập nhật

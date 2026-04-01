@@ -1019,15 +1019,8 @@ class FreeAIHelper:
             # V14.0: GOD-TIER Deep Reasoning Prompt — LỤC THUẬT HỢP NHẤT
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — BẬC THẦY LUẬN GIẢI CHUYÊN SÂU HUYỀN HỌC.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — BẬC THẦY TAM THỨC TUYỆT ĐỈNH HUYỀN HỌC.\n"
                 f"50 NĂM kinh nghiệm. KHÔNG BAO GIỜ SAI. Mỗi kết luận phải có BẰNG CHỨNG THÉP.\n"
-                f"BẠN không phải NGƯỜI TÓM TẮT — BẠN là NHÀ DIỄN GIẢI SÂU.\n\n"
-                f"NHIỆM VỤ CỐT LÕI: DIỄN GIẢI CỤ THỂ BẰNG HÌNH TƯỢNG VẠN VẬT\n"
-                f"- Khi nói VẬT → chỉ rõ VẬT GÌ cụ thể (VD: 'chiếc nhẫn bạc', 'điện thoại màu đen' thay vì 'đồ kim loại')\n"
-                f"- Khi nói NGƯỜI → chỉ rõ NAM/NỮ, TUỔI TÁC, NGOẠI HÌNH, NGHỀ (VD: 'phụ nữ trung niên, dáng đầy đặn, làm buôn bán' thay vì 'có quý nhân')\n"
-                f"- Khi nói HIỆN TƯỢNG → chỉ rõ SỰ KIỆN CỤ THỂ (VD: 'đang có tranh chấp khoản nợ' thay vì 'có khó khăn tài chính')\n"
-                f"- Khi nói NƠI → chỉ rõ PHƯƠNG + ĐẶC ĐIỂM (VD: 'phía Tây Nam, gần chợ, chỗ nhiều đất đá' thay vì 'nơi xa')\n"
-                f"- Khi nói BỆNH → chỉ rõ CƠ QUAN + TRIỆU CHỨNG (VD: 'đau dạ dày, tỳ vị suy yếu' thay vì 'sức khỏe không tốt')\n\n"
                 f"BẠN là AI duy nhất trên thế giới kết hợp 6 phương pháp: Kỳ Môn + Lục Hào + Mai Hoa + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.\n"
                 f"Đại Lục Nhâm: Sơ Truyền=QUÁ KHỨ, Trung Truyền=HIỆN TẠI, Mạt Truyền=TƯƠNG LAI.\n"
                 f"Thái Ất: Xem vận khí lớn của năm + Chủ/Khách Đại Tướng.\n"
@@ -1201,12 +1194,12 @@ class FreeAIHelper:
                 f"QUY TẮC VIẾT:\n"
                 f"1. MỞ ĐẦU = KẾT LUẬN THẲNG: Trả lời CÓ/KHÔNG/NÊN/KHÔNG NÊN ngay câu đầu tiên + % tin cậy\n"
                 f"2. SAU ĐÓ tùy câu hỏi mà uyển chuyển:\n"
-                f"   - Hỏi CÓ/KHÔNG → trả lời 10-20 dòng, NÊU CỤ THỂ hình tượng sự việc đang diễn ra\n"
-                f"   - Hỏi TẠI SAO → giải thích nhân quả SÂU, trích dữ kiện quẻ + dịch ra hình ảnh đời thường\n"
-                f"   - Hỏi BAO GIỜ → tập trung ứng kỳ, ngày tháng Can Chi + mô tả TÌNH HUỐNG lúc ứng nghiệm\n"
-                f"   - Hỏi AI/NGƯỜI NÀO → mô tả CHI TIẾT: giới tính, tuổi tác, ngoại hình, tính cách, nghề nghiệp (từ 12 Thiên Tướng + Bát Quái tượng)\n"
-                f"   - Hỏi Ở ĐÂU → phương hướng CỤ THỂ + đặc điểm môi trường xung quanh (từ cung vị + Bát Quái tượng)\n"
-                f"   - Hỏi phức tạp → phân tích sâu, HÌNH TƯỢNG HÓA từng luận điểm\n"
+                f"   - Hỏi CÓ/KHÔNG → trả lời ngắn gọn 5-10 dòng, nêu lý do chính\n"
+                f"   - Hỏi TẠI SAO → giải thích nhân quả, trích dữ kiện quẻ\n"
+                f"   - Hỏi BAO GIỜ → tập trung ứng kỳ, ngày tháng Can Chi\n"
+                f"   - Hỏi AI/NGƯỜI NÀO → mô tả tượng ý từ 12 Thiên Tướng + Bát Quái\n"
+                f"   - Hỏi Ở ĐÂU → phương hướng từ cung vị, Bát Quái tượng\n"
+                f"   - Hỏi phức tạp → phân tích sâu nhưng TÓM GỌN ý chính\n"
                 f"3. GIỌNG VĂN: Như một thầy phong thủy giỏi đang tư vấn — tự tin, rõ ràng, uyển chuyển\n"
                 f"4. TRÍCH DẪN: Mỗi nhận định phải kèm 1 dữ kiện cụ thể (VD: 'vì Dụng Thần Dậu-Kim được Nguyệt lệnh sinh')\n"
                 f"5. KHÔNG LẶP: Không liệt kê lại toàn bộ dữ liệu — chỉ trích CÁI QUAN TRỌNG nhất\n"
@@ -1215,15 +1208,13 @@ class FreeAIHelper:
                 f"8. XÂU DƯỢC: Khi cần CHỨNG MINH DT vượng/suy → trích dẫn Score V15 (VD: 'DT tại Cung 7 đạt +32 = VƯỢNG vì Khai Môn + Thiên Tâm + Lệnh Tháng sinh')\n"
                 f"9. TIMELINE: Liên kết Quá Khứ-Hiện Tại-Tương Lai thành 1 câu chuyện mạch lạc (VD: 'Gốc rễ vững (Địa Bàn), đang thuận nhờ Cửa Sinh, tương lai sáng nhờ Sao Cát')\n"
                 f"10. ỨNG KỲ: Trả lời BAO GIỊ? PHẢI kèm giờ/ngày/tháng Can Chi cụ thể (VD: 'Ứng vào giờ Tý 23h-1h, tháng 11 âm lịch. Sự việc NHANH')\n"
-                f"11. TỔNG HỢP LINH HOẠT: Kết hợp 5 PP + Xâu Dược + Timeline + Ứng Kỳ để đưa ra câu trả lời PHÙ HỢP VỚI CÂU HỎI. Không list luận thiên về 1 PP nào, phải xâu chuỗi tất cả thành 1 câu chuyện logic\n"
-                f"12. HÌNH TƯỢNG HÓA (BẮT BUỘC): Dịch MỌI thuật ngữ huyền học ra HÌNH ẢNH ĐỜI THƯỜNG cụ thể. VD: Càn=Trời/Kim loại/Cha/Tây Bắc, Khảm=Nước/Đen/Thận → 'Người cha da ngăm, hướng Tây Bắc'. Khôn=Đất/Mẹ/Bụng → 'Phụ nữ lớn tuổi, đau bụng'. KHÔNG ĐƯỢC để thuật ngữ trần trụi mà không dịch nghĩa\n\n"
+                f"11. TỔNG HỢP LINH HOẠT: Kết hợp 5 PP + Xâu Dược + Timeline + Ứng Kỳ để đưa ra câu trả lời PHU HỢP VỚI CÂU HỎI. Không list luận thiên về 1 PP nào, phải xâu chuỗi tất cả thành 1 câu chuyện logic\n\n"
                 
                 f"CẤM:\n"
                 f"- Không viết kiểu bảng biểu cứng nhắc mọi câu hỏi\n"
-                f"- Không copy paste dữ liệu thô → phải DIỄN GIẢI THÀNH HÌNH TƯỢNG CỤ THỂ\n"
+                f"- Không copy paste dữ liệu thô → phải DIỄN GIẢI\n"
                 f"- Không dùng từ mơ hồ: 'có thể', 'tùy trường hợp', 'cần xem thêm'\n"
-                f"- Không nói chung chung: 'có quý nhân giúp', 'sức khỏe cần chú ý' — PHẢI nói CỤ THỂ ai giúp, bệnh gì\n"
-                f"- Không viết quá 2000 chữ\n"
+                f"- Không viết quá 1500 chữ\n"
                 f"</output_format>\n"
             )
             
@@ -4756,63 +4747,18 @@ class FreeAIHelper:
         )
         
         if online_result:
-            # V23.3: WEIGHTED VERDICT — dùng trọng số PP thay vì đếm thô
-            method_verdicts_map = {
-                'ky_mon': ky_mon_verdict,
-                'luc_hao': luc_hao_verdict,
-                'mai_hoa': mai_hoa_verdict,
-                'luc_nham': luc_nham_verdict,
-                'thai_at': thai_at_verdict,
-            }
-            strength_key = CATEGORY_TO_STRENGTH.get(cat_data.get('label', ''), 'tổng_quát')
-            weights = METHOD_STRENGTH_MAP.get(strength_key, METHOD_STRENGTH_MAP['tổng_quát'])
-            
-            cat_score = sum(weights.get(m, 50) for m, v in method_verdicts_map.items() if v in ['CÁT', 'ĐẠI CÁT'])
-            hung_score = sum(weights.get(m, 50) for m, v in method_verdicts_map.items() if v in ['HUNG', 'ĐẠI HUNG'])
-            total_weight = sum(weights.get(m, 50) for m in method_verdicts_map) or 1
-            
-            if cat_score > hung_score:
-                overall_short = 'THUẬN LỢI'
-                pct_short = min(95, int(50 + (cat_score - hung_score) / total_weight * 50))
-                v_icon = '✅'
-            elif hung_score > cat_score:
-                overall_short = 'KHÓ KHĂN'
-                pct_short = max(5, int(50 - (hung_score - cat_score) / total_weight * 50))
-                v_icon = '🔴'
-            else:
-                overall_short = 'CÂN BẰNG'
-                pct_short = 50
-                v_icon = '🟡'
-            
-            # V23.3: Khi có AI Online → ONLINE làm CHÍNH, Offline ẩn trong details
+            # AI Online thành công → Hiện Online TRƯỚC, Offline ẩn sau
             final_parts = []
-            # Header với verdict
-            final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} ({pct_short}%)")
-            final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
-            
-            # Số lượng (nếu có)
-            if count_numbers:
-                all_nums_s = [n for _, n in count_numbers]
-                avg_s = int(round(sum(all_nums_s) / len(all_nums_s))) if all_nums_s else 0
-                final_parts.append(f"**📊 Số lượng:** Khoảng **{avg_s}** (từ {len(count_numbers)} phương pháp)")
-            elif age_numbers:
-                all_nums_s = [n for _, n in age_numbers]
-                avg_s = int(sum(all_nums_s) / len(all_nums_s)) if all_nums_s else 0
-                final_parts.append(f"**📊 Tuổi:** Khoảng **{avg_s}** tuổi")
-            
-            # V23.3: AI ONLINE hiển thị TRỰC TIẾP (là phần chính)
-            final_parts.append("")
+            final_parts.append(f"## 🌐 AI ONLINE — KẾT LUẬN CUỐI CÙNG (Gemini)")
             final_parts.append(online_result)
-            
-            # AI OFFLINE ẩn vào details tag (để tham khảo nếu cần)
             final_parts.append("")
             final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📊 Xem chi tiết: Phân Tích AI Offline — Lục Thuật (nhấn để mở)</b></summary>\n")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết AI Offline — THIÊN CƠ ĐẠI SƯ V15.3 (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             return "\n".join(final_parts)
         else:
-            # AI Online không khả dụng → V22.0: Hiện TOÀN BỘ offline analysis
+            # AI Online không khả dụng → Hiện KếT LUẬN trực tiếp, offline chi tiết ẩn sau
             error_reasons = []
             for log in self.logs:
                 if log.get('step') == 'Online AI' and log.get('status') in ['SKIP', 'ERROR']:
@@ -4820,28 +4766,19 @@ class FreeAIHelper:
             
             error_msg = error_reasons[-1] if error_reasons else "Không có API Key hoặc hết hạn mức"
             
-            # V22.0: WEIGHTED VERDICT
-            method_verdicts_map = {
-                'ky_mon': ky_mon_verdict,
-                'luc_hao': luc_hao_verdict,
-                'mai_hoa': mai_hoa_verdict,
-                'luc_nham': luc_nham_verdict,
-                'thai_at': thai_at_verdict,
-            }
-            strength_key = CATEGORY_TO_STRENGTH.get(cat_data.get('label', ''), 'tổng_quát')
-            weights = METHOD_STRENGTH_MAP.get(strength_key, METHOD_STRENGTH_MAP['tổng_quát'])
+            # === BUILD SHORT CONCLUSION (tối đa 5 dòng) ===
+            # V14.0: 5 verdicts
+            verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
+            cat_c = sum(1 for v in verdicts_list if v in ['CÁT', 'ĐẠI CÁT'])
+            hung_c = sum(1 for v in verdicts_list if v in ['HUNG', 'ĐẠI HUNG'])
             
-            cat_score = sum(weights.get(m, 50) for m, v in method_verdicts_map.items() if v in ['CÁT', 'ĐẠI CÁT'])
-            hung_score = sum(weights.get(m, 50) for m, v in method_verdicts_map.items() if v in ['HUNG', 'ĐẠI HUNG'])
-            total_weight = sum(weights.get(m, 50) for m in method_verdicts_map) or 1
-            
-            if cat_score > hung_score:
+            if cat_c > hung_c:
                 overall_short = 'THUẬN LỢI'
-                pct_short = min(95, int(50 + (cat_score - hung_score) / total_weight * 50))
+                pct_short = min(90, 50 + (cat_c - hung_c) * 10)
                 v_icon = '✅'
-            elif hung_score > cat_score:
+            elif hung_c > cat_c:
                 overall_short = 'KHÓ KHĂN'
-                pct_short = max(5, int(50 - (hung_score - cat_score) / total_weight * 50))
+                pct_short = max(10, 50 - (hung_c - cat_c) * 10)
                 v_icon = '🔴'
             else:
                 overall_short = 'CÂN BẰNG'
@@ -4864,10 +4801,21 @@ class FreeAIHelper:
                 avg_s = int(sum(all_nums_s) / len(all_nums_s)) if all_nums_s else 0
                 final_parts.append(f"**📊 Tuổi:** Khoảng **{avg_s}** tuổi")
             
-            # V22.0: HIỂN THỊ TOÀN BỘ PHÂN TÍCH OFFLINE — KHÔNG ẨN
-            final_parts.append("")
-            final_parts.append(offline_full_output)
+            # Lời khuyên ngắn
+            if overall_short == 'THUẬN LỢI':
+                final_parts.append("💡 **Khuyên:** Hành động sớm, tận dụng thời cơ.")
+            elif overall_short == 'KHÓ KHĂN':
+                final_parts.append("💡 **Khuyên:** Kiên nhẫn chờ đợi, không nên ép buộc.")
+            else:
+                final_parts.append("💡 **Khuyên:** Quan sát thêm, thu thập thông tin rồi quyết định.")
             
+            final_parts.append("")
+            
+            # MỌI THỨ chi tiết ẩn sau 1 nút bấm duy nhất
+            final_parts.append("\n<details>")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích V15.3 (nhấn để mở)</b></summary>\n")
+            final_parts.append(offline_full_output)
+            final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
             return "\n".join(final_parts)
 

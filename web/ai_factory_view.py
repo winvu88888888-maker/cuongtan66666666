@@ -53,8 +53,21 @@ def render_ai_factory_view():
     st.info("Hệ thống tích hợp n8n & Sharded Data Hub: Tự động hóa 24/7.")
     
     # Initialize Global Factory Manager (Persistent 24/7)
-    from ai_modules.autonomous_miner import load_config
+    from ai_modules.autonomous_miner import load_config, save_config
     config = load_config()
+    
+    # AUTO-SYNC: Luôn đồng bộ API key mới nhất vào factory
+    _active_key = st.session_state.get("gemini_key", "")
+    if not _active_key:
+        try:
+            _active_key = st.secrets.get("GEMINI_API_KEY", "")
+        except Exception:
+            pass
+    if _active_key and _active_key != config.get("api_key", ""):
+        config["api_key"] = _active_key
+        config["autonomous_247"] = True
+        save_config(config)
+    
     is_active_247 = config.get("autonomous_247", False)
 
     if 'global_factory_status' not in st.session_state or st.session_state.get('last_247_state') != is_active_247:
@@ -79,8 +92,12 @@ def render_ai_factory_view():
         st.session_state.memory = MemorySystem()
         
     if 'n8n_client' not in st.session_state:
-        n8n_url = st.secrets.get("N8N_BASE_URL", "http://localhost:5678")
-        n8n_key = st.secrets.get("N8N_API_KEY", None)
+        try:
+            n8n_url = st.secrets.get("N8N_BASE_URL", "http://localhost:5678")
+            n8n_key = st.secrets.get("N8N_API_KEY", None)
+        except Exception:
+            n8n_url = "http://localhost:5678"
+            n8n_key = None
         st.session_state.n8n_client = N8NClient(n8n_url, n8n_key)
 
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([

@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-02-06-V2.5-TITAN-FORCE-REBUILD-01
+# VERSION: 2026-03-30-V20.3-SUPER-INTELLIGENCE
 try:
     st.set_page_config(
-    page_title="🔴 SYSTEM DIAGNOSTIC MODE 🔴",
+    page_title="☯️ Kỳ Môn AI V20.3",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -17,11 +17,12 @@ import traceback
 import re
 
 import extra_streamlit_components as stx
-from streamlit_autorefresh import st_autorefresh
+# REMOVED: st_autorefresh was causing full page rerun every 60s, wiping AI analysis data
+# from streamlit_autorefresh import st_autorefresh
 
 # Initialize CookieManager without cache to avoid CachedWidgetWarning
 cookie_manager = stx.CookieManager(key="cookie_mgr")
-st_autorefresh(interval=60000, key="auto_time_refresh") # Refresh every 60s
+# REMOVED: st_autorefresh(interval=60000, key="auto_time_refresh") — was deleting AI results every 60s
 
 def show_fatal_error(e):
     st.error("🛑 LỖI HỆ THỐNG NGHIÊM TRỌNG")
@@ -117,8 +118,11 @@ except Exception: pass
 # --- AI MODEL BADGE ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 Trí Tuệ Nhân Tạo")
-st.sidebar.success("🚀 **MODEL: GEMINI-1.5-PRO**")
-st.sidebar.caption("Trạng thái: Đã kích hoạt Prophet Mode")
+model_display = "GEMINI-2.5-PRO"
+if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'model_name'):
+    model_display = st.session_state.gemini_helper.model_name.upper()
+st.sidebar.success(f"🚀 **MODEL: {model_display}**")
+st.sidebar.caption("Trạng thái: Đã kích hoạt Siêu Trí Tuệ Thông Minh Nhất V20.3")
 
 # Add project root and dist directory to Python path
 root_path = os.path.dirname(os.path.abspath(__file__))
@@ -239,6 +243,8 @@ if 'all_topics_full' not in st.session_state:
     st.session_state.all_topics_full = sorted(list(set(core_topics + hub_topics)))
 if 'current_view' not in st.session_state:
     st.session_state.current_view = "ky_mon"  # ky_mon, mai_hoa, luc_hao
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
 
 # Additional Module Imports (Flattened)
 try:
@@ -333,135 +339,6 @@ def render_brain_training_ui():
             st.caption("📚 Các thuật ngữ đã học:")
             for k, v in list(st.session_state.custom_keywords.items())[-5:]: 
                 st.markdown(f"- **{k}**: {v}")
-
-# ======================================================================
-# UNIFIED AI RESULT DISPLAY FUNCTION
-# ======================================================================
-def display_ai_result(text, title="🤖 Kết Quả AI"):
-    """Hiển thị kết quả AI với format đẹp, dễ đọc, có điểm nhấn."""
-    if not text:
-        st.warning("⚠️ AI không trả về kết quả.")
-        return
-    
-    text = str(text).strip()
-    
-    # Header card
-    st.markdown(f"""
-    <div style="
-        background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
-        padding: 18px 24px;
-        border-radius: 16px 16px 0 0;
-        margin-top: 16px;
-    ">
-        <div style="color: #ffffff; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.5px;">
-            {title}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Split by major sections (# headings)
-    import re as _re_display
-    sections = _re_display.split(r'(?m)^(#{1,3}\s+.+)$', text)
-    
-    # Color palette for sections
-    section_colors = [
-        ("#1e40af", "#dbeafe", "#1e3a8a"),  # Blue
-        ("#065f46", "#d1fae5", "#047857"),  # Green 
-        ("#9a3412", "#ffedd5", "#c2410c"),  # Orange
-        ("#7c2d12", "#fef3c7", "#b45309"),  # Amber
-        ("#581c87", "#f3e8ff", "#7c3aed"),  # Purple
-        ("#1e3a5f", "#e0f2fe", "#0369a1"),  # Sky
-    ]
-    color_idx = 0
-    
-    # Container start
-    st.markdown('<div style="background: #ffffff; border: 2px solid #e2e8f0; border-top: none; border-radius: 0 0 16px 16px; padding: 8px 0 16px 0; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);">', unsafe_allow_html=True)
-    
-    has_sections = False
-    i = 0
-    while i < len(sections):
-        part = sections[i].strip()
-        
-        # Check if this is a heading
-        heading_match = _re_display.match(r'^(#{1,3})\s+(.+)$', part)
-        if heading_match:
-            has_sections = True
-            level = len(heading_match.group(1))
-            heading_text = heading_match.group(2).strip()
-            
-            # Get body text (next element)
-            body = sections[i + 1].strip() if i + 1 < len(sections) else ""
-            i += 2
-            
-            # Pick color
-            text_c, bg_c, border_c = section_colors[color_idx % len(section_colors)]
-            color_idx += 1
-            
-            # Detect special sections for highlight
-            is_conclusion = any(kw in heading_text.upper() for kw in ["KẾT QUẢ", "KẾT LUẬN", "DỰ BÁO", "PHÁN ĐOÁN"])
-            is_advice = any(kw in heading_text.upper() for kw in ["LỜI KHUYÊN", "HÀNH ĐỘNG", "KHUYẾN NGHỊ"])
-            
-            if is_conclusion:
-                text_c, bg_c, border_c = ("#991b1b", "#fef2f2", "#dc2626")
-            elif is_advice:
-                text_c, bg_c, border_c = ("#065f46", "#ecfdf5", "#059669")
-            
-            # Section heading
-            font_size = "1.2rem" if level == 1 else "1.05rem" if level == 2 else "0.95rem"
-            st.markdown(f"""
-            <div style="
-                background: {bg_c};
-                border-left: 5px solid {border_c};
-                margin: 12px 16px 0 16px;
-                padding: 12px 18px;
-                border-radius: 0 10px 10px 0;
-            ">
-                <div style="color: {text_c}; font-size: {font_size}; font-weight: 900; letter-spacing: 0.3px;">
-                    {heading_text}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Section body - render via native st.markdown for proper markdown support
-            if body:
-                # Wrap in a styled container but use st.markdown for content
-                st.markdown(f"""
-                <div style="
-                    margin: 0 16px 4px 16px;
-                    padding: 14px 20px;
-                    background: #ffffff;
-                    border-left: 2px solid {border_c}33;
-                    font-size: 1.05rem;
-                    line-height: 1.85;
-                    color: #1e293b;
-                    font-weight: 500;
-                ">
-                </div>
-                """, unsafe_allow_html=True)
-                # Use native markdown for body (supports **bold**, lists, etc.)
-                with st.container():
-                    st.markdown(f"<div style='padding: 0 20px 0 38px; font-size: 1.05rem; line-height: 1.85; color: #1e293b; font-weight: 500;'>", unsafe_allow_html=True)
-                    st.markdown(body)
-                    st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            # Non-heading content (intro text or content without headings)
-            if part:
-                with st.container():
-                    st.markdown(f"<div style='padding: 12px 24px; font-size: 1.05rem; line-height: 1.85; color: #1e293b; font-weight: 500;'>", unsafe_allow_html=True)
-                    st.markdown(part)
-                    st.markdown("</div>", unsafe_allow_html=True)
-            i += 1
-    
-    # If no headings found, render the whole text nicely
-    if not has_sections:
-        with st.container():
-            st.markdown(f"<div style='padding: 16px 24px; font-size: 1.05rem; line-height: 1.85; color: #1e293b; font-weight: 500;'>", unsafe_allow_html=True)
-            st.markdown(text)
-            st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Container end
-    st.markdown('</div>', unsafe_allow_html=True)
-
 
 CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
 SAO_9 = list(KY_MON_DATA["DU_LIEU_DUNG_THAN_PHU_TRO"]["CUU_TINH"].keys())
@@ -646,7 +523,7 @@ st.markdown("""
         color: #ffffff !important;
         border-color: #ffffff !important;
     }
-
+ 0.86rem; }
     .marker-badge.kv {
         background: #ffffff !important;
         color: #000000 !important;
@@ -1122,7 +999,7 @@ with col_header3:
 
 st.markdown("---")
 # DEPLOYMENT VERIFICATION BANNER
-st.success("✅ SYSTEM ONLINE: V4.0 - TỨ THUẬT HỢP NHẤT")
+st.success("✅ SYSTEM ONLINE: V20.3 - SIÊU TRÍ TUỆ (13-Step CoT + Number Engine + VVLT 40)")
 
 # ======================================================================
 # SIDEBAR - CONTROLS
@@ -1133,7 +1010,7 @@ with st.sidebar:
     # View selection
     view_option = st.radio(
         "Chọn Phương Pháp:",
-        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "🤖 Hỏi Gemini AI"],
+        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "📊 Vạn Vật Loại Tượng", "🌊 Đại Lục Nhâm", "⭐ Thái Ất Thần Số", "🤖 Hỏi Gemini AI"],
         index=0
     )
     
@@ -1149,6 +1026,12 @@ with st.sidebar:
         st.session_state.current_view = "luc_hao"
     elif view_option == "📜 Thiết Bản Thần Toán":
         st.session_state.current_view = "thiet_ban"
+    elif view_option == "📊 Vạn Vật Loại Tượng":
+        st.session_state.current_view = "van_vat"
+    elif view_option == "🌊 Đại Lục Nhâm":
+        st.session_state.current_view = "dai_luc_nham"
+    elif view_option == "⭐ Thái Ất Thần Số":
+        st.session_state.current_view = "thai_at"
     else:  # 🤖 Hỏi Gemini AI
         st.session_state.current_view = "gemini_ai"
     
@@ -1176,1531 +1059,778 @@ with st.sidebar:
     if 'ai_preference' not in st.session_state:
         st.session_state.ai_preference = "auto" # Default to auto discovery
 
+    # Always resolve the API key so it's available for checks below
+    # ƯU TIÊN 1: Streamlit Cloud Secrets (Quan trọng nhất cho deployment)
+    st_secret = None
+    try:
+        st_secret = st.secrets.get("GEMINI_API_KEY", None)
+    except Exception:
+        pass
+    
+    # ƯU TIÊN 2: File custom_data.json (Local)
+    custom_data = load_custom_data()
+    saved_key = cookie_manager.get(cookie="GEMINI_API_KEY")
+    if not saved_key:
+        saved_key = custom_data.get("GEMINI_API_KEY")
+    
+    # ƯU TIÊN 3: Factory Config (Đồng bộ)
+    factory_key = None
+    try:
+        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+                factory_key = cfg.get("api_key")
+    except: pass
+    
+    # ƯU TIÊN 0: User Manual Input (Session State) - QUAN TRỌNG NHẤT
+    manual_key = st.session_state.get("gemini_key")
+    
+    # Tổng hợp: Ưu tiên Manual > Streamlit Secrets > Saved Key > Factory Key
+    secret_api_key = manual_key or st_secret or saved_key or factory_key
+    
+    st.session_state._resolved_api_key = secret_api_key
+    
+    # Thông báo nếu chạy trên cloud nhưng chưa có secret
+    if not secret_api_key:
+        # Đang chạy trên cloud và không có API key nào
+        st.session_state.missing_cloud_secret = True
+    else:
+        st.session_state.missing_cloud_secret = False
+
     # Actual Initialization Logic
-    if ('gemini_helper' not in st.session_state or 
-        not hasattr(st.session_state.gemini_helper, 'analyze_mai_hao') or 
-        'V2.7' not in getattr(st.session_state.gemini_helper, 'version', '')):
-        
-        # ƯU TIÊN 1: Streamlit Cloud Secrets (Quan trọng nhất cho deployment)
-        st_secret = None
-        try:
-            st_secret = st.secrets.get("GEMINI_API_KEY", None)
-        except Exception:
-            pass
-        
-        # ƯU TIÊN 2: File custom_data.json (Local)
-        custom_data = load_custom_data()
-        saved_key = cookie_manager.get(cookie="GEMINI_API_KEY")
-        if not saved_key:
-            saved_key = custom_data.get("GEMINI_API_KEY")
-        
-        # ƯU TIÊN 3: Factory Config (Đồng bộ)
-        factory_key = None
-        try:
-            config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_hub", "factory_config.json")
-            if os.path.exists(config_path):
-                with open(config_path, "r", encoding="utf-8") as f:
-                    cfg = json.load(f)
-                    factory_key = cfg.get("api_key")
-        except: pass
-        
-        # ƯU TIÊN 0: User Manual Input (Session State) - QUAN TRỌNG NHẤT
-        manual_key = st.session_state.get("gemini_key")
-        
-        # Tổng hợp: Ưu tiên Manual > Streamlit Secrets > Saved Key > Factory Key
-        secret_api_key = manual_key or st_secret or saved_key or factory_key
-        
-        st.session_state._resolved_api_key = secret_api_key
-        
-        # Thông báo nếu chạy trên cloud nhưng chưa có secret
-        if not secret_api_key:
-            # Đang chạy trên cloud và không có API key nào
-            st.session_state.missing_cloud_secret = True
-        else:
-            st.session_state.missing_cloud_secret = False
+    if 'gemini_helper' not in st.session_state:
+        # FIX: Removed buggy checks (typo 'analyze_mai_hao' instead of 'analyze_mai_hoa' + version check)
+        # These caused re-initialization on EVERY rerun, triggering API key re-resolution loop
+        pass
         
 import google.generativeai as genai
 
-# --- MANUAL KEY OVERRIDE (CRITICAL FOR LEAKED KEYS) ---
+# --- API KEY LED STATUS (Sidebar - Compact) ---
 with st.sidebar:
-    with st.expander("🔑 Cấu hình API Key (Nâng cao)", expanded=st.session_state.get("missing_cloud_secret", False)):
-        with st.form("api_key_form"):
-            new_key_input = st.text_input("Nhập Gemini API Key mới:", type="password", help="Nhập key mới nếu key cũ bị lỗi 403/Quota.")
-            submitted = st.form_submit_button("💾 Lưu và Kích hoạt", use_container_width=True)
-            if submitted and new_key_input:
-                st.session_state.gemini_key = new_key_input
-                st.session_state.missing_cloud_secret = False
-                
-                # Update Persistent Storage immediately
-                try:
-                    data = load_custom_data()
-                    data["GEMINI_API_KEY"] = new_key_input
-                    save_custom_data(data)
-                    import datetime as dt_module
-                    cookie_manager.set("GEMINI_API_KEY", new_key_input, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
-                except: pass
-
-                # Clear helper to force reload
-                if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
-                st.rerun()
-        if st.session_state.get("gemini_key"):
-            st.success("✅ Đã có API Key trong phiên!")
+    _key_led = "🟢" if st.session_state.get("api_status_ok") else "🔴"
+    _key_status = "Hoạt động" if st.session_state.get("api_status_ok") else "Chưa kết nối"
+    st.caption(f"{_key_led} API Key: {_key_status}")
 
 # --- IMPORT GEMINI HELPER FROM EXTERNAL MODULE (Unified Logic) ---
-# try:
-#     from gemini_helper import GeminiQMDGHelper
-# except ImportError:
-#     st.error("⚠️ Critical Error: gemini_helper.py not found! Vui lòng kiểm tra lại thư mục.")
+try:
+    import gemini_helper
+    import importlib
+    # REMOVED: importlib.reload(gemini_helper) - This causes C-extension thread deadlocks and UI freezes!
+    from gemini_helper import GeminiQMDGHelper
+except ImportError:
+    pass
+    pass
 
-# --- INLINED GEMINI HELPER TO BYPASS IMPORT CACHING (PHOENIX FIX) ---
-class GeminiQMDGHelper:
-    """Helper class for Gemini AI with QMDG specific knowledge and grounding"""
+# ════════════════════════════════════════════════════
+# V19.0: DISPLAY AI RESULT — Beautiful answer layout
+# ════════════════════════════════════════════════════
+def display_ai_result(text, key_prefix="ai"):
+    """V19.0: Hiển thị kết quả AI với bố cục đẹp, chữ to/nhỏ, nút ẩn/hiện."""
+    if not text:
+        st.warning("❌ Không có kết quả")
+        return
     
-    def __init__(self, api_key_input):
-        import re
-        import hashlib
-        import google.generativeai as genai
+    import re
+    
+    # Tách kết quả thành các phần theo markers
+    lines = text.split('\n')
+    
+    # Tìm KẾT LUẬN CHÍNH (dòng quán trọng nhất)
+    conclusion = ""
+    verdict_badge = ""
+    detail_blocks = []
+    current_block_title = ""
+    current_block_lines = []
+    
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
         
-        # ROBUST KEY EXTRACTION (Combined Method)
-        keys_from_regex = re.findall(r"AIza[0-9A-Za-z-_]{35}", str(api_key_input))
+        # Detect main conclusion (CÁT/HUNG/BÌNH patterns)
+        is_conclusion = False
+        if re.search(r'(?:KẾT LUẬN|PHÁN QUYẾT|TỔNG KẾT|VERDICT|CÂU TRẢ LỜI)', stripped, re.IGNORECASE):
+            is_conclusion = True
+        elif re.search(r'^\*\*.*(?:CÁT|ĐẠI CÁT|HUNG|ĐẠI HUNG|THUẬN LỢI|KHÓ KHĂN|TỐT|XẤU).*\*\*', stripped, re.IGNORECASE):
+            is_conclusion = True
         
-        # Fallback/Supplemental: Split by common delimiters
-        raw_text = str(api_key_input).replace("\n", ",").replace(";", ",")
-        keys_from_split = [k.strip() for k in raw_text.split(',') if len(k.strip()) > 30 and "AIza" in k]
-        
-        # Merge and Deduplicate (Preserve order)
-        all_candidates = keys_from_regex + keys_from_split
-        self.api_keys = list(dict.fromkeys(all_candidates)) # remove duplicates while keeping order
-        
-        # Final cleanup
-        self.api_keys = [k for k in self.api_keys if len(k) > 30]
-
-        self.current_key_index = 0
-        self.api_key = self.api_keys[0] if self.api_keys else None
-        
-        # Feedback to User (Subtle)
-        if hasattr(st, 'toast') and self.api_keys:
-            st.toast(f"🔑 Đã nạp thành công {len(self.api_keys)} API Key!", icon="🛡️")
-
-            # DEBUG DISPLAY - TEMPORARY
-            if len(self.api_keys) > 1:
-                st.info(f"📋 DEBUG: Đã nhận diện {len(self.api_keys)} Key. (Key 1: ...{self.api_keys[0][-6:]}, Key 2: ...{self.api_keys[1][-6:]})")
+        if is_conclusion and not conclusion:
+            conclusion = stripped
+            # Xác định loại verdict
+            if re.search(r'CÁT|ĐẠI CÁT|THUẬN LỢI|TỐT|THÀNH CÔNG|\bCÓ\b', stripped, re.IGNORECASE):
+                verdict_badge = "cat"
+            elif re.search(r'HUNG|ĐẠI HUNG|KHÓ|XẤU|THẤT BẠI|\bKHÔNG\b', stripped, re.IGNORECASE):
+                verdict_badge = "hung"
             else:
-                raw_preview = str(api_key_input)[:20] + "..." if api_key_input else "None"
-                # st.warning(f"⚠️ DEBUG: Chỉ tìm thấy 1 Key! (Input: {raw_preview})")
+                verdict_badge = "binh"
+            continue
         
-        self.version = "V4.0 - TỨ THUẬT HỢP NHẤT" 
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
+        # Detect block headers (##, ###, Bước, numbered items like "1.", "2.")
+        is_header = False
+        if stripped.startswith('#'):
+            is_header = True
+            current_block_title = stripped.lstrip('#').strip()
+        elif re.match(r'^\*\*(?:Bước|B\d|Phần|Giai đoạn)', stripped, re.IGNORECASE):
+            is_header = True
+            current_block_title = stripped.replace('**', '').strip()
+        elif re.match(r'^(?:BƯỚC|PHÂN TÍCH|TIMELINE|THÁM TỬ|MANH MỐI|SĐHCD)', stripped, re.IGNORECASE):
+            is_header = True
+            current_block_title = stripped
         
-        self.n8n_url = None
-        self.n8n_timeout = 8
+        if is_header:
+            if current_block_lines:
+                detail_blocks.append((current_block_title or "Chi tiết", '\n'.join(current_block_lines)))
+            current_block_lines = []
+        else:
+            current_block_lines.append(stripped)
+    
+    # Flush last block
+    if current_block_lines:
+        detail_blocks.append((current_block_title or "Chi tiết", '\n'.join(current_block_lines)))
+    
+    # ═══ RENDER ═══
+    
+    # 1. KET LUAN box (chữ TO, nổi bật)
+    if conclusion:
+        if verdict_badge == "cat":
+            gradient = "linear-gradient(135deg, #065f46, #047857)"
+            border_color = "#10b981"
+            icon = "✅"
+            label = "THUẬN LỢI"
+        elif verdict_badge == "hung":
+            gradient = "linear-gradient(135deg, #7f1d1d, #b91c1c)"
+            border_color = "#ef4444"
+            icon = "⚠️"
+            label = "KHÓ KHĂN"
+        else:
+            gradient = "linear-gradient(135deg, #78350f, #b45309)"
+            border_color = "#f59e0b"
+            icon = "⚖️"
+            label = "CÂN NHẮC"
         
-        # Default placeholder
-        self.model = self._get_best_model()
-
-    def _get_best_model(self):
-        # Always default to Flash 2.0 for stability
-        import google.generativeai as genai
-        return genai.GenerativeModel('gemini-2.0-flash')
-
-    def test_connection(self):
-        try:
-            import google.generativeai as genai
-            list(genai.list_models())
-            return True, "Kết nối thành công (Inlined)"
-        except Exception as e:
-            return False, f"Lỗi kết nối: {str(e)}"
-
-    def classify_intent(self, text):
-        text = text.lower()
-        social_keywords = ['chào', 'hello', 'hi', 'bạn là ai', 'tên gì', 'khỏe không']
-        if any(x in text for x in social_keywords) and len(text) < 20:
-            return 'social'
-        return 'question'
-
-    def call_n8n_webhook(self, question, context_summary):
-        if not self.n8n_url: return None
-        try:
-            import requests
-            import hashlib
-            payload = {
-                "question": question,
-                "context": context_summary,
-                "timestamp": str(hashlib.sha256(question.encode()).hexdigest())[:10]
-            }
-            resp = requests.post(self.n8n_url, json=payload, timeout=self.n8n_timeout)
-            if resp.status_code == 200:
-                data = resp.json()
-                return data.get('output') or data.get('text') or data.get('result')
-            return None
-        except Exception: return None
-
-    def _create_expert_prompt(self, user_input):
-        return f"VAI TRÒ: Trợ lý Huyền Học.\\nUSER: {user_input}"
-
-    def safe_get_text(self, response):
-        try:
-            if response.text: return response.text
-        except: pass
-        return "⚠️"
-
-    # --- BASIC AI CALLER WITH CASCADE FALLBACK & KEY ROTATION ---
-    def _call_ai_raw(self, prompt):
-        import google.generativeai as genai
-        from google.generativeai.types import HarmCategory, HarmBlockThreshold
-        import time
-
-        # RELAXED SAFETY SETTINGS (Prevent "Safety" Blocks on Fortune Telling topics)
-        safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+        # Clean markdown chars from conclusion
+        clean_conclusion = conclusion.replace('**', '').replace('##', '').replace('#', '').strip()
+        
+        st.markdown(f"""
+        <div style="
+            background: {gradient};
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin: 16px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border-left: 6px solid {border_color};
+        ">
+            <div style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 12px;
+            ">
+                <span style="font-size: 28px;">{icon}</span>
+                <span style="
+                    background: {border_color};
+                    color: white;
+                    padding: 4px 16px;
+                    border-radius: 20px;
+                    font-weight: 800;
+                    font-size: 13px;
+                    letter-spacing: 1px;
+                ">{label}</span>
+            </div>
+            <div style="
+                color: white;
+                font-size: 1.3rem;
+                font-weight: 700;
+                line-height: 1.6;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            ">{clean_conclusion}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # 2. Nếu không parse được block nào, hiển thị toàn bộ trong expander
+    if not detail_blocks and not conclusion:
+        # Fallback: hiển thị raw text nhưng với styling đẹp
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 12px;
+            padding: 20px 24px;
+            border-left: 4px solid #3b82f6;
+            margin: 12px 0;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #1e293b;
+        ">{text}</div>
+        """, unsafe_allow_html=True)
+        return
+    
+    # 3. Detail blocks trong expander (ẩn/hiện)
+    if detail_blocks:
+        # Group blocks into categories cho gắn gọn hơn
+        block_icons = {
+            'Thám Tử': '🔍', 'Manh Mối': '🔎', 'Timeline': '📅',
+            'Ứng Kỳ': '⏰', 'Bước': '📌', 'Phân Tích': '📊',
+            'Kỳ Môn': '🏰', 'Lục Hào': '☯️', 'Mai Hoa': '🌸',
+            'Thiết Bản': '📜', 'Lục Nhâm': '🐉', 'Thái Ất': '⭐',
+            'Lời Khuyên': '💡', 'Tóm Tắt': '📝', 'Score': '💯',
+            'PP CHÍNH': '🥇', 'Routing': '🛤️', 'Đồng Thuận': '🤝',
         }
-
-        # DYNAMIC DISCOVERY V3 (The Last Stand)
-        # Goal: Find ANY model that works and tell the user what we found.
-        if not hasattr(self, 'cascade_models') or not self.cascade_models:
-            self.cascade_models = []
-            try:
-                # 1. Get ALL valid models that support generation
-                all_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-                
-                # 2. LOGGING FOR USER (Crucial for Debugging)
-                if hasattr(st, 'toast'):
-                    # Show first 3 models found to verify we see ANYTHING
-                    try:
-                         # Only toast if we haven't toasted recently to avoid spam (optional optimization)
-                         pass
-                    except: pass
-                    # st.toast(f"🔎 Tìm thấy {len(all_models)} Models: {all_models[:3]}...", icon="🤖")
-                    print(f"DEBUG: Capabilities Found: {all_models}")
-
-                # 3. Intelligent Sorting: 1.5 Flash > 1.5 Pro > 2.0 Flash (Preview)
-                # We prioritize 1.5 because 2.0 has low quota for free users.
-                def model_score(m_name):
-                    score = 0
-                    if 'gemini-1.5-flash' in m_name: score += 100
-                    if 'gemini-1.5-flash-8b' in m_name: score += 150 # Bias slightly higher for speed/quota
-                    if 'gemini-1.5-pro' in m_name: score += 80
-                    if 'gemini-2.0' in m_name: score += 50 # Lower priority due to limits
-                    if 'latest' in m_name: score -= 10 # Avoid unstable
-                    return score
-
-                all_models.sort(key=model_score, reverse=True)
-                self.cascade_models = all_models
-                
-                # 4. Fallback if empty
-                if not self.cascade_models: raise Exception("No generateContent models found")
-                
-            except Exception as e:
-                print(f"⚠️ Model Discovery Failed: {e}. Using Safe Fallback List.")
-                self.cascade_models = [
-                    'gemini-1.5-flash',
-                    'gemini-1.5-flash-8b',
-                    'gemini-1.5-pro',
-                    'gemini-2.0-flash',
-                    'gemini-pro'
-                ]
-                
-        # Use the discovered list
-        cascade_models = self.cascade_models
         
-        last_error = None
-        error_log = []
-        
-        # KEY ROTATION LOOP
-        # We try every key in our list until one works or all fail
-        for key_idx, current_api_key in enumerate(self.api_keys):
-            
-            # Configure with current key
-            try:
-                genai.configure(api_key=current_api_key)
-            except: continue
-
-            # MODEL CASCADE LOOP for Current Key
-            for model_name in cascade_models:
-                try:
-                    active_model = genai.GenerativeModel(model_name)
-                    # Try with tools first
-                    try: 
-                        tools = [{"google_search_retrieval": {}}]
-                        resp = active_model.generate_content(prompt, tools=tools, safety_settings=safety_settings)
-                    except:
-                        resp = active_model.generate_content(prompt, safety_settings=safety_settings)
-                    
-                    # ROBUST TEXT EXTRACTION (Handle Safety Filters)
-                    final_text = ""
-                    try:
-                        if resp.text: final_text = resp.text
-                    except Exception:
-                        # Fallback for "ValueError: The response was blocked."
-                        try:
-                            if resp.candidates and resp.candidates[0].content.parts:
-                                final_text = resp.candidates[0].content.parts[0].text
-                        except: pass
-                    
-                    if final_text and len(final_text.strip()) > 1:
-                         return final_text
-                    
-                    # If empty, IT IS AN ERROR -> Force next model/key
-                    block_reason = "Unknown"
-                    try:
-                        if resp.prompt_feedback and resp.prompt_feedback.block_reason:
-                             block_reason = str(resp.prompt_feedback.block_reason)
-                    except: pass
-                    
-                    raise Exception(f"Empty Response (Len: {len(final_text) if final_text else 0}, Block Reason: {block_reason})")
-
-                except Exception as e:
-                    # CATCH ALL ERRORS TO CONTINUE FALLBACK
-                    err = str(e)
-                    error_log.append(f"Key{key_idx+1}-{model_name}: {err}")
-                    
-                    # DEBUG: SHOW REAL ERROR TO USER
-                    print(f"DEBUG ERROR: {model_name} with Key {key_idx+1}: {err}")
-
-                    # CRITICAL ERRORS THAT REQUIRE KEY SWITCH (Only 403 or Invalid Key)
-                    lower_err = err.lower()
-                    if "403" in lower_err or "key" in lower_err and "invalid" in lower_err:
-                         print(f"⚠️ Key {key_idx+1} Permission Denied/Invalid. Switching Key...")
-                         last_error = e
-                         break # BREAK MODEL LOOP -> Next Key
-                    
-                    # RETRY STRATEGY FOR 429 (RATE LIMIT)
-                    if "429" in lower_err or "quota" in lower_err:
-                         print(f"⏳ Rate Limit hit on {model_name}. Sleeping 2s...")
-                         time.sleep(2) # Wait a bit before trying next model/key
-                         # Don't break, just continue to next model/key
-                    
-                    # OTHER ERRORS (Likely model specific, not key specific) -> Try next model
-                    print(f"⚠️ {model_name} failed: {err}. Switching Model...")
-                    last_error = e
-                    continue
-        
-        # ANALYZE FAILURE REASONS
-        error_text = "\\n".join(error_log)
-        if "429" in error_text or "quota" in error_text:
-            return f"⏳ **Hết lượt (429)**<br>Đã thử {len(self.api_keys)} Key nhưng đều thất bại.<br>Chi tiết lỗi:<br>{error_text}"
-            
-        return f"🛑 AI Failed. Debug Log:<br>{error_text if error_text else 'No specific error log. Unknown failure.'}"
-
-
-    # COMPATIBILITY WRAPPER FOR ORCHESTRATOR
-    def _call_ai(self, prompt, use_hub=True, use_web_search=False):
-        return self._call_ai_raw(prompt)
-
-    def _process_response(self, text):
-        import re
-        import streamlit as st
-        
-        thinking = ""
-        answer = text
-        
-        # Regex search for the thinking block
-        if not text: return "" # Defensive coding
-        text = str(text) # Force string conversion
-        match_thinking = re.search(r'\[SUY_LUAN\](.*?)\[/SUY_LUAN\]', text, re.DOTALL)
-        if match_thinking:
-            thinking = match_thinking.group(1).strip()
-            answer = text.replace(match_thinking.group(0), "").strip()
-            
-            # Display the thinking process visually
-            st.markdown("""
-            <style>
-            .ag-thinking {
-                background-color: #f0f9ff;
-                border: 1px solid #7dd3fc;
-                border-radius: 8px;
-                padding: 10px;
-                font-family: monospace;
-                font-size: 0.9em;
-                color: #0369a1;
-                margin-bottom: 10px;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            with st.expander("⚡ Logic Suy Luận (Click để xem)", expanded=False):
-                st.markdown(f'<div class="ag-thinking">{thinking}</div>', unsafe_allow_html=True)
-
-        return answer
-
-    def answer_question(self, question, chart_data=None, topic=None, mai_hoa_data=None, luc_hao_data=None): 
-
-        
-        # --- V3.6 VISIBLE INTELLECT: PROOF OF REASONING ---
-        import streamlit as st
-        t = st.session_state.get('chu_de_hien_tai', 'Chung')
-        
-        # REMOVED SOCIAL BYPASS -> ALL QUESTIONS GO TO MASTER BRAIN
-        
-        # A. KNOWLEDGE REPOSITORY
-        element_definitions = (
-             "TRA CỨU TỪ ĐIỂN KỲ MÔN (CƠ BẢN):\n"
-             "- Cửa Sinh: Sự sống, lợi lộc. | Cửa Tử: Chấm dứt, săn bắn. | Cửa Thương: Tổn thương, xe cộ.\n"
-             "- Cửa Đỗ: Bế tắc, ẩn nấp. | Cửa Cảnh: Tin tức, giấy tờ. | Cửa Hưu: Nghỉ ngơi, hôn nhân.\n"
-             "- Cửa Kinh: Sợ hãi, kiện tụng. | Cửa Khai: Mở ra, công việc.\n"
-             "- Sao Thiên Bồng: Trộm cướp, mạo hiểm. | Sao Thiên Nhu: Ôn hòa, bệnh tật.\n"
-             "- Sao Thiên Xung: Nóng nảy, xung đột. | Sao Thiên Phụ: Văn chương, thi cử.\n"
-             "- Sao Thiên Anh: Nóng nảy, văn thư. | Sao Thiên Nhậm: Cẩn trọng, giữ tiền.\n"
-             "- Sao Thiên Trụ: Phá hoại, vững chắc. | Sao Thiên Tâm: Tâm tính, lãnh đạo.\n"
-             "QUY TẮC DỊCH MÃ & TUẦN KHÔNG (TỰ TÍNH):\n"
-             "- Dịch Mã (Biến động): Dần Ngọ Tuất -> Thân | Thân Tý Thìn -> Dần | Tỵ Dậu Sửu -> Hợi | Hợi Mão Mùi -> Tỵ.\n"
-             "- Tuần Không (Hư ảo): Giáp Tý (Tuần Không Tuất Hợi)... (Tự suy từ Can Chi Ngày/Giờ).\n"
-         )
-
-        # B. BUILD CONTEXT
-        extra_context = ""
-        if chart_data:
-            extra_context += "\\n[DỮ LIỆU KỲ MÔN ĐỘN GIÁP (THỜI KHẮC CHIẾN LƯỢC)]:\\n"
-            extra_context += f"- Thời gian: {chart_data.get('can_gio')} {chart_data.get('chi_gio')} (Giờ), {chart_data.get('can_ngay')} {chart_data.get('chi_ngay')} (Ngày)\\n"
-            extra_context += f"{element_definitions}\\n" 
-            
-            extra_context += "\\n[BÀN CỜ 9 CUNG KỲ MÔN (ĐỂ SUY KẾT QUẢ)]:\\n"
-            for p in range(1, 10):
-                p_star = chart_data.get('thien_ban', {}).get(p, '?')
-                p_door = chart_data.get('nhan_ban', {}).get(p, '?')
-                p_deity = chart_data.get('than_ban', {}).get(p, '?')
-                p_can_t = chart_data.get('can_thien_ban', {}).get(p, '?')
-                p_can_d = chart_data.get('can_dia_ban', {}).get(p, '?')
-                if p_star != '?':
-                    extra_context += f"- Cung {p}: Sao {p_star} | Cửa {p_door} | Thần {p_deity} | Can: {p_can_t}/{p_can_d}\\n"
-
-        if mai_hoa_data:
-            extra_context += f"\\n[DỮ LIỆU MAI HOA (HÌNH TƯỢNG & ĐIỀM BÁO)]:\\n"
-            extra_context += f"- Quẻ: {mai_hoa_data.get('ten', '?')}. Tượng: {mai_hoa_data.get('tuong', '?')}\\n"
-            extra_context += f"- Ý Nghĩa Sâu: {mai_hoa_data.get('nghĩa', '?')}\\n"
-
-        if luc_hao_data:
-            extra_context += f"\\n[DỮ LIỆU LỤC HÀO (CHI TIẾT SỰ VIỆC)]:\\n"
-            extra_context += f"- Quẻ Chủ: {luc_hao_data.get('ban', {}).get('name')} -> Biến: {luc_hao_data.get('bien', {}).get('name')}\\n"
-            extra_context += f"- Dụng Thần: {luc_hao_data.get('dung_than_label')}\\n"
-            extra_context += f"- Kết Luận Sơ Bộ: {luc_hao_data.get('conclusion')}\\n"
-            if luc_hao_data.get('dong_hao'):
-                 extra_context += f"- Hào Động: {luc_hao_data.get('dong_hao')} (Động là nơi sự việc biến đổi).\\n"
-
-        # C. VISIBLE REASONING PROMPT (V4.0 - TỨ THUẬT HỢP NHẤT)
-        import datetime
-        timestamp_str = datetime.datetime.now().strftime("%H:%M %d/%m/%Y")
-        
-        # 1. CALCULATE USER PALACE & STRENGTH (VƯỢNG SUY)
-        user_palace_info = "KHÔNG XÁC ĐỊNH ĐƯỢC CUNG MỆNH"
-        if chart_data and 'can_ngay' in chart_data and 'can_thien_ban' in chart_data:
-            can_ngay = chart_data['can_ngay']
-            # Find Palace containing Day Stem
-            u_idx = None
-            for idx, stem in chart_data['can_thien_ban'].items():
-                if stem == can_ngay:
-                    u_idx = idx
+        for idx, (title, content) in enumerate(detail_blocks):
+            # Match icon
+            icon = '📌'
+            for key, ic in block_icons.items():
+                if key.lower() in title.lower():
+                    icon = ic
                     break
             
-            if u_idx:
-                # Get Attributes
-                u_star = chart_data.get('thien_ban', {}).get(u_idx, '?')
-                u_door = chart_data.get('nhan_ban', {}).get(u_idx, '?')
-                u_deity = chart_data.get('than_ban', {}).get(u_idx, '?')
-                
-                # Determine Element Relationship (Simplified for AI Context)
-                # This helps AI guess age: Vượng/Tướng -> Young/Strong; Hưu/Tù/Tử -> Old/Weak
-                palace_element = CUNG_NGU_HANH.get(u_idx, 'Thổ')
-                
-                user_palace_info = (
-                    f"USER LÀ CAN NGÀY '{can_ngay}', ĐANG NGỰ TẠI CUNG {u_idx} (Hành {palace_element}):\n"
-                    f"- Sao (Tính Cách): {u_star}\n"
-                    f"- Cửa (Hành Động): {u_door}\n"
-                    f"- Thần (Tâm Linh): {u_deity}\n"
-                    f"-> GỢI Ý XẠ PHÚC (ĐOÁN NGƯỜI):\n"
-                    f"   + Nhìn vào tương tác giữa Can Ngày '{can_ngay}' và Cung {u_idx} ({palace_element}) để đoán độ tuổi (Vượng -> Trẻ, Suy -> Già).\n"
-                    f"   + Nhìn vào tính chất Âm/Dương của Sao {u_star} và Cửa {u_door} để đoán Giới Tính."
-                )
-
-        # Fallback Context if no chart
-        if not extra_context:
-            extra_context = f"KHÔNG CÓ DỮ LIỆU BÀN CỜ. HÃY DÙNG THỜI GIAN HIỆN TẠI ĐỂ LUẬN: {timestamp_str}"
-
-        prompt = (
-            f"<system_instructions>\n"
-            f"BẠN LÀ MỘT VỊ THIÊN CƠ LÃO TỔ - BẬC THẦY KỲ MÔN ĐỘN GIÁP VÀ TỨ THUẬT.\n"
-            f"=== QUY TẮC BẮT BUỘC ===\n"
-            f"1. LỆNH NGÔN NGỮ: BẮT BUỘC 100% TRẢ LỜI BẰNG TIẾNG VIỆT.\n"
-            f"2. LỆNH THUYẾT TRÌNH: TRẢ LỜI TRỰC TIẾP VÀO TRỌNG TÂM THEO FORMAT CHỈ ĐỊNH. TUYỆT ĐỐI KHÔNG CHÀO HỎI, KHÔNG NÓI 'TÔI ĐÃ SẴN SÀNG', KHÔNG VÒNG VO! ❌\n"
-            f"TUYỆT ĐỐI KHÔNG HIỂN THỊ CÁC BƯỚC SUY LUẬN BẰNG TIẾNG ANH (Như 'Okay, let's analyze...'). CHỈ ĐƯỢC PHÉP IN RA KẾT QUẢ CUỐI CÙNG.\n"
-            f"3. CHỐNG SIÊU DÀI DÒNG: TUYỆT ĐỐI KHÔNG liệt kê hay đi phân tích vòng vo toàn bộ 9 cung. Hãy tập trung tổng hợp Tứ Thuật để đưa ra câu trả lời.\n"
-            f"4. LUẬT TỐI CAO TUỔI TÁC: Năm {timestamp_str[-4:]} là NĂM XEM BÓI, KHÔNG PHẢI NĂM SINH.\n"
-            f"5. ⛔ LUẬT TỬ HÌNH CHỐNG ÁO GIÁC (ANTI-HALLUCINATION): BẠN CHỈ ĐƯỢC PHÉP luận đoán dựa trên những Cung, Sao, Môn, Thần, Yếu Tố CÓ MẶT TRONG <context_data>. TUYỆT ĐỐI KHÔNG BỊA RA CÁC CUNG (NHƯ 'CUNG CÀN', 'CUNG VỊ') HAY KIẾN THỨC CHUNG CHUNG NẾU TỪ KHÓA ĐÓ KHÔNG CÓ TRONG KẾT QUẢ! ⛔\n"
-            f"6. LỆNH BẮT BUỘC: Bạn phải đóng vai Thầy Bói thực thụ, không được tóm tắt chung chung. Hãy thực hiện quy trình sau:\n"
-            f"  - Bước 1: Xác định Dụng Thần (chủ thể của câu hỏi là gì?).\n"
-            f"  - Bước 2: Tìm trong Kỳ Môn xem Cung Mệnh của người hỏi (Cung của Can Ngày) và Cung Sự Việc (Cung của Dụng Thần/Can Giờ) tương sinh hay tương khắc.\n"
-            f"  - Bước 3: Tìm trong Mai Hoa xem Thể và Dụng sinh khắc ra sao.\n"
-            f"  - Bước 4: Khảo sát Lục Hào xem Hào Động báo hiệu điều gì, Dụng Thần vượng hay suy.\n"
-            f"Lấy tất cả các dữ kiện có thật này chắp nối thành một câu trả lời chính xác, TUYỆT ĐỐI không chép lại dữ liệu MANG ĐOÁN nếu dữ liệu gốc chi tiết hơn.\n\n"
-            f"BẮT BUỘC TRÌNH BÀY ĐÚNG 4 PHẦN THEO ĐÚNG THỨ TỰ SAU (Tuyệt đối không được bỏ sót Header nào, kể cả khi thiếu dữ liệu):\n"
-            f"# 1. HỒ SƠ KHÁCH HÀNG\n"
-            f"(TUYỆT ĐỐI KHÔNG TRẢ LỜI CÂU HỎI CHÍNH Ở PHẦN NÀY! Chỉ suy luận tuổi/giới tính nếu có dữ liệu. Nếu không, ghi 'Không đủ dữ liệu xác định')\n\n"
-            f"# 2. CĂN CỨ TỨ THUẬT\n"
-            f"(Bắt buộc phân tích logic tại đây dựa trên <context_data>. Nếu môn nào thiếu, ghi 'Chưa gieo quẻ')\n"
-            f"- KỲ MÔN: ...\n"
-            f"- MAI HOA: ...\n"
-            f"- LỤC HÀO: ...\n"
-            f"- THIẾT BẢN: ...\n\n"
-            f"# 3. KẾT QUẢ DỰ BÁO\n"
-            f"(CHỈ ĐƯỢC PHÉP TRẢ LỜI CÂU HỎI TRỰC TIẾP TẠI ĐÂY. Tổng hợp logic từ Phần 2 để chốt ĐÁP ÁN)\n\n"
-            f"# 4. LỜI KHUYÊN\n"
-            f"(1 câu hành động thiết thực)\n"
-            f"</system_instructions>\n\n"
-            f"<context_data>\n"
-            f"{user_palace_info}\n"
-            f"{extra_context}\n"
-            f"</context_data>\n\n"
-            f"<user_question>\n"
-            f"{question}\n"
-            f"</user_question>"
-        )
-        return self._call_ai_raw(prompt)
-
-    # --- MISSING METHODS RESTORED & UPGRADED FOR "SMARTEST AI" ---
+            # Determine if this is a key block (auto-expand)
+            is_key = any(k in title.lower() for k in ['kết luận', 'lời khuyên', 'pp chính', 'thám tử', 'routing'])
+            
+            with st.expander(f"{icon} {title}", expanded=is_key):
+                # Render content với styling đẹp
+                st.markdown(f"""
+                <div style="
+                    font-size: 14px;
+                    line-height: 1.8;
+                    color: #334155;
+                    padding: 8px 0;
+                ">{content}</div>
+                """, unsafe_allow_html=True)
     
-    def analyze_palace(self, palace_data, topic):
-        """Analyzes a specific QMDG Palace with context (V3.5 Prophet Mode)."""
-        p_num = palace_data.get('num', '?')
-        prompt = (
-            f"VAI TRÒ: Chuyên gia Kỳ Môn Độn Giáp (V3.5 Prophet Mode).\\n"
-            f"NHIỆM VỤ: Phân tích CÁT HUNG của Cung {p_num} theo chủ đề '{topic}'.\\n"
-            f"--------------------------------------------------\\n"
-            f"DỮ LIỆU CUNG {p_num}:\\n"
-            f"- Cửa: {palace_data.get('door')} | Sao: {palace_data.get('star')} | Thần: {palace_data.get('deity')}\\n"
-            f"- Thiên Bàn: {palace_data.get('can_thien')} | Địa Bàn: {palace_data.get('can_dia')}\\n"
-            f"--------------------------------------------------\\n"
-            f"QUY TRÌNH LUẬN GIẢI (V3.5):\\n"
-            f"1. **NGHĨA ĐỘNG (Contextual)**: Xét ý nghĩa Cửa/Sao dựa trên '{topic}'. (Ví dụ: Cửa Tử xấu cho Hôn nhân nhưng tốt cho Săn bắn/Tu luyện).\\n"
-            f"2. **TƯƠNG TÁC NGŨ HÀNH**: Xét sự sinh khắc giữa Cửa - Cung - Sao - Thần.\\n"
-            f"3. **YẾU TỐ ẨN**: Tự xét xem có phạm Tuần Không hay Dịch Mã không (dựa trên kiến thức của bạn về Kỳ Môn).\\n"
-            f"\\n"
-            f"KẾT LUẬN:\\n"
-            f"🔮 **Đánh Giá**: [Tốt/Xấu/Trung Bình]\\n"
-            f"💡 **Lý Do Chính**: [Giải thích ngắn gọn, súc tích]\\n"
-        )
-        return self._call_ai_raw(prompt)
-
-    def explain_element(self, element_type, value):
-        """Explains a specific QMDG element (Stem, Star, Door)."""
-        prompt = (
-            f"VAI TRÒ: Từ điển Sống về Kỳ Môn Độn Giáp (V3.5).\\n"
-            f"YÊU CẦU: Giải thích ý nghĩa của {element_type}: {value}.\\n"
-            f"1. **Ý Nghĩa Gốc**: Cát hay Hung?\\n"
-            f"2. **Ý Nghĩa Mở Rộng**: Tốt cho việc gì, xấu cho việc gì?\\n"
-            f"3. **Hình Tượng**: Nó đại diện cho người/vật gì?"
-        )
-        return self._call_ai_raw(prompt)
-
-    def analyze_mai_hoa(self, hex_data, topic):
-        """Analyzes Mai Hoa Hexagram (V3.5 Prophet Mode)."""
-        ten = hex_data.get('ten', 'Quẻ')
-        tuong = hex_data.get('tuong', 'Image')
-        nghia = hex_data.get('nghĩa', 'Meaning')
-        prompt = (
-            f"VAI TRÒ: Nhà Tiên Tri Mai Hoa (V3.5).\\n"
-            f"CHỦ ĐỀ: {topic}\\n"
-            f"QUẺ: {ten}\\n"
-            f"TƯỢNG: {tuong}\\n"
-            f"Ý NGHĨA: {nghia}\\n"
-            f"--------------------------------------------------\\n"
-            f"PHÂN TÍCH TIÊN TRI:\\n"
-            f"Hãy nhìn vào 'Tượng Quẻ' (Hình ảnh) để đưa ra dự báo cho '{topic}'.\\n"
-            f"Đừng chỉ tra sách, hãy dùng Trực Giác Tiên Tri để kết nối hình ảnh với sự việc.\\n"
-            f"KẾT QUẢ: Cát hay Hung? Tại sao?"
-        )
-        return self._call_ai_raw(prompt)
-        
-    def analyze_luc_hao(self, hex_data, topic):
-        """Analyzes Luc Hao Hexagram (V3.5 Prophet Mode)."""
-        ban = hex_data.get('ban', {}).get('name', '?')
-        bien = hex_data.get('bien', {}).get('name', '?')
-        conclusion = hex_data.get('conclusion', '...')
-        prompt = (
-            f"VAI TRÒ: Chuyên gia Lục Hào Thần Sát (V3.5).\\n"
-            f"CHỦ ĐỀ: {topic}\\n"
-            f"DIỄN BIẾN: Quẻ {ban} biến thành {bien}\\n"
-            f"LUẬN SƠ BỘ: {conclusion}\\n"
-            f"--------------------------------------------------\\n"
-            f"LUẬN GIẢI CHI TIẾT:\\n"
-            f"1. **Động Hào**: Hào động báo hiệu sự thay đổi gì?\\n"
-            f"2. **Biến Hóa**: Sự việc sẽ kết thúc (Quẻ Biến) như thế nào?\\n"
-            f"3. **Lời Khuyên**: Nên tiến hay lùi?"
-        )
-        return self._call_ai_raw(prompt)
+    # 4. Raw output (for transparency)
+    with st.expander("📄 Xem toàn bộ văn bản gốc", expanded=False):
+        st.markdown(f"""
+        <div style="
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #475569;
+            max-height: 400px;
+            overflow-y: auto;
+        ">{text}</div>
+        """, unsafe_allow_html=True)
 
 
-
-# -----------------------------------------------
-
-# --- PHOENIX ORCHESTRATOR (INLINED TO FIX IMPORT CACHING) ---
 class PhoenixOrchestrator:
-    """
-    Simulates an n8n-style workflow orchestration.
-    Coordinates specialized Agents (Nodes) to answer user queries accurately.
-    Inlined to prevent 'Empty Response' due to old cached modules.
-    """
-    
+    """Wrapper class to maintain compatibility with existing code while routing to gemini_helper"""
     def __init__(self, gemini_helper):
         self.gemini = gemini_helper
-        self.logs = [] # Execution logs to show in UI
-        
+        self.logs = []
+    
     def log_step(self, step_name, status, detail=""):
-        import datetime
-        entry = {
-            "time": datetime.datetime.now().strftime("%H:%M:%S"),
-            "step": step_name,
-            "status": status,
-            "detail": detail
-        }
-        self.logs.append(entry)
-        
-    def run_pipeline(self, user_question, current_topic="Chung", chart_data=None, mai_hoa_data=None, luc_hao_data=None, tb_context=""):
-        self.logs = [] # Reset logs
-        final_answer = ""
-        knowledge_context = ""
-        
-        # --- NODE 0: LIVE DATA INGESTION ---
-        # AUTO-CAPTURE from session_state if arguments are missing (Smart Context)
-        import streamlit as st
-        if not mai_hoa_data and 'mai_hoa_result' in st.session_state:
-            mai_hoa_data = st.session_state.mai_hoa_result
-        if not luc_hao_data and 'luc_hao_result' in st.session_state:
-            luc_hao_data = st.session_state.luc_hao_result
-        if not chart_data and 'chart_data' in st.session_state:
-            chart_data = st.session_state.chart_data
-            
-        live_context = self._format_live_context(chart_data, mai_hoa_data, luc_hao_data, current_topic)
-        if live_context:
-            knowledge_context += f"\\n[DỮ LIỆU BÀN CỜ & QUẺ (LIVE INTELLIGENCE)]:\\n{live_context}\\n"
-            self.log_step("Live Data Ingestion", "SUCCESS", "Captured & Decoded QMDG/MaiHoa/LucHao.")
-        else:
-            self.log_step("Live Data Ingestion", "SKIPPED", "No active chart/hexagram found.")
-            
-        if tb_context:
-            knowledge_context += f"\\n{tb_context}\\n"
-            self.log_step("Live Data Ingestion", "SUCCESS", "Captured Thiet Ban Than Toan context.")
-        
-        # --- NODE 1: INTENT ROUTER (Regex Enhanced) ---
-        self.log_step("Intent Analysis", "RUNNING", "Analyzing user question...")
-        import re
-        q_lower = f" {user_question.lower()} " # Padding for boundary matching
-        intent = "GENERAL"
-
-        # Regex Helpers
-        def match_any(keywords, text):
-            return any(re.search(rf"\\b{kw}\\b", text) for kw in keywords)
-
-        # 1. Calculation
-        if match_any(["giờ tốt", "xuất hành", "khổng minh", "tính giờ", "giờ nào"], q_lower):
-            intent = "CALCULATION"
-        # 2. Timing
-        elif match_any(["khi nào", "bao giờ", "bao lâu", "tháng mấy", "năm nào", "ngày nào", "mấy giờ", "đến lúc nào"], q_lower):
-            intent = "TIMING"
-        # 3. People / Profile
-        elif match_any(["ai", "người", "trai", "gái", "nam", "nữ", "ghét", "thương", "tính cách", "bản tính"], q_lower):
-            intent = "PROFILE"
-        # 4. Remedy
-        elif match_any(["hóa giải", "cách sửa", "làm gì", "đối phó"], q_lower):
-            intent = "REMEDY"
-        # 5. Definition
-        elif match_any(["là gì", "ý nghĩa", "giải thích", "định nghĩa"], q_lower):
-            intent = "DEFINITION"
-        # 6. Analysis
-        elif match_any(["luận giải", "phân tích", "đánh giá", "xem giúp", "như thế nào", "kết quả", "thành bại", "được không"], q_lower):
-            intent = "ANALYSIS"
-            
-        self.log_step("Intent Analysis", "COMPLETED", f"Detected Intent: {intent}")
-        
-        # --- NODE 2: KNOWLEDGE RETRIEVAL ---
-        self.log_step("Knowledge Retrieval", "RUNNING", f"Fetching data for {intent}...")
-        
-        # Sub-Node: Forced Topic Override
-        people_time_keywords = ["ai", "người", "trai", "gái", "nam", "nữ", "khi nào", "bao giờ", "lúc nào", "mấy giờ", "ghét", "thương"]
-        topic_override = any(kw in q_lower for kw in people_time_keywords) or intent in ["PROFILE", "TIMING"]
-        
-        # Sub-Node: Time Horizon Hint
-        time_horizon = "FUTURE"
-        if any(x in q_lower for x in ["đã", "vừa mới", "quá khứ", "trước đây"]):
-            time_horizon = "PAST"
-        knowledge_context += f"\\n[GỢI Ý THỜI ĐIỂM]: {time_horizon}\\n"
-
-        # Sub-Node: Dictionary Skill
-        try:
-            from skill_library import lookup_concept
-            dict_data = lookup_concept(user_question)
-            if dict_data:
-                self.log_step("Dictionary Skill", "SUCCESS", f"Found definition for input term.")
-                knowledge_context += f"\\n[📖 TỪ ĐIỂN CHUYÊN NGÀNH]: {dict_data['summary']}\\nChi tiết: {dict_data['details']}\\n"
-            
-            # Sub-Node: Object Mapping
-            dung_than_data = lookup_concept("dụng thần")
-            if dung_than_data:
-                 knowledge_context += f"\\n[🔍 BẢNG TRA CỨU ĐỐI TƯỢNG (DỤNG THẦN)]: {dung_than_data['summary']}\\nChi tiết: {dung_than_data['details']}\\n"
-                 self.log_step("Object Mapping", "SUCCESS", "Loaded Reference Objects Table.")
-
-            # Sub-Node: Timing/Remedy/Weather
-            for skill_key, skill_intent in [("ứng kỳ", "TIMING"), ("hóa giải", "REMEDY"), ("thời tiết", "WEATHER")]:
-                if intent == skill_intent:
-                    skill_data = lookup_concept(skill_key)
-                    if skill_data:
-                         knowledge_context += f"\\n[🔍 QUY TẮC CHUẨN - {skill_key.upper()}]:\\n{skill_data['details']}\\n"
-                         self.log_step(f"{skill_key.capitalize()} Skill", "SUCCESS", f"Loaded Rules for {skill_intent}")
-            
-            # Sub-Node: Personality & Gender
-            if intent == "PROFILE" or any(kw in q_lower for kw in ["tính cách", "nam", "nữ", "trai", "gái", "ai"]):
-                profile_data = lookup_concept("tính cách")
-                gender_data = lookup_concept("nam nữ")
-                if profile_data: knowledge_context += f"\\n[👤 TỪ ĐIỂN TÍNH CÁCH]:\\n{profile_data['details']}\\n"
-                if gender_data: knowledge_context += f"\\n[⚧️ QUY TẮC XEM GIỚI TÍNH (Nam/Nữ)]:\\n{gender_data['details']}\\n"
-                self.log_step("Profile Skill", "SUCCESS", "Loaded Profile & Gender Rules.")
-        except:
-            self.log_step("Skill Library", "WARNING", "Could not import skill_library. Skipping.")
-
-        # Sub-Node: Topic Context
-        if not topic_override and intent in ["ANALYSIS", "GENERAL", "DEFINITION"]:
-            try:
-                import qmdg_data
-                topic_dict = getattr(qmdg_data, 'TOPIC_INTERPRETATIONS', {})
-                if current_topic in topic_dict:
-                     t_data = topic_dict[current_topic]
-                     knowledge_context += f"\\n[CHỦ ĐỀ ĐANG XEM TRÊN UI]: {current_topic}\\n- Dụng thần chuẩn: {t_data.get('Dụng_Thần')}\\n- Gợi ý luận giải: {t_data.get('Luận_Giải_Gợi_Ý')}\\n"
-                     self.log_step("Topic Context", "SUCCESS", f"Injected context for {current_topic}")
-            except: pass
-        else:
-            self.log_step("Topic Context", "SKIPPED", "Ignored UI topic to focus on specific Person/Time query.")
-        
-        # Sub-Node: Time Calculation Skill
-        if intent == "CALCULATION":
-            try:
-                import datetime
-                import streamlit as st
-                d_val = datetime.datetime.now()
-                if hasattr(st, 'session_state') and 'selected_date' in st.session_state:
-                     d_val = st.session_state.selected_date
-                from ai_tools import get_lunar_date_offline, get_khong_minh_luc_dieu
-                lm, ld = get_lunar_date_offline(d_val)
-                summ, det = get_khong_minh_luc_dieu(lm, ld)
-                knowledge_context += f"\\n[⏱️ TÍNH TOÁN THỜI GIAN]:\\n{summ}\\n{det}\\n"
-                self.log_step("Time Calc Skill", "SUCCESS", f"Calculated for Lunar Date {ld}/{lm}")
-            except Exception as e:
-                self.log_step("Time Calc Skill", "ERROR", str(e))
-                
-        self.log_step("Knowledge Retrieval", "COMPLETED", "Data gathering finished.")
-        
-        # --- NODE 3: CONTEXT MEMORY ---
-        self.log_step("Context Memory", "RUNNING", "Retrieving session history...")
-        history_context = ""
-        import streamlit as st
-        if hasattr(st, 'session_state') and 'chat_history' in st.session_state:
-            recent_history = st.session_state.chat_history[-6:] 
-            history_context = "\\n[LỊCH SỬ TRÒ CHUYỆN GẦN ĐÂY]:\\n"
-            for msg in recent_history:
-                role = "Bạn" if msg["role"] == "user" else "AI"
-                history_context += f"- {role}: {msg['content'][:100]}...\\n"
-        self.log_step("Context Memory", "SUCCESS", "Internal memory updated.")
-
-        # --- NODE 4: SYNTHESIS ---
-        self.log_step("Gemini Synthesis", "RUNNING", "Generating final response...")
-        
-        import datetime as _dt_prompt
-        _now_ts = _dt_prompt.datetime.now()
-        
-        # V5.0: MANG ĐOÁN - Pre-computed blind reading
-        _blind_text = ""
-        try:
-            from blind_reading import blind_read, format_blind_reading
-            _chart = st.session_state.get('chart_data', None)
-            _mh = st.session_state.get('mai_hoa_result', None)
-            _lh = st.session_state.get('luc_hao_result', None)
-            _readings = blind_read(chart_data=_chart, mai_hoa_data=_mh, luc_hao_data=_lh)
-            _blind_text = format_blind_reading(_readings)
-        except Exception as _e:
-            _blind_text = f"(Lỗi Mang Đoán: {_e})"
-        system_prompt = (
-            f"<system_instructions>\n"
-            f"Bạn là Bậc Thầy Tứ Thuật (Kỳ Môn, Mai Hoa, Lục Hào, Thiết Bản). Năm {_now_ts.year} là năm xem bói.\n"
-            f"LUẬT TOÁN MỆNH BẮT BUỘC:\n"
-            f"- LỆNH NGÔN NGỮ: BẮT BUỘC 100% TRẢ LỜI BẰNG TIẾNG VIỆT.\n"
-            f"- LỆNH THUYẾT TRÌNH: TRẢ LỜI NGAY VÀO FORMAT, TUYỆT ĐỐI KHÔNG HIỂN THỊ DÒNG SUY NGHĨ HAY CÁC BƯỚC PHÂN TÍCH BẰNG TIẾNG ANH (Như 'Okay, let's analyze...'). ❌ TUYỆT ĐỐI KHÔNG CHÀO HỎI, KHÔNG NÓI 'TÔI ĐÃ SẴN SÀNG'. ❌\n"
-            f"- ⛔ LUẬT TỬ HÌNH CHỐNG ÁO GIÁC (ANTI-HALLUCINATION): BẠN CHỈ ĐƯỢC PHÉP LUẬN DỰA TRÊN DỮ LIỆU TRONG <context_data>! NẾU QUẺ KHÔNG NHẮC ĐẾN 'CUNG CÀN', THÌ TUYỆT ĐỐI KHÔNG ĐƯỢC CHÉM GIÓ VỀ 'CUNG CÀN'. CHỈ DÙNG DỮ LIỆU CÓ THẬT!!! ⛔\n"
-            f"- KHÔNG được lười biếng tóm tắt chung chung. Bạn PHẢI đóng vai Thầy Bói thực thụ, thực hiện quy trình sau dựa trên <context_data>:\n"
-            f"   + Bước 1: Xác định Dụng Thần (chủ thể của câu hỏi là gì?).\n"
-            f"   + Bước 4: Khảo sát Lục Hào xem Hào Động báo hiệu điều gì, Dụng Thần vượng hay suy.\n"
-            f"   + Bước 5: Tham chiếu Thiết Bản Thần Toán xem điềm báo thời cơ là gì.\n"
-            f"   Lấy tất cả các dữ kiện có thật này chắp nối thành một câu trả lời chính xác, sắc bén và TUYỆT ĐỐI KHÔNG BỊA ĐẶT.\n\n"
-            f"=========================================\n"
-            f"📖 CẨM NANG DỤNG THẦN VẠN NĂNG (UNIVERSAL RULEBOOK)\n"
-            f"Dùng cẩm nang này để tự suy luận Dụng Thần cho BẤT KỲ CÂU HỎI NÀO của người dùng:\n\n"
-            f"1. LỤC THÂN (LỤC HÀO) - ĐẠI DIỆN CHO:\n"
-            f"- HÀO QUAN QUỶ: Nghề nghiệp, chức vụ, sếp, bệnh tật, ma quỷ, tai họa, trộm cướp, chồng/bạn trai.\n"
-            f"- HÀO THÊ TÀI: Tiền bạc, tài sản, lợi nhuận, đồ ăn, vợ/bạn gái, thuộc cấp, người làm thuê.\n"
-            f"- HÀO TỬ TÔN: Con cái, cháu chắt, thú cưng, thuốc men chữa bệnh, sự bình an, đường gỡ rối.\n"
-            f"- HÀO PHỤ MẪU: Cha mẹ, người lớn tuổi, nhà cửa, đất đai, xe cộ, trường học, quần áo, giấy tờ, hợp đồng, tin tức.\n"
-            f"- HÀO HUYNH ĐỆ: Anh chị em, bạn bè, đối tác, đối thủ cạnh tranh, người chia tiền.\n\n"
-            f"2. KỲ MÔN DỤNG THẦN - ĐẠI DIỆN CHO:\n"
-            f"- Nhật Can (Can Ngày): Bản thân người hỏi.\n"
-            f"- Thời Can (Can Giờ): Sự việc chung, kết quả, con cái, súc vật, cấp dưới.\n"
-            f"- Nguyệt Can (Can Tháng): Anh em, bạn bè, đồng nghiệp.\n"
-            f"- Niên Can (Can Năm): Cha mẹ, trưởng bối, sếp lớn, chính quyền.\n"
-            f"- Khai Môn: Công việc, sự nghiệp, cửa hàng, mở mang.\n"
-            f"- Sinh Môn: Lợi nhuận, tiền tài, nhà cửa, sự sống, nghề địa ốc.\n"
-            f"- Tử Môn: Chết chóc, bệnh tật, đất đai, mồ mả, sự bế tắc.\n"
-            f"- Cảnh Môn: Thư từ, giấy báo, thi cử, hình ảnh, hỏa hoạn.\n"
-            f"- Thiên Tâm: Bác sĩ, thuốc men, quý nhân, người lãnh đạo.\n"
-            f"- Trực Phù: VIP, sếp, chủ nợ, tài sản lớn.\n"
-            f"- Huyền Vũ / Thiên Bồng: Trộm cướp, tiểu nhân, sự lừa dối, mất mát.\n\n"
-            f"3. CÔNG THỨC TOÁN SỐ BÍ TRUYỀN (Tính Số Lượng/Tuổi Tác):\n"
-            f"- Nếu hỏi số lượng (bao nhiêu người, mấy cái nhà, mấy tầng, mấy tỷ, mấy con thú...): Chọn Cung Kỳ Môn chứa Dụng Thần. Số lượng = Số Hà Đồ của Cung đó (Khảm=1/6, Khôn=2/7, Chấn=3/8, Tốn=4/9, Trung=5/10, Càn=1/6, Đoài=4/9, Cấn=5/10, Ly=2/7). Nếu Cung Vượng/Tướng dồi dào -> Lấy số LỚN. Nếu Suy/Tuyệt -> Lấy số NHỎ.\n"
-            f"=========================================\n\n"
-            f"BẮT BUỘC TRÌNH BÀY ĐÚNG 4 PHẦN THEO ĐÚNG THỨ TỰ SAU (Tuyệt đối không được bỏ sót Header nào, kể cả khi thiếu dữ liệu):\n"
-            f"# 1. HỒ SƠ KHÁCH HÀNG\n"
-            f"(TUYỆT ĐỐI KHÔNG TRẢ LỜI CÂU HỎI CHÍNH Ở PHẦN NÀY! Chỉ suy luận tuổi/giới tính nếu có dữ liệu. Nếu không, ghi 'Không đủ dữ liệu xác định')\n\n"
-            f"# 2. CĂN CỨ TỨ THUẬT\n"
-            f"(Bắt buộc phân tích logic tại đây dựa trên <context_data>. Nếu môn nào thiếu, ghi 'Chưa gieo quẻ')\n"
-            f"- KỲ MÔN: ...\n"
-            f"- MAI HOA: ...\n"
-            f"- LỤC HÀO: ...\n"
-            f"- THIẾT BẢN: ...\n\n"
-            f"# 3. KẾT QUẢ DỰ BÁO\n"
-            f"(CHỈ ĐƯỢC PHÉP TRẢ LỜI CÂU HỎI TRỰC TIẾP TẠI ĐÂY. Tổng hợp logic từ Phần 2 để chốt ĐÁP ÁN. Nếu Phần 2 hoàn toàn không có dữ liệu, hãy ghi 'Do hệ thống chưa nhận được dữ liệu bàn cờ nên không thể đưa ra đáp án chính xác')\n\n"
-            f"# 4. LỜI KHUYÊN\n"
-            f"(1 câu hành động thiết thực)\n"
-            f"</system_instructions>\n\n"
-            f"<context_data>\n"
-            f"{history_context}\n{knowledge_context}\n{_blind_text}\n"
-            f"</context_data>\n\n"
-            f"<user_question>\n"
-            f"{user_question}\n"
-            f"</user_question>"
-        )
-        
-        try:
-            final_answer = self.gemini._call_ai(system_prompt)
-        except Exception as e:
-            self.log_step("Gemini Synthesis", "ERROR", str(e))
-            final_answer = f"⚠️ Lỗi xử lý AI: {str(e)}"
-            
-        if not final_answer:
-             final_answer = "⚠️ AI trả về dữ liệu rỗng (Phoenix Fix). Vui lòng thử lại."
-             
-        return final_answer
-
-    def _format_live_context(self, qmdg, mai_hoa, luc_hao, current_topic="Chung"):
-        context = ""
-        import json
-        import datetime
-        
-        # Helper string force
-        def safe_str(val):
-            return str(val) if val is not None else "Unknown"
-
-        # Helper to safely get nested keys
-        def get_safe(data, key):
-            val = data.get(key, "N/A") if data else "N/A"
-            return str(val)
-
-        # --- LOAD TRUCTU_TRANH & CAN_CHI DATA FOR CÁCH CỤC LOOKUP ---
-        TRUCTU_TRANH = {}
-        CAN_CHI_LUAN_GIAI = {}
-        CUU_TINH_DATA = {}
-        BAT_MON_DATA = {}
-        BAT_THAN_DATA = {}
-        try:
-            import qmdg_data
-            KY_MON = getattr(qmdg_data, 'KY_MON_DATA', {})
-            TRUCTU_TRANH = KY_MON.get('TRUCTU_TRANH', {})
-            CAN_CHI_LUAN_GIAI = KY_MON.get('CAN_CHI_LUAN_GIAI', {})
-            dung_than = KY_MON.get('DU_LIEU_DUNG_THAN_PHU_TRO', {})
-            CUU_TINH_DATA = dung_than.get('CUU_TINH', {})
-            BAT_MON_DATA = dung_than.get('BAT_MON', {})
-            BAT_THAN_DATA = dung_than.get('BAT_THAN', {})
-        except Exception:
-            pass
-
-        # --- Helper: Lookup Cách Cục for a palace ---
-        def lookup_cach_cuc(can_thien, can_dia):
-            if not can_thien or not can_dia or can_thien == 'N/A' or can_dia == 'N/A':
-                return None
-            key = f"{can_thien}{can_dia}"
-            return TRUCTU_TRANH.get(key, None)
-
-        # --- Helper: Ngũ Hành relationship ---
-        NGU_HANH_MAP = {"Mộc": 0, "Hỏa": 1, "Thổ": 2, "Kim": 3, "Thủy": 4}
-        def ngu_hanh_relation(hanh1, hanh2):
-            if not hanh1 or not hanh2: return "Không rõ"
-            idx1 = NGU_HANH_MAP.get(hanh1, -1)
-            idx2 = NGU_HANH_MAP.get(hanh2, -1)
-            if idx1 < 0 or idx2 < 0: return "Không rõ"
-            diff = (idx2 - idx1) % 5
-            return {0: "Tỷ Hòa (ngang nhau)", 1: "Sinh (tốt, hỗ trợ)", 2: "Khắc (xấu, bị chế ngự)", 3: "Bị Khắc (bị tổn thương)", 4: "Được Sinh (được hỗ trợ)"}[diff]
-
-        def get_hanh_of_can(can_name):
-            info = CAN_CHI_LUAN_GIAI.get(can_name, {})
-            return info.get('Hành', 'Thổ')
-
-        # --- CUNG NGŨ HÀNH (Palace elements) ---
-        CUNG_NGU_HANH = {1: "Thủy", 2: "Thổ", 3: "Mộc", 4: "Mộc", 5: "Thổ", 6: "Kim", 7: "Kim", 8: "Thổ", 9: "Hỏa"}
-
-        # --- 0. IDENTITY AUTO-DETECT ---
-        can_ngay_val = "Giáp"
-        can_nam_val = "Bính"
-        t_tru = "N/A"
-        
-        if qmdg:
-            can_ngay_val = get_safe(qmdg, 'can_ngay')
-            can_nam_val = get_safe(qmdg, 'can_nam')
-            t_tru = f"{get_safe(qmdg, 'can_nam')} {get_safe(qmdg, 'chi_nam')} / {get_safe(qmdg, 'can_thang')} {get_safe(qmdg, 'chi_thang')} / {can_ngay_val} {get_safe(qmdg, 'chi_ngay')} / {get_safe(qmdg, 'can_gio')} {get_safe(qmdg, 'chi_gio')}"
-        else:
-            try:
-                from qmdg_calc import calculate_qmdg_params
-                now = datetime.datetime.now()
-                params = calculate_qmdg_params(now) 
-                can_ngay_val = safe_str(params.get('can_ngay', 'Giáp'))
-                can_nam_val = safe_str(params.get('can_nam', 'Bính'))
-                def p(k): return safe_str(params.get(k, '?'))
-                t_tru = f"{p('can_nam')} {p('chi_nam')} / {p('can_thang')} {p('chi_thang')} / {can_ngay_val} {p('chi_ngay')} / {p('can_gio')} {p('chi_gio')}"
-            except Exception as e:
-                t_tru = "Dữ liệu tính toán bị lỗi"
-                context += f"[LỖI TÍNH TOÁN ẨN]: {e}\n"
-
-        # --- 1. LỊCH ÂM/DƯƠNG (Calendar) - Lấy từ session state (đã có timezone VN) ---
-        try:
-            import qmdg_calc
-            import streamlit as st
-            # Lấy thời gian từ session state (đã tính sẵn ở sidebar, timezone VN)
-            if 'selected_datetime' in dir(st.session_state) or True:
-                try:
-                    # Try to get VN timezone
-                    vn_tz = None
-                    try:
-                        import pytz
-                        vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-                    except:
-                        try:
-                            from zoneinfo import ZoneInfo
-                            vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
-                        except:
-                            vn_tz = datetime.timezone(datetime.timedelta(hours=7))
-                    now = datetime.datetime.now(vn_tz)
-                except:
-                    now = datetime.datetime.now() + datetime.timedelta(hours=7)  # Fallback: UTC+7
-            
-            tomorrow = now + datetime.timedelta(days=1)
-            
-            lday_today, lmonth_today, lyear_today, is_leap_today = qmdg_calc.solar_to_lunar(now)
-            lday_tmr, lmonth_tmr, lyear_tmr, is_leap_tmr = qmdg_calc.solar_to_lunar(tomorrow)
-            
-            l_year_can_today, l_year_chi_today = qmdg_calc.get_can_chi_year(lyear_today)
-            l_year_can_tmr, l_year_chi_tmr = qmdg_calc.get_can_chi_year(lyear_tmr)
-            
-            # Can Chi ngày hôm nay và ngày mai
-            params_today = qmdg_calc.calculate_qmdg_params(now)
-            params_tmr = qmdg_calc.calculate_qmdg_params(tomorrow)
-            canchi_today = f"{params_today.get('can_ngay','?')} {params_today.get('chi_ngay','?')}"
-            canchi_tmr = f"{params_tmr.get('can_ngay','?')} {params_tmr.get('chi_ngay','?')}"
-            
-            context += f"=== LỊCH NGÀY (CHÍNH XÁC - TIMEZONE VIỆT NAM) ===\n"
-            context += f"HÔM NAY: Dương lịch {now.strftime('%d/%m/%Y')} | Âm lịch: {lday_today}/{lmonth_today} năm {l_year_can_today} {l_year_chi_today}{'(Nhuận)' if is_leap_today else ''} | Ngày {canchi_today}\n"
-            context += f"NGÀY MAI: Dương lịch {tomorrow.strftime('%d/%m/%Y')} | Âm lịch: {lday_tmr}/{lmonth_tmr} năm {l_year_can_tmr} {l_year_chi_tmr}{'(Nhuận)' if is_leap_tmr else ''} | Ngày {canchi_tmr}\n"
-        except Exception:
-            pass
-
-        # --- 2. IDENTITY HINTS ---
-        can_yang = ["Giáp", "Bính", "Mậu", "Canh", "Nhâm"]
-        is_yang = any(k in can_ngay_val for k in can_yang)
-        gender_hint = "NAM (Can Ngày Dương)" if is_yang else "NỮ (Can Ngày Âm)"
-        
-        context += f"\n=== DỮ LIỆU LUẬN GIẢI CHUẨN ===\n"
-        context += f"Tứ Trụ: {t_tru}\n"
-        context += f"Giới Tính (Theo Can Ngày): {gender_hint}\n"
-
-        # --- 3. QMDG FULL ANALYSIS WITH CÁCH CỤC ---
-        if qmdg:
-            context += f"\n=== KỲ MÔN ĐỘN GIÁP ===\n"
-            context += f"Tiết Khí: {get_safe(qmdg, 'tiet_khi')} | Cục: {get_safe(qmdg, 'cuc')}\n"
-            
-            can_thien_ban = qmdg.get('can_thien_ban', {})
-            can_dia_ban = qmdg.get('can_dia_ban', {})
-            thien_ban = qmdg.get('thien_ban', {})
-            nhan_ban = qmdg.get('nhan_ban', {})
-            than_ban = qmdg.get('than_ban', {})
-            
-            # Find USER palace (Can Ngày) and TOPIC palace
-            user_palace_idx = None
-            for idx, stem in can_thien_ban.items():
-                if stem == can_ngay_val:
-                    user_palace_idx = idx
-                    break
-            
-            # Build focused analysis for each palace
-            key_palaces = {}
-            for idx in [1,2,3,4,6,7,8,9]:
-                ct = safe_str(can_thien_ban.get(idx, can_thien_ban.get(str(idx), '?')))
-                cd = safe_str(can_dia_ban.get(idx, can_dia_ban.get(str(idx), '?')))
-                star = safe_str(thien_ban.get(idx, thien_ban.get(str(idx), '?')))
-                door = safe_str(nhan_ban.get(idx, nhan_ban.get(str(idx), '?')))
-                deity = safe_str(than_ban.get(idx, than_ban.get(str(idx), '?')))
-                
-                cach_cuc = lookup_cach_cuc(ct, cd)
-                cach_cuc_str = ""
-                if cach_cuc:
-                    cach_cuc_str = f" | CÁCH CỤC: {cach_cuc.get('Tên_Cách_Cục','?')} ({cach_cuc.get('Cát_Hung','?')}) - {cach_cuc.get('Luận_Giải','')}"
-                
-                # Get Cát/Hung from star & door data
-                star_info = CUU_TINH_DATA.get(star, {})
-                door_full = f"{door} Môn" if door and "Môn" not in door else door
-                door_info = BAT_MON_DATA.get(door_full, BAT_MON_DATA.get(door, {}))
-                deity_info = BAT_THAN_DATA.get(deity, {})
-                
-                hanh_cung = CUNG_NGU_HANH.get(int(idx) if isinstance(idx, str) else idx, 'Thổ')
-                
-                palace_line = (
-                    f"  Cung {idx} ({hanh_cung}): Sao={star}({star_info.get('Hành','?')}) | "
-                    f"Cửa={door}({door_info.get('Cát_Hung','?')}) | Thần={deity} | "
-                    f"Can: {ct}/{cd}{cach_cuc_str}"
-                )
-                
-                key_palaces[idx] = {
-                    'line': palace_line, 'star': star, 'door': door, 'deity': deity,
-                    'can_thien': ct, 'can_dia': cd, 'cach_cuc': cach_cuc,
-                    'hanh_cung': hanh_cung, 'star_info': star_info, 'door_info': door_info
-                }
-            
-            # USER PALACE ANALYSIS (FOCUSED)
-            if user_palace_idx and user_palace_idx in key_palaces:
-                up = key_palaces[user_palace_idx]
-                context += f"\n★ CUNG CHỦ (User - Can Ngày '{can_ngay_val}' tại Cung {user_palace_idx}):\n"
-                context += f"{up['line']}\n"
-                hanh_can = get_hanh_of_can(can_ngay_val)
-                rel = ngu_hanh_relation(hanh_can, up['hanh_cung'])
-                context += f"  → Ngũ Hành: Can {can_ngay_val}({hanh_can}) vs Cung({up['hanh_cung']}) = {rel}\n"
-            
-            # 8 PALACES (compact) - DISABLED TO PREVENT WORD SALAD
-            # context += f"\n📋 TOÀN BÀN (8 Cung + Cách Cục):\n"
-            # for idx in [1,2,3,4,6,7,8,9]:
-            #     if idx in key_palaces:
-            #         context += f"{key_palaces[idx]['line']}\n"
-            pass
-            
-        # --- 4. MAI HOA (DEEP) ---
-        if mai_hoa:
-            mh_ten = get_safe(mai_hoa, 'ten')
-            mh_dong = get_safe(mai_hoa, 'dong_hao')
-            mh_bien = get_safe(mai_hoa, 'ten_qua_bien')
-            mh_upper_e = get_safe(mai_hoa, 'upper_element')
-            mh_lower_e = get_safe(mai_hoa, 'lower_element')
-            mh_upper_s = get_safe(mai_hoa, 'upper_symbol')
-            mh_lower_s = get_safe(mai_hoa, 'lower_symbol')
-            
-            # Thể Dụng sinh khắc analysis
-            the_dung_rel = ""
-            NGU_HANH_ORD = ["Mộc", "Hỏa", "Thổ", "Kim", "Thủy"]
-            if mh_upper_e in NGU_HANH_ORD and mh_lower_e in NGU_HANH_ORD:
-                i1 = NGU_HANH_ORD.index(mh_upper_e)
-                i2 = NGU_HANH_ORD.index(mh_lower_e)
-                diff = (i2 - i1) % 5
-                rel_map = {0: "Tỷ Hòa", 1: "Sinh", 2: "Khắc", 3: "Bị Khắc", 4: "Được Sinh"}
-                the_dung_rel = f"Ngoại ({mh_upper_e}) vs Nội ({mh_lower_e}) = {rel_map.get(diff, '?')}"
-            
-            context += f"\n=== MAI HOA DỊCH SỐ ===\n"
-            context += f"Quẻ Chủ: {mh_ten} ({mh_upper_s} / {mh_lower_s})\n"
-            context += f"Thể: {get_safe(mai_hoa, 'ten_the')} | Dụng: {get_safe(mai_hoa, 'ten_dung')}\n"
-            context += f"Tượng: {get_safe(mai_hoa, 'tuong')}\n"
-            context += f"Ý Nghĩa: {get_safe(mai_hoa, 'nghĩa')}\n"
-            context += f"Động Hào: {mh_dong} | Quẻ Biến: {mh_bien}\n"
-            context += f"Thể Dụng Ngũ Hành: {the_dung_rel}\n"
-            context += f"→ Thể sinh Dụng = CÁT (tốt cho mình), Dụng khắc Thể = HUNG.\n"
-
-        # --- 5. LỤC HÀO (DEEP) ---
-        if luc_hao:
-            context += f"\n=== LỤC HÀO KINH DỊCH ===\n"
-            ban_info = luc_hao.get('ban', {})
-            bien_info = luc_hao.get('bien', {})
-            lh_ten = get_safe(ban_info, 'name')
-            lh_bien = get_safe(bien_info, 'name')
-            lh_palace = get_safe(ban_info, 'palace')
-            context += f"Quẻ: {lh_ten} (Họ {lh_palace}) biến {lh_bien}\n"
-            context += f"Dụng Thần: {get_safe(luc_hao, 'dung_than_label')}\n"
-            context += f"Thế Ứng: {get_safe(luc_hao, 'the_ung')}\n"
-            context += f"Hào Động: {get_safe(luc_hao, 'dong_hao')}\n"
-            
-            # Chi tiết 6 hào
-            ban_details = ban_info.get('details', [])
-            if ban_details:
-                context += "Chi Tiết 6 Hào:\n"
-                for d in ban_details:
-                    h_num = d.get('hao', '?')
-                    lt = d.get('luc_than', '?')
-                    cc = d.get('can_chi', '?')
-                    lthu = d.get('luc_thu', '?')
-                    stren = d.get('strength', '?')
-                    moving = "⚡ĐỘNG" if d.get('is_moving', False) else ""
-                    mk = d.get('marker', '')
-                    lm = d.get('loc_ma', '')
-                    context += f"  Hào {h_num}: {lt} | {cc} | {lthu} | {stren} {moving} {mk} {lm}\n"
-            
-            context += f"Kết Luận Sơ Bộ: {get_safe(luc_hao, 'conclusion')}\n"
-            context += f"→ Dụng Thần Vượng = CÁT, Dụng Thần Suy/Tuyệt = HUNG.\n"
-
-        # --- 6. THIẾT BẢN THẦN TOÁN (DEEP) ---
-        try:
-            # Load from JSON file first, then fallback
-            tb_data = None
-            try:
-                import os as _os
-                json_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "thiet_ban_than_toan.json")
-                if _os.path.exists(json_path):
-                    with open(json_path, 'r', encoding='utf-8') as f:
-                        tb_data = json.load(f)
-            except: pass
-            
-            if not tb_data:
-                import qmdg_data
-                tb_data = getattr(qmdg_data, 'KY_MON_DATA', {}).get("THIET_BAN_THAN_TOAN", {})
-            
-            hoa_giap = tb_data.get("LUC_THAP_HOA_GIAP_NAP_AM", {})
-            
-            nam_tru = f"{can_nam_val} {get_safe(qmdg, 'chi_nam')}" if qmdg else f"{can_nam_val} {params.get('chi_nam','?')}"
-            ngay_tru = f"{can_ngay_val} {get_safe(qmdg, 'chi_ngay')}" if qmdg else f"{can_ngay_val} {params.get('chi_ngay','?')}"
-            
-            na_nam_info = hoa_giap.get(nam_tru.strip(), {})
-            na_ngay_info = hoa_giap.get(ngay_tru.strip(), {})
-            na_nam = na_nam_info.get("Nạp_Âm", "Không rõ")
-            na_nam_hanh = na_nam_info.get("Hành", "?")
-            na_nam_yn = na_nam_info.get("Ý_Nghĩa", "")
-            na_ngay = na_ngay_info.get("Nạp_Âm", "Không rõ")
-            na_ngay_hanh = na_ngay_info.get("Hành", "?")
-            na_ngay_yn = na_ngay_info.get("Ý_Nghĩa", "")
-            
-            context += f"\n=== THIẾT BẢN THẦN TOÁN ===\n"
-            context += f"Mệnh Năm ({nam_tru.strip()}): {na_nam} (Hành {na_nam_hanh}) - {na_nam_yn}\n"
-            context += f"Mệnh Ngày ({ngay_tru.strip()}): {na_ngay} (Hành {na_ngay_hanh}) - {na_ngay_yn}\n"
-            
-            # Trường Sinh 12 Giai Đoạn
-            truong_sinh = tb_data.get("TRUONG_SINH_12_GIAI_DOAN", {})
-            nh_ts_tai = truong_sinh.get("Ngũ_Hành_Trường_Sinh_Tại", {})
-            giai_doan_map = truong_sinh.get("Giai_Đoạn", {})
-            chi_ngay_check = get_safe(qmdg, 'chi_ngay') if qmdg else params.get('chi_ngay', '?')
-            
-            if na_ngay_hanh != "?" and chi_ngay_check != "?":
-                hanh_ts = nh_ts_tai.get(na_ngay_hanh, {})
-                for stage_name, chi_val in hanh_ts.items():
-                    if chi_val == chi_ngay_check:
-                        clean_stage = stage_name.replace("_", " ")
-                        gd_info = giai_doan_map.get(clean_stage, {})
-                        context += f"Trường Sinh Ngày: {clean_stage} (Mức {gd_info.get('Mức', '?')}/10) - {gd_info.get('Luận', '?')}\n"
-                        break
-            
-            # Thần Sát
-            than_sat = tb_data.get("THAN_SAT_LOOKUP", {})
-            relevant_sats = []
-            for sat_name, sat_info in than_sat.items():
-                cach_an = sat_info.get("Cách_An", "")
-                if can_ngay_val in cach_an or chi_ngay_check in cach_an:
-                    relevant_sats.append(f"{sat_name.replace('_', ' ')} ({sat_info.get('Loại', '?')}): {sat_info.get('Tác_Dụng', '')}")
-            if relevant_sats:
-                context += "Thần Sát liên quan:\n"
-                for sat in relevant_sats[:3]:
-                    context += f"  - {sat}\n"
-            
-            # Cung chi tiết cho User + Sự Việc
-            cung_rules = tb_data.get("CUNG_LUAN_DOAN_CHI_TIET", {})
-            def get_c_rule(idx):
-                if not idx: return ""
-                for k, v in cung_rules.items():
-                    if f"Cung_{idx}_" in k: return f"{v.get('Quái','')} (Hành {v.get('Hành', '')}): {v.get('Luận_Đoán', '')}"
-                return ""
-                
-            obj_stem = get_safe(qmdg, 'can_gio') if qmdg else "N/A"
-            obj_idx = None
-            if qmdg and 'can_thien_ban' in qmdg:
-                for idx, stem in qmdg['can_thien_ban'].items():
-                    if stem == obj_stem: obj_idx = idx
-            
-            if user_palace_idx: context += f"Gợi ý Cung Chủ: {get_c_rule(user_palace_idx)}\n"
-            if obj_idx: context += f"Gợi ý Cung Sự Việc: {get_c_rule(obj_idx)}\n"
-            
-            # Ngũ Bất Ngộ Thời
-            quy_tac = tb_data.get("QUY_TAC_LUAN_DOAN_NANG_CAO", {})
-            ngu_bat = quy_tac.get("Ngũ_Bất_Ngộ_Thời", {})
-            if ngu_bat:
-                context += f"→ Ngũ Bất Ngộ Thời: {'; '.join(ngu_bat.get('Quy_Tắc', []))}\n"
-            context += f"→ Chú ý Phục Ngâm/Phản Ngâm, Tam Kỳ Đắc Sử.\n"
-        except Exception as e:
-            context += f"\n(Lỗi load Thiết Bản Thần Toán: {e})\n"
-
-        return context
+        pass
 
     def render_logs(self):
-        import streamlit as st
-        st.markdown("### ⚙️ Quy Trình Xử Lý (Phoenix System Workflow)")
-        for log in self.logs:
-            icon = "✅" if log['status'] in ["SUCCESS", "COMPLETED"] else "🔄"
-            if log['status'] == "ERROR": icon = "❌"
-            
-            with st.expander(f"{icon} {log['step']} - {log['status']}", expanded=False):
-                st.write(f"**Time:** {log['time']}")
-                st.write(f"**Detail:** {log['detail']}")
+        pass
 
-# Auto-Init logic
-if st.session_state.ai_preference == "offline":
-    if FREE_AI_AVAILABLE:
-        st.session_state.gemini_helper = FreeAIHelper()
-        st.session_state.ai_type = "Free AI (Manual Offline)"
-else: # auto or online
-    if secret_api_key and GEMINI_AVAILABLE:
-        try:
-            # INSTANTIATE INLINED CLASS DIRECTLY
-            st.session_state.gemini_helper = GeminiQMDGHelper(secret_api_key)
-            st.session_state.gemini_key = secret_api_key
-            st.session_state.ai_type = "Gemini Pro (V4.0 - Tứ Thuật Hợp Nhất)"
-        except Exception: 
-            if st.session_state.ai_preference == "auto" and FREE_AI_AVAILABLE:
-                st.session_state.gemini_helper = FreeAIHelper()
-                st.session_state.ai_type = "Free AI (Fallback)"
-    elif FREE_AI_AVAILABLE:
-        st.session_state.gemini_helper = FreeAIHelper()
-        st.session_state.ai_type = "Free AI (Offline Mode)"
+    def run_pipeline(self, user_question, current_topic="Chung", chart_data=None, mai_hoa_data=None, luc_hao_data=None, tb_context=""):
+        enhanced_question = user_question + tb_context if tb_context else user_question
+        return self.gemini.answer_question(enhanced_question, chart_data=chart_data, topic=current_topic, mai_hoa_data=mai_hoa_data, luc_hao_data=luc_hao_data)
 
+# Auto-Init logic — GUARD: Only init if not already in session_state
+if 'gemini_helper' not in st.session_state:
+    if st.session_state.ai_preference == "offline":
+        if FREE_AI_AVAILABLE:
+            st.session_state.gemini_helper = FreeAIHelper()
+            st.session_state.ai_type = "Free AI (Manual Offline)"
+            st.session_state.api_status_ok = True
+            st.session_state.api_status_msg = "Offline Mode"
+    else: # auto or online
+        if secret_api_key and GEMINI_AVAILABLE:
+            try:
+                # INSTANTIATE AND AUTO-TEST CONNECTION
+                _temp_helper = GeminiQMDGHelper(secret_api_key)
+                _success, _msg = _temp_helper.test_connection()
+                st.session_state.gemini_helper = _temp_helper
+                st.session_state.gemini_key = secret_api_key
+                st.session_state.ai_orchestrator = PhoenixOrchestrator(_temp_helper)
+                if _success:
+                    st.session_state.ai_type = f"Gemini ({_temp_helper.model_name})"
+                    st.session_state.api_status_ok = True
+                    st.session_state.api_status_msg = _msg
+                else:
+                    st.session_state.ai_type = "Gemini (Lỗi kết nối)"
+                    st.session_state.api_status_ok = False
+                    st.session_state.api_status_msg = _msg
+            except Exception as e: 
+                st.session_state.api_status_ok = False
+                st.session_state.api_status_msg = f"Lỗi Gemini: {e}"
+                if FREE_AI_AVAILABLE:
+                    st.session_state.gemini_helper = FreeAIHelper()
+                    st.session_state.ai_type = "Free AI (Fallback từ Lỗi)"
+        elif FREE_AI_AVAILABLE:
+            st.session_state.gemini_helper = FreeAIHelper()
+            st.session_state.ai_type = "Free AI (Offline Mode)"
+            st.session_state.api_status_ok = True
+            st.session_state.api_status_msg = "Offline Mode"
 
-    # AI Status Display with LED Indicator
-    ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
-    
-    # Auto-check API status periodically (every 30 seconds)
-    if 'last_api_check_time' not in st.session_state:
-        st.session_state.last_api_check_time = 0
-    
-    import time
-    current_time = time.time()
-    
-    # Auto-check API status
-    if "Gemini" in ai_status and (current_time - st.session_state.last_api_check_time > 30):
-        try:
-            success, msg = st.session_state.gemini_helper.test_connection()
-            st.session_state.api_status_ok = success
-            st.session_state.api_status_msg = msg
-            st.session_state.last_api_check_time = current_time
-        except:
-            st.session_state.api_status_ok = False
-            st.session_state.api_status_msg = "Chưa kiểm tra"
-    
-    # Initialize status if not exists
-    if 'api_status_ok' not in st.session_state:
-        st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
-        st.session_state.api_status_msg = "Chưa kiểm tra"
-    
-    # LED Indicator Colors
-    if st.session_state.api_status_ok is True:
-        led_color = "🟢"  # Xanh = OK
-        status_color = "#10b981"
-        status_text = "HOẠT ĐỘNG TỐT"
-    elif st.session_state.api_status_ok is False:
-        led_color = "🔴"  # Đỏ = Lỗi
-        status_color = "#ef4444"
-        status_text = "LỖI KẾT NỐI"
-    else:
-        led_color = "🟡"  # Vàng = Chưa check
-        status_color = "#f59e0b"
-        status_text = "CHƯA KIỂM TRA"
-    
-    # Display with LED & Unified Configuration
-    st.markdown(f"""
-    <div style="
-        background: linear-gradient(135deg, {status_color}22 0%, {status_color}11 100%);
-        border-left: 4px solid {status_color};
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-    ">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 24px;">{led_color}</span>
-            <div style="flex: 1;">
-                <div style="font-weight: 800; color: {status_color}; font-size: 0.9rem;">
-                    {status_text}
-                </div>
-                <div style="font-weight: 600; color: #475569; font-size: 0.85rem;">
-                    🤖 {ai_status}
-                </div>
-                <div style="font-size: 0.75rem; color: #dc2626; margin-top: 5px; font-style: italic;">
-                    {st.session_state.api_status_msg if st.session_state.api_status_ok is False else ""}
-                </div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+# === SIDEBAR DISPLAY (Always runs, NOT inside the guard above) ===
+# AI Status Display with LED Indicator
+ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
 
-    # --- DEFERRED AI INITIALIZATION (Because classes are defined above) ---
-    if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_api_key'):
+# Initialize status if not exists
+if 'api_status_ok' not in st.session_state:
+    st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
+    st.session_state.api_status_msg = "Chưa kiểm tra"
+
+# LED Indicator Colors
+if st.session_state.api_status_ok is True:
+    led_color = "🟢"  # Xanh = OK
+    status_color = "#10b981"
+    status_text = "HOẠT ĐỘNG TỐT"
+elif st.session_state.api_status_ok is False:
+    led_color = "🔴"  # Đỏ = Lỗi
+    status_color = "#ef4444"
+    status_text = "LỖI KẾT NỐI"
+else:
+    led_color = "🟡"  # Vàng = Chưa check
+    status_color = "#f59e0b"
+    status_text = "CHƯA KIỂM TRA"
+
+# Display with LED & Unified Configuration
+_err_msg = ""
+if st.session_state.api_status_ok is False:
+    _err_msg = str(st.session_state.api_status_msg).replace('<','&lt;').replace('>','&gt;')
+
+# AI Status Display - Clean HTML (no nesting issues)
+_status_html = f'<div style="background:linear-gradient(135deg,{status_color}22 0%,{status_color}11 100%);border-left:4px solid {status_color};padding:15px;border-radius:8px;margin-bottom:10px;">'
+_status_html += f'<div style="display:flex;align-items:center;gap:10px;">'
+_status_html += f'<span style="font-size:24px;">{led_color}</span>'
+_status_html += f'<div style="flex:1;">'
+_status_html += f'<div style="font-weight:800;color:{status_color};font-size:0.9rem;">{status_text}</div>'
+_status_html += f'<div style="font-weight:600;color:#475569;font-size:0.85rem;">🤖 {ai_status}</div>'
+if _err_msg:
+    _status_html += f'<div style="font-size:0.75rem;color:#dc2626;margin-top:5px;font-style:italic;">{_err_msg}</div>'
+_status_html += '</div></div></div>'
+st.markdown(_status_html, unsafe_allow_html=True)
+
+# --- DEFERRED AI INITIALIZATION (Because classes are defined above) ---
+if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_api_key'):
+    try:
         temp_helper = GeminiQMDGHelper(st.session_state._resolved_api_key)
         st.session_state.gemini_helper = temp_helper
         st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
         st.session_state.api_status_ok = True
         st.session_state.api_status_msg = "Sẵn sàng"
-
-    # UNIFIED SETTINGS (One place for everything)
-    is_connected = st.session_state.get("api_status_ok", False) is True
-    expander_title = "🔑 Thay đổi API Key / Cấu hình" if is_connected else "🔑 Cấu Hình AI (Yêu cầu Key)"
-    
-    with st.expander(expander_title, expanded=not is_connected):
-        # 1. Connection Controls (Only if connected)
-        if is_connected:
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                if st.button("🔄 Test Kết Nối Lại", key="test_ai_conn_unified", use_container_width=True):
-                    with st.spinner("Đang thử kết nối..."):
-                        success, msg = st.session_state.gemini_helper.test_connection()
-                        st.session_state.api_status_ok = success
-                        st.session_state.api_status_msg = msg
-                        st.session_state.last_api_check_time = current_time
-                        st.rerun()
-            with col2:
-                if st.button("R", key="force_refresh_unified", help="Reload App", use_container_width=True):
-                    st.rerun()
-                    
-            st.markdown("---")
-
-        # 2. Main Input Area (ALWAYS VISIBLE HERE)
-        st.markdown("👉 [Lấy API Key Google miễn phí](https://aistudio.google.com/app/apikey)")
-        st.info("💡 Mẹo: Dán đè Key mới vào đây để thay đổi. Hỗ trợ dán nhiều Key cùng lúc.")
-        
-        user_api_input = st.text_area("Dán Key vào đây (Tự động lọc):", height=100, key="input_api_key_smart_unified")
-        
-        if st.button("🚀 CẬP NHẬT & KÍCH HOẠT", type="primary", use_container_width=True):
-            if user_api_input:
-                with st.spinner("🤖 Đang quét Key & Test kết nối..."):
-                    try:
-                        # 1. Initialize Helper (It filters keys inside __init__)
-                        # from gemini_helper import GeminiQMDGHelper <--- REMOVED TO USE INLINED CLASS
-                        temp_helper = GeminiQMDGHelper(user_api_input)
-                        
-                        # 2. Check if any valid keys found
-                        # 2. Check if any valid keys found
-                        if not temp_helper.api_keys:
-                            st.error("❌ Không tìm thấy API Key nào hợp lệ (AIza...) trong văn bản bạn nhập.")
-                        else:
-                            # 3. FORCE SAVE FIRST (Trust the User)
-                            # Update Session State immediately so next run uses this key
-                            st.session_state.gemini_helper = temp_helper
-                            st.session_state.gemini_key = temp_helper.api_key
-                            st.session_state.ai_type = f"Gemini (Updated)"
-                            
-                            # Update Persistent Storage immediately
-                            try:
-                                data = load_custom_data()
-                                data["GEMINI_API_KEY"] = ",".join(temp_helper.api_keys)
-                                save_custom_data(data)
-                                cookie_manager.set("GEMINI_API_KEY", ",".join(temp_helper.api_keys), expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
-                            except: pass
-
-                            # 4. Test Connection (Just for info)
-                            success, msg = temp_helper.test_connection()
-                            
-                            if success:
-                                st.session_state.api_status_ok = True
-                                st.session_state.api_status_msg = "Kết nối thành công"
-                                st.success(f"✅ ĐÃ LƯU & KẾT NỐI: {len(temp_helper.api_keys)} Key")
-                            else:
-                                st.session_state.api_status_ok = False
-                                st.session_state.api_status_msg = f"Lưu thành công, nhưng test lỗi: {msg}"
-                                st.warning(f"⚠️ Đã lưu Key mới, nhưng kết nối chập chờn: {msg}. (Đừng lo, Web sẽ tự thử lại)")
-                            
-                            time.sleep(1)
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Lỗi xử lý: {e}")
-            else:
-                st.warning("⚠️ Vui lòng dán Key vào ô trống.")
-
-    # n8n Configuration
-    with st.expander("🔗 Kết nối n8n (Advanced AI)"):
-        n8n_url = st.secrets.get("N8N_WEBHOOK_URL", "")
-        n8n_input = st.text_input("n8n Webhook URL:", value=st.session_state.get('n8n_url', n8n_url))
-        if n8n_input:
-            st.session_state.n8n_url = n8n_input
-            if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'set_n8n_url'):
-                st.session_state.gemini_helper.set_n8n_url(n8n_input)
-    
-    st.markdown("---")
-    
-    st.markdown("---")
-    
-    # Time controls (GLOBAL for all views)
-    st.markdown("### 🕒 Thời Gian")
-    
-    use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
-    
-    # Timezone handling (Robust Purification)
-    vn_tz = None
-    if pytz is not None:
-        try:
-            vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-        except:
-            pass
-    
-    if vn_tz is None:
-        try:
-            import zoneinfo
-            vn_tz = zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh")
-        except:
-            try:
-                from zoneinfo import ZoneInfo
-                vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
-            except:
-                vn_tz = dt_module.timezone.utc
-
-    if use_current_time:
-        now = dt_module.datetime.now(vn_tz)
-        selected_datetime = now
-    else:
-        now_vn = dt_module.datetime.now(vn_tz)
-        selected_date = st.date_input("Chọn ngày:", now_vn.date())
-        selected_time = st.time_input("Chọn giờ:", now_vn.time())
-        selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
-    
-    # Calculate QMDG parameters (Always calculate to show in sidebar)
-    params = None
-    try:
-        import qmdg_calc
-        params = qmdg_calc.calculate_qmdg_params(selected_datetime)
-        
-        # Calculate Lunar Date for display
-        lday, lmonth, lyear, is_leap = qmdg_calc.solar_to_lunar(selected_datetime)
-        l_year_can, l_year_chi = qmdg_calc.get_can_chi_year(lyear)
-        l_year_name = f"{l_year_can} {l_year_chi}"
-        
-        st.info(f"""
-        **Thời gian:** {selected_datetime.strftime("%H:%M - %d/%m/%Y")}
-        
-        **Âm lịch:**
-        - Ngày: **{lday}/{lmonth} năm {l_year_name}** {'(Nhuận)' if is_leap else ''}
-        - Giờ: {params['can_gio']} {params['chi_gio']}
-        - Ngày: {params['can_ngay']} {params['chi_ngay']}
-        - Tháng: {params['can_thang']} {params['chi_thang']}
-        
-        **Cục:** {params['cuc']} ({'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn)
-        """)
     except Exception as e:
-        st.error(f"Lỗi tính toán: {e}")
-    
-    st.markdown("---")
-    
-    # Topic selection
-    st.markdown("### 🎯 Chủ Đề Chính")
-    
-    # Dynamic Topic Refresh
-    # Dynamic Topic Refresh with Categories
-    core_topics = list(TOPIC_INTERPRETATIONS.keys())
-    
-    # Get standard categories from Strategist
-    from ai_modules.mining_strategist import MiningStrategist
-    standard_categories = list(MiningStrategist().categories.keys()) + ["Kiáº¿n Thá»©c", "KhÃ¡c"]
-    
-    hub_entries = []
-    try:
-        from ai_modules.shard_manager import search_index
-        hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
-    except Exception: pass
-    
-    # Store full entry list for filtering
-    st.session_state.hub_entries = hub_entries
-    
-    # Filter topics logic simplified for selectbox
-    all_titles = sorted(list(set(core_topics + [e['title'] for e in hub_entries])))
-    st.session_state.all_topics_full = all_titles
+        st.session_state.api_status_ok = False
+        st.session_state.api_status_msg = str(e)
+        if FREE_AI_AVAILABLE:
+            st.session_state.gemini_helper = FreeAIHelper()
 
+# UNIFIED SETTINGS (One place for everything)
+is_connected = st.session_state.get("api_status_ok", False) is True
+# UNIFIED API KEY INPUT (ONE PLACE ONLY)
+_key_led_main = "🟢" if is_connected else "🔴"
+_key_label = f"{_key_led_main} API Key đang hoạt động tốt" if is_connected else f"{_key_led_main} Chưa có Key / Key hỏng — Bấm để dán Key mới"
+expander_title = f"🔑 {_key_label}"
 
-    search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
-    
-    # NEW: Topic Counter Button
-    if st.button("📊 Đếm tổng số chủ đề đang có"):
-        total_count = len(st.session_state.all_topics_full)
-        st.success(f"📈 Hiện hệ thống đang có tổng cộng: **{total_count}** chủ đề tri thức!")
-    
-    with st.expander("✍️ Đặt câu hỏi riêng & Kích hoạt AI Mining"):
-        with st.form("custom_topic_form"):
-            new_q = st.text_area("Nhập vấn đề/câu hỏi bạn đang quan tâm:", placeholder="Ví dụ: Đầu tư vàng năm 2026, Phân tích quẻ gieo cho sức khỏe bố mẹ...")
-            if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
-                if new_q:
-                    try:
-                        from ai_modules.shard_manager import add_entry
-                        # Save as a SEED topic
-                        id = add_entry(
-                            title=new_q, 
-                            content=f"Câu hỏi gốc người dùng: {new_q}\n(Chủ đề này đã được nạp làm hạt giống để AI quân đoàn đi khai thác Internet.)",
-                            category="Kiến Thức",
-                            source="User Inquiry"
-                        )
-                        if id:
-                            st.success(f"✅ Đã nạp thành công! AI sẽ bắt đầu tìm kiếm thông tin liên quan cho bạn.")
-                            st.session_state.chu_de_hien_tai = new_q
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"Lỗi nạp chủ đề: {e}")
-
-    # 1. Select Standard Category (Chủ đề chuẩn)
-    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
-    
-    selected_cat = st.selectbox(
-        "📂 Lọc theo Phân loại chuẩn:",
-        standard_categories,
-        index=0
-    )
-    
-    # 2. Filter topics based on category
-    available_topics = []
-    divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
-    
-    if selected_cat == "Tất cả":
-        # Default view: Only core topics + specific divination hub topics
-        hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
-        available_topics = sorted(list(set(core_topics + hub_divination)))
-    else:
-        # Get hub topics in this specific category
-        available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
-        
-    # Search Filter
-    if search_term:
-        available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
-    
-    if not available_topics:
-        available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
-
-    selected_topic = st.selectbox(
-        "Chọn chủ đề chi tiết:",
-        available_topics,
-        index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
-    )
-
-    
-    st.session_state.chu_de_hien_tai = selected_topic
-    
-    st.info(f"📌 Đã chọn: **{selected_topic}**")
-    
-    # Multi-layer analysis (if available)
-    if USE_MULTI_LAYER_ANALYSIS:
+with st.expander(expander_title, expanded=not is_connected):
+    # 1. Connection Controls (Only if connected)
+    if is_connected:
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            if st.button("🔄 Test Kết Nối Lại", key="test_ai_conn_unified", use_container_width=True):
+                with st.spinner("Đang thử kết nối..."):
+                    success, msg = st.session_state.gemini_helper.test_connection()
+                    st.session_state.api_status_ok = success
+                    st.session_state.api_status_msg = msg
+                    st.rerun()
+        with col2:
+            if st.button("R", key="force_refresh_unified", help="Reload App", use_container_width=True):
+                st.rerun()
+                
         st.markdown("---")
-        st.markdown("### 🎯 Đối Tượng (Lục Thân)")
+
+    # 2. UNIFIED KEY INPUT — 1 Ô Duy Nhất
+    st.markdown("👉 [Lấy Gemini API Key miễn phí](https://aistudio.google.com/app/apikey)")
+    
+    user_api_input = st.text_area("📋 Dán API Key vào đây:", height=80, key="input_api_key_smart_unified", placeholder="AIzaSy... (hỗ trợ dán nhiều key cùng lúc)")
+    
+    # --- 2 NÚT HÀNH ĐỘNG ---
+    btn_col1, btn_col2 = st.columns(2)
+    
+    with btn_col1:
+        btn_activate = st.button("⚡ KÍCH HOẠT + LƯU VĨNH VIỄN", type="primary", use_container_width=True, help="Kích hoạt key ngay + tự lưu lên GitHub vĩnh viễn")
+    
+    with btn_col2:
+        btn_clear_keys = st.button("🗑️ XÓA KEY CŨ", use_container_width=True, help="Xóa tất cả API key hết quota để nhập key mới")
+    
+    # --- XỬ LÝ: XÓA KEY CŨ ---
+    if btn_clear_keys:
+        with st.spinner("🗑️ Đang xóa API key cũ từ tất cả nơi lưu trữ..."):
+            cleared = []
+            for k in ['api_key', 'gemini_key', 'gemini_helper', 'ai_orchestrator', 'api_status_ok', 'api_status_msg']:
+                if k in st.session_state:
+                    del st.session_state[k]
+            cleared.append("Session")
+            try:
+                data = load_custom_data()
+                if data.get("GEMINI_API_KEY"):
+                    data["GEMINI_API_KEY"] = ""
+                    save_custom_data(data)
+                    cleared.append("custom_data.json")
+            except: pass
+            try:
+                import json as _json
+                fc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_hub', 'factory_config.json')
+                if os.path.exists(fc_path):
+                    with open(fc_path, 'r', encoding='utf-8') as f:
+                        fc = _json.load(f)
+                    if fc.get("api_key"):
+                        fc["api_key"] = ""
+                        with open(fc_path, 'w', encoding='utf-8') as f:
+                            _json.dump(fc, f, indent=2)
+                        cleared.append("factory_config.json")
+            except: pass
+            try:
+                cookie_manager.set("GEMINI_API_KEY", "", expires_at=dt_module.datetime.now() + dt_module.timedelta(days=-1))
+                cleared.append("Cookie")
+            except: pass
+            st.success(f"✅ ĐÃ XÓA SẠCH API KEY CŨ từ: {', '.join(cleared)}")
+            st.info("👉 Giờ hãy dán API Key mới vào ô trên → bấm **⚡ KÍCH HOẠT + LƯU VĨNH VIỄN**")
+            time.sleep(2)
+            st.rerun()
+    
+    # --- XỬ LÝ: KÍCH HOẠT + TỰ ĐỘNG LƯU VĨNH VIỄN ---
+    if btn_activate:
+        if not user_api_input:
+            st.warning("⚠️ Dán Key vào ô trên trước!")
+        else:
+            with st.spinner("🤖 Đang kích hoạt + lưu vĩnh viễn..."):
+                try:
+                    # Bước 1: Kích hoạt ngay trong session
+                    temp_helper = GeminiQMDGHelper(user_api_input)
+                    if not temp_helper.api_keys:
+                        st.error("❌ Không tìm thấy API Key hợp lệ (AIza...) trong văn bản.")
+                    else:
+                        success, msg = temp_helper.test_connection()
+                        st.session_state.gemini_helper = temp_helper
+                        st.session_state.gemini_key = temp_helper.api_key
+                        st.session_state.ai_type = f"Gemini (Updated)"
+                        st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+                        
+                        _final_key = temp_helper.api_key or ",".join(temp_helper.api_keys)
+                        
+                        # Bước 2: Lưu local (custom_data + cookie + factory_config)
+                        try:
+                            data = load_custom_data()
+                            data["GEMINI_API_KEY"] = _final_key
+                            save_custom_data(data)
+                            cookie_manager.set("GEMINI_API_KEY", _final_key, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
+                        except: pass
+                        try:
+                            import json as _json
+                            fc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_hub', 'factory_config.json')
+                            if os.path.exists(fc_path):
+                                with open(fc_path, 'r', encoding='utf-8') as f:
+                                    fc = _json.load(f)
+                                fc["api_key"] = _final_key
+                                with open(fc_path, 'w', encoding='utf-8') as f:
+                                    _json.dump(fc, f, indent=2)
+                        except: pass
+                        
+                        # Bước 3: TỰ ĐỘNG push lên GitHub (vĩnh viễn)
+                        _pat = ""
+                        try: _pat = st.secrets.get("GITHUB_PAT", "")
+                        except: pass
+                        if not _pat:
+                            _pat = st.session_state.get("github_pat", "")
+                        if not _pat:
+                            try: _pat = cookie_manager.get("GITHUB_PAT") or ""
+                            except: pass
+                        
+                        if _pat:
+                            # Có PAT → auto push
+                            st.session_state._push_cloud_key = _final_key
+                            st.session_state._push_cloud_pat = _pat
+                        else:
+                            # Chưa có PAT → yêu cầu 1 lần
+                            st.session_state._need_pat_for_activate = _final_key
+                        
+                        if success:
+                            st.session_state.api_status_ok = True
+                            st.session_state.api_status_msg = "Kết nối thành công"
+                            st.success(f"✅ ĐÃ KÍCH HOẠT: {len(temp_helper.api_keys)} Key")
+                        else:
+                            st.session_state.api_status_ok = False
+                            st.session_state.api_status_msg = f"Lưu OK, test lỗi: {msg}"
+                            st.warning(f"⚠️ Đã lưu, nhưng kết nối chập chờn: {msg}")
+                        
+                        if not _pat:
+                            st.info("⚠️ Để lưu VĨNH VIỄN, cần nhập GitHub Token **1 lần duy nhất** bên dưới ↓")
+                        time.sleep(1)
+                        if _pat:
+                            st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Lỗi: {e}")
+    
+    # --- YÊU CẦU GITHUB PAT (1 lần duy nhất) ---
+    if st.session_state.get("_need_pat_for_activate"):
+        st.markdown("---")
+        st.warning("🔐 **LẦN ĐẦU:** Nhập GitHub Token để lưu key vĩnh viễn (chỉ cần 1 lần, sau đó tự động)")
+        st.markdown("👉 [Lấy GitHub Token tại đây](https://github.com/settings/tokens) → **Generate new token (classic)** → chọn scope **`repo`** → Copy token")
+        _pat_input = st.text_input("GitHub Token:", type="password", placeholder="ghp_xxxxx...", key="github_pat_input_activate")
+        if st.button("✅ LƯU VĨNH VIỄN", type="primary", use_container_width=True, key="confirm_pat_activate"):
+            if _pat_input:
+                _gemini_key = st.session_state.pop("_need_pat_for_activate", "")
+                st.session_state.github_pat = _pat_input
+                # Lưu PAT vào cookie → không bao giờ cần nhập lại
+                try:
+                    cookie_manager.set("GITHUB_PAT", _pat_input, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
+                except: pass
+                st.session_state._push_cloud_key = _gemini_key
+                st.session_state._push_cloud_pat = _pat_input
+                st.rerun()
+            else:
+                st.error("❌ Dán GitHub Token vào!")
+    
+    # V13.0: Old LƯU LÊN CLOUD handler removed — merged into KÍCH HOẠT + LƯU VĨNH VIỄN above
+    
+    # --- THỰC HIỆN PUSH (chung cho cả 2 flow) ---
+    if st.session_state.get("_push_cloud_key") and st.session_state.get("_push_cloud_pat"):
+        _gemini_key = st.session_state.pop("_push_cloud_key")
+        _pat = st.session_state.pop("_push_cloud_pat")
         
-        doi_tuong_options = [
-            "👤 Bản thân",
-            "👨‍👩‍👧 Anh chị em",
-            "👴👵 Bố mẹ",
-            "👶 Con cái",
-            "🤝 Người lạ (theo Can sinh)"
-        ]
-        
-        selected_doi_tuong = st.selectbox("Chọn đối tượng:", doi_tuong_options, index=0)
-        
-        target_stem_name = "Giáp" # Default
-        if selected_doi_tuong == "🤝 Người lạ (theo Can sinh)":
-            target_stem_name = st.selectbox("Chọn Thiên Can năm sinh của người đó:", 
-                                           ["Không rõ (Dùng Can Giờ)", "Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"])
-        
-        st.session_state.selected_doi_tuong = selected_doi_tuong
-        st.session_state.target_stem_name_custom = target_stem_name
+        with st.spinner("🚀 Đang push lên GitHub → Streamlit Cloud..."):
+            try:
+                import base64
+                _GH_OWNER = "winvu88888888-maker"
+                _GH_REPO = "cuongtan66666666"
+                _GH_FILE = ".streamlit/secrets.toml"
+                _GH_API = f"https://api.github.com/repos/{_GH_OWNER}/{_GH_REPO}/contents/{_GH_FILE}"
+                _headers = {"Authorization": f"token {_pat}", "Accept": "application/vnd.github.v3+json"}
+                
+                _secrets_content = f'GEMINI_API_KEY = "{_gemini_key}"\nGITHUB_PAT = "{_pat}"\n'
+                _encoded = base64.b64encode(_secrets_content.encode()).decode()
+                
+                # Get current file SHA
+                _sha = None
+                try:
+                    _resp_get = requests.get(_GH_API, headers=_headers)
+                    if _resp_get.status_code == 200:
+                        _sha = _resp_get.json().get("sha")
+                except: pass
+                
+                _payload = {"message": "auto: update API key from app UI", "content": _encoded, "branch": "main"}
+                if _sha:
+                    _payload["sha"] = _sha
+                
+                _resp_put = requests.put(_GH_API, headers=_headers, json=_payload)
+                
+                if _resp_put.status_code in [200, 201]:
+                    st.session_state.github_pat = _pat
+                    # Also activate immediately
+                    try:
+                        temp_helper = GeminiQMDGHelper(_gemini_key)
+                        st.session_state.gemini_helper = temp_helper
+                        st.session_state.gemini_key = _gemini_key
+                        st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+                    except: pass
+                    st.success("✅ ĐÃ PUSH & KÍCH HOẠT! Cloud sẽ tự deploy lại ~1-2 phút.")
+                    st.balloons()
+                else:
+                    _err = _resp_put.json().get("message", _resp_put.text[:200])
+                    st.error(f"❌ Lỗi GitHub: {_err}")
+            except Exception as e:
+                st.error(f"❌ Lỗi: {str(e)}")
+
+# n8n Configuration
+with st.expander("🔗 Kết nối n8n (Advanced AI)"):
+    n8n_url = ""
+    try:
+        n8n_url = st.secrets.get("N8N_WEBHOOK_URL", "")
+    except Exception:
+        pass
+    n8n_input = st.text_input("n8n Webhook URL:", value=st.session_state.get('n8n_url', n8n_url))
+    if n8n_input:
+        st.session_state.n8n_url = n8n_input
+        if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'set_n8n_url'):
+            st.session_state.gemini_helper.set_n8n_url(n8n_input)
+
+st.markdown("---")
+
+st.markdown("---")
+
+# Time controls (GLOBAL for all views)
+st.markdown("### 🕒 Thời Gian")
+
+use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
+
+# Timezone handling (Robust Purification)
+vn_tz = None
+if pytz is not None:
+    try:
+        vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+    except:
+        pass
+
+if vn_tz is None:
+    try:
+        import zoneinfo
+        vn_tz = zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh")
+    except:
+        try:
+            from zoneinfo import ZoneInfo
+            vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+        except:
+            vn_tz = dt_module.timezone.utc
+
+if use_current_time:
+    now = dt_module.datetime.now(vn_tz)
+    selected_datetime = now
+else:
+    now_vn = dt_module.datetime.now(vn_tz)
+    selected_date = st.date_input("Chọn ngày:", now_vn.date())
+    selected_time = st.time_input("Chọn giờ:", now_vn.time())
+    selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
+
+# Calculate QMDG parameters (Always calculate to show in sidebar)
+params = None
+try:
+    import qmdg_calc
+    params = qmdg_calc.calculate_qmdg_params(selected_datetime)
+    
+    # Calculate Lunar Date for display
+    lday, lmonth, lyear, is_leap = qmdg_calc.solar_to_lunar(selected_datetime)
+    l_year_can, l_year_chi = qmdg_calc.get_can_chi_year(lyear)
+    l_year_name = f"{l_year_can} {l_year_chi}"
+    
+    st.info(f"""
+    **Thời gian:** {selected_datetime.strftime("%H:%M - %d/%m/%Y")}
+    
+    **Âm lịch:**
+    - Ngày: **{lday}/{lmonth} năm {l_year_name}** {'(Nhuận)' if is_leap else ''}
+    - Giờ: {params['can_gio']} {params['chi_gio']}
+    - Ngày: {params['can_ngay']} {params['chi_ngay']}
+    - Tháng: {params['can_thang']} {params['chi_thang']}
+    
+    **Cục:** {params['cuc']} ({'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn)
+    """)
+except Exception as e:
+    st.error(f"Lỗi tính toán: {e}")
+
+st.markdown("---")
+
+# Topic selection
+st.markdown("### 🎯 Chủ Đề Chính")
+
+# Dynamic Topic Refresh
+# Dynamic Topic Refresh with Categories
+core_topics = list(TOPIC_INTERPRETATIONS.keys())
+
+# Get standard categories from Strategist
+from ai_modules.mining_strategist import MiningStrategist
+standard_categories = list(MiningStrategist().categories.keys()) + ["Kiáº¿n Thá»©c", "KhÃ¡c"]
+
+hub_entries = []
+try:
+    from ai_modules.shard_manager import search_index
+    hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
+except Exception: pass
+
+# Store full entry list for filtering
+st.session_state.hub_entries = hub_entries
+
+# Filter topics logic simplified for selectbox
+all_titles = sorted(list(set(core_topics + [e['title'] for e in hub_entries])))
+st.session_state.all_topics_full = all_titles
+
+
+search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
+
+# NEW: Topic Counter Button
+if st.button("📊 Đếm tổng số chủ đề đang có"):
+    total_count = len(st.session_state.all_topics_full)
+    st.success(f"📈 Hiện hệ thống đang có tổng cộng: **{total_count}** chủ đề tri thức!")
+
+with st.expander("✍️ Đặt câu hỏi riêng & Kích hoạt AI Mining"):
+    with st.form("custom_topic_form"):
+        new_q = st.text_area("Nhập vấn đề/câu hỏi bạn đang quan tâm:", placeholder="Ví dụ: Đầu tư vàng năm 2026, Phân tích quẻ gieo cho sức khỏe bố mẹ...")
+        if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
+            if new_q:
+                try:
+                    from ai_modules.shard_manager import add_entry
+                    # Save as a SEED topic
+                    id = add_entry(
+                        title=new_q, 
+                        content=f"Câu hỏi gốc người dùng: {new_q}\n(Chủ đề này đã được nạp làm hạt giống để AI quân đoàn đi khai thác Internet.)",
+                        category="Kiến Thức",
+                        source="User Inquiry"
+                    )
+                    if id:
+                        st.success(f"✅ Đã nạp thành công! AI sẽ bắt đầu tìm kiếm thông tin liên quan cho bạn.")
+                        st.session_state.chu_de_hien_tai = new_q
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"Lỗi nạp chủ đề: {e}")
+
+# 1. Select Standard Category (Chủ đề chuẩn)
+standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
+
+selected_cat = st.selectbox(
+    "📂 Lọc theo Phân loại chuẩn:",
+    standard_categories,
+    index=0
+)
+
+# 2. Filter topics based on category
+available_topics = []
+divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
+
+if selected_cat == "Tất cả":
+    # Default view: Only core topics + specific divination hub topics
+    hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
+    available_topics = sorted(list(set(core_topics + hub_divination)))
+else:
+    # Get hub topics in this specific category
+    available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
+    
+# Search Filter
+if search_term:
+    available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
+
+if not available_topics:
+    available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
+
+selected_topic = st.selectbox(
+    "Chọn chủ đề chi tiết:",
+    available_topics,
+    index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
+)
+
+
+st.session_state.chu_de_hien_tai = selected_topic
+
+st.info(f"📌 Đã chọn: **{selected_topic}**")
+
+# Multi-layer analysis (if available)
+if USE_MULTI_LAYER_ANALYSIS:
+    st.markdown("---")
+    st.markdown("### 🎯 Đối Tượng (Lục Thân)")
+    
+    doi_tuong_options = [
+        "👤 Bản thân",
+        "👨‍👩‍👧 Anh chị em",
+        "👴👵 Bố mẹ",
+        "👶 Con cái",
+        "🤝 Người lạ (theo Can sinh)"
+    ]
+    
+    selected_doi_tuong = st.selectbox("Chọn đối tượng:", doi_tuong_options, index=0)
+    
+    target_stem_name = "Giáp" # Default
+    if selected_doi_tuong == "🤝 Người lạ (theo Can sinh)":
+        target_stem_name = st.selectbox("Chọn Thiên Can năm sinh của người đó:", 
+                                       ["Không rõ (Dùng Can Giờ)", "Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"])
+    
+    st.session_state.selected_doi_tuong = selected_doi_tuong
+    st.session_state.target_stem_name_custom = target_stem_name
 
 # ======================================================================
 # MAIN CONTENT
@@ -2753,7 +1883,9 @@ if st.session_state.current_view == "ky_mon":
                 'can_ngay': params['can_ngay'],
                 'chi_ngay': params['chi_ngay'],
                 'can_thang': params.get('can_thang', 'N/A'),
-                'can_nam': params.get('can_nam', 'N/A')
+                'chi_thang': params.get('chi_thang', 'N/A'),
+                'can_nam': params.get('can_nam', 'N/A'),
+                'chi_nam': params.get('chi_nam', 'N/A')
             }
             
         except Exception as e:
@@ -2935,6 +2067,25 @@ if st.session_state.current_view == "ky_mon":
                         }.items():
                             if p_can and can_dia == p_can:
                                 m_html.append(f'<div class="marker-badge pillar-{pillar}">📍 {p_label} ({p_can})</div>')
+
+                        # 4. V12.2: 六甲遁甲 — Can Giáp ẨN ở cung nào
+                        try:
+                            _cn = params.get('can_ngay', '')
+                            if _cn == 'Giáp':
+                                _THIEN_CAN = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                                _DIA_CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                                _LUC_GIAP = {'Tý': 'Mậu', 'Tuất': 'Kỷ', 'Thân': 'Canh', 'Ngọ': 'Tân', 'Thìn': 'Nhâm', 'Dần': 'Quý'}
+                                _chn = params.get('chi_ngay', '')
+                                if _chn in _DIA_CHI:
+                                    _ci = _THIEN_CAN.index(_cn)
+                                    _chi = _DIA_CHI.index(_chn)
+                                    _tuan_chi = _DIA_CHI[(_chi - _ci) % 12]
+                                    _hidden = _LUC_GIAP.get(_tuan_chi, 'Mậu')
+                                    # Kiểm tra cung hiện tại có can_thien == hidden can không
+                                    if can_thien == _hidden:
+                                        m_html.append(f'<div class="marker-badge" style="background:#7c3aed;color:white;">🔮 Giáp Ẩn (Giáp {_tuan_chi})</div>')
+                        except Exception:
+                            pass
 
                         marker_display_html = "".join(m_html)
 
@@ -3140,30 +2291,9 @@ if st.session_state.current_view == "ky_mon":
                             """
                             st.markdown(dt_html, unsafe_allow_html=True)
                             
-                            # UNIFIED AI EXPERT BUTTON
-                            if 'gemini_helper' in st.session_state:
-                                st.markdown("---")
-                                if st.button(f"🧙 AI Chuyên Gia Tư Vấn Cung {palace_num}", key=f"ai_palace_expert_btn_{palace_num}", use_container_width=True, type="primary"):
-                                    with st.spinner(f"Chuyên gia AI đang phân tích Cung {palace_num} theo chủ đề {selected_topic}..."):
-                                        analysis = st.session_state.gemini_helper.analyze_palace(
-                                            {
-                                                "num": palace_num,
-                                                "qua": QUAI_TUONG.get(palace_num, 'N/A'),
-                                                "hanh": hanh,
-                                                "star": sao,
-                                                "door": cua,
-                                                "deity": than,
-                                                "can_thien": can_thien,
-                                                "can_dia": can_dia
-                                            },
-                                            selected_topic
-                                        )
-                                        st.markdown(f"""
-                                        <div class="interpret-box">
-                                            <div class="interpret-title">🔮 Phân Tích Chuyên Sâu Cung {palace_num}</div>
-                                            <div style="font-size: 15px; line-height: 1.6; color: #1e293b;">{analysis}</div>
-                                        </div>
-                                        """, unsafe_allow_html=True)
+                            # V13.0: Removed per-palace AI button (saves up to 9 API calls!)
+                            # User should use LỤC THUẬT HỢP NHẤT for comprehensive analysis
+                            st.caption("💡 Dùng tab '🤖 Hỏi Gemini AI' → LỤC THUẬT HỢP NHẤT để phân tích tổng hợp")
 
                             # Static descriptions (Keep it brief)
                             st.markdown("---")
@@ -3187,21 +2317,8 @@ if st.session_state.current_view == "ky_mon":
                                     st.markdown(f"**🔗 {can_thien}/{can_dia}:** {combination_data.get('Luận_Giải', 'Chưa có nội dung')}")
                                     st.caption(f"Cát/Hung: {combination_data.get('Cát_Hung', 'Bình')}")
                                 with col_can_2:
-                                    show_can_exp = False
-                                    if 'gemini_helper' in st.session_state:
-                                        if st.button(f"🔮 Giải Thích", key=f"ai_can_{palace_num}_{can_thien}_{can_dia}", use_container_width=True):
-                                            show_can_exp = True
-                                
-                                # Move explanation out of columns for full width
-                                if show_can_exp:
-                                    with st.spinner(f"AI đang phân giải tổ hợp {can_thien}/{can_dia}..."):
-                                        explanation = st.session_state.gemini_helper.explain_element('stem', f"{can_thien}/{can_dia}")
-                                        st.markdown(f"""
-                                        <div class="interpret-box">
-                                            <div class="interpret-title">📖 Luận Giải Cặp Can: {can_thien}/{can_dia}</div>
-                                            <div style="font-size: 15px; line-height: 1.6; color: #1e293b;">{explanation}</div>
-                                        </div>
-                                        """, unsafe_allow_html=True)
+                                    # V13.0: Removed per-can AI button (saves API quota)
+                                    pass
                             
                             st.markdown("---")
                             # End of Palace Details
@@ -3297,7 +2414,11 @@ if st.session_state.current_view == "ky_mon":
                             st.error(f"Lỗi phân tích: {e}")
                 
                 if st.session_state.get('final_ai_report'):
-                    display_ai_result(st.session_state.final_ai_report, title="🏆 KẾT LUẬN AI TỔNG HỢP")
+                    st.markdown(f"""
+                    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
+                        {st.session_state.final_ai_report}
+                    </div>
+                    """, unsafe_allow_html=True)
 
         # ===== PALACE COMPARISON SECTION =====
         if st.session_state.chart_data:
@@ -3377,12 +2498,9 @@ if st.session_state.current_view == "ky_mon":
                             st.info(f"**Phân tích Ngũ Hành:** {interaction}")
                             
                             # AI Comparison Analysis
-                            if 'gemini_helper' in st.session_state:
-                                if st.button("🤖 AI Phân Tích So Sánh", key="ai_compare_btn", type="primary"):
-                                    with st.spinner("🤖 AI Đang phân tích..."):
-                                        prompt = f"So sánh Cung {chu['so']} ({chu['hanh']}) và Cung {khach['so']} ({khach['hanh']}) cho chủ đề {selected_topic}."
-                                        analysis = st.session_state.gemini_helper.answer_question(prompt)
-                                        st.markdown(analysis)
+                            # V13.0: Removed AI So Sánh button (saves API quota)
+                            # User should use LỤC THUẬT HỢP NHẤT instead
+                            st.caption("💡 Dùng '🌟 LỤC THUẬT HỢP NHẤT' trong tab Hỏi Gemini AI để phân tích chuyên sâu")
                         else:
                             raise ImportError
                     except (ImportError, NameError, Exception):
@@ -3415,86 +2533,112 @@ if st.session_state.current_view == "ky_mon":
             st.markdown("---")
             st.markdown("## 🏆 HỆ THỐNG LUẬN GIẢI TỔNG HỢP CHUYÊN SÂU")
             
-            # 1. PRIMARY AI EXPERT REPORT (Dụng Thần focus)
-            if 'gemini_helper' in st.session_state:
-                with st.container():
-                    st.markdown("### 🎯 KẾT LUẬN TỔNG HỢP TỪ AI (Dụng Thần)")
-                    if st.button("🔴 ⭐ BẮT ĐẦU LUẬN GIẢI CHUYÊN SÂU (ƯU TIÊN ĐỌC TRƯỚC) ⭐ 🔴", type="primary", key="ai_final_report_btn", use_container_width=True):
-                        with st.spinner("🤖 AI Đang thực hiện luận giải trọng tâm..."):
-                            try:
-                                # Get Dụng Thần info from the best available source
-                                dung_than_list = []
-                                if 'USE_200_TOPICS' in globals() and USE_200_TOPICS:
-                                    dung_than_list = lay_dung_than_200(selected_topic)
-                                
-                                if not dung_than_list:
-                                    topic_data = TOPIC_INTERPRETATIONS.get(selected_topic, {})
-                                    dung_than_list = topic_data.get("Dụng_Thần", [])
-                                
-                                # Get interpretation hints
-                                topic_hints = TOPIC_INTERPRETATIONS.get(selected_topic, {}).get("Luận_Giải_Gợi_Ý", "")
-                                
-                                # Resolve Dynamic Actors (Chủ - Khách)
-                                # The Subject (Chủ thể/Người thực hiện) is the person we are asking ABOUT.
-                                rel_type = st.session_state.get('selected_doi_tuong', "👩‍👧‍👦 Bản thân")
-                                subj_stem = st.session_state.chart_data.get('can_ngay') # Default to Self
-                                obj_stem = st.session_state.chart_data.get('can_gio') # Default to General Matter/Other Party
-                                
-                                role_label = "Bản thân bạn"
-                                if "Anh chị em" in rel_type:
-                                    subj_stem = st.session_state.chart_data.get('can_thang')
-                                    role_label = "Anh chị bạn"
-                                elif "Bố mẹ" in rel_type:
-                                    subj_stem = st.session_state.chart_data.get('can_nam')
-                                    role_label = "Bố mẹ bạn"
-                                elif "Con cái" in rel_type:
-                                    subj_stem = st.session_state.chart_data.get('can_gio')
-                                    role_label = "Con cái bạn"
-                                elif "Người lạ" in rel_type:
-                                    custom_val = st.session_state.get('target_stem_name_custom', "Giáp")
-                                    if "Không rõ" not in custom_val:
-                                        subj_stem = custom_val
-                                    role_label = "Đối phương (Người ngoài)"
-                                
-                                # Process Dụng Thần labels for better context
-                                enriched_dung_than = []
-                                for dt in dung_than_list:
-                                    if dt == "Sinh Môn": enriched_dung_than.append("Sinh Môn (Lợi nhuận/Ngôi nhà)")
-                                    elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
-                                    else: enriched_dung_than.append(dt)
-                                
-                                # Build a comprehensive prompt
-                                prompt = f"""Phân tích chi tiết về chủ đề: {selected_topic}
+            # 1. PRIMARY AI EXPERT REPORT (Dụng Thần focus) — DUAL MODE
+            with st.container():
+                st.markdown("### 🎯 KẾT LUẬN TỔNG HỢP TỪ AI (Dụng Thần)")
+                
+                # V8.2: MỘT NÚT DUY NHẤT — Kết hợp AI Offline + Online
+                unified_clicked = st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", type="primary", key="ai_unified_btn", use_container_width=True)
+                
+                if unified_clicked:
+                    try:
+                        selected_topic = st.session_state.get('selected_topic', 'Chung')
+                        topic_data = st.session_state.get('topic_data', {})
+                        params = st.session_state.get('params', {})
+                        dung_than_list = topic_data.get('Dụng_Thần', []) if topic_data else []
+                        topic_hints = topic_data.get('Gợi_Ý', '') if topic_data else ''
+                        
+                        # Xác định đối tượng
+                        rel_type = st.session_state.get('selected_doi_tuong', 'Bản thân')
+                        # V10.2: role_label phải phản ánh đúng đối tượng, KHÔNG hardcode
+                        role_label = rel_type if rel_type and rel_type != 'Bản thân' else 'Bản thân'
+                        
+                        enriched_dung_than = []
+                        for dt in dung_than_list:
+                            if dt == "Sinh Môn": enriched_dung_than.append("Sinh Môn (Lợi nhuận/Ngôi nhà)")
+                            elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
+                            else: enriched_dung_than.append(dt)
+                        
+                        prompt = f"""Phân tích chi tiết về chủ đề: {selected_topic}
 
-**Đối tượng:** {role_label}
-**Dụng Thần:** {', '.join(enriched_dung_than)}
+**Đối tượng hỏi:** {role_label}
+**Dụng Thần (đại diện SỰ VIỆC):** {', '.join(enriched_dung_than) if enriched_dung_than else 'Tự xác định'}
 **Gợi ý:** {topic_hints}
 
-Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cung Sự Việc (Can Giờ/Dụng Thần).
+QUY TẮC QUAN TRỌNG:
+- Dụng Thần = đại diện cho SỰ VIỆC/VẤN ĐỀ được hỏi, KHÔNG PHẢI bản thân người hỏi
+- Can Ngày = đại diện cho NGƯỜI HỎI (Bản Thân)
+- Hãy phân tích mối quan hệ Sinh-Khắc giữa Người Hỏi (Can Ngày) và Sự Việc (Dụng Thần)
+- Tập trung luận giải KẾT QUẢ CỦA SỰ VIỆC, không luận tính cách người hỏi
 """
-                                analysis = st.session_state.gemini_helper.answer_question(
-                                    prompt,
-                                    chart_data=st.session_state.chart_data,
-                                    topic=selected_topic,
-                                    selected_subject=st.session_state.get('selected_doi_tuong', 'Bản thân')
-                                )
-                                
-                                # 2. GENERATE QUICK ACTIONS
-                                quick_actions = ["Hãy hành động dựa trên kết luận trên", "Chọn thời điểm phù hợp với ngũ hành"]
-                                actions_html = "".join([f'<div class="action-item">{act}</div>' for act in quick_actions])
-                                
-                                # Display Quick Actions First
-                                st.markdown(f"""
-                                <div class="action-card">
-                                    <div class="action-title">&#128640; HÀNH ĐỘNG NHANH CẦN LÀM NGAY</div>
-                                    {actions_html}
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                # Display Detailed Analysis
-                                display_ai_result(analysis, title="🎯 KẾT LUẬN CHUYÊN SÂU (Dụng Thần)")
-                            except Exception as e:
-                                st.error(f"❌ Lỗi AI: {str(e)}")
+                        
+                        # ====== BƯỚC 1: AI OFFLINE phân tích quẻ trước ======
+                        with st.spinner("⚙️ Bước 1/2: AI Offline đang phân tích quẻ..."):
+                            from free_ai_helper import FreeAIHelper
+                            _offline_api_key = st.session_state.get('api_key', '')
+                            offline_ai = FreeAIHelper(api_key=_offline_api_key)
+                            
+                            # Auto-compute Mai Hoa & Lục Hào
+                            mai_hoa_for_offline = st.session_state.get('mai_hoa_result')
+                            luc_hao_for_offline = st.session_state.get('luc_hao_result')
+                            
+                            if not mai_hoa_for_offline:
+                                try:
+                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    mai_hoa_for_offline = tinh_qua_theo_thoi_gian(dt_now.year, dt_now.month, dt_now.day, dt_now.hour)
+                                    mai_hoa_for_offline['interpretation'] = giai_qua(mai_hoa_for_offline, selected_topic)
+                                    st.session_state.mai_hoa_result = mai_hoa_for_offline
+                                except Exception:
+                                    pass
+                            
+                            if not luc_hao_for_offline:
+                                try:
+                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    can_ngay_val = params.get('can_ngay', 'Giáp') if params else 'Giáp'
+                                    chi_ngay_val = params.get('chi_ngay', 'Tý') if params else 'Tý'
+                                    luc_hao_for_offline = lap_qua_luc_hao(
+                                        dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
+                                        topic=selected_topic,
+                                        can_ngay=can_ngay_val,
+                                        chi_ngay=chi_ngay_val
+                                    )
+                                    st.session_state.luc_hao_result = luc_hao_for_offline
+                                except Exception:
+                                    pass
+                            
+                            offline_result = offline_ai.answer_question(
+                                prompt,
+                                chart_data=st.session_state.chart_data,
+                                topic=selected_topic,
+                                selected_subject=rel_type,
+                                mai_hoa_data=mai_hoa_for_offline,
+                                luc_hao_data=luc_hao_for_offline
+                            )
+                        
+                        # ====== V13.0: AI ONLINE đã tích hợp trong answer_question ======
+                        # Loại bỏ refine_prompt riêng — tiết kiệm 50% API quota
+                        # V12.0 gọi _call_ai_raw thêm 1 lần ở đây → TỐN GẤP ĐÔI
+                        # V13.0: offline_result đã bao gồm online result bên trong rồi
+                        st.session_state.primary_ai_analysis = offline_result
+                    except Exception as e:
+                        st.error(f"❌ Lỗi AI: {str(e)}")
+            
+            # Moved outside of 'gemini_helper' check to persist during API key reload
+            if st.session_state.get('primary_ai_analysis'):
+                # 2. GENERATE QUICK ACTIONS
+                quick_actions = ["Hãy hành động dựa trên kết luận trên", "Chọn thời điểm phù hợp với ngũ hành"]
+                actions_html = "".join([f'<div class="action-item">{act}</div>' for act in quick_actions])
+                
+                # Display Quick Actions First
+                st.markdown(f"""
+                <div class="action-card">
+                    <div class="action-title">&#128640; HÀNH ĐỘNG NHANH CẦN LÀM NGAY</div>
+                    {actions_html}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # V19.0: Display Detailed Analysis với bố cục đẹp
+                display_ai_result(st.session_state.primary_ai_analysis, key_prefix="primary")
 
             # 2. COMPARISON SECTION (Chủ - Khách Interaction)
             st.markdown("---")
@@ -3535,11 +2679,8 @@ Hãy luận giải tình hình dựa trên Cung Bản Mệnh (Can Ngày) và Cun
                     res_mqh = tinh_ngu_hanh_sinh_khac(c_chu['hanh'], c_khach['hanh'])
                     st.success(f"**Tương tác Ngũ Hành:** {res_mqh}")
                     
-                    if st.button("🤖 AI Phân Tích So Sánh", key="ai_compare_details"):
-                        with st.spinner("AI Đang so sánh..."):
-                            p = f"So sánh chi tiết Cung {chu_idx} và Cung {khach_idx} cho {selected_topic}."
-                            ans = st.session_state.gemini_helper.answer_question(p)
-                            st.info(ans)
+                    # V13.0: Removed duplicate AI So Sánh button
+                    st.caption("💡 Dùng '🌟 LỤC THUẬT HỢP NHẤT' trong tab Hỏi Gemini AI")
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
 
@@ -3652,38 +2793,80 @@ PHÂN TÍCH LIÊN MẠCH:
                         import traceback
                         st.code(traceback.format_exc())
 
-            # 4. AI Q&A SECTION
+            # 4. AI Q&A SECTION — V8.2 UNIFIED (Offline + Online kết hợp)
             st.markdown("---")
-            st.markdown("### ❓ HỎI AI VỀ BÀN NÀY")
-            user_question = st.text_area("Đặt câu hỏi cho Chuyên gia AI:", placeholder="Hỏi thêm về thời điểm, cách hóa giải...", key="ai_q_input")
-            if st.button("🤖 Gửi Câu Hỏi", key="ai_ask_final"):
+            st.markdown("### ❓ HỎI AI — KHÔNG GIỚI HẠN CHỦ ĐỀ")
+            user_question = st.text_area("💬 Đặt câu hỏi bất kỳ (tự do, không giới hạn chủ đề):", placeholder="Ví dụ: Năm nay có mua được nhà không? / Con mèo lạc tìm ở đâu? / Bao giờ tìm được việc?...", key="ai_q_input", height=80)
+            if st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", key="ai_ask_unified", type="primary", use_container_width=True):
                 if user_question:
-                    with st.spinner("🤖 Chuyên gia AI đang phân tích dữ liệu..."):
-                        try:
-                            # from qmdg_orchestrator import AIOrchestrator
-                            # Use PHOENIX ORCHESTRATOR (Inlined)
-                            orc = PhoenixOrchestrator(st.session_state.gemini_helper)
-                            raw = orc.run_pipeline(
-                                user_question, 
-                                current_topic=selected_topic,
-                                chart_data=st.session_state.get('chart_data'),
-                                mai_hoa_data=st.session_state.get('mai_hoa_result'),
-                                luc_hao_data=st.session_state.get('luc_hao_result')
-                            )
-                            # Check if raw is empty
-                            if not raw:
-                                st.error(f"❌ Lỗi: AI trả về rỗng (Empty Response) - [DEBUG_V3.0].\\nType: {type(raw)}\\nContent: {repr(raw)}")
-                            else:
-                                final_ans = st.session_state.gemini_helper._process_response(raw)
-                                display_ai_result(final_ans, title="🤖 Trả Lời AI")
+                    try:
+                        # ====== BƯỚC 1: AI OFFLINE phân tích quẻ ======
+                        with st.spinner("⚙️ Bước 1/2: AI Offline đang phân tích quẻ từ câu hỏi của bạn..."):
+                            from free_ai_helper import FreeAIHelper
+                            # V8.2: Lấy API key từ session_state HOẶC secrets
+                            _api_key = st.session_state.get('api_key', '')
+                            if not _api_key:
+                                try:
+                                    _api_key = st.secrets.get('GEMINI_API_KEY', '')
+                                except Exception:
+                                    _api_key = ''
+                            offline_ai = FreeAIHelper(api_key=_api_key)
                             
-                            orc.render_logs()
-                        except Exception as e:
-                            st.error(f"❌ Lỗi xử lý AI: {str(e)}")
-                            import traceback
-                            st.code(traceback.format_exc())
-                            # Try to render logs even if crashed
-                            if 'orc' in locals(): orc.render_logs()
+                            # Auto-compute Mai Hoa & Lục Hào
+                            mai_hoa_for_q = st.session_state.get('mai_hoa_result')
+                            luc_hao_for_q = st.session_state.get('luc_hao_result')
+                            
+                            if not mai_hoa_for_q:
+                                try:
+                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    mai_hoa_for_q = tinh_qua_theo_thoi_gian(dt_now.year, dt_now.month, dt_now.day, dt_now.hour)
+                                    mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
+                                    st.session_state.mai_hoa_result = mai_hoa_for_q
+                                except Exception:
+                                    pass
+                            
+                            if not luc_hao_for_q:
+                                try:
+                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    params = st.session_state.get('params', {})
+                                    can_ngay_val = params.get('can_ngay', 'Giáp') if params else 'Giáp'
+                                    chi_ngay_val = params.get('chi_ngay', 'Tý') if params else 'Tý'
+                                    luc_hao_for_q = lap_qua_luc_hao(
+                                        dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
+                                        topic=selected_topic, can_ngay=can_ngay_val, chi_ngay=chi_ngay_val
+                                    )
+                                    st.session_state.luc_hao_result = luc_hao_for_q
+                                except Exception:
+                                    pass
+                            
+                            # V8.2: topic=None → AI tự phân tích câu hỏi thay vì dùng dropdown
+                            offline_result = offline_ai.answer_question(
+                                user_question,
+                                chart_data=st.session_state.get('chart_data'),
+                                topic=None,
+                                selected_subject=st.session_state.get('selected_doi_tuong', 'Bản thân'),
+                                mai_hoa_data=mai_hoa_for_q,
+                                luc_hao_data=luc_hao_for_q
+                            )
+                        
+                        # ====== V13.0: AI ONLINE đã tích hợp trong answer_question ======
+                        # Loại bỏ refine_prompt riêng — tiết kiệm 50% API quota
+                        # V13.0: offline_result đã bao gồm online result bên trong rồi
+                        combined_answer = offline_result or ""
+                        
+                        # V19.0: Display với bố cục đẹp
+                        display_ai_result(combined_answer, key_prefix="qa")
+                        
+                        # Lưu vào history
+                        st.session_state.chat_history.append({'role': 'user', 'content': user_question})
+                        st.session_state.chat_history.append({'role': 'assistant', 'content': combined_answer})
+                        if len(st.session_state.chat_history) > 20:
+                            st.session_state.chat_history = st.session_state.chat_history[-20:]
+                    
+                    except Exception as e:
+                        st.error(f"❌ Lỗi AI: {str(e)}")
+                        import traceback
+                        st.code(traceback.format_exc())
 
 
 
@@ -3785,14 +2968,8 @@ elif st.session_state.current_view == "mai_hoa":
         
         st.info(f"💡 **Luận giải chi tiết:** {res.get('interpretation', 'Đang phân tích...')}")
 
-        if st.button("🤖 AI Luận Quẻ Mai Hoa", key="ai_mai_hoa_btn"):
-            with st.spinner("AI Đang giải mã Mai Hoa..."):
-                ans = st.session_state.gemini_helper.analyze_mai_hoa(res, selected_topic)
-                st.markdown(f"""
-                <div class="interpret-box" style="background: white; border-top: 5px solid #b91c1c;">
-                    {ans}
-                </div>
-                """, unsafe_allow_html=True)
+        # V13.0: Removed AI Luận Mai Hoa button (dùng LỤC THUẬT HỢP NHẤT thay thế)
+        st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
 
         st.markdown('<div class="footer-stamp">Copyright © 2026 MAI HOA DICH SO PRO</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -3811,9 +2988,20 @@ elif st.session_state.current_view == "luc_hao":
 
     # AUTO CAST TIME
     dt = dt_module.datetime.now(vn_tz)
-    st.info(f"🕒 Giờ hiện tại: {dt.strftime('%H:%M - %d/%m/%Y')}. Quẻ tự động cập nhật theo thời gian thực.")
     can_ngay = params.get('can_ngay', 'Giáp') if params else "Giáp"
     chi_ngay = params.get('chi_ngay', 'Tý') if params else "Tý"
+    can_gio = params.get('can_gio', '') if params else ""
+    chi_gio = params.get('chi_gio', '') if params else ""
+    can_thang = params.get('can_thang', '') if params else ""
+    chi_thang = params.get('chi_thang', '') if params else ""
+    can_nam = params.get('can_nam', '') if params else ""
+    chi_nam = params.get('chi_nam', '') if params else ""
+    tiet_khi = params.get('tiet_khi', '') if params else ""
+    
+    # Nhật Thần & Nguyệt Lệnh
+    nhat_than = f"{chi_ngay}"
+    nguyet_lenh = f"{chi_thang}"
+    
     try:
         st.session_state.luc_hao_result = lap_qua_luc_hao(
             dt.year, dt.month, dt.day, dt.hour,
@@ -3826,113 +3014,171 @@ elif st.session_state.current_view == "luc_hao":
 
     if 'luc_hao_result' in st.session_state:
         res = st.session_state.luc_hao_result
-        st.markdown('<div class="iching-container">', unsafe_allow_html=True)
         
+        # ========== COMPACT HEADER (giống xinhdich.com) ==========
         st.markdown(f"""
-        <div class="hex-header-row">
-            <div>
-                <div class="hex-title-pro">{res['ban']['name']}</div>
-                <div class="hex-subtitle">Họ {res['ban']['palace']}</div>
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #b45309; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-size: 13px;">
+            <div style="text-align:center; font-weight:900; font-size:15px; color:#92400e; margin-bottom:6px;">
+                📜 PHẦN MỀM LẬP QUẺ DỊCH — Phương pháp: Mai Hoa
             </div>
-            <div>
-                <div class="hex-title-pro">{res['bien']['name']}</div>
-                <div class="hex-subtitle">Quẻ Biến</div>
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
+                <span>⏰ <b>Thời gian:</b> {dt.strftime('%H:%M %d/%m/%Y')}</span>
+                <span>🌙 <b>Can Chi:</b> giờ {can_gio} {chi_gio}, ngày {can_ngay} {chi_ngay}, tháng {can_thang} {chi_thang}, năm {can_nam} {chi_nam}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px; margin-top:4px;">
+                <span>🌿 <b>Tiết khí:</b> {tiet_khi}</span>
+                <span>☀️ <b>Nhật thần:</b> {nhat_than}</span>
+                <span>🌙 <b>Nguyệt lệnh:</b> {nguyet_lenh}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUẺ CHỦ ({res["ban"]["palace"]})</div>', unsafe_allow_html=True)
-            st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
-            moving_hao = res.get('dong_hao', [])
-            detail_map_ban = {d['hao']: d for d in res['ban']['details']}
-            for i, line in enumerate(reversed(res['ban']['lines'])):
-                h_idx = 6 - i
-                is_dong = h_idx in moving_hao
-                cls = "yang-line-pro" if line == 1 else "yin-line-pro"
-                dong_cls = "hao-moving-red" if is_dong else ""
-                d = detail_map_ban.get(h_idx, {})
-                
-                st.markdown('<div class="hao-row-pro">', unsafe_allow_html=True)
-                st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
-                if line == 1:
-                    st.markdown(f'<div class="hao-line-pro {cls} {dong_cls}"></div>', unsafe_allow_html=True)
-                else:
-                    st.markdown(f'<div class="{cls}"><div class="yin-half-pro {dong_cls}"></div><div class="yin-half-pro {dong_cls}"></div></div>', unsafe_allow_html=True)
-                
-                # Enhanced Label with Debugging
-                s = d.get("strength")
-                val_s = s if s else "N/A"
-                if s:
-                    s_label = f"<span style='color: #15803d;'>{s}</span>" if s in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{s} (Suy)</span>" if s in ["Hưu", "Tù", "Tử"] else s
-                else:
-                    s_label = "⚠️ Thiếu"
-                
-                lt = d.get("luc_thu", "N/A")
-                m = d.get("marker", "")
-                
-                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","N/A")} | {d.get("can_chi","N/A")} | {lt} | {s_label} {m}</div>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            if show_debug_ih:
-                st.write("DEBUG (Hào 1):", res['ban']['details'][0])
-                st.write(f"📊 Module Path: `{luc_hao_kinh_dich.__file__}`")
-                st.write(f"⚙️ Version: `{getattr(luc_hao_kinh_dich, 'VERSION_LH', 'Unknown')}`")
-
-            st.markdown('<table class="hao-table-pro"><tr><th>HÀO</th><th>LỤC THÂN</th><th>CAN CHI</th><th>ĐỊNH VỊ</th></tr>', unsafe_allow_html=True)
-            for d in reversed(res['ban']['details']):
-                h_cls = "highlight-red" if d['is_moving'] else ""
-                marker = d.get('marker', '')
-                
-                st.markdown(f'<tr class="{h_cls}"><td>Hào {d["hao"]} {marker}</td><td>{d["luc_than"]}</td><td>{d["can_chi"]}</td><td>{d.get("loc_ma", "-")}</td></tr>', unsafe_allow_html=True)
-            st.markdown('</table>', unsafe_allow_html=True)
-
-        with col2:
-            st.markdown(f'<div style="text-align:center; font-weight:800; color:#b91c1c;">QUẺ BIẾN</div>', unsafe_allow_html=True)
-            st.markdown('<div class="hex-visual-stack">', unsafe_allow_html=True)
-            detail_map_bien = {d['hao']: d for d in res['bien'].get('details', [])}
-            for i, line in enumerate(reversed(res['bien']['lines'])):
-                h_idx = 6 - i
-                cls = "yang-line-pro" if line == 1 else "yin-line-pro"
-                d = detail_map_bien.get(h_idx, {})
-                
-                st.markdown('<div class="hao-row-pro">', unsafe_allow_html=True)
-                st.markdown(f'<div class="hao-label-pro">Hào {h_idx}</div>', unsafe_allow_html=True)
-                if line == 1:
-                    st.markdown(f'<div class="hao-line-pro {cls}"></div>', unsafe_allow_html=True)
-                else:
-                    st.markdown(f'<div class="{cls}"><div class="yin-half-pro"></div><div class="yin-half-pro"></div></div>', unsafe_allow_html=True)
-                
-                # Enhanced Label (Converted Hexagram usually doesn't show strength/marker in some schools but user asked for it)
-                sb = d.get("strength","")
-                sb_label = f"<span style='color: #15803d;'>{sb}</span>" if sb in ["Vượng", "Tướng"] else f"<span style='color: #b91c1c;'>{sb} (Suy)</span>" if sb in ["Hưu", "Tù", "Tử"] else sb
-                st.markdown(f'<div class="hao-info-pro">{d.get("luc_than","")} | {d.get("can_chi","")} | {d.get("luc_thu","")} | {sb_label} {d.get("marker","")}</div>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            st.markdown('<table class="hao-table-pro"><tr><th>HÀO</th><th>LỤC THÂN</th><th>CAN CHI</th><th>LỤC THÚ</th></tr>', unsafe_allow_html=True)
-            for d in reversed(res['bien']['details']):
-                st.markdown(f'<tr><td>Hào {d["hao"]}</td><td>{d["luc_than"]}</td><td>{d["can_chi"]}</td><td>{d["luc_thu"]}</td></tr>', unsafe_allow_html=True)
-            st.markdown('</table>', unsafe_allow_html=True)
-
-
-        # Expert Footer
+        
+        # ========== HEXAGRAM NAMES HEADER ==========
         st.markdown(f"""
-        <div class="status-footer-pro">
+        <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:8px;">
+            <div>
+                <div style="font-size:20px; font-weight:900; color:#b91c1c;">{res['ban']['name']}</div>
+                <div style="font-size:12px; color:#78716c;">Họ {res['ban']['palace']} | {res['the_ung']}</div>
+            </div>
+            <div>
+                <div style="font-size:20px; font-weight:900; color:#1d4ed8;">{res['bien']['name']}</div>
+                <div style="font-size:12px; color:#78716c;">Quẻ Biến</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ========== COMPACT TABLE (giống xinhdich.com) ==========
+        moving_hao = res.get('dong_hao', [])
+        detail_ban = {d['hao']: d for d in res['ban']['details']}
+        detail_bien = {d['hao']: d for d in res['bien'].get('details', [])}
+        
+        # Build HTML table
+        # CSS first (separate call to avoid rendering issues)
+        st.markdown("""
+        <style>
+            .lh-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px; }
+            .lh-table th { background:#1e293b; color:#fbbf24; padding:4px 6px; text-align:center; font-size:11px; border:1px solid #334155; }
+            .lh-table td { padding:3px 6px; text-align:center; border:1px solid #e2e8f0; font-size:12px; }
+            .lh-table tr:nth-child(even) { background:#f8fafc; }
+            .lh-moving { background:#fef2f2 !important; font-weight:700; }
+            .lh-yang { display:inline-block; width:40px; height:6px; background:#000; border-radius:1px; }
+            .lh-yin { display:inline-flex; gap:6px; justify-content:center; }
+            .lh-yin-half { display:inline-block; width:16px; height:6px; background:#000; border-radius:1px; }
+            .lh-dong { color:#b91c1c; font-weight:bold; }
+            .lh-vuong { color:#15803d; font-weight:600; }
+            .lh-suy { color:#b91c1c; }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        ban_name_h = res['ban']['name']
+        ban_palace_h = res['ban']['palace']
+        bien_name_h = res['bien']['name']
+        
+        table_html = f"""
+        <table class="lh-table">
+        <tr>
+            <th colspan="6" style="background:#b91c1c; color:white; font-size:13px;">{ban_name_h} (Họ {ban_palace_h})</th>
+            <th colspan="5" style="background:#1d4ed8; color:white; font-size:13px;">{bien_name_h} (Biến)</th>
+        </tr>
+        <tr>
+            <th>Hào</th><th>Tượng</th><th>Lục Thân</th><th>Can Chi</th><th>Lục Thú</th><th>Vượng Suy</th>
+            <th>Tượng</th><th>Lục Thân</th><th>Can Chi</th><th>Lục Thú</th><th>V-S</th>
+        </tr>
+        """
+        
+        for h_idx in range(6, 0, -1):
+            db = detail_ban.get(h_idx, {})
+            dbi = detail_bien.get(h_idx, {})
+            is_dong = h_idx in moving_hao
+            row_bg = "background:#dc2626; color:white; font-weight:700;" if is_dong else ""
+            
+            # Yang/Yin symbols - bold thick characters
+            ban_line = db.get('line', 0)
+            bien_line = dbi.get('line', 0)
+            ban_sym = "<b style='font-size:16px;'>━━━━━━━</b>" if ban_line == 1 else "<b style='font-size:16px;'>━━━ ━━━</b>"
+            bien_sym = "<b style='font-size:16px;'>━━━━━━━</b>" if bien_line == 1 else "<b style='font-size:16px;'>━━━ ━━━</b>"
+            
+            if is_dong:
+                ban_sym = f"<b style='font-size:16px; color:#fff;'>━━━━━━━ ○</b>" if ban_line == 1 else f"<b style='font-size:16px; color:#fff;'>━━━ ━━━ ✕</b>"
+            
+            # Strength
+            s = db.get('strength', '')
+            if is_dong:
+                s_html = f"<b>{s}</b>"
+            else:
+                s_html = f"<b style='color:#15803d;'>{s}</b>" if s in ['Vượng', 'Tướng'] else f"<b style='color:#b91c1c;'>{s}</b>"
+            sb = dbi.get('strength', '')
+            sb_html = f"<b style='color:#15803d;'>{sb}</b>" if sb in ['Vượng', 'Tướng'] else f"<b style='color:#b91c1c;'>{sb}</b>"
+            
+            # Markers
+            marker = db.get('marker', '')
+            hao_label = f"<b>Hào {h_idx}</b>"
+            if marker:
+                if is_dong:
+                    hao_label += f" <b>{marker}</b>"
+                else:
+                    hao_label += f" <b style='color:#b91c1c;'>{marker}</b>"
+            
+            table_html += f"""<tr style="{row_bg}">
+                <td>{hao_label}</td>
+                <td>{ban_sym}</td>
+                <td>{db.get('luc_than', '')}</td>
+                <td><b>{db.get('can_chi', '')}</b></td>
+                <td>{db.get('luc_thu', '')}</td>
+                <td>{s_html}</td>
+                <td>{bien_sym}</td>
+                <td>{dbi.get('luc_than', '')}</td>
+                <td><b>{dbi.get('can_chi', '')}</b></td>
+                <td>{dbi.get('luc_thu', '')}</td>
+                <td>{sb_html}</td>
+            </tr>"""
+        
+        table_html += "</table>"
+        st.markdown(table_html, unsafe_allow_html=True)
+        
+        # ========== FOOTER INFO ==========
+        st.markdown(f"""
+        <div style="background:#f1f5f9; border-radius:8px; padding:8px 12px; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
             <span>💡 {res['the_ung']}</span>
             <span>📝 Dụng Thần: {res['ban']['details'][2]['luc_than']}</span>
-            <span>📜 {res['conclusion'].split('.')[1]}</span>
+            <span>🔄 Động hào: {', '.join([str(h) for h in moving_hao])}</span>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown('<div class="footer-stamp">Copyright © 2026 KY MON DON GIAP PRO</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
         
-        if st.button("🤖 AI Luận Quẻ", key="ai_iching_btn"):
-            with st.spinner("AI Đang giải mã..."):
-                ans = st.session_state.gemini_helper.analyze_luc_hao(res, selected_topic)
-                st.info(ans)
+        # ========== V12.2: PHỤC THẦN (伏神) — Lục Thân ẩn ==========
+        phuc_than_data = res.get('phuc_than', [])
+        if phuc_than_data:
+            pt_html = """
+            <div style="background:#faf5ff; border:2px solid #7c3aed; border-radius:8px; padding:8px 12px; margin:8px 0;">
+                <div style="font-weight:700; color:#7c3aed; font-size:13px; margin-bottom:6px;">🔮 PHỤC THẦN (伏神) — Lục Thân Ẩn</div>
+                <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                <tr style="background:#7c3aed; color:white;">
+                    <th style="padding:3px 6px;">Lục Thân ẩn</th>
+                    <th style="padding:3px 6px;">Can Chi</th>
+                    <th style="padding:3px 6px;">Ẩn dưới hào</th>
+                    <th style="padding:3px 6px;">Phi Thần</th>
+                    <th style="padding:3px 6px;">Vượng Suy</th>
+                </tr>"""
+            for pt in phuc_than_data:
+                s_color = '#15803d' if pt['strength'] in ['Vượng', 'Tướng'] else '#b91c1c'
+                pt_html += f"""
+                <tr>
+                    <td style="padding:3px 6px; font-weight:700; color:#7c3aed;">{pt['luc_than']}</td>
+                    <td style="padding:3px 6px; font-weight:700;">{pt['can_chi']}</td>
+                    <td style="padding:3px 6px;">Hào {pt['hao_pos']}</td>
+                    <td style="padding:3px 6px;">{pt['phi_than_luc_than']} ({pt['phi_than_can_chi']})</td>
+                    <td style="padding:3px 6px; color:{s_color}; font-weight:700;">{pt['strength']}</td>
+                </tr>"""
+            pt_html += "</table></div>"
+            st.markdown(pt_html, unsafe_allow_html=True)
+        
+        if show_debug_ih:
+            st.write("DEBUG (Hào 1):", res['ban']['details'][0])
+            st.write(f"📊 Module Path: `{luc_hao_kinh_dich.__file__}`")
+            st.write(f"⚙️ Version: `{getattr(luc_hao_kinh_dich, 'VERSION_LH', 'Unknown')}`")
+        
+        # V13.0: Removed AI Luận Lục Hào button (dùng LỤC THUẬT HỢP NHẤT thay thế)
+        st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
 
 
 # ======================================================================
@@ -3977,21 +3223,24 @@ elif st.session_state.current_view == "thiet_ban":
         <h4>🔍 TÍCH HỢP ĐẠI TIÊN TRI</h4>
         - Thiết Bản Thần Toán là môn thuật số đề cao Nạp Âm của Năm và Ngày để định đoạt cát hung đại cục.<br>
         - AI Tiên Tri đã được trang bị toàn bộ hơn 100 quy tắc Phản Ngâm, Phục Ngâm, Trường Sinh 12 Giai Đoạn, và Thần Sát của Thiết Bản.<br>
-        👉 Hãy chuyển sang Tab <b>"🤖 Hỏi Gemini AI"</b> và chọn <b>"🌟 TỨ THUẬT HỢP NHẤT"</b> để dung hợp Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản vào một câu trả lời duy nhất!
+        👉 Hãy chuyển sang Tab <b>"🤖 Hỏi Gemini AI"</b> và chọn <b>"🌟 LỤC THUẬT HỢP NHẤT"</b> để dung hợp Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản vào một câu trả lời duy nhất!
     </div>
     ''', unsafe_allow_html=True)
+    
+    # V13.0: Removed AI Luận Thiết Bản button (dùng LỤC THUẬT HỢP NHẤT thay thế)
+    st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
 
 
 # ======================================================================
 # AI FACTORY VIEW
 # ======================================================================
 elif st.session_state.current_view == "ai_factory":
-    st.markdown("## 🏭 NHÀ MÁY PHÁT TRIỂN AI - 50 AGENTS HUB")
+    st.markdown("## 🏭 NHÀ MÁY PHÁT TRIỂN AI - 10 AGENTS HUB")
     st.info("Hệ thống tự động hóa điều phối bởi AI Orchestrator + n8n.")
     
     # Status Row
     c1, c2, c3 = st.columns(3)
-    with c1: st.metric("Agents Đang Chạy", "40/50", "Active")
+    with c1: st.metric("Agents Đang Chạy", "10/10", "Active")
     with c2: st.metric("Công Việc Hoàn Tất", "1,248", "Today")
     with c3: st.metric("Độ Ổn Định", "99.9%", "Verified")
     
@@ -4103,6 +3352,11 @@ elif st.session_state.current_view == "ai_experts":
                     # PROCESS & DISPLAY
                     res = st.session_state.gemini_helper._process_response(raw_response)
                     st.info(res)
+                    # === SAVE TO CHAT HISTORY ===
+                    st.session_state.chat_history.append({'role': 'user', 'content': exp_q})
+                    st.session_state.chat_history.append({'role': 'assistant', 'content': res})
+                    if len(st.session_state.chat_history) > 20:
+                        st.session_state.chat_history = st.session_state.chat_history[-20:]
                     
                     # SHOW LOGS
                     orc.render_logs()
@@ -4138,6 +3392,32 @@ elif st.session_state.current_view == "gemini_ai":
     
     st.markdown("---")
     
+    # === CONVERSATION HISTORY UI ===
+    if st.session_state.chat_history:
+        st.markdown("### 📜 Lịch Sử Hội Thoại")
+        st.caption(f"AI sẽ nhớ {len(st.session_state.chat_history) // 2} câu hỏi trước đó để trả lời chính xác hơn.")
+        
+        # Display chat history
+        for i, msg in enumerate(st.session_state.chat_history):
+            if msg['role'] == 'user':
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px 15px; border-radius: 10px; color: white; margin: 5px 0; margin-left: 20%;">
+                    <b>👤 Bạn:</b> {msg['content'][:200]}{'...' if len(msg['content']) > 200 else ''}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style="background: #f0f2f6; padding: 10px 15px; border-radius: 10px; color: #1e293b; margin: 5px 0; margin-right: 20%; border-left: 4px solid #667eea;">
+                    <b>🤖 AI:</b> {msg['content'][:300]}{'...' if len(msg['content']) > 300 else ''}
+                </div>
+                """, unsafe_allow_html=True)
+        
+        if st.button("🗑️ Xóa Lịch Sử Hội Thoại", key="clear_chat_history"):
+            st.session_state.chat_history = []
+            st.rerun()
+        
+        st.markdown("---")
+    
     # Question input area
     st.markdown("### ✍️ Câu Hỏi Của Bạn")
     user_question = st.text_area(
@@ -4151,11 +3431,11 @@ elif st.session_state.current_view == "gemini_ai":
     with col_ask1:
         btn_ask_normal = st.button(f"🤖 Hỏi {ai_name} (Thường)", use_container_width=True, key="ask_gemini_btn")
     with col_ask2:
-        btn_ask_supreme = st.button("🌟 TỨ THUẬT HỢP NHẤT", type="primary", help="Tự động gieo quẻ Kỳ Môn, Kinh Dịch, Mai Hoa và Thiết Bản để tổng hợp 1 kết quả chính xác nhất.", use_container_width=True, key="ask_supreme_btn")
+        btn_ask_supreme = st.button("🌟 LỤC THUẬT HỢP NHẤT", type="primary", help="Tự động gieo quẻ Kỳ Môn, Kinh Dịch, Mai Hoa và Thiết Bản để tổng hợp 1 kết quả chính xác nhất.", use_container_width=True, key="ask_supreme_btn")
         
     if btn_ask_normal or btn_ask_supreme:
         if user_question:
-            with st.spinner(f"🌟 Khởi động Đại Tiên Tri Tứ Thuật..." if btn_ask_supreme else f"🤖 {ai_name} đang chạy quy trình..."):
+            with st.spinner(f"🌟 Khởi động Đại Tiên Tri Lục Thuật..." if btn_ask_supreme else f"🤖 {ai_name} đang chạy quy trình..."):
                 try:
                     safe_topic = selected_topic_ai if selected_topic_ai != 'Không chọn (Hỏi chung)' else 'Chung'
                     
@@ -4163,57 +3443,64 @@ elif st.session_state.current_view == "gemini_ai":
                     import datetime
                     import random
                     import hashlib
-                    
-                    current_dt = now # Use the real-time auto-refresh datetime
+                    import datetime as dt_module
+                    vn_tz = dt_module.timezone(dt_module.timedelta(hours=7))
+                    current_dt = dt_module.datetime.now(vn_tz) # Use the real-time auto-refresh datetime
                     
                     # 1. KỲ MÔN ĐỘN GIÁP
-                    try:
-                        from qmdg_calc import calculate_qmdg_params
-                        from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg
-                        q_params = calculate_qmdg_params(current_dt)
-                        dia_can = an_bai_luc_nghi(q_params['cuc'], q_params['is_duong_don'])
-                        thien_ban, can_thien_ban, nhan_ban, than_ban, truc_phu_cung = lap_ban_qmdg(
-                            q_params['cuc'], q_params['truc_phu'], q_params['truc_su'], 
-                            q_params['can_gio'], q_params['chi_gio'], q_params['is_duong_don']
-                        )
-                        st.session_state.chart_data = {
-                            'thien_ban': thien_ban,
-                            'can_thien_ban': can_thien_ban,
-                            'nhan_ban': nhan_ban,
-                            'than_ban': than_ban,
-                            'dia_can': dia_can,
-                            'cuc': q_params['cuc'],
-                            'tiet_khi': q_params.get('tiet_khi', ''),
-                            'can_ngay': q_params['can_ngay'],
-                            'chi_ngay': q_params['chi_ngay'],
-                            'can_nam': q_params.get('can_nam', 'N/A'),
-                            'chi_nam': q_params.get('chi_nam', 'N/A'),
-                            'can_thang': q_params.get('can_thang', 'N/A'),
-                            'chi_thang': q_params.get('chi_thang', 'N/A'),
-                            'can_gio': q_params['can_gio'],
-                            'chi_gio': q_params['chi_gio']
-                        }
-                    except Exception as e:
-                        pass
-                        
+                    temp_chart_data = st.session_state.get('chart_data')
+                    if not temp_chart_data:
+                        try:
+                            from qmdg_calc import calculate_qmdg_params
+                            from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg
+                            q_params = calculate_qmdg_params(current_dt)
+                            dia_can = an_bai_luc_nghi(q_params['cuc'], q_params['is_duong_don'])
+                            thien_ban, can_thien_ban, nhan_ban, than_ban, truc_phu_cung = lap_ban_qmdg(
+                                q_params['cuc'], q_params['truc_phu'], q_params['truc_su'], 
+                                q_params['can_gio'], q_params['chi_gio'], q_params['is_duong_don']
+                            )
+                            temp_chart_data = {
+                                'thien_ban': thien_ban,
+                                'can_thien_ban': can_thien_ban,
+                                'nhan_ban': nhan_ban,
+                                'than_ban': than_ban,
+                                'dia_can': dia_can,
+                                'cuc': q_params['cuc'],
+                                'tiet_khi': q_params.get('tiet_khi', ''),
+                                'can_ngay': q_params['can_ngay'],
+                                'chi_ngay': q_params['chi_ngay'],
+                                'can_nam': q_params.get('can_nam', 'N/A'),
+                                'chi_nam': q_params.get('chi_nam', 'N/A'),
+                                'can_thang': q_params.get('can_thang', 'N/A'),
+                                'chi_thang': q_params.get('chi_thang', 'N/A'),
+                                'can_gio': q_params['can_gio'],
+                                'chi_gio': q_params['chi_gio']
+                            }
+                        except Exception as e:
+                            pass
+                            
                     # 2. MAI HOA DỊCH SỐ
-                    try:
-                        from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
-                        st.session_state.mai_hoa_result = tinh_qua_theo_thoi_gian(current_dt.year, current_dt.month, current_dt.day, current_dt.hour)
-                        st.session_state.mai_hoa_result['interpretation'] = giai_qua(st.session_state.mai_hoa_result, safe_topic)
-                    except Exception as e:
-                        pass
-                        
+                    temp_mai_hoa = st.session_state.get('mai_hoa_result')
+                    if not temp_mai_hoa:
+                        try:
+                            from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
+                            temp_mai_hoa = tinh_qua_theo_thoi_gian(current_dt.year, current_dt.month, current_dt.day, current_dt.hour)
+                            temp_mai_hoa['interpretation'] = giai_qua(temp_mai_hoa, safe_topic)
+                        except Exception as e:
+                            pass
+                            
                     # 3. LỤC HÀO KINH DỊCH
-                    try:
-                        seed = int(hashlib.md5(f"{user_question}_{current_dt}".encode()).hexdigest(), 16) % 100000
-                        random.seed(seed)
-                        hao_list = [random.choice([6, 7, 8, 9]) for _ in range(6)]
-                        from luc_hao_kinh_dich import lap_que
-                        st.session_state.luc_hao_result = lap_que(hao_list, current_dt, safe_topic)
-                    except Exception as e:
-                        pass
-                        
+                    temp_luc_hao = st.session_state.get('luc_hao_result')
+                    if not temp_luc_hao:
+                        try:
+                            seed = int(hashlib.md5(f"{user_question}_{current_dt}".encode()).hexdigest(), 16) % 100000
+                            random.seed(seed)
+                            hao_list = [random.choice([6, 7, 8, 9]) for _ in range(6)]
+                            from luc_hao_kinh_dich import lap_que
+                            temp_luc_hao = lap_que(hao_list, current_dt, safe_topic)
+                        except Exception as e:
+                            pass
+                            
                     # 4. THIẾT BẢN THẦN TOÁN (Context Injection)
                     tb_context = ""
                     try:
@@ -4222,10 +3509,11 @@ elif st.session_state.current_view == "gemini_ai":
                         hoa_giap = KY_MON_DATA.get("THIET_BAN_THAN_TOAN", {}).get("LUC_THAP_HOA_GIAP_NAP_AM", {})
                         tb_year_can, tb_year_chi = get_can_chi_year(current_dt.year)
                         tb_year_key = f"{tb_year_can} {tb_year_chi}"
-                        tb_day_key = f"{q_params['can_ngay']} {q_params['chi_ngay']}"
+                        # Try to use existing chart_data if any, otherwise default
+                        tb_day_key = f"{temp_chart_data['can_ngay']} {temp_chart_data['chi_ngay']}" if temp_chart_data else "? ?"
                         nap_am_nam = hoa_giap.get(tb_year_key, {}).get("Nạp_Âm", "Không rõ")
                         nap_am_ngay = hoa_giap.get(tb_day_key, {}).get("Nạp_Âm", "Không rõ")
-                        tb_context = f"\n[DỮ LIỆU THIẾT BẢN THẦN TOÁN]:\n- Nạp Âm Trụ Năm Mở Quẻ: {nap_am_nam} ({tb_year_key})\n- Nạp Âm Trụ Ngày Mở Quẻ: {nap_am_ngay} ({tb_day_key})\nLƯU Ý THẦN TOÁN: ĐÂY LÀ KHÍ CHẤT CỦA THỜI GIAN HIỆN TẠI, TUYỆT ĐỐI KHÔNG LẤY NÓ LÀM MỆNH (NĂM SINH) CỦA NGƯỜI DÙNG.\n"
+                        tb_context = f"\\n[DỮ LIỆU THIẾT BẢN THẦN TOÁN]:\\n- Nạp Âm Trụ Năm Mở Quẻ: {nap_am_nam} ({tb_year_key})\\n- Nạp Âm Trụ Ngày Mở Quẻ: {nap_am_ngay} ({tb_day_key})\\nLƯU Ý THẦN TOÁN: ĐÂY LÀ KHÍ CHẤT CỦA THỜI GIAN HIỆN TẠI, TUYỆT ĐỐI KHÔNG LẤY NÓ LÀM MỆNH (NĂM SINH) CỦA NGƯỜI DÙNG.\\n"
                     except Exception as e:
                         pass
                     
@@ -4236,9 +3524,9 @@ elif st.session_state.current_view == "gemini_ai":
                         raw_response = orc.run_pipeline(
                             user_question, 
                             current_topic=safe_topic,
-                            chart_data=st.session_state.get('chart_data'),
-                            mai_hoa_data=st.session_state.get('mai_hoa_result'),
-                            luc_hao_data=st.session_state.get('luc_hao_result'),
+                            chart_data=temp_chart_data,
+                            mai_hoa_data=temp_mai_hoa,
+                            luc_hao_data=temp_luc_hao,
                             tb_context=tb_context
                         )
                     else:
@@ -4247,16 +3535,43 @@ elif st.session_state.current_view == "gemini_ai":
                         raw_response = st.session_state.gemini_helper.answer_question(
                             enhanced_question, 
                             topic=safe_topic,
-                            chart_data=st.session_state.get('chart_data'),
-                            mai_hoa_data=st.session_state.get('mai_hoa_result'),
-                            luc_hao_data=st.session_state.get('luc_hao_result')
+                            chart_data=temp_chart_data,
+                            mai_hoa_data=temp_mai_hoa,
+                            luc_hao_data=temp_luc_hao
                         )
                     
                     # PROCESS & DISPLAY
                     response_text = st.session_state.gemini_helper._process_response(raw_response)
                     
+                    # === SAVE TO CHAT HISTORY ===
+                    st.session_state.chat_history.append({'role': 'user', 'content': user_question})
+                    st.session_state.chat_history.append({'role': 'assistant', 'content': response_text})
+                    # Giới hạn tối đa 10 cặp Q&A (20 messages)
+                    if len(st.session_state.chat_history) > 20:
+                        st.session_state.chat_history = st.session_state.chat_history[-20:]
+                    
+                    # === AUTO GROW TOPICS (CHỈ THÊM, KHÔNG BAO GIỜ XÓA) ===
+                    try:
+                        from ai_modules.shard_manager import add_entry
+                        # Lưu câu hỏi thành chủ đề mới (nếu đủ dài)
+                        if len(user_question.strip()) > 5:
+                            topic_title = user_question.strip()[:100]  # Max 100 ký tự cho title
+                            add_entry(
+                                title=topic_title,
+                                content=f"Câu hỏi: {user_question}\n\nChủ đề gốc: {safe_topic}\n\nTrả lời AI (tóm tắt): {response_text[:500]}",
+                                category="Kiến Thức",
+                                source="Auto-Generated from AI Q&A"
+                            )
+                            # Cập nhật danh sách chủ đề trong session (thêm vào, ko xóa)
+                            if topic_title not in st.session_state.all_topics_full:
+                                st.session_state.all_topics_full.append(topic_title)
+                                st.session_state.all_topics_full = sorted(st.session_state.all_topics_full)
+                    except Exception:
+                        pass  # Không crash app nếu lưu topic lỗi
+                    
                     # Display response in a nice panel
                     st.markdown("---")
+                    st.markdown(f"### 🤖 Trả Lời Từ {ai_name}")
                     st.markdown(f"""
                     <div style="
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -4270,7 +3585,17 @@ elif st.session_state.current_view == "gemini_ai":
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    display_ai_result(response_text, title=f"🤖 Trả Lời Từ {ai_name}")
+                    st.markdown(f"""
+                    <div style="
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 15px;
+                        border-left: 5px solid #667eea;
+                        margin: 10px 0;
+                    ">
+                        {response_text.replace(chr(10), '<br>')}
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     # RENDER WORKFLOW LOGS (User requested n8n visibility)
                     if hasattr(st.session_state.gemini_helper, 'render_logs'):
@@ -4280,6 +3605,139 @@ elif st.session_state.current_view == "gemini_ai":
                     st.error(f"❌ Lỗi: {str(e)}")
         else:
             st.warning("⚠️ Vui lòng nhập câu hỏi")
+
+# ======================================================================
+# VẠN VẬT LOẠI TƯỢNG VIEW
+# ======================================================================
+elif st.session_state.current_view == "van_vat":
+    try:
+        from van_vat_loai_tuong import render_van_vat_view
+        render_van_vat_view()
+    except ImportError as e:
+        st.error(f"⚠️ Lỗi: Không tìm thấy module van_vat_loai_tuong.py: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Lỗi hiển thị Vạn Vật Loại Tượng: {e}")
+
+# ======================================================================
+# ĐẠI LỤC NHÂM VIEW (V14.0)
+# ======================================================================
+elif st.session_state.current_view == "dai_luc_nham":
+    st.header("🌊 Đại Lục Nhâm (大六壬)")
+    st.caption("Tam Thức thứ 2 — Dự đoán sự kiện, chính xác thời gian")
+    
+    try:
+        from dai_luc_nham import tinh_dai_luc_nham, format_display
+        
+        # Lấy dữ liệu từ quẻ hiện tại
+        chart = st.session_state.get('chart_data', {})
+        can_ngay = chart.get('can_ngay', 'Giáp')
+        chi_ngay = chart.get('chi_ngay', 'Tý')
+        chi_gio = chart.get('chi_gio', 'Ngọ')
+        tiet_khi = chart.get('tiet_khi', 'Đông Chí')
+        
+        # Tính Đại Lục Nhâm
+        data = tinh_dai_luc_nham(can_ngay, chi_ngay, chi_gio, tiet_khi)
+        
+        # Hiển thị
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("📌 Nguyệt Tướng")
+            st.info(f"**{data['nguyet_tuong']['ten']}** ({data['nguyet_tuong']['chi']})")
+            
+            st.subheader("📋 Tứ Khóa")
+            for k in data['tu_khoa']:
+                st.write(f"**{k['ten']}**: {k['thien']} / {k['dia']}")
+        
+        with col2:
+            st.subheader("🔮 Tam Truyền")
+            tt = data['tam_truyen']
+            st.success(f"**Sơ Truyền (Phát)**: {tt['so_truyen']} ({tt['so_truyen_hanh']})")
+            st.warning(f"**Trung Truyền (Diễn)**: {tt['trung_truyen']} ({tt['trung_truyen_hanh']})")
+            st.info(f"**Mạt Truyền (Quả)**: {tt['mat_truyen']} ({tt['mat_truyen_hanh']})")
+            st.caption(f"Phương pháp: {tt['phuong_phap']}")
+        
+        # Luận Giải
+        st.subheader("📊 Luận Giải")
+        lg = data['luan_giai']
+        if lg['verdict'] == 'CÁT':
+            st.success(f"🟢 **{lg['verdict']}**")
+        elif lg['verdict'] == 'HUNG':
+            st.error(f"🔴 **{lg['verdict']}**")
+        else:
+            st.warning(f"🟡 **{lg['verdict']}**")
+        
+        for d in lg['details']:
+            st.write(d)
+        
+        # Thiên Địa Bàn
+        with st.expander("🗺️ Thiên Địa Bàn"):
+            for dia, thien in data['thien_dia_ban'].items():
+                st.write(f"Địa: {dia} → Thiên: {thien}")
+        
+        # 12 Thiên Tướng
+        with st.expander("⚔️ Thập Nhị Thiên Tướng"):
+            for chi, ten in data['thien_tuong_map'].items():
+                st.write(f"{chi}: {ten}")
+        
+    except ImportError as e:
+        st.error(f"⚠️ Module dai_luc_nham.py chưa có: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Lỗi Đại Lục Nhâm: {e}")
+
+# ======================================================================
+# THÁI ẤT THẦN SỐ VIEW (V14.0)
+# ======================================================================
+elif st.session_state.current_view == "thai_at":
+    st.header("⭐ Thái Ất Thần Số (太乙神数)")
+    st.caption("Tam Thức thứ 3 — Dự đoán vận mệnh quốc gia, thiên tai, đại sự")
+    
+    try:
+        from thai_at_than_so import tinh_thai_at_than_so, format_display as ta_format
+        import datetime
+        
+        # Lấy dữ liệu
+        now = datetime.datetime.now()
+        chart = st.session_state.get('chart_data', {})
+        can_ngay = chart.get('can_ngay', 'Giáp')
+        chi_ngay = chart.get('chi_ngay', 'Tý')
+        
+        # Tính Thái Ất
+        data = tinh_thai_at_than_so(now.year, now.month, can_ngay, chi_ngay)
+        
+        # Hiển thị
+        ta = data['thai_at_cung']
+        st.info(f"**Năm {data['nam']}** | Tích Niên: {data['tich_nien']} | Thái Ất: Cung **{ta['cung']} ({ta['ten_cung']})** — {ta['hanh_cung']} — {ta['ly']}")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("⚔️ Bát Tướng")
+            for name, info in data['bat_tuong'].items():
+                icon = "✅" if info['cat_hung'] in ('Cát', 'Đại Cát') else ("❌" if 'Hung' in info['cat_hung'] else "📌")
+                st.write(f"{icon} **{name}**: Cung {info['cung']} ({info['ten_cung']}) — {info['cat_hung']}")
+        
+        with col2:
+            st.subheader("📊 Luận Giải")
+            lg = data['luan_giai']
+            if lg['verdict'] == 'CÁT':
+                st.success(f"🟢 **{lg['verdict']}**")
+            elif lg['verdict'] == 'HUNG':
+                st.error(f"🔴 **{lg['verdict']}**")
+            else:
+                st.warning(f"🟡 **{lg['verdict']}**")
+            
+            for d in lg['details']:
+                st.write(d)
+        
+        # Cách Cục
+        if data['cach_cuc']:
+            with st.expander("🔮 Cách Cục Thái Ất"):
+                for cc in data['cach_cuc']:
+                    st.write(cc)
+        
+    except ImportError as e:
+        st.error(f"⚠️ Module thai_at_than_so.py chưa có: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Lỗi Thái Ất Thần Số: {e}")
 
 st.markdown("---")
 st.markdown("""

@@ -36,8 +36,8 @@ except ImportError:
 
 
 
-# --- EXPANDED MINER DATA (50 AGENTS) ---
-def get_50_miners():
+# --- MINER DATA (10 AGENTS) ---
+def get_10_miners():
     categories = [
         ("Kỳ Môn Độn Giáp", "Google, China Archives"),
         ("Kinh Dịch Pro", "I-Ching Scholars"),
@@ -53,7 +53,7 @@ def get_50_miners():
     miners = []
     statuses = ["🟢 Đang quét sâu", "🟢 Đang phân tích", "🟡 Chờ nạp Shard", "🟢 Đang tổng hợp"]
     
-    for i in range(50):
+    for i in range(10):
         cat_info = categories[i % len(categories)]
         miners.append({
             "id": f"Agent {i+1:02d}",
@@ -105,14 +105,14 @@ def render_universal_data_hub_tab():
         if is_recently_active:
             st.markdown("""
             <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <h3 style='color: white; margin: 0;'>🟢 10 AI AGENTS</h3>
                 <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>ĐANG CHẠY</p>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
             <div style='padding: 15px; border-radius: 10px; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); text-align: center;'>
-                <h3 style='color: white; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <h3 style='color: white; margin: 0;'>🔴 10 AI AGENTS</h3>
                 <p style='color: white; margin: 5px 0 0 0; font-size: 14px;'>KHÔNG CHẠY</p>
             </div>
             """, unsafe_allow_html=True)
@@ -236,7 +236,7 @@ def render_mining_summary_on_dashboard(key_suffix=""):
         if is_recently_active:
             st.markdown("""
             <div style='padding: 15px; border-radius: 10px; background: #064e3b; text-align: center; border: 1px solid #059669;'>
-                <h3 style='color: #4ade80; margin: 0;'>🟢 50 AI AGENTS</h3>
+                <h3 style='color: #4ade80; margin: 0;'>🟢 10 AI AGENTS</h3>
                 <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG KHAI THÁC</p>
                 <small style='color: #a7f3d0; opacity: 0.8;'>Lần cuối: """ + str(int(time_diff_minutes)) + """p trước</small>
             </div>
@@ -244,7 +244,7 @@ def render_mining_summary_on_dashboard(key_suffix=""):
         else:
             st.markdown("""
             <div style='padding: 15px; border-radius: 10px; background: #450a0a; text-align: center; border: 1px solid #b91c1c;'>
-                <h3 style='color: #f87171; margin: 0;'>🔴 50 AI AGENTS</h3>
+                <h3 style='color: #f87171; margin: 0;'>🔴 10 AI AGENTS</h3>
                 <p style='color: #ffffff; margin: 5px 0 0 0; font-size: 14px; font-weight: bold;'>ĐANG DỪNG</p>
             </div>
             """, unsafe_allow_html=True)
@@ -280,8 +280,8 @@ def render_mining_summary_on_dashboard(key_suffix=""):
     st.success("🛡️ **Chế độ BẢO TỒN**: Tất cả chủ đề được bảo vệ vĩnh viễn.")
     st.markdown("---")
     
-    # 2. 50 MINING AGENTS INFO
-    st.markdown("### 🏹 Quân Đoàn 50 Đặc Phái Viên AI")
+    # 2. 10 MINING AGENTS INFO
+    st.markdown("### 🏹 Quân Đoàn 10 Đặc Phái Viên AI")
     st.caption("✨ **NÂNG CẤP MỚI**: Mỗi agent tìm kiếm trên Google/Internet + Gemini AI Grounding")
     
     # --- Removed redundant status check and display ---
@@ -345,7 +345,7 @@ def render_mining_summary_on_dashboard(key_suffix=""):
 
     # Real Trigger Button (Manual override)
     btn_key = f"activate_mining_legion_btn{key_suffix}"
-    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG (50 AGENTS THẬT)", use_container_width=True, key=btn_key, type="primary"):
+    if st.button("🚀 CHẠY CHU KỲ THỦ CÔNG (10 AGENTS THẬT)", use_container_width=True, key=btn_key, type="primary"):
         # AUTO-DETECT API KEY FROM MULTIPLE SOURCES
         api_key = None
         
@@ -365,10 +365,10 @@ def render_mining_summary_on_dashboard(key_suffix=""):
         
         # RUN OR ERROR
         if api_key:
-            with st.spinner("🤖 50 AI AGENTS ĐANG CHẠY THẬT... (2-5 phút)"):
+            with st.spinner("🤖 10 AI AGENTS ĐANG CHẠY THẬT... (2-5 phút)"):
                 try:
                     run_mining_cycle(api_key)
-                    st.success("✅ HOÀN TẤT! 50 agents đã thu thập dữ liệu THẬT từ Google + Gemini AI!")
+                    st.success("✅ HOÀN TẤT! 10 agents đã thu thập dữ liệu THẬT từ Google + Gemini AI!")
                     st.balloons()
                     time.sleep(1)
                     st.rerun()
@@ -379,16 +379,16 @@ def render_mining_summary_on_dashboard(key_suffix=""):
 
     stats = get_hub_stats()
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Tổng Đặc phái viên", "50", help="50 AI agents tìm kiếm trên Google + Internet")
-    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0), help="Mỗi chu kỳ = 50 tasks")
+    col1.metric("Tổng Đặc phái viên", "10", help="10 AI agents tìm kiếm trên Google + Internet")
+    col2.metric("Chu kỳ hoàn tất", config.get("total_cycles", 0), help="Mỗi chu kỳ = 10 tasks")
     col3.metric("Lưu trữ Shard", f"{stats['size_mb']} MB", help="Dữ liệu từ web + AI synthesis")
     col4.metric("Dữ liệu nạp", f"{stats['total']} bản ghi", help="Tự động cập nhật 24/7")
     
     if config.get("last_run"):
         st.caption(f"🕒 Lần cuối hoạt động: {config['last_run']} | Giãn cách: {config.get('interval_minutes')} phút")
     
-    with st.expander(f"🔍 Xem danh sách 50 Đặc phái viên đang thực nhiệm ({key_suffix.strip('_')})"):
-        miners = get_50_miners()
+    with st.expander(f"🔍 Xem danh sách 10 Đặc phái viên đang thực nhiệm ({key_suffix.strip('_')})"):
+        miners = get_10_miners()
         for m in miners:
             cx1, cx2, cx3 = st.columns([1, 2, 2])
             cx1.write(f"**{m['id']}**")

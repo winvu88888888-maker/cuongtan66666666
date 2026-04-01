@@ -5,11 +5,7 @@ echo   [ HE THONG HOAN TAT DU AN - PHIEN BAN CUOI CUNG ]
 echo ====================================================
 echo.
 echo [1/3] Dang thanh loc code va chuan hoa he thong...
-:: Force sync code to all folders
-copy /y "app.py" "UPLOAD_LEN_GITHUB\app.py" >nul
-copy /y "gemini_helper.py" "UPLOAD_LEN_GITHUB\gemini_helper.py" >nul
-copy /y "app.py" "UPLOAD_TO_STREAMLIT\app.py" >nul
-copy /y "gemini_helper.py" "UPLOAD_TO_STREAMLIT\gemini_helper.py" >nul
+:: Khong can chuyen cd vi script nay nam san trong thu muc
 rd /s /q __pycache__ 2>nul
 rd /s /q web\__pycache__ 2>nul
 rd /s /q ai_modules\__pycache__ 2>nul
