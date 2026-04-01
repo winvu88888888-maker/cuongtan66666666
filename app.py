@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-03-30-V20.3-SUPER-INTELLIGENCE
+# VERSION: 2026-04-01-V20.5-SUPER-INTELLIGENCE
 try:
     st.set_page_config(
-    page_title="☯️ Kỳ Môn AI V20.3",
+    page_title="☯️ Kỳ Môn AI V20.5",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
