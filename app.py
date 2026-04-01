@@ -1126,38 +1126,35 @@ except ImportError:
 # V19.0: DISPLAY AI RESULT — Beautiful answer layout
 # ════════════════════════════════════════════════════
 def display_ai_result(text, key_prefix="ai"):
-    """V20.4: Hiển thị kết quả AI với format đẹp, dễ đọc, headings có màu, markdown render đúng."""
+    """V20.5: Trình bày kết quả AI giống hệt nút 'Bắt đầu Phân Tích Tổng Hợp' - dễ đọc, rõ ràng."""
     if not text:
         st.warning("❌ Không có kết quả")
         return
     
     import re
-    
     text = str(text).strip()
     
-    # ═══ PHÁT HIỆN KẾT LUẬN CHÍNH ═══
+    # ═══ PHÁT HIỆN KẾT LUẬN CHÍNH (CÁT/HUNG/BÌNH) ═══
     conclusion = ""
     verdict_badge = ""
     for line in text.split('\n'):
         stripped = line.strip()
         if not stripped:
             continue
-        is_conclusion = False
-        if re.search(r'(?:KẾT LUẬN|PHÁN QUYẾT|TỔNG KẾT|VERDICT|CÂU TRẢ LỜI)', stripped, re.IGNORECASE):
-            is_conclusion = True
-        elif re.search(r'^\*\*.*(?:CÁT|ĐẠI CÁT|HUNG|ĐẠI HUNG|THUẬN LỢI|KHÓ KHĂN|TỐT|XẤU).*\*\*', stripped, re.IGNORECASE):
-            is_conclusion = True
-        if is_conclusion and not conclusion:
+        if re.search(r'(?:KẾT LUẬN|PHÁN QUYẾT|TỔNG KẾT|VERDICT)', stripped, re.IGNORECASE):
             conclusion = stripped
-            if re.search(r'CÁT|ĐẠI CÁT|THUẬN LỢI|TỐT|THÀNH CÔNG|\bCÓ\b', stripped, re.IGNORECASE):
+        elif re.search(r'^\*\*.*(?:CÁT|ĐẠI CÁT|HUNG|ĐẠI HUNG|THUẬN LỢI|KHÓ KHĂN).*\*\*', stripped, re.IGNORECASE):
+            conclusion = stripped
+        if conclusion:
+            if re.search(r'CÁT|ĐẠI CÁT|THUẬN LỢI|TỐT|THÀNH CÔNG', conclusion, re.IGNORECASE):
                 verdict_badge = "cat"
-            elif re.search(r'HUNG|ĐẠI HUNG|KHÓ|XẤU|THẤT BẠI|\bKHÔNG\b', stripped, re.IGNORECASE):
+            elif re.search(r'HUNG|ĐẠI HUNG|KHÓ|XẤU|THẤT BẠI', conclusion, re.IGNORECASE):
                 verdict_badge = "hung"
             else:
                 verdict_badge = "binh"
             break
     
-    # ═══ 1. VERDICT BOX (nổi bật nhất) ═══
+    # ═══ 1. VERDICT BOX (nổi bật) ═══
     if conclusion:
         if verdict_badge == "cat":
             gradient = "linear-gradient(135deg, #065f46, #047857)"
@@ -1183,90 +1180,16 @@ def display_ai_result(text, key_prefix="ai"):
         </div>
         """, unsafe_allow_html=True)
     
-    # ═══ 2. TÁCH SECTIONS THEO HEADINGS & RENDER ĐẸP ═══
-    sections = re.split(r'(?m)^(#{1,3}\s+.+)$', text)
+    # ═══ 2. NỘI DUNG CHÍNH — RENDER GIỐNG HỆT "Bắt đầu Phân Tích Tổng Hợp" ═══
+    # Dùng interpret-box + st.markdown() native để headings, bold, list render đúng
+    st.markdown("""
+    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a; border-radius: 0 0 12px 12px; padding: 24px 28px; margin: 0 0 20px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+    </div>
+    """, unsafe_allow_html=True)
     
-    section_colors = [
-        ("#1e40af", "#dbeafe", "#1e3a8a"),
-        ("#065f46", "#d1fae5", "#047857"),
-        ("#9a3412", "#ffedd5", "#c2410c"),
-        ("#7c2d12", "#fef3c7", "#b45309"),
-        ("#581c87", "#f3e8ff", "#7c3aed"),
-        ("#1e3a5f", "#e0f2fe", "#0369a1"),
-    ]
-    color_idx = 0
-    has_sections = False
-    
-    # Container
-    st.markdown('<div style="background:#ffffff; border:2px solid #e2e8f0; border-radius:16px; padding:8px 0 16px 0; margin:12px 0 20px 0; box-shadow:0 8px 30px rgba(0,0,0,0.08);">', unsafe_allow_html=True)
-    
-    i = 0
-    while i < len(sections):
-        part = sections[i].strip()
-        heading_match = re.match(r'^(#{1,3})\s+(.+)$', part)
-        
-        if heading_match:
-            has_sections = True
-            level = len(heading_match.group(1))
-            heading_text = heading_match.group(2).strip()
-            body = sections[i + 1].strip() if i + 1 < len(sections) else ""
-            i += 2
-            
-            text_c, bg_c, border_c = section_colors[color_idx % len(section_colors)]
-            color_idx += 1
-            
-            # Highlight đặc biệt cho KẾT LUẬN / LỜI KHUYÊN
-            if any(kw in heading_text.upper() for kw in ["KẾT QUẢ", "KẾT LUẬN", "DỰ BÁO", "PHÁN ĐOÁN"]):
-                text_c, bg_c, border_c = ("#991b1b", "#fef2f2", "#dc2626")
-            elif any(kw in heading_text.upper() for kw in ["LỜI KHUYÊN", "HÀNH ĐỘNG", "KHUYẾN NGHỊ"]):
-                text_c, bg_c, border_c = ("#065f46", "#ecfdf5", "#059669")
-            
-            font_size = "1.15rem" if level == 1 else "1.05rem" if level == 2 else "0.95rem"
-            st.markdown(f"""
-            <div style="background:{bg_c}; border-left:5px solid {border_c}; margin:12px 16px 0 16px; padding:12px 18px; border-radius:0 10px 10px 0;">
-                <div style="color:{text_c}; font-size:{font_size}; font-weight:900; letter-spacing:0.3px;">{heading_text}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if body:
-                # Loại bỏ dòng kết luận đã hiển thị ở verdict box
-                if conclusion:
-                    body = body.replace(conclusion, '').strip()
-                # Dùng st.markdown() native để render markdown đúng (bold, list, sub-headers)
-                with st.container():
-                    st.markdown(f"<div style='padding:2px 20px 2px 38px; font-size:1.05rem; line-height:1.85; color:#1e293b;'>", unsafe_allow_html=True)
-                    st.markdown(body)
-                    st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            if part:
-                # Loại bỏ conclusion đã hiển thị
-                display_part = part
-                if conclusion:
-                    display_part = part.replace(conclusion, '').strip()
-                if display_part:
-                    with st.container():
-                        st.markdown(f"<div style='padding:8px 24px; font-size:1.05rem; line-height:1.85; color:#1e293b;'>", unsafe_allow_html=True)
-                        st.markdown(display_part)
-                        st.markdown("</div>", unsafe_allow_html=True)
-            i += 1
-    
-    # Nếu không có heading sections → render toàn bộ text với markdown native
-    if not has_sections:
-        display_text = text
-        if conclusion:
-            display_text = text.replace(conclusion, '').strip()
-        if display_text:
-            with st.container():
-                st.markdown(f"<div style='padding:16px 24px; font-size:1.05rem; line-height:1.85; color:#1e293b;'>", unsafe_allow_html=True)
-                st.markdown(display_text)
-                st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Container end
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Raw output (for transparency)
-    with st.expander("📄 Xem toàn bộ văn bản gốc", expanded=False):
-        st.code(text, language=None)
+    # Render toàn bộ text bằng st.markdown() native — CHÌA KHÓA để hiển thị đẹp
+    # st.markdown() tự động render: ## heading, **bold**, - list, > quote...
+    st.markdown(text)
 
 
 class PhoenixOrchestrator:
