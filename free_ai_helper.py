@@ -1,10 +1,10 @@
 """
-Free AI Helper V15.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + XÂU DƯỢC)
+Free AI Helper V20.5 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + XÂU DƯỢC + DataFirst Grounded)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
-V15.0: XÂU DƯỢC — Phân tích tương tác NỘI CUNG (7 tầng) cho Kỳ Môn.
+V20.5: Sync với gemini_helper V20.5 — DataFirst Grounded + Offline Verdict.
+       Kế thừa V15.0: XÂU DƯỢC + NỘI CUNG (7 tầng).
        Kế thừa V14.0: LỤC THUẬT HỢP NHẤT + Deep Reasoning.
-       Kế thừa V13.0: Deep Reasoning + V12.0: Lục Thân Relationship Engine.
 """
 
 import random
@@ -848,9 +848,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong, Nguyệt Phá...
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V15.0 Xâu Dược)"
-        self.version = "V15.0-XauDuoc"
-        self.model_name = "offline-rule-engine-v15-xau-duoc"
+        self.name = "Thiên Cơ Đại Sư (V20.5 DataFirst Grounded)"
+        self.version = "V20.5-DataFirst-Grounded-Offline"
+        self.model_name = "offline-rule-engine-v20.5"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -866,7 +866,7 @@ class FreeAIHelper:
         return text if text else "Không có phản hồi."
 
     def test_connection(self):
-        return True, "V12.0 Lục Thân Quan Hệ — Offline + Online fallback"
+        return True, "V20.5 DataFirst Grounded — Offline + Online fallback"
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
@@ -4127,7 +4127,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V14.0 Lục Thuật Hợp Nhất). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V20.5 Lục Thuật Hợp Nhất). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Đã học {lc} câu hỏi mới."
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -4251,7 +4251,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V14.0 Lục Thuật Hợp Nhất\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V20.5 Lục Thuật Hợp Nhất\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
@@ -4536,7 +4536,7 @@ class FreeAIHelper:
         )
         sections.append(unified_narrative)
         
-        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V15.3 — Lục Thuật Hợp Nhất + Xâu Dược + Ứng Kỳ: KM+LH+MH+TB+LN+TA, Suy luận có chứng minh.*")
+        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V20.5 — Lục Thuật Hợp Nhất + DataFirst Grounded: KM+LH+MH+TB+LN+TA, Suy luận có chứng minh.*")
         
         # ========================================
         # V11.1: AI ONLINE LÀ PHÂN TÍCH CHÍNH
@@ -4753,7 +4753,7 @@ class FreeAIHelper:
             final_parts.append(online_result)
             final_parts.append("")
             final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết AI Offline — THIÊN CƠ ĐẠI SƯ V15.3 (nhấn để mở)</b></summary>\n")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết AI Offline — THIÊN CƠ ĐẠI SƯ V20.5 (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             return "\n".join(final_parts)
@@ -4813,7 +4813,7 @@ class FreeAIHelper:
             
             # MỌI THỨ chi tiết ẩn sau 1 nút bấm duy nhất
             final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích V15.3 (nhấn để mở)</b></summary>\n")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích V20.5 (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
