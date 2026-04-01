@@ -1180,16 +1180,13 @@ def display_ai_result(text, key_prefix="ai"):
         </div>
         """, unsafe_allow_html=True)
     
-    # ═══ 2. NỘI DUNG CHÍNH — RENDER GIỐNG HỆT "Bắt đầu Phân Tích Tổng Hợp" ═══
-    # Dùng interpret-box + st.markdown() native để headings, bold, list render đúng
-    st.markdown("""
-    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a; border-radius: 0 0 12px 12px; padding: 24px 28px; margin: 0 0 20px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+    # ═══ 2. NỘI DUNG CHÍNH — RENDER GIỐNG HỆT "Bắt đầu Phân Tích Tổng Hợp" (dòng 2370) ═══
+    # Y HỆT: st.markdown(f'<div class="interpret-box">{text}</div>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
+        {text}
     </div>
     """, unsafe_allow_html=True)
-    
-    # Render toàn bộ text bằng st.markdown() native — CHÌA KHÓA để hiển thị đẹp
-    # st.markdown() tự động render: ## heading, **bold**, - list, > quote...
-    st.markdown(text)
 
 
 class PhoenixOrchestrator:
