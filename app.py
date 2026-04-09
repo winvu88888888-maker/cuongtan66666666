@@ -1104,7 +1104,10 @@ with st.sidebar:
         # These caused re-initialization on EVERY rerun, triggering API key re-resolution loop
         pass
         
-import google.generativeai as genai
+try:
+    from google import genai
+except ImportError:
+    genai = None
 
 # --- API KEY LED STATUS (Sidebar - Compact) ---
 with st.sidebar:
