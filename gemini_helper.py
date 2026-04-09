@@ -4,7 +4,8 @@ Python Pre-Analysis Engine + 12-Step CoT + Deep Reasoning + Tam Tài + Contradic
 Lục Thuật Hợp Nhất: Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất + Mang Đoán + Vạn Vật
 """
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 import os
 import requests
 import json
@@ -38,9 +39,11 @@ class GeminiQMDGHelper:
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V20.5-DataFirst-Grounded"
+        self.version = "V21.0-GenAI-SDK"
+        # V21.0: Khởi tạo Client mới (google-genai SDK)
+        self._client = None
         if self.api_key:
-            genai.configure(api_key=self.api_key)
+            self._client = genai.Client(api_key=self.api_key)
         
         self._failed_models = set()
         self._hashlib = hashlib
@@ -50,12 +53,12 @@ class GeminiQMDGHelper:
         self.n8n_timeout = 8
         self.logs = [] 
 
-        self.model_name = "gemini-2.0-flash"
-        self.model = self._get_best_model_placeholder()
+        self.model_name = "gemini-3.1-pro-preview"
+        self.model = None  # V21.0: Không cần model object, dùng client.models
         self.fallback_helper = FreeAIHelper()
 
     def _get_best_model_placeholder(self):
-        return genai.GenerativeModel('gemini-2.0-flash')
+        return None  # V21.0: Không cần placeholder, dùng client.models
 
     def log_step(self, step, status, detail):
         self.logs.append({
@@ -67,30 +70,30 @@ class GeminiQMDGHelper:
 
     def test_connection(self):
         try:
+            if not self._client:
+                return False, "Chưa có API Key!"
+            
             valid_models = []
             try:
-                available = list(genai.list_models())
+                available = list(self._client.models.list())
                 for m in available:
-                    if 'generateContent' in m.supported_generation_methods:
-                        valid_models.append(m.name)
+                    valid_models.append(m.name)
             except Exception as e:
                 return False, f"Lỗi liệt kê model: {str(e)}"
 
             if not valid_models:
                 return False, "Key không có quyền truy cập model nào!"
 
-            # V6.0: KHÔNG gọi generate_content("ping") nữa — tiết kiệm quota!
-            # Chỉ kiểm tra model có tồn tại trong danh sách hay không
-            
-            # V15.0: Priority order — Pro first (mạnh nhất), Flash fallback (quota cao)
+            # V21.0: Priority order — 3.1 Pro (MẠNH NHẤT), Flash fallback
             priority_order = [
-                'gemini-2.0-flash',                # Ổn định nhất hiện tại
+                'gemini-3.1-pro-preview',          # V21.0: Model MỚI NHẤT — MẠNH NHẤT
+                'gemini-2.0-flash',                # Fallback ổn định
                 'gemini-1.5-pro',                  # Fallback mạnh
                 'gemini-1.5-flash',                # Fallback quota cao
             ]
             
             # Find best available model by checking against list_models
-            model_names_short = [m.split('/')[-1] for m in valid_models]
+            model_names_short = [m.split('/')[-1] if '/' in m else m for m in valid_models]
             first_match = None
             for model_alias in priority_order:
                 if any(model_alias in mn for mn in model_names_short):
@@ -99,13 +102,11 @@ class GeminiQMDGHelper:
             
             if first_match:
                 self.model_name = first_match
-                self.model = genai.GenerativeModel(first_match)
                 return True, f"Kết nối OK! ({first_match}) — Sẵn sàng"
             else:
                 # Fallback: use first available model
-                fallback = model_names_short[0] if model_names_short else 'gemini-1.5-flash'
+                fallback = model_names_short[0] if model_names_short else 'gemini-2.0-flash'
                 self.model_name = fallback
-                self.model = genai.GenerativeModel(fallback)
                 return True, f"Kết nối OK! ({fallback})"
 
         except Exception as e:
@@ -116,19 +117,19 @@ class GeminiQMDGHelper:
 
     # --- CORE: CALL AI RAW ---
     def _call_ai_raw(self, prompt):
-        # SAFETY SETTINGS: OFF
-        from google.generativeai.types import HarmCategory, HarmBlockThreshold
-        safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-        }
+        # V21.0: google-genai SDK — safety settings via types
+        safety_settings = [
+            genai_types.SafetySetting(category='HARM_CATEGORY_HARASSMENT', threshold='BLOCK_NONE'),
+            genai_types.SafetySetting(category='HARM_CATEGORY_HATE_SPEECH', threshold='BLOCK_NONE'),
+            genai_types.SafetySetting(category='HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold='BLOCK_NONE'),
+            genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+        ]
 
-        # Model cascade - V6.0: dùng được cái nào thì dùng cái đó
+        # V21.0: Model cascade — 3.1 Pro mới nhất
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-2.0-flash',                # Model ổn định nhất hiện tại
+                'gemini-3.1-pro-preview',          # V21.0: Model MỚI NHẤT — MẠNH NHẤT
+                'gemini-2.0-flash',                # Fallback ổn định
                 'gemini-1.5-pro',                  # Fallback mạnh
                 'gemini-1.5-flash',                # Fallback quota cao
             ]
@@ -138,21 +139,25 @@ class GeminiQMDGHelper:
         # KEY ROTATION & MODEL CASCADE
         for current_api_key in self.api_keys:
             try:
-                genai.configure(api_key=current_api_key)
+                client = genai.Client(api_key=current_api_key)
             except Exception:
                 continue
 
             for model_name in self.cascade_models:
-                # V13.0: Thử TẤT CẢ model — mỗi model có quota RIÊNG!
+                # V21.0: Thử TẤT CẢ model — mỗi model có quota RIÊNG!
                 try:
-                    active_model = genai.GenerativeModel(model_name)
-                    gen_config = genai.GenerationConfig(
+                    gen_config = genai_types.GenerateContentConfig(
                         temperature=0.4,          # V20.5: Giảm từ 0.7→0.4 — tăng chính xác, giảm hallucination
                         top_p=0.85,               # V20.5: Thu hẹp phạm vi — bám data hơn
                         top_k=40,                 # V20.5: Ít sáng tạo hơn, chính xác hơn
                         max_output_tokens=65536,  # V15.0: Max output cho phân tích chi tiết
+                        safety_settings=safety_settings,
                     )
-                    resp = active_model.generate_content(prompt, safety_settings=safety_settings, generation_config=gen_config)
+                    resp = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=gen_config,
+                    )
 
                     # V14.0: Fix parsing cho thinking models (gemini-2.5-flash)
                     # Thinking model trả về nhiều parts: thought (suy nghĩ nội bộ) + text (câu trả lời)
@@ -1993,25 +1998,27 @@ class GeminiQMDGHelper:
             )
             
             # Gọi AI kiểm chứng với temperature cực thấp
-            from google.generativeai.types import HarmCategory, HarmBlockThreshold
-            safety_settings = {
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            }
-            gen_config = genai.GenerationConfig(
+            # V21.0: google-genai SDK verification
+            safety_settings = [
+                genai_types.SafetySetting(category='HARM_CATEGORY_HARASSMENT', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_HATE_SPEECH', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+            ]
+            gen_config = genai_types.GenerateContentConfig(
                 temperature=0.1,  # Cực thấp cho kiểm chứng
                 top_p=0.7,
                 max_output_tokens=32768,
+                safety_settings=safety_settings,
             )
             
-            # Dùng model hiện tại
-            verify_model = genai.GenerativeModel(self.model_name)
-            resp = verify_model.generate_content(
-                verify_prompt, 
-                safety_settings=safety_settings,
-                generation_config=gen_config
+            # Dùng model hiện tại qua client
+            if not self._client:
+                return raw_analysis
+            resp = self._client.models.generate_content(
+                model=self.model_name,
+                contents=verify_prompt,
+                config=gen_config,
             )
             
             try:
