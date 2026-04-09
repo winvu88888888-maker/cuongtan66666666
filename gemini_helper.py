@@ -53,7 +53,7 @@ class GeminiQMDGHelper:
         self.n8n_timeout = 8
         self.logs = [] 
 
-        self.model_name = "gemini-3.1-pro-preview"
+        self.model_name = "gemini-2.5-flash"
         self.model = None  # V21.0: Không cần model object, dùng client.models
         self.fallback_helper = FreeAIHelper()
 
@@ -84,12 +84,12 @@ class GeminiQMDGHelper:
             if not valid_models:
                 return False, "Key không có quyền truy cập model nào!"
 
-            # V21.0: Priority order — 3.1 Pro (MẠNH NHẤT), Flash fallback
+            # V21.0: Priority order — Flash FREE first, Pro nếu có billing
             priority_order = [
-                'gemini-3.1-pro-preview',          # V21.0: Model MỚI NHẤT — MẠNH NHẤT
-                'gemini-2.0-flash',                # Fallback ổn định
-                'gemini-1.5-pro',                  # Fallback mạnh
-                'gemini-1.5-flash',                # Fallback quota cao
+                'gemini-2.5-flash',                # V21.0: FREE — Mạnh nhất trong free tier
+                'gemini-2.5-flash-lite',           # FREE — Fallback nhẹ
+                'gemini-3.1-pro-preview',          # PAID — Chỉ dùng nếu có billing
+                'gemini-1.5-flash',                # Fallback legacy
             ]
             
             # Find best available model by checking against list_models
@@ -125,13 +125,13 @@ class GeminiQMDGHelper:
             genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
         ]
 
-        # V21.0: Model cascade — 3.1 Pro mới nhất
+        # V21.0: Model cascade — Free tier first
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-3.1-pro-preview',          # V21.0: Model MỚI NHẤT — MẠNH NHẤT
-                'gemini-2.0-flash',                # Fallback ổn định
-                'gemini-1.5-pro',                  # Fallback mạnh
-                'gemini-1.5-flash',                # Fallback quota cao
+                'gemini-2.5-flash',                # V21.0: FREE — Mạnh nhất free tier
+                'gemini-2.5-flash-lite',           # FREE — Fallback nhẹ, quota cao
+                'gemini-3.1-pro-preview',          # PAID — Chỉ dùng nếu có billing
+                'gemini-1.5-flash',                # Fallback legacy
             ]
 
         error_log = []
