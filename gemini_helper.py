@@ -50,12 +50,12 @@ class GeminiQMDGHelper:
         self.n8n_timeout = 8
         self.logs = [] 
 
-        self.model_name = "gemini-2.5-pro"
+        self.model_name = "gemini-2.0-flash"
         self.model = self._get_best_model_placeholder()
         self.fallback_helper = FreeAIHelper()
 
     def _get_best_model_placeholder(self):
-        return genai.GenerativeModel('gemini-2.5-pro')
+        return genai.GenerativeModel('gemini-2.0-flash')
 
     def log_step(self, step, status, detail):
         self.logs.append({
@@ -84,11 +84,9 @@ class GeminiQMDGHelper:
             
             # V15.0: Priority order — Pro first (mạnh nhất), Flash fallback (quota cao)
             priority_order = [
-                'gemini-2.5-pro-preview-06-05',
-                'gemini-2.5-pro',
-                'gemini-2.5-flash-preview-05-20',
-                'gemini-2.5-flash',
-                'gemini-2.0-flash',
+                'gemini-2.0-flash',                # Ổn định nhất hiện tại
+                'gemini-1.5-pro',                  # Fallback mạnh
+                'gemini-1.5-flash',                # Fallback quota cao
             ]
             
             # Find best available model by checking against list_models
@@ -130,12 +128,9 @@ class GeminiQMDGHelper:
         # Model cascade - V6.0: dùng được cái nào thì dùng cái đó
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-2.5-pro-preview-06-05',    # V15.0: Pro mới nhất — MẠNH NHẤT
-                'gemini-2.5-pro',                  # Pro ổn định — MẠNH NHẤT
-                'gemini-2.5-flash-preview-05-20',  # Flash mới nhất — fallback quota cao
-                'gemini-2.5-flash',                # Flash ổn định — fallback quota cao
-                'gemini-2.0-flash',                # Fallback ổn định
-                'gemini-1.5-pro',                  # Fallback cuối
+                'gemini-2.0-flash',                # Model ổn định nhất hiện tại
+                'gemini-1.5-pro',                  # Fallback mạnh
+                'gemini-1.5-flash',                # Fallback quota cao
             ]
 
         error_log = []
