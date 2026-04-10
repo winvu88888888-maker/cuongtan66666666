@@ -4487,7 +4487,8 @@ class FreeAIHelper:
                                   ky_mon_reason, luc_hao_reason, mai_hoa_reason,
                                   impact_evidence=None,
                                   luc_nham_verdict='BÌNH', luc_nham_reason='',
-                                  thai_at_verdict='BÌNH', thai_at_reason=''):
+                                  thai_at_verdict='BÌNH', thai_at_reason='',
+                                  final_pct=None):
         """
         V11.0: Tổng hợp THỐNG NHẤT — Thu thập Dụng Thần từ cả 3 phương pháp,
         kết nối thành chuỗi nhân quả, tạo 1 câu trả lời duy nhất.
@@ -4765,19 +4766,31 @@ class FreeAIHelper:
         # Build narrative paragraph
         narrative_parts = []
         
-        # Part 1: Mở đầu — trạng thái DT
-        if total_good > total_bad:
-            overall = 'THUẬN LỢI'
-            pct = min(90, 50 + (total_good - total_bad) * 10)
-            narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** ({pct}%).")
-        elif total_bad > total_good:
-            overall = 'KHÓ KHĂN'
-            pct = max(10, 50 - (total_bad - total_good) * 10)
-            narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
+        # Part 1: Mở đầu — trạng thái DT (V26.0 dùng Điểm Trọng Số Thống Nhất)
+        if final_pct is not None:
+            pct = final_pct
+            if pct >= 60:
+                overall = 'THUẬN LỢI'
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** ({pct}%).")
+            elif pct <= 45:
+                overall = 'KHÓ KHĂN'
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
+            else:
+                overall = 'CHƯA RÕ'
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CHƯA RÕ RÀNG / BÌNH BÌNH** ({pct}%) — thế trận giằng co.")
         else:
-            overall = 'CHƯA RÕ'
-            pct = 50
-            narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CHƯA RÕ RÀNG** — các phương pháp cho kết quả trái chiều.")
+            if total_good > total_bad:
+                overall = 'THUẬN LỢI'
+                pct = min(90, 50 + (total_good - total_bad) * 10)
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** ({pct}%).")
+            elif total_bad > total_good:
+                overall = 'KHÓ KHĂN'
+                pct = max(10, 50 - (total_bad - total_good) * 10)
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
+            else:
+                overall = 'CHƯA RÕ'
+                pct = 50
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CHƯA RÕ RÀNG** — các phương pháp cho kết quả trái chiều.")
         
         # Part 2: Bằng chứng cụ thể từ mỗi phương pháp
         method_summaries = []
@@ -4795,80 +4808,16 @@ class FreeAIHelper:
         if method_summaries:
             narrative_parts.append("Cụ thể: " + "; ".join(method_summaries) + ".")
         
-        # Part 3: Kết luận dứt khoát theo CÂU HỎI
-        if any(k in q for k in ['mấy', 'bao nhiêu', 'số lượng', 'mấy chiếc', 'mấy cái', 'mấy người']):
-            # ĐẾM SỐ LƯỢNG — trả lời số cụ thể
-            if chart_data and isinstance(chart_data, dict):
-                can_thien_ban_n = chart_data.get('can_thien_ban', {})
-                can_gio_n = chart_data.get('can_gio', '')
-                sv_cung_n = None
-                for cn_n, cv_n in can_thien_ban_n.items():
-                    if cv_n == can_gio_n:
-                        sv_cung_n = int(cn_n) if cn_n else None
-                        break
-                quai_n = QUAI_TUONG.get(sv_cung_n, '') if sv_cung_n else ''
-                tien_thien_n = TIEN_THIEN.get(quai_n, 0) if quai_n else 0
-                if tien_thien_n > 0:
-                    narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': Khoảng {tien_thien_n}** (Quái Tiên Thiên {quai_n} = {tien_thien_n}).")
-                else:
-                    narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': Chưa xác định chính xác số lượng.** Xem Bảng đếm số ở trên.")
-            else:
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': Chưa đủ dữ liệu để đếm.**")
-        elif any(k in q for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể']):
-            if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CÓ — RẤT ĐẢM BẢO.** Cả 5 phép đều hướng về kết quả tốt cho sự việc.")
-            elif overall == 'KHÓ KHĂN':
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': KHÔNG NÊN — CHƯA PHẢI THỜI ĐIỂM.** Dụng Thần yếu, sự việc gặp trở ngại lớn.")
-            else:
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CÒN PHẢI XEM LẠI — tỷ lệ 50/50.** Các phương pháp cho kết quả khác nhau.")
-        elif any(k in q for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không', 'qua khỏi', 'nguy hiểm không', 'an toàn không']):
-            if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': BÌNH AN VÔ SỰ / CÒN SỐNG.** {dung_than} vẫn còn sức, có khả năng hồi phục.")
-            elif overall == 'KHÓ KHĂN':
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': TÌNH TRẠNG CỰC KỲ NGUY KỊCH.** {dung_than} rất yếu, khó qua khỏi, cần hành động khẩn cấp.")
-            else:
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CHƯA THỂ KHẲNG ĐỊNH.** 50/50, Cần theo dõi sát và hành động sớm.")
-        elif any(k in q for k in ['ở đâu', 'hướng nào', 'tìm đâu', 'chỗ nào']):
-            if km_dt_info:
-                quai_dt = QUAI_TUONG.get(km_dt_info['cung'], '')
-                huong_map = {'Khảm': 'Bắc', 'Ly': 'Nam', 'Chấn': 'Đông', 'Đoài': 'Tây', 'Cấn': 'Đông Bắc', 'Tốn': 'Đông Nam', 'Càn': 'Tây Bắc', 'Khôn': 'Tây Nam'}
-                huong = huong_map.get(quai_dt, '?')
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': HƯỚNG {huong} (Cung {km_dt_info['cung']} - {quai_dt}).** Cả Kỳ Môn và Lục Hào đều chỉ về hướng này.")
-            else:
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}':** Xem chi tiết BƯỚC 7 để xác định hướng.")
-        elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào']):
-            if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': NGAY BÂY GIỜ LUÔN.** Năng lượng cực vượng, hành động trong 1-7 ngày.")
-            else:
-                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CHƯA TỚI THỜI ĐIỂM. Chờ 1-3 tháng** để tình hình chuyển biến.")
-        else:
-            # Câu hỏi chung
-            if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHẢ THI / RẤT TỐT ({pct}%).** {dung_than} được hỗ trợ mạnh mẽ, nên hành động.")
-            elif overall == 'KHÓ KHĂN':
-                narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHÔNG ĐƯỢC / XẤU ({pct}%).** {dung_than} suy yếu, bế tắc, vạn sự khó thành.")
-            else:
-                narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': BÌNH BÌNH ({pct}%).** Vẫn lấp lửng thiếu rõ ràng. Cần sự nỗ lực hơn từ bản thân.")
-        
-        # Part 4: Lời khuyên cụ thể
+        # Part 3: Kết luận dứt khoát theo CÂU HỎI (V26.0: Xóa bỏ hardcode keyword match dễ lỗi)
         if overall == 'THUẬN LỢI':
-            if any(k in q for k in ['tiền', 'mua', 'bán', 'đầu tư']):
-                narrative_parts.append("💡 **Khuyên:** Thời điểm tốt — hãy kiểm tra giấy tờ kỹ trước khi giao dịch.")
-            elif any(k in q for k in ['bệnh', 'ốm', 'khỏe']):
-                narrative_parts.append("💡 **Khuyên:** Tình hình khả quan — tiếp tục điều trị và giữ tinh thần lạc quan.")
-            elif any(k in q for k in ['yêu', 'tình', 'cưới', 'vợ', 'chồng']):
-                narrative_parts.append("💡 **Khuyên:** Mối quan hệ thuận lợi — hãy bày tỏ chân thành.")
-            else:
-                narrative_parts.append("💡 **Khuyên:** Hành động sớm, tận dụng thời cơ đang có.")
+            narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHẢ THI / RẤT TỐT ({pct}%).** {dung_than} được hỗ trợ mạnh mẽ, nên hành động quyết đoán.")
+            narrative_parts.append("💡 **Khuyên:** Thời điểm vượng khí, hãy tận dụng thời cơ đang có để triển khai rốt ráo.")
         elif overall == 'KHÓ KHĂN':
-            if any(k in q for k in ['tiền', 'mua', 'bán', 'đầu tư']):
-                narrative_parts.append("💡 **Khuyên:** Tạm dừng giao dịch — chờ 2-4 tuần để tình hình thay đổi.")
-            elif any(k in q for k in ['bệnh', 'ốm', 'khỏe']):
-                narrative_parts.append("💡 **Khuyên:** Cần đi khám chuyên khoa gấp — không nên chủ quan.")
-            else:
-                narrative_parts.append("💡 **Khuyên:** Kiên nhẫn chờ đợi, tìm người hỗ trợ, không nên ép buộc.")
+            narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHÔNG ĐƯỢC / XẤU ({pct}%).** {dung_than} suy yếu, bế tắc, vạn sự khó thành.")
+            narrative_parts.append("💡 **Khuyên:** Năng lượng yếu, tạm thời đình chỉ hành động hoặc tìm thêm nhân tố trợ lực (Quý nhân).")
         else:
-            narrative_parts.append("💡 **Khuyên:** Quan sát thêm 1-2 tuần, thu thập thêm thông tin rồi quyết định.")
+            narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': BÌNH BÌNH ({pct}%).** Các yếu tố đang ở mức giằng co, lấp lửng thiếu rõ ràng.")
+            narrative_parts.append("💡 **Khuyên:** Quan sát thêm, thu thập thêm thông tin mở rộng cục diện rồi mới quyết định.")
         
         # Kết hợp narrative
         lines.append("\n".join(narrative_parts))
@@ -5026,6 +4975,10 @@ class FreeAIHelper:
                 dung_than = 'Bản Thân'
         if any(kw in q_lower for kw in ['anh chị em', 'anh em', 'mấy anh', 'mấy chị', 'bao nhiêu anh']):
             dung_than = 'Huynh Đệ'
+            
+        # V26.1: TÔN TRỌNG tuyệt đối quyết định tự chọn Dụng Thần của người dùng (từ Dropdown Streamlit)
+        if selected_subject and selected_subject != "Không Rõ":
+            dung_than = selected_subject
         
         is_age = _is_age_question(question)
         is_find = _is_find_question(question) and detected_category == "TÌM_ĐỒ"
@@ -5568,6 +5521,7 @@ class FreeAIHelper:
             luc_nham_reason=luc_nham_reason,
             thai_at_verdict=thai_at_verdict,
             thai_at_reason=thai_at_reason,
+            final_pct=weighted_pct
         )
         sections.append(unified_narrative)
         
