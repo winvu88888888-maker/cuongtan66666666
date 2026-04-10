@@ -1,8 +1,8 @@
 """
-Free AI Helper V22.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + LƯỢNG HÓA SUY VƯỢNG TOÀN DIỆN)
+Free AI Helper V24.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + LƯỢNG HÓA SUY VƯỢNG TOÀN DIỆN)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
-V22.0: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
+V24.0: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
        Ngũ Hành vật chất mapping (hình, chất liệu, màu sắc).
        Kế thừa V21.0: Lượng Hóa Suy Vượng, Tiến/Thối Thần, Nguyệt Phá.
        Kế thừa V15.0: XÂU DƯỢC + NỘI CUNG (7 tầng).
@@ -533,7 +533,7 @@ NGU_HANH_VAT_CHAT = {
     'Thổ': {'hinh': 'Vuông, bàn phẳng, dày', 'chat_lieu': 'Đất, gạch, xi măng', 'mau': 'Vàng, nâu', 'huong': 'Trung tâm', 'vi': 'Ngọt', 'co_the': 'Dạ dày, lá lách, cơ bắp'},
 }
 
-# V22.0: VẠN VẬT CỤ THỂ = NGŨ HÀNH × TẦNG VƯỢNG SUY
+# V24.0: VẠN VẬT CỤ THỂ = NGŨ HÀNH × TẦNG VƯỢNG SUY
 # Kết hợp chất liệu (Ngũ Hành) + tình trạng (Tầng) → đồ vật cụ thể
 VAN_VAT_CU_THE = {
     'Kim': {
@@ -729,7 +729,7 @@ VAN_VAT_CU_THE = {
 }
 
 def _get_van_vat_cu_the(hanh, tier_key):
-    """V22.0: Lấy mô tả vạn vật CỤ THỂ từ Ngũ Hành + Tầng Vượng Suy"""
+    """V24.0: Lấy mô tả vạn vật CỤ THỂ từ Ngũ Hành + Tầng Vượng Suy"""
     hanh_data = VAN_VAT_CU_THE.get(hanh, {})
     return hanh_data.get(tier_key, {})
 
@@ -1194,15 +1194,15 @@ NGU_HANH_DETECT = {
 class FreeAIHelper:
 
     """
-    Offline AI V22.0 — Lượng Hóa Suy Vượng Toàn Diện + 3 Tầng Unified Strength.
-    V22.0: Tích hợp _calc_unified_strength_tier() (LH+TS+NK) + Ngũ Hành vật chất.
+    Offline AI V24.0 — Lượng Hóa Suy Vượng Toàn Diện + 3 Tầng Unified Strength.
+    V24.0: Tích hợp _calc_unified_strength_tier() (LH+TS+NK) + Ngũ Hành vật chất.
     Kế thừa V21.0: Weighted scoring 5 PP, Tiến/Thối Thần, Nguyệt Phá.
     Kế thừa V12.0: Lục Thân Relationship Engine.
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V22.0 Unified Strength)"
-        self.version = "V22.0-Unified-Strength"
+        self.name = "Thiên Cơ Đại Sư (V24.0 Unified Strength)"
+        self.version = "V24.0-Unified-Strength"
         self.model_name = "offline-rule-engine-v22.0"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
@@ -1219,7 +1219,7 @@ class FreeAIHelper:
         return text if text else "Không có phản hồi."
 
     def test_connection(self):
-        return True, "V22.0 Unified Strength — Offline + Online fallback"
+        return True, "V24.0 Unified Strength — Offline + Online fallback"
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
@@ -2381,8 +2381,12 @@ class FreeAIHelper:
             elif KHAC.get(dt_hanh_can) == dt_hanh_cung: score -= 2; factors.append(f"KM Can DT Tù tại Cung -2")
             
         # ⑥ Tuần Không (-10)
+        cung_chi_km = {
+            1: ['Tý'], 8: ['Sửu', 'Dần'], 3: ['Mão'], 4: ['Thìn', 'Tị', 'Tỵ'],
+            9: ['Ngọ'], 2: ['Mùi', 'Thân'], 7: ['Dậu'], 6: ['Tuất', 'Hợi']
+        }
         khong_vong = _get_khong_vong(can_ngay, chi_ngay) if can_ngay and chi_ngay else []
-        cung_chis = CUNG_CHI.get(dt_cung, [])
+        cung_chis = cung_chi_km.get(dt_cung, [])
         if any(c in khong_vong for c in cung_chis):
             score -= 10
             factors.append(f"KM Cung DT Không Vong -10")
@@ -2410,7 +2414,7 @@ class FreeAIHelper:
     def _luc_hao_scoring(self, luc_hao_data, dung_than):
         """V16.0: Chấm điểm Lục Hào — 8 tầng scoring."""
         if not luc_hao_data or not isinstance(luc_hao_data, dict):
-            return 0, "Không có dữ liệu Lục Hào"
+            return 0, "Không có dữ liệu Lục Hào", []
         
         score = 0
         factors = []
@@ -2419,7 +2423,7 @@ class FreeAIHelper:
         dong_hao = luc_hao_data.get('dong_hao', [])
         haos = ban.get('haos') or ban.get('details', [])
         if not haos:
-            return 0, "Không có hào"
+            return 0, "Không có hào", []
         
         # Tìm DT hào
         dt_hao = None
@@ -2584,7 +2588,7 @@ class FreeAIHelper:
                 factors.append("Ứng khắc Thế -5")
         
         # ═══════════════════════════════════════════════════════════
-        # V23.0: THÊM 14 YẾU TỐ MỚI (⑩-㉓) — TOÀN DIỆN AI OFFLINE
+        # V24.0: THÊM 14 YẾU TỐ MỚI (⑩-㉓) — TOÀN DIỆN AI OFFLINE
         # ═══════════════════════════════════════════════════════════
         
         # ⑩ Cừu Thần (hành sinh Kỵ Thần → tăng sức khắc DT) (±4)
@@ -2765,7 +2769,7 @@ class FreeAIHelper:
                 factors.append("DT ở hào 1 (thấp, yếu, mới bắt đầu) -2")
         
         # ═══════════════════════════════════════════════════════════
-        # V23.0: STRENGTH LABEL với thang điểm mở rộng
+        # V24.0: STRENGTH LABEL với thang điểm mở rộng
         # ═══════════════════════════════════════════════════════════
         if score >= 25: strength = "🟢 CỰC VƯỢNG"
         elif score >= 15: strength = "🟢 VƯỢNG"
@@ -3008,7 +3012,7 @@ class FreeAIHelper:
     def _luc_nham_scoring(self, chart_data):
         """V16.0: Chấm điểm Đại Lục Nhâm — Tam Truyền + Thiên Tướng + Tuần Không."""
         if not chart_data or not isinstance(chart_data, dict):
-            return 0, "Không có chart_data"
+            return 0, "Không có chart_data", []
         
         score = 0
         factors = []
@@ -3016,7 +3020,7 @@ class FreeAIHelper:
         try:
             from dai_luc_nham import tinh_dai_luc_nham, phan_tich_chuyen_sau, tinh_tuan_khong, CHI_NGU_HANH as LN_CHI_HANH
         except ImportError:
-            return 0, "Thiếu module dai_luc_nham"
+            return 0, "Thiếu module dai_luc_nham", []
         
         can_ngay = chart_data.get('can_ngay', 'Giáp')
         chi_ngay = chart_data.get('chi_ngay', 'Tý')
@@ -3094,7 +3098,7 @@ class FreeAIHelper:
     def _thai_at_scoring(self, chart_data):
         """V16.0: Chấm điểm Thái Ất — Chủ↔Khách + Văn Xương + Cách Cục."""
         if not chart_data or not isinstance(chart_data, dict):
-            return 0, "Không có chart_data"
+            return 0, "Không có chart_data", []
         
         score = 0
         factors = []
@@ -4869,7 +4873,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V22.0 Unified Strength). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V24.0 Unified Strength). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -5020,7 +5024,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V22.0 Unified Strength\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V24.0 Unified Strength\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
@@ -5236,7 +5240,7 @@ class FreeAIHelper:
         v16_tb_raw = 0
         v16_ln_raw = 0
         v16_ta_raw = 0
-        v23_lh_factors = []  # V23.0: Lưu toàn bộ factors chi tiết
+        v23_lh_factors = []  # V24.0: Lưu toàn bộ factors chi tiết
         v24_km_factors = []
         v24_mh_factors = []
         v24_tb_factors = []
@@ -5349,7 +5353,7 @@ class FreeAIHelper:
         sections.append(f"\n**📊 WEIGHTED SCORE: {weighted_pct}%** (có tính 12 Trường Sinh: {ts_bonus:+d}%)")
         
         # ═══════════════════════════════════════════════════════
-        # V22.0: BƯỚC 5.7 — LƯỢNG HÓA LỰC LƯỢNG 3 TẦNG (UNIFIED STRENGTH)
+        # V24.0: BƯỚC 5.7 — LƯỢNG HÓA LỰC LƯỢNG 3 TẦNG (UNIFIED STRENGTH)
         # Tích hợp _calc_unified_strength_tier() — hàm V21.0 viết nhưng chưa gọi
         # 3 nguồn: LH raw (50%) + 12 Trường Sinh (30%) + Ngũ Khí (20%)
         # ═══════════════════════════════════════════════════════
@@ -5389,7 +5393,7 @@ class FreeAIHelper:
         # Bảng vạn vật từ weighted_pct (5 PP) — giữ lại như cũ
         vv_key, vv_data = _get_van_vat_from_pct(weighted_pct)
         
-        sections.append(f"\n### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V22.0 UNIFIED STRENGTH)")
+        sections.append(f"\n### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V24.0 UNIFIED STRENGTH)")
         
         # A. Bảng 3 tầng Unified
         sections.append(f"\n**A. 3 TẦNG ĐO LỰC LƯỢNG DT:**")
@@ -5401,7 +5405,7 @@ class FreeAIHelper:
         sections.append(f"| **UNIFIED** | **3 tầng tổng hợp** | **{unified_v22['unified_pct']}%** | {unified_v22['tier_data']['cap']} |")
         sections.append(f"| **WEIGHTED 5PP** | **KM+LH+MH+LN+TA** | **{weighted_pct}%** | {vv_data['cap']} |")
         
-        # A2. V23.0: BẢNG THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT
+        # A2. V24.0: BẢNG THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT
         if v23_lh_factors:
             # Phân loại factors
             noi_tai = []  # Yếu tố nội tại DT
@@ -5420,7 +5424,7 @@ class FreeAIHelper:
             tong_diem_tot = sum(1 for f in v23_lh_factors if '+' in f)
             tong_diem_xau = sum(1 for f in v23_lh_factors if '-' in f and '+' not in f)
             
-            sections.append(f"\n**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V23.0) — {len(v23_lh_factors)} yếu tố:**")
+            sections.append(f"\n**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V24.0) — {len(v23_lh_factors)} yếu tố:**")
             sections.append(f"*✅ Thuận lợi: {tong_diem_tot} | ⚠️ Bất lợi: {tong_diem_xau} | Tổng: {v16_lh_raw:+d}*")
             
             if noi_tai:
@@ -5474,7 +5478,7 @@ class FreeAIHelper:
             sections.append(f"\n**D. 12 TRƯỜNG SINH:** {ts_stage} ({ts_info.get('cap', '?')}) — Power={ts_info.get('power', 50)}%")
             sections.append(f"→ Con người: {ts_info.get('con_nguoi', '?')} | Vật: {ts_info.get('vat', '?')}")
         
-        # E. V22.0: VẠN VẬT CỤ THỂ = Ngũ Hành × Tầng Vượng Suy
+        # E. V24.0: VẠN VẬT CỤ THỂ = Ngũ Hành × Tầng Vượng Suy
         vv_cu_the = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH'))
         if vv_cu_the:
             sections.append(f"\n**E. 🎯 VẠN VẬT CỤ THỂ ({hanh_dt_v22} × {unified_v22['tier_data']['cap']}):**")
@@ -5551,7 +5555,7 @@ class FreeAIHelper:
         )
         sections.append(unified_narrative)
         
-        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V22.0 — Unified Strength: Weighted 5PP={weighted_pct}%, Unified 3-Tier={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
+        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V24.0 — Unified Strength: Weighted 5PP={weighted_pct}%, Unified 3-Tier={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
         
         # ========================================
         # V11.1: AI ONLINE LÀ PHÂN TÍCH CHÍNH
@@ -5722,7 +5726,7 @@ class FreeAIHelper:
             'v17_routing': v17_routing,
             # V18.0: Detective deduction
             'v18_detective': v18_detective,
-            # V22.0: Unified Strength — 3 tầng tổng hợp
+            # V24.0: Unified Strength — 3 tầng tổng hợp
             'v22_unified_strength': {
                 'unified_pct': unified_v22['unified_pct'] if unified_v22 else 50,
                 'lh_pct': unified_v22['lh_pct'] if unified_v22 else 50,
@@ -5763,7 +5767,7 @@ class FreeAIHelper:
             final_parts.append(online_result)
             final_parts.append("")
             final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết AI Offline — THIÊN CƠ ĐẠI SƯ V22.0 (nhấn để mở)</b></summary>\n")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết AI Offline — THIÊN CƠ ĐẠI SƯ V24.0 (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             return "\n".join(final_parts)
@@ -5776,7 +5780,7 @@ class FreeAIHelper:
             
             error_msg = error_reasons[-1] if error_reasons else "Không có API Key hoặc hết hạn mức"
             
-            # === V22.0: BUILD COMPREHENSIVE OFFLINE CONCLUSION ===
+            # === V24.0: BUILD COMPREHENSIVE OFFLINE CONCLUSION ===
             pct_short = weighted_pct  # Từ BƯỚC 6 đã tính
             unified_pct_short = unified_v22['unified_pct'] if unified_v22 else pct_short
             
@@ -5794,14 +5798,14 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V22.0")
+            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V24.0")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
             final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} ({pct_short}%)")
             final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
             final_parts.append(f"\n**📊 Unified Strength (3 tầng):** {unified_pct_short}% ({unified_v22['tier_data']['cap'] if unified_v22 else '?'}) | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
             
-            # V22.0: VẠN VẬT CỤ THỂ trong KẾT LUẬN
+            # V24.0: VẠN VẬT CỤ THỂ trong KẾT LUẬN
             vv_cu_the_kl = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH') if unified_v22 else 'TRUNG_BÌNH')
             if vv_cu_the_kl and hanh_dt_v22:
                 final_parts.append(f"\n### 🎯 VẠN VẬT CỤ THỂ ({hanh_dt_v22} × {unified_v22['tier_data']['cap'] if unified_v22 else '?'})")
@@ -6056,7 +6060,7 @@ class FreeAIHelper:
             
             # MỌI THỨ chi tiết ẩn sau 1 nút bấm duy nhất
             final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích V22.0 (nhấn để mở)</b></summary>\n")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích V24.0 (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
