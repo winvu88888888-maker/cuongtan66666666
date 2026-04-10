@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-04-01-V20.5-SUPER-INTELLIGENCE
+# VERSION: 2026-04-10-V22.0-UNIFIED-STRENGTH
 try:
     st.set_page_config(
-    page_title="☯️ Kỳ Môn AI V20.5",
+    page_title="☯️ Kỳ Môn AI V22.0",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -122,7 +122,7 @@ model_display = "GEMINI-2.5-PRO"
 if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'model_name'):
     model_display = st.session_state.gemini_helper.model_name.upper()
 st.sidebar.success(f"🚀 **MODEL: {model_display}**")
-st.sidebar.caption("Trạng thái: Đã kích hoạt Siêu Trí Tuệ Thông Minh Nhất V20.3")
+st.sidebar.caption("Trạng thái: THIÊN CƠ ĐẠI SƯ V22.0 — Unified Strength + 6 Lục Thuật")
 
 # Add project root and dist directory to Python path
 root_path = os.path.dirname(os.path.abspath(__file__))
@@ -999,7 +999,7 @@ with col_header3:
 
 st.markdown("---")
 # DEPLOYMENT VERIFICATION BANNER
-st.success("✅ SYSTEM ONLINE: V20.3 - SIÊU TRÍ TUỆ (13-Step CoT + Number Engine + VVLT 40)")
+st.success("✅ SYSTEM ONLINE: V22.0 — THIÊN CƠ ĐẠI SƯ (Unified Strength + 3 Tầng LH+TS+NK + 6 Lục Thuật)")
 
 # ======================================================================
 # SIDEBAR - CONTROLS

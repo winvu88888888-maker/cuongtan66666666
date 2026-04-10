@@ -25,14 +25,29 @@ except Exception as e:
     st.error(f"🚨 Lỗi nạp Hệ thống: {e}")
     def render_universal_data_hub_tab(): st.error("Tab Dữ Liệu lỗi")
     def render_system_management_tab(): st.error("Tab Quản Trị lỗi")
+    def render_mining_summary_on_dashboard(**kwargs): pass
     def add_entry(*args, **kwargs): return False
+    def get_hub_stats(): return {'total': 0, 'size_mb': 0.0}
+    def init_global_factory(): return {'status': 'offline'}
 
 # Import modules from ai_modules
 try:
     from ai_modules.orchestrator import AIOrchestrator
     from ai_modules.memory_system import MemorySystem
 except ImportError:
-    st.error("⚠️ Không thể tải ai_modules")
+    # V22.0: Fallback — tránh crash NameError khi module không tồn tại
+    class AIOrchestrator:
+        def __init__(self, api_key=None):
+            self.api_key = api_key
+        def process_request(self, req):
+            return {'plan': {'project_name': 'N/A'}, 'execution': {'created_files': []}}
+    class MemorySystem:
+        def __init__(self):
+            pass
+        def get_statistics(self):
+            return {'total_knowledge': 0, 'total_executions': 0, 'executions_by_status': {'success': 0}}
+        def search_knowledge(self, q):
+            return []
 
 # n8n Integration
 try:
