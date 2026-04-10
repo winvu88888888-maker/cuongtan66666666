@@ -1039,8 +1039,39 @@ with st.sidebar:
         st.session_state.current_view = "thai_at"
     else:  # 🤖 Hỏi Gemini AI
         st.session_state.current_view = "gemini_ai"
+
+    st.markdown("---")
     
-    
+    # V25.0: RAG Feedback Form Sidebar
+    try:
+        from ai_modules.feedback_rag import FeedbackRAG
+        rag = FeedbackRAG()
+    except Exception:
+        rag = None
+        
+    if rag:
+        with st.expander("🎓 RÚT KINH NGHIỆM AI THỰC TẾ", expanded=False):
+            st.caption("Nhập kết quả thực tế của một quẻ trong quá khứ để giúp AI khôn hơn.")
+            with st.form("rag_feedback_form"):
+                r_q = st.text_input("Câu hỏi ban đầu:", placeholder="Ví dụ: Lô hàng có về kịp không?")
+                r_dt = st.text_input("Dụng Thần (bắt buộc):", placeholder="Thê Tài")
+                r_status = st.radio("Kết quả thực tế:", ["✅ ĐÚNG", "❌ SAI"], horizontal=True)
+                r_text = st.text_area("Giải thích diễn biến:", placeholder="Ví dụ: Vì gặp bão nên chậm 2 ngày so với dự kiến...")
+                
+                submitted = st.form_submit_button("💾 LƯU ÁN LỆ VÀO NÃO AI")
+                if submitted:
+                    if not r_dt.strip() or not r_text.strip():
+                        st.error("Vui lòng nhập đủ Dụng Thần và Lời giải thích!")
+                    else:
+                        rag.save_feedback(
+                            question=r_q.strip(),
+                            dung_than=r_dt.strip(),
+                            result_status=r_status.replace("✅ ", "").replace("❌ ", ""),
+                            feedback_text=r_text.strip(),
+                            chart_summary="Được nạp thủ công từ Form Rút Kinh Nghiệm."
+                        )
+                        st.success("🎉 Nạp vào Bộ Nhớ Án Lệ thành công!")
+
     st.markdown("---")
     
     # --- AI Initialization & Mode Switcher ---
@@ -2737,7 +2768,7 @@ PHÂN TÍCH LIÊN MẠCH:
                         
                         # V19.0: Display với bố cục đẹp
                         display_ai_result(combined_answer, key_prefix="qa")
-                        
+
                         # Lưu vào history
                         st.session_state.chat_history.append({'role': 'user', 'content': user_question})
                         st.session_state.chat_history.append({'role': 'assistant', 'content': combined_answer})

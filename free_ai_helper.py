@@ -1207,6 +1207,13 @@ class FreeAIHelper:
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
+        
+        # V25.0: RAG Feedback Loop
+        try:
+            from ai_modules.feedback_rag import FeedbackRAG
+            self.feedback_rag = FeedbackRAG()
+        except ImportError:
+            self.feedback_rag = None
 
     def log_step(self, step, status, detail=""):
         self.logs.append({"step": step, "status": status, "detail": detail})
@@ -1250,6 +1257,14 @@ class FreeAIHelper:
             
             # === BUILD DEEP ANALYSIS PROMPT (V13.0 — Deep Reasoning) ===
             offline_ctx = ""
+            rag_prompt = ""
+            
+            # V25.0: Truy Xuất Án Lệ Thực Tế (RAG FEEDBACK LOOP)
+            if self.feedback_rag and offline_analysis_data:
+                dung_than = offline_analysis_data.get('dung_than', '')
+                exps = self.feedback_rag.search_experience(question, dung_than, top_k=2)
+                rag_prompt = self.feedback_rag.build_rag_prompt(exps)
+
             if offline_analysis_data:
                 od = offline_analysis_data
                 
@@ -1381,6 +1396,7 @@ class FreeAIHelper:
                 
                 f"<data>\n"
                 f"Câu hỏi: {question}\n\n"
+                f"{rag_prompt}\n"
                 f"{offline_ctx}"
                 f"{luc_nham_ctx}"
                 f"{thai_at_ctx}"
