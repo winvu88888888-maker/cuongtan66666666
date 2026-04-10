@@ -4809,46 +4809,46 @@ class FreeAIHelper:
                 quai_n = QUAI_TUONG.get(sv_cung_n, '') if sv_cung_n else ''
                 tien_thien_n = TIEN_THIEN.get(quai_n, 0) if quai_n else 0
                 if tien_thien_n > 0:
-                    narrative_parts.append(f"**→ KẾT LUẬN: Khoảng {tien_thien_n}** (Quái Tiên Thiên {quai_n} = {tien_thien_n}).")
+                    narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': Khoảng {tien_thien_n}** (Quái Tiên Thiên {quai_n} = {tien_thien_n}).")
                 else:
-                    narrative_parts.append(f"**→ KẾT LUẬN: Chưa xác định chính xác số lượng.** Xem Bảng đếm số ở trên.")
+                    narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': Chưa xác định chính xác số lượng.** Xem Bảng đếm số ở trên.")
             else:
-                narrative_parts.append(f"**→ KẾT LUẬN: Chưa đủ dữ liệu để đếm.**")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': Chưa đủ dữ liệu để đếm.**")
         elif any(k in q for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể']):
             if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ KẾT LUẬN: CÓ — nên thực hiện.** Cả 5 phép đều hướng về kết quả tốt cho sự việc.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CÓ — RẤT ĐẢM BẢO.** Cả 5 phép đều hướng về kết quả tốt cho sự việc.")
             elif overall == 'KHÓ KHĂN':
-                narrative_parts.append(f"**→ KẾT LUẬN: KHÔNG NÊN — chưa phải thời điểm.** Dụng Thần yếu, sự việc gặp trở ngại lớn.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': KHÔNG NÊN — CHƯA PHẢI THỜI ĐIỂM.** Dụng Thần yếu, sự việc gặp trở ngại lớn.")
             else:
-                narrative_parts.append(f"**→ KẾT LUẬN: CÒN PHẢI XEM — chờ thêm.** Các phương pháp cho kết quả khác nhau.")
-        elif any(k in q for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không', 'qua khỏi']):
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CÒN PHẢI XEM LẠI — tỷ lệ 50/50.** Các phương pháp cho kết quả khác nhau.")
+        elif any(k in q for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không', 'qua khỏi', 'nguy hiểm không', 'an toàn không']):
             if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ KẾT LUẬN: TÌNH TRẠNG KHẢ QUAN.** {dung_than} vẫn còn sức, có khả năng hồi phục.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': BÌNH AN VÔ SỰ / CÒN SỐNG.** {dung_than} vẫn còn sức, có khả năng hồi phục.")
             elif overall == 'KHÓ KHĂN':
-                narrative_parts.append(f"**→ KẾT LUẬN: TÌNH TRẠNG NGHIÊM TRỌNG.** {dung_than} rất yếu, cần hành động khẩn cấp.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': TÌNH TRẠNG CỰC KỲ NGUY KỊCH.** {dung_than} rất yếu, khó qua khỏi, cần hành động khẩn cấp.")
             else:
-                narrative_parts.append(f"**→ KẾT LUẬN: CHƯA THỂ KHẲNG ĐỊNH.** Cần theo dõi sát và hành động sớm.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CHƯA THỂ KHẲNG ĐỊNH.** 50/50, Cần theo dõi sát và hành động sớm.")
         elif any(k in q for k in ['ở đâu', 'hướng nào', 'tìm đâu', 'chỗ nào']):
             if km_dt_info:
                 quai_dt = QUAI_TUONG.get(km_dt_info['cung'], '')
                 huong_map = {'Khảm': 'Bắc', 'Ly': 'Nam', 'Chấn': 'Đông', 'Đoài': 'Tây', 'Cấn': 'Đông Bắc', 'Tốn': 'Đông Nam', 'Càn': 'Tây Bắc', 'Khôn': 'Tây Nam'}
                 huong = huong_map.get(quai_dt, '?')
-                narrative_parts.append(f"**→ KẾT LUẬN: HƯỚNG {huong} (Cung {km_dt_info['cung']} - {quai_dt}).** Cả Kỳ Môn và Lục Hào đều chỉ về hướng này.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': HƯỚNG {huong} (Cung {km_dt_info['cung']} - {quai_dt}).** Cả Kỳ Môn và Lục Hào đều chỉ về hướng này.")
             else:
-                narrative_parts.append(f"**→ KẾT LUẬN:** Xem chi tiết BƯỚC 7 để xác định hướng.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}':** Xem chi tiết BƯỚC 7 để xác định hướng.")
         elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào']):
             if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ KẾT LUẬN: NGAY BÂY GIỜ là thời điểm thuận lợi.** Nên hành động trong 1-7 ngày.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': NGAY BÂY GIỜ LUÔN.** Năng lượng cực vượng, hành động trong 1-7 ngày.")
             else:
-                narrative_parts.append(f"**→ KẾT LUẬN: CHƯA TỚI THỜI ĐIỂM. Chờ 1-3 tháng** để tình hình chuyển biến.")
+                narrative_parts.append(f"**→ ĐÁP ÁN CHO '{question}': CHƯA TỚI THỜI ĐIỂM. Chờ 1-3 tháng** để tình hình chuyển biến.")
         else:
             # Câu hỏi chung
             if overall == 'THUẬN LỢI':
-                narrative_parts.append(f"**→ KẾT LUẬN: SỰ VIỆC THUẬN LỢI ({pct}%).** {dung_than} được hỗ trợ, nên hành động.")
+                narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHẢ THI / RẤT TỐT ({pct}%).** {dung_than} được hỗ trợ mạnh mẽ, nên hành động.")
             elif overall == 'KHÓ KHĂN':
-                narrative_parts.append(f"**→ KẾT LUẬN: SỰ VIỆC KHÓ KHĂN ({pct}%).** {dung_than} yếu, nên chờ thời.")
+                narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHÔNG ĐƯỢC / XẤU ({pct}%).** {dung_than} suy yếu, bế tắc, vạn sự khó thành.")
             else:
-                narrative_parts.append(f"**→ KẾT LUẬN: CHƯA RÕ ({pct}%).** Cần thêm thông tin hoặc hỏi lại sau.")
+                narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': BÌNH BÌNH ({pct}%).** Vẫn lấp lửng thiếu rõ ràng. Cần sự nỗ lực hơn từ bản thân.")
         
         # Part 4: Lời khuyên cụ thể
         if overall == 'THUẬN LỢI':
