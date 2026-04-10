@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-04-10-V22.0-UNIFIED-STRENGTH
+# VERSION: 2026-04-10-V23.0-TOAN-DIEN-OFFLINE
 try:
     st.set_page_config(
-    page_title="☯️ Kỳ Môn AI V22.0",
+    page_title="☯️ Kỳ Môn AI V23.0",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -117,12 +117,17 @@ except Exception: pass
 
 # --- AI MODEL BADGE ---
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 🧠 Trí Tuệ Nhân Tạo")
-model_display = "GEMINI-2.5-PRO"
-if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'model_name'):
-    model_display = st.session_state.gemini_helper.model_name.upper()
-st.sidebar.success(f"🚀 **MODEL: {model_display}**")
-st.sidebar.caption("Trạng thái: THIÊN CƠ ĐẠI SƯ V22.0 — Unified Strength + 6 Lục Thuật")
+st.sidebar.markdown("""
+<div style='text-align: center; margin-bottom: 20px;'>
+    <h3 style='color: #4CAF50; margin-bottom: 5px;'>Trí Tuệ Nhân Tạo</h3>
+    <div style='background-color: #2E3B4E; padding: 5px 10px; border-radius: 15px; display: inline-block;'>
+        <code style='color: #4CAF50; background: none;'>🚀 MODEL: GEMINI-2.5-PRO</code>
+    </div>
+    <div style='margin-top: 10px; font-size: 0.8em; color: #a0aec0;'>
+        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V23.0</b> —<br>Toàn diện hóa AI Offline (23 Yếu Tố)
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # Add project root and dist directory to Python path
 root_path = os.path.dirname(os.path.abspath(__file__))
@@ -999,7 +1004,7 @@ with col_header3:
 
 st.markdown("---")
 # DEPLOYMENT VERIFICATION BANNER
-st.success("✅ SYSTEM ONLINE: V22.0 — THIÊN CƠ ĐẠI SƯ (Unified Strength + 3 Tầng LH+TS+NK + 6 Lục Thuật)")
+st.success("✅ SYSTEM ONLINE: V23.0 — THIÊN CƠ ĐẠI SƯ (Toàn diện AI Offline, 23 yếu tố)")
 
 # ======================================================================
 # SIDEBAR - CONTROLS
@@ -3470,6 +3475,14 @@ elif st.session_state.current_view == "gemini_ai":
                         margin: 10px 0;
                     ">
                         {response_text.replace(chr(10), '<br>')}
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # RENDER
+                    st.markdown("""
+                    <div style='text-align: center; color: gray; padding: 20px 0;'>
+                        --- <b>☯️ Kỳ Môn AI V23.0 — Lượng Hóa Suy Vượng</b> ---<br>
+                        <i>© 2024-2026 Cuongtan888888. All rights reserved.</i>
                     </div>
                     """, unsafe_allow_html=True)
                     

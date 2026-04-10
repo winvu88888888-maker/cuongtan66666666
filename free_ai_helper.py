@@ -2458,15 +2458,200 @@ class FreeAIHelper:
                 score -= 5
                 factors.append("Ứng khắc Thế -5")
         
-        # Strength label
-        if score >= 15: strength = "🟢 VƯỢNG"
+        # ═══════════════════════════════════════════════════════════
+        # V23.0: THÊM 14 YẾU TỐ MỚI (⑩-㉓) — TOÀN DIỆN AI OFFLINE
+        # ═══════════════════════════════════════════════════════════
+        
+        # ⑩ Cừu Thần (hành sinh Kỵ Thần → tăng sức khắc DT) (±4)
+        if dt_hanh:
+            ky_hanh_list = [h for h, k in KHAC.items() if k == dt_hanh]
+            cuu_hanh_list = []
+            for kh in ky_hanh_list:
+                cuu_hanh_list.extend([h for h, s in SINH.items() if s == kh])
+            for hao in haos:
+                h_hanh = hao.get('ngu_hanh', '')
+                h_idx = haos.index(hao) + 1
+                if h_hanh in cuu_hanh_list and hao != dt_hao:
+                    h_vuong = str(hao.get('vuong_suy', ''))
+                    if 'Vượng' in h_vuong and h_idx in (dong_hao or []):
+                        score -= 4
+                        factors.append(f"Cừu Thần ({h_hanh}) vượng+động -4")
+                    elif 'Vượng' in h_vuong:
+                        score -= 2
+                        factors.append(f"Cừu Thần ({h_hanh}) vượng -2")
+                    break
+        
+        # ⑪⑫ Phản Ngâm / Phục Ngâm (DT động → biến)
+        bien_haos = bien.get('haos') or bien.get('details', []) if bien else []
+        if dt_idx and dong_hao and dt_idx in dong_hao and bien_haos and dt_idx <= len(bien_haos):
+            bien_hao = bien_haos[dt_idx - 1]
+            bien_chi = bien_hao.get('chi', '')
+            # Phản Ngâm: chi DT xung chi biến (đảo ngược 180°)
+            if dt_chi and bien_chi and LUC_XUNG_CHI.get(dt_chi) == bien_chi:
+                score -= 10
+                factors.append(f"PHẢN NGÂM ({dt_chi}⇔{bien_chi}) -10")
+            # Phục Ngâm: chi biến = chi DT (dậm chân tại chỗ)
+            elif dt_chi and bien_chi and dt_chi == bien_chi:
+                score -= 6
+                factors.append(f"PHỤC NGÂM ({dt_chi}={bien_chi}) -6")
+            
+            # ㉒ Hóa Tuyệt / Hóa Mộ — DT biến vào giai đoạn tiêu tan
+            bien_vuong = str(bien_hao.get('vuong_suy', ''))
+            if 'Tuyệt' in bien_vuong:
+                score -= 8
+                factors.append(f"Hóa TUYỆT ({bien_chi}) -8")
+            elif 'Mộ' in bien_vuong:
+                score -= 5
+                factors.append(f"Hóa MỘ ({bien_chi}) -5")
+        
+        # ⑬ Nhật Hợp DT — Nhật chi hợp chi DT (bị ràng buộc)
+        chi_ngay = luc_hao_data.get('chi_ngay', '') or ban.get('chi_ngay', '')
+        if chi_ngay and dt_chi and LUC_HOP_CHI.get(chi_ngay) == dt_chi:
+            if dt_idx and dong_hao and dt_idx in dong_hao:
+                score += 4
+                factors.append(f"Nhật Hợp DT động +4")
+            else:
+                score -= 4
+                factors.append(f"Nhật Hợp DT tĩnh (ràng buộc) -4")
+        
+        # ⑭ Nhật Xung DT / Ám Động — Nhật chi xung chi DT khi DT tĩnh
+        if chi_ngay and dt_chi and LUC_XUNG_CHI.get(chi_ngay) == dt_chi:
+            dt_is_dong = dt_idx and dong_hao and dt_idx in dong_hao
+            if not dt_is_dong:
+                # DT tĩnh bị Nhật xung = Ám Động (lay động)
+                dt_vuong_check = str(dt_hao.get('vuong_suy', ''))
+                if 'Vượng' in dt_vuong_check or 'Tướng' in dt_vuong_check:
+                    score += 5
+                    factors.append(f"ÁM ĐỘNG vượng ({chi_ngay}⇔{dt_chi}) +5")
+                else:
+                    score -= 5
+                    factors.append(f"Nhật Xung DT suy ({chi_ngay}⇔{dt_chi}) -5")
+        
+        # ⑮ Lục Hợp chi DT — Hào khác hợp chi DT (bị giữ lại)
+        for hao in haos:
+            if hao == dt_hao:
+                continue
+            h_chi = hao.get('chi', '')
+            if h_chi and dt_chi and LUC_HOP_CHI.get(h_chi) == dt_chi:
+                h_lt = hao.get('luc_than', '')
+                score -= 3
+                factors.append(f"Hào {h_lt}({h_chi}) hợp DT -3")
+                break  # Chỉ tính 1 lần
+        
+        # ⑯ Lục Xung chi DT — Hào khác xung chi DT (bất ổn)
+        for hao in haos:
+            if hao == dt_hao:
+                continue
+            h_chi = hao.get('chi', '')
+            h_idx = haos.index(hao) + 1
+            if h_chi and dt_chi and LUC_XUNG_CHI.get(h_chi) == dt_chi:
+                if h_idx in (dong_hao or []):
+                    score -= 4
+                    factors.append(f"Hào động ({h_chi}) xung DT -4")
+                    break
+        
+        # ⑰ Tam Hợp Cục sinh/khắc DT
+        if dt_hanh:
+            all_chi = [h.get('chi', '') for h in haos if h.get('chi')]
+            for tam_hop_set, (thc_hanh, thc_desc) in TAM_HOP_CUC.items():
+                matching = [c for c in all_chi if c in tam_hop_set]
+                if len(matching) >= 3:
+                    if SINH.get(thc_hanh) == dt_hanh:
+                        score += 6
+                        factors.append(f"Tam Hợp {thc_hanh} sinh DT +6")
+                    elif KHAC.get(thc_hanh) == dt_hanh:
+                        score -= 6
+                        factors.append(f"Tam Hợp {thc_hanh} khắc DT -6")
+                    break
+        
+        # ⑱ Hào Động KHÁC sinh/khắc DT (QUAN TRỌNG NHẤT — scan TẤT CẢ hào động)
+        if dong_hao and dt_hanh:
+            dong_sinh_count = 0
+            dong_khac_count = 0
+            for d_idx in dong_hao:
+                if d_idx == dt_idx:
+                    continue  # Bỏ qua DT
+                if d_idx <= len(haos):
+                    d_hao = haos[d_idx - 1]
+                    d_hanh = d_hao.get('ngu_hanh', '')
+                    d_lt = d_hao.get('luc_than', '')
+                    if d_hanh and SINH.get(d_hanh) == dt_hanh:
+                        dong_sinh_count += 1
+                        score += 5
+                        factors.append(f"Hào {d_idx} {d_lt}({d_hanh}) động sinh DT +5")
+                    elif d_hanh and KHAC.get(d_hanh) == dt_hanh:
+                        dong_khac_count += 1
+                        score -= 5
+                        factors.append(f"Hào {d_idx} {d_lt}({d_hanh}) động khắc DT -5")
+        
+        # ⑲ DT Động / Tĩnh
+        dt_is_dong = dt_idx and dong_hao and dt_idx in dong_hao
+        if dt_is_dong:
+            score += 3
+            factors.append("DT ĐỘNG (phát động) +3")
+        else:
+            score -= 2
+            factors.append("DT TĨNH (chờ đợi) -2")
+        
+        # ⑳ DT Trì Thế — DT cùng hào với Thế
+        the_idx_found = None
+        for i, hao in enumerate(haos):
+            if hao.get('the_ung') == 'Thế':
+                the_idx_found = i + 1
+                break
+        if dt_idx and the_idx_found and dt_idx == the_idx_found:
+            score += 4
+            factors.append("DT TRÌ THẾ +4")
+        
+        # ㉑ Nguyên Thần bị Kỵ Thần khắc — chain effect
+        if dt_hanh:
+            nguyen_hanh_list = [h for h, s in SINH.items() if s == dt_hanh]
+            ky_hanh_list2 = [h for h, k in KHAC.items() if k == dt_hanh]
+            nt_found = None
+            kt_found = None
+            for hao in haos:
+                h_hanh = hao.get('ngu_hanh', '')
+                if h_hanh in nguyen_hanh_list and hao != dt_hao:
+                    nt_found = hao
+                if h_hanh in ky_hanh_list2 and hao != dt_hao:
+                    kt_found = hao
+            if nt_found and kt_found:
+                nt_hanh = nt_found.get('ngu_hanh', '')
+                kt_hanh = kt_found.get('ngu_hanh', '')
+                if KHAC.get(kt_hanh) == nt_hanh:
+                    kt_idx = haos.index(kt_found) + 1
+                    if kt_idx in (dong_hao or []):
+                        score -= 5
+                        factors.append(f"KT({kt_hanh}) động khắc NT({nt_hanh}) → DT mất nguồn -5")
+                    else:
+                        score -= 3
+                        factors.append(f"KT({kt_hanh}) khắc NT({nt_hanh}) → chain -3")
+        
+        # ㉓ Vị trí hào DT (ý nghĩa ngữ cảnh)
+        if dt_idx:
+            if dt_idx == 6:
+                score += 2
+                factors.append("DT ở hào 6 (cao, xa, khó) +2")
+            elif dt_idx == 5:
+                score += 2
+                factors.append("DT ở hào 5 (quân vương, trung tâm) +2")
+            elif dt_idx == 1:
+                score -= 2
+                factors.append("DT ở hào 1 (thấp, yếu, mới bắt đầu) -2")
+        
+        # ═══════════════════════════════════════════════════════════
+        # V23.0: STRENGTH LABEL với thang điểm mở rộng
+        # ═══════════════════════════════════════════════════════════
+        if score >= 25: strength = "🟢 CỰC VƯỢNG"
+        elif score >= 15: strength = "🟢 VƯỢNG"
         elif score >= 5: strength = "🔵 TƯỚNG"
         elif score >= -5: strength = "🟡 BÌNH"
-        elif score >= -15: strength = "🟠 TÙ"
+        elif score >= -15: strength = "🟠 SUY"
+        elif score >= -25: strength = "🟠 RẤT YẾU"
         else: strength = "🔴 TỬ"
         
-        summary = f"LH Score={score}, {strength} ({', '.join(factors[:4])})"
-        return score, summary
+        summary = f"LH Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:6])}{'...' if len(factors) > 6 else ''})"
+        return score, summary, factors
     
     def _mai_hoa_scoring(self, mai_hoa_data):
         """V16.0: Chấm điểm Mai Hoa — 6 tầng scoring (Thể↔Dụng centric)."""
@@ -4871,8 +5056,9 @@ class FreeAIHelper:
         v16_tb_raw = 0
         v16_ln_raw = 0
         v16_ta_raw = 0
+        v23_lh_factors = []  # V23.0: Lưu toàn bộ factors chi tiết
         try:
-            lh_s, lh_sum = self._luc_hao_scoring(luc_hao_data, dung_than)
+            lh_s, lh_sum, v23_lh_factors = self._luc_hao_scoring(luc_hao_data, dung_than)
             v16_lh_score_str = lh_sum
             v16_lh_raw = lh_s
         except Exception:
@@ -5019,6 +5205,45 @@ class FreeAIHelper:
         sections.append(f"| ③ Ngũ Khí | {ngu_khi_state_v22} ({hanh_dt_v22} @ {cung_bt_hanh_v22 or '?'}) | {unified_v22['nk_pct']}% | 20% |")
         sections.append(f"| **UNIFIED** | **3 tầng tổng hợp** | **{unified_v22['unified_pct']}%** | {unified_v22['tier_data']['cap']} |")
         sections.append(f"| **WEIGHTED 5PP** | **KM+LH+MH+LN+TA** | **{weighted_pct}%** | {vv_data['cap']} |")
+        
+        # A2. V23.0: BẢNG THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT
+        if v23_lh_factors:
+            # Phân loại factors
+            noi_tai = []  # Yếu tố nội tại DT
+            ben_ngoai = []  # Yếu tố bên ngoài (Nhật/Nguyệt/Hào khác)
+            doi_nghich = []  # Yếu tố đối nghịch (Kỵ/Cừu/Phản Ngâm/Hóa Tuyệt)
+            
+            for f in v23_lh_factors:
+                f_lower = f.lower()
+                if any(k in f for k in ['DT ', 'DT(', 'Dụng', 'ĐỘNG', 'TĨNH', 'TRÌ THẾ', 'hào 6', 'hào 5', 'hào 1']):
+                    noi_tai.append(f)
+                elif any(k in f for k in ['Kỵ', 'Cừu', 'PHẢN', 'PHỤC', 'Hóa T', 'Hóa M', 'khắc DT', 'xung DT', 'THỐI', 'Ứng khắc', 'KT(']):
+                    doi_nghich.append(f)
+                else:
+                    ben_ngoai.append(f)
+            
+            tong_diem_tot = sum(1 for f in v23_lh_factors if '+' in f)
+            tong_diem_xau = sum(1 for f in v23_lh_factors if '-' in f and '+' not in f)
+            
+            sections.append(f"\n**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V23.0) — {len(v23_lh_factors)} yếu tố:**")
+            sections.append(f"*✅ Thuận lợi: {tong_diem_tot} | ⚠️ Bất lợi: {tong_diem_xau} | Tổng: {v16_lh_raw:+d}*")
+            
+            if noi_tai:
+                sections.append(f"\n**🔵 NỘI TẠI (DT bản thân):** ({len(noi_tai)} yếu tố)")
+                for f in noi_tai:
+                    icon = '✅' if '+' in f else '⚠️'
+                    sections.append(f"- {icon} {f}")
+            
+            if ben_ngoai:
+                sections.append(f"\n**🟢 BÊN NGOÀI (Nhật/Nguyệt/Hào khác):** ({len(ben_ngoai)} yếu tố)")
+                for f in ben_ngoai:
+                    icon = '✅' if '+' in f else '⚠️'
+                    sections.append(f"- {icon} {f}")
+            
+            if doi_nghich:
+                sections.append(f"\n**🔴 ĐỐI NGHỊCH (Kỵ/Cừu/Phản Ngâm/Hóa Tuyệt):** ({len(doi_nghich)} yếu tố)")
+                for f in doi_nghich:
+                    sections.append(f"- ⚠️ {f}")
         
         # B. Ngũ Hành vật chất từ unified
         hv = unified_v22.get('hanh_vat', {})
@@ -5315,6 +5540,8 @@ class FreeAIHelper:
                 'hanh_vat': unified_v22.get('hanh_vat', {}) if unified_v22 else {},
                 'van_vat_cu_the': _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH')) if unified_v22 else {},
             },
+            # V23.0: Toàn bộ yếu tố tác động DT (23 factors)
+            'v23_lh_factors': v23_lh_factors,
             # V14.0: Gửi toàn bộ báo cáo offline (giới hạn 10000 ký tự để chứa đủ V15+V16+LN+TA)
             'full_offline_report': offline_full_output[:10000] if offline_full_output else '',
         }
@@ -5586,6 +5813,17 @@ class FreeAIHelper:
                     final_parts.append(f"- 🔴 **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Yếu tố BẤT LỢI")
                 else:
                     final_parts.append(f"- 🟡 **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Trung tính")
+            
+            # V23.0: THỐNG KÊ TOÀN DIỆN CÁC YẾU TỐ
+            if v23_lh_factors:
+                final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(v23_lh_factors)})")
+                for f in v23_lh_factors:
+                    if '+' in f:
+                        final_parts.append(f"- ✅ **THUẬN LỢI:** {f}")
+                    elif '-' in f:
+                        final_parts.append(f"- ⚠️ **BẤT LỢI:** {f}")
+                    else:
+                        final_parts.append(f"- ℹ️ **THÔNG TIN:** {f}")
             
             # Trường Sinh context
             if ts_stage:
