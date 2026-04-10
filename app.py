@@ -1057,6 +1057,7 @@ with st.sidebar:
                 r_dt = st.text_input("Dụng Thần (bắt buộc):", placeholder="Thê Tài")
                 r_status = st.radio("Kết quả thực tế:", ["✅ ĐÚNG", "❌ SAI"], horizontal=True)
                 r_text = st.text_area("Giải thích diễn biến:", placeholder="Ví dụ: Vì gặp bão nên chậm 2 ngày so với dự kiến...")
+                r_analysis = st.text_area("Mổ Xẻ Lỗi Của AI (chỉ ghi nếu chọn SAI):", placeholder="Ví dụ: AI lấy sai Dụng thần, quên không tính đến yếu tố Tuần Không của Cung...")
                 
                 submitted = st.form_submit_button("💾 LƯU ÁN LỆ VÀO NÃO AI")
                 if submitted:
@@ -1068,6 +1069,7 @@ with st.sidebar:
                             dung_than=r_dt.strip(),
                             result_status=r_status.replace("✅ ", "").replace("❌ ", ""),
                             feedback_text=r_text.strip(),
+                            user_analysis=r_analysis.strip(),
                             chart_summary="Được nạp thủ công từ Form Rút Kinh Nghiệm."
                         )
                         st.success("🎉 Nạp vào Bộ Nhớ Án Lệ thành công!")

@@ -19,10 +19,11 @@ class FeedbackRAG:
             with open(self.db_path, "w", encoding="utf-8") as f:
                 json.dump([], f, ensure_ascii=False, indent=4)
 
-    def save_feedback(self, question, dung_than, result_status, feedback_text, chart_summary=""):
+    def save_feedback(self, question, dung_than, result_status, feedback_text, user_analysis="", chart_summary=""):
         """
         Lưu phản hồi kinh nghiệm vào cơ sở dữ liệu học tập.
         result_status: 'DUNG' hoặc 'SAI'
+        user_analysis: (Ghi chú chuyên sâu) Người xem tự phân tích tại sao hôm đó AI lại luận sai, sai ở bước nào.
         """
         try:
             with open(self.db_path, "r", encoding="utf-8") as f:
@@ -37,6 +38,7 @@ class FeedbackRAG:
             "dung_than": dung_than,
             "result_status": result_status,
             "feedback_text": feedback_text,
+            "user_analysis": user_analysis,
             "chart_summary": chart_summary
         }
         
@@ -103,6 +105,8 @@ class FeedbackRAG:
             prompt += f"   - Câu hỏi quá khứ: '{ex['question']}' (Dụng thần: {ex['dung_than']})\n"
             prompt += f"   - Đánh giá của thầy phong thủy về AI cũ: {ex['result_status']}\n"
             prompt += f"   - 💡 BÀI HỌC THỰC TẾ RÚT RA: {ex['feedback_text']}\n"
+            if ex.get('user_analysis') and ex['user_analysis'].strip():
+                prompt += f"   - 🔎 LỜI GIẢI MÃ LỖI SAI DO THẦY PHONG THỦY GHI CHÚ: {ex['user_analysis']}\n"
             if ex.get('chart_summary'):
                 prompt += f"   - Tóm tắt quẻ: {ex['chart_summary']}\n"
                 
