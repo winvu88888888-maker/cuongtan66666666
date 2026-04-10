@@ -1396,6 +1396,22 @@ class FreeAIHelper:
                 
                 f"<data>\n"
                 f"Câu hỏi: {question}\n\n"
+                
+                # V26.3: VERDICT SUMMARY — Gemini PHẢI dựa vào đây làm trục chính
+                f"<verdict_summary>\n"
+                f"⚠️ DỮ LIỆU CHỐT (BẮT BUỘC TUÂN THEO, CẤM NÓI NGƯỢC):\n"
+                f"- Dụng Thần: {od.get('dung_than', '?')}\n"
+                f"- Weighted Score (5PP): {od.get('v22_unified_strength', {}).get('unified_pct', '?')}%\n"
+                f"- KM={od.get('ky_mon_verdict','?')} | LH={od.get('luc_hao_verdict','?')} | MH={od.get('mai_hoa_verdict','?')} | LN={od.get('luc_nham_verdict','?')} | TA={od.get('thai_at_verdict','?')}\n"
+                f"- Ngũ Khí: {od.get('v22_unified_strength', {}).get('ngu_khi', '?')}\n"
+                f"- 12 Trường Sinh: {od.get('v22_unified_strength', {}).get('ts_stage', '?')}\n"
+                f"- Hành DT: {od.get('v22_unified_strength', {}).get('hanh_dt', '?')}\n"
+                f"→ NẾU Weighted Score >= 60% → phán CÁT/THUẬN LỢI.\n"
+                f"→ NẾU Weighted Score <= 45% → phán HUNG/KHÓ KHĂN.\n"  
+                f"→ NẾU 46-59% → phán BÌNH/CHƯA RÕ.\n"
+                f"BẠN CẤM ĐƯỢC PHÁN NGƯỢC LẠI CON SỐ NÀY!\n"
+                f"</verdict_summary>\n\n"
+                
                 f"{rag_prompt}\n"
                 f"{offline_ctx}"
                 f"{luc_nham_ctx}"
@@ -3964,24 +3980,32 @@ class FreeAIHelper:
         # V14.0: Mở rộng từ 3 → 5 verdicts (thêm Lục Nhâm + Thái Ất)
         luc_nham_v = kwargs.get('luc_nham_verdict', 'BÌNH')
         thai_at_v = kwargs.get('thai_at_verdict', 'BÌNH')
-        verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_v, thai_at_v]
-        cat_count = sum(1 for v in verdicts if v in ['CÁT', 'ĐẠI CÁT'])
-        hung_count = sum(1 for v in verdicts if v in ['HUNG', 'ĐẠI HUNG'])
         
-        # Đếm bằng chứng tốt/xấu
-        good_ev = sum(1 for e in evidence if any(x in e for x in ['sinh', 'Vượng', 'cát']))
-        bad_ev = sum(1 for e in evidence if any(x in e for x in ['khắc', 'Tử', 'Tuyệt', 'Suy', 'hung']))
-        
-        if cat_count > hung_count:
-            final_verdict = 'CÁT'
-            pct = int(50 + (cat_count / max(len(verdicts), 1)) * 30 + (good_ev - bad_ev) * 5)
-        elif hung_count > cat_count:
-            final_verdict = 'HUNG'
-            pct = int(50 - (hung_count / max(len(verdicts), 1)) * 30 - (bad_ev - good_ev) * 5)
+        # V26.3: Dùng weighted_pct từ bên ngoài truyền vào (Nếu có)
+        ext_pct = kwargs.get('weighted_pct', None)
+        if ext_pct is not None:
+            pct = ext_pct
+            if pct >= 60:
+                final_verdict = 'CÁT'
+            elif pct <= 45:
+                final_verdict = 'HUNG'
+            else:
+                final_verdict = 'BÌNH'
         else:
-            final_verdict = 'BÌNH'
-            pct = 50 + (good_ev - bad_ev) * 5
-        pct = max(5, min(95, pct))  # Clamp 5-95%
+            # FALLBACK: dùng logic đếm cũ nếu không có weighted_pct
+            verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_v, thai_at_v]
+            cat_count = sum(1 for v in verdicts if v in ['CÁT', 'ĐẠI CÁT'])
+            hung_count = sum(1 for v in verdicts if v in ['HUNG', 'ĐẠI HUNG'])
+            if cat_count > hung_count:
+                final_verdict = 'CÁT'
+                pct = min(90, 50 + (cat_count / max(len(verdicts), 1)) * 30)
+            elif hung_count > cat_count:
+                final_verdict = 'HUNG'
+                pct = max(10, 50 - (hung_count / max(len(verdicts), 1)) * 30)
+            else:
+                final_verdict = 'BÌNH'
+                pct = 50
+            pct = max(5, min(95, int(pct)))
         
         # --- Build output ---
         impact_text = ""
@@ -3992,7 +4016,7 @@ class FreeAIHelper:
         
         # --- Trả lời trực tiếp câu hỏi ---
         direct_answer = self._generate_direct_answer(question, dung_than, final_verdict, pct,
-                                                     cat_count, hung_count, evidence, impacts,
+                                                     0, 0, evidence, impacts,
                                                      ky_mon_reason, luc_hao_reason, mai_hoa_reason,
                                                      age_numbers=age_numbers, count_numbers=count_numbers,
                                                      chart_data=chart_data)
@@ -5496,7 +5520,8 @@ class FreeAIHelper:
             age_numbers=age_numbers,
             count_numbers=count_numbers,
             luc_nham_verdict=luc_nham_verdict,
-            thai_at_verdict=thai_at_verdict
+            thai_at_verdict=thai_at_verdict,
+            weighted_pct=weighted_pct
         )
         
         # ========================================
@@ -5716,8 +5741,8 @@ class FreeAIHelper:
             'v24_tb_factors': v24_tb_factors,
             'v24_ln_factors': v24_ln_factors,
             'v24_ta_factors': v24_ta_factors,
-            # V14.0: Gửi toàn bộ báo cáo offline (giới hạn 10000 ký tự để chứa đủ V15+V16+LN+TA)
-            'full_offline_report': offline_full_output[:10000] if offline_full_output else '',
+            # V14.0: Gửi báo cáo offline (V26.3: giảm xuống 4000 ký tự tránh Gemini ngộp)
+            'full_offline_report': offline_full_output[:4000] if offline_full_output else '',
         }
         
         # Gọi AI Online (Gemini) — phân tích sâu
