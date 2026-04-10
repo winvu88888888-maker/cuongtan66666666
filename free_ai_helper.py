@@ -2279,9 +2279,134 @@ class FreeAIHelper:
         return details
     
     # ═══════════════════════════════════════════════════════════
-    # V16.0: LỤC THUẬT XÂU DƯỢC — SCORING CHO TẤT CẢ 5 PP
+    # V16.0 / V24.0: ĐẠI THỐNG NHẤT SCORING ĐA PHƯƠNG PHÁP
     # ═══════════════════════════════════════════════════════════
     
+    def _ky_mon_scoring(self, chart_data, dung_than):
+        """V24.0: Chấm điểm Kỳ Môn Độn Giáp — 10 tầng scoring."""
+        if not chart_data or not isinstance(chart_data, dict):
+            return 0, "Không có dữ liệu Kỳ Môn", []
+            
+        score = 0
+        factors = []
+        
+        can_ngay = chart_data.get('can_ngay', '')
+        chi_ngay = chart_data.get('chi_ngay', '')
+        can_thien_ban = chart_data.get('can_thien_ban', {})
+        thien_ban = chart_data.get('thien_ban', {})
+        nhan_ban = chart_data.get('nhan_ban', {})
+        than_ban = chart_data.get('than_ban', {})
+        
+        # 1. Xác định Can của Dụng Thần
+        dt_can_map = {
+            'Quan Quỷ': chart_data.get('can_gio', ''),
+            'Thê Tài': chart_data.get('can_gio', ''),
+            'Tử Tôn': chart_data.get('can_gio', ''),
+            'Phụ Mẫu': chart_data.get('can_nam', ''),
+            'Huynh Đệ': chart_data.get('can_thang', ''),
+            'Bản Thân': can_ngay,
+        }
+        dt_can = dt_can_map.get(dung_than, chart_data.get('can_gio', ''))
+        
+        # Cung BT và DT
+        bt_cung = None
+        dt_cung = None
+        for cung_num, can_val in can_thien_ban.items():
+            if can_val == can_ngay: bt_cung = int(cung_num) if cung_num else None
+            # Trường hợp Lục Nghi Kích Hình: Giáp ẩn dưới Mậu
+            if not bt_cung and can_ngay == 'Giáp' and can_val == 'Mậu':
+                bt_cung = int(cung_num) if cung_num else None
+                
+        for cung_num, can_val in can_thien_ban.items():
+            if can_val == dt_can: dt_cung = int(cung_num) if cung_num else None
+            if not dt_cung and dt_can == 'Giáp' and can_val == 'Mậu':
+                dt_cung = int(cung_num) if cung_num else None
+        
+        if not dt_cung:
+            return 0, "Không tìm thấy Cung Dụng Thần KM", []
+            
+        bt_hanh = CUNG_NGU_HANH.get(bt_cung, '') if bt_cung else ''
+        dt_hanh_cung = CUNG_NGU_HANH.get(dt_cung, '')
+        dt_hanh_can = CAN_NGU_HANH.get(dt_can, '')
+        
+        # ① Sinh Khắc Cung (DT vs BT) (±8)
+        if bt_hanh and dt_hanh_cung and bt_cung != dt_cung:
+            if SINH.get(dt_hanh_cung) == bt_hanh:
+                score += 8
+                factors.append(f"KM Cung DT tương sinh BT +8")
+            elif KHAC.get(dt_hanh_cung) == bt_hanh:
+                score -= 8
+                factors.append(f"KM Cung DT khắc BT -8")
+            elif KHAC.get(bt_hanh) == dt_hanh_cung:
+                score += 5
+                factors.append(f"KM Cung BT khắc DT (chủ động) +5")
+            elif SINH.get(bt_hanh) == dt_hanh_cung:
+                score -= 4
+                factors.append(f"KM Cung BT sinh DT (hao) -4")
+            elif bt_hanh == dt_hanh_cung:
+                score += 2
+                factors.append(f"KM Cung DT và BT Tỷ hòa +2")
+                
+        # ② Sao tại cung DT (±5)
+        dt_sao = str(thien_ban.get(dt_cung, thien_ban.get(str(dt_cung), '')))
+        sao_info = SAO_GIAI_THICH.get(dt_sao, {})
+        sao_ch = sao_info.get('cat_hung', '')
+        if 'Đại Cát' in sao_ch: score += 5; factors.append(f"KM Sao {dt_sao} Cát +5")
+        elif 'Cát' in sao_ch: score += 3; factors.append(f"KM Sao {dt_sao} Cát +3")
+        elif 'Đại Hung' in sao_ch: score -= 5; factors.append(f"KM Sao {dt_sao} Hung -5")
+        elif 'Hung' in sao_ch: score -= 3; factors.append(f"KM Sao {dt_sao} Hung -3")
+        
+        # ③ Cửa tại cung DT (±6)
+        dt_cua = str(nhan_ban.get(dt_cung, nhan_ban.get(str(dt_cung), '')))
+        cua_key = dt_cua if 'Môn' in dt_cua else dt_cua + ' Môn'
+        cua_info = CUA_GIAI_THICH.get(cua_key, {})
+        cua_ch = cua_info.get('cat_hung', '')
+        if 'Đại Cát' in cua_ch: score += 6; factors.append(f"KM Cửa {dt_cua} Cát +6")
+        elif 'Cát' in cua_ch: score += 4; factors.append(f"KM Cửa {dt_cua} Cát +4")
+        elif 'Đại Hung' in cua_ch: score -= 6; factors.append(f"KM Cửa {dt_cua} Hung -6")
+        elif 'Hung' in cua_ch: score -= 4; factors.append(f"KM Cửa {dt_cua} Hung -4")
+        
+        # ④ Thần tại cung DT (±4)
+        dt_than = str(than_ban.get(dt_cung, than_ban.get(str(dt_cung), '')))
+        than_info = THAN_GIAI_THICH.get(dt_than, {})
+        than_tc = than_info.get('tinh_chat', '')
+        if any(k in than_tc for k in ['CÁT', 'cát', 'giúp']): score += 4; factors.append(f"KM Thần {dt_than} Cát +4")
+        elif any(k in than_tc for k in ['tai', 'lừa', 'phá', 'HUNG', 'hung']): score -= 4; factors.append(f"KM Thần {dt_than} Hung -4")
+        
+        # ⑤ Vượng Suy Can tại Cung (±4)
+        if dt_hanh_can and dt_hanh_cung:
+            if dt_hanh_can == dt_hanh_cung: score += 4; factors.append(f"KM Can DT Vượng tại Cung +4")
+            elif SINH.get(dt_hanh_cung) == dt_hanh_can: score += 2; factors.append(f"KM Can DT Tướng tại Cung +2")
+            elif KHAC.get(dt_hanh_cung) == dt_hanh_can: score -= 4; factors.append(f"KM Can DT Tử tại Cung -4")
+            elif KHAC.get(dt_hanh_can) == dt_hanh_cung: score -= 2; factors.append(f"KM Can DT Tù tại Cung -2")
+            
+        # ⑥ Tuần Không (-10)
+        khong_vong = _get_khong_vong(can_ngay, chi_ngay) if can_ngay and chi_ngay else []
+        cung_chis = CUNG_CHI.get(dt_cung, [])
+        if any(c in khong_vong for c in cung_chis):
+            score -= 10
+            factors.append(f"KM Cung DT Không Vong -10")
+            
+        # ⑦ Mã Tinh (+3)
+        ma_tinh_map = {'Thân': 'Dần', 'Tý': 'Dần', 'Thìn': 'Dần',
+                       'Dần': 'Thân', 'Ngọ': 'Thân', 'Tuất': 'Thân',
+                       'Tị': 'Hợi', 'Dậu': 'Hợi', 'Sửu': 'Hợi',
+                       'Hợi': 'Tị', 'Mão': 'Tị', 'Mùi': 'Tị'}
+        chi_ma = ma_tinh_map.get(chi_ngay, '')
+        if chi_ma and chi_ma in cung_chis:
+            score += 3
+            factors.append(f"KM Cung DT có Mã Tinh +3")
+            
+        if score >= 15: strength = "🟢 CỰC VƯỢNG"
+        elif score >= 8: strength = "🟢 VƯỢNG"
+        elif score >= 3: strength = "🔵 TƯỚNG"
+        elif score >= -3: strength = "🟡 BÌNH"
+        elif score >= -8: strength = "🟠 SUY"
+        else: strength = "🔴 TỬ"
+        
+        summary = f"KM Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        return score, summary, factors
+
     def _luc_hao_scoring(self, luc_hao_data, dung_than):
         """V16.0: Chấm điểm Lục Hào — 8 tầng scoring."""
         if not luc_hao_data or not isinstance(luc_hao_data, dict):
@@ -2653,15 +2778,15 @@ class FreeAIHelper:
         summary = f"LH Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:6])}{'...' if len(factors) > 6 else ''})"
         return score, summary, factors
     
-    def _mai_hoa_scoring(self, mai_hoa_data):
-        """V16.0: Chấm điểm Mai Hoa — 6 tầng scoring (Thể↔Dụng centric)."""
+    def _mai_hoa_scoring(self, mai_hoa_data, chart_data=None):
+        """V24.0: Chấm điểm Mai Hoa — 8 tầng scoring. Bổ sung Nhật/Nguyệt/Tỷ Hòa."""
         if not mai_hoa_data or not isinstance(mai_hoa_data, dict):
-            return 0, "Không có dữ liệu Mai Hoa"
+            return 0, "Không có dữ liệu Mai Hoa", []
         
         try:
             from mai_hoa_dich_so import QUAI_ELEMENTS, QUAI_NAMES
         except ImportError:
-            return 0, "Thiếu module mai_hoa_dich_so"
+            return 0, "Thiếu module mai_hoa_dich_so", []
         
         score = 0
         factors = []
@@ -2680,24 +2805,24 @@ class FreeAIHelper:
         the_name = QUAI_NAMES.get(the_quai, '?')
         
         if not the_el or not dung_el:
-            return 0, "Thiếu Ngũ Hành Thể/Dụng"
+            return 0, "Thiếu Ngũ Hành Thể/Dụng", []
         
         # ① Thể↔Dụng sinh khắc (±10)
         if SINH.get(dung_el) == the_el:
             score += 10
-            factors.append(f"Dụng sinh Thể +10")
+            factors.append(f"MH Dụng sinh Thể +10")
         elif KHAC.get(dung_el) == the_el:
             score -= 10
-            factors.append(f"Dụng khắc Thể -10")
+            factors.append(f"MH Dụng khắc Thể -10")
         elif KHAC.get(the_el) == dung_el:
             score += 8
-            factors.append(f"Thể khắc Dụng +8")
+            factors.append(f"MH Thể khắc Dụng (thuận lợi) +8")
         elif SINH.get(the_el) == dung_el:
             score -= 5
-            factors.append(f"Thể sinh Dụng -5 (hao)")
+            factors.append(f"MH Thể sinh Dụng (hao mòn) -5")
         else:
             score += 2
-            factors.append(f"Tỷ Hòa +2")
+            factors.append(f"MH Tỷ Hòa +2")
         
         # ② Hỗ Quái sinh/khắc Thể (±8)
         ho_name = mai_hoa_data.get('ten_ho', '')
@@ -2707,10 +2832,10 @@ class FreeAIHelper:
             if ho_el and the_el:
                 if SINH.get(ho_el) == the_el:
                     score += 8
-                    factors.append(f"Hỗ sinh Thể +8")
+                    factors.append(f"MH Hỗ sinh Thể +8")
                 elif KHAC.get(ho_el) == the_el:
                     score -= 8
-                    factors.append(f"Hỗ khắc Thể -8")
+                    factors.append(f"MH Hỗ khắc Thể -8")
         
         # ③ Biến Quái sinh/khắc Thể (±8)
         ten_bien = mai_hoa_data.get('ten_qua_bien', '')
@@ -2722,23 +2847,41 @@ class FreeAIHelper:
                     if bien_el and the_el:
                         if SINH.get(bien_el) == the_el:
                             score += 8
-                            factors.append(f"Biến sinh Thể +8")
+                            factors.append(f"MH Biến sinh Thể +8")
                         elif KHAC.get(bien_el) == the_el:
                             score -= 8
-                            factors.append(f"Biến khắc Thể -8")
+                            factors.append(f"MH Biến khắc Thể -8")
                     break
         
         # ④ Nguyệt lệnh (±6)
         lenh_hanh, lenh_mua = _get_lenh_thang_hanh()
         if the_el and lenh_hanh:
             if the_el == lenh_hanh:
-                score += 6
-                factors.append(f"Thể đắc lệnh +6")
+                score += 5
+                factors.append(f"MH Thể đắc lệnh (Tháng) +5")
+            elif SINH.get(lenh_hanh) == the_el:
+                score += 3
+                factors.append(f"MH Tháng sinh Thể +3")
             elif KHAC.get(lenh_hanh) == the_el:
-                score -= 6
-                factors.append(f"Thể thất lệnh -6")
+                score -= 5
+                factors.append(f"MH Thể bị Tháng khắc (Thất lệnh) -5")
+                
+        # ⑤ Nhật Thần (±6) - V24.0 thêm vào
+        if chart_data and isinstance(chart_data, dict):
+            chi_ngay = chart_data.get('chi_ngay', '')
+            ngay_hanh = CHI_NGU_HANH.get(chi_ngay, '')
+            if ngay_hanh and the_el:
+                if the_el == ngay_hanh:
+                    score += 5
+                    factors.append(f"MH Thể vượng tại Ngày +5")
+                elif SINH.get(ngay_hanh) == the_el:
+                    score += 4
+                    factors.append(f"MH Ngày sinh Thể +4")
+                elif KHAC.get(ngay_hanh) == the_el:
+                    score -= 6
+                    factors.append(f"MH Ngày khắc Thể -6")
         
-        # ⑤ Quái Tượng 64 quẻ (±5)
+        # ⑥ Quái Tượng 64 quẻ (±5)
         ten_que = mai_hoa_data.get('ten', '')
         if ten_que and KINH_DICH_64:
             for k, v in KINH_DICH_64.items():
@@ -2746,62 +2889,96 @@ class FreeAIHelper:
                     cat_hung = v.get('cat_hung', '')
                     if 'Cát' in cat_hung or 'Hanh' in cat_hung:
                         score += 5
-                        factors.append(f"64 Quẻ CÁT +5")
+                        factors.append(f"MH Quẻ {ten_que} Cát +5")
                     elif 'Hung' in cat_hung or 'Nguy' in cat_hung:
                         score -= 5
-                        factors.append(f"64 Quẻ HUNG -5")
+                        factors.append(f"MH Quẻ {ten_que} Hung -5")
                     break
         
         # Strength label
-        if score >= 15: strength = "🟢 VƯỢNG"
+        if score >= 15: strength = "🟢 CỰC VƯỢNG"
         elif score >= 5: strength = "🔵 TƯỚNG"
         elif score >= -5: strength = "🟡 BÌNH"
-        elif score >= -15: strength = "🟠 TÙ"
+        elif score >= -15: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"MH Thể={the_name}({the_el}), Score={score}, {strength} ({', '.join(factors[:3])})"
-        return score, summary
+        summary = f"MH Thể={the_name}({the_el}), Score={score}, {strength} ({len(factors)} yếu: {', '.join(factors[:3])}...)"
+        return score, summary, factors
     
     def _thiet_ban_scoring(self, chart_data, luc_hao_data, mai_hoa_data):
-        """V16.0: Chấm điểm Thiết Bản — Nạp Âm + 12 Trường Sinh + Quái Tượng."""
+        """V24.0: Chấm điểm Thiết Bản — Đại Vận/Nạp Âm + 12 Trường Sinh + Quái Tượng."""
         score = 0
         factors = []
         
-        # ① Nạp Âm (±6)
+        can_ngay = ''
+        chi_ngay = ''
+        chi_nam = ''
+        
+        # ① Nạp Âm & Sinh khắc Can-Chi Ngày (±6)
         if chart_data and isinstance(chart_data, dict):
             can_ngay = chart_data.get('can_ngay', '')
             chi_ngay = chart_data.get('chi_ngay', '')
+            chi_nam = chart_data.get('chi_nam', '')
             can_chi = can_ngay + chi_ngay if can_ngay and chi_ngay else ''
+            
+            # Nạp âm mệnh
             if can_chi and NAP_AM_GIAI_THICH:
                 nap_am = NAP_AM_GIAI_THICH.get(can_chi, {})
                 if nap_am:
                     cat_hung = nap_am.get('cat_hung', '')
                     if 'Cát' in str(cat_hung):
-                        score += 6
-                        factors.append(f"Nạp Âm CÁT +6")
+                        score += 5
+                        factors.append(f"TB Nạp Âm {can_chi} Cát +5")
                     elif 'Hung' in str(cat_hung):
-                        score -= 6
-                        factors.append(f"Nạp Âm HUNG -6")
+                        score -= 5
+                        factors.append(f"TB Nạp Âm {can_chi} Hung -5")
+            
+            # Sinh khắc Can (Thiên) Chi (Địa) Ngày
+            can_hanh = CAN_NGU_HANH.get(can_ngay, '')
+            chi_hanh = CHI_NGU_HANH.get(chi_ngay, '')
+            if can_hanh and chi_hanh:
+                if SINH.get(chi_hanh) == can_hanh:
+                    score += 4
+                    factors.append(f"TB Địa Chi sinh Thiên Can +4")
+                elif KHAC.get(chi_hanh) == can_hanh:
+                    score -= 4
+                    factors.append(f"TB Địa Chi khắc Thiên Can -4")
+                elif can_hanh == chi_hanh:
+                    score += 2
+                    factors.append(f"TB Thiên Địa Tỷ Hòa +2")
         
-        # ② 12 Trường Sinh (±8)
+        # ② Thái Tuế (Lưu Niên) sinh khắc Mệnh Chủ (Can Ngày) (±6)
+        if can_ngay and chi_nam:
+            can_hanh = CAN_NGU_HANH.get(can_ngay, '')
+            nam_hanh = CHI_NGU_HANH.get(chi_nam, '')
+            if can_hanh and nam_hanh:
+                if SINH.get(nam_hanh) == can_hanh:
+                    score += 6
+                    factors.append(f"TB Thái Tuế ({chi_nam}) sinh Mệnh +6")
+                elif KHAC.get(nam_hanh) == can_hanh:
+                    score -= 6
+                    factors.append(f"TB Thái Tuế ({chi_nam}) khắc Mệnh -6")
+                elif nam_hanh == can_hanh:
+                    score += 3
+                    factors.append(f"TB Mệnh đắc Thái Tuế +3")
+        
+        # ③ 12 Trường Sinh (±8)
         if chart_data and isinstance(chart_data, dict):
-            can_ngay = chart_data.get('can_ngay', '')
-            chi_ngay = chart_data.get('chi_ngay', '')
             hanh_can = CAN_NGU_HANH.get(can_ngay, '')
             if hanh_can and chi_ngay:
                 ts_stage, ts_explain = _get_truong_sinh(hanh_can, chi_ngay)
                 if ts_stage:
                     if ts_stage in ['Đế Vượng', 'Lâm Quan', 'Trường Sinh']:
                         score += 8
-                        factors.append(f"12TrSinh {ts_stage} +8")
+                        factors.append(f"TB 12TrSinh Mệnh {ts_stage} +8")
                     elif ts_stage in ['Tử', 'Mộ', 'Tuyệt']:
                         score -= 8
-                        factors.append(f"12TrSinh {ts_stage} -8")
+                        factors.append(f"TB 12TrSinh Mệnh {ts_stage} -8")
                     elif ts_stage in ['Suy', 'Bệnh']:
                         score -= 4
-                        factors.append(f"12TrSinh {ts_stage} -4")
-        
-        # ③ Quái Tượng 64 quẻ — từ Lục Hào hoặc Mai Hoa (±5)
+                        factors.append(f"TB 12TrSinh Mệnh {ts_stage} -4")
+                        
+        # ④ Bổ trợ từ Quẻ (±5)
         que_name = ''
         if luc_hao_data:
             que_name = luc_hao_data.get('ban', {}).get('name', '')
@@ -2813,20 +2990,20 @@ class FreeAIHelper:
                     cat_hung = v.get('cat_hung', '')
                     if 'Cát' in cat_hung:
                         score += 5
-                        factors.append(f"Quẻ CÁT +5")
+                        factors.append(f"TB Cục diện Quẻ {que_name} Cát +5")
                     elif 'Hung' in cat_hung:
                         score -= 5
-                        factors.append(f"Quẻ HUNG -5")
+                        factors.append(f"TB Cục diện Quẻ {que_name} Hung -5")
                     break
         
-        if score >= 10: strength = "🟢 VƯỢNG"
-        elif score >= 3: strength = "🔵 TƯỚNG"
+        if score >= 10: strength = "🟢 CỰC VƯỢNG"
+        elif score >= 4: strength = "🔵 TƯỚNG"
         elif score >= -3: strength = "🟡 BÌNH"
-        elif score >= -10: strength = "🟠 TÙ"
+        elif score >= -8: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"TB Score={score}, {strength} ({', '.join(factors[:3])})"
-        return score, summary
+        summary = f"TB Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        return score, summary, factors
     
     def _luc_nham_scoring(self, chart_data):
         """V16.0: Chấm điểm Đại Lục Nhâm — Tam Truyền + Thiên Tướng + Tuần Không."""
@@ -2856,23 +3033,23 @@ class FreeAIHelper:
             if so_hanh and can_hanh:
                 if SINH.get(so_hanh) == can_hanh:
                     score += 8
-                    factors.append(f"Sơ sinh Can +8")
+                    factors.append(f"LN Sơ Truyền sinh Can +8")
                 elif KHAC.get(so_hanh) == can_hanh:
                     score -= 8
-                    factors.append(f"Sơ khắc Can -8")
+                    factors.append(f"LN Sơ Truyền khắc Can -8")
                 elif KHAC.get(can_hanh) == so_hanh:
                     score += 5
-                    factors.append(f"Can khắc Sơ +5")
+                    factors.append(f"LN Can khắc Sơ Truyền +5")
             
             # ② Mạt Truyền ↔ Can Ngày (±8) — kết quả
             mat_hanh = tam_truyen.get('mat_truyen_hanh', '')
             if mat_hanh and can_hanh:
                 if SINH.get(mat_hanh) == can_hanh:
                     score += 8
-                    factors.append(f"Mạt sinh Can +8 (KQ tốt)")
+                    factors.append(f"LN Mạt Truyền sinh Can +8 (KQ tốt)")
                 elif KHAC.get(mat_hanh) == can_hanh:
                     score -= 8
-                    factors.append(f"Mạt khắc Can -8 (KQ xấu)")
+                    factors.append(f"LN Mạt Truyền khắc Can -8 (KQ xấu)")
             
             # ③ Thiên Tướng Sơ Truyền (±5)
             thien_tuong = ln_data.get('thien_tuong_full', {})
@@ -2882,37 +3059,37 @@ class FreeAIHelper:
                 cat_hung = tuong.get('cat_hung', '')
                 if 'Cát' in cat_hung:
                     score += 5
-                    factors.append(f"Thiên Tướng CÁT +5")
+                    factors.append(f"LN Thiên Tướng của Sơ Truyền Cát +5")
                 elif 'Hung' in cat_hung:
                     score -= 5
-                    factors.append(f"Thiên Tướng HUNG -5")
+                    factors.append(f"LN Thiên Tướng của Sơ Truyền Hung -5")
             
             # ④ Tuần Không (−12)
             tuan_khong = tinh_tuan_khong(can_ngay, chi_ngay)
             if so_chi in tuan_khong:
                 score -= 12
-                factors.append(f"Sơ Truyền Tuần Không -12")
+                factors.append(f"LN Sơ Truyền rơi Tuần Không -12")
             
             # ⑤ Tam Truyền xu hướng (±4)
             trung_hanh = tam_truyen.get('trung_truyen_hanh', '')
             if so_hanh and mat_hanh:
                 if SINH.get(so_hanh) == trung_hanh and SINH.get(trung_hanh) == mat_hanh:
                     score += 4
-                    factors.append(f"Tam Truyền sinh tiến +4")
+                    factors.append(f"LN Tam Truyền sinh tiến +4")
                 elif so_hanh == trung_hanh == mat_hanh:
                     score += 2
-                    factors.append(f"Tam Truyền đồng khí +2")
+                    factors.append(f"LN Tam Truyền đồng khí +2")
         except Exception:
             pass
         
-        if score >= 12: strength = "🟢 VƯỢNG"
+        if score >= 12: strength = "🟢 CỰC VƯỢNG"
         elif score >= 4: strength = "🔵 TƯỚNG"
         elif score >= -4: strength = "🟡 BÌNH"
-        elif score >= -12: strength = "🟠 TÙ"
+        elif score >= -12: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"LN Score={score}, {strength} ({', '.join(factors[:3])})"
-        return score, summary
+        summary = f"LN Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        return score, summary, factors
     
     def _thai_at_scoring(self, chart_data):
         """V16.0: Chấm điểm Thái Ất — Chủ↔Khách + Văn Xương + Cách Cục."""
@@ -2943,16 +3120,16 @@ class FreeAIHelper:
                 if chu_h and khach_h:
                     if KHAC.get(chu_h) == khach_h:
                         score += 10
-                        factors.append(f"Chủ khắc Khách +10")
+                        factors.append(f"TA Chủ khắc Khách +10")
                     elif KHAC.get(khach_h) == chu_h:
                         score -= 10
-                        factors.append(f"Khách khắc Chủ -10")
+                        factors.append(f"TA Khách khắc Chủ -10")
                     elif SINH.get(khach_h) == chu_h:
                         score += 5
-                        factors.append(f"Khách sinh Chủ +5")
+                        factors.append(f"TA Khách sinh Chủ +5")
                     elif SINH.get(chu_h) == khach_h:
                         score -= 5
-                        factors.append(f"Chủ sinh Khách -5")
+                        factors.append(f"TA Chủ sinh Khách -5")
             
             # ② Văn Xương ↔ Thái Ất (±6)
             van_xuong = bat_tuong.get('Văn Xương', {})
@@ -2963,40 +3140,43 @@ class FreeAIHelper:
                 if vx_h and ta_h:
                     if SINH.get(vx_h) == ta_h:
                         score += 6
-                        factors.append(f"VX sinh TA +6")
+                        factors.append(f"TA Văn Xương sinh Thái Ất +6")
                     elif KHAC.get(vx_h) == ta_h:
                         score -= 6
-                        factors.append(f"VX khắc TA -6")
+                        factors.append(f"TA Văn Xương khắc Thái Ất -6")
             
             # ③ Cách Cục (±4 mỗi cách)
             for cc in cach_cuc[:3]:
-                if 'YỂM' in cc or 'KÍCH' in cc:
+                if 'YỂM' in cc or 'KÍCH' in cc or 'TÙ' in cc:
                     score -= 4
-                    factors.append(f"Cách Cục hung -4")
+                    factors.append(f"TA Cách cục Hung ({cc[:10]}...) -4")
+                elif 'BẢO' in cc or 'HÒA' in cc:
+                    score += 3
+                    factors.append(f"TA Cách cục Cát ({cc[:10]}...) +3")
                 elif 'CÁCH' in cc:
                     score -= 3
-                    factors.append(f"Cách -3")
+                    factors.append(f"TA Cách cục cản trở ({cc[:10]}...) -3")
             
             # ④ Bát Tướng Cát/Hung (±3)
             cat_count = sum(1 for t in bat_tuong.values() if t.get('cat_hung') in ('Cát', 'Đại Cát'))
             hung_count = sum(1 for t in bat_tuong.values() if t.get('cat_hung') in ('Hung', 'Đại Hung'))
             if cat_count > hung_count:
                 score += 3
-                factors.append(f"BT đa cát +3")
+                factors.append(f"TA Bát Tướng đa Cát +3")
             elif hung_count > cat_count:
                 score -= 3
-                factors.append(f"BT đa hung -3")
+                factors.append(f"TA Bát Tướng đa Hung -3")
         except Exception:
             pass
         
-        if score >= 12: strength = "🟢 VƯỢNG"
+        if score >= 12: strength = "🟢 CỰC VƯỢNG"
         elif score >= 4: strength = "🔵 TƯỚNG"
         elif score >= -4: strength = "🟡 BÌNH"
-        elif score >= -12: strength = "🟠 TÙ"
+        elif score >= -12: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"TA Score={score}, {strength} ({', '.join(factors[:3])})"
-        return score, summary
+        summary = f"TA Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        return score, summary, factors
     
     # ═══════════════════════════════════════════════════════════
     # V17.0: LỤC THUẬT PHÂN CẤP — ROUTING + ĐỐI CHIẾU %
@@ -5057,6 +5237,19 @@ class FreeAIHelper:
         v16_ln_raw = 0
         v16_ta_raw = 0
         v23_lh_factors = []  # V23.0: Lưu toàn bộ factors chi tiết
+        v24_km_factors = []
+        v24_mh_factors = []
+        v24_tb_factors = []
+        v24_ln_factors = []
+        v24_ta_factors = []
+        
+        try:
+            km_s, km_sum, v24_km_factors = self._ky_mon_scoring(chart_data, dung_than)
+            v16_km_raw = km_s
+            # Override km_verdict_to_score from raw calculation
+        except Exception:
+            pass
+            
         try:
             lh_s, lh_sum, v23_lh_factors = self._luc_hao_scoring(luc_hao_data, dung_than)
             v16_lh_score_str = lh_sum
@@ -5064,39 +5257,41 @@ class FreeAIHelper:
         except Exception:
             pass
         try:
-            mh_s, mh_sum = self._mai_hoa_scoring(mai_hoa_data)
+            mh_s, mh_sum, v24_mh_factors = self._mai_hoa_scoring(mai_hoa_data, chart_data)
             v16_mh_score_str = mh_sum
             v16_mh_raw = mh_s
         except Exception:
             pass
         try:
-            tb_s, tb_sum = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data)
+            tb_s, tb_sum, v24_tb_factors = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data)
             v16_tb_score_str = tb_sum
             v16_tb_raw = tb_s
         except Exception:
             pass
         try:
-            ln_s, ln_sum = self._luc_nham_scoring(chart_data)
+            ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data)
             v16_ln_score_str = ln_sum
             v16_ln_raw = ln_s
         except Exception:
             pass
         try:
-            ta_s, ta_sum = self._thai_at_scoring(chart_data)
+            ta_s, ta_sum, v24_ta_factors = self._thai_at_scoring(chart_data)
             v16_ta_score_str = ta_sum
             v16_ta_raw = ta_s
         except Exception:
             pass
         
         # V21.0 BƯỚC 6: TỔNG HỢP + WEIGHTED SCORING — 5 PHƯƠNG PHÁP
-        sections.append(f"### ĐỐI CHIẾU 5 PHƯƠNG PHÁP")
+        sections.append(f"### ĐỐI CHIẾU MỌI PHƯƠNG PHÁP")
         verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
         reasons = [ky_mon_reason, luc_hao_reason, mai_hoa_reason, luc_nham_reason, thai_at_reason]
         
         # V21.0: Normalize raw scores → 0-100% per method
-        # KM doesn't have a scoring function — estimate from verdict
-        km_verdict_to_score = {'ĐẠI CÁT': 25, 'CÁT': 15, 'BÌNH': 0, 'HUNG': -15, 'ĐẠI HUNG': -25}
-        v16_km_raw = km_verdict_to_score.get(ky_mon_verdict, 0)
+        # KM đã có score thực nên không lấy từ estimation nữa
+        if v16_km_raw == 0:
+            km_verdict_to_score = {'ĐẠI CÁT': 25, 'CÁT': 15, 'BÌNH': 0, 'HUNG': -15, 'ĐẠI HUNG': -25}
+            v16_km_raw = km_verdict_to_score.get(ky_mon_verdict, 0)
+        
         raw_scores = {
             'KM': v16_km_raw,
             'LH': v16_lh_raw,
@@ -5540,8 +5735,13 @@ class FreeAIHelper:
                 'hanh_vat': unified_v22.get('hanh_vat', {}) if unified_v22 else {},
                 'van_vat_cu_the': _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH')) if unified_v22 else {},
             },
-            # V23.0: Toàn bộ yếu tố tác động DT (23 factors)
+            # V24.0: Toàn bộ yếu tố tác động Đa Môn Phái
             'v23_lh_factors': v23_lh_factors,
+            'v24_km_factors': v24_km_factors,
+            'v24_mh_factors': v24_mh_factors,
+            'v24_tb_factors': v24_tb_factors,
+            'v24_ln_factors': v24_ln_factors,
+            'v24_ta_factors': v24_ta_factors,
             # V14.0: Gửi toàn bộ báo cáo offline (giới hạn 10000 ký tự để chứa đủ V15+V16+LN+TA)
             'full_offline_report': offline_full_output[:10000] if offline_full_output else '',
         }
@@ -5814,10 +6014,11 @@ class FreeAIHelper:
                 else:
                     final_parts.append(f"- 🟡 **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Trung tính")
             
-            # V23.0: THỐNG KÊ TOÀN DIỆN CÁC YẾU TỐ
-            if v23_lh_factors:
-                final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(v23_lh_factors)})")
-                for f in v23_lh_factors:
+            # V24.0: THỐNG KÊ TOÀN DIỆN CÁC YẾU TỐ (ĐA MÔN PHÁI)
+            all_factors = v24_km_factors + v23_lh_factors + v24_mh_factors + v24_tb_factors + v24_ln_factors + v24_ta_factors
+            if all_factors:
+                final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(all_factors)})")
+                for f in all_factors:
                     if '+' in f:
                         final_parts.append(f"- ✅ **THUẬN LỢI:** {f}")
                     elif '-' in f:
