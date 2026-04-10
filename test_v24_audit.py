@@ -41,6 +41,6 @@ ans = helper.answer_question(
 )
 
 print("\n\n" + "="*50)
-print("V24.0 OFFLINE OUTPUT KẾT QUẢ TỪ ANSWER_QUESTION")
+print("V26.2 OFFLINE OUTPUT KẾT QUẢ TỪ ANSWER_QUESTION")
 print("="*50)
 print(ans)

@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-04-10-V24.0-DAI-THONG-NHAT
+# VERSION: 2026-04-10-V26.2-DAI-THONG-NHAT
 try:
     st.set_page_config(
-        page_title="☯️ Kỳ Môn AI V24.0",
+        page_title="☯️ Kỳ Môn AI V26.2",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -124,7 +124,7 @@ st.sidebar.markdown("""
         <code style='color: #4CAF50; background: none;'>🚀 MODEL: GEMINI-2.5-PRO</code>
     </div>
     <div style='margin-top: 10px; font-size: 0.8em; color: #a0aec0;'>
-        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V24.0</b> —<br>Đại Thống Nhất Đa Môn Phái (6 Môn)
+        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V26.2</b> —<br>Đại Thống Nhất Đa Môn Phái (6 Môn)
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1004,7 +1004,7 @@ with col_header3:
 
 st.markdown("---")
 # DEPLOYMENT VERIFICATION BANNER
-st.success("✅ SYSTEM ONLINE: V24.0 — THIÊN CƠ ĐẠI SƯ (Đại Thống Nhất Đa Môn Phái - 6 Môn Tích Hợp)")
+st.success("✅ SYSTEM ONLINE: V26.2 — THIÊN CƠ ĐẠI SƯ (Đại Thống Nhất Đa Môn Phái - 6 Môn Tích Hợp)")
 
 # ======================================================================
 # SIDEBAR - CONTROLS
@@ -3514,7 +3514,7 @@ elif st.session_state.current_view == "gemini_ai":
                     # RENDER
                     st.markdown("""
                     <div style='text-align: center; color: gray; padding: 20px 0;'>
-                        --- <b>☯️ Kỳ Môn AI V24.0 — Đại Thống Nhất Đa Môn Phái</b> ---<br>
+                        --- <b>☯️ Kỳ Môn AI V26.2 — Đại Thống Nhất Đa Môn Phái</b> ---<br>
                         <i>© 2024-2026 Cuongtan888888. All rights reserved.</i>
                     </div>
                     """, unsafe_allow_html=True)
