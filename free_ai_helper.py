@@ -1,5 +1,5 @@
 """
-Free AI Helper V26.2 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + LƯỢNG HÓA SUY VƯỢNG TOÀN DIỆN)
+Free AI Helper V27.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + LƯỢNG HÓA SUY VƯỢNG TOÀN DIỆN)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
@@ -1093,6 +1093,65 @@ METHOD_NAMES = {
 # V18.0: AI THÁM TỬ — QUÁI ATTRIBUTES (Manh mối Vạn Vật)
 # Mỗi quái cho ra nhiều thuộc tính để cross-reference
 # ═══════════════════════════════════════════════════════════
+
+# V27.0: TICH HOP 3 MODULE QUAN TRONG
+# Module 1: Quy tac nang cao (mau sac, khoang cach, nguoi quen/la, 64 que)
+try:
+    from qmdg_advanced_rules import MAU_SAC_NGU_HANH as ADV_MAU_SAC, QUEN_LA_QUY_TAC, KHOANG_CACH_CHI_TIET, KHA_NANG_LAY_LAI, QUE_64 as ADV_QUE_64
+except ImportError:
+    ADV_MAU_SAC = {}
+    QUEN_LA_QUY_TAC = {}
+    KHOANG_CACH_CHI_TIET = {}
+    KHA_NANG_LAY_LAI = {}
+    ADV_QUE_64 = {}
+
+# Module 2: Quy tac suy luan (xac dinh nguoi lay, gia tri vat, kha nang bat)
+try:
+    from qmdg_inference_rules import (
+        MAU_SAC_VAT_MAT, NGUYEN_TAC_TRA_LOI, DAC_DIEM_KE_LAY,
+        GIA_TRI_VE_SO, KHA_NANG_BI_BAT, KHOANG_CACH_CHUAN,
+        QUEN_LA_CHI_TIET, DAC_DIEM_THEO_THAN, KHA_NANG_BI_BAT_THEO_THAN
+    )
+except ImportError:
+    MAU_SAC_VAT_MAT = {}
+    NGUYEN_TAC_TRA_LOI = ""
+    DAC_DIEM_KE_LAY = {}
+    GIA_TRI_VE_SO = {}
+    KHA_NANG_BI_BAT = {}
+    KHOANG_CACH_CHUAN = {}
+    QUEN_LA_CHI_TIET = {}
+    DAC_DIEM_THEO_THAN = {}
+    KHA_NANG_BI_BAT_THEO_THAN = {}
+
+# Module 3: 64 que Kinh Dich day du (fortune, love, career, lost_item...)
+try:
+    from iching_integrated_data import ICHING_HEXAGRAMS, LUC_THAN_MEANINGS as ICHING_LUC_THAN
+except ImportError:
+    ICHING_HEXAGRAMS = {}
+    ICHING_LUC_THAN = {}
+
+
+# V27.0: Module 4: Blind Reading (doc mu que)
+try:
+    from blind_reading import get_season_vuong_suy as BLIND_VUONG_SUY
+except ImportError:
+    def BLIND_VUONG_SUY(h, t): return "Binh"
+
+# V27.0: Module 5: Phan tich da tang (tuong tac giua 2 cung)
+try:
+    from phan_tich_da_tang import tinh_ngu_hanh_sinh_khac as DATANG_SINH_KHAC, phan_tich_yeu_to_thoi_gian as DATANG_MUA
+except ImportError:
+    def DATANG_SINH_KHAC(h1, h2): return "Binh Hoa"
+    def DATANG_MUA(h, m): return "Binh"
+
+# V27.0: Module 6: Database tuong tac (Sao x Mon, trong so)
+try:
+    from database_tuong_tac import TUONG_TAC_SAO_MON, TRONG_SO_YEU_TO, ANH_HUONG_MUA as DB_MUA
+except ImportError:
+    TUONG_TAC_SAO_MON = {}
+    TRONG_SO_YEU_TO = {}
+    DB_MUA = {}
+
 QUAI_ATTRIBUTES = {
     'Càn': {
         'hanh': 'Kim', 'chat_lieu': ['kim loại', 'vàng', 'bạc', 'đồng', 'sắt', 'thép', 'inox'],
@@ -1127,46 +1186,43 @@ QUAI_ATTRIBUTES = {
     },
     'Tốn': {
         'hanh': 'Mộc', 'chat_lieu': ['gỗ', 'dây', 'sợi', 'lụa', 'giấy', 'vải'],
-        'hinh_dang': ['dài', 'mảnh', 'uốn cong', 'mềm mại'], 'mau_sac': ['xanh lá nhạt', 'trắng xanh'],
-        'am_thanh': ['vi vu', 'rì rào', 'tiếng gió', 'nhẹ nhàng'],
-        'dac_biet': ['mùi thơm', 'bay', 'gió', 'lan tỏa', 'linh hoạt', 'mềm'],
-        'nguoi': ['con gái trưởng', 'phụ nữ trẻ', 'thương gia', 'người đi lại nhiều'],
-        'vat': ['quạt', 'thuyền buồm', 'dây thừng', 'lông gà', 'hương', 'máy bay', 'diều'],
-        'noi': ['phía Đông Nam', 'vườn hoa', 'chùa', 'nơi thờ cúng', 'cửa hàng'],
+        'hinh_dang': ['dài', 'mảnh', 'uốn cong', 'mềm'], 'mau_sac': ['xanh lá', 'xanh ngọc'],
+        'am_thanh': ['gió', 'vi vu', 'nhẹ nhàng'], 'dac_biet': ['mềm', 'dịu', 'thâm nhập', 'gió', 'lan tỏa'],
+        'nguoi': ['con gái trưởng', 'phụ nữ trung niên', 'thương nhân', 'người đi lại nhiều'],
+        'vat': ['dây', 'quạt', 'máy bay', 'hương', 'bút', 'sách', 'thư từ', 'giấy tờ'],
+        'noi': ['phía Đông Nam', 'chợ', 'đường đi', 'nơi thoáng gió', 'sân bay'],
         'benh': ['đùi', 'cảm gió', 'hô hấp', 'ruột'],
-        'tim_do': ['phía Đông Nam', 'nơi gió', 'gần cây', 'chỗ mùi thơm'],
-    },
-    'Khảm': {
-        'hanh': 'Thủy', 'chat_lieu': ['nước', 'chất lỏng', 'kính', 'thủy tinh', 'nhựa trong'],
-        'hinh_dang': ['tròn cong', 'rỗng giữa', 'uốn lượn', 'không đều'], 'mau_sac': ['đen', 'xanh đậm', 'trong suốt'],
-        'am_thanh': ['chảy', 'rì rào', 'ào ào', 'sóng'],
-        'dac_biet': ['ẩm', 'lạnh', 'nguy hiểm', 'ẩn giấu', 'sâu', 'bí mật'],
-        'nguoi': ['con trai giữa', 'kẻ trộm', 'người lái xe', 'ngư dân'],
-        'vat': ['rượu', 'mực', 'máy giặt', 'bình nước', 'kính', 'bánh xe', 'bể cá', 'máy lọc nước'],
-        'noi': ['phía Bắc', 'sông hồ', 'nhà tắm', 'nơi ẩm ướt', 'quán bar'],
-        'benh': ['thận', 'tai', 'máu', 'bàng quang'],
-        'tim_do': ['phía Bắc', 'gần nước', 'nơi ẩm', 'chỗ tối'],
+        'tim_do': ['phía Đông Nam', 'nơi có gió', 'gần cây dài', 'nơi thoáng'],
     },
     'Ly': {
-        'hanh': 'Hỏa', 'chat_lieu': ['lửa', 'điện', 'ánh sáng', 'kính', 'nhựa'],
-        'hinh_dang': ['rỗng giữa', 'trung rỗng', 'lưới', 'sáng'], 'mau_sac': ['đỏ', 'cam', 'tím', 'hồng'],
-        'am_thanh': ['lách tách', 'nổ nhỏ', 'tí tách', 'reo'],
-        'dac_biet': ['nóng', 'sáng', 'đẹp', 'rực rỡ', 'điện tử', 'màn hình', 'phát sáng'],
-        'nguoi': ['con gái giữa', 'người đẹp', 'nghệ sĩ', 'lính cứu hỏa', 'mắt sáng'],
-        'vat': ['đèn', 'TV', 'điện thoại', 'máy tính', 'camera', 'gương', 'bếp', 'đồ điện tử', 'pin', 'mắt kính'],
-        'noi': ['phía Nam', 'nơi sáng', 'sân khấu', 'phòng triển lãm', 'rạp chiếu phim'],
-        'benh': ['mắt', 'tim', 'huyết áp', 'viêm'],
-        'tim_do': ['phía Nam', 'nơi sáng', 'gần đồ điện', 'trên cao sáng'],
+        'hanh': 'Hỏa', 'chat_lieu': ['lửa', 'điện', 'ánh sáng', 'nhựa', 'da'],
+        'hinh_dang': ['nhọn', 'tam giác', 'rỗng giữa'], 'mau_sac': ['đỏ', 'cam', 'hồng', 'tím'],
+        'am_thanh': ['nổ', 'cháy', 'lách tách'], 'dac_biet': ['sáng', 'nóng', 'đẹp', 'rỗng', 'bám dính'],
+        'nguoi': ['con gái giữa', 'người đẹp', 'học giả', 'quân nhân', 'bác sĩ'],
+        'vat': ['đèn', 'nến', 'gương', 'kính', 'tranh', 'vũ khí', 'máy ảnh', 'điện thoại'],
+        'noi': ['phía Nam', 'nơi sáng', 'nhà bếp', 'sân khấu', 'bệnh viện'],
+        'benh': ['tim', 'mắt', 'huyết áp', 'viêm'],
+        'tim_do': ['phía Nam', 'nơi sáng', 'gần lửa/điện', 'nơi đẹp'],
+    },
+    'Khảm': {
+        'hanh': 'Thủy', 'chat_lieu': ['nước', 'kính', 'chất lỏng', 'mực', 'rượu', 'xăng'],
+        'hinh_dang': ['lượn sóng', 'không đều', 'có lỗ'], 'mau_sac': ['đen', 'xanh đậm', 'xanh dương'],
+        'am_thanh': ['chảy', 'róc rách', 'ầm ầm'], 'dac_biet': ['hiểm', 'sâu', 'ẩm', 'lạnh', 'chảy'],
+        'nguoi': ['con trai giữa', 'kẻ trộm', 'người hiểm', 'thủy thủ', 'người kinh doanh rượu'],
+        'vat': ['nước', 'rượu', 'mực', 'xăng', 'bánh xe', 'gương', 'kính'],
+        'noi': ['phía Bắc', 'sông hồ', 'nhà vệ sinh', 'nơi ẩm ướt', 'quán rượu'],
+        'benh': ['thận', 'tai', 'bàng quang', 'huyết', 'lạnh'],
+        'tim_do': ['phía Bắc', 'gần nước', 'nơi ẩm tối', 'nơi lạnh'],
     },
     'Cấn': {
-        'hanh': 'Thổ', 'chat_lieu': ['đá', 'gạch', 'bê tông', 'sỏi', 'đá quý'],
-        'hinh_dang': ['khối', 'chắc', 'nặng', 'nhỏ gọn'], 'mau_sac': ['vàng', 'nâu', 'xám'],
-        'am_thanh': ['im lặng', 'tĩnh lặng'], 'dac_biet': ['dừng', 'tĩnh', 'chắc chắn', 'ngăn chặn', 'nặng'],
-        'nguoi': ['con trai út', 'trẻ em trai', 'nhà sư', 'bảo vệ', 'người canh gác'],
-        'vat': ['bàn đá', 'tường', 'cổng', 'chó', 'két sắt', 'hộp', 'cục đá'],
-        'noi': ['phía Đông Bắc', 'núi', 'ngõ hẻm', 'cái cổng', 'chùa trên núi'],
-        'benh': ['tay', 'lưng', 'mũi', 'khớp'],
-        'tim_do': ['phía Đông Bắc', 'núi', 'nơi cao', 'gần tường', 'trong hộp'],
+        'hanh': 'Thổ', 'chat_lieu': ['đá', 'đất', 'gạch', 'xi măng', 'gốm'],
+        'hinh_dang': ['vuông nhỏ', 'khối', 'lồi lõm'], 'mau_sac': ['vàng', 'nâu đất', 'xám'],
+        'am_thanh': ['yên lặng', 'trầm'], 'dac_biet': ['tĩnh', 'dừng', 'ngăn cản', 'bền chắc'],
+        'nguoi': ['con trai út', 'trẻ em', 'nhà sư', 'bảo vệ', 'người ít nói'],
+        'vat': ['tường', 'cửa', 'tủ', 'hộp', 'đá quý', 'bàn', 'ghế'],
+        'noi': ['phía Đông Bắc', 'núi', 'nơi cao', 'gần tường', 'trong hộp'],
+        'benh': ['tay', 'lưng', 'xương', 'dạ dày'],
+        'tim_do': ['phía Đông Bắc', 'nơi cao', 'gần tường/núi', 'trong hộp/tủ'],
     },
     'Đoài': {
         'hanh': 'Kim', 'chat_lieu': ['kim loại mỏng', 'dao', 'kéo', 'gương'],
@@ -1201,7 +1257,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V26.2 Unified Strength)"
+        self.name = "Thiên Cơ Đại Sư (V27.0 Unified + Deep Integration)"
         self.version = "V26.2-Unified-Strength"
         self.model_name = "offline-rule-engine-v22.0"
         self.logs = []
@@ -1225,8 +1281,111 @@ class FreeAIHelper:
     def _process_response(self, text):
         return text if text else "Không có phản hồi."
 
+
+
+    # V27.0: ENHANCED DETECTIVE - Tich hop qmdg_advanced_rules + qmdg_inference_rules
+    def _enhanced_detective(self, chart_data, question, hanh_dt=None):
+        """V27.0: Bo sung chi tiet cho V18 Detective tu 2 module moi.
+        Tra ve string bo sung them cho detective analysis."""
+        extras = []
+        if not hanh_dt:
+            return ""
+        
+        q_lower = question.lower() if question else ""
+        is_tim_do = any(kw in q_lower for kw in ['tim', 'mat', 'trom', 'lay', 'danh roi', 'de quen',
+                                                   'tìm', 'mất', 'trộm', 'lấy', 'đánh rơi', 'để quên'])
+        
+        # 1) Mau sac vat mat (tu qmdg_inference_rules)
+        if is_tim_do and MAU_SAC_VAT_MAT:
+            mau_data = MAU_SAC_VAT_MAT.get(hanh_dt, {})
+            if mau_data:
+                extras.append(f"[V27-MAU SAC] Hanh {hanh_dt}: {mau_data.get('Chinh','')} | Phu: {', '.join(mau_data.get('Phu',['?']))}")
+        
+        # 2) Nguoi quen hay nguoi la (tu qmdg_advanced_rules)
+        if is_tim_do and QUEN_LA_QUY_TAC:
+            # Xac dinh dua tren Luc Than cua Dung Than
+            for lt_key, lt_data in QUEN_LA_QUY_TAC.items():
+                if isinstance(lt_data, dict) and lt_data.get('Quan_He'):
+                    extras.append(f"[V27-NGUOI] {lt_key}: {lt_data['Quan_He'][:60]}")
+                    break  # Chi lay 1 mau dau tien lam vi du
+        
+        # 3) Khoang cach (tu qmdg_advanced_rules)
+        if is_tim_do and KHOANG_CACH_CHI_TIET:
+            kc_data = KHOANG_CACH_CHI_TIET.get(hanh_dt, {})
+            if kc_data:
+                extras.append(f"[V27-KC] {kc_data}")
+        
+        # 4) Kha nang lay lai
+        if is_tim_do and KHA_NANG_LAY_LAI:
+            kn_data = KHA_NANG_LAY_LAI.get(hanh_dt, '')
+            if kn_data:
+                extras.append(f"[V27-KHA NANG] {kn_data}")
+        
+        # 5) Dac diem ke lay (tu qmdg_inference_rules)
+        if is_tim_do and DAC_DIEM_KE_LAY:
+            for hanh_key, dd_data in DAC_DIEM_KE_LAY.items():
+                if hanh_key == hanh_dt:
+                    extras.append(f"[V27-KE LAY] Hanh {hanh_key}: {dd_data}")
+                    break
+        
+        if extras:
+            return "\n--- V27 DETECTIVE NANG CAO ---\n" + "\n".join(extras) + "\n"
+        return ""
+
+    # V27.0: VERDICT COMPACT BLOCK - Tom tat co cau truc de Gemini luon doc duoc
+    def _build_verdict_compact_block(self, od):
+        """V27.0: Tao block tom tat compact ~1200 ky tu chua TAT CA du lieu quan trong.
+        Block nay luon nam DAU prompt -> Gemini doc duoc 100% du full report bi cat."""
+        lines = []
+        lines.append("\n=== [V27 VERDICT COMPACT] DU LIEU THEN CHOT ===")
+        
+        # 1) Verdict 6 phuong phap
+        lines.append(f"DT={od.get('dung_than','?')} | Cat={od.get('category_label','?')}")
+        lines.append(f"KM={od.get('ky_mon_verdict','?')} LH={od.get('luc_hao_verdict','?')} MH={od.get('mai_hoa_verdict','?')} LN={od.get('luc_nham_verdict','?')} TA={od.get('thai_at_verdict','?')}")
+        
+        # 2) V22 Unified Strength  
+        v22 = od.get('v22_unified_strength', {})
+        if v22:
+            lines.append(f"Unified={v22.get('unified_pct','?')}% LH={v22.get('lh_pct','?')}% TS={v22.get('ts_pct','?')}% NK={v22.get('nk_pct','?')}%")
+            lines.append(f"Tier={v22.get('tier_cap','?')} NguKhi={v22.get('ngu_khi','?')} HanhDT={v22.get('hanh_dt','?')} 12TS={v22.get('ts_stage','?')}")
+            vv = v22.get('van_vat_cu_the', {})
+            if vv:
+                lines.append(f"VanVat: DoVat={vv.get('do_vat','')} Nguoi={vv.get('nguoi','')} Benh={vv.get('benh','')}")
+        
+        # 3) V15 Xau Duoc compact
+        if od.get('v15_bt_score') or od.get('v15_dt_score'):
+            lines.append(f"V15: BT={od.get('v15_bt_score','?')} DT={od.get('v15_dt_score','?')} Time={od.get('v15_timeline','?')} UngKy={od.get('v15_timing','?')}")
+        
+        # 4) V16 Scoring compact
+        v16_parts = []
+        for k, label in [('v16_lh_score','LH'),('v16_mh_score','MH'),('v16_tb_score','TB'),('v16_ln_score','LN'),('v16_ta_score','TA')]:
+            if od.get(k):
+                v16_parts.append(f"{label}={od[k]}")
+        if v16_parts:
+            lines.append(f"V16: {' '.join(v16_parts)}")
+        
+        # 5) V17 Method Routing compact (chi 200 ky tu)
+        if od.get('v17_routing'):
+            lines.append(f"V17: {od['v17_routing'][:200]}")
+        
+        # 6) V18 Detective compact (chi 200 ky tu)
+        if od.get('v18_detective'):
+            lines.append(f"V18: {od['v18_detective'][:200]}")
+        
+        # 7) Top factors (tat ca phuong phap, chi lay top 3 moi loai)
+        factor_parts = []
+        for fkey, flabel in [('v23_lh_factors','LH'),('v24_km_factors','KM'),('v24_mh_factors','MH'),('v24_ln_factors','LN'),('v24_ta_factors','TA')]:
+            fdata = od.get(fkey, [])
+            if fdata and isinstance(fdata, list) and len(fdata) > 0:
+                factor_parts.append(f"{flabel}:[{';'.join(str(f) for f in fdata[:3])}]")
+        if factor_parts:
+            lines.append(f"Factors: {' | '.join(factor_parts)}")
+        
+        lines.append("=== [HET V27 COMPACT] ===\n")
+        return "\n".join(lines)
+
     def test_connection(self):
-        return True, "V26.2 Unified Strength — Offline + Online fallback"
+        return True, "V27.0 Unified + Deep Integration — Offline + Online fallback"
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
@@ -1267,6 +1426,9 @@ class FreeAIHelper:
 
             if offline_analysis_data:
                 od = offline_analysis_data
+                
+                # V27.0: VERDICT COMPACT BLOCK - Chen truoc tat ca du lieu khac
+                offline_ctx += self._build_verdict_compact_block(od)
                 
                 # 1) Thông tin cơ bản
                 offline_ctx += (
@@ -1343,6 +1505,13 @@ class FreeAIHelper:
                 if od.get('v18_detective'):
                     offline_ctx += f"\n--- V18 AI THÁM TỬ (LẮP GHÉP MANH MỐI) ---\n"
                     offline_ctx += od['v18_detective'] + "\n"
+
+                # V27.0: Enhanced Detective (tu qmdg_advanced_rules + inference_rules)
+                if chart_data and isinstance(chart_data, dict):
+                    hanh_dt_v27 = od.get('v22_unified_strength', {}).get('hanh_dt', '')
+                    enhanced_det = self._enhanced_detective(chart_data, question, hanh_dt_v27)
+                    if enhanced_det:
+                        offline_ctx += enhanced_det
                 
                 offline_ctx += f"=== HẾT DỮ LIỆU OFFLINE ===\n\n"
             
@@ -2441,6 +2610,67 @@ class FreeAIHelper:
         else: strength = "🔴 TỬ"
         
         summary = f"KM Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        
+        # V27.0: 5 FACTORS BO SUNG CHO KY MON
+        # Factor 1: Tuong tac Sao x Mon (tu database_tuong_tac)
+        if TUONG_TAC_SAO_MON and dt_cung is not None:
+            sao_dt = ''
+            mon_dt = ''
+            if isinstance(thien_ban, dict):
+                sao_dt = thien_ban.get(dt_cung, {}).get('sao', '') if isinstance(thien_ban.get(dt_cung), dict) else str(thien_ban.get(dt_cung, ''))
+            if isinstance(nhan_ban, dict):
+                mon_dt = nhan_ban.get(dt_cung, {}).get('mon', '') if isinstance(nhan_ban.get(dt_cung), dict) else str(nhan_ban.get(dt_cung, ''))
+            sao_mon_key = (sao_dt, mon_dt)
+            sm_result = TUONG_TAC_SAO_MON.get(sao_mon_key, '')
+            if sm_result:
+                if 'Cat' in str(sm_result) or 'Cát' in str(sm_result):
+                    score += 5
+                    factors.append(f"V27 KM Sao×Môn Cát +5: {sao_dt}×{mon_dt}")
+                else:
+                    score -= 3
+                    factors.append(f"V27 KM Sao×Môn: {sm_result}")
+        
+        # Factor 2: Sinh khac Cung BT <-> DT (tu phan_tich_da_tang)
+        if bt_cung is not None and dt_cung is not None:
+            hanh_bt_cung = CUNG_NGU_HANH.get(bt_cung, '')
+            hanh_dt_cung = CUNG_NGU_HANH.get(dt_cung, '')
+            if hanh_bt_cung and hanh_dt_cung:
+                rel = DATANG_SINH_KHAC(hanh_bt_cung, hanh_dt_cung)
+                if 'Sinh' in str(rel) and 'Bi' not in str(rel):
+                    score += 6
+                    factors.append(f"V27 KM Cung BT sinh DT +6 ({hanh_bt_cung}→{hanh_dt_cung})")
+                elif 'Khac' in str(rel) or 'Khắc' in str(rel):
+                    if 'Bi' in str(rel) or 'Bị' in str(rel):
+                        score -= 6
+                        factors.append(f"V27 KM Cung BT bị khắc -6 ({hanh_bt_cung}←{hanh_dt_cung})")
+                    else:
+                        score += 4
+                        factors.append(f"V27 KM Cung BT khắc DT +4")
+        
+        # Factor 3: Vuong Suy theo mua (tu blind_reading)
+        if dt_can:
+            can_hanh_km = CAN_NGU_HANH.get(dt_can, '')
+            tiet_khi = chart_data.get('tiet_khi', '')
+            if can_hanh_km and tiet_khi:
+                vs = BLIND_VUONG_SUY(can_hanh_km, tiet_khi)
+                if vs:
+                    vs_str = str(vs)
+                    if 'Vuong' in vs_str or 'Vượng' in vs_str:
+                        score += 5
+                        factors.append(f"V27 KM DT Vượng mùa +5")
+                    elif 'Tu' in vs_str or 'Tử' in vs_str or 'Tù' in vs_str:
+                        score -= 5
+                        factors.append(f"V27 KM DT Tử/Tù mùa -5")
+        
+        # Factor 4: Anh huong mua len Hanh DT (tu database_tuong_tac)
+        if DB_MUA and can_hanh_km:
+            for mua_key, mua_data in DB_MUA.items():
+                if isinstance(mua_data, dict) and can_hanh_km in mua_data:
+                    trang_thai = mua_data[can_hanh_km]
+                    if 'Vuong' in str(trang_thai) or 'Vượng' in str(trang_thai):
+                        factors.append(f"V27 KM Mua {mua_key}: DT {trang_thai}")
+                    break
+
         return score, summary, factors
 
     def _luc_hao_scoring(self, luc_hao_data, dung_than):
@@ -2939,6 +3169,33 @@ class FreeAIHelper:
         else: strength = "🔴 TỬ"
         
         summary = f"MH Thể={the_name}({the_el}), Score={score}, {strength} ({len(factors)} yếu: {', '.join(factors[:3])}...)"
+        
+        # V27.0: Enrichment tu ICHING_HEXAGRAMS (64 que chi tiet)
+        if ICHING_HEXAGRAMS:
+            try:
+                hex_num = None
+                if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                    hex_num = mai_hoa_data.get('que_so') or mai_hoa_data.get('hex_number')
+                if hex_num and hex_num in ICHING_HEXAGRAMS:
+                    ic = ICHING_HEXAGRAMS[hex_num]
+                    cat_key = topic.lower() if topic else 'general'
+                    # Map topic to ICHING key
+                    topic_map = {
+                        'tai_chinh': 'fortune', 'tinh_cam': 'love', 'hon_nhan': 'love',
+                        'cong_viec': 'career', 'suc_khoe': 'sickness', 'benh_tat': 'sickness',
+                        'tim_do': 'lost_item', 'mat_do': 'lost_item',
+                    }
+                    ic_key = topic_map.get(cat_key, 'general')
+                    ic_text = ic.get(ic_key, ic.get('general', ''))
+                    if ic_text:
+                        factors.append(f"[V27 KINH DICH] Que {ic.get('name','?')}: {str(ic_text)[:200]}")
+                        if 'cat' in str(ic_text).lower() or 'hanh' in str(ic_text).lower():
+                            score += 3
+                        elif 'hung' in str(ic_text).lower() or 'nan' in str(ic_text).lower():
+                            score -= 3
+            except Exception:
+                pass
+
         return score, summary, factors
     
     def _thiet_ban_scoring(self, chart_data, luc_hao_data, mai_hoa_data):
@@ -3039,6 +3296,31 @@ class FreeAIHelper:
         else: strength = "🔴 TỬ"
         
         summary = f"TB Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        
+        # V27.0: Bo sung Thiet Ban - Dai Van/Luu Nien
+        try:
+            import datetime as _dt_tb
+            current_year = _dt_tb.datetime.now().year
+            # Load thiet_ban_than_toan.json neu co
+            import json as _json_tb
+            tb_json_path = os.path.join(os.path.dirname(__file__), 'thiet_ban_than_toan.json')
+            if os.path.exists(tb_json_path):
+                with open(tb_json_path, 'r', encoding='utf-8') as _f:
+                    tb_json = _json_tb.load(_f)
+                    # Tim Luu Nien hien tai
+                    luu_nien = tb_json.get('luu_nien', {}).get(str(current_year), {})
+                    if luu_nien:
+                        ln_hanh = luu_nien.get('hanh', '')
+                        if ln_hanh and can_hanh:
+                            if SINH.get(ln_hanh) == can_hanh:
+                                score += 4
+                                factors.append(f"V27 TB Luu Nien {current_year} sinh Menh +4")
+                            elif KHAC.get(ln_hanh) == can_hanh:
+                                score -= 4
+                                factors.append(f"V27 TB Luu Nien {current_year} khac Menh -4")
+        except Exception:
+            pass
+
         return score, summary, factors
     
     def _luc_nham_scoring(self, chart_data):
@@ -3125,6 +3407,48 @@ class FreeAIHelper:
         else: strength = "🔴 TỬ"
         
         summary = f"LN Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        
+        # V27.0: Bo sung Phan Tich Luc Nham
+        # Factor: Sinh khac Tam Truyen voi Can Ngay (chi tiet hon)
+        try:
+            trung_hanh = tam_truyen.get('trung_truyen_hanh', '')
+            mat_hanh = tam_truyen.get('mat_truyen_hanh', '')
+            
+            # Trung Truyen (Hien Tai) - trong so trung binh
+            if trung_hanh and can_hanh:
+                if SINH.get(trung_hanh) == can_hanh:
+                    score += 5
+                    factors.append(f"V27 LN Trung Truyen sinh Can +5")
+                elif KHAC.get(trung_hanh) == can_hanh:
+                    score -= 5
+                    factors.append(f"V27 LN Trung Truyen khac Can -5")
+            
+            # Mat Truyen (Tuong Lai) - trong so thap
+            if mat_hanh and can_hanh:
+                if SINH.get(mat_hanh) == can_hanh:
+                    score += 3
+                    factors.append(f"V27 LN Mat Truyen sinh Can +3 (tuong lai tot)")
+                elif KHAC.get(mat_hanh) == can_hanh:
+                    score -= 3
+                    factors.append(f"V27 LN Mat Truyen khac Can -3 (tuong lai xau)")
+            
+            # Thien Tuong
+            thien_tuong = ln_data.get('thien_tuong', {})
+            if thien_tuong:
+                for tt_name, tt_val in thien_tuong.items():
+                    if isinstance(tt_val, dict) and tt_val.get('cat_hung'):
+                        ch = str(tt_val['cat_hung'])
+                        if 'Cat' in ch or 'Cát' in ch:
+                            score += 2
+                            factors.append(f"V27 LN Thien Tuong {tt_name} Cat +2")
+                        elif 'Hung' in ch:
+                            score -= 2
+                            factors.append(f"V27 LN Thien Tuong {tt_name} Hung -2")
+                        if len(factors) > 20:
+                            break
+        except Exception:
+            pass
+
         return score, summary, factors
     
     def _thai_at_scoring(self, chart_data):
@@ -3212,6 +3536,44 @@ class FreeAIHelper:
         else: strength = "🔴 TỬ"
         
         summary = f"TA Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        
+        # V27.0: Bo sung Thai At
+        # Factor: Sinh khac voi Can Ngay
+        try:
+            ta_cung = ta_data.get('thai_at_cung', {})
+            hanh_cung_ta = ta_cung.get('hanh_cung', '')
+            can_h = CAN_NGU_HANH.get(can_ngay, '')
+            if hanh_cung_ta and can_h:
+                if SINH.get(hanh_cung_ta) == can_h:
+                    score += 6
+                    factors.append(f"V27 TA Thai At sinh Can Ngay +6")
+                elif KHAC.get(hanh_cung_ta) == can_h:
+                    score -= 6
+                    factors.append(f"V27 TA Thai At khac Can Ngay -6")
+                elif hanh_cung_ta == can_h:
+                    score += 3
+                    factors.append(f"V27 TA Thai At dong hanh Can +3")
+            
+            # Bat Tuong diem
+            if bat_tuong:
+                cat_count = 0
+                hung_count = 0
+                for bt_name, bt_val in bat_tuong.items():
+                    if isinstance(bt_val, dict):
+                        ly = str(bt_val.get('ly', ''))
+                        if 'Cat' in ly or 'Cát' in ly or 'tot' in ly.lower():
+                            cat_count += 1
+                        elif 'Hung' in ly or 'xau' in ly.lower():
+                            hung_count += 1
+                if cat_count > hung_count:
+                    score += 4
+                    factors.append(f"V27 TA Bat Tuong Cat nhieu +4 ({cat_count}C/{hung_count}H)")
+                elif hung_count > cat_count:
+                    score -= 4
+                    factors.append(f"V27 TA Bat Tuong Hung nhieu -4 ({cat_count}C/{hung_count}H)")
+        except Exception:
+            pass
+
         return score, summary, factors
     
     # ═══════════════════════════════════════════════════════════
@@ -4862,7 +5224,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V26.2 Unified Strength). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V27.0 Unified + Deep Integration). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -5017,7 +5379,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V26.2 Unified Strength\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V27.0 Unified + Deep Integration\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
