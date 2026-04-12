@@ -1243,20 +1243,62 @@ class FreeAIHelper:
         return text if text else "Không có phản hồi."
 
 
-    # V27.0: Verdict Compact Block - Tom tat ngan gon de Gemini doc duoc 100%
+    # V28.4: Verdict Compact Block — SUPER DETAILED for Gemini to follow 100%
     def _build_verdict_compact_block(self, od):
-        """V28.3: Compact block chua du lieu then chot, nam dau prompt."""
+        """V28.4: Block then chot DAY DU — Gemini PHAI doc va tuan theo."""
         lines = []
-        lines.append("\n=== [V28.3 COMPACT] ===")
-        lines.append(f"DT={od.get('dung_than','?')} | Cat={od.get('category_label','?')}")
-        # V28.3: Kèm MH Thể/Dụng + LH Dụng Thần rõ ràng
-        lines.append(f"MH_The={od.get('mh_the','?')} MH_Dung={od.get('mh_dung','?')}")
-        lines.append(f"LH_DungThan={od.get('lh_dung_than','?')}")
-        lines.append(f"KM={od.get('ky_mon_verdict','?')} LH={od.get('luc_hao_verdict','?')} MH={od.get('mai_hoa_verdict','?')} LN={od.get('luc_nham_verdict','?')} TA={od.get('thai_at_verdict','?')}")
+        lines.append("\n╔══════════════════════════════════════════════════════════╗")
+        lines.append("║  ⛔ V28.4 VERDICT LOCK — AI OFFLINE ĐÃ TÍNH CHÍNH XÁC   ║")
+        lines.append("║  BẠN PHẢI TUÂN THEO. CẤM PHÁN NGƯỢC!                    ║")
+        lines.append("╚══════════════════════════════════════════════════════════╝")
+        
+        # 1) Dụng Thần
+        lines.append(f"\n🎯 DỤNG THẦN: {od.get('dung_than','?')}")
+        lines.append(f"📋 NHÓM: {od.get('category_label','?')}")
+        
+        # 2) Mai Hoa Thể/Dụng
+        lines.append(f"\n🌸 MAI HOA: Thể={od.get('mh_the','?')} | Dụng={od.get('mh_dung','?')}")
+        
+        # 3) LH Dụng Thần (Lục Thân)
+        lines.append(f"☯️ LỤC HÀO DT: {od.get('lh_dung_than','?')}")
+        
+        # 4) Verdicts + Reasons (QUAN TRỌNG NHẤT)
+        lines.append(f"\n═══ KẾT QUẢ 5 PHƯƠNG PHÁP (Python tính chính xác 100%) ═══")
+        lines.append(f"1️⃣ KỲ MÔN:      {od.get('ky_mon_verdict','?'):6s} | Lý do: {od.get('ky_mon_reason','không rõ')}")
+        lines.append(f"2️⃣ LỤC HÀO:     {od.get('luc_hao_verdict','?'):6s} | Lý do: {od.get('luc_hao_reason','không rõ')}")
+        lines.append(f"3️⃣ MAI HOA:      {od.get('mai_hoa_verdict','?'):6s} | Lý do: {od.get('mai_hoa_reason','không rõ')}")
+        lines.append(f"4️⃣ ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?'):6s} | Lý do: {od.get('luc_nham_reason','không rõ')}")
+        lines.append(f"5️⃣ THÁI ẤT:      {od.get('thai_at_verdict','?'):6s} | Lý do: {od.get('thai_at_reason','không rõ')}")
+        
+        # 5) Weighted Score
         v22 = od.get('v22_unified_strength', {})
         if v22:
-            lines.append(f"Unified={v22.get('unified_pct','?')}% Tier={v22.get('tier_cap','?')} 12TS={v22.get('ts_stage','?')}")
-        lines.append("=== [HET COMPACT] ===\n")
+            pct = v22.get('unified_pct', 50)
+            tier = v22.get('tier_cap', '?')
+            ts = v22.get('ts_stage', '?')
+            nk = v22.get('ngu_khi', '?')
+            hanh = v22.get('hanh_dt', '?')
+            lines.append(f"\n═══ ĐIỂM TỔNG HỢP THỐNG NHẤT ═══")
+            lines.append(f"📊 Weighted Score: {pct}% → {'CÁT' if pct >= 60 else 'HUNG' if pct <= 45 else 'BÌNH'}")
+            lines.append(f"🏷️ Tier: {tier} | Ngũ Khí: {nk} | 12 Trường Sinh: {ts}")
+            lines.append(f"🔥 Hành DT: {hanh}")
+        
+        # 6) Bằng chứng tác động (top 10)
+        evidence = od.get('impact_evidence', [])
+        if evidence:
+            lines.append(f"\n═══ BẰNG CHỨNG THEN CHỐT (Top 10) ═══")
+            for i, e in enumerate(evidence[:10]):
+                lines.append(f"📌 {i+1}. {e}")
+        
+        # 7) Kết luận offline
+        narrative = od.get('unified_narrative', '')
+        if narrative:
+            lines.append(f"\n═══ KẾT LUẬN AI OFFLINE ═══")
+            lines.append(narrative)
+        
+        lines.append("\n════════════════════════════════════════════════════════")
+        lines.append("⛔ BẠN (Gemini) PHẢI:\n① Trích dẫn verdict trên TRƯỚC KHI kết luận\n② Giải thích TẠI SAO verdict đúng (dẫn chứng data)\n③ KHÔNG được phán ngược verdict nếu không có bằng chứng MÂU THUẪN rõ ràng")
+        lines.append("════════════════════════════════════════════════════════\n")
         return "\n".join(lines)
 
     def test_connection(self):
@@ -1423,7 +1465,7 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # V14.0: GOD-TIER Deep Reasoning Prompt — LỤC THUẬT HỢP NHẤT
+            # V28.4: GOD-TIER Deep Reasoning Prompt — LỤC THUẬT HỢP NHẤT
             deep_prompt = (
                 f"<system_role>\n"
                 f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — BẬC THẦY TAM THỨC TUYỆT ĐỈNH HUYỀN HỌC.\n"
@@ -1433,28 +1475,33 @@ class FreeAIHelper:
                 f"Thái Ất: Xem vận khí lớn của năm + Chủ/Khách Đại Tướng.\n"
                 f"</system_role>\n\n"
                 
-                f"<data>\n"
+                # V28.4: VERDICT LOCK ĐẶT ĐẦU TIÊN — Primacy Bias
+                f"╔══════════════════════════════════════════════════════════╗\n"
+                f"║  ⛔ VERDICT LOCK — ĐỌC TRƯỚC KHI LÀM BẤT CỨ GÌ       ║\n"
+                f"╚══════════════════════════════════════════════════════════╝\n"
+                f"AI Offline (Python engine) ĐÃ TÍNH TOÁN CHÍNH XÁC 100%.\n"
+                f"BẠN PHẢI tuân theo kết quả dưới đây. CẤM phán ngược.\n\n"
+                
                 f"Câu hỏi: {question}\n\n"
                 
-                # V26.3: VERDICT SUMMARY — Gemini PHẢI dựa vào đây làm trục chính
-                f"<verdict_summary>\n"
-                f"⚠️ DỮ LIỆU CHỐT (BẮT BUỘC TUÂN THEO, CẤM NÓI NGƯỢC):\n"
-                f"- Dụng Thần: {od.get('dung_than', '?')}\n"
-                f"- Weighted Score (5PP): {od.get('v22_unified_strength', {}).get('unified_pct', '?')}%\n"
-                f"- KM={od.get('ky_mon_verdict','?')} | LH={od.get('luc_hao_verdict','?')} | MH={od.get('mai_hoa_verdict','?')} | LN={od.get('luc_nham_verdict','?')} | TA={od.get('thai_at_verdict','?')}\n"
-                f"- Ngũ Khí: {od.get('v22_unified_strength', {}).get('ngu_khi', '?')}\n"
-                f"- 12 Trường Sinh: {od.get('v22_unified_strength', {}).get('ts_stage', '?')}\n"
-                f"- Hành DT: {od.get('v22_unified_strength', {}).get('hanh_dt', '?')}\n"
-                f"→ NẾU Weighted Score >= 60% → phán CÁT/THUẬN LỢI.\n"
-                f"→ NẾU Weighted Score <= 45% → phán HUNG/KHÓ KHĂN.\n"  
-                f"→ NẾU 46-59% → phán BÌNH/CHƯA RÕ.\n"
-                f"BẠN CẤM ĐƯỢC PHÁN NGƯỢC LẠI CON SỐ NÀY!\n"
-                f"</verdict_summary>\n\n"
-                
-                f"{rag_prompt}\n"
+                # COMPACT BLOCK — chứa TOÀN BỘ verdict + evidence
                 f"{offline_ctx}"
                 f"{luc_nham_ctx}"
-                f"{thai_at_ctx}"
+                f"{thai_at_ctx}\n\n"
+                
+                f"<verdict_lock>\n"
+                f"⚠️ QUY TẮC BẮT BUỘC TUYỆT ĐỐI:\n"
+                f"1. Weighted Score = {od.get('v22_unified_strength', {}).get('unified_pct', '?')}%\n"
+                f"   → ≥60% = phán CÁT/THUẬN LỢI | ≤45% = phán HUNG/KHÓ KHĂN | 46-59% = BÌNH\n"
+                f"2. BẠN CẤM phán ngược con số này!\n"
+                f"3. Mỗi nhận định PHẢI kèm: (📌 Dữ liệu: [tên] = [giá trị]) từ block trên\n"
+                f"4. CẤM nói: 'có vẻ', 'có thể', 'tùy trường hợp', 'cần xem thêm'\n"
+                f"5. CẤM tự bịa dữ liệu không có trong block trên\n"
+                f"6. KẾT LUẬN phải DỨT KHOÁT: CÓ/KHÔNG, NÊN/KHÔNG NÊN + %% tin cậy\n"
+                f"</verdict_lock>\n\n"
+                
+                f"<data>\n"
+                f"{rag_prompt}\n"
                 f"</data>\n\n"
                 
                 f"<absolute_rules>\n"

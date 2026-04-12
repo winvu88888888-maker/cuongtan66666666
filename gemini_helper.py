@@ -332,239 +332,25 @@ class GeminiQMDGHelper:
     # CORE: ANSWER QUESTION (THE BRAIN) - V20.5 GROUNDED
     # ================================================================
     def answer_question(self, question, chart_data=None, topic="Chung", selected_subject=None, mai_hoa_data=None, luc_hao_data=None): 
+        """
+        V28.4: Route direct AI Online calls through FreeAIHelper 
+        to ensure all deterministic Offline logic and weighted score 
+        data are passed into Gemini's context.
+        """
         self.logs = [] # Reset logs
-        if not question:
-            question = topic or "Chung"
-        
-        # --- AUTO-CAPTURE CONTEXT IF MISSING ---
         try:
-            import streamlit as st
-            if not chart_data and 'chart_data' in st.session_state:
-                chart_data = st.session_state.chart_data
-            if not mai_hoa_data and 'mai_hoa_result' in st.session_state:
-                mai_hoa_data = st.session_state.mai_hoa_result
-            if not luc_hao_data and 'luc_hao_result' in st.session_state:
-                luc_hao_data = st.session_state.luc_hao_result
-            if not selected_subject and 'selected_doi_tuong' in st.session_state:
-                selected_subject = st.session_state.selected_doi_tuong
-            if topic == "Chung" and 'chu_de_hien_tai' in st.session_state:
-                topic = st.session_state.chu_de_hien_tai
-        except Exception:
-            pass
-
-        # 1. GREETING CHECK — V9.0: word-level matching
-        social_keywords = ["chào", "hello", "hi", "bạn ơi"]
-        q_words = question.lower().split()
-        if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social_keywords):
-            return "Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (AI Tiên Tri V20.0 — Siêu Trí Tuệ Thông Minh Nhất). Tôi sẵn sàng luận giải vận mệnh, thời thế với Lục Thuật Hợp Nhất. Bạn muốn hỏi điều gì?"
-
-        # V20.1: LƯU question vào session_state để Cross-Verdict weighted scoring hoạt động
-        try:
-            import streamlit as st
-            st.session_state['last_question'] = question
-        except Exception:
-            pass
-
-        # 2. PREPARE FULL CONTEXT DATA (ALL 4 METHODS)
-        live_context = self._get_paranoid_context(chart_data, topic, question, selected_subject, mai_hoa_data, luc_hao_data)
-        
-        # 3. DATE ENFORCEMENT
-        now = datetime.datetime.now()
-        date_str = now.strftime("%d/%m/%Y")
-        time_str = now.strftime("%H:%M")
-        
-        # 5. BUILD PROMPT V5.2 - ALGORITHMIC REASONING (Research-Based)
-        # === Conditional: Skip internet if we have hexagram data ===
-        has_hexagram_data = bool(chart_data) or bool(mai_hoa_data) or bool(luc_hao_data)
-        internet_data = ""
-        if not has_hexagram_data:
-            internet_data = self._search_internet(question, topic)
-        else:
-            internet_data = "(Có dữ liệu quẻ — bỏ qua internet)"
-        
-        # V20.5: Hub knowledge — supplementary only
-        hub_data = ""
-        try:
-            hub_data = self._search_hub_knowledge(question, topic)
-        except Exception:
-            hub_data = ""
-        
-        # V20.5: BUILD OFFLINE VERDICT SUMMARY — Python pre-compute sẵn kết luận
-        offline_verdict = self._build_offline_verdict_summary(live_context)
-
-        system_prompt = (
-            # ═══════════════════════════════════════════
-            # V20.5: CONTEXT DATA ĐẶT LÊN ĐẦU (Primacy Bias)
-            # LLM chú ý đầu prompt nhất → đặt data quan trọng ở đây
-            # ═══════════════════════════════════════════
-            f"<mandatory_context>\n"
-            f"⏰ Thời điểm: {date_str} {time_str}\n"
-            f"{live_context}\n"
-            f"</mandatory_context>\n\n"
-
-            f"<offline_verdict>\n"
-            f"{offline_verdict}\n"
-            f"</offline_verdict>\n\n"
-
-            f"<user_question>\n"
-            f"{question}\n"
-            f"</user_question>\n\n"
-
-            # ═══════════════════════════════════════════
-            # V20.5: SYSTEM INSTRUCTIONS (sau context)
-            # ═══════════════════════════════════════════
-            f"<system_instructions>\n"
-            f"Bạn là THIÊN CƠ ĐẠI SƯ V20.5 — TỔNG SƯ LỤC THUẬT HỢP NHẤT.\n"
-            f"Tinh thông: Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Mai Hoa Dịch Số + Thiết Bản Thần Toán + Đại Lục Nhâm + Thái Ất Thần Số.\n"
-            f"Năm {now.year}. Ngày phân tích: {date_str} {time_str}.\n\n"
-
-            f"╔══════════════════════════════════════════╗\n"
-            f"║  ⛔ V20.5 — GROUNDING ENFORCEMENT        ║\n"
-            f"║  BẮT BUỘC TUÂN THỦ — KHÔNG NGOẠI LỆ     ║\n"
-            f"╚══════════════════════════════════════════╝\n\n"
-
-            f"🔒 QUY TẮC SỐ 1 — TRÍCH DẪN TRƯỚC, KẾT LUẬN SAU:\n"
-            f"TRƯỚC KHI viết BẤT KỲ kết luận nào, BẮT BUỘC trích dẫn CHÍNH XÁC dữ kiện từ <mandatory_context>.\n"
-            f"Mẫu bắt buộc: 'Theo context: [tên trường] = [giá trị]. Vì [giá trị] nên → [kết luận]'\n"
-            f"Nếu KHÔNG CÓ dữ kiện phù hợp → nói rõ 'Quẻ không chỉ rõ điều này'. TUYỆT ĐỐI KHÔNG bịa.\n\n"
-
-            f"🔒 QUY TẮC SỐ 2 — BÁM CHẶT OFFLINE VERDICT:\n"
-            f"<offline_verdict> là kết luận Python đã tính toán chính xác 100%. AI PHẢI:\n"
-            f"① Đọc offline_verdict TRƯỚC → đây là KẾT LUẬN GỐC\n"
-            f"② GIẢI THÍCH TẠI SAO verdict đúng (dẫn chứng data)\n"
-            f"③ CHỈ ĐƯỢC phản bác verdict NẾU tìm thấy MÂU THUẪN CỤ THỂ trong data (phải nêu rõ)\n"
-            f"④ Không được tự nghĩ ra kết luận mâu thuẫn verdict nếu không có bằng chứng\n\n"
-
-            f"🔒 QUY TẮC SỐ 3 — KHÔNG BỊA:\n"
-            f"- CHỈ dùng dữ liệu trong <mandatory_context>. KHÔNG suy luận từ kiến thức chung.\n"
-            f"- ƯU TIÊN SỐ 1: Các mục [PRE-ANALYSIS] — Python đã tính toán chính xác 100%.\n"
-            f"- KHÔNG bịa con số, hướng, Ngũ Hành, Lục Thân, tên Sao/Cửa/Thần.\n"
-            f"- 100% TIẾNG VIỆT.\n\n"
-
-            f"🔒 QUY TẮC SỐ 4 — BÁM ĐÚNG DỤNG THẦN (TUYỆT ĐỐI):\n"
-            f"⛔ NGHIÊM CẤM tự ý thay đổi Dụng Thần đã xác định!\n"
-            f"- Nếu câu hỏi về TIỀN/ĐẦU TƯ → DT = Thê Tài → PHẢI phân tích Thê Tài. KHÔNG được nhảy sang Tử Tôn/Quan Quỷ.\n"
-            f"- Nếu câu hỏi về BỆNH → DT = Quan Quỷ → PHẢI phân tích Quan Quỷ. KHÔNG nhảy sang PP khác.\n"
-            f"- Nếu câu hỏi về CON CÁI → DT = Tử Tôn → mới được phân tích Tử Tôn.\n"
-            f"- TOÀN BỘ phân tích Lục Hào PHẢI tập trung vào DT đã xác định:\n"
-            f"  → DT Vượng/Suy? Nhật/Nguyệt sinh/khắc DT? Nguyên Thần hỗ trợ DT?\n"
-            f"  → Kết luận PHẢI dựa vào trạng thái DT, KHÔNG dựa vào Lục Thân khác.\n"
-            f"- VÍ DỤ SAI: Câu hỏi 'đầu tư tiền' → AI nhảy sang Tử Tôn (con cái) = SAI 100%!\n"
-            f"- VÍ DỤ ĐÚNG: Câu hỏi 'đầu tư tiền' → Thê Tài ở Hào X, Vượng/Suy, Nhật sinh/khắc = ĐÚNG.\n\n"
-
-            f"AI Offline (Python) đã tính toán DỮ LIỆU THÔ chính xác 100% trong [PRE-ANALYSIS].\n"
-            f"Nhiệm vụ CỦA BẠN là LUẬN GIẢI SÂU — giải thích TẠI SAO verdict đúng, bổ sung chi tiết từ data.\n\n"
-
-            f"📐 NGŨ HÀNH → MÀU SẮC (khi AI tư vấn màu):\n"
-            f"Mộc=🟢Xanh lá | Hỏa=🔴Đỏ/Cam | Thổ=🟡Vàng/Nâu | Kim=⚪Trắng/Bạc | Thủy=⚫Đen/Xanh dương\n"
-            f"→ Màu HỖ TRỢ = hành SINH hành DT. → Màu CẤM = hành KHẮC hành DT.\n\n"
-
-            f"📋 BẢNG TRA DỤNG THẦN:\n"
-            f"Tiền/tài=Thê Tài | Việc/sếp/bệnh=Quan Quỷ | Con/bình an=Tử Tôn | Nhà/xe/học=Phụ Mẫu | Bạn/đối thủ=Huynh Đệ\n"
-            f"Kỳ Môn: Mình=Can Ngày, Sự Việc=Can Giờ, Cha mẹ=Can Năm, Anh em=Can Tháng\n\n"
-
-            f"⚡ HƯỚNG DẪN THEO LOẠI CÂU HỎI:\n"
-            f"❶ TÌM ĐỒ: HƯỚNG (C1=Bắc,C2=Tây Nam,C3=Đông,C4=ĐôngNam,C6=TâyBắc,C7=Tây,C8=ĐôngBắc,C9=Nam) + Nơi\n"
-            f"❷ CÓ/KHÔNG: Trả lời DỨT KHOÁT + %% xác suất + giải thích\n"
-            f"❸ KHI NÀO: Dùng ỨNG KỲ ENGINE → ngày/tháng CỤ THỂ\n"
-            f"❹ TUỔI/SỐ: CHỈ dùng số từ [SỐ HỌC QUẺ — NUMBER ENGINE]\n"
-            f"❺ AN TOÀN: Tập trung Cách Cục + Kỵ Thần + Huyền Vũ/Bạch Hổ\n\n"
-
-            f"╔══════════════════════════════════════════╗\n"
-            f"║  📐 8 BƯỚC PHÂN TÍCH V20.5              ║\n"
-            f"║  ⛔ BẮT BUỘC LÀM ĐỦ, KHÔNG BỎ BƯỚC     ║\n"
-            f"╚══════════════════════════════════════════╝\n\n"
-
-            f"**BƯỚC 1 — XÁC ĐỊNH DỤNG THẦN ĐA PHƯƠNG PHÁP**\n"
-            f"Đọc <user_question> → Xác định CHỦ ĐỀ → Chọn DT ĐÚNG:\n"
-            f"- Tiền/đầu tư/mua bán → DT = THÊ TÀI. ⛔ KHÔNG nhảy sang Tử Tôn!\n"
-            f"- Bệnh/sức khỏe → DT = QUAN QUỶ. ⛔ KHÔNG nhảy sang Phụ Mẫu!\n"
-            f"- Con cái → DT = TỬ TÔN. Chỉ khi câu hỏi RÕ RÀNG về con cái!\n"
-            f"Sau khi chọn DT → KHÓA LẠI. TOÀN BỘ bước 2-8 PHẢI dùng DT này.\n"
-            f"Đọc <mandatory_context> → Tìm DT trong quẻ:\n"
-            f"- Lục Hào: DT = [Lục Thân nào?] → ở Hào [?] → Vượng/Suy?\n"
-            f"- Kỳ Môn: Can Ngày [?] tại Cung [?] vs Can Giờ [?] tại Cung [?]\n"
-            f"- Mai Hoa: Thể quái = [?] (Hành [?]) vs Dụng quái = [?] (Hành [?])\n"
-            f"→ TẠI SAO chọn DT này? Trích dẫn câu hỏi + data cụ thể.\n\n"
-
-            f"**BƯỚC 2 — KỲ MÔN ĐỘN GIÁP (Trích dẫn context)**\n"
-            f"Đọc [PHÂN TÍCH CUNG CHỦ vs CUNG SỰ VIỆC] + [KỲ MÔN CÁCH CỤC PRE-ANALYSIS].\n"
-            f"→ Trích dẫn: Sao [?] + Cửa [?] + Thần [?] = TƯỢNG gì? Ngũ Hành Sinh/Khắc?\n"
-            f"→ KẾT LUẬN KỲ MÔN: CÁT/HUNG + %% (PHẢI khớp với offline_verdict)\n\n"
-
-            f"**BƯỚC 3 — LỤC HÀO KINH DỊCH (Trích dẫn context)**\n"
-            f"⛔ BẮT BUỘC phân tích DT đã xác định ở BƯỚC 1. KHÔNG được nhảy sang Lục Thân khác!\n"
-            f"Đọc [LỤC HÀO PRE-ANALYSIS] + [PHỤC THẦN].\n"
-            f"→ DT (đã khóa ở Bước 1) ở hào nào? Vượng/Suy? Nhật/Nguyệt SINH hay KHẮC DT?\n"
-            f"→ Nguyên Thần sinh DT? Kỵ Thần ĐỘNG không? Hóa Hồi Đầu Khắc?\n"
-            f"→ KẾT LUẬN LỤC HÀO: CÁT/HUNG + %% (dựa trên DT, KHÔNG phải Lục Thân khác)\n\n"
-
-            f"**BƯỚC 4 — MAI HOA DỊCH SỐ (Trích dẫn context)**\n"
-            f"Đọc [MAI HOA PRE-ANALYSIS] + Hỗ Quái.\n"
-            f"→ Thể-Dụng sinh/khắc? Hào Động ý nghĩa?\n"
-            f"→ KẾT LUẬN MAI HOA: CÁT/HUNG + %%\n\n"
-
-            f"**BƯỚC 5 — THIẾT BẢN + LỤC NHÂM + THÁI ẤT (Gộp 3 PP phụ)**\n"
-            f"→ Nạp Âm + Trường Sinh → ý nghĩa ngắn gọn\n"
-            f"→ Tam Truyền (Lục Nhâm) → quá khứ/hiện tại/tương lai\n"
-            f"→ Thái Ất verdict\n\n"
-
-            f"**BƯỚC 6 — TUẦN KHÔNG + DỊCH MÃ + LỤC THẦN**\n"
-            f"Đọc [TUẦN KHÔNG TỨ TRỤ] + [DỊCH MÃ] + [LỤC THẦN CHẨN ĐOÁN].\n"
-            f"→ Chi nào lâm Tuần Không? DT có bị Tuần Không không?\n"
-            f"→ Huyền Vũ/Đằng Xà = giả dối? Dịch Mã = di chuyển?\n\n"
-
-            f"**BƯỚC 7 — TỔNG HỢP DỰA TRÊN DỮ KIỆN**\n"
-            f"Dùng [CROSS-METHOD VERDICT] + kết luận BƯỚC 2-6 → Lập bảng:\n"
-            f"| PP | Kết luận | Dữ kiện chính (TRÍCH DẪN) | Độ tin cậy |\n"
-            f"|:--|:--|:--|:--|\n"
-            f"→ 🏆 KẾT LUẬN CUỐI: ĐẠI CÁT/CÁT/BÌNH/HUNG/ĐẠI HUNG\n"
-            f"→ Xác suất: ??% | Ứng kỳ: [ngày/tháng cụ thể từ NUMBER ENGINE]\n\n"
-
-            f"**BƯỚC 8 — TIÊN TRI & LỜI KHUYÊN**\n"
-            f"→ Ngắn hạn (1-7 ngày): Hành động CỤ THỂ\n"
-            f"→ Trung hạn (1-3 tháng): Xu hướng + Cảnh báo\n"
-            f"→ 3 NÊN + 3 KHÔNG NÊN + Hướng/Giờ/Màu/Số may mắn\n"
-            f"→ Scenario A (cao) vs B (thấp) + Blind Spot\n"
-            f"→ 🎯 Tin cậy tổng: ??%\n\n"
-
-            f"╔══════════════════════════════════════════╗\n"
-            f"║  🔢 QUY TẮC SỐ HỌC — CẤM BỊA SỐ       ║\n"
-            f"╚══════════════════════════════════════════╝\n\n"
-
-            f"⛔ TUYỆT ĐỐI KHÔNG tự bịa con số (tuổi, chiều cao, tiền, khoảng cách, số lượng).\n"
-            f"✅ CHỈ dùng số từ [SỐ HỌC QUẺ — NUMBER ENGINE] trong mandatory_context.\n"
-            f"✅ Nếu KHÔNG có NUMBER ENGINE → nói 'Số liên quan: [số Tiên Thiên/Hậu Thiên]'.\n\n"
-
-            f"📐 FORMAT OUTPUT:\n"
-            f"✅ Dùng emoji đầu mỗi heading. ✅ **In đậm** từ khóa. ✅ Dùng → cho mỗi luận điểm.\n"
-            f"✅ Dùng bảng markdown khi so sánh PP. ✅ Mỗi section cách nhau bằng ---\n"
-            f"⛔ KHÔNG lặp lại dữ liệu. ⛔ KHÔNG viết mở bài thừa. Quality > Quantity.\n\n"
-
-            f"</system_instructions>\n\n"
-
-            f"<conversation_history>\n"
-            f"{self._get_chat_history()}\n"
-            f"</conversation_history>\n\n"
-            f"<supplementary_data>\n"
-            f"{internet_data}\n"
-            f"{hub_data}\n"
-            f"</supplementary_data>\n"
-            f"LƯU Ý: ƯU TIÊN TUYỆT ĐỐI dữ liệu trong <mandatory_context> + <offline_verdict>. Supplementary chỉ THAM KHẢO.\n"
-        )
-        
-        # 5. CALL AI
-        self.log_step("AI Generation", "RUNNING", "Gửi prompt V20.5 (8-Step Grounded CoT + Offline Verdict) đến Gemini...")
-        raw_response = self._call_ai_raw(system_prompt)
-        
-        # V13.0: Verification đã tích hợp vào prompt chính → tiết kiệm 50% quota
-        self.log_step("Verification", "OK", "Tích hợp trong prompt V20.5 (không cần gọi lại)")
-        
-        # 6. PROCESS RESPONSE
-        if not raw_response:
-            err_detail = getattr(self, '_last_error_log', 'Không rõ lý do')
-            return f"⚠️ AI không trả lời được.\n\n**Lý do:** {err_detail}\n\n💡 **Giải pháp:** Tạo API key mới tại [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → bấm 🗑️ XÓA KEY CŨ → dán key mới → ⚡ KÍCH HOẠT"
-        return self._process_response(raw_response)
+            from free_ai_helper import FreeAIHelper
+            offline_ai = FreeAIHelper(api_key=self.api_key)
+            return offline_ai.answer_question(
+                question=question,
+                chart_data=chart_data,
+                topic=topic,
+                selected_subject=selected_subject,
+                mai_hoa_data=mai_hoa_data,
+                luc_hao_data=luc_hao_data
+            )
+        except Exception as e:
+            return f"❌ Lỗi Tích Hợp AI: {str(e)}"
 
     # ================================================================
     # PARANOID CONTEXT BUILDER - V5.0 TIÊN TRI FULL 6 METHODS
