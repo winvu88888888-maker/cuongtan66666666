@@ -7877,5 +7877,5 @@ class FreeAIHelper:
         return f"### ☯️ Luận Giải Lục Hào — Offline V8.0\n**Chủ đề:** {topic}\n\n{section}\n→ Kết luận: **{verdict}**"
 
     def analyze_mai_hoa(self, mai_hoa_res, topic="Chung"):
-        section, verdict, _ = self._analyze_mai_hoa_full(mai_hoa_res, False)
+        section, verdict, _, _tn, _te, _dn, _de = self._analyze_mai_hoa_full(mai_hoa_res, False)
         return f"### 🌸 Luận Giải Mai Hoa — Offline V8.0\n**Chủ đề:** {topic}\n\n{section}\n→ Kết luận: **{verdict}**"
