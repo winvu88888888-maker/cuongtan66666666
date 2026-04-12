@@ -2467,24 +2467,11 @@ if st.session_state.current_view == "ky_mon":
                         # V10.2: role_label phải phản ánh đúng đối tượng, KHÔNG hardcode
                         role_label = rel_type if rel_type and rel_type != 'Bản thân' else 'Bản thân'
                         
-                        enriched_dung_than = []
-                        for dt in dung_than_list:
-                            if dt == "Sinh Môn": enriched_dung_than.append("Sinh Môn (Lợi nhuận/Ngôi nhà)")
-                            elif dt == "Khai Môn": enriched_dung_than.append("Khai Môn (Công việc/Sự khởi đầu)")
-                            else: enriched_dung_than.append(dt)
-                        
-                        prompt = f"""Phân tích chi tiết về chủ đề: {selected_topic}
-
-**Đối tượng hỏi:** {role_label}
-**Dụng Thần (đại diện SỰ VIỆC):** {', '.join(enriched_dung_than) if enriched_dung_than else 'Tự xác định'}
-**Gợi ý:** {topic_hints}
-
-QUY TẮC QUAN TRỌNG:
-- Dụng Thần = đại diện cho SỰ VIỆC/VẤN ĐỀ được hỏi, KHÔNG PHẢI bản thân người hỏi
-- Can Ngày = đại diện cho NGƯỜI HỎI (Bản Thân)
-- Hãy phân tích mối quan hệ Sinh-Khắc giữa Người Hỏi (Can Ngày) và Sự Việc (Dụng Thần)
-- Tập trung luận giải KẾT QUẢ CỦA SỰ VIỆC, không luận tính cách người hỏi
-"""
+                        # V28.0: Fix Lỗi 1 — GỬI CÂU HỎI THỰC thay vì prompt template
+                        # Prompt template cũ chứa "Bạn là đại sư..." khiến Smart Category phân loại SAI
+                        actual_question = f"Phân tích về {selected_topic}"
+                        if role_label and role_label != 'Bản thân':
+                            actual_question += f" cho {role_label}"
                         
                         # ====== BƯỚC 1: AI OFFLINE phân tích quẻ trước ======
                         with st.spinner("⚙️ Bước 1/2: AI Offline đang phân tích quẻ..."):
@@ -2508,8 +2495,10 @@ QUY TẮC QUAN TRỌNG:
                             if not luc_hao_for_offline:
                                 try:
                                     dt_now = dt_module.datetime.now(vn_tz)
-                                    can_ngay_val = params.get('can_ngay', 'Giáp') if params else 'Giáp'
-                                    chi_ngay_val = params.get('chi_ngay', 'Tý') if params else 'Tý'
+                                    # V28.0: Fix Lỗi 6 — Lấy Can/Chi từ chart_data thay vì params rỗng
+                                    _chart = st.session_state.get('chart_data', {})
+                                    can_ngay_val = _chart.get('can_ngay', 'Giáp') if _chart else 'Giáp'
+                                    chi_ngay_val = _chart.get('chi_ngay', 'Tý') if _chart else 'Tý'
                                     luc_hao_for_offline = lap_qua_luc_hao(
                                         dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                         topic=selected_topic,
@@ -2521,9 +2510,9 @@ QUY TẮC QUAN TRỌNG:
                                     pass
                             
                             offline_result = offline_ai.answer_question(
-                                prompt,
+                                actual_question,
                                 chart_data=st.session_state.chart_data,
-                                topic=selected_topic,
+                                topic=selected_topic,  # V28.0: PHẢI truyền topic để match đúng DT
                                 selected_subject=rel_type,
                                 mai_hoa_data=mai_hoa_for_offline,
                                 luc_hao_data=luc_hao_for_offline
@@ -2742,9 +2731,10 @@ PHÂN TÍCH LIÊN MẠCH:
                             if not luc_hao_for_q:
                                 try:
                                     dt_now = dt_module.datetime.now(vn_tz)
-                                    params = st.session_state.get('params', {})
-                                    can_ngay_val = params.get('can_ngay', 'Giáp') if params else 'Giáp'
-                                    chi_ngay_val = params.get('chi_ngay', 'Tý') if params else 'Tý'
+                                    # V28.0: Fix Lỗi 6 — Lấy Can/Chi từ chart_data thay vì params rỗng
+                                    _chart_q = st.session_state.get('chart_data', {})
+                                    can_ngay_val = _chart_q.get('can_ngay', 'Giáp') if _chart_q else 'Giáp'
+                                    chi_ngay_val = _chart_q.get('chi_ngay', 'Tý') if _chart_q else 'Tý'
                                     luc_hao_for_q = lap_qua_luc_hao(
                                         dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                         topic=selected_topic, can_ngay=can_ngay_val, chi_ngay=chi_ngay_val
