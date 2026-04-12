@@ -4959,14 +4959,16 @@ class FreeAIHelper:
             "NHÀ_CỬA": {
                 "keywords": ["nhà", "tầng", "phòng", "căn hộ", "chung cư", "xây nhà", "sửa nhà", 
                              "nhà tôi", "nhà mấy", "phong thủy", "hướng nhà", "cửa nhà",
-                             "dọn nhà", "chuyển nhà", "đất", "thửa đất", "lô đất"],
+                             "dọn nhà", "chuyển nhà", "đất", "thửa đất", "lô đất",
+                             "mua nhà", "bán nhà", "thuê nhà", "mua đất", "bán đất",
+                             "mua được nhà", "mua căn hộ", "sang nhượng"],
                 "dung_than": "Thê Tài",
                 "dung_than_detail": {},
                 "label": "🏠 Nhà Cửa / Bất Động Sản",
                 "hint": "Phân tích nhà cửa. Thê Tài = tài sản/nhà. Cấn = núi/nhà cao tầng."
             },
             "CHUNG": {
-                "keywords": ["vận mệnh", "năm nay", "tháng này", "an toàn", "quý nhân", "may mắn"],
+                "keywords": ["vận mệnh", "tháng này", "an toàn", "quý nhân", "may mắn"],
                 "dung_than": "Bản Thân",
                 "dung_than_detail": {},
                 "label": "❓ Tổng Quát",
@@ -5326,24 +5328,34 @@ class FreeAIHelper:
             mh_s, mh_sum, v24_mh_factors = self._mai_hoa_scoring(mai_hoa_data, chart_data)
             v16_mh_score_str = mh_sum
             v16_mh_raw = mh_s
+            # V28.1: Đồng bộ verdict MH từ scoring
+            if mh_s >= 10: mai_hoa_verdict = "CÁT"
+            elif mh_s <= -10: mai_hoa_verdict = "HUNG"
         except Exception as e:
             self.log_step("MH Scoring", "ERROR", f"_mai_hoa_scoring crash: {str(e)[:200]}")
         try:
             tb_s, tb_sum, v24_tb_factors = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data)
             v16_tb_score_str = tb_sum
             v16_tb_raw = tb_s
+            # V28.1: Đồng bộ verdict TB (Thiết Bản không hiện trong bảng verdict nhưng ảnh hưởng weighted)
         except Exception as e:
             self.log_step("TB Scoring", "ERROR", f"_thiet_ban_scoring crash: {str(e)[:200]}")
         try:
             ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data)
             v16_ln_score_str = ln_sum
             v16_ln_raw = ln_s
+            # V28.1: Đồng bộ verdict LN từ scoring
+            if ln_s >= 10: luc_nham_verdict = "CÁT"
+            elif ln_s <= -10: luc_nham_verdict = "HUNG"
         except Exception as e:
             self.log_step("LN Scoring", "ERROR", f"_luc_nham_scoring crash: {str(e)[:200]}")
         try:
             ta_s, ta_sum, v24_ta_factors = self._thai_at_scoring(chart_data)
             v16_ta_score_str = ta_sum
             v16_ta_raw = ta_s
+            # V28.1: Đồng bộ verdict TA từ scoring — score=-11 KHÔNG THỂ là BÌNH!
+            if ta_s >= 10: thai_at_verdict = "CÁT"
+            elif ta_s <= -10: thai_at_verdict = "HUNG"
         except Exception as e:
             self.log_step("TA Scoring", "ERROR", f"_thai_at_scoring crash: {str(e)[:200]}")
         
