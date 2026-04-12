@@ -1218,7 +1218,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V28.2 Dai Thong Nhat)"
+        self.name = "Thiên Cơ Đại Sư (V28.3 Dai Thong Nhat)"
         self.version = "V26.2-Unified-Strength"
         self.model_name = "offline-rule-engine-v22.0"
         self.logs = []
@@ -1245,11 +1245,11 @@ class FreeAIHelper:
 
     # V27.0: Verdict Compact Block - Tom tat ngan gon de Gemini doc duoc 100%
     def _build_verdict_compact_block(self, od):
-        """V28.2: Compact block chua du lieu then chot, nam dau prompt."""
+        """V28.3: Compact block chua du lieu then chot, nam dau prompt."""
         lines = []
-        lines.append("\n=== [V28.2 COMPACT] ===")
+        lines.append("\n=== [V28.3 COMPACT] ===")
         lines.append(f"DT={od.get('dung_than','?')} | Cat={od.get('category_label','?')}")
-        # V28.2: Kèm MH Thể/Dụng + LH Dụng Thần rõ ràng
+        # V28.3: Kèm MH Thể/Dụng + LH Dụng Thần rõ ràng
         lines.append(f"MH_The={od.get('mh_the','?')} MH_Dung={od.get('mh_dung','?')}")
         lines.append(f"LH_DungThan={od.get('lh_dung_than','?')}")
         lines.append(f"KM={od.get('ky_mon_verdict','?')} LH={od.get('luc_hao_verdict','?')} MH={od.get('mai_hoa_verdict','?')} LN={od.get('luc_nham_verdict','?')} TA={od.get('thai_at_verdict','?')}")
@@ -1260,7 +1260,7 @@ class FreeAIHelper:
         return "\n".join(lines)
 
     def test_connection(self):
-        return True, "V28.2 Dai Thong Nhat — Offline + Online fallback"
+        return True, "V28.3 Dai Thong Nhat — Offline + Online fallback"
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
@@ -4901,7 +4901,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V28.2 Dai Thong Nhat). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V28.3 Dai Thong Nhat). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -4918,6 +4918,16 @@ class FreeAIHelper:
                                      "con": "Tử Tôn", "con trai": "Tử Tôn", "con gái": "Tử Tôn",
                                      "vợ": "Thê Tài", "chồng": "Quan Quỷ",
                                      "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ"},
+                # V28.3: LH Dụng Thần riêng — bệnh = Quan Quỷ (bệnh tinh)
+                "lh_dung_than": "Bản Thân",
+                "lh_dung_than_detail": {
+                    "bệnh": "Quan Quỷ", "ốm": "Quan Quỷ", "đau": "Quan Quỷ",
+                    "khỏi bệnh": "Quan Quỷ", "trị bệnh": "Quan Quỷ", "chữa": "Quan Quỷ",
+                    "bệnh viện": "Quan Quỷ", "phẫu thuật": "Quan Quỷ", "ung thư": "Quan Quỷ",
+                    "bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu",
+                    "con": "Tử Tôn", "con trai": "Tử Tôn", "con gái": "Tử Tôn",
+                    "vợ": "Thê Tài", "chồng": "Quan Quỷ",
+                },
                 "label": "🏥 Sức Khỏe / Gia Đình",
                 "hint": "Phân tích sức khỏe. DT mặc định = hào Thế (Bản Thân). Quan Quỷ = bệnh tinh (nguyên nhân bệnh). Phụ Mẫu = bố mẹ. Tử Tôn = con cái."
             },
@@ -5067,6 +5077,25 @@ class FreeAIHelper:
                 mapped_dt = SUBJECT_TO_DT.get(clean, clean)
             dung_than = mapped_dt
         
+        # V28.3: Tính LH Dụng Thần riêng (bệnh → Quan Quỷ bệnh tinh)
+        lh_dung_than = dung_than  # Default = giống DT tổng quát
+        lh_dt_base = cat_data.get('lh_dung_than', '')
+        lh_dt_detail = cat_data.get('lh_dung_than_detail', {})
+        if lh_dt_detail:
+            lh_detail_sorted = sorted(lh_dt_detail.items(), key=lambda x: len(x[0]), reverse=True)
+            for lh_kw, lh_dt_val in lh_detail_sorted:
+                if lh_kw in q_lower:
+                    lh_dung_than = lh_dt_val
+                    break
+            else:
+                if lh_dt_base:
+                    lh_dung_than = lh_dt_base
+        elif lh_dt_base:
+            lh_dung_than = lh_dt_base
+        # Nếu user đã chọn subject từ dropdown → override cả LH DT
+        if selected_subject and selected_subject != "Không Rõ":
+            lh_dung_than = dung_than
+        
         is_age = _is_age_question(question)
         is_find = _is_find_question(question) and detected_category == "TÌM_ĐỒ"
         is_yesno = _is_yesno_question(question)
@@ -5080,7 +5109,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V28.2 Dai Thong Nhat\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V28.3 Dai Thong Nhat\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
@@ -5153,7 +5182,7 @@ class FreeAIHelper:
         # BƯỚC 3: LỤC HÀO
         sections.append(f"### BƯỚC 3 — LỤC HÀO KINH DỊCH")
         if luc_hao_data and isinstance(luc_hao_data, dict):
-            lh_section, luc_hao_verdict, lh_age, lh_reason, lh_count = self._analyze_luc_hao_full(luc_hao_data, dung_than, is_age, is_count)
+            lh_section, luc_hao_verdict, lh_age, lh_reason, lh_count = self._analyze_luc_hao_full(luc_hao_data, lh_dung_than, is_age, is_count)
             sections.append(lh_section)
             luc_hao_reason = lh_reason
             if lh_age:
@@ -5165,13 +5194,13 @@ class FreeAIHelper:
         
         # BƯỚC 4: MAI HOA
         sections.append(f"### BƯỚC 4 — MAI HOA DỊCH SỐ")
-        # V28.2: Track MH Thể/Dụng for AI Online context
+        # V28.3: Track MH Thể/Dụng for AI Online context
         mh_the_name = '?'
         mh_the_el = '?'
         mh_dung_name = '?'
         mh_dung_el = '?'
         if mai_hoa_data and isinstance(mai_hoa_data, dict):
-            mh_section, mai_hoa_verdict, mh_age, mh_the_name, mh_the_el, mh_dung_name, mh_dung_el = self._analyze_mai_hoa_full(mai_hoa_data, is_age)
+            mh_section, mai_hoa_verdict, mh_age, mh_the_name, mh_the_el, mh_dung_name, mh_dung_el = self._analyze_mai_hoa_full(mai_hoa_data, is_age, chart_data)
             sections.append(mh_section)
             # V8.0: Extract reason from MAI HOA verdict line
             mai_hoa_reason = ""
@@ -5779,7 +5808,7 @@ class FreeAIHelper:
         except Exception:
             pass
         
-        # V28.2: Trích xuất Dụng Thần Lục Hào (Lục Thân) từ luc_hao_data
+        # V28.3: Trích xuất Dụng Thần Lục Hào (Lục Thân) từ luc_hao_data
         lh_dung_than_label = dung_than  # Default fallback
         if luc_hao_data and isinstance(luc_hao_data, dict):
             lh_ban = luc_hao_data.get('ban', {})
@@ -5805,10 +5834,10 @@ class FreeAIHelper:
             'age_numbers': age_numbers,
             'impact_evidence': impact_evidence,
             'unified_narrative': unified_narrative,
-            # V28.2: Thể/Dụng Mai Hoa cho AI Online
+            # V28.3: Thể/Dụng Mai Hoa cho AI Online
             'mh_the': f"{mh_the_name} ({mh_the_el})",
             'mh_dung': f"{mh_dung_name} ({mh_dung_el})",
-            # V28.2: Dụng Thần Lục Hào (Lục Thân)
+            # V28.3: Dụng Thần Lục Hào (Lục Thân)
             'lh_dung_than': lh_dung_than_label,
             # V15.3: Structured V15 analysis summaries for Online AI
             'v15_bt_score': v15_bt_score,
@@ -7157,6 +7186,20 @@ class FreeAIHelper:
                     reasons_list.append("Dụng Thần Nguyệt Phá")
                     verdict = "HUNG"
             
+            # ====== V28.3: NGUYỆT LỆNH VƯỢNG SUY CHO DT ======
+            if chi_thang_lh and dung_than_hao:
+                dt_hanh_ml = dung_than_hao.get('ngu_hanh', '')
+                thang_hanh = CHI_NGU_HANH.get(chi_thang_lh, '')
+                if dt_hanh_ml and thang_hanh:
+                    if SINH.get(thang_hanh) == dt_hanh_ml or thang_hanh == dt_hanh_ml:
+                        lines.append(f"\n**🌙 NGUYỆT LỆNH (V28.3):** Tháng {chi_thang_lh} ({thang_hanh}) {'SINH' if SINH.get(thang_hanh) == dt_hanh_ml else 'ĐỒNG HÀNH'} DT ({dt_hanh_ml})")
+                        lines.append(f"  → DT được Nguyệt Lệnh phò trợ = CỰC VƯỢNG ✅")
+                        reasons_list.append("Nguyệt Lệnh sinh DT")
+                    elif KHAC.get(thang_hanh) == dt_hanh_ml:
+                        lines.append(f"\n**🌙 NGUYỆT LỆNH (V28.3):** Tháng {chi_thang_lh} ({thang_hanh}) KHẮC DT ({dt_hanh_ml})")
+                        lines.append(f"  → DT bị Nguyệt Lệnh khắc = SUY NHƯỢC ⚠️")
+                        reasons_list.append("Nguyệt Lệnh khắc DT")
+            
             # ====== V9.0: TAM HỢP CỤC ======
             if haos:
                 all_chi = [h.get('chi', '') for h in haos if h.get('chi')]
@@ -7383,8 +7426,8 @@ class FreeAIHelper:
     # ===========================
     # MAI HOA ANALYSIS
     # ===========================
-    def _analyze_mai_hoa_full(self, mai_hoa_data, is_age):
-        """V8.0 — Mai Hoa: Hỗ Quái + Ý nghĩa quái tượng + Liên hệ câu hỏi"""
+    def _analyze_mai_hoa_full(self, mai_hoa_data, is_age, chart_data=None):
+        """V28.3 — Mai Hoa: Hỗ Quái + Nhật Thần + Lệnh Tháng Dụng + Liên hệ câu hỏi"""
         lines = []
         verdict = "BÌNH"
         age_num = None
@@ -7525,6 +7568,38 @@ class FreeAIHelper:
                 if verdict == "CÁT":
                     verdict = "BÌNH"
                     reason += " + Thể suy lệnh"
+        
+        # ====== V28.3: NHẬT THẦN SINH KHẮC THỂ/DỤNG ======
+        if chart_data and isinstance(chart_data, dict):
+            can_ngay_mh = chart_data.get('can_ngay', '')
+            nhat_than_hanh = CAN_NGU_HANH.get(can_ngay_mh, '')
+            if nhat_than_hanh and the_el and the_el != '?':
+                if SINH.get(nhat_than_hanh) == the_el:
+                    lines.append(f"\n**☀️ NHẬT THẦN (V28.3):** {can_ngay_mh} ({nhat_than_hanh}) SINH Thể ({the_el})")
+                    lines.append(f"  → Nhật Thần hỗ trợ Thể quái = Sức mạnh TĂNG! ✅")
+                    if verdict == 'HUNG':
+                        verdict = 'BÌNH'
+                        reason += ' + Nhật sinh Thể'
+                elif KHAC.get(nhat_than_hanh) == the_el:
+                    lines.append(f"\n**☀️ NHẬT THẦN (V28.3):** {can_ngay_mh} ({nhat_than_hanh}) KHẮC Thể ({the_el})")
+                    lines.append(f"  → Nhật Thần khắc Thể quái = SUY YẾU thêm ⚠️")
+                    if verdict == 'CÁT':
+                        verdict = 'BÌNH'
+                        reason += ' + Nhật khắc Thể'
+            if nhat_than_hanh and dung_el and dung_el != '?':
+                if SINH.get(nhat_than_hanh) == dung_el:
+                    lines.append(f"  → Nhật Thần ({nhat_than_hanh}) SINH Dụng ({dung_el}) = Đối phương/sự việc được hỗ trợ")
+                elif KHAC.get(nhat_than_hanh) == dung_el:
+                    lines.append(f"  → Nhật Thần ({nhat_than_hanh}) KHẮC Dụng ({dung_el}) = Đối phương/sự việc bị yếu")
+        
+        # ====== V28.3: LỆNH THÁNG SINH KHẮC DỤNG ======
+        if dung_el and dung_el != '?':
+            if dung_el == lenh_hanh:
+                lines.append(f"\n**🌿 LỆNH THÁNG → DỤNG (V28.3):** Dụng quái ({dung_el}) ĐANG VƯỢNG theo mùa")
+                lines.append(f"  → Đối phương/sự việc mạnh = Cần cẩn trọng")
+            elif KHAC.get(lenh_hanh) == dung_el:
+                lines.append(f"\n**🍂 LỆNH THÁNG → DỤNG (V28.3):** Dụng quái ({dung_el}) BỊ KHẮC bởi Lệnh Tháng")
+                lines.append(f"  → Đối phương/sự việc suy yếu = Có lợi cho ta")
         
         # ====== V9.0: HỖ QUÁI SINH KHẮC THỂ ======
         ho_el = None
@@ -7877,5 +7952,5 @@ class FreeAIHelper:
         return f"### ☯️ Luận Giải Lục Hào — Offline V8.0\n**Chủ đề:** {topic}\n\n{section}\n→ Kết luận: **{verdict}**"
 
     def analyze_mai_hoa(self, mai_hoa_res, topic="Chung"):
-        section, verdict, _, _tn, _te, _dn, _de = self._analyze_mai_hoa_full(mai_hoa_res, False)
+        section, verdict, _, _tn, _te, _dn, _de = self._analyze_mai_hoa_full(mai_hoa_res, False, None)
         return f"### 🌸 Luận Giải Mai Hoa — Offline V8.0\n**Chủ đề:** {topic}\n\n{section}\n→ Kết luận: **{verdict}**"
