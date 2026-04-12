@@ -3333,96 +3333,132 @@ elif st.session_state.current_view == "gemini_ai":
     
     col_ask1, col_ask2 = st.columns(2)
     with col_ask1:
-        btn_ask_normal = st.button(f"🤖 Hỏi {ai_name} (Thường)", use_container_width=True, key="ask_gemini_btn")
+        btn_ask_normal = st.button("💬 HỎI NHANH (Kiến Thức Chung)", use_container_width=True, key="ask_gemini_btn", help="Hỏi Gemini trực tiếp về kiến thức huyền học — KHÔNG gieo quẻ, KHÔNG dùng dữ liệu offline.")
     with col_ask2:
         btn_ask_supreme = st.button("🌟 LỤC THUẬT HỢP NHẤT", type="primary", help="Tự động gieo quẻ Kỳ Môn, Kinh Dịch, Mai Hoa và Thiết Bản để tổng hợp 1 kết quả chính xác nhất.", use_container_width=True, key="ask_supreme_btn")
         
     if btn_ask_normal or btn_ask_supreme:
         if user_question:
-            with st.spinner(f"🌟 Khởi động Đại Tiên Tri Lục Thuật..." if btn_ask_supreme else f"🤖 {ai_name} đang chạy quy trình..."):
+            with st.spinner(f"🌟 Khởi động Đại Tiên Tri Lục Thuật..." if btn_ask_supreme else f"💬 Đang hỏi Gemini trực tiếp..."):
                 try:
                     safe_topic = selected_topic_ai if selected_topic_ai != 'Không chọn (Hỏi chung)' else 'Chung'
                     
-                    # --- AUTO GENERATE ALL 4 CHARTS (KỲ MÔN, MAI HOA, LỤC HÀO, THIẾT BẢN) FOR AI ---
-                    import datetime
-                    import random
-                    import hashlib
-                    import datetime as dt_module
-                    vn_tz = dt_module.timezone(dt_module.timedelta(hours=7))
-                    current_dt = dt_module.datetime.now(vn_tz) # Use the real-time auto-refresh datetime
-                    
-                    # 1. KỲ MÔN ĐỘN GIÁP
-                    temp_chart_data = st.session_state.get('chart_data')
-                    if not temp_chart_data:
+                    if btn_ask_normal:
+                        # ===============================================================
+                        # V29.0: NÚT "HỎI NHANH" — Gọi Gemini TRỰC TIẾP (không gieo quẻ)
+                        # Dùng cho kiến thức huyền học chung, KHÔNG chạy offline engine
+                        # ===============================================================
+                        quick_prompt = (
+                            f"Bạn là THIÊN CƠ ĐẠI SƯ — chuyên gia huyền học Phương Đông.\n"
+                            f"Trả lời câu hỏi dưới đây bằng kiến thức huyền học (Kỳ Môn, Lục Hào, Mai Hoa, Kinh Dịch, Phong Thủy, v.v.).\n"
+                            f"Giọng văn: Tự tin, chuyên nghiệp, dễ hiểu.\n"
+                            f"Nếu câu hỏi YÊU CẦU BÓI/GIEO QUẺ cụ thể, hãy khuyên user bấm nút '🌟 LỤC THUẬT HỢP NHẤT' để có kết quả chính xác.\n\n"
+                            f"Chủ đề: {safe_topic}\n"
+                            f"CÂU HỎI: {user_question}"
+                        )
+                        
+                        # Thử gọi Gemini trực tiếp (không qua offline engine)
+                        raw_response = None
                         try:
-                            from qmdg_calc import calculate_qmdg_params
-                            from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg
-                            q_params = calculate_qmdg_params(current_dt)
-                            dia_can = an_bai_luc_nghi(q_params['cuc'], q_params['is_duong_don'])
-                            thien_ban, can_thien_ban, nhan_ban, than_ban, truc_phu_cung = lap_ban_qmdg(
-                                q_params['cuc'], q_params['truc_phu'], q_params['truc_su'], 
-                                q_params['can_gio'], q_params['chi_gio'], q_params['is_duong_don']
+                            if hasattr(st.session_state.gemini_helper, '_call_ai_raw'):
+                                raw_response = st.session_state.gemini_helper._call_ai_raw(quick_prompt)
+                            elif hasattr(st.session_state.gemini_helper, '_call_ai'):
+                                raw_response = st.session_state.gemini_helper._call_ai(quick_prompt)
+                        except Exception:
+                            pass
+                        
+                        # Fallback: nếu không có Gemini API → dùng offline engine
+                        if not raw_response or len(str(raw_response)) < 50:
+                            raw_response = (
+                                "⚠️ **AI Online không khả dụng.** Không thể trả lời nhanh.\n\n"
+                                "💡 **Gợi ý:** Bấm nút **'🌟 LỤC THUẬT HỢP NHẤT'** để AI Offline phân tích "
+                                "dựa trên quẻ Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản."
                             )
-                            temp_chart_data = {
-                                'thien_ban': thien_ban,
-                                'can_thien_ban': can_thien_ban,
-                                'nhan_ban': nhan_ban,
-                                'than_ban': than_ban,
-                                'dia_can': dia_can,
-                                'cuc': q_params['cuc'],
-                                'tiet_khi': q_params.get('tiet_khi', ''),
-                                'can_ngay': q_params['can_ngay'],
-                                'chi_ngay': q_params['chi_ngay'],
-                                'can_nam': q_params.get('can_nam', 'N/A'),
-                                'chi_nam': q_params.get('chi_nam', 'N/A'),
-                                'can_thang': q_params.get('can_thang', 'N/A'),
-                                'chi_thang': q_params.get('chi_thang', 'N/A'),
-                                'can_gio': q_params['can_gio'],
-                                'chi_gio': q_params['chi_gio']
-                            }
-                        except Exception as e:
-                            pass
-                            
-                    # 2. MAI HOA DỊCH SỐ
-                    temp_mai_hoa = st.session_state.get('mai_hoa_result')
-                    if not temp_mai_hoa:
-                        try:
-                            from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
-                            temp_mai_hoa = tinh_qua_theo_thoi_gian(current_dt.year, current_dt.month, current_dt.day, current_dt.hour)
-                            temp_mai_hoa['interpretation'] = giai_qua(temp_mai_hoa, safe_topic)
-                        except Exception as e:
-                            pass
-                            
-                    # 3. LỤC HÀO KINH DỊCH
-                    temp_luc_hao = st.session_state.get('luc_hao_result')
-                    if not temp_luc_hao:
-                        try:
-                            seed = int(hashlib.md5(f"{user_question}_{current_dt}".encode()).hexdigest(), 16) % 100000
-                            random.seed(seed)
-                            hao_list = [random.choice([6, 7, 8, 9]) for _ in range(6)]
-                            from luc_hao_kinh_dich import lap_que
-                            temp_luc_hao = lap_que(hao_list, current_dt, safe_topic)
-                        except Exception as e:
-                            pass
-                            
-                    # 4. THIẾT BẢN THẦN TOÁN (Context Injection)
-                    tb_context = ""
-                    try:
-                        from qmdg_data import KY_MON_DATA
-                        from qmdg_calc import get_can_chi_year
-                        hoa_giap = KY_MON_DATA.get("THIET_BAN_THAN_TOAN", {}).get("LUC_THAP_HOA_GIAP_NAP_AM", {})
-                        tb_year_can, tb_year_chi = get_can_chi_year(current_dt.year)
-                        tb_year_key = f"{tb_year_can} {tb_year_chi}"
-                        # Try to use existing chart_data if any, otherwise default
-                        tb_day_key = f"{temp_chart_data['can_ngay']} {temp_chart_data['chi_ngay']}" if temp_chart_data else "? ?"
-                        nap_am_nam = hoa_giap.get(tb_year_key, {}).get("Nạp_Âm", "Không rõ")
-                        nap_am_ngay = hoa_giap.get(tb_day_key, {}).get("Nạp_Âm", "Không rõ")
-                        tb_context = f"\\n[DỮ LIỆU THIẾT BẢN THẦN TOÁN]:\\n- Nạp Âm Trụ Năm Mở Quẻ: {nap_am_nam} ({tb_year_key})\\n- Nạp Âm Trụ Ngày Mở Quẻ: {nap_am_ngay} ({tb_day_key})\\nLƯU Ý THẦN TOÁN: ĐÂY LÀ KHÍ CHẤT CỦA THỜI GIAN HIỆN TẠI, TUYỆT ĐỐI KHÔNG LẤY NÓ LÀM MỆNH (NĂM SINH) CỦA NGƯỜI DÙNG.\\n"
-                    except Exception as e:
-                        pass
                     
-                    if btn_ask_supreme:
-                        # CALL PHOENIX MASTER
+                    else:
+                        # ===============================================================
+                        # NÚT "LỤC THUẬT HỢP NHẤT" — Full Pipeline (Offline 5PP → Online)
+                        # ===============================================================
+                    
+                        # --- AUTO GENERATE ALL 4 CHARTS (KỲ MÔN, MAI HOA, LỤC HÀO, THIẾT BẢN) FOR AI ---
+                        import datetime
+                        import random
+                        import hashlib
+                        import datetime as dt_module
+                        vn_tz = dt_module.timezone(dt_module.timedelta(hours=7))
+                        current_dt = dt_module.datetime.now(vn_tz) # Use the real-time auto-refresh datetime
+                        
+                        # 1. KỲ MÔN ĐỘN GIÁP
+                        temp_chart_data = st.session_state.get('chart_data')
+                        if not temp_chart_data:
+                            try:
+                                from qmdg_calc import calculate_qmdg_params
+                                from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg
+                                q_params = calculate_qmdg_params(current_dt)
+                                dia_can = an_bai_luc_nghi(q_params['cuc'], q_params['is_duong_don'])
+                                thien_ban, can_thien_ban, nhan_ban, than_ban, truc_phu_cung = lap_ban_qmdg(
+                                    q_params['cuc'], q_params['truc_phu'], q_params['truc_su'], 
+                                    q_params['can_gio'], q_params['chi_gio'], q_params['is_duong_don']
+                                )
+                                temp_chart_data = {
+                                    'thien_ban': thien_ban,
+                                    'can_thien_ban': can_thien_ban,
+                                    'nhan_ban': nhan_ban,
+                                    'than_ban': than_ban,
+                                    'dia_can': dia_can,
+                                    'cuc': q_params['cuc'],
+                                    'tiet_khi': q_params.get('tiet_khi', ''),
+                                    'can_ngay': q_params['can_ngay'],
+                                    'chi_ngay': q_params['chi_ngay'],
+                                    'can_nam': q_params.get('can_nam', 'N/A'),
+                                    'chi_nam': q_params.get('chi_nam', 'N/A'),
+                                    'can_thang': q_params.get('can_thang', 'N/A'),
+                                    'chi_thang': q_params.get('chi_thang', 'N/A'),
+                                    'can_gio': q_params['can_gio'],
+                                    'chi_gio': q_params['chi_gio']
+                                }
+                            except Exception as e:
+                                pass
+                                
+                        # 2. MAI HOA DỊCH SỐ
+                        temp_mai_hoa = st.session_state.get('mai_hoa_result')
+                        if not temp_mai_hoa:
+                            try:
+                                from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
+                                temp_mai_hoa = tinh_qua_theo_thoi_gian(current_dt.year, current_dt.month, current_dt.day, current_dt.hour)
+                                temp_mai_hoa['interpretation'] = giai_qua(temp_mai_hoa, safe_topic)
+                            except Exception as e:
+                                pass
+                                
+                        # 3. LỤC HÀO KINH DỊCH
+                        temp_luc_hao = st.session_state.get('luc_hao_result')
+                        if not temp_luc_hao:
+                            try:
+                                seed = int(hashlib.md5(f"{user_question}_{current_dt}".encode()).hexdigest(), 16) % 100000
+                                random.seed(seed)
+                                hao_list = [random.choice([6, 7, 8, 9]) for _ in range(6)]
+                                from luc_hao_kinh_dich import lap_que
+                                temp_luc_hao = lap_que(hao_list, current_dt, safe_topic)
+                            except Exception as e:
+                                pass
+                                
+                        # 4. THIẾT BẢN THẦN TOÁN (Context Injection)
+                        tb_context = ""
+                        try:
+                            from qmdg_data import KY_MON_DATA
+                            from qmdg_calc import get_can_chi_year
+                            hoa_giap = KY_MON_DATA.get("THIET_BAN_THAN_TOAN", {}).get("LUC_THAP_HOA_GIAP_NAP_AM", {})
+                            tb_year_can, tb_year_chi = get_can_chi_year(current_dt.year)
+                            tb_year_key = f"{tb_year_can} {tb_year_chi}"
+                            # Try to use existing chart_data if any, otherwise default
+                            tb_day_key = f"{temp_chart_data['can_ngay']} {temp_chart_data['chi_ngay']}" if temp_chart_data else "? ?"
+                            nap_am_nam = hoa_giap.get(tb_year_key, {}).get("Nạp_Âm", "Không rõ")
+                            nap_am_ngay = hoa_giap.get(tb_day_key, {}).get("Nạp_Âm", "Không rõ")
+                            tb_context = f"\\n[DỮ LIỆU THIẾT BẢN THẦN TOÁN]:\\n- Nạp Âm Trụ Năm Mở Quẻ: {nap_am_nam} ({tb_year_key})\\n- Nạp Âm Trụ Ngày Mở Quẻ: {nap_am_ngay} ({tb_day_key})\\nLƯU Ý THẦN TOÁN: ĐÂY LÀ KHÍ CHẤT CỦA THỜI GIAN HIỆN TẠI, TUYỆT ĐỐI KHÔNG LẤY NÓ LÀM MỆNH (NĂM SINH) CỦA NGƯỜI DÙNG.\\n"
+                        except Exception as e:
+                            pass
+                        
+                        # CALL PHOENIX MASTER (FULL PIPELINE)
                         orc = PhoenixOrchestrator(st.session_state.gemini_helper)
                         
                         raw_response = orc.run_pipeline(
@@ -3432,16 +3468,6 @@ elif st.session_state.current_view == "gemini_ai":
                             mai_hoa_data=temp_mai_hoa,
                             luc_hao_data=temp_luc_hao,
                             tb_context=tb_context
-                        )
-                    else:
-                        # Append tb_context to question for basic answer_question
-                        enhanced_question = user_question + tb_context if tb_context else user_question
-                        raw_response = st.session_state.gemini_helper.answer_question(
-                            enhanced_question, 
-                            topic=safe_topic,
-                            chart_data=temp_chart_data,
-                            mai_hoa_data=temp_mai_hoa,
-                            luc_hao_data=temp_luc_hao
                         )
                     
                     # PROCESS & DISPLAY
