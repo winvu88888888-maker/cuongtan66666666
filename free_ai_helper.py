@@ -1218,7 +1218,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V27.0 Dai Thong Nhat)"
+        self.name = "Thiên Cơ Đại Sư (V28.2 Dai Thong Nhat)"
         self.version = "V26.2-Unified-Strength"
         self.model_name = "offline-rule-engine-v22.0"
         self.logs = []
@@ -1245,10 +1245,13 @@ class FreeAIHelper:
 
     # V27.0: Verdict Compact Block - Tom tat ngan gon de Gemini doc duoc 100%
     def _build_verdict_compact_block(self, od):
-        """Tao block ~500 chars chua du lieu then chot, nam dau prompt."""
+        """V28.2: Compact block chua du lieu then chot, nam dau prompt."""
         lines = []
-        lines.append("\n=== [V27 COMPACT] ===")
+        lines.append("\n=== [V28.2 COMPACT] ===")
         lines.append(f"DT={od.get('dung_than','?')} | Cat={od.get('category_label','?')}")
+        # V28.2: Kèm MH Thể/Dụng + LH Dụng Thần rõ ràng
+        lines.append(f"MH_The={od.get('mh_the','?')} MH_Dung={od.get('mh_dung','?')}")
+        lines.append(f"LH_DungThan={od.get('lh_dung_than','?')}")
         lines.append(f"KM={od.get('ky_mon_verdict','?')} LH={od.get('luc_hao_verdict','?')} MH={od.get('mai_hoa_verdict','?')} LN={od.get('luc_nham_verdict','?')} TA={od.get('thai_at_verdict','?')}")
         v22 = od.get('v22_unified_strength', {})
         if v22:
@@ -1257,7 +1260,7 @@ class FreeAIHelper:
         return "\n".join(lines)
 
     def test_connection(self):
-        return True, "V27.0 Dai Thong Nhat — Offline + Online fallback"
+        return True, "V28.2 Dai Thong Nhat — Offline + Online fallback"
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
@@ -1307,6 +1310,8 @@ class FreeAIHelper:
                     f"\n=== DỮ LIỆU TỪ AI OFFLINE (rule-based Python, chính xác 100%) ===\n"
                     f"Dụng Thần: {od.get('dung_than', '?')}\n"
                     f"Nhóm câu hỏi: {od.get('category_label', '?')}\n"
+                    f"Mai Hoa Thể: {od.get('mh_the', '?')} | Mai Hoa Dụng: {od.get('mh_dung', '?')}\n"
+                    f"Lục Hào Dụng Thần (Lục Thân): {od.get('lh_dung_than', '?')}\n"
                 )
                 
                 # 2) Verdicts từ 5 phương pháp (V14.0 LỤC THUẬT)
@@ -4896,7 +4901,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V27.0 Dai Thong Nhat). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V28.2 Dai Thong Nhat). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -5075,7 +5080,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V27.0 Dai Thong Nhat\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V28.2 Dai Thong Nhat\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
@@ -5160,8 +5165,13 @@ class FreeAIHelper:
         
         # BƯỚC 4: MAI HOA
         sections.append(f"### BƯỚC 4 — MAI HOA DỊCH SỐ")
+        # V28.2: Track MH Thể/Dụng for AI Online context
+        mh_the_name = '?'
+        mh_the_el = '?'
+        mh_dung_name = '?'
+        mh_dung_el = '?'
         if mai_hoa_data and isinstance(mai_hoa_data, dict):
-            mh_section, mai_hoa_verdict, mh_age = self._analyze_mai_hoa_full(mai_hoa_data, is_age)
+            mh_section, mai_hoa_verdict, mh_age, mh_the_name, mh_the_el, mh_dung_name, mh_dung_el = self._analyze_mai_hoa_full(mai_hoa_data, is_age)
             sections.append(mh_section)
             # V8.0: Extract reason from MAI HOA verdict line
             mai_hoa_reason = ""
@@ -5769,6 +5779,14 @@ class FreeAIHelper:
         except Exception:
             pass
         
+        # V28.2: Trích xuất Dụng Thần Lục Hào (Lục Thân) từ luc_hao_data
+        lh_dung_than_label = dung_than  # Default fallback
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            lh_ban = luc_hao_data.get('ban', {})
+            lh_dt_from_chart = lh_ban.get('dung_than', '')
+            if lh_dt_from_chart:
+                lh_dung_than_label = lh_dt_from_chart
+        
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
             'dung_than': dung_than,
@@ -5787,6 +5805,11 @@ class FreeAIHelper:
             'age_numbers': age_numbers,
             'impact_evidence': impact_evidence,
             'unified_narrative': unified_narrative,
+            # V28.2: Thể/Dụng Mai Hoa cho AI Online
+            'mh_the': f"{mh_the_name} ({mh_the_el})",
+            'mh_dung': f"{mh_dung_name} ({mh_dung_el})",
+            # V28.2: Dụng Thần Lục Hào (Lục Thân)
+            'lh_dung_than': lh_dung_than_label,
             # V15.3: Structured V15 analysis summaries for Online AI
             'v15_bt_score': v15_bt_score,
             'v15_dt_score': v15_dt_score,
@@ -7552,7 +7575,7 @@ class FreeAIHelper:
             lines.append(f"- Tuổi (Mai Hoa: Thể={the_name}, Tiên Thiên={tt}): **{age_num}**")
         
         lines.append("")
-        return "\n".join(lines), verdict, age_num
+        return "\n".join(lines), verdict, age_num, the_name, the_el, dung_name, dung_el
 
 
     # ===========================
