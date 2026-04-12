@@ -1,8 +1,8 @@
 """
-Free AI Helper V27.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + LƯỢNG HÓA SUY VƯỢNG TOÀN DIỆN)
+Free AI Helper V28.1 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + FIX VERDICT SYNC)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
-V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
+V28.1: Fix verdict sync MH/LN/TA + NHÀ_CỬA keywords + subject mapping.
        Ngũ Hành vật chất mapping (hình, chất liệu, màu sắc).
        Kế thừa V21.0: Lượng Hóa Suy Vượng, Tiến/Thối Thần, Nguyệt Phá.
        Kế thừa V15.0: XÂU DƯỢC + NỘI CUNG (7 tầng).
