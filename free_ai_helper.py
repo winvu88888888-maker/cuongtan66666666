@@ -1412,6 +1412,267 @@ class FreeAIHelper:
         lines.append("════════════════════════════════════════════════════════\n")
         return "\n".join(lines)
 
+    # V30.1: DỤNG THẦN DEEP BRIEF — Trích xuất ĐẦY ĐỦ yếu tố tác động vào DT
+    def _build_dung_than_deep_brief(self, od, luc_hao_data, chart_data, mai_hoa_data):
+        """V30.1: Trích xuất TOÀN BỘ thông tin Dụng Thần + yếu tố tác động.
+        Gemini PHẢI đọc và dùng phần này để luận giải chính xác.
+        
+        Bao gồm:
+        - DT là gì, tại hào nào, Chi gì, Hành gì, Vượng/Suy
+        - Nguyên Thần (sinh DT) - ở đâu, vượng/suy
+        - Kỵ Thần (khắc DT) - ở đâu, vượng/suy, có động không
+        - Cừu Thần (sinh Kỵ Thần)
+        - Nguyệt Lệnh sinh/khắc DT
+        - Nhật Thần sinh/khắc DT  
+        - Tuần Không
+        - Nguyệt Phá
+        - Hào Động + Biến (Tiến Thần/Thối Thần)
+        - Phản Ngâm/Phục Ngâm
+        - Thế/Ứng quan hệ
+        """
+        lines = []
+        dung_than = od.get('dung_than', '?')
+        lines.append(f"\n{'='*50}")
+        lines.append(f"🎯 PHÂN TÍCH DỤNG THẦN CHI TIẾT")
+        lines.append(f"{'='*50}")
+        lines.append(f"Dụng Thần: {dung_than}")
+        
+        # ═══ A. Lục Hào: DT hào nào + tất cả yếu tố ═══
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            ban = luc_hao_data.get('ban', {})
+            haos = ban.get('haos') or ban.get('details', [])
+            dong_hao = luc_hao_data.get('dong_hao', [])
+            bien = luc_hao_data.get('bien', {})
+            
+            CHI_LIST = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+            
+            # Tìm DT hào + Thế + Ứng
+            dt_hao = None
+            dt_idx = None
+            the_hao = None
+            ung_hao = None
+            for i, hao in enumerate(haos):
+                lt = hao.get('luc_than', '') or hao.get('luc_thu', '')
+                tu = hao.get('the_ung', '') or hao.get('marker', '')
+                if lt == dung_than or (dung_than in ['Phụ Mẫu (Cha)', 'Phụ Mẫu (Mẹ)'] and 'Phụ Mẫu' in lt):
+                    dt_hao = hao
+                    dt_idx = i + 1
+                if dung_than == 'Bản Thân' and 'Thế' in str(tu):
+                    dt_hao = hao
+                    dt_idx = i + 1
+                if 'Thế' in str(tu):
+                    the_hao = hao
+                if 'Ứng' in str(tu):
+                    ung_hao = hao
+            
+            if not dt_hao and the_hao:
+                dt_hao = the_hao
+                dt_idx = haos.index(the_hao) + 1 if the_hao in haos else None
+            
+            if dt_hao:
+                dt_canchi = dt_hao.get('can_chi', '?')
+                dt_hanh = dt_hao.get('ngu_hanh', '?')
+                dt_vuong = str(dt_hao.get('vuong_suy', '?'))
+                dt_lt = dt_hao.get('luc_than', '?')
+                is_dong = dt_idx in dong_hao if dt_idx and dong_hao else False
+                
+                # Extract Chi
+                dt_chi = '?'
+                for c in CHI_LIST:
+                    if c in str(dt_canchi):
+                        dt_chi = c
+                        break
+                
+                lines.append(f"\n📌 [LỤC HÀO] DT ({dung_than}):")
+                lines.append(f"  └ Hào {dt_idx}, {dt_canchi}({dt_hanh})")
+                lines.append(f"  └ Vượng/Suy: {dt_vuong}")
+                lines.append(f"  └ Động: {'CÓ — PHÁT ĐỘNG' if is_dong else 'KHÔNG — TĨNH'}")
+                
+                # Nguyên Thần (hành sinh DT)
+                SINH = {'Kim': 'Thủy', 'Thủy': 'Mộc', 'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim'}
+                KHAC = {'Kim': 'Mộc', 'Mộc': 'Thổ', 'Thổ': 'Thủy', 'Thủy': 'Hỏa', 'Hỏa': 'Kim'}
+                
+                if dt_hanh and dt_hanh != '?':
+                    # Nguyên Thần: hành nào SINH dt_hanh?
+                    nguyen_hanh = [h for h, s in SINH.items() if s == dt_hanh]
+                    lines.append(f"\n  🟢 NGUYÊN THẦN (hành {', '.join(nguyen_hanh)} sinh {dt_hanh}):")
+                    found_nt = False
+                    for hao in haos:
+                        h_hanh = hao.get('ngu_hanh', '')
+                        if h_hanh in nguyen_hanh:
+                            h_cc = hao.get('can_chi', '?')
+                            h_vuong = str(hao.get('vuong_suy', '?'))
+                            h_idx = haos.index(hao) + 1
+                            h_dong = h_idx in dong_hao if dong_hao else False
+                            h_lt = hao.get('luc_than', '?')
+                            lines.append(f"    └ Hào {h_idx} ({h_lt}): {h_cc}({h_hanh}), {h_vuong}{', ĐỘNG' if h_dong else ''}")
+                            if 'Vượng' in h_vuong:
+                                lines.append(f"    └ → Nguyên Thần VƯỢNG → HỖ TRỢ DT MẠNH MẼ ✅")
+                            elif 'Suy' in h_vuong or 'Tử' in h_vuong or 'Tuyệt' in h_vuong:
+                                lines.append(f"    └ → Nguyên Thần SUY → KHÔNG ĐỦ SỨC SINH DT ❌")
+                            found_nt = True
+                    if not found_nt:
+                        lines.append(f"    └ KHÔNG CÓ trong quẻ → DT thiếu nguồn sinh ❌")
+                    
+                    # Kỵ Thần: hành nào KHẮC dt_hanh?
+                    ky_hanh = [h for h, k in KHAC.items() if k == dt_hanh]
+                    lines.append(f"\n  🔴 KỴ THẦN (hành {', '.join(ky_hanh)} khắc {dt_hanh}):")
+                    found_kt = False
+                    for hao in haos:
+                        h_hanh = hao.get('ngu_hanh', '')
+                        if h_hanh in ky_hanh and hao != dt_hao:
+                            h_cc = hao.get('can_chi', '?')
+                            h_vuong = str(hao.get('vuong_suy', '?'))
+                            h_idx = haos.index(hao) + 1
+                            h_dong = h_idx in dong_hao if dong_hao else False
+                            h_lt = hao.get('luc_than', '?')
+                            lines.append(f"    └ Hào {h_idx} ({h_lt}): {h_cc}({h_hanh}), {h_vuong}{', ĐỘNG!' if h_dong else ''}")
+                            if 'Vượng' in h_vuong and h_dong:
+                                lines.append(f"    └ → Kỵ Thần VƯỢNG + ĐỘNG → GÂY HẠI CỰC MẠNH ❌❌")
+                            elif 'Vượng' in h_vuong:
+                                lines.append(f"    └ → Kỵ Thần VƯỢNG → NGUY HIỂM ❌")
+                            elif 'Suy' in h_vuong or 'Tử' in h_vuong:
+                                lines.append(f"    └ → Kỵ Thần SUY → KHÔNG ĐỦ SỨC KHẮC DT ✅")
+                            found_kt = True
+                    if not found_kt:
+                        lines.append(f"    └ KHÔNG CÓ trong quẻ → DT không bị khắc ✅")
+                
+                # Nguyệt Lệnh
+                chi_thang = luc_hao_data.get('chi_thang', '') or ban.get('chi_thang', '')
+                CHI_NGU_HANH = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc',
+                               'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ',
+                               'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
+                hanh_thang = CHI_NGU_HANH.get(chi_thang, '')
+                if hanh_thang and dt_hanh and dt_hanh != '?':
+                    lines.append(f"\n  📅 NGUYỆT LỆNH (tháng {chi_thang}/{hanh_thang}):")
+                    if SINH.get(hanh_thang) == dt_hanh:
+                        lines.append(f"    └ Tháng {chi_thang}({hanh_thang}) SINH DT({dt_hanh}) → ĐƯỢC THÁNG SINH ✅")
+                    elif KHAC.get(hanh_thang) == dt_hanh:
+                        lines.append(f"    └ Tháng {chi_thang}({hanh_thang}) KHẮC DT({dt_hanh}) → BỊ THÁNG KHẮC ❌")
+                    elif hanh_thang == dt_hanh:
+                        lines.append(f"    └ Tháng {chi_thang} đồng hành DT → VƯỢNG ✅")
+                    else:
+                        lines.append(f"    └ Tháng {chi_thang} không sinh không khắc → BÌNH")
+                
+                # Nhật Thần  
+                can_ngay = luc_hao_data.get('can_ngay', '') or ban.get('can_ngay', '')
+                CAN_NGU_HANH = {'Giáp': 'Mộc', 'Ất': 'Mộc', 'Bính': 'Hỏa', 'Đinh': 'Hỏa',
+                                'Mậu': 'Thổ', 'Kỷ': 'Thổ', 'Canh': 'Kim', 'Tân': 'Kim',
+                                'Nhâm': 'Thủy', 'Quý': 'Thủy'}
+                hanh_ngay = CAN_NGU_HANH.get(can_ngay, '')
+                if hanh_ngay and dt_hanh and dt_hanh != '?':
+                    lines.append(f"\n  📅 NHẬT THẦN (ngày {can_ngay}/{hanh_ngay}):")
+                    if SINH.get(hanh_ngay) == dt_hanh:
+                        lines.append(f"    └ Ngày {can_ngay}({hanh_ngay}) SINH DT({dt_hanh}) → ĐƯỢC NGÀY SINH ✅")
+                    elif KHAC.get(hanh_ngay) == dt_hanh:
+                        lines.append(f"    └ Ngày {can_ngay}({hanh_ngay}) KHẮC DT({dt_hanh}) → BỊ NGÀY KHẮC ❌")
+                    else:
+                        lines.append(f"    └ Ngày {can_ngay} — BÌNH")
+                
+                # Tuần Không
+                chi_ngay = luc_hao_data.get('chi_ngay', '') or ban.get('chi_ngay', '')
+                if can_ngay and chi_ngay and dt_chi != '?':
+                    try:
+                        kv = _get_khong_vong(can_ngay, chi_ngay)
+                        if kv:
+                            lines.append(f"\n  ⭕ TUẦN KHÔNG: {kv}")
+                            if dt_chi in kv:
+                                lines.append(f"    └ DT Chi={dt_chi} NẰM TRONG Tuần Không → VÔ LỰC ❌❌")
+                            else:
+                                lines.append(f"    └ DT Chi={dt_chi} KHÔNG bị Tuần Không ✅")
+                    except Exception:
+                        pass
+                
+                # Nguyệt Phá
+                if chi_thang and dt_chi != '?':
+                    LUC_XUNG = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu',
+                                'Dần': 'Thân', 'Thân': 'Dần', 'Mão': 'Dậu', 'Dậu': 'Mão',
+                                'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
+                    if LUC_XUNG.get(chi_thang) == dt_chi:
+                        lines.append(f"\n  💥 NGUYỆT PHÁ: Tháng {chi_thang} xung DT {dt_chi} → BỊ NGUYỆT PHÁ ❌❌")
+                
+                # Hào Động + Biến
+                if is_dong and bien:
+                    bien_haos = bien.get('haos') or bien.get('details', [])
+                    if bien_haos and dt_idx and dt_idx <= len(bien_haos):
+                        bien_hao = bien_haos[dt_idx - 1]
+                        b_cc = bien_hao.get('can_chi', '?')
+                        b_hanh = bien_hao.get('ngu_hanh', '?')
+                        b_vuong = str(bien_hao.get('vuong_suy', '?'))
+                        lines.append(f"\n  🔄 HÀO ĐỘNG + BIẾN:")
+                        lines.append(f"    └ DT Hào {dt_idx} ĐỘNG → Biến thành {b_cc}({b_hanh}), {b_vuong}")
+                        if b_hanh and dt_hanh and dt_hanh != '?' and b_hanh != '?':
+                            if SINH.get(b_hanh) == dt_hanh:
+                                lines.append(f"    └ HÓA HỒI SINH: Biến({b_hanh}) sinh DT({dt_hanh}) → CỰC TỐT ✅✅")
+                            elif KHAC.get(b_hanh) == dt_hanh:
+                                lines.append(f"    └ HÓA HỒI KHẮC: Biến({b_hanh}) khắc DT({dt_hanh}) → CỰC XẤU ❌❌")
+                            elif b_hanh == dt_hanh:
+                                lines.append(f"    └ HÓA PHỤC: Biến đồng hành DT → TỐT ✅")
+                
+                # Thế/Ứng
+                if the_hao and ung_hao:
+                    the_cc = the_hao.get('can_chi', '?')
+                    the_h = the_hao.get('ngu_hanh', '?')
+                    ung_cc = ung_hao.get('can_chi', '?')
+                    ung_h = ung_hao.get('ngu_hanh', '?')
+                    lines.append(f"\n  ⚔️ THẾ vs ỨNG:")
+                    lines.append(f"    └ Thế: {the_cc}({the_h})")
+                    lines.append(f"    └ Ứng: {ung_cc}({ung_h})")
+                    if the_h and ung_h and the_h != '?' and ung_h != '?':
+                        if KHAC.get(the_h) == ung_h:
+                            lines.append(f"    └ Thế KHẮC Ứng → Người hỏi THẮNG/KIỂM SOÁT ✅")
+                        elif KHAC.get(ung_h) == the_h:
+                            lines.append(f"    └ Ứng KHẮC Thế → Đối phương MẠNH HƠN ❌")
+                        elif SINH.get(the_h) == ung_h:
+                            lines.append(f"    └ Thế SINH Ứng → Người hỏi BỎ CÔNG SỨC")
+                        elif SINH.get(ung_h) == the_h:
+                            lines.append(f"    └ Ứng SINH Thế → Đối phương HỖ TRỢ ✅")
+                
+                # Toàn bộ 6 hào
+                lines.append(f"\n  📋 BẢNG 6 HÀO:")
+                for i, hao in enumerate(haos):
+                    h_lt = hao.get('luc_than', '?')
+                    h_cc = hao.get('can_chi', '?')
+                    h_hanh = hao.get('ngu_hanh', '?')
+                    h_vuong = str(hao.get('vuong_suy', '?'))
+                    h_tu = hao.get('the_ung', '')
+                    h_dong = (i + 1) in dong_hao if dong_hao else False
+                    marker = ''
+                    if hao == dt_hao:
+                        marker = ' ← DỤNG THẦN'
+                    if 'Thế' in str(h_tu):
+                        marker += ' ← THẾ'
+                    if 'Ứng' in str(h_tu):
+                        marker += ' ← ỨNG'
+                    lines.append(f"    Hào {i+1}: {h_lt:6s} | {h_cc:8s} | {h_hanh:3s} | {h_vuong:10s} | {'ĐỘNG' if h_dong else 'tĩnh'}{marker}")
+            
+            else:
+                lines.append(f"\n  ⚠️ DT ({dung_than}) KHÔNG xuất hiện trong quẻ → PHỤC THẦN (ẩn, yếu) ❌❌")
+        
+        # ═══ B. Factors từ offline engine (đã tính sẵn) ═══
+        lh_factors = od.get('v23_lh_factors', [])
+        if lh_factors:
+            lines.append(f"\n  📊 CÁC YẾU TỐ ĐIỂM SỐ (Python tính sẵn):")
+            for f in lh_factors:
+                lines.append(f"    • {f}")
+        
+        # ═══ C. Kỳ Môn: BT + SV ═══
+        km_factors = od.get('v24_km_factors', [])
+        if km_factors:
+            lines.append(f"\n📌 [KỲ MÔN] Yếu tố tác động:")
+            for f in km_factors:
+                lines.append(f"    • {f}")
+        
+        # ═══ D. Mai Hoa factors ═══
+        mh_factors = od.get('v24_mh_factors', [])
+        if mh_factors:
+            lines.append(f"\n📌 [MAI HOA] Yếu tố tác động:")
+            for f in mh_factors:
+                lines.append(f"    • {f}")
+        
+        lines.append(f"\n{'='*50}")
+        return "\n".join(lines)
+
     def test_connection(self):
         return True, "V28.3 Dai Thong Nhat — Offline + Online fallback"
 
@@ -1707,6 +1968,11 @@ class FreeAIHelper:
             # A. Verdict Compact Block (verdict chính thức)
             evidence_sections.append(self._build_verdict_compact_block(od))
             
+            # A2. V30.1: DỤNG THẦN DEEP BRIEF — PHÂN TÍCH ĐẦY ĐỦ YẾU TỐ TÁC ĐỘNG
+            dt_brief = self._build_dung_than_deep_brief(od, luc_hao_data, chart_data, mai_hoa_data)
+            if dt_brief:
+                evidence_sections.append(f"\n<dung_than_analysis>\n{dt_brief}\n</dung_than_analysis>")
+            
             # B. Bằng chứng tác động (TẤT CẢ)
             if od.get('impact_evidence'):
                 evidence_sections.append("\n<impact_evidence>")
@@ -1854,11 +2120,12 @@ class FreeAIHelper:
                 f"NGUYÊN TẮC TUYỆT ĐỐI (VI PHẠM = SAI HOÀN TOÀN):\n"
                 f"1. MỌI dữ liệu trong <evidence_data> ĐÃ ĐƯỢC PYTHON TÍNH CHÍNH XÁC 100%.\n"
                 f"2. BẠN PHẢI tuân theo verdict trong <verdict_lock>. Đó là KẾT LUẬN CUỐI CÙNG.\n"
-                f"3. Vai trò: GIẢI THÍCH TẠI SAO verdict đúng bằng TRÍCH DẪN bằng chứng cụ thể.\n"
-                f"4. MỖI nhận định → PHẢI kèm [NGUỒN: phương pháp + data cụ thể].\n"
-                f"5. CẤM bịa sao/cửa/hào/quẻ/chi KHÔNG có trong <evidence_data> hoặc <raw_data>.\n"
-                f"6. CẤM phán NGƯỢC verdict. Nếu data mâu thuẫn → ghi nhận nhưng VẪN THEO verdict cuối.\n"
-                f"7. PHẢI viết theo <output_format> — đúng thứ tự, đúng nội dung.\n"
+                f"3. PHẢI đọc <dung_than_analysis> — đây là phân tích Dụng Thần ĐẦY ĐỦ nhất.\n"
+                f"4. Luận giải BẮT BUỘC dựa trên: DT Vượng/Suy + Nguyên Thần + Kỵ Thần + Nguyệt Lệnh + Nhật Thần + Tuần Không.\n"
+                f"5. MỖI nhận định → PHẢI kèm [NGUỒN: phương pháp + data cụ thể].\n"
+                f"6. CẤM bịa sao/cửa/hào/quẻ/chi KHÔNG có trong data.\n"
+                f"7. CẤM phán NGƯỢC verdict. Nếu data mâu thuẫn → ghi nhận nhưng VẪN THEO verdict cuối.\n"
+                f"8. PHẢI viết theo <output_format> — đúng thứ tự, đúng nội dung.\n"
                 f"</system_role>\n\n"
                 
                 f"<verdict_lock>\n"
@@ -1895,7 +2162,12 @@ class FreeAIHelper:
                 f"### 1. Kỳ Môn Độn Giáp: {_km_v}\n"
                 f"- [trích dẫn: Cung nào, Sao nào, Cửa nào, Thần nào → TẠI SAO {_km_v}]\n"
                 f"### 2. Lục Hào Kinh Dịch: {_lh_v}\n"
-                f"- [trích dẫn: Hào nào, Chi nào, Vượng/Suy, Động/Tĩnh → TẠI SAO {_lh_v}]\n"
+                f"- DT ({_dung_than}) ở Hào nào, Chi nào, Vượng hay Suy\n"
+                f"- Nguyên Thần (sinh DT): ở đâu, vượng/suy → có hỗ trợ DT không?\n"
+                f"- Kỵ Thần (khắc DT): ở đâu, vượng/suy, có động không → có đe dọa DT không?\n"
+                f"- Nguyệt Lệnh + Nhật Thần: sinh hay khắc DT?\n"
+                f"- Tuần Không / Nguyệt Phá: DT có bị ảnh hưởng?\n"
+                f"- [TẤT CẢ lấy từ <dung_than_analysis> — KHÔNG được bịa]\n"
                 f"### 3. Mai Hoa Dịch Số: {_mh_v}\n"
                 f"- [trích dẫn: Thể/Dụng sinh khắc → TẠI SAO {_mh_v}]\n"
                 f"### 4. Đại Lục Nhâm: {_ln_v}\n"
