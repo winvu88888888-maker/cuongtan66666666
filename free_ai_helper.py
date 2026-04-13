@@ -1652,23 +1652,271 @@ class FreeAIHelper:
         # ═══ B. Factors từ offline engine (đã tính sẵn) ═══
         lh_factors = od.get('v23_lh_factors', [])
         if lh_factors:
-            lines.append(f"\n  📊 CÁC YẾU TỐ ĐIỂM SỐ (Python tính sẵn):")
+            lines.append(f"\n  📊 CÁC YẾU TỐ ĐIỂM SỐ LỤC HÀO (Python tính sẵn):")
             for f in lh_factors:
                 lines.append(f"    • {f}")
         
-        # ═══ C. Kỳ Môn: BT + SV ═══
+        # ═══ C. KỲ MÔN ĐỘN GIÁP — Phân tích sâu BT + SV ═══
+        lines.append(f"\n{'='*50}")
+        lines.append(f"📌 [KỲ MÔN ĐỘN GIÁP] Phân tích chi tiết")
+        lines.append(f"{'='*50}")
+        
+        if chart_data and isinstance(chart_data, dict):
+            can_ngay = chart_data.get('can_ngay', '?')
+            chi_ngay = chart_data.get('chi_ngay', '?')
+            can_gio = chart_data.get('can_gio', '?')
+            chi_gio = chart_data.get('chi_gio', '?')
+            cuc = chart_data.get('cuc', '?')
+            tiet_khi = chart_data.get('tiet_khi', '?')
+            can_thien_ban = chart_data.get('can_thien_ban', {})
+            thien_ban = chart_data.get('thien_ban', {})
+            nhan_ban = chart_data.get('nhan_ban', {})
+            than_ban = chart_data.get('than_ban', {})
+            
+            lines.append(f"  Ngày: {can_ngay} {chi_ngay} | Giờ: {can_gio} {chi_gio}")
+            lines.append(f"  Cục: {cuc} | Tiết khí: {tiet_khi}")
+            
+            # Tuần Không
+            kv4 = chart_data.get('khong_vong_4', '')
+            if kv4:
+                lines.append(f"  Tuần Không: {kv4}")
+            
+            CUA_CAT = ['Khai Môn', 'Hưu Môn', 'Sinh Môn']
+            CUA_HUNG = ['Tử Môn', 'Kinh Môn', 'Thương Môn', 'Đỗ Môn']
+            SAO_CAT = ['Thiên Tâm', 'Thiên Nhậm', 'Thiên Phụ', 'Thiên Xung']
+            SAO_HUNG = ['Thiên Bồng', 'Thiên Nhuế', 'Thiên Cầm']
+            HUONG_MAP = {1:'Bắc(Khảm)', 2:'Tây Nam(Khôn)', 3:'Đông(Chấn)', 4:'Đông Nam(Tốn)', 
+                        5:'Trung Tâm', 6:'Tây Bắc(Càn)', 7:'Tây(Đoài)', 8:'Đông Bắc(Cấn)', 9:'Nam(Ly)'}
+            CUNG_HANH = {1:'Thủy', 2:'Thổ', 3:'Mộc', 4:'Mộc', 5:'Thổ', 6:'Kim', 7:'Kim', 8:'Thổ', 9:'Hỏa'}
+            
+            # Tìm Cung BT
+            bt_cung = None
+            for cn, cv in can_thien_ban.items():
+                if cv == can_ngay:
+                    bt_cung = int(cn) if str(cn).isdigit() else None
+                    break
+            if not bt_cung and can_ngay == 'Giáp':
+                for cn, cv in can_thien_ban.items():
+                    if cv == 'Mậu':
+                        bt_cung = int(cn) if str(cn).isdigit() else None
+                        break
+            
+            # Tìm Cung SV (Can Giờ)
+            sv_cung = None
+            if can_gio and can_gio != can_ngay:
+                for cn, cv in can_thien_ban.items():
+                    if cv == can_gio:
+                        sv_cung = int(cn) if str(cn).isdigit() else None
+                        break
+            
+            # BẢN THÂN
+            if bt_cung:
+                bt_sao = str(thien_ban.get(bt_cung, thien_ban.get(str(bt_cung), '?')))
+                bt_cua = str(nhan_ban.get(bt_cung, nhan_ban.get(str(bt_cung), '?')))
+                bt_than = str(than_ban.get(bt_cung, than_ban.get(str(bt_cung), '?')))
+                bt_hanh = CUNG_HANH.get(bt_cung, '?')
+                bt_huong = HUONG_MAP.get(bt_cung, '?')
+                
+                sao_ok = any(s in bt_sao for s in SAO_CAT)
+                cua_ok = any(c in bt_cua for c in CUA_CAT)
+                cua_bad = any(c in bt_cua for c in CUA_HUNG)
+                
+                lines.append(f"\n  👤 BẢN THÂN — Cung {bt_cung} ({bt_huong}), Hành: {bt_hanh}")
+                lines.append(f"    └ Sao: {bt_sao} {'✅ CÁT' if sao_ok else '❌ HUNG' if any(s in bt_sao for s in SAO_HUNG) else '🟡 BÌNH'}")
+                lines.append(f"    └ Cửa: {bt_cua} {'✅ CÁT' if cua_ok else '❌ HUNG' if cua_bad else '🟡 BÌNH'}")
+                lines.append(f"    └ Thần: {bt_than}")
+                
+                if sao_ok and cua_ok:
+                    lines.append(f"    └ → Người hỏi MẠNH MẼ (Sao cát + Cửa cát) ✅✅")
+                elif cua_bad:
+                    lines.append(f"    └ → Người hỏi GẶP KHÓ (Cửa hung) ❌")
+            
+            # SỰ VIỆC
+            if sv_cung and sv_cung != bt_cung:
+                sv_sao = str(thien_ban.get(sv_cung, thien_ban.get(str(sv_cung), '?')))
+                sv_cua = str(nhan_ban.get(sv_cung, nhan_ban.get(str(sv_cung), '?')))
+                sv_than = str(than_ban.get(sv_cung, than_ban.get(str(sv_cung), '?')))
+                sv_hanh = CUNG_HANH.get(sv_cung, '?')
+                sv_huong = HUONG_MAP.get(sv_cung, '?')
+                
+                sao_ok = any(s in sv_sao for s in SAO_CAT)
+                cua_ok = any(c in sv_cua for c in CUA_CAT)
+                cua_bad = any(c in sv_cua for c in CUA_HUNG)
+                
+                lines.append(f"\n  📋 SỰ VIỆC — Cung {sv_cung} ({sv_huong}), Hành: {sv_hanh}")
+                lines.append(f"    └ Sao: {sv_sao} {'✅ CÁT' if sao_ok else '❌ HUNG' if any(s in sv_sao for s in SAO_HUNG) else '🟡 BÌNH'}")
+                lines.append(f"    └ Cửa: {sv_cua} {'✅ CÁT' if cua_ok else '❌ HUNG' if cua_bad else '🟡 BÌNH'}")
+                lines.append(f"    └ Thần: {sv_than}")
+                
+                if sao_ok and cua_ok:
+                    lines.append(f"    └ → Sự việc THUẬN LỢI ✅✅")
+                elif cua_bad:
+                    lines.append(f"    └ → Sự việc GẶP TRỞ NGẠI ❌")
+                
+                # BT ↔ SV quan hệ Ngũ Hành
+                SINH = {'Kim': 'Thủy', 'Thủy': 'Mộc', 'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim'}
+                KHAC = {'Kim': 'Mộc', 'Mộc': 'Thổ', 'Thổ': 'Thủy', 'Thủy': 'Hỏa', 'Hỏa': 'Kim'}
+                if bt_hanh != '?' and sv_hanh != '?':
+                    lines.append(f"\n  ⚔️ BT({bt_hanh}) ↔ SV({sv_hanh}):")
+                    if SINH.get(bt_hanh) == sv_hanh:
+                        lines.append(f"    └ BT SINH SV → Người hỏi phải BỎ CÔNG SỨC cho sự việc")
+                    elif SINH.get(sv_hanh) == bt_hanh:
+                        lines.append(f"    └ SV SINH BT → Sự việc ĐEM LẠI LỢI ÍCH ✅")
+                    elif KHAC.get(bt_hanh) == sv_hanh:
+                        lines.append(f"    └ BT KHẮC SV → Người hỏi KIỂM SOÁT sự việc ✅")
+                    elif KHAC.get(sv_hanh) == bt_hanh:
+                        lines.append(f"    └ SV KHẮC BT → Sự việc GÂY KHÓ KHĂN cho người hỏi ❌")
+                    elif bt_hanh == sv_hanh:
+                        lines.append(f"    └ BT tỷ hòa SV → CÂN BẰNG")
+            elif bt_cung:
+                lines.append(f"\n  📋 SỰ VIỆC — cùng cung với BT (Cung {bt_cung})")
+            
+            # Bảng 9 cung overview
+            lines.append(f"\n  📋 BẢNG 9 CUNG:")
+            for ci in range(1, 10):
+                s = str(thien_ban.get(ci, thien_ban.get(str(ci), '?')))
+                c = str(nhan_ban.get(ci, nhan_ban.get(str(ci), '?')))
+                t = str(than_ban.get(ci, than_ban.get(str(ci), '?')))
+                h = HUONG_MAP.get(ci, '?')
+                marker = ''
+                if ci == bt_cung:
+                    marker = ' ← BẢN THÂN'
+                if ci == sv_cung:
+                    marker += ' ← SỰ VIỆC'
+                lines.append(f"    Cung {ci} ({h[:5]:5s}): Sao={s:8s} | Cửa={c:8s} | Thần={t:8s}{marker}")
+        
+        # KM factors (từ offline engine)
         km_factors = od.get('v24_km_factors', [])
         if km_factors:
-            lines.append(f"\n📌 [KỲ MÔN] Yếu tố tác động:")
+            lines.append(f"\n  📊 YẾU TỐ ĐIỂM SỐ KỲ MÔN (Python tính sẵn):")
             for f in km_factors:
                 lines.append(f"    • {f}")
         
-        # ═══ D. Mai Hoa factors ═══
+        # ═══ D. MAI HOA DỊCH SỐ — Phân tích sâu ═══
+        lines.append(f"\n{'='*50}")
+        lines.append(f"📌 [MAI HOA DỊCH SỐ] Phân tích chi tiết")
+        lines.append(f"{'='*50}")
+        
+        if mai_hoa_data and isinstance(mai_hoa_data, dict):
+            thuong = mai_hoa_data.get('thuong', '?')
+            ha = mai_hoa_data.get('ha', '?')
+            the_quai = mai_hoa_data.get('the_quai', '?')
+            dung_quai = mai_hoa_data.get('dung_quai', '?')
+            dong_hao_mh = mai_hoa_data.get('dong_hao', '?')
+            ten_que = mai_hoa_data.get('ten_que', mai_hoa_data.get('name', '?'))
+            bien_que = mai_hoa_data.get('bien_que', mai_hoa_data.get('bien', '?'))
+            
+            QUAI_HANH = {'Càn': 'Kim', 'Đoài': 'Kim', 'Ly': 'Hỏa', 'Chấn': 'Mộc', 
+                        'Tốn': 'Mộc', 'Khảm': 'Thủy', 'Cấn': 'Thổ', 'Khôn': 'Thổ'}
+            
+            the_h = QUAI_HANH.get(the_quai, '?')
+            dung_h = QUAI_HANH.get(dung_quai, '?')
+            
+            lines.append(f"  Quẻ: {ten_que}")
+            lines.append(f"  Thượng Quái: {thuong} | Hạ Quái: {ha}")
+            lines.append(f"  Thể Quái: {the_quai}({the_h}) | Dụng Quái: {dung_quai}({dung_h})")
+            lines.append(f"  Hào Động: {dong_hao_mh}")
+            if bien_que and bien_que != '?':
+                lines.append(f"  Biến Quẻ: {bien_que}")
+            
+            SINH = {'Kim': 'Thủy', 'Thủy': 'Mộc', 'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim'}
+            KHAC = {'Kim': 'Mộc', 'Mộc': 'Thổ', 'Thổ': 'Thủy', 'Thủy': 'Hỏa', 'Hỏa': 'Kim'}
+            
+            if the_h != '?' and dung_h != '?':
+                lines.append(f"\n  ⚔️ THỂ({the_quai}/{the_h}) ↔ DỤNG({dung_quai}/{dung_h}):")
+                if SINH.get(the_h) == dung_h:
+                    lines.append(f"    └ Thể SINH Dụng → Hao sức cho sự việc (trung bình)")
+                elif SINH.get(dung_h) == the_h:
+                    lines.append(f"    └ Dụng SINH Thể → Sự việc SINH LỢI cho người hỏi ✅")
+                elif KHAC.get(the_h) == dung_h:
+                    lines.append(f"    └ Thể KHẮC Dụng → Người hỏi KIỂM SOÁT sự việc ✅")
+                elif KHAC.get(dung_h) == the_h:
+                    lines.append(f"    └ Dụng KHẮC Thể → Sự việc GÂY HẠI cho người hỏi ❌")
+                elif the_h == dung_h:
+                    lines.append(f"    └ Thể Dụng TỶ HÒA → CÂN BẰNG")
+            
+            # Interpretation từ software
+            interp = mai_hoa_data.get('interpretation', '')
+            if interp and isinstance(interp, str) and len(interp) > 10:
+                noise_words = ['TikTok', 'Livestream', 'Bán Hàng', 'tiktok']
+                if not any(nw in interp for nw in noise_words):
+                    lines.append(f"\n  📖 GIẢI NGHĨA QUẺ:\n    {interp[:500]}")
+            
+            # Tượng quẻ
+            tuong = mai_hoa_data.get('tuong', '')
+            if tuong:
+                lines.append(f"\n  🔮 TƯỢNG: {tuong[:300]}")
+        
+        # MH factors
         mh_factors = od.get('v24_mh_factors', [])
         if mh_factors:
-            lines.append(f"\n📌 [MAI HOA] Yếu tố tác động:")
+            lines.append(f"\n  📊 YẾU TỐ ĐIỂM SỐ MAI HOA (Python tính sẵn):")
             for f in mh_factors:
                 lines.append(f"    • {f}")
+        
+        # ═══ E. THIẾT BẢN THẦN TOÁN — Nạp Âm + Kinh Dịch ═══
+        lines.append(f"\n{'='*50}")
+        lines.append(f"📌 [THIẾT BẢN THẦN TOÁN] Phân tích chi tiết")
+        lines.append(f"{'='*50}")
+        
+        tb_factors = od.get('v24_tb_factors', [])
+        if tb_factors:
+            for f in tb_factors:
+                lines.append(f"    • {f}")
+        
+        # Nạp Âm từ chart_data
+        if chart_data and isinstance(chart_data, dict):
+            can_n = chart_data.get('can_ngay', '')
+            chi_n = chart_data.get('chi_ngay', '')
+            if can_n and chi_n:
+                try:
+                    na = tra_nap_am(f"{can_n}{chi_n}")
+                    if na:
+                        lines.append(f"\n  📜 NẠP ÂM NGÀY ({can_n} {chi_n}): {na}")
+                        na_hanh = ''
+                        for h in ['Kim', 'Mộc', 'Thủy', 'Hỏa', 'Thổ']:
+                            if h in str(na):
+                                na_hanh = h
+                                break
+                        if na_hanh:
+                            lines.append(f"    └ Hành Nạp Âm: {na_hanh}")
+                        na_giai = NAP_AM_GIAI_THICH.get(na, '')
+                        if na_giai:
+                            lines.append(f"    └ Ý nghĩa: {na_giai}")
+                except Exception:
+                    pass
+        
+        v16_tb = od.get('v16_tb_score', '')
+        if v16_tb:
+            lines.append(f"\n  📊 SCORING: {v16_tb}")
+        
+        # ═══ F. ĐẠI LỤC NHÂM ═══
+        lines.append(f"\n{'='*50}")
+        lines.append(f"📌 [ĐẠI LỤC NHÂM] Phân tích chi tiết")
+        lines.append(f"{'='*50}")
+        
+        ln_factors = od.get('v24_ln_factors', [])
+        if ln_factors:
+            for f in ln_factors:
+                lines.append(f"    • {f}")
+        
+        v16_ln = od.get('v16_ln_score', '')
+        if v16_ln:
+            lines.append(f"\n  📊 SCORING: {v16_ln}")
+        
+        # ═══ G. THÁI ẤT THẦN SỐ ═══
+        lines.append(f"\n{'='*50}")
+        lines.append(f"📌 [THÁI ẤT THẦN SỐ] Phân tích chi tiết")
+        lines.append(f"{'='*50}")
+        
+        ta_factors = od.get('v24_ta_factors', [])
+        if ta_factors:
+            for f in ta_factors:
+                lines.append(f"    • {f}")
+        
+        v16_ta = od.get('v16_ta_score', '')
+        if v16_ta:
+            lines.append(f"\n  📊 SCORING: {v16_ta}")
         
         lines.append(f"\n{'='*50}")
         return "\n".join(lines)
