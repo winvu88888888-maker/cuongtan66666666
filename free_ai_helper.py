@@ -1486,31 +1486,68 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # V29.1: FULL DATA PROMPT — Gemini ĐỌC HẾT + Answer First
+            # V29.2: ANTI-HALLUCINATION PROMPT — Gemini = NARRATOR (trình bày), KHÔNG PHẢI analyst
             _wpct = od.get('v22_unified_strength', {}).get('unified_pct', 50) if offline_analysis_data else 50
             
+            # Pre-build conclusion (Gemini PHẢI dùng cái này, KHÔNG được đổi)
+            if _wpct >= 65:
+                _pre_conclusion = f"THUẬN LỢI — Xác suất thành công {_wpct}%"
+                _pre_icon = "✅"
+            elif _wpct >= 50:
+                _pre_conclusion = f"CẦN CÂN NHẮC — Tình thế chưa rõ ràng ({_wpct}%)"
+                _pre_icon = "🟡"
+            elif _wpct >= 35:
+                _pre_conclusion = f"KHÓ KHĂN — Nhiều yếu tố bất lợi ({_wpct}%)"
+                _pre_icon = "🔴"
+            else:
+                _pre_conclusion = f"RẤT KHÓ KHĂN — Xác suất bất lợi {100-_wpct}%"
+                _pre_icon = "🔴"
+            
+            # Pre-build verdict summary từ offline data
+            _km_v = od.get('ky_mon_verdict', '?') if offline_analysis_data else '?'
+            _lh_v = od.get('luc_hao_verdict', '?') if offline_analysis_data else '?'
+            _mh_v = od.get('mai_hoa_verdict', '?') if offline_analysis_data else '?'
+            _ln_v = od.get('luc_nham_verdict', '?') if offline_analysis_data else '?'
+            _ta_v = od.get('thai_at_verdict', '?') if offline_analysis_data else '?'
+            _km_r = od.get('ky_mon_reason', '') if offline_analysis_data else ''
+            _lh_r = od.get('luc_hao_reason', '') if offline_analysis_data else ''
+            _mh_r = od.get('mai_hoa_reason', '') if offline_analysis_data else ''
+            _ln_r = od.get('luc_nham_reason', '') if offline_analysis_data else ''
+            _ta_r = od.get('thai_at_reason', '') if offline_analysis_data else ''
+            
             deep_prompt = (
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — BẬC THẦY HUYỀN HỌC tổng hợp 6 phương pháp.\n"
-                f"NHIỆM VỤ: ĐỌC KỸ TOÀN BỘ dữ liệu offline bên dưới, rồi viết BÀI PHÁN QUYẾT.\n\n"
+                f"⛔⛔⛔ CẢNH BÁO TUYỆT ĐỐI ⛔⛔⛔\n"
+                f"BẠN KHÔNG PHẢI NHÀ PHÂN TÍCH. BẠN LÀ NGƯỜI TRÌNH BÀY KẾT QUẢ.\n"
+                f"Mọi phân tích ĐÃ ĐƯỢC PYTHON TÍNH XONG. Bạn CHỈ viết lại cho đẹp.\n"
+                f"NẾU BẠN BỊA THÊM BẤT KỲ THÔNG TIN NÀO KHÔNG CÓ TRONG DỮ LIỆU → BẠN SAI.\n\n"
                 
-                f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
-                f"1. CÂU ĐẦU TIÊN = KẾT LUẬN DỨT KHOÁT: CÓ/KHÔNG/NÊN/KHÔNG NÊN + % tin cậy\n"
-                f"   Weighted Score = {_wpct}% → {'CÁT/THUẬN LỢI' if _wpct >= 60 else 'HUNG/KHÓ KHĂN' if _wpct <= 45 else 'BÌNH/CÂN NHẮC'}\n"
-                f"2. CẤM nói: 'có vẻ', 'có thể', 'tùy trường hợp', 'cần xem thêm'\n"
-                f"3. Mỗi nhận định PHẢI kèm dẫn chứng cụ thể từ dữ liệu offline\n"
-                f"4. GIỌNG VĂN: Tự tin, dứt khoát, như thầy phong thủy giỏi tư vấn\n"
-                f"5. PHẢI phân tích ĐẦY ĐỦ cả 6 phương pháp (KM, LH, MH, TB, LN, TA)\n"
-                f"6. PHẢI tuân theo verdict offline. CẤM phán ngược.\n"
-                f"7. Cấu trúc bài viết:\n"
-                f"   - Dòng 1: 🏆 KẾT LUẬN + % + CÁT/HUNG\n"
-                f"   - Phần 2: Phân tích từng phương pháp (trích dẫn data cụ thể)\n"
-                f"   - Phần 3: Tổng hợp liên kết các phương pháp\n"
-                f"   - Phần 4: Lời khuyên cụ thể\n\n"
+                f"═══════════════════════════════════════\n"
+                f"NHIỆM VỤ DUY NHẤT: Viết bài trình bày KẾT QUẢ đã tính sẵn bên dưới.\n"
+                f"═══════════════════════════════════════\n\n"
                 
-                f"CÂU HỎI: {question}\n\n"
+                f"📌 KẾT LUẬN ĐÃ TÍNH (BẠN PHẢI GIỮ NGUYÊN, CẤM THAY ĐỔI):\n"
+                f"→ {_pre_icon} {_pre_conclusion}\n"
+                f"→ Kỳ Môn: {_km_v} — {_km_r}\n"
+                f"→ Lục Hào: {_lh_v} — {_lh_r}\n"
+                f"→ Mai Hoa: {_mh_v} — {_mh_r}\n"
+                f"→ Đại Lục Nhâm: {_ln_v} — {_ln_r}\n"
+                f"→ Thái Ất: {_ta_v} — {_ta_r}\n"
+                f"→ Weighted Score: {_wpct}%\n\n"
+                
+                f"⛔ QUY TẮC BẮT BUỘC:\n"
+                f"1. DÒNG ĐẦU TIÊN phải là: '🏆 KẾT LUẬN: {_pre_conclusion}'\n"
+                f"2. Sau đó trình bày TỪNG phương pháp (KM, LH, MH, LN, TA) — CHỈ dùng data ở trên\n"
+                f"3. CẤM TUYỆT ĐỐI: Bịa thêm sao, cửa, hào, quẻ mà KHÔNG có trong dữ liệu\n"
+                f"4. CẤM nói: 'có vẻ', 'có thể', 'cần xem thêm', 'tùy trường hợp'\n"
+                f"5. Mỗi câu PHẢI trích dẫn dữ liệu cụ thể: dẫn chứng → kết luận\n"
+                f"6. KHÔNG được phán ngược verdict đã tính\n"
+                f"7. Giọng văn: DỨT KHOÁT, tự tin, ngắn gọn\n\n"
+                
+                f"CÂU HỎI CỦA NGƯỜI DÙNG: {question}\n\n"
                 
                 f"{'='*60}\n"
-                f"DỮ LIỆU OFFLINE (Python tính chính xác 100%) — ĐỌC HẾT!\n"
+                f"TOÀN BỘ DỮ LIỆU OFFLINE (Python tính chính xác 100%)\n"
+                f"CHỈ ĐƯỢC TRÍCH DẪN TỪ ĐÂY — CẤM BỊA THÊM!\n"
                 f"{'='*60}\n"
                 f"{offline_ctx}"
                 f"{luc_nham_ctx}"

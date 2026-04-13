@@ -147,9 +147,9 @@ class GeminiQMDGHelper:
                 # V21.0: Thử TẤT CẢ model — mỗi model có quota RIÊNG!
                 try:
                     gen_config = genai_types.GenerateContentConfig(
-                        temperature=0.4,          # V20.5: Giảm từ 0.7→0.4 — tăng chính xác, giảm hallucination
-                        top_p=0.85,               # V20.5: Thu hẹp phạm vi — bám data hơn
-                        top_k=40,                 # V20.5: Ít sáng tạo hơn, chính xác hơn
+                        temperature=0.15,         # V29.2: Giảm mạnh — bám sát data 100%, CẤM sáng tạo/bịa
+                        top_p=0.7,                # V29.2: Thu hẹp tối đa — chỉ chọn từ ngữ chính xác nhất
+                        top_k=20,                 # V29.2: Giảm mạnh — bám sát data, không suy diễn
                         max_output_tokens=65536,  # V15.0: Max output cho phân tích chi tiết
                         safety_settings=safety_settings,
                     )
