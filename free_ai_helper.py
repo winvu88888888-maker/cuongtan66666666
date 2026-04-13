@@ -1243,8 +1243,11 @@ class FreeAIHelper:
     def _process_response(self, text):
         return text if text else "Không có phản hồi."
 
-    def _enforce_conclusion(self, raw_response, weighted_pct, dung_than):
-        """V29.0: Nếu Gemini KHÔNG có kết luận dứt khoát ở câu đầu → tự thêm conclusion block."""
+    def _enforce_conclusion(self, raw_response, weighted_pct, dung_than, question=''):
+        """V29.3: Đảm bảo phản hồi luôn có:
+        1. Câu trả lời CÓ/KHÔNG dứt khoát 
+        2. Hướng dẫn hành động cụ thể
+        """
         if not raw_response:
             return raw_response
         
@@ -1257,23 +1260,52 @@ class FreeAIHelper:
         has_conclusion = any(k in first_text for k in conclusion_markers)
         
         if not has_conclusion:
-            # Inject conclusion dựa trên weighted_pct
+            # V29.3: Inject CÓ/KHÔNG dứt khoát + hướng dẫn
             if weighted_pct >= 65:
-                conclusion = f"## ✅ KẾT LUẬN: THUẬN LỢI — Xác suất thành công {weighted_pct}%\n\n"
+                yes_no = "CÓ — NÊN TIẾN HÀNH"
+                icon = "✅"
+                guidance = (
+                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
+                    f"• Thời điểm hiện tại THUẬN LỢI ({weighted_pct}%), nên tiến hành.\n"
+                    f"• Dụng Thần ({dung_than}) đang được hỗ trợ tốt.\n"
+                    f"• Lưu ý: Theo dõi các yếu tố bất lợi nhỏ (nếu có) để phòng ngừa.\n"
+                )
             elif weighted_pct >= 50:
-                conclusion = f"## 🟡 KẾT LUẬN: CÂN NHẮC — Tình thế chưa rõ ràng ({weighted_pct}%)\n\n"
+                yes_no = "CÂN NHẮC — CÓ THỂ TIẾN HÀNH NHƯNG CẦN THẬN TRỌNG"
+                icon = "🟡"
+                guidance = (
+                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
+                    f"• Tình thế 50-50 ({weighted_pct}%), không rõ ràng thuận hay nghịch.\n"
+                    f"• Nếu BUỘC phải làm → hãy chuẩn bị kỹ, có phương án dự phòng.\n"
+                    f"• Nếu KHÔNG GẤP → nên chờ thời điểm tốt hơn.\n"
+                )
             elif weighted_pct >= 35:
-                conclusion = f"## 🔴 KẾT LUẬN: KHÓ KHĂN — Nhiều yếu tố bất lợi ({weighted_pct}%)\n\n"
+                yes_no = "KHÔNG — CHƯA NÊN TIẾN HÀNH"
+                icon = "🔴"
+                guidance = (
+                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
+                    f"• Nhiều yếu tố BẤT LỢI ({weighted_pct}%), KHÔNG nên vội.\n"
+                    f"• Dụng Thần ({dung_than}) đang bị khắc chế/suy yếu.\n"
+                    f"• Nên HOÃN lại, chờ thời điểm thuận lợi hơn.\n"
+                )
             else:
-                conclusion = f"## 🔴 KẾT LUẬN: RẤT KHÓ KHĂN — Xác suất bất lợi {100-weighted_pct}%\n\n"
+                yes_no = "KHÔNG — TUYỆT ĐỐI KHÔNG NÊN"
+                icon = "🔴"
+                guidance = (
+                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
+                    f"• Cực kỳ BẤT LỢI ({weighted_pct}%), rủi ro rất cao.\n"
+                    f"• Dụng Thần ({dung_than}) bị khắc nặng.\n"
+                    f"• TUYỆT ĐỐI KHÔNG nên tiến hành vào thời điểm này.\n"
+                    f"• Nên chờ ít nhất 1 tháng rồi hỏi lại.\n"
+                )
             
+            conclusion = f"## {icon} KẾT LUẬN: {yes_no} ({weighted_pct}%)\n\n{guidance}\n---\n\n"
             raw_response = conclusion + raw_response
         
         # V29.0: Loại bỏ từ vòng vo nếu Gemini vẫn dùng
         vague_phrases = ['có vẻ như', 'có thể ', 'tùy trường hợp', 'cần xem thêm', 'khó nói chính xác']
         for phrase in vague_phrases:
             if phrase in raw_response.lower():
-                # Thay thế bằng cách nói dứt khoát hơn
                 raw_response = raw_response.replace(phrase, '')
                 raw_response = raw_response.replace(phrase.capitalize(), '')
         
@@ -1486,24 +1518,28 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # V29.2: ANTI-HALLUCINATION PROMPT — Gemini = NARRATOR (trình bày), KHÔNG PHẢI analyst
+            # V29.3: FULL ANSWER PROMPT — Trả lời MỌI DẠNG câu hỏi dựa trên data thực tế
             _wpct = od.get('v22_unified_strength', {}).get('unified_pct', 50) if offline_analysis_data else 50
             
-            # Pre-build conclusion (Gemini PHẢI dùng cái này, KHÔNG được đổi)
+            # Pre-build conclusion
             if _wpct >= 65:
-                _pre_conclusion = f"THUẬN LỢI — Xác suất thành công {_wpct}%"
+                _pre_conclusion = f"CÓ — THUẬN LỢI ({_wpct}%)"
                 _pre_icon = "✅"
+                _pre_yesno = "CÓ"
             elif _wpct >= 50:
-                _pre_conclusion = f"CẦN CÂN NHẮC — Tình thế chưa rõ ràng ({_wpct}%)"
+                _pre_conclusion = f"CÂN NHẮC — Chưa rõ ràng ({_wpct}%)"
                 _pre_icon = "🟡"
+                _pre_yesno = "CÓ NHƯNG CẦN THẬN TRỌNG"
             elif _wpct >= 35:
-                _pre_conclusion = f"KHÓ KHĂN — Nhiều yếu tố bất lợi ({_wpct}%)"
+                _pre_conclusion = f"KHÔNG — Nhiều bất lợi ({_wpct}%)"
                 _pre_icon = "🔴"
+                _pre_yesno = "KHÔNG NÊN"
             else:
-                _pre_conclusion = f"RẤT KHÓ KHĂN — Xác suất bất lợi {100-_wpct}%"
+                _pre_conclusion = f"KHÔNG — Rất bất lợi ({_wpct}%)"
                 _pre_icon = "🔴"
+                _pre_yesno = "TUYỆT ĐỐI KHÔNG"
             
-            # Pre-build verdict summary từ offline data
+            # Pre-build verdict summary
             _km_v = od.get('ky_mon_verdict', '?') if offline_analysis_data else '?'
             _lh_v = od.get('luc_hao_verdict', '?') if offline_analysis_data else '?'
             _mh_v = od.get('mai_hoa_verdict', '?') if offline_analysis_data else '?'
@@ -1515,35 +1551,73 @@ class FreeAIHelper:
             _ln_r = od.get('luc_nham_reason', '') if offline_analysis_data else ''
             _ta_r = od.get('thai_at_reason', '') if offline_analysis_data else ''
             
+            # V29.3: Trích xuất thêm data quan trọng cho hướng dẫn chi tiết
+            _dung_than = od.get('dung_than', '?') if offline_analysis_data else '?'
+            _category = od.get('category_label', '?') if offline_analysis_data else '?'
+            _v15_timing = od.get('v15_timing', '') if offline_analysis_data else ''
+            _v15_timeline = od.get('v15_timeline', '') if offline_analysis_data else ''
+            _narrative = od.get('unified_narrative', '') if offline_analysis_data else ''
+            
             deep_prompt = (
-                f"⛔⛔⛔ CẢNH BÁO TUYỆT ĐỐI ⛔⛔⛔\n"
-                f"BẠN KHÔNG PHẢI NHÀ PHÂN TÍCH. BẠN LÀ NGƯỜI TRÌNH BÀY KẾT QUẢ.\n"
-                f"Mọi phân tích ĐÃ ĐƯỢC PYTHON TÍNH XONG. Bạn CHỈ viết lại cho đẹp.\n"
-                f"NẾU BẠN BỊA THÊM BẤT KỲ THÔNG TIN NÀO KHÔNG CÓ TRONG DỮ LIỆU → BẠN SAI.\n\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — người TRÌNH BÀY kết quả phân tích đã tính sẵn.\n"
+                f"Mọi dữ liệu ĐÃ ĐƯỢC PYTHON TÍNH CHÍNH XÁC 100%. Bạn CHỈ viết lại cho dễ hiểu.\n"
+                f"CẤM bịa thêm. CHỈ trích dẫn từ dữ liệu bên dưới.\n\n"
                 
-                f"═══════════════════════════════════════\n"
-                f"NHIỆM VỤ DUY NHẤT: Viết bài trình bày KẾT QUẢ đã tính sẵn bên dưới.\n"
-                f"═══════════════════════════════════════\n\n"
-                
-                f"📌 KẾT LUẬN ĐÃ TÍNH (BẠN PHẢI GIỮ NGUYÊN, CẤM THAY ĐỔI):\n"
-                f"→ {_pre_icon} {_pre_conclusion}\n"
+                f"{'='*60}\n"
+                f"📌 KẾT LUẬN ĐÃ TÍNH SẴN (BẮT BUỘC PHẢI DÙNG):\n"
+                f"{'='*60}\n"
+                f"→ {_pre_icon} TRẢ LỜI: {_pre_yesno}\n"
+                f"→ Xác suất: {_wpct}% — {_pre_conclusion}\n"
+                f"→ Dụng Thần: {_dung_than} | Nhóm: {_category}\n"
                 f"→ Kỳ Môn: {_km_v} — {_km_r}\n"
                 f"→ Lục Hào: {_lh_v} — {_lh_r}\n"
                 f"→ Mai Hoa: {_mh_v} — {_mh_r}\n"
                 f"→ Đại Lục Nhâm: {_ln_v} — {_ln_r}\n"
                 f"→ Thái Ất: {_ta_v} — {_ta_r}\n"
-                f"→ Weighted Score: {_wpct}%\n\n"
+                f"→ Thời điểm: {_v15_timing if _v15_timing else 'Xem trong data'}\n"
+                f"→ Tiến độ: {_v15_timeline if _v15_timeline else 'Xem trong data'}\n\n"
                 
-                f"⛔ QUY TẮC BẮT BUỘC:\n"
-                f"1. DÒNG ĐẦU TIÊN phải là: '🏆 KẾT LUẬN: {_pre_conclusion}'\n"
-                f"2. Sau đó trình bày TỪNG phương pháp (KM, LH, MH, LN, TA) — CHỈ dùng data ở trên\n"
-                f"3. CẤM TUYỆT ĐỐI: Bịa thêm sao, cửa, hào, quẻ mà KHÔNG có trong dữ liệu\n"
-                f"4. CẤM nói: 'có vẻ', 'có thể', 'cần xem thêm', 'tùy trường hợp'\n"
-                f"5. Mỗi câu PHẢI trích dẫn dữ liệu cụ thể: dẫn chứng → kết luận\n"
-                f"6. KHÔNG được phán ngược verdict đã tính\n"
-                f"7. Giọng văn: DỨT KHOÁT, tự tin, ngắn gọn\n\n"
+                f"{'='*60}\n"
+                f"⛔ CÁCH TRẢ LỜI (BẮT BUỘC):\n"
+                f"{'='*60}\n"
+                f"Bạn PHẢI viết theo cấu trúc sau:\n\n"
                 
-                f"CÂU HỎI CỦA NGƯỜI DÙNG: {question}\n\n"
+                f"**PHẦN 1 — KẾT LUẬN (2-3 dòng đầu tiên, QUAN TRỌNG NHẤT):**\n"
+                f"• Dòng 1: '🏆 KẾT LUẬN: [CÓ/KHÔNG] — [giải thích ngắn]'\n"
+                f"• Dòng 2: Trả lời TRỰC TIẾP câu hỏi của người dùng bằng ngôn ngữ đời thường\n"
+                f"  Ví dụ: 'Tôi có nên mua nhà?' → 'CÓ, thời điểm này thuận lợi để mua nhà'\n"
+                f"  Ví dụ: 'Bệnh có khỏi không?' → 'CÓ, bệnh sẽ KHỎI vì Tử Tôn vượng...'\n"
+                f"  Ví dụ: 'Khi nào tốt?' → 'Thời điểm tốt nhất là tháng X, ngày Y'\n"
+                f"  Ví dụ: 'Hướng nào tốt?' → 'Hướng ĐÔng Nam (Cung Tốn) thuận lợi nhất vì...'\n"
+                f"  Ví dụ: 'Người này có thật lòng?' → 'KHÔNG thật lòng vì Huyền Vũ lâm Ứng...'\n"
+                f"  Ví dụ: 'Tìm đồ ở đâu?' → 'Tìm ở hướng Tây, nơi có kim loại/trắng...'\n\n"
+                
+                f"**PHẦN 2 — BẰNG CHỨNG (trích từ data offline, 5 phương pháp):**\n"
+                f"Với MỖI phương pháp, viết 1-2 dòng:\n"
+                f"• 📌 Kỳ Môn: [trích data cụ thể] → [kết luận]\n"
+                f"• 📌 Lục Hào: [trích data cụ thể] → [kết luận]\n"
+                f"• 📌 Mai Hoa: [trích data cụ thể] → [kết luận]\n"
+                f"• 📌 Đại Lục Nhâm: [trích data] → [kết luận]\n"
+                f"• 📌 Thái Ất: [trích data] → [kết luận]\n\n"
+                
+                f"**PHẦN 3 — HƯỚNG DẪN CỤ THỂ (TÙY THEO DẠNG CÂU HỎI):**\n"
+                f"Dựa trên dữ liệu offline, đưa ra hướng dẫn CHI TIẾT:\n"
+                f"• Nếu hỏi CÓ/KHÔNG → Trả lời rõ CÓ hay KHÔNG + lý do từ data\n"
+                f"• Nếu hỏi KHI NÀO → Dùng Chi Giờ/Ngày/Tháng để suy ra thời điểm cụ thể\n"
+                f"• Nếu hỏi Ở ĐÂU → Dùng Cung vị (Ly=Nam, Khảm=Bắc, Chấn=Đông, Đoài=Tây, Tốn=ĐN, Khôn=TN, Cấn=ĐB, Càn=TB) + Quẻ tượng\n"
+                f"• Nếu hỏi về NGƯỜI → Dùng Lục Thần (Huyền Vũ=gian dối, Thanh Long=thật lòng, Câu Trần=chậm chạp) + Ứng hào\n"
+                f"• Nếu hỏi HƯỚNG → Dùng Cung Kỳ Môn + Quẻ Mai Hoa để chỉ hướng cụ thể\n"
+                f"• Nếu hỏi SỐ LƯỢNG → Dùng số từ data (Tuổi, Đếm số, Hào động)\n"
+                f"• Nếu hỏi SỨC KHỎE → Dùng Dụng Thần (Quan Quỷ=bệnh, Tử Tôn=thuốc) + Vượng/Suy\n"
+                f"• Nếu hỏi TÌNH CẢM → Dùng Thế-Ứng (Thế=ta, Ứng=đối phương), Lục Hợp/Lục Xung\n"
+                f"• Nếu hỏi TÀI CHÍNH → Dùng Thê Tài (Vượng=có tiền, Suy=mất tiền) + Huynh Đệ\n"
+                f"• Nếu hỏi KIỆN TỤNG → Dùng Thế khắc Ứng=thắng, Ứng khắc Thế=thua\n"
+                f"• Nếu hỏi DI CHUYỂN → Dùng Dịch Mã, Cửa (Khai/Hưu=đi được, Đỗ/Tử=không)\n\n"
+                
+                f"⛔ CẤM: bịa sao/cửa/hào/quẻ không có trong data. CẤM nói 'có vẻ', 'có thể'.\n"
+                f"⛔ PHẢI tuân theo verdict đã tính. CẤM phán ngược.\n\n"
+                
+                f"CÂU HỎI: {question}\n\n"
                 
                 f"{'='*60}\n"
                 f"TOÀN BỘ DỮ LIỆU OFFLINE (Python tính chính xác 100%)\n"
@@ -1573,8 +1647,8 @@ class FreeAIHelper:
             result = gemini._call_ai_raw(deep_prompt)
             
             if result and len(str(result)) > 50:
-                # V29.0: Enforce conclusion — đảm bảo Gemini có kết luận dứt khoát
-                result = self._enforce_conclusion(str(result), _wpct, od.get('dung_than', '?') if offline_analysis_data else '?')
+                # V29.3: Enforce conclusion — đảm bảo có CÓ/KHÔNG + hướng dẫn cụ thể
+                result = self._enforce_conclusion(str(result), _wpct, od.get('dung_than', '?') if offline_analysis_data else '?', question)
                 self.log_step("Online AI", "DONE", f"Gemini trả lời {len(str(result))} ký tự")
                 return str(result)
             
