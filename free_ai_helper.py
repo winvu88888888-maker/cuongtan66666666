@@ -1243,10 +1243,57 @@ class FreeAIHelper:
     def _process_response(self, text):
         return text if text else "Không có phản hồi."
 
+    def _detect_question_type(self, question):
+        """V29.4: Nhận dạng LOẠI câu hỏi để trả lời đúng trọng tâm."""
+        q = question.lower().strip()
+        
+        # TUỔI / SỐ LƯỢNG
+        if any(k in q for k in ['bao nhiêu tuổi', 'mấy tuổi', 'năm sinh', 'tuổi gì', 'tuổi con gì']):
+            return 'AGE'
+        if any(k in q for k in ['bao nhiêu', 'mấy cái', 'mấy người', 'số lượng', 'được bao nhiêu']):
+            return 'QUANTITY'
+        
+        # THỜI GIAN
+        if any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm nào', 'tháng mấy', 'năm nào', 
+                                  'ngày nào', 'mấy giờ', 'sớm hay muộn', 'nhanh hay chậm', 'bao lâu']):
+            return 'TIMING'
+        
+        # ĐỊA ĐIỂM / VỊ TRÍ
+        if any(k in q for k in ['ở đâu', 'chỗ nào', 'nơi nào', 'phương nào', 'tìm ở', 'vị trí', 
+                                  'mất ở đâu', 'để ở đâu', 'đi đâu']):
+            return 'LOCATION'
+        
+        # HƯỚNG
+        if any(k in q for k in ['hướng nào', 'hướng gì', 'hướng tốt', 'hướng nhà', 'phong thủy hướng']):
+            return 'DIRECTION'
+        
+        # NGƯỜI / TÍNH CÁCH
+        if any(k in q for k in ['người này', 'anh ấy', 'cô ấy', 'hắn ta', 'có thật lòng', 'có lừa', 
+                                  'tính cách', 'người đó', 'ai là', 'kẻ trộm', 'thủ phạm',
+                                  'có yêu', 'có thương', 'có chung thủy']):
+            return 'PERSON'
+        
+        # MÔ TẢ / ĐẶC ĐIỂM
+        if any(k in q for k in ['như thế nào', 'ra sao', 'thế nào', 'trông như', 'hình dáng', 'đặc điểm',
+                                  'màu gì', 'hình gì', 'chất liệu']):
+            return 'DESCRIBE'
+        
+        # SỨC KHỎE
+        if any(k in q for k in ['bệnh gì', 'đau ở đâu', 'bệnh nặng', 'sống được', 'chữa được']):
+            return 'HEALTH_DETAIL'
+        
+        # CÓ/KHÔNG (mặc định cho các câu hỏi khẳng định/phủ định)
+        if any(k in q for k in ['có nên', 'có được', 'có không', 'có thành', 'có đỗ', 'có khỏi',
+                                  'có tốt', 'có xấu', 'nên không', 'được không', 'thắng không',
+                                  'có mua', 'có bán', 'có đi', 'có lấy', 'có cưới']):
+            return 'YES_NO'
+        
+        # Mặc định: GENERAL (trả lời tổng hợp, không ép CÓ/KHÔNG)
+        return 'GENERAL'
+    
     def _enforce_conclusion(self, raw_response, weighted_pct, dung_than, question=''):
-        """V29.3: Đảm bảo phản hồi luôn có:
-        1. Câu trả lời CÓ/KHÔNG dứt khoát 
-        2. Hướng dẫn hành động cụ thể
+        """V29.4: Inject kết luận ĐÚNG TRỌNG TÂM theo loại câu hỏi.
+        KHÔNG ép CÓ/KHÔNG cho câu hỏi về tuổi, thời gian, vị trí, v.v.
         """
         if not raw_response:
             return raw_response
@@ -1255,54 +1302,102 @@ class FreeAIHelper:
         first_lines = raw_response.strip().split('\n')[:3]
         first_text = ' '.join(first_lines).upper()
         
-        conclusion_markers = ['CÓ', 'KHÔNG', 'NÊN', 'THUẬN LỢI', 'KHÓ KHĂN', 'CÁT', 'HUNG', 
-                              'ĐẠI CÁT', 'ĐẠI HUNG', 'CHƯA NÊN', 'KHÔNG NÊN', 'KẾT LUẬN']
+        conclusion_markers = ['KẾT LUẬN', 'TRẢ LỜI', '🏆', 'VERDICT']
         has_conclusion = any(k in first_text for k in conclusion_markers)
         
         if not has_conclusion:
-            # V29.3: Inject CÓ/KHÔNG dứt khoát + hướng dẫn
+            q_type = self._detect_question_type(question)
+            
+            # CÁT/HUNG label chung
             if weighted_pct >= 65:
-                yes_no = "CÓ — NÊN TIẾN HÀNH"
+                cat_hung = "CÁT — THUẬN LỢI"
                 icon = "✅"
-                guidance = (
-                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
-                    f"• Thời điểm hiện tại THUẬN LỢI ({weighted_pct}%), nên tiến hành.\n"
-                    f"• Dụng Thần ({dung_than}) đang được hỗ trợ tốt.\n"
-                    f"• Lưu ý: Theo dõi các yếu tố bất lợi nhỏ (nếu có) để phòng ngừa.\n"
-                )
             elif weighted_pct >= 50:
-                yes_no = "CÂN NHẮC — CÓ THỂ TIẾN HÀNH NHƯNG CẦN THẬN TRỌNG"
+                cat_hung = "BÌNH — CÂN NHẮC"
                 icon = "🟡"
-                guidance = (
-                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
-                    f"• Tình thế 50-50 ({weighted_pct}%), không rõ ràng thuận hay nghịch.\n"
-                    f"• Nếu BUỘC phải làm → hãy chuẩn bị kỹ, có phương án dự phòng.\n"
-                    f"• Nếu KHÔNG GẤP → nên chờ thời điểm tốt hơn.\n"
-                )
             elif weighted_pct >= 35:
-                yes_no = "KHÔNG — CHƯA NÊN TIẾN HÀNH"
+                cat_hung = "HUNG — KHÓ KHĂN"
                 icon = "🔴"
-                guidance = (
-                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
-                    f"• Nhiều yếu tố BẤT LỢI ({weighted_pct}%), KHÔNG nên vội.\n"
-                    f"• Dụng Thần ({dung_than}) đang bị khắc chế/suy yếu.\n"
-                    f"• Nên HOÃN lại, chờ thời điểm thuận lợi hơn.\n"
-                )
             else:
-                yes_no = "KHÔNG — TUYỆT ĐỐI KHÔNG NÊN"
+                cat_hung = "ĐẠI HUNG — RẤT BẤT LỢI"
                 icon = "🔴"
-                guidance = (
-                    f"**📋 HƯỚNG DẪN HÀNH ĐỘNG:**\n"
-                    f"• Cực kỳ BẤT LỢI ({weighted_pct}%), rủi ro rất cao.\n"
-                    f"• Dụng Thần ({dung_than}) bị khắc nặng.\n"
-                    f"• TUYỆT ĐỐI KHÔNG nên tiến hành vào thời điểm này.\n"
-                    f"• Nên chờ ít nhất 1 tháng rồi hỏi lại.\n"
+            
+            if q_type == 'YES_NO':
+                if weighted_pct >= 60:
+                    answer = "CÓ — NÊN TIẾN HÀNH"
+                elif weighted_pct >= 45:
+                    answer = "CẦN CÂN NHẮC KỸ"
+                else:
+                    answer = "KHÔNG — CHƯA NÊN"
+                conclusion = (
+                    f"## {icon} KẾT LUẬN: {answer} ({weighted_pct}%)\n"
+                    f"**Dụng Thần ({dung_than})** — Xu hướng tổng: {cat_hung}\n\n---\n\n"
                 )
             
-            conclusion = f"## {icon} KẾT LUẬN: {yes_no} ({weighted_pct}%)\n\n{guidance}\n---\n\n"
+            elif q_type == 'AGE':
+                conclusion = (
+                    f"## 🔢 KẾT LUẬN VỀ TUỔI:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Xem dữ liệu Chi, Hào, Quẻ trong phân tích bên dưới để xác định tuổi cụ thể)*\n\n---\n\n"
+                )
+            
+            elif q_type == 'TIMING':
+                conclusion = (
+                    f"## ⏰ KẾT LUẬN VỀ THỜI ĐIỂM:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Thời điểm thuận lợi dựa trên Chi Ngày/Tháng/Năm trong dữ liệu bên dưới)*\n\n---\n\n"
+                )
+            
+            elif q_type == 'LOCATION':
+                conclusion = (
+                    f"## 📍 KẾT LUẬN VỀ VỊ TRÍ:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Vị trí/hướng dựa trên Cung vị Kỳ Môn + Quẻ tượng Mai Hoa bên dưới)*\n\n---\n\n"
+                )
+            
+            elif q_type == 'DIRECTION':
+                conclusion = (
+                    f"## 🧭 KẾT LUẬN VỀ HƯỚNG:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Hướng tốt dựa trên Cung Kỳ Môn + Cửa Cát trong dữ liệu bên dưới)*\n\n---\n\n"
+                )
+            
+            elif q_type == 'PERSON':
+                conclusion = (
+                    f"## 👤 KẾT LUẬN VỀ NGƯỜI:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Đặc điểm người dựa trên Lục Thần, Ứng Hào, Quẻ tượng bên dưới)*\n\n---\n\n"
+                )
+            
+            elif q_type == 'DESCRIBE':
+                conclusion = (
+                    f"## 📋 KẾT LUẬN MÔ TẢ:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n\n---\n\n"
+                )
+            
+            elif q_type == 'HEALTH_DETAIL':
+                conclusion = (
+                    f"## 🏥 KẾT LUẬN VỀ SỨC KHỎE:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Bệnh: Quan Quỷ, Thuốc: Tử Tôn — xem vượng/suy trong dữ liệu)*\n\n---\n\n"
+                )
+            
+            elif q_type == 'QUANTITY':
+                conclusion = (
+                    f"## 🔢 KẾT LUẬN VỀ SỐ LƯỢNG:\n"
+                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
+                    f"*(Số lượng dựa trên Hào động, Chi, Quẻ số trong dữ liệu bên dưới)*\n\n---\n\n"
+                )
+            
+            else:  # GENERAL
+                conclusion = (
+                    f"## {icon} KẾT LUẬN TỔNG HỢP: {cat_hung} ({weighted_pct}%)\n"
+                    f"**Dụng Thần:** {dung_than}\n\n---\n\n"
+                )
+            
             raw_response = conclusion + raw_response
         
-        # V29.0: Loại bỏ từ vòng vo nếu Gemini vẫn dùng
+        # Loại bỏ từ vòng vo
         vague_phrases = ['có vẻ như', 'có thể ', 'tùy trường hợp', 'cần xem thêm', 'khó nói chính xác']
         for phrase in vague_phrases:
             if phrase in raw_response.lower():
@@ -1518,26 +1613,25 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # V29.3: FULL ANSWER PROMPT — Trả lời MỌI DẠNG câu hỏi dựa trên data thực tế
+            # V29.4: SMART ANSWER PROMPT — Nhận dạng loại câu hỏi → trả lời đúng trọng tâm
             _wpct = od.get('v22_unified_strength', {}).get('unified_pct', 50) if offline_analysis_data else 50
             
-            # Pre-build conclusion
+            # CÁT/HUNG chung
             if _wpct >= 65:
-                _pre_conclusion = f"CÓ — THUẬN LỢI ({_wpct}%)"
+                _cat_hung = f"CÁT — THUẬN LỢI ({_wpct}%)"
                 _pre_icon = "✅"
-                _pre_yesno = "CÓ"
             elif _wpct >= 50:
-                _pre_conclusion = f"CÂN NHẮC — Chưa rõ ràng ({_wpct}%)"
+                _cat_hung = f"BÌNH — CÂN NHẮC ({_wpct}%)"
                 _pre_icon = "🟡"
-                _pre_yesno = "CÓ NHƯNG CẦN THẬN TRỌNG"
             elif _wpct >= 35:
-                _pre_conclusion = f"KHÔNG — Nhiều bất lợi ({_wpct}%)"
+                _cat_hung = f"HUNG — KHÓ KHĂN ({_wpct}%)"
                 _pre_icon = "🔴"
-                _pre_yesno = "KHÔNG NÊN"
             else:
-                _pre_conclusion = f"KHÔNG — Rất bất lợi ({_wpct}%)"
+                _cat_hung = f"ĐẠI HUNG — RẤT BẤT LỢI ({_wpct}%)"
                 _pre_icon = "🔴"
-                _pre_yesno = "TUYỆT ĐỐI KHÔNG"
+            
+            # V29.4: Nhận dạng loại câu hỏi
+            _q_type = self._detect_question_type(question)
             
             # Pre-build verdict summary
             _km_v = od.get('ky_mon_verdict', '?') if offline_analysis_data else '?'
@@ -1551,12 +1645,67 @@ class FreeAIHelper:
             _ln_r = od.get('luc_nham_reason', '') if offline_analysis_data else ''
             _ta_r = od.get('thai_at_reason', '') if offline_analysis_data else ''
             
-            # V29.3: Trích xuất thêm data quan trọng cho hướng dẫn chi tiết
             _dung_than = od.get('dung_than', '?') if offline_analysis_data else '?'
             _category = od.get('category_label', '?') if offline_analysis_data else '?'
             _v15_timing = od.get('v15_timing', '') if offline_analysis_data else ''
             _v15_timeline = od.get('v15_timeline', '') if offline_analysis_data else ''
-            _narrative = od.get('unified_narrative', '') if offline_analysis_data else ''
+            
+            # V29.4: Build hướng dẫn TRẢ LỜI theo loại câu hỏi
+            _answer_guide = {
+                'YES_NO': (
+                    f"Câu hỏi dạng CÓ/KHÔNG. "
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN: {'CÓ — NÊN TIẾN HÀNH' if _wpct >= 60 else 'CẦN CÂN NHẮC' if _wpct >= 45 else 'KHÔNG — CHƯA NÊN'}'\n"
+                    f"Sau đó giải thích tại sao CÓ hoặc KHÔNG dựa trên data."
+                ),
+                'AGE': (
+                    f"Câu hỏi về TUỔI/NĂM SINH. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ TUỔI: [tuổi/năm sinh cụ thể]'\n"
+                    f"Dùng Chi (Tý=Chuột, Sửu=Trâu, Dần=Hổ, Mão=Mèo, Thìn=Rồng, Tị=Rắn, Ngọ=Ngựa, Mùi=Dê, Thân=Khỉ, Dậu=Gà, Tuất=Chó, Hợi=Heo) để suy ra tuổi.\n"
+                    f"Dùng Hào Ứng (đối phương) hoặc Hào Thế (bản thân) + Chi để xác định."
+                ),
+                'TIMING': (
+                    f"Câu hỏi về THỜI GIAN. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ THỜI ĐIỂM: [tháng/ngày/giờ cụ thể]'\n"
+                    f"Dùng Chi Ngày/Tháng/Giờ trong data để suy ra thời điểm.\n"
+                    f"Dùng Ngũ Hành tương sinh/tương khắc + Trường Sinh để tính nhanh/chậm."
+                ),
+                'LOCATION': (
+                    f"Câu hỏi về VỊ TRÍ/ĐỊA ĐIỂM. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ VỊ TRÍ: [hướng/nơi cụ thể]'\n"
+                    f"Dùng Cung: Ly=Nam, Khảm=Bắc, Chấn=Đông, Đoài=Tây, Tốn=Đông Nam, Khôn=Tây Nam, Cấn=Đông Bắc, Càn=Tây Bắc.\n"
+                    f"Dùng Quẻ tượng + Ngũ Hành để mô tả đặc điểm nơi đó (Kim=trắng/kim loại, Mộc=cây/xanh, Thủy=nước/đen, Hỏa=đỏ/điện, Thổ=đất/vàng)."
+                ),
+                'DIRECTION': (
+                    f"Câu hỏi về HƯỚNG. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ HƯỚNG: [hướng tốt nhất cụ thể]'\n"
+                    f"Dùng Cung Kỳ Môn có Cửa Cát (Khai/Hưu/Sinh) + Sao Cát (Thiên Phụ/Thiên Tâm)."
+                ),
+                'PERSON': (
+                    f"Câu hỏi về NGƯỜI/TÍNH CÁCH. KHÔNG trả lời CÓ/KHÔNG nếu không phải câu hỏi yes/no!\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ NGƯỜI: [mô tả tính cách/đặc điểm]'\n"
+                    f"Dùng: Huyền Vũ=gian dối, Thanh Long=thật lòng, Bạch Hổ=dữ dằn, Câu Trần=chậm chạp, Chu Tước=hay nói.\n"
+                    f"Dùng Hào Ứng + Chi để mô tả đối phương."
+                ),
+                'HEALTH_DETAIL': (
+                    f"Câu hỏi về CHI TIẾT SỨC KHỎE. Trả lời về BỘ PHẬN/LOẠI BỆNH.\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ SỨC KHỎE: [bệnh gì/chữa được không]'\n"
+                    f"Dùng: Quan Quỷ=bệnh (Chi nào = bộ phận nào), Tử Tôn=thuốc (Vượng=chữa được, Suy=khó)."
+                ),
+                'QUANTITY': (
+                    f"Câu hỏi về SỐ LƯỢNG. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ SỐ: [con số cụ thể]'\n"
+                    f"Dùng Hào động, Quẻ số, Chi + Ngũ Hành để tính."
+                ),
+                'DESCRIBE': (
+                    f"Câu hỏi MÔ TẢ. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"Dòng 1 PHẢI là: '🏆 MÔ TẢ: [đặc điểm cụ thể từ quẻ]'\n"
+                    f"Dùng Quẻ tượng + Ngũ Hành + Lục Thần để mô tả."
+                ),
+            }
+            _guide = _answer_guide.get(_q_type, (
+                f"Trả lời tổng hợp. Dòng 1: '🏆 KẾT LUẬN: {_cat_hung}'\n"
+                f"Phân tích dựa trên data offline, đưa ra kết luận + hướng dẫn cụ thể."
+            ))
             
             deep_prompt = (
                 f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — người TRÌNH BÀY kết quả phân tích đã tính sẵn.\n"
@@ -1564,58 +1713,29 @@ class FreeAIHelper:
                 f"CẤM bịa thêm. CHỈ trích dẫn từ dữ liệu bên dưới.\n\n"
                 
                 f"{'='*60}\n"
-                f"📌 KẾT LUẬN ĐÃ TÍNH SẴN (BẮT BUỘC PHẢI DÙNG):\n"
+                f"📌 VERDICT ĐÃ TÍNH SẴN:\n"
                 f"{'='*60}\n"
-                f"→ {_pre_icon} TRẢ LỜI: {_pre_yesno}\n"
-                f"→ Xác suất: {_wpct}% — {_pre_conclusion}\n"
+                f"→ {_pre_icon} Xu hướng tổng: {_cat_hung}\n"
                 f"→ Dụng Thần: {_dung_than} | Nhóm: {_category}\n"
                 f"→ Kỳ Môn: {_km_v} — {_km_r}\n"
                 f"→ Lục Hào: {_lh_v} — {_lh_r}\n"
                 f"→ Mai Hoa: {_mh_v} — {_mh_r}\n"
                 f"→ Đại Lục Nhâm: {_ln_v} — {_ln_r}\n"
                 f"→ Thái Ất: {_ta_v} — {_ta_r}\n"
-                f"→ Thời điểm: {_v15_timing if _v15_timing else 'Xem trong data'}\n"
-                f"→ Tiến độ: {_v15_timeline if _v15_timeline else 'Xem trong data'}\n\n"
+                f"→ Thời điểm: {_v15_timing if _v15_timing else 'Xem trong data'}\n\n"
                 
                 f"{'='*60}\n"
-                f"⛔ CÁCH TRẢ LỜI (BẮT BUỘC):\n"
+                f"⛔ LOẠI CÂU HỎI ĐÃ NHẬN DẠNG: {_q_type}\n"
+                f"⛔ CÁCH TRẢ LỜI BẮT BUỘC:\n"
                 f"{'='*60}\n"
-                f"Bạn PHẢI viết theo cấu trúc sau:\n\n"
+                f"{_guide}\n\n"
                 
-                f"**PHẦN 1 — KẾT LUẬN (2-3 dòng đầu tiên, QUAN TRỌNG NHẤT):**\n"
-                f"• Dòng 1: '🏆 KẾT LUẬN: [CÓ/KHÔNG] — [giải thích ngắn]'\n"
-                f"• Dòng 2: Trả lời TRỰC TIẾP câu hỏi của người dùng bằng ngôn ngữ đời thường\n"
-                f"  Ví dụ: 'Tôi có nên mua nhà?' → 'CÓ, thời điểm này thuận lợi để mua nhà'\n"
-                f"  Ví dụ: 'Bệnh có khỏi không?' → 'CÓ, bệnh sẽ KHỎI vì Tử Tôn vượng...'\n"
-                f"  Ví dụ: 'Khi nào tốt?' → 'Thời điểm tốt nhất là tháng X, ngày Y'\n"
-                f"  Ví dụ: 'Hướng nào tốt?' → 'Hướng ĐÔng Nam (Cung Tốn) thuận lợi nhất vì...'\n"
-                f"  Ví dụ: 'Người này có thật lòng?' → 'KHÔNG thật lòng vì Huyền Vũ lâm Ứng...'\n"
-                f"  Ví dụ: 'Tìm đồ ở đâu?' → 'Tìm ở hướng Tây, nơi có kim loại/trắng...'\n\n"
-                
-                f"**PHẦN 2 — BẰNG CHỨNG (trích từ data offline, 5 phương pháp):**\n"
-                f"Với MỖI phương pháp, viết 1-2 dòng:\n"
-                f"• 📌 Kỳ Môn: [trích data cụ thể] → [kết luận]\n"
-                f"• 📌 Lục Hào: [trích data cụ thể] → [kết luận]\n"
-                f"• 📌 Mai Hoa: [trích data cụ thể] → [kết luận]\n"
-                f"• 📌 Đại Lục Nhâm: [trích data] → [kết luận]\n"
-                f"• 📌 Thái Ất: [trích data] → [kết luận]\n\n"
-                
-                f"**PHẦN 3 — HƯỚNG DẪN CỤ THỂ (TÙY THEO DẠNG CÂU HỎI):**\n"
-                f"Dựa trên dữ liệu offline, đưa ra hướng dẫn CHI TIẾT:\n"
-                f"• Nếu hỏi CÓ/KHÔNG → Trả lời rõ CÓ hay KHÔNG + lý do từ data\n"
-                f"• Nếu hỏi KHI NÀO → Dùng Chi Giờ/Ngày/Tháng để suy ra thời điểm cụ thể\n"
-                f"• Nếu hỏi Ở ĐÂU → Dùng Cung vị (Ly=Nam, Khảm=Bắc, Chấn=Đông, Đoài=Tây, Tốn=ĐN, Khôn=TN, Cấn=ĐB, Càn=TB) + Quẻ tượng\n"
-                f"• Nếu hỏi về NGƯỜI → Dùng Lục Thần (Huyền Vũ=gian dối, Thanh Long=thật lòng, Câu Trần=chậm chạp) + Ứng hào\n"
-                f"• Nếu hỏi HƯỚNG → Dùng Cung Kỳ Môn + Quẻ Mai Hoa để chỉ hướng cụ thể\n"
-                f"• Nếu hỏi SỐ LƯỢNG → Dùng số từ data (Tuổi, Đếm số, Hào động)\n"
-                f"• Nếu hỏi SỨC KHỎE → Dùng Dụng Thần (Quan Quỷ=bệnh, Tử Tôn=thuốc) + Vượng/Suy\n"
-                f"• Nếu hỏi TÌNH CẢM → Dùng Thế-Ứng (Thế=ta, Ứng=đối phương), Lục Hợp/Lục Xung\n"
-                f"• Nếu hỏi TÀI CHÍNH → Dùng Thê Tài (Vượng=có tiền, Suy=mất tiền) + Huynh Đệ\n"
-                f"• Nếu hỏi KIỆN TỤNG → Dùng Thế khắc Ứng=thắng, Ứng khắc Thế=thua\n"
-                f"• Nếu hỏi DI CHUYỂN → Dùng Dịch Mã, Cửa (Khai/Hưu=đi được, Đỗ/Tử=không)\n\n"
-                
-                f"⛔ CẤM: bịa sao/cửa/hào/quẻ không có trong data. CẤM nói 'có vẻ', 'có thể'.\n"
-                f"⛔ PHẢI tuân theo verdict đã tính. CẤM phán ngược.\n\n"
+                f"⛔ QUY TẮC CHUNG:\n"
+                f"• CẤM bịa sao/cửa/hào/quẻ không có trong data\n"
+                f"• CẤM nói 'có vẻ', 'có thể', 'cần xem thêm'\n"
+                f"• PHẢI tuân theo verdict đã tính. CẤM phán ngược\n"
+                f"• Phần 2: Trích dẫn bằng chứng từ 5 phương pháp (KM, LH, MH, LN, TA)\n"
+                f"• Phần 3: Hướng dẫn hành động cụ thể cho người hỏi\n\n"
                 
                 f"CÂU HỎI: {question}\n\n"
                 
