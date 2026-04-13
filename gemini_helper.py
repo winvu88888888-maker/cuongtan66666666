@@ -150,7 +150,7 @@ class GeminiQMDGHelper:
                         temperature=0.15,         # V29.2: Giảm mạnh — bám sát data 100%, CẤM sáng tạo/bịa
                         top_p=0.7,                # V29.2: Thu hẹp tối đa — chỉ chọn từ ngữ chính xác nhất
                         top_k=20,                 # V29.2: Giảm mạnh — bám sát data, không suy diễn
-                        max_output_tokens=65536,  # V15.0: Max output cho phân tích chi tiết
+                        max_output_tokens=8192,   # V30.0: Giảm từ 65536 → buộc Gemini viết TẬP TRUNG, không lan man
                         safety_settings=safety_settings,
                     )
                     resp = client.models.generate_content(

@@ -1292,119 +1292,65 @@ class FreeAIHelper:
         return 'GENERAL'
     
     def _enforce_conclusion(self, raw_response, weighted_pct, dung_than, question=''):
-        """V29.4: Inject kết luận ĐÚNG TRỌNG TÂM theo loại câu hỏi.
-        KHÔNG ép CÓ/KHÔNG cho câu hỏi về tuổi, thời gian, vị trí, v.v.
+        """V30.0: Kiểm tra + bổ sung kết luận. KHÔNG PHÁ KẾT QUẢ GEMINI.
+        - Check 15 dòng đầu thay vì 3
+        - KHÔNG xóa từ ngữ tự nhiên (bỏ string replace phá nghĩa)
+        - Nếu Gemini đã có kết luận → giữ nguyên 100%
+        - Nếu Gemini thiếu kết luận → APPEND footer (không prepend)
         """
         if not raw_response:
             return raw_response
         
-        # Check nếu câu đầu tiên đã có kết luận rõ ràng
-        first_lines = raw_response.strip().split('\n')[:3]
+        # V30.0: Check 15 dòng đầu — phạm vi rộng hơn để phát hiện kết luận Gemini
+        first_lines = raw_response.strip().split('\n')[:15]
         first_text = ' '.join(first_lines).upper()
         
-        conclusion_markers = ['KẾT LUẬN', 'TRẢ LỜI', '🏆', 'VERDICT']
+        conclusion_markers = ['KẾT LUẬN', 'TRẢ LỜI', '🏆', 'VERDICT', 'KẾT QUẢ', 'NHẬN ĐỊNH']
         has_conclusion = any(k in first_text for k in conclusion_markers)
         
-        if not has_conclusion:
-            q_type = self._detect_question_type(question)
-            
-            # CÁT/HUNG label chung
-            if weighted_pct >= 65:
-                cat_hung = "CÁT — THUẬN LỢI"
-                icon = "✅"
-            elif weighted_pct >= 50:
-                cat_hung = "BÌNH — CÂN NHẮC"
-                icon = "🟡"
-            elif weighted_pct >= 35:
-                cat_hung = "HUNG — KHÓ KHĂN"
-                icon = "🔴"
+        if has_conclusion:
+            # Gemini ĐÃ CÓ kết luận → KHÔNG ĐÈ LÊN, giữ nguyên 100%
+            return raw_response
+        
+        # Gemini THIẾU kết luận → tạo footer APPEND vào CUỐI
+        q_type = self._detect_question_type(question)
+        
+        # CÁT/HUNG label
+        if weighted_pct >= 65:
+            cat_hung = "CÁT — THUẬN LỢI"
+            icon = "✅"
+        elif weighted_pct >= 50:
+            cat_hung = "BÌNH — CÂN NHẮC"
+            icon = "🟡"
+        elif weighted_pct >= 35:
+            cat_hung = "HUNG — KHÓ KHĂN"
+            icon = "🔴"
+        else:
+            cat_hung = "ĐẠI HUNG — RẤT BẤT LỢI"
+            icon = "🔴"
+        
+        # V30.0: Footer cho từng loại câu hỏi
+        if q_type == 'YES_NO':
+            if weighted_pct >= 60:
+                answer = "CÓ — NÊN TIẾN HÀNH"
+            elif weighted_pct >= 45:
+                answer = "CẦN CÂN NHẮC KỸ"
             else:
-                cat_hung = "ĐẠI HUNG — RẤT BẤT LỢI"
-                icon = "🔴"
-            
-            if q_type == 'YES_NO':
-                if weighted_pct >= 60:
-                    answer = "CÓ — NÊN TIẾN HÀNH"
-                elif weighted_pct >= 45:
-                    answer = "CẦN CÂN NHẮC KỸ"
-                else:
-                    answer = "KHÔNG — CHƯA NÊN"
-                conclusion = (
-                    f"## {icon} KẾT LUẬN: {answer} ({weighted_pct}%)\n"
-                    f"**Dụng Thần ({dung_than})** — Xu hướng tổng: {cat_hung}\n\n---\n\n"
-                )
-            
-            elif q_type == 'AGE':
-                conclusion = (
-                    f"## 🔢 KẾT LUẬN VỀ TUỔI:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Xem dữ liệu Chi, Hào, Quẻ trong phân tích bên dưới để xác định tuổi cụ thể)*\n\n---\n\n"
-                )
-            
-            elif q_type == 'TIMING':
-                conclusion = (
-                    f"## ⏰ KẾT LUẬN VỀ THỜI ĐIỂM:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Thời điểm thuận lợi dựa trên Chi Ngày/Tháng/Năm trong dữ liệu bên dưới)*\n\n---\n\n"
-                )
-            
-            elif q_type == 'LOCATION':
-                conclusion = (
-                    f"## 📍 KẾT LUẬN VỀ VỊ TRÍ:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Vị trí/hướng dựa trên Cung vị Kỳ Môn + Quẻ tượng Mai Hoa bên dưới)*\n\n---\n\n"
-                )
-            
-            elif q_type == 'DIRECTION':
-                conclusion = (
-                    f"## 🧭 KẾT LUẬN VỀ HƯỚNG:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Hướng tốt dựa trên Cung Kỳ Môn + Cửa Cát trong dữ liệu bên dưới)*\n\n---\n\n"
-                )
-            
-            elif q_type == 'PERSON':
-                conclusion = (
-                    f"## 👤 KẾT LUẬN VỀ NGƯỜI:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Đặc điểm người dựa trên Lục Thần, Ứng Hào, Quẻ tượng bên dưới)*\n\n---\n\n"
-                )
-            
-            elif q_type == 'DESCRIBE':
-                conclusion = (
-                    f"## 📋 KẾT LUẬN MÔ TẢ:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n\n---\n\n"
-                )
-            
-            elif q_type == 'HEALTH_DETAIL':
-                conclusion = (
-                    f"## 🏥 KẾT LUẬN VỀ SỨC KHỎE:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Bệnh: Quan Quỷ, Thuốc: Tử Tôn — xem vượng/suy trong dữ liệu)*\n\n---\n\n"
-                )
-            
-            elif q_type == 'QUANTITY':
-                conclusion = (
-                    f"## 🔢 KẾT LUẬN VỀ SỐ LƯỢNG:\n"
-                    f"**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)\n"
-                    f"*(Số lượng dựa trên Hào động, Chi, Quẻ số trong dữ liệu bên dưới)*\n\n---\n\n"
-                )
-            
-            else:  # GENERAL
-                conclusion = (
-                    f"## {icon} KẾT LUẬN TỔNG HỢP: {cat_hung} ({weighted_pct}%)\n"
-                    f"**Dụng Thần:** {dung_than}\n\n---\n\n"
-                )
-            
-            raw_response = conclusion + raw_response
+                answer = "KHÔNG — CHƯA NÊN"
+            footer = f"\n\n---\n## {icon} KẾT LUẬN BỔ SUNG: {answer} ({weighted_pct}%)\n**Dụng Thần ({dung_than})** — Xu hướng: {cat_hung}"
+        elif q_type == 'AGE':
+            footer = f"\n\n---\n## 🔢 KẾT LUẬN BỔ SUNG VỀ TUỔI\n**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)"
+        elif q_type == 'TIMING':
+            footer = f"\n\n---\n## ⏰ KẾT LUẬN BỔ SUNG VỀ THỜI ĐIỂM\n**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)"
+        elif q_type == 'LOCATION':
+            footer = f"\n\n---\n## 📍 KẾT LUẬN BỔ SUNG VỀ VỊ TRÍ\n**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)"
+        elif q_type == 'HEALTH_DETAIL':
+            footer = f"\n\n---\n## 🏥 KẾT LUẬN BỔ SUNG VỀ SỨC KHỎE\n**Dụng Thần:** {dung_than} | Xu hướng: {cat_hung} ({weighted_pct}%)"
+        else:
+            footer = f"\n\n---\n## {icon} KẾT LUẬN BỔ SUNG: {cat_hung} ({weighted_pct}%)\n**Dụng Thần:** {dung_than}"
         
-        # Loại bỏ từ vòng vo
-        vague_phrases = ['có vẻ như', 'có thể ', 'tùy trường hợp', 'cần xem thêm', 'khó nói chính xác']
-        for phrase in vague_phrases:
-            if phrase in raw_response.lower():
-                raw_response = raw_response.replace(phrase, '')
-                raw_response = raw_response.replace(phrase.capitalize(), '')
-        
-        return raw_response
+        # V30.0: APPEND footer vào CUỐI — không phá cấu trúc phân tích Gemini
+        return raw_response + footer
 
 
 
@@ -1471,11 +1417,19 @@ class FreeAIHelper:
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
-        """V11.1: AI Online là phân tích CHÍNH.
-        Nhận raw data từ 3 phương pháp + offline analysis → phân tích sâu, loại bỏ vô lý."""
+        """V30.0: AI Online — CẤU TRÚC XML PROMPT + SINGLE SOURCE OF TRUTH.
+        
+        Triết lý V30.0:
+        1. XML tags phân vùng rõ ràng (Gemini đọc HẾT, biết đâu là verdict bắt buộc)
+        2. SINGLE SOURCE — chỉ dùng data từ offline engine (không gọi _get_paranoid_context)
+        3. Pre-extract data cụ thể cho từng loại câu hỏi
+        4. Output format template bắt buộc
+        """
         try:
             import streamlit as st
-            # V13.0: Fix key lookup — session_state uses 'gemini_key', not 'api_key'
+            import json
+            
+            # V13.0: Fix key lookup
             api_key = self._api_key
             if not api_key:
                 api_key = getattr(st, 'session_state', {}).get('gemini_key')
@@ -1492,131 +1446,132 @@ class FreeAIHelper:
             
             from gemini_helper import GeminiQMDGHelper
             gemini = GeminiQMDGHelper(api_key)
-            # V13.0: Bỏ test_connection() — tiết kiệm 1 API call/câu hỏi
             
-            self.log_step("Online AI", "RUNNING", f"Gemini đang phân tích sâu: {question[:50]}...")
+            self.log_step("Online AI", "RUNNING", f"Gemini V30.0 XML prompt: {question[:50]}...")
             
-            # === BUILD DEEP ANALYSIS PROMPT (V13.0 — Deep Reasoning) ===
-            offline_ctx = ""
+            # === V30.0: BUILD XML-STRUCTURED PROMPT ===
+            od = offline_analysis_data or {}
             rag_prompt = ""
             
-            # V25.0: Truy Xuất Án Lệ Thực Tế (RAG FEEDBACK LOOP)
-            if self.feedback_rag and offline_analysis_data:
-                dung_than = offline_analysis_data.get('dung_than', '')
+            # V25.0: RAG Feedback
+            if self.feedback_rag and od:
+                dung_than = od.get('dung_than', '')
                 exps = self.feedback_rag.search_experience(question, dung_than, top_k=2)
                 rag_prompt = self.feedback_rag.build_rag_prompt(exps)
-
-            if offline_analysis_data:
-                od = offline_analysis_data
-                
-                # V29.1: VERDICT BLOCK ĐẦY ĐỦ — Gemini đọc HẾT
-                offline_ctx += self._build_verdict_compact_block(od)
-                
-                # Thông tin bổ sung
-                if od.get('count_numbers'):
-                    offline_ctx += f"Kết quả đếm số: {od['count_numbers']}\n"
-                if od.get('age_numbers'):
-                    offline_ctx += f"Kết quả tuổi: {od['age_numbers']}\n"
-                
-                # V29.1: TẤT CẢ bằng chứng tác động (KHÔNG giới hạn)
-                if od.get('impact_evidence'):
-                    offline_ctx += f"\n--- BẰNG CHỨNG TÁC ĐỘNG (ĐẦY ĐỦ) ---\n"
-                    for i, e in enumerate(od['impact_evidence']):
-                        offline_ctx += f"• [{i+1}] {e}\n"
-                
-                # Unified narrative (kết luận offline)
-                if od.get('unified_narrative'):
-                    offline_ctx += f"\n--- KẾT LUẬN AI OFFLINE ---\n"
-                    offline_ctx += od['unified_narrative'] + "\n"
-                
-                # V29.1: TOÀN BỘ offline report (KHÔNG cắt bớt)
-                if od.get('full_offline_report'):
-                    offline_ctx += f"\n--- CHI TIẾT PHÂN TÍCH OFFLINE (ĐẦY ĐỦ) ---\n"
-                    offline_ctx += od['full_offline_report'] + "\n"
-                
-                # V29.1: Thêm scoring details nếu có
-                if od.get('scoring_details'):
-                    offline_ctx += f"\n--- SCORING DETAILS ---\n"
-                    for method, detail in od['scoring_details'].items():
-                        offline_ctx += f"[{method}]: {detail}\n"
-                
-                # V29.1: Thêm detective deduction nếu có
-                if od.get('detective_deduction'):
-                    offline_ctx += f"\n--- PHÂN TÍCH TƯƠNG QUAN ĐA PHƯƠNG PHÁP ---\n"
-                    offline_ctx += od['detective_deduction'] + "\n"
-                
-                # V29.1: Thêm element impact analysis nếu có
-                if od.get('element_impact'):
-                    offline_ctx += f"\n--- NGŨ HÀNH TÁC ĐỘNG ---\n"
-                    offline_ctx += od['element_impact'] + "\n"
-                
-                # V29.1: Lục Thân relationship nếu có
-                if od.get('luc_than_table'):
-                    offline_ctx += f"\n--- LỤC THÂN QUAN HỆ ---\n"
-                    offline_ctx += od['luc_than_table'] + "\n"
-                
-                offline_ctx += f"=== HẾT DỮ LIỆU OFFLINE ===\n\n"
             
-            # V14.0: Inject Đại Lục Nhâm + Thái Ất data
-            luc_nham_ctx = ""
-            thai_at_ctx = ""
-            try:
-                from dai_luc_nham import tinh_dai_luc_nham, phan_tich_chuyen_sau
-                if chart_data and isinstance(chart_data, dict) and 'can_ngay' in chart_data:
-                    ln_data = tinh_dai_luc_nham(
-                        chart_data.get('can_ngay', 'Giáp'),
-                        chart_data.get('chi_ngay', 'Tý'),
-                        chart_data.get('chi_gio', 'Ngọ'),
-                        chart_data.get('tiet_khi', 'Đông Chí')
-                    )
-                    ln_deep = phan_tich_chuyen_sau(ln_data, question, topic or 'chung')
-                    # V29.1: TẤT CẢ details Lục Nhâm (KHÔNG giới hạn)
-                    luc_nham_ctx = "\n=== [5] ĐẠI LỤC NHÂM (ĐẦY ĐỦ) ===\n"
-                    for d in ln_deep.get('details', []):
-                        luc_nham_ctx += f"{d}\n"
-                    luc_nham_ctx += f"VERDICT LỤC NHÂM: {ln_deep.get('verdict', '?')}\n"
-                    # Thêm raw data Lục Nhâm
-                    if ln_deep.get('tu_khoa'):
-                        luc_nham_ctx += f"Tứ Khóa: {ln_deep.get('tu_khoa')}\n"
-                    if ln_deep.get('tam_truyen'):
-                        luc_nham_ctx += f"Tam Truyền: {ln_deep.get('tam_truyen')}\n"
-            except Exception:
-                pass
+            # ══════════════════════════════════════════════════════
+            # V30.0: PHẦN 0 — Pre-extract data CỤ THỂ cho answer guide
+            # ══════════════════════════════════════════════════════
+            _q_type = self._detect_question_type(question)
+            _wpct = od.get('v22_unified_strength', {}).get('unified_pct', 50)
+            _dung_than = od.get('dung_than', '?')
+            _category = od.get('category_label', '?')
             
-            try:
-                from thai_at_than_so import tinh_thai_at_than_so
-                import datetime
-                now = datetime.datetime.now()
-                ta_can = chart_data.get('can_ngay', 'Giáp') if chart_data and isinstance(chart_data, dict) else 'Giáp'
-                ta_chi = chart_data.get('chi_ngay', 'Tý') if chart_data and isinstance(chart_data, dict) else 'Tý'
-                ta_data = tinh_thai_at_than_so(now.year, now.month, ta_can, ta_chi)
-                # V29.1: Thêm chi tiết Thái Ất
-                thai_at_ctx = "\n=== [6] THÁI ẤT THẦN SỐ (ĐẦY ĐỦ) ===\n"
-                ta_cung = ta_data.get('thai_at_cung', {})
-                thai_at_ctx += f"Cung {ta_cung.get('cung', '?')} ({ta_cung.get('ten_cung', '?')}) — {ta_cung.get('hanh_cung', '?')}\n"
-                thai_at_ctx += f"Lý: {ta_cung.get('ly', '?')}\n"
-                thai_at_ctx += f"VERDICT THÁI ẤT: {ta_data.get('luan_giai', {}).get('verdict', '?')}\n"
-                # Thêm Bát Tướng
-                bat_tuong = ta_data.get('bat_tuong', {})
-                if bat_tuong:
-                    thai_at_ctx += "Bát Tướng:\n"
-                    for bt_name, bt_info in bat_tuong.items():
-                        thai_at_ctx += f"  {bt_name}: Cung {bt_info.get('cung','?')} — {bt_info.get('cat_hung','?')}\n"
-                # Thêm Cách Cục
-                cach_cuc = ta_data.get('cach_cuc', [])
-                if cach_cuc:
-                    thai_at_ctx += f"Cách Cục: {', '.join(cach_cuc)}\n"
-                # Luận giải details
-                lg = ta_data.get('luan_giai', {})
-                for d in lg.get('details', []):
-                    thai_at_ctx += f"  {d}\n"
-            except Exception:
-                pass
+            # Pre-extract: Hào Ứng, Hào Thế, DT hào, Chi cụ thể
+            _ung_chi = '?'
+            _ung_hanh = '?'
+            _ung_hao_num = '?'
+            _the_chi = '?'
+            _the_hanh = '?'
+            _the_hao_num = '?'
+            _dt_chi = '?'
+            _dt_hanh_lh = '?'
+            _dt_hao_num = '?'
+            _dt_vuong_suy = '?'
+            _dong_hao_list = []
             
-            # V29.4: SMART ANSWER PROMPT — Nhận dạng loại câu hỏi → trả lời đúng trọng tâm
-            _wpct = od.get('v22_unified_strength', {}).get('unified_pct', 50) if offline_analysis_data else 50
+            CHI_LIST = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
             
-            # CÁT/HUNG chung
+            if luc_hao_data and isinstance(luc_hao_data, dict):
+                ban = luc_hao_data.get('ban', {})
+                haos = ban.get('haos') or ban.get('details', [])
+                _dong_hao_list = luc_hao_data.get('dong_hao', [])
+                
+                for hao in haos:
+                    lt = hao.get('luc_than', '') or hao.get('luc_thu', '')
+                    tu = hao.get('the_ung', '') or hao.get('marker', '')
+                    cc = str(hao.get('can_chi', ''))
+                    hao_num = hao.get('hao', '?')
+                    hanh = hao.get('ngu_hanh', '?')
+                    
+                    # Extract Chi from can_chi
+                    h_chi = '?'
+                    for c in CHI_LIST:
+                        if c in cc:
+                            h_chi = c
+                            break
+                    
+                    if 'Ứng' in str(tu):
+                        _ung_chi = h_chi
+                        _ung_hanh = hanh
+                        _ung_hao_num = hao_num
+                    if 'Thế' in str(tu):
+                        _the_chi = h_chi
+                        _the_hanh = hanh
+                        _the_hao_num = hao_num
+                    
+                    # DT hào
+                    if lt and (_dung_than in lt or (_dung_than == 'Bản Thân' and 'Thế' in str(tu))):
+                        _dt_chi = h_chi
+                        _dt_hanh_lh = hanh
+                        _dt_hao_num = hao_num
+                        _dt_vuong_suy = hao.get('vuong_suy', '?')
+            
+            # Pre-extract: Cung BT + Cung DT từ Kỳ Môn
+            _bt_cung = '?'
+            _bt_sao = '?'
+            _bt_cua = '?'
+            _bt_than = '?'
+            _dt_cung_km = '?'
+            _dt_sao_km = '?'
+            _dt_cua_km = '?'
+            _huong_map = {1:'Bắc', 2:'Tây Nam', 3:'Đông', 4:'Đông Nam', 5:'Trung Tâm', 6:'Tây Bắc', 7:'Tây', 8:'Đông Bắc', 9:'Nam'}
+            
+            if chart_data and isinstance(chart_data, dict):
+                can_ngay = chart_data.get('can_ngay', '')
+                can_thien_ban = chart_data.get('can_thien_ban', {})
+                thien_ban = chart_data.get('thien_ban', {})
+                nhan_ban = chart_data.get('nhan_ban', {})
+                than_ban = chart_data.get('than_ban', {})
+                
+                # Tìm cung BT
+                for cn, cv in can_thien_ban.items():
+                    if cv == can_ngay:
+                        _bt_cung = cn
+                        break
+                if _bt_cung == '?' and can_ngay == 'Giáp':
+                    for cn, cv in can_thien_ban.items():
+                        if cv == 'Mậu':
+                            _bt_cung = cn
+                            break
+                
+                if _bt_cung != '?':
+                    ci = int(_bt_cung) if str(_bt_cung).isdigit() else None
+                    if ci:
+                        _bt_sao = str(thien_ban.get(ci, thien_ban.get(str(ci), '?')))
+                        _bt_cua = str(nhan_ban.get(ci, nhan_ban.get(str(ci), '?')))
+                        _bt_than = str(than_ban.get(ci, than_ban.get(str(ci), '?')))
+                
+                # Tìm cung DT (Can Giờ)
+                can_gio = chart_data.get('can_gio', '')
+                if can_gio and can_gio != can_ngay:
+                    for cn, cv in can_thien_ban.items():
+                        if cv == can_gio:
+                            _dt_cung_km = cn
+                            break
+                if _dt_cung_km != '?':
+                    ci2 = int(_dt_cung_km) if str(_dt_cung_km).isdigit() else None
+                    if ci2:
+                        _dt_sao_km = str(thien_ban.get(ci2, thien_ban.get(str(ci2), '?')))
+                        _dt_cua_km = str(nhan_ban.get(ci2, nhan_ban.get(str(ci2), '?')))
+            
+            # Pre-extract: Mai Hoa Thể/Dụng
+            _mh_the = od.get('mh_the', '?')
+            _mh_dung = od.get('mh_dung', '?')
+            
+            # ══════════════════════════════════════════════════════
+            # V30.0: CÁT/HUNG label
+            # ══════════════════════════════════════════════════════
             if _wpct >= 65:
                 _cat_hung = f"CÁT — THUẬN LỢI ({_wpct}%)"
                 _pre_icon = "✅"
@@ -1630,146 +1585,351 @@ class FreeAIHelper:
                 _cat_hung = f"ĐẠI HUNG — RẤT BẤT LỢI ({_wpct}%)"
                 _pre_icon = "🔴"
             
-            # V29.4: Nhận dạng loại câu hỏi
-            _q_type = self._detect_question_type(question)
+            # Verdict summaries
+            _km_v = od.get('ky_mon_verdict', '?')
+            _lh_v = od.get('luc_hao_verdict', '?')
+            _mh_v = od.get('mai_hoa_verdict', '?')
+            _ln_v = od.get('luc_nham_verdict', '?')
+            _ta_v = od.get('thai_at_verdict', '?')
+            _km_r = od.get('ky_mon_reason', '')
+            _lh_r = od.get('luc_hao_reason', '')
+            _mh_r = od.get('mai_hoa_reason', '')
+            _ln_r = od.get('luc_nham_reason', '')
+            _ta_r = od.get('thai_at_reason', '')
+            _v15_timing = od.get('v15_timing', '')
+            _v15_timeline = od.get('v15_timeline', '')
             
-            # Pre-build verdict summary
-            _km_v = od.get('ky_mon_verdict', '?') if offline_analysis_data else '?'
-            _lh_v = od.get('luc_hao_verdict', '?') if offline_analysis_data else '?'
-            _mh_v = od.get('mai_hoa_verdict', '?') if offline_analysis_data else '?'
-            _ln_v = od.get('luc_nham_verdict', '?') if offline_analysis_data else '?'
-            _ta_v = od.get('thai_at_verdict', '?') if offline_analysis_data else '?'
-            _km_r = od.get('ky_mon_reason', '') if offline_analysis_data else ''
-            _lh_r = od.get('luc_hao_reason', '') if offline_analysis_data else ''
-            _mh_r = od.get('mai_hoa_reason', '') if offline_analysis_data else ''
-            _ln_r = od.get('luc_nham_reason', '') if offline_analysis_data else ''
-            _ta_r = od.get('thai_at_reason', '') if offline_analysis_data else ''
+            # ══════════════════════════════════════════════════════
+            # V30.0: Answer Guide VỚI DATA CỤ THỂ ĐÃ TRÍCH XUẤT
+            # ══════════════════════════════════════════════════════
+            _huong_dt = _huong_map.get(int(_dt_cung_km), '?') if str(_dt_cung_km).isdigit() else '?'
+            _huong_bt = _huong_map.get(int(_bt_cung), '?') if str(_bt_cung).isdigit() else '?'
             
-            _dung_than = od.get('dung_than', '?') if offline_analysis_data else '?'
-            _category = od.get('category_label', '?') if offline_analysis_data else '?'
-            _v15_timing = od.get('v15_timing', '') if offline_analysis_data else ''
-            _v15_timeline = od.get('v15_timeline', '') if offline_analysis_data else ''
-            
-            # V29.4: Build hướng dẫn TRẢ LỜI theo loại câu hỏi
             _answer_guide = {
                 'YES_NO': (
-                    f"Câu hỏi dạng CÓ/KHÔNG. "
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN: {'CÓ — NÊN TIẾN HÀNH' if _wpct >= 60 else 'CẦN CÂN NHẮC' if _wpct >= 45 else 'KHÔNG — CHƯA NÊN'}'\n"
-                    f"Sau đó giải thích tại sao CÓ hoặc KHÔNG dựa trên data."
+                    f"Câu hỏi dạng CÓ/KHÔNG.\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Weighted Score = {_wpct}% → {'CÓ — NÊN TIẾN HÀNH' if _wpct >= 60 else 'CẦN CÂN NHẮC' if _wpct >= 45 else 'KHÔNG — CHƯA NÊN'}\n"
+                    f"  • DT Lục Hào: Hào {_dt_hao_num}, Chi={_dt_chi}({_dt_hanh_lh}), {_dt_vuong_suy}\n"
+                    f"  • BT (Kỳ Môn): Cung {_bt_cung}, Sao={_bt_sao}, Cửa={_bt_cua}\n"
+                    f"  • Mai Hoa: Thể={_mh_the}, Dụng={_mh_dung}\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN: {'CÓ — NÊN TIẾN HÀNH' if _wpct >= 60 else 'CẦN CÂN NHẮC' if _wpct >= 45 else 'KHÔNG — CHƯA NÊN'} ({_wpct}%)'\n"
+                    f"Sau đó TRÍCH DẪN data cụ thể giải thích TẠI SAO."
                 ),
                 'AGE': (
                     f"Câu hỏi về TUỔI/NĂM SINH. KHÔNG trả lời CÓ/KHÔNG!\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ TUỔI: [tuổi/năm sinh cụ thể]'\n"
-                    f"Dùng Chi (Tý=Chuột, Sửu=Trâu, Dần=Hổ, Mão=Mèo, Thìn=Rồng, Tị=Rắn, Ngọ=Ngựa, Mùi=Dê, Thân=Khỉ, Dậu=Gà, Tuất=Chó, Hợi=Heo) để suy ra tuổi.\n"
-                    f"Dùng Hào Ứng (đối phương) hoặc Hào Thế (bản thân) + Chi để xác định."
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Hào Ứng (đối phương): Hào {_ung_hao_num}, Chi={_ung_chi}({_ung_hanh})\n"
+                    f"  • Hào Thế (bản thân): Hào {_the_hao_num}, Chi={_the_chi}({_the_hanh})\n"
+                    f"  • DT Hào: {_dt_hao_num}, Chi={_dt_chi}\n"
+                    f"  • Tuổi python tính: {od.get('age_numbers', [])}\n"
+                    f"  • CHI → TUỔI: Tý=Chuột, Sửu=Trâu, Dần=Hổ, Mão=Mèo, Thìn=Rồng, Tị=Rắn, Ngọ=Ngựa, Mùi=Dê, Thân=Khỉ, Dậu=Gà, Tuất=Chó, Hợi=Heo\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ TUỔI: [tuổi cụ thể từ data trên]'"
                 ),
                 'TIMING': (
-                    f"Câu hỏi về THỜI GIAN. KHÔNG trả lời CÓ/KHÔNG!\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ THỜI ĐIỂM: [tháng/ngày/giờ cụ thể]'\n"
-                    f"Dùng Chi Ngày/Tháng/Giờ trong data để suy ra thời điểm.\n"
-                    f"Dùng Ngũ Hành tương sinh/tương khắc + Trường Sinh để tính nhanh/chậm."
+                    f"Câu hỏi về THỜI GIAN/KHI NÀO. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Weighted Score: {_wpct}% → {'NHANH (1-7 ngày)' if _wpct >= 60 else 'TRUNG BÌNH (1-3 tháng)' if _wpct >= 40 else 'CHẬM (3-6 tháng+)'}\n"
+                    f"  • Hào Động: {_dong_hao_list}\n"
+                    f"  • DT ({_dung_than}): Chi={_dt_chi}, {_dt_vuong_suy}\n"
+                    f"  • V15 Timing: {_v15_timing if _v15_timing else 'xem evidence_data'}\n"
+                    f"  • V15 Timeline: {_v15_timeline if _v15_timeline else 'xem evidence_data'}\n"
+                    f"  • 12 Trường Sinh: {od.get('v22_unified_strength', {}).get('ts_stage', '?')}\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ THỜI ĐIỂM: [thời gian cụ thể]'"
                 ),
                 'LOCATION': (
-                    f"Câu hỏi về VỊ TRÍ/ĐỊA ĐIỂM. KHÔNG trả lời CÓ/KHÔNG!\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ VỊ TRÍ: [hướng/nơi cụ thể]'\n"
-                    f"Dùng Cung: Ly=Nam, Khảm=Bắc, Chấn=Đông, Đoài=Tây, Tốn=Đông Nam, Khôn=Tây Nam, Cấn=Đông Bắc, Càn=Tây Bắc.\n"
-                    f"Dùng Quẻ tượng + Ngũ Hành để mô tả đặc điểm nơi đó (Kim=trắng/kim loại, Mộc=cây/xanh, Thủy=nước/đen, Hỏa=đỏ/điện, Thổ=đất/vàng)."
+                    f"Câu hỏi về VỊ TRÍ/Ở ĐÂU. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Cung Sự Việc (KM): Cung {_dt_cung_km} → Hướng {_huong_dt}\n"
+                    f"  • Sao={_dt_sao_km}, Cửa={_dt_cua_km}\n"
+                    f"  • Cung BT (KM): Cung {_bt_cung} → Hướng {_huong_bt}\n"
+                    f"  • Cung→Hướng: 1=Bắc, 2=Tây Nam, 3=Đông, 4=Đông Nam, 5=Trung, 6=Tây Bắc, 7=Tây, 8=Đông Bắc, 9=Nam\n"
+                    f"  • Ngũ Hành mô tả: Kim=trắng/kim loại, Mộc=cây/xanh, Thủy=nước/đen, Hỏa=đỏ/điện, Thổ=đất/vàng\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ VỊ TRÍ: Hướng {_huong_dt} (Cung {_dt_cung_km})'"
                 ),
                 'DIRECTION': (
-                    f"Câu hỏi về HƯỚNG. KHÔNG trả lời CÓ/KHÔNG!\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ HƯỚNG: [hướng tốt nhất cụ thể]'\n"
-                    f"Dùng Cung Kỳ Môn có Cửa Cát (Khai/Hưu/Sinh) + Sao Cát (Thiên Phụ/Thiên Tâm)."
+                    f"Câu hỏi về HƯỚNG TỐT. KHÔNG trả lời CÓ/KHÔNG!\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Cung BT: {_bt_cung} ({_huong_bt}), Sao={_bt_sao}, Cửa={_bt_cua}\n"
+                    f"  • Cung DT: {_dt_cung_km} ({_huong_dt}), Sao={_dt_sao_km}, Cửa={_dt_cua_km}\n"
+                    f"  • CỬA CÁT: Khai Môn (khởi đầu), Hưu Môn (nghỉ ngơi), Sinh Môn (tài lộc)\n"
+                    f"  • CỬA HUNG: Tử Môn, Kinh Môn, Thương Môn\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ HƯỚNG: [hướng tốt nhất + cửa cát]'"
                 ),
                 'PERSON': (
-                    f"Câu hỏi về NGƯỜI/TÍNH CÁCH. KHÔNG trả lời CÓ/KHÔNG nếu không phải câu hỏi yes/no!\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ NGƯỜI: [mô tả tính cách/đặc điểm]'\n"
-                    f"Dùng: Huyền Vũ=gian dối, Thanh Long=thật lòng, Bạch Hổ=dữ dằn, Câu Trần=chậm chạp, Chu Tước=hay nói.\n"
-                    f"Dùng Hào Ứng + Chi để mô tả đối phương."
+                    f"Câu hỏi về NGƯỜI/TÍNH CÁCH.\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Hào Ứng (đối phương): Hào {_ung_hao_num}, Chi={_ung_chi}({_ung_hanh})\n"
+                    f"  • Hào Thế (bản thân): Hào {_the_hao_num}, Chi={_the_chi}({_the_hanh})\n"
+                    f"  • Lục Thần: Huyền Vũ=gian dối, Thanh Long=thật lòng, Bạch Hổ=dữ, Câu Trần=chậm, Chu Tước=nói nhiều\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ NGƯỜI: [mô tả đặc điểm]'"
                 ),
                 'HEALTH_DETAIL': (
-                    f"Câu hỏi về CHI TIẾT SỨC KHỎE. Trả lời về BỘ PHẬN/LOẠI BỆNH.\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ SỨC KHỎE: [bệnh gì/chữa được không]'\n"
-                    f"Dùng: Quan Quỷ=bệnh (Chi nào = bộ phận nào), Tử Tôn=thuốc (Vượng=chữa được, Suy=khó)."
+                    f"Câu hỏi về SỨC KHỎE.\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • DT ({_dung_than}): Hào {_dt_hao_num}, Chi={_dt_chi}({_dt_hanh_lh}), {_dt_vuong_suy}\n"
+                    f"  • Weighted Score: {_wpct}%\n"
+                    f"  • Quan Quỷ = bệnh, Tử Tôn = thuốc (Vượng=chữa được, Suy=khó)\n"
+                    f"  • Chi→Bộ phận: Tý=thận/bàng quang, Sửu=bụng/dạ dày, Dần=tay/mật, Mão=gan, Thìn=vai, Tị=tim, Ngọ=mặt/mắt, Mùi=dạ dày, Thân=phổi, Dậu=miệng/răng, Tuất=chân, Hợi=thận\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ SỨC KHỎE: [tình trạng + bệnh gì]'"
                 ),
                 'QUANTITY': (
                     f"Câu hỏi về SỐ LƯỢNG. KHÔNG trả lời CÓ/KHÔNG!\n"
-                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ SỐ: [con số cụ thể]'\n"
-                    f"Dùng Hào động, Quẻ số, Chi + Ngũ Hành để tính."
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • Kết quả đếm: {od.get('count_numbers', [])}\n"
+                    f"  • Hào Động: {_dong_hao_list}\n"
+                    f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN VỀ SỐ: [con số cụ thể]'"
                 ),
                 'DESCRIBE': (
-                    f"Câu hỏi MÔ TẢ. KHÔNG trả lời CÓ/KHÔNG!\n"
-                    f"Dòng 1 PHẢI là: '🏆 MÔ TẢ: [đặc điểm cụ thể từ quẻ]'\n"
-                    f"Dùng Quẻ tượng + Ngũ Hành + Lục Thần để mô tả."
+                    f"Câu hỏi MÔ TẢ.\n"
+                    f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                    f"  • DT ({_dung_than}): Chi={_dt_chi}({_dt_hanh_lh}), {_dt_vuong_suy}\n"
+                    f"  • BT (KM): Cung {_bt_cung}, Sao={_bt_sao}, Cửa={_bt_cua}\n"
+                    f"  • Mai Hoa: Thể={_mh_the}, Dụng={_mh_dung}\n"
+                    f"Dòng 1 PHẢI là: '🏆 MÔ TẢ: [đặc điểm cụ thể từ quẻ]'"
                 ),
             }
             _guide = _answer_guide.get(_q_type, (
-                f"Trả lời tổng hợp. Dòng 1: '🏆 KẾT LUẬN: {_cat_hung}'\n"
-                f"Phân tích dựa trên data offline, đưa ra kết luận + hướng dẫn cụ thể."
+                f"Trả lời tổng hợp.\n"
+                f"DỮ LIỆU ĐÃ TRÍCH XUẤT:\n"
+                f"  • Weighted Score: {_wpct}% → {_cat_hung}\n"
+                f"  • DT ({_dung_than}): Hào {_dt_hao_num}, Chi={_dt_chi}, {_dt_vuong_suy}\n"
+                f"  • BT (KM): Cung {_bt_cung}, Sao={_bt_sao}, Cửa={_bt_cua}\n"
+                f"Dòng 1 PHẢI là: '🏆 KẾT LUẬN: {_cat_hung}'"
             ))
             
-            deep_prompt = (
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — người TRÌNH BÀY kết quả phân tích đã tính sẵn.\n"
-                f"Mọi dữ liệu ĐÃ ĐƯỢC PYTHON TÍNH CHÍNH XÁC 100%. Bạn CHỈ viết lại cho dễ hiểu.\n"
-                f"CẤM bịa thêm. CHỈ trích dẫn từ dữ liệu bên dưới.\n\n"
-                
-                f"{'='*60}\n"
-                f"📌 VERDICT ĐÃ TÍNH SẴN:\n"
-                f"{'='*60}\n"
-                f"→ {_pre_icon} Xu hướng tổng: {_cat_hung}\n"
-                f"→ Dụng Thần: {_dung_than} | Nhóm: {_category}\n"
-                f"→ Kỳ Môn: {_km_v} — {_km_r}\n"
-                f"→ Lục Hào: {_lh_v} — {_lh_r}\n"
-                f"→ Mai Hoa: {_mh_v} — {_mh_r}\n"
-                f"→ Đại Lục Nhâm: {_ln_v} — {_ln_r}\n"
-                f"→ Thái Ất: {_ta_v} — {_ta_r}\n"
-                f"→ Thời điểm: {_v15_timing if _v15_timing else 'Xem trong data'}\n\n"
-                
-                f"{'='*60}\n"
-                f"⛔ LOẠI CÂU HỎI ĐÃ NHẬN DẠNG: {_q_type}\n"
-                f"⛔ CÁCH TRẢ LỜI BẮT BUỘC:\n"
-                f"{'='*60}\n"
-                f"{_guide}\n\n"
-                
-                f"⛔ QUY TẮC CHUNG:\n"
-                f"• CẤM bịa sao/cửa/hào/quẻ không có trong data\n"
-                f"• CẤM nói 'có vẻ', 'có thể', 'cần xem thêm'\n"
-                f"• PHẢI tuân theo verdict đã tính. CẤM phán ngược\n"
-                f"• Phần 2: Trích dẫn bằng chứng từ 5 phương pháp (KM, LH, MH, LN, TA)\n"
-                f"• Phần 3: Hướng dẫn hành động cụ thể cho người hỏi\n\n"
-                
-                f"CÂU HỎI: {question}\n\n"
-                
-                f"{'='*60}\n"
-                f"TOÀN BỘ DỮ LIỆU OFFLINE (Python tính chính xác 100%)\n"
-                f"CHỈ ĐƯỢC TRÍCH DẪN TỪ ĐÂY — CẤM BỊA THÊM!\n"
-                f"{'='*60}\n"
-                f"{offline_ctx}"
-                f"{luc_nham_ctx}"
-                f"{thai_at_ctx}\n"
-            )
+            # ══════════════════════════════════════════════════════
+            # V30.0: BUILD EVIDENCE DATA — TOÀN BỘ, KHÔNG CẮT GIẢM
+            # Chia thành sub-sections XML cho từng phương pháp
+            # ══════════════════════════════════════════════════════
+            evidence_sections = []
             
-            # V29.1: raw_que_data ĐẦY ĐỦ (KHÔNG cắt bớt)
-            raw_que_data = ""
+            # A. Verdict Compact Block (verdict chính thức)
+            evidence_sections.append(self._build_verdict_compact_block(od))
+            
+            # B. Bằng chứng tác động (TẤT CẢ)
+            if od.get('impact_evidence'):
+                evidence_sections.append("\n<impact_evidence>")
+                for i, e in enumerate(od['impact_evidence']):
+                    evidence_sections.append(f"[{i+1}] {e}")
+                evidence_sections.append("</impact_evidence>")
+            
+            # C. Count/Age numbers
+            if od.get('count_numbers'):
+                evidence_sections.append(f"\n<count_data>Kết quả đếm: {od['count_numbers']}</count_data>")
+            if od.get('age_numbers'):
+                evidence_sections.append(f"\n<age_data>Kết quả tuổi: {od['age_numbers']}</age_data>")
+            
+            # D. Unified narrative (kết luận offline)
+            if od.get('unified_narrative'):
+                evidence_sections.append(f"\n<offline_conclusion>\n{od['unified_narrative']}\n</offline_conclusion>")
+            
+            # E. V24 factors — toàn bộ yếu tố tác động chia theo phương pháp
+            for fkey, fname in [('v23_lh_factors', 'luc_hao_factors'), 
+                                ('v24_km_factors', 'ky_mon_factors'),
+                                ('v24_mh_factors', 'mai_hoa_factors'),
+                                ('v24_tb_factors', 'thiet_ban_factors'),
+                                ('v24_ln_factors', 'luc_nham_factors'),
+                                ('v24_ta_factors', 'thai_at_factors')]:
+                factors = od.get(fkey, [])
+                if factors:
+                    evidence_sections.append(f"\n<{fname}>")
+                    for f in factors:
+                        evidence_sections.append(f"• {f}")
+                    evidence_sections.append(f"</{fname}>")
+            
+            # F. V16 Scoring details
+            for skey, sname in [('v16_lh_score', 'luc_hao_scoring'), ('v16_mh_score', 'mai_hoa_scoring'),
+                                ('v16_tb_score', 'thiet_ban_scoring'), ('v16_ln_score', 'luc_nham_scoring'),
+                                ('v16_ta_score', 'thai_at_scoring')]:
+                sval = od.get(skey, '')
+                if sval:
+                    evidence_sections.append(f"\n<{sname}>{sval}</{sname}>")
+            
+            # G. V15 Analysis summaries
+            for vkey, vname in [('v15_bt_score', 'bt_cung_analysis'), ('v15_dt_score', 'dt_cung_analysis'),
+                                ('v15_timeline', 'timeline'), ('v15_timing', 'timing_analysis')]:
+                vval = od.get(vkey, '')
+                if vval:
+                    evidence_sections.append(f"\n<{vname}>{vval}</{vname}>")
+            
+            # H. V17 Method routing
+            if od.get('v17_routing'):
+                evidence_sections.append(f"\n<method_routing>{od['v17_routing']}</method_routing>")
+            
+            # I. V18 Detective deduction
+            if od.get('detective_deduction'):
+                evidence_sections.append(f"\n<detective_deduction>\n{od['detective_deduction']}\n</detective_deduction>")
+            
+            # J. TOÀN BỘ offline report (V30.0: giữ nguyên, KHÔNG cắt)
+            if od.get('full_offline_report'):
+                evidence_sections.append(f"\n<full_offline_report>\n{od['full_offline_report']}\n</full_offline_report>")
+            
+            evidence_data = "\n".join(evidence_sections)
+            
+            # ══════════════════════════════════════════════════════
+            # V30.0: INJECT RAW DATA GỐC (thay thế _get_paranoid_context)
+            # Cùng nguồn data với offline engine → KHÔNG MÂU THUẪN
+            # ══════════════════════════════════════════════════════
+            raw_input_data = ""
             try:
-                raw_que_data = gemini._get_paranoid_context(
-                    chart_data, topic or "Chung", question, None, mai_hoa_data, luc_hao_data
-                )
+                if chart_data and isinstance(chart_data, dict):
+                    # Chỉ lấy fields quan trọng (không serialize toàn bộ object lớn)
+                    chart_essential = {}
+                    for k in ['can_ngay', 'chi_ngay', 'can_gio', 'chi_gio', 'can_thang', 'chi_thang',
+                              'can_nam', 'chi_nam', 'tiet_khi', 'cuc', 'khong_vong_4',
+                              'thien_ban', 'nhan_ban', 'than_ban', 'can_thien_ban', 'can_dia_ban']:
+                        if k in chart_data:
+                            chart_essential[k] = chart_data[k]
+                    raw_input_data += f"\n<raw_ky_mon>\n{json.dumps(chart_essential, ensure_ascii=False, indent=1, default=str)}\n</raw_ky_mon>\n"
+                
+                if luc_hao_data and isinstance(luc_hao_data, dict):
+                    raw_input_data += f"\n<raw_luc_hao>\n{json.dumps(luc_hao_data, ensure_ascii=False, indent=1, default=str)}\n</raw_luc_hao>\n"
+                
+                if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                    raw_input_data += f"\n<raw_mai_hoa>\n{json.dumps(mai_hoa_data, ensure_ascii=False, indent=1, default=str)}\n</raw_mai_hoa>\n"
+            except Exception:
+                pass  # JSON serialization failure is non-critical
+            
+            # ══════════════════════════════════════════════════════
+            # V30.0: Lục Nhâm + Thái Ất context
+            # ══════════════════════════════════════════════════════
+            luc_nham_ctx = ""
+            thai_at_ctx = ""
+            try:
+                from dai_luc_nham import tinh_dai_luc_nham, phan_tich_chuyen_sau
+                if chart_data and isinstance(chart_data, dict) and 'can_ngay' in chart_data:
+                    ln_data = tinh_dai_luc_nham(
+                        chart_data.get('can_ngay', 'Giáp'),
+                        chart_data.get('chi_ngay', 'Tý'),
+                        chart_data.get('chi_gio', 'Ngọ'),
+                        chart_data.get('tiet_khi', 'Đông Chí')
+                    )
+                    ln_deep = phan_tich_chuyen_sau(ln_data, question, topic or 'chung')
+                    luc_nham_ctx = "\n<dai_luc_nham>\n"
+                    for d in ln_deep.get('details', []):
+                        luc_nham_ctx += f"{d}\n"
+                    luc_nham_ctx += f"VERDICT: {ln_deep.get('verdict', '?')}\n"
+                    if ln_deep.get('tu_khoa'):
+                        luc_nham_ctx += f"Tứ Khóa: {ln_deep.get('tu_khoa')}\n"
+                    if ln_deep.get('tam_truyen'):
+                        luc_nham_ctx += f"Tam Truyền: {ln_deep.get('tam_truyen')}\n"
+                    luc_nham_ctx += "</dai_luc_nham>\n"
             except Exception:
                 pass
             
-            if raw_que_data:
-                deep_prompt += f"\n<raw_data_full>\n{raw_que_data}\n</raw_data_full>\n"
+            try:
+                from thai_at_than_so import tinh_thai_at_than_so
+                import datetime
+                now = datetime.datetime.now()
+                ta_can = chart_data.get('can_ngay', 'Giáp') if chart_data and isinstance(chart_data, dict) else 'Giáp'
+                ta_chi = chart_data.get('chi_ngay', 'Tý') if chart_data and isinstance(chart_data, dict) else 'Tý'
+                ta_data = tinh_thai_at_than_so(now.year, now.month, ta_can, ta_chi)
+                thai_at_ctx = "\n<thai_at>\n"
+                ta_cung = ta_data.get('thai_at_cung', {})
+                thai_at_ctx += f"Cung {ta_cung.get('cung', '?')} ({ta_cung.get('ten_cung', '?')}) — {ta_cung.get('hanh_cung', '?')}\n"
+                thai_at_ctx += f"Lý: {ta_cung.get('ly', '?')}\n"
+                thai_at_ctx += f"VERDICT: {ta_data.get('luan_giai', {}).get('verdict', '?')}\n"
+                bat_tuong = ta_data.get('bat_tuong', {})
+                if bat_tuong:
+                    thai_at_ctx += "Bát Tướng:\n"
+                    for bt_name, bt_info in bat_tuong.items():
+                        thai_at_ctx += f"  {bt_name}: Cung {bt_info.get('cung','?')} — {bt_info.get('cat_hung','?')}\n"
+                cach_cuc = ta_data.get('cach_cuc', [])
+                if cach_cuc:
+                    thai_at_ctx += f"Cách Cục: {', '.join(cach_cuc)}\n"
+                lg = ta_data.get('luan_giai', {})
+                for d in lg.get('details', []):
+                    thai_at_ctx += f"  {d}\n"
+                thai_at_ctx += "</thai_at>\n"
+            except Exception:
+                pass
             
+            # ══════════════════════════════════════════════════════
+            # V30.0: BUILD FINAL PROMPT — XML STRUCTURED
+            # ══════════════════════════════════════════════════════
+            deep_prompt = (
+                f"<system_role>\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — chuyên gia Lý Số Đông Phương hàng đầu.\n\n"
+                f"NGUYÊN TẮC TUYỆT ĐỐI (VI PHẠM = SAI HOÀN TOÀN):\n"
+                f"1. MỌI dữ liệu trong <evidence_data> ĐÃ ĐƯỢC PYTHON TÍNH CHÍNH XÁC 100%.\n"
+                f"2. BẠN PHẢI tuân theo verdict trong <verdict_lock>. Đó là KẾT LUẬN CUỐI CÙNG.\n"
+                f"3. Vai trò: GIẢI THÍCH TẠI SAO verdict đúng bằng TRÍCH DẪN bằng chứng cụ thể.\n"
+                f"4. MỖI nhận định → PHẢI kèm [NGUỒN: phương pháp + data cụ thể].\n"
+                f"5. CẤM bịa sao/cửa/hào/quẻ/chi KHÔNG có trong <evidence_data> hoặc <raw_data>.\n"
+                f"6. CẤM phán NGƯỢC verdict. Nếu data mâu thuẫn → ghi nhận nhưng VẪN THEO verdict cuối.\n"
+                f"7. PHẢI viết theo <output_format> — đúng thứ tự, đúng nội dung.\n"
+                f"</system_role>\n\n"
+                
+                f"<verdict_lock>\n"
+                f"{'='*60}\n"
+                f"⛔ KẾT QUẢ ĐÃ TÍNH SẴN — BẮT BUỘC TUÂN THEO\n"
+                f"{'='*60}\n"
+                f"→ {_pre_icon} XU HƯỚNG TỔNG: {_cat_hung}\n"
+                f"→ Dụng Thần: {_dung_than} | Nhóm: {_category}\n"
+                f"→ 1️⃣ Kỳ Môn:      {_km_v} | {_km_r}\n"
+                f"→ 2️⃣ Lục Hào:     {_lh_v} | {_lh_r}\n"
+                f"→ 3️⃣ Mai Hoa:      {_mh_v} | {_mh_r}\n"
+                f"→ 4️⃣ Đại Lục Nhâm: {_ln_v} | {_ln_r}\n"
+                f"→ 5️⃣ Thái Ất:      {_ta_v} | {_ta_r}\n"
+                f"→ Thời điểm: {_v15_timing if _v15_timing else 'xem evidence_data'}\n"
+                f"→ Mai Hoa: Thể={_mh_the}, Dụng={_mh_dung}\n"
+                f"→ LH Dụng Thần: {od.get('lh_dung_than', '?')}\n"
+                f"→ DT (LH): Hào {_dt_hao_num}, Chi={_dt_chi}({_dt_hanh_lh}), {_dt_vuong_suy}\n"
+                f"→ BT (KM): Cung {_bt_cung}, Sao={_bt_sao}, Cửa={_bt_cua}, Thần={_bt_than}\n"
+                f"→ SV (KM): Cung {_dt_cung_km}, Sao={_dt_sao_km}, Cửa={_dt_cua_km}\n"
+                f"</verdict_lock>\n\n"
+                
+                f"<question_analysis>\n"
+                f"CÂU HỎI: {question}\n"
+                f"LOẠI CÂU HỎI: {_q_type}\n\n"
+                f"CÁCH TRẢ LỜI BẮT BUỘC:\n"
+                f"{_guide}\n"
+                f"</question_analysis>\n\n"
+                
+                f"<output_format>\n"
+                f"BẠN PHẢI viết ĐÚNG format sau, KHÔNG thay đổi thứ tự:\n\n"
+                f"## 🏆 KẾT LUẬN: [COPY từ verdict_lock — ĐÚNG verdict đã tính]\n"
+                f"[1-3 câu trả lời TRỰC TIẾP cho câu hỏi \"{question}\", DẪN CHỨNG data cụ thể]\n\n"
+                f"## 📊 PHÂN TÍCH TỪ 5 PHƯƠNG PHÁP:\n"
+                f"### 1. Kỳ Môn Độn Giáp: {_km_v}\n"
+                f"- [trích dẫn: Cung nào, Sao nào, Cửa nào, Thần nào → TẠI SAO {_km_v}]\n"
+                f"### 2. Lục Hào Kinh Dịch: {_lh_v}\n"
+                f"- [trích dẫn: Hào nào, Chi nào, Vượng/Suy, Động/Tĩnh → TẠI SAO {_lh_v}]\n"
+                f"### 3. Mai Hoa Dịch Số: {_mh_v}\n"
+                f"- [trích dẫn: Thể/Dụng sinh khắc → TẠI SAO {_mh_v}]\n"
+                f"### 4. Đại Lục Nhâm: {_ln_v}\n"
+                f"- [trích dẫn: Tam Truyền, Tứ Khóa → TẠI SAO {_ln_v}]\n"
+                f"### 5. Thái Ất Thần Số: {_ta_v}\n"
+                f"- [trích dẫn: Cung, Bát Tướng → TẠI SAO {_ta_v}]\n\n"
+                f"## 💡 HƯỚNG DẪN HÀNH ĐỘNG:\n"
+                f"- [3 lời khuyên CỤ THỂ dựa trên data — KHÔNG chung chung]\n\n"
+                f"## ⏰ THỜI VẬN:\n"
+                f"- [thời điểm thuận lợi dựa trên Chi + 12 Trường Sinh + Ứng Kỳ]\n"
+                f"</output_format>\n\n"
+                
+                f"<evidence_data>\n"
+                f"{evidence_data}\n"
+                f"{luc_nham_ctx}"
+                f"{thai_at_ctx}\n"
+                f"</evidence_data>\n\n"
+                
+                f"<raw_data>\n"
+                f"{raw_input_data}\n"
+                f"</raw_data>\n"
+            )
+            
+            # V25.0: RAG prompt
             if rag_prompt:
                 deep_prompt += f"\n<rag>\n{rag_prompt}\n</rag>\n"
             
-            # Gọi trực tiếp _call_ai_raw
+            # V30.0: Gọi Gemini — KHÔNG gọi _get_paranoid_context (loại bỏ nguồn mâu thuẫn)
             result = gemini._call_ai_raw(deep_prompt)
             
             if result and len(str(result)) > 50:
-                # V29.3: Enforce conclusion — đảm bảo có CÓ/KHÔNG + hướng dẫn cụ thể
-                result = self._enforce_conclusion(str(result), _wpct, od.get('dung_than', '?') if offline_analysis_data else '?', question)
-                self.log_step("Online AI", "DONE", f"Gemini trả lời {len(str(result))} ký tự")
+                # V30.0: Enforce conclusion nhẹ nhàng — hỗ trợ, không phá
+                result = self._enforce_conclusion(str(result), _wpct, _dung_than, question)
+                self.log_step("Online AI", "DONE", f"Gemini V30.0 trả lời {len(str(result))} ký tự")
                 return str(result)
             
             return None
