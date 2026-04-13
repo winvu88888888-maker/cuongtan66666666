@@ -1382,30 +1382,51 @@ class FreeAIHelper:
             if offline_analysis_data:
                 od = offline_analysis_data
                 
-                # V29.0: CHỈ GIỮ 1 VERDICT BLOCK DUY NHẤT (loại bỏ duplicate)
+                # V29.1: VERDICT BLOCK ĐẦY ĐỦ — Gemini đọc HẾT
                 offline_ctx += self._build_verdict_compact_block(od)
                 
-                # Thông tin bổ sung ngắn gọn (không lặp verdict)
+                # Thông tin bổ sung
                 if od.get('count_numbers'):
                     offline_ctx += f"Kết quả đếm số: {od['count_numbers']}\n"
                 if od.get('age_numbers'):
                     offline_ctx += f"Kết quả tuổi: {od['age_numbers']}\n"
                 
-                # Top 10 bằng chứng (giữ nguyên — quan trọng)
+                # V29.1: TẤT CẢ bằng chứng tác động (KHÔNG giới hạn)
                 if od.get('impact_evidence'):
-                    offline_ctx += f"\n--- BẰNG CHỨNG TÁC ĐỘNG ---\n"
-                    for e in od['impact_evidence'][:10]:
-                        offline_ctx += f"• {e}\n"
+                    offline_ctx += f"\n--- BẰNG CHỨNG TÁC ĐỘNG (ĐẦY ĐỦ) ---\n"
+                    for i, e in enumerate(od['impact_evidence']):
+                        offline_ctx += f"• [{i+1}] {e}\n"
                 
                 # Unified narrative (kết luận offline)
                 if od.get('unified_narrative'):
                     offline_ctx += f"\n--- KẾT LUẬN AI OFFLINE ---\n"
                     offline_ctx += od['unified_narrative'] + "\n"
                 
-                # V29.0: Giới hạn offline report 2000 ký tự (giảm từ 6000)
+                # V29.1: TOÀN BỘ offline report (KHÔNG cắt bớt)
                 if od.get('full_offline_report'):
-                    offline_ctx += f"\n--- CHI TIẾT OFFLINE (tóm tắt) ---\n"
-                    offline_ctx += od['full_offline_report'][:2000] + "\n"
+                    offline_ctx += f"\n--- CHI TIẾT PHÂN TÍCH OFFLINE (ĐẦY ĐỦ) ---\n"
+                    offline_ctx += od['full_offline_report'] + "\n"
+                
+                # V29.1: Thêm scoring details nếu có
+                if od.get('scoring_details'):
+                    offline_ctx += f"\n--- SCORING DETAILS ---\n"
+                    for method, detail in od['scoring_details'].items():
+                        offline_ctx += f"[{method}]: {detail}\n"
+                
+                # V29.1: Thêm detective deduction nếu có
+                if od.get('detective_deduction'):
+                    offline_ctx += f"\n--- PHÂN TÍCH TƯƠNG QUAN ĐA PHƯƠNG PHÁP ---\n"
+                    offline_ctx += od['detective_deduction'] + "\n"
+                
+                # V29.1: Thêm element impact analysis nếu có
+                if od.get('element_impact'):
+                    offline_ctx += f"\n--- NGŨ HÀNH TÁC ĐỘNG ---\n"
+                    offline_ctx += od['element_impact'] + "\n"
+                
+                # V29.1: Lục Thân relationship nếu có
+                if od.get('luc_than_table'):
+                    offline_ctx += f"\n--- LỤC THÂN QUAN HỆ ---\n"
+                    offline_ctx += od['luc_than_table'] + "\n"
                 
                 offline_ctx += f"=== HẾT DỮ LIỆU OFFLINE ===\n\n"
             
@@ -1422,10 +1443,16 @@ class FreeAIHelper:
                         chart_data.get('tiet_khi', 'Đông Chí')
                     )
                     ln_deep = phan_tich_chuyen_sau(ln_data, question, topic or 'chung')
-                    luc_nham_ctx = "\n=== [5] ĐẠI LỤC NHÂM ===\n"
-                    for d in ln_deep.get('details', [])[:5]:
+                    # V29.1: TẤT CẢ details Lục Nhâm (KHÔNG giới hạn)
+                    luc_nham_ctx = "\n=== [5] ĐẠI LỤC NHÂM (ĐẦY ĐỦ) ===\n"
+                    for d in ln_deep.get('details', []):
                         luc_nham_ctx += f"{d}\n"
                     luc_nham_ctx += f"VERDICT LỤC NHÂM: {ln_deep.get('verdict', '?')}\n"
+                    # Thêm raw data Lục Nhâm
+                    if ln_deep.get('tu_khoa'):
+                        luc_nham_ctx += f"Tứ Khóa: {ln_deep.get('tu_khoa')}\n"
+                    if ln_deep.get('tam_truyen'):
+                        luc_nham_ctx += f"Tam Truyền: {ln_deep.get('tam_truyen')}\n"
             except Exception:
                 pass
             
@@ -1436,39 +1463,61 @@ class FreeAIHelper:
                 ta_can = chart_data.get('can_ngay', 'Giáp') if chart_data and isinstance(chart_data, dict) else 'Giáp'
                 ta_chi = chart_data.get('chi_ngay', 'Tý') if chart_data and isinstance(chart_data, dict) else 'Tý'
                 ta_data = tinh_thai_at_than_so(now.year, now.month, ta_can, ta_chi)
-                thai_at_ctx = "\n=== [6] THÁI ẤT THẦN SỐ ===\n"
+                # V29.1: Thêm chi tiết Thái Ất
+                thai_at_ctx = "\n=== [6] THÁI ẤT THẦN SỐ (ĐẦY ĐỦ) ===\n"
                 ta_cung = ta_data.get('thai_at_cung', {})
                 thai_at_ctx += f"Cung {ta_cung.get('cung', '?')} ({ta_cung.get('ten_cung', '?')}) — {ta_cung.get('hanh_cung', '?')}\n"
+                thai_at_ctx += f"Lý: {ta_cung.get('ly', '?')}\n"
                 thai_at_ctx += f"VERDICT THÁI ẤT: {ta_data.get('luan_giai', {}).get('verdict', '?')}\n"
+                # Thêm Bát Tướng
+                bat_tuong = ta_data.get('bat_tuong', {})
+                if bat_tuong:
+                    thai_at_ctx += "Bát Tướng:\n"
+                    for bt_name, bt_info in bat_tuong.items():
+                        thai_at_ctx += f"  {bt_name}: Cung {bt_info.get('cung','?')} — {bt_info.get('cat_hung','?')}\n"
+                # Thêm Cách Cục
+                cach_cuc = ta_data.get('cach_cuc', [])
+                if cach_cuc:
+                    thai_at_ctx += f"Cách Cục: {', '.join(cach_cuc)}\n"
+                # Luận giải details
+                lg = ta_data.get('luan_giai', {})
+                for d in lg.get('details', []):
+                    thai_at_ctx += f"  {d}\n"
             except Exception:
                 pass
             
-            # V29.0: STREAMLINED PROMPT — "ANSWER FIRST, EXPLAIN LATER"
-            # Giảm từ ~15K tokens xuống ~3K tokens
+            # V29.1: FULL DATA PROMPT — Gemini ĐỌC HẾT + Answer First
             _wpct = od.get('v22_unified_strength', {}).get('unified_pct', 50) if offline_analysis_data else 50
             
             deep_prompt = (
                 f"BẠN LÀ THIÊN CƠ ĐẠI SƯ — BẬC THẦY HUYỀN HỌC tổng hợp 6 phương pháp.\n"
-                f"NHIỆM VỤ: Dựa trên KẾT QUẢ TÍNH TOÁN OFFLINE bên dưới, viết BÀI PHÁN QUYẾT.\n\n"
+                f"NHIỆM VỤ: ĐỌC KỸ TOÀN BỘ dữ liệu offline bên dưới, rồi viết BÀI PHÁN QUYẾT.\n\n"
                 
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"1. CÂU ĐẦU TIÊN = KẾT LUẬN DỨT KHOÁT: CÓ/KHÔNG/NÊN/KHÔNG NÊN + % tin cậy\n"
                 f"   Weighted Score = {_wpct}% → {'CÁT/THUẬN LỢI' if _wpct >= 60 else 'HUNG/KHÓ KHĂN' if _wpct <= 45 else 'BÌNH/CÂN NHẮC'}\n"
                 f"2. CẤM nói: 'có vẻ', 'có thể', 'tùy trường hợp', 'cần xem thêm'\n"
-                f"3. Mỗi nhận định PHẢI kèm dẫn chứng: (📌 [PP]: [dữ liệu] → [kết luận])\n"
+                f"3. Mỗi nhận định PHẢI kèm dẫn chứng cụ thể từ dữ liệu offline\n"
                 f"4. GIỌNG VĂN: Tự tin, dứt khoát, như thầy phong thủy giỏi tư vấn\n"
-                f"5. Tối đa 500 chữ. Không liệt kê dữ liệu thô — chỉ DIỄN GIẢI.\n"
-                f"6. PHẢI tuân theo verdict offline. CẤM phán ngược.\n\n"
+                f"5. PHẢI phân tích ĐẦY ĐỦ cả 6 phương pháp (KM, LH, MH, TB, LN, TA)\n"
+                f"6. PHẢI tuân theo verdict offline. CẤM phán ngược.\n"
+                f"7. Cấu trúc bài viết:\n"
+                f"   - Dòng 1: 🏆 KẾT LUẬN + % + CÁT/HUNG\n"
+                f"   - Phần 2: Phân tích từng phương pháp (trích dẫn data cụ thể)\n"
+                f"   - Phần 3: Tổng hợp liên kết các phương pháp\n"
+                f"   - Phần 4: Lời khuyên cụ thể\n\n"
                 
                 f"CÂU HỎI: {question}\n\n"
                 
-                f"--- DỮ LIỆU OFFLINE (Python tính chính xác 100%) ---\n"
+                f"{'='*60}\n"
+                f"DỮ LIỆU OFFLINE (Python tính chính xác 100%) — ĐỌC HẾT!\n"
+                f"{'='*60}\n"
                 f"{offline_ctx}"
                 f"{luc_nham_ctx}"
                 f"{thai_at_ctx}\n"
             )
             
-            # V29.0: Chỉ thêm raw_que_data nếu cần (giới hạn 3000 ký tự)
+            # V29.1: raw_que_data ĐẦY ĐỦ (KHÔNG cắt bớt)
             raw_que_data = ""
             try:
                 raw_que_data = gemini._get_paranoid_context(
@@ -1478,7 +1527,7 @@ class FreeAIHelper:
                 pass
             
             if raw_que_data:
-                deep_prompt += f"\n<raw_data>\n{raw_que_data[:3000]}\n</raw_data>\n"
+                deep_prompt += f"\n<raw_data_full>\n{raw_que_data}\n</raw_data_full>\n"
             
             if rag_prompt:
                 deep_prompt += f"\n<rag>\n{rag_prompt}\n</rag>\n"
@@ -5702,9 +5751,10 @@ class FreeAIHelper:
             'v24_tb_factors': v24_tb_factors,
             'v24_ln_factors': v24_ln_factors,
             'v24_ta_factors': v24_ta_factors,
-            # V14.0: Gửi báo cáo offline (V26.3: giảm xuống 4000 ký tự tránh Gemini ngộp)
-            # V28.0: Nâng từ 4000→6000 chars (Fix Lỗi 5 — Gemini 2.5 chịu được 1M tokens)
-            'full_offline_report': offline_full_output[:6000] if offline_full_output else '',
+            # V29.1: TOÀN BỘ báo cáo offline — KHÔNG cắt bớt (Gemini 2.5 chịu được 1M tokens)
+            'full_offline_report': offline_full_output if offline_full_output else '',
+            # V29.1: Detective deduction cho AI Online
+            'detective_deduction': v18_detective if v18_detective else '',
         }
         
         # Gọi AI Online (Gemini) — phân tích sâu
