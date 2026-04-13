@@ -1004,7 +1004,7 @@ with col_header3:
 
 st.markdown("---")
 # DEPLOYMENT VERIFICATION BANNER
-st.success("✅ SYSTEM ONLINE: V29.0 — THIÊN CƠ ĐẠI SƯ (Đại Thống Nhất Đa Môn Phái - 6 Môn Tích Hợp)")
+st.success("✅ SYSTEM ONLINE: V29.4 — THIÊN CƠ ĐẠI SƯ (Đại Thống Nhất Đa Môn Phái - 6 Môn Tích Hợp)")
 
 # ======================================================================
 # SIDEBAR - CONTROLS
@@ -3345,7 +3345,7 @@ elif st.session_state.current_view == "gemini_ai":
                     
                     if btn_ask_normal:
                         # ===============================================================
-                        # V29.0: NÚT "HỎI NHANH" — Gọi Gemini TRỰC TIẾP (không gieo quẻ)
+                        # V29.4: NÚT "HỎI NHANH" — Gọi Gemini TRỰC TIẾP (không gieo quẻ)
                         # Dùng cho kiến thức huyền học chung, KHÔNG chạy offline engine
                         # ===============================================================
                         quick_prompt = (
