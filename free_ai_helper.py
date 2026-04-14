@@ -1529,6 +1529,35 @@ class FreeAIHelper:
                             found_kt = True
                     if not found_kt:
                         lines.append(f"    └ KHÔNG CÓ trong quẻ → DT không bị khắc ✅")
+                    
+                    # V31: CỪU THẦN (hành sinh Kỵ Thần = tiếp tay gây hại DT)
+                    # Kỵ Thần hành X → Cừu Thần hành sinh X
+                    cuu_hanh = []
+                    for kh in ky_hanh:
+                        for h, s in SINH.items():
+                            if s == kh:
+                                cuu_hanh.append(h)
+                    if cuu_hanh:
+                        lines.append(f"\n  🟤 CỪU THẦN (hành {', '.join(cuu_hanh)} sinh Kỵ Thần):")
+                        found_ct = False
+                        for hao in haos:
+                            h_hanh = hao.get('ngu_hanh', '')
+                            if h_hanh in cuu_hanh and hao != dt_hao:
+                                h_cc = hao.get('can_chi', '?')
+                                h_vuong = str(hao.get('vuong_suy', '?'))
+                                h_idx = haos.index(hao) + 1
+                                h_dong = h_idx in dong_hao if dong_hao else False
+                                h_lt = hao.get('luc_than', '?')
+                                lines.append(f"    └ Hào {h_idx} ({h_lt}): {h_cc}({h_hanh}), {h_vuong}{', ĐỘNG!' if h_dong else ''}")
+                                if 'Vượng' in h_vuong and h_dong:
+                                    lines.append(f"    └ → Cừu Thần VƯỢNG + ĐỘNG → TIẾP SỨC Kỵ Thần, CỰC XẤU ❌❌")
+                                elif 'Vượng' in h_vuong:
+                                    lines.append(f"    └ → Cừu Thần VƯỢNG → TĂNG SỨC Kỵ Thần ⚠️")
+                                elif 'Suy' in h_vuong or 'Tử' in h_vuong:
+                                    lines.append(f"    └ → Cừu Thần SUY → KHÔNG ĐỦ SỨC SINH Kỵ Thần ✅")
+                                found_ct = True
+                        if not found_ct:
+                            lines.append(f"    └ KHÔNG CÓ trong quẻ → Kỵ Thần không được tiếp sức ✅")
                 
                 # Nguyệt Lệnh
                 chi_thang = luc_hao_data.get('chi_thang', '') or ban.get('chi_thang', '')
@@ -1601,6 +1630,34 @@ class FreeAIHelper:
                                 lines.append(f"    └ HÓA HỒI KHẮC: Biến({b_hanh}) khắc DT({dt_hanh}) → CỰC XẤU ❌❌")
                             elif b_hanh == dt_hanh:
                                 lines.append(f"    └ HÓA PHỤC: Biến đồng hành DT → TỐT ✅")
+                            elif SINH.get(dt_hanh) == b_hanh:
+                                lines.append(f"    └ HÓA TIẾT KHÍ: DT({dt_hanh}) sinh Biến({b_hanh}) → HAO TỔN SỨC ⚠️")
+                        # V31: Hóa Tuyệt / Hóa Mộ / Hóa Phá
+                        b_chi = '?'
+                        for c in CHI_LIST:
+                            if c in str(b_cc):
+                                b_chi = c
+                                break
+                        if b_chi != '?' and dt_hanh and dt_hanh != '?':
+                            ts_stage_b, _ = _get_truong_sinh(dt_hanh, b_chi)
+                            if ts_stage_b == 'Tuyệt':
+                                lines.append(f"    └ 💀 HÓA TUYỆT: DT biến vào Tuyệt({b_chi}) → HOÀN TOÀN MẤT LỰC ❌❌❌")
+                            elif ts_stage_b == 'Mộ':
+                                lines.append(f"    └ ⚰️ HÓA MỘ: DT biến vào Mộ({b_chi}) → BỊ GIAM CẦM, CHẬM TRỄ ❌")
+                            elif ts_stage_b == 'Tử':
+                                lines.append(f"    └ 💀 HÓA TỬ: DT biến vào Tử({b_chi}) → CỰC XẤU, KẾT THÚC ❌❌")
+                            elif ts_stage_b == 'Đế Vượng':
+                                lines.append(f"    └ 👑 HÓA VƯỢNG: DT biến vào Đế Vượng({b_chi}) → CỰC MẠNH ✅✅")
+                            elif ts_stage_b == 'Trường Sinh':
+                                lines.append(f"    └ 🌱 HÓA TRƯỜNG SINH: DT biến vào Trường Sinh({b_chi}) → KHỞI ĐẦU MỚI ✅")
+                        # Kiểm tra Nhật Xung biến hào (Hóa Phá)
+                        if b_chi != '?' and chi_ngay:
+                            LUC_XUNG_B = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu',
+                                          'Dần': 'Thân', 'Thân': 'Dần', 'Mão': 'Dậu', 'Dậu': 'Mão',
+                                          'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
+                            chi_ngay_val = luc_hao_data.get('chi_ngay', '') or ban.get('chi_ngay', '')
+                            if chi_ngay_val and LUC_XUNG_B.get(chi_ngay_val) == b_chi:
+                                lines.append(f"    └ 💥 HÓA PHÁ: Biến Chi({b_chi}) bị Nhật Xung({chi_ngay_val}) → BỊ PHÁ, VÔ HIỆU ❌")
                 
                 # Thế/Ứng
                 if the_hao and ung_hao:
@@ -1640,7 +1697,26 @@ class FreeAIHelper:
                     lines.append(f"    Hào {i+1}: {h_lt:6s} | {h_cc:8s} | {h_hanh:3s} | {h_vuong:10s} | {'ĐỘNG' if h_dong else 'tĩnh'}{marker}")
             
             else:
-                lines.append(f"\n  ⚠️ DT ({dung_than}) KHÔNG xuất hiện trong quẻ → PHỤC THẦN (ẩn, yếu) ❌❌")
+                # V31: PHI THẦN / PHỤC THẦN chi tiết
+                lines.append(f"\n  ⚠️ PHỤC THẦN: DT ({dung_than}) KHÔNG xuất hiện trong 6 hào!")
+                lines.append(f"    └ DT đang ẨN (Phục Thần dưới quẻ gốc Bát Cung)")
+                lines.append(f"    └ Sự việc CHƯA LỘ DIỆN, CẦN CHỜ THỜI ❌❌")
+                # Tìm Phi Thần (hào đè lên vị trí Phục Thần)
+                # Phục Thần nằm ở quẻ gốc cùng Cung → xét hào Thế
+                if the_hao:
+                    phi_hanh = the_hao.get('ngu_hanh', '?')
+                    lines.append(f"    └ PHI THẦN (hào đè DT): Hào Thế {the_hao.get('can_chi','?')}({phi_hanh})")
+                    if phi_hanh != '?' and dung_than in ['Thê Tài','Quan Quỷ','Tử Tôn','Phụ Mẫu','Huynh Đệ']:
+                        # Ước lượng hành DT từ bảng lục thân
+                        bt_hanh_guess = CAN_NGU_HANH.get(luc_hao_data.get('can_ngay',''), '') if luc_hao_data else ''
+                        dt_hanh_guess = _get_luc_than_hanh(bt_hanh_guess, dung_than) if bt_hanh_guess else '?'
+                        if dt_hanh_guess != '?' and phi_hanh != '?':
+                            if SINH.get(phi_hanh) == dt_hanh_guess:
+                                lines.append(f"    └ Phi Thần({phi_hanh}) SINH Phục Thần({dt_hanh_guess}) → PHI SINH PHỤC = CÓ THỂ LỘ ✅")
+                            elif KHAC.get(phi_hanh) == dt_hanh_guess:
+                                lines.append(f"    └ Phi Thần({phi_hanh}) KHẮC Phục Thần({dt_hanh_guess}) → PHI KHẮC PHỤC = CHÔN VÙI, CỰC XẤU ❌❌")
+                            elif phi_hanh == dt_hanh_guess:
+                                lines.append(f"    └ Phi Phục đồng hành → CÓ THỂ LỘ nhưng CHẬM")
         
         # ═══ B. Factors từ offline engine (đã tính sẵn) ═══
         lh_factors = od.get('v23_lh_factors', [])
@@ -2362,7 +2438,7 @@ class FreeAIHelper:
                 f"1. MỌI dữ liệu trong <evidence_data> ĐÃ ĐƯỢC PYTHON TÍNH CHÍNH XÁC 100%.\n"
                 f"2. BẠN PHẢI tuân theo verdict trong <verdict_lock>. Đó là KẾT LUẬN CUỐI CÙNG.\n"
                 f"3. PHẢI đọc <dung_than_analysis> — đây là phân tích Dụng Thần ĐẦY ĐỦ nhất.\n"
-                f"4. Luận giải BẮT BUỘC dựa trên: DT Vượng/Suy + Nguyên Thần + Kỵ Thần + Nguyệt Lệnh + Nhật Thần + Tuần Không.\n"
+                f"4. Luận giải BẮT BUỘC dựa trên: DT Vượng/Suy + Nguyên Thần + Kỵ Thần + Cừu Thần + Phi/Phục Thần + Nguyệt Lệnh + Nhật Thần + Tuần Không + Hóa Tuyệt/Mộ.\n"
                 f"5. MỖI nhận định → PHẢI kèm [NGUỒN: phương pháp + data cụ thể].\n"
                 f"6. CẤM bịa sao/cửa/hào/quẻ/chi KHÔNG có trong data.\n"
                 f"7. CẤM phán NGƯỢC verdict. Nếu data mâu thuẫn → ghi nhận nhưng VẪN THEO verdict cuối.\n"
@@ -2406,8 +2482,11 @@ class FreeAIHelper:
                 f"- DT ({_dung_than}) ở Hào nào, Chi nào, Vượng hay Suy\n"
                 f"- Nguyên Thần (sinh DT): ở đâu, vượng/suy → có hỗ trợ DT không?\n"
                 f"- Kỵ Thần (khắc DT): ở đâu, vượng/suy, có động không → có đe dọa DT không?\n"
+                f"- Cừu Thần (sinh Kỵ Thần): ở đâu, có tiếp sức Kỵ Thần không?\n"
+                f"- Phi/Phục Thần: DT có vắng mặt? Phi Thần sinh hay khắc Phục Thần?\n"
                 f"- Nguyệt Lệnh + Nhật Thần: sinh hay khắc DT?\n"
                 f"- Tuần Không / Nguyệt Phá: DT có bị ảnh hưởng?\n"
+                f"- Hào Biến: Hóa Tuyệt/Mộ/Tử/Phá? (nếu DT động)\n"
                 f"- [TẤT CẢ lấy từ <dung_than_analysis> — KHÔNG được bịa]\n"
                 f"### 3. Mai Hoa Dịch Số: {_mh_v}\n"
                 f"- [trích dẫn: Thể/Dụng sinh khắc → TẠI SAO {_mh_v}]\n"
