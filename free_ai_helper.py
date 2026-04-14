@@ -1490,9 +1490,9 @@ class FreeAIHelper:
             
             if dt_hao:
                 dt_canchi = dt_hao.get('can_chi', '?')
-                dt_hanh = dt_hao.get('ngu_hanh', '?')
-                dt_vuong = str(dt_hao.get('vuong_suy', '?'))
-                dt_lt = dt_hao.get('luc_than', '?')
+                dt_hanh = dt_hao.get('ngu_hanh', '?') or dt_hao.get('hanh', '?')
+                dt_vuong = str(dt_hao.get('vuong_suy', '?') or dt_hao.get('vuong', '?'))
+                dt_lt = dt_hao.get('luc_than', '?') or dt_hao.get('luc_thu', '?')
                 is_dong = dt_idx in dong_hao if dt_idx and dong_hao else False
                 
                 # Extract Chi
@@ -1501,6 +1501,13 @@ class FreeAIHelper:
                     if c in str(dt_canchi):
                         dt_chi = c
                         break
+                
+                # V31.5: Auto-compute ngu_hanh từ Chi nếu thiếu
+                CHI_NGU_HANH_LOCAL = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc',
+                                     'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ',
+                                     'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
+                if (not dt_hanh or dt_hanh == '?') and dt_chi != '?':
+                    dt_hanh = CHI_NGU_HANH_LOCAL.get(dt_chi, '?')
                 
                 lines.append(f"\n📌 [LỤC HÀO] DT ({dung_than}):")
                 lines.append(f"  └ Hào {dt_idx}, {dt_canchi}({dt_hanh})")
@@ -1517,13 +1524,19 @@ class FreeAIHelper:
                     lines.append(f"\n  🟢 NGUYÊN THẦN (hành {', '.join(nguyen_hanh)} sinh {dt_hanh}):")
                     found_nt = False
                     for hao in haos:
-                        h_hanh = hao.get('ngu_hanh', '')
+                        h_hanh = hao.get('ngu_hanh', '') or hao.get('hanh', '')
+                        # V31.5: Auto-compute từ Chi nếu thiếu
+                        if not h_hanh:
+                            for c in CHI_LIST:
+                                if c in str(hao.get('can_chi', '')):
+                                    h_hanh = CHI_NGU_HANH_LOCAL.get(c, '')
+                                    break
                         if h_hanh in nguyen_hanh:
                             h_cc = hao.get('can_chi', '?')
-                            h_vuong = str(hao.get('vuong_suy', '?'))
+                            h_vuong = str(hao.get('vuong_suy', '?') or hao.get('vuong', '?'))
                             h_idx = haos.index(hao) + 1
                             h_dong = h_idx in dong_hao if dong_hao else False
-                            h_lt = hao.get('luc_than', '?')
+                            h_lt = hao.get('luc_than', '?') or hao.get('luc_thu', '?')
                             lines.append(f"    └ Hào {h_idx} ({h_lt}): {h_cc}({h_hanh}), {h_vuong}{', ĐỘNG' if h_dong else ''}")
                             if 'Vượng' in h_vuong:
                                 lines.append(f"    └ → Nguyên Thần VƯỢNG → HỖ TRỢ DT MẠNH MẼ ✅")
@@ -1538,13 +1551,19 @@ class FreeAIHelper:
                     lines.append(f"\n  🔴 KỴ THẦN (hành {', '.join(ky_hanh)} khắc {dt_hanh}):")
                     found_kt = False
                     for hao in haos:
-                        h_hanh = hao.get('ngu_hanh', '')
+                        h_hanh = hao.get('ngu_hanh', '') or hao.get('hanh', '')
+                        # V31.5: Auto-compute từ Chi nếu thiếu
+                        if not h_hanh:
+                            for c in CHI_LIST:
+                                if c in str(hao.get('can_chi', '')):
+                                    h_hanh = CHI_NGU_HANH_LOCAL.get(c, '')
+                                    break
                         if h_hanh in ky_hanh and hao != dt_hao:
                             h_cc = hao.get('can_chi', '?')
-                            h_vuong = str(hao.get('vuong_suy', '?'))
+                            h_vuong = str(hao.get('vuong_suy', '?') or hao.get('vuong', '?'))
                             h_idx = haos.index(hao) + 1
                             h_dong = h_idx in dong_hao if dong_hao else False
-                            h_lt = hao.get('luc_than', '?')
+                            h_lt = hao.get('luc_than', '?') or hao.get('luc_thu', '?')
                             lines.append(f"    └ Hào {h_idx} ({h_lt}): {h_cc}({h_hanh}), {h_vuong}{', ĐỘNG!' if h_dong else ''}")
                             if 'Vượng' in h_vuong and h_dong:
                                 lines.append(f"    └ → Kỵ Thần VƯỢNG + ĐỘNG → GÂY HẠI CỰC MẠNH ❌❌")
@@ -1586,7 +1605,9 @@ class FreeAIHelper:
                             lines.append(f"    └ KHÔNG CÓ trong quẻ → Kỵ Thần không được tiếp sức ✅")
                 
                 # Nguyệt Lệnh
-                chi_thang = luc_hao_data.get('chi_thang', '') or ban.get('chi_thang', '')
+                # V31.5: Fallback chain: luc_hao_data → ban → chart_data
+                chi_thang = (luc_hao_data.get('chi_thang', '') or ban.get('chi_thang', '') 
+                            or (chart_data.get('chi_thang', '') if chart_data and isinstance(chart_data, dict) else ''))
                 CHI_NGU_HANH = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc',
                                'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ',
                                'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
@@ -1601,9 +1622,13 @@ class FreeAIHelper:
                         lines.append(f"    └ Tháng {chi_thang} đồng hành DT → VƯỢNG ✅")
                     else:
                         lines.append(f"    └ Tháng {chi_thang} không sinh không khắc → BÌNH")
+                else:
+                    lines.append(f"\n  📅 NGUYỆT LỆNH: KHÔNG XÁC ĐỊNH (thiếu chi_thang)")
                 
                 # Nhật Thần  
-                can_ngay = luc_hao_data.get('can_ngay', '') or ban.get('can_ngay', '')
+                # V31.5: Fallback chain: luc_hao_data → ban → chart_data
+                can_ngay = (luc_hao_data.get('can_ngay', '') or ban.get('can_ngay', '')
+                           or (chart_data.get('can_ngay', '') if chart_data and isinstance(chart_data, dict) else ''))
                 CAN_NGU_HANH = {'Giáp': 'Mộc', 'Ất': 'Mộc', 'Bính': 'Hỏa', 'Đinh': 'Hỏa',
                                 'Mậu': 'Thổ', 'Kỷ': 'Thổ', 'Canh': 'Kim', 'Tân': 'Kim',
                                 'Nhâm': 'Thủy', 'Quý': 'Thủy'}
@@ -1616,9 +1641,13 @@ class FreeAIHelper:
                         lines.append(f"    └ Ngày {can_ngay}({hanh_ngay}) KHẮC DT({dt_hanh}) → BỊ NGÀY KHẮC ❌")
                     else:
                         lines.append(f"    └ Ngày {can_ngay} — BÌNH")
+                else:
+                    lines.append(f"\n  📅 NHẬT THẦN: KHÔNG XÁC ĐỊNH (thiếu can_ngay)")
                 
                 # Tuần Không
-                chi_ngay = luc_hao_data.get('chi_ngay', '') or ban.get('chi_ngay', '')
+                # V31.5: Fallback chain
+                chi_ngay = (luc_hao_data.get('chi_ngay', '') or ban.get('chi_ngay', '')
+                           or (chart_data.get('chi_ngay', '') if chart_data and isinstance(chart_data, dict) else ''))
                 if can_ngay and chi_ngay and dt_chi != '?':
                     try:
                         kv = _get_khong_vong(can_ngay, chi_ngay)
