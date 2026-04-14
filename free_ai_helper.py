@@ -2582,8 +2582,27 @@ class FreeAIHelper:
             except Exception:
                 pass
             
+            # V32.2: Dynamic Output Format Header based on Question Type
+            _header_kieu_cau_hoi = ""
+            if _q_type == 'AGE':
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI RÕ TUỔI/NĂM SINH CỤ THỂ DỰA TRÊN CHI Ở TRÊN]\n**→ Trả lời trực tiếp:** [Ghi rõ số tuổi hoặc con giáp dự đoán cho câu hỏi '{question}']"
+            elif _q_type == 'TIMING':
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI RÕ THỜI GIAN/KHI NÀO VÀO ĐÂY]\n**→ Trả lời trực tiếp:** [Dựa vào Ứng kỳ offline, ghi rõ mốc thời gian diễn ra sự việc cho câu hỏi '{question}']"
+            elif _q_type in ['LOCATION', 'DIRECTION']:
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI RÕ PHƯƠNG HƯỚNG/VỊ TRÍ VÀO ĐÂY]\n**→ Trả lời trực tiếp:** [Dựa vào cung offline, ghi rõ phương hướng/vị trí cho câu hỏi '{question}']"
+            elif _q_type == 'PERSON':
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI RÕ ĐẶC ĐIỂM NGƯỜI VÀO ĐÂY]\n**→ Trả lời trực tiếp:** [Miêu tả chính xác đặc điểm/tính cách/ngoại hình con người cho câu hỏi '{question}']"
+            elif _q_type == 'QUANTITY':
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI SỐ LƯỢNG VÀO ĐÂY]\n**→ Trả lời trực tiếp:** [Đưa ra con số cụ thể dự đoán cho câu hỏi '{question}']"
+            elif _q_type == 'HEALTH_DETAIL':
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI CHI TIẾT SỨC KHỎE/BỆNH TẬT VÀO ĐÂY]\n**→ Trả lời trực tiếp:** [Kết luận chính xác về bệnh tình và khả năng khỏi cho câu hỏi '{question}']"
+            elif _q_type == 'DESCRIBE':
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: [GHI MÔ TẢ ĐẶC ĐIỂM VÀO ĐÂY]\n**→ Trả lời trực tiếp:** [Mô tả đúng đặc điểm sự việc cho câu hỏi '{question}']"
+            else:
+                _header_kieu_cau_hoi = f"## 🏆 KẾT LUẬN: {_cat_hung}\n**→ Trả lời trực tiếp:** [TRẢ LỜI THẲNG câu hỏi '{question}' bằng CÓ/KHÔNG/NÊN/KHÔNG NÊN rõ ràng]"
+
             # ══════════════════════════════════════════════════════
-            # V30.0: BUILD FINAL PROMPT — XML STRUCTURED
+            # V32.2: BUILD FINAL PROMPT — XML STRUCTURED
             # ══════════════════════════════════════════════════════
             deep_prompt = (
                 f"<system_role>\n"
@@ -2636,9 +2655,8 @@ class FreeAIHelper:
                 f"</question_analysis>\n\n"
                 
                 f"<output_format>\n"
-                f"⛔ QUAN TRỌNG: Phần KẾT LUẬN phải TRẢ LỜI THẲNG câu hỏi '{question}'. KHÔNG được nói chung chung.\n\n"
-                f"## 🏆 KẾT LUẬN: {_cat_hung}\n"
-                f"**→ [TRẢ LỜI THẲNG câu hỏi '{question}' trong 1 câu ngắn gọn, rõ ràng CÓ/KHÔNG/NÊN/KHÔNG NÊN]**\n"
+                f"⛔ QUAN TRỌNG: Phần KẾT LUẬN phải ĐI THẲNG vào truy vấn của câu hỏi '{question}'. KHÔNG lan man.\n\n"
+                f"{_header_kieu_cau_hoi}\n"
                 f"**→ Lý do chính:** [1 lý do quan trọng nhất từ data — VD: DT Vượng + được Nguyệt Lệnh sinh]\n"
                 f"**→ Mức độ:** {_wpct}% — {_cat_hung} (5 phương pháp tổng hợp)\n\n"
                 f"---\n\n"
