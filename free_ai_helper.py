@@ -1,4 +1,4 @@
-"""
+﻿"""
 Free AI Helper V29.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + STREAMLINED PROMPT)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
@@ -2497,14 +2497,15 @@ class FreeAIHelper:
                 f"NGUYÊN TẮC TUYỆT ĐỐI (VI PHẠM = SAI HOÀN TOÀN):\n"
                 f"1. MỌI dữ liệu trong <evidence_data> ĐÃ ĐƯỢC PYTHON TÍNH CHÍNH XÁC 100%.\n"
                 f"2. BẠN PHẢI tuân theo verdict trong <verdict_lock>. Đó là KẾT LUẬN CUỐI CÙNG.\n"
-                f"3. PHẢI đọc <dung_than_analysis> — đây là phân tích Dụng Thần ĐẦY ĐỦ nhất.\n"
+                f"3. PHẢI đọc phần PHÂN TÍCH DỤNG THẦN — đây là phân tích Dụng Thần ĐẦY ĐỦ nhất.\n"
                 f"4. Luận giải BẮT BUỘC DIỄN GIẢI CHI TIẾT: DT Vượng/Suy + Nguyên Thần + Kỵ Thần + Cừu Thần + Phi/Phục Thần + Nguyệt Lệnh + Nhật Thần + Tuần Không + Nguyệt Phá + Hào Biến.\n"
                 f"5. MỖI nhận định → kèm [NGUỒN: data cụ thể].\n"
                 f"6. CẤM bịa sao/cửa/hào/quẻ/chi KHÔNG có trong data.\n"
                 f"7. CẤM phán NGƯỢC verdict.\n"
-                f"8. PHẢI viết theo <output_format>.\n"
+                f"8. PHẢI viết theo output_format.\n"
                 f"9. DIỄN GIẢI = Giải thích TẠI SAO, KHÔNG chỉ liệt kê.\n"
                 f"10. ĐẾM: bao nhiêu ✅ THUẬN vs ❌ BẤT LỢI → dẫn đến verdict.\n"
+                f"11. ⛔ CẤM tất cả tên tag XML trong output (không hiện gì có dấu < > như dung_than_analysis, evidence_data...).\n"
                 f"</system_role>\n\n"
                 
                 f"<verdict_lock>\n"
@@ -2549,7 +2550,7 @@ class FreeAIHelper:
                 f"- **Ngũ Hành xung khắc:** [Thiên Bàn vs Địa Bàn — sinh/khắc cụ thể]\n"
                 f"- **Cách Cục đặc biệt:** [có Tam Kỳ Đắc Sử, Ngọc Nữ, hay không?]\n\n"
                 f"### ☯️ 2. Lục Hào Kinh Dịch — {_lh_v}\n"
-                f"⚠️ BẮT BUỘC PHẢI DIỄN GIẢI TẤT CẢ CÁC MỤC SAU (lấy từ <dung_than_analysis>):\n\n"
+                f"BẮT BUỘC DIỄN GIẢI TẤT CẢ CÁC MỤC SAU (data đã tính sẵn ở trên):\n\n"
                 f"**a) Dụng Thần ({_dung_than}):**\n"
                 f"- Hào mấy? Can Chi gì? Ngũ Hành gì? Vượng/Suy/Tử?\n"
                 f"- Có ĐỘNG không? → [giải thích ảnh hưởng]\n"
@@ -2637,6 +2638,12 @@ class FreeAIHelper:
             
             # V30.0: Gọi Gemini — KHÔNG gọi _get_paranoid_context (loại bỏ nguồn mâu thuẫn)
             result = gemini._call_ai_raw(deep_prompt)
+            
+            # V31.5: RESPONSE CLEANER — strip leaked XML tags
+            if result and isinstance(result, str):
+                import re
+                result = re.sub(r'</?(?:dung_than_analysis|evidence_data|raw_data|verdict_lock|system_role|output_format|question_analysis|raw_ky_mon|raw_luc_hao|raw_mai_hoa|impact_evidence|count_data|age_data|offline_conclusion|luc_hao_factors|ky_mon_factors|mai_hoa_factors|thiet_ban_factors|luc_nham_factors|thai_at_factors|dai_luc_nham|thai_at|rag)>', '', result)
+                result = result.strip()
             
             if result and len(str(result)) > 50:
                 # V30.0: Enforce conclusion nhẹ nhàng — hỗ trợ, không phá
