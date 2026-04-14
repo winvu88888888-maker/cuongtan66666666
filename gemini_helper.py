@@ -84,18 +84,34 @@ class GeminiQMDGHelper:
             if not valid_models:
                 return False, "Key không có quyền truy cập model nào!"
 
-            # V31.3: Priority — FREE models first, PAID last (tránh chờ 404 vô ích)
-            priority_order = [
-                'gemini-2.5-pro',                  # FREE tier — Suy luận sâu nhất hiện tại
-                'gemini-2.5-flash',                # FREE — Nhanh, quota cao
-                'gemini-2.5-flash-lite',           # FREE — Nhẹ nhất
-                'gemini-1.5-flash',                # FREE — Legacy
-                'gemini-3.1-pro-preview',          # PAID — Chỉ dùng nếu có billing
-                'gemini-1.5-pro',                  # PAID — Legacy Pro
-            ]
-            
-            # Find best available model by checking against list_models
+            # V31.4: SMART BILLING DETECT — Auto-detect paid models
             model_names_short = [m.split('/')[-1] if '/' in m else m for m in valid_models]
+            
+            # Check: có model PAID trong danh sách? → có billing
+            has_billing = any('3.1-pro' in mn or '3.0-pro' in mn for mn in model_names_short)
+            
+            if has_billing:
+                # CÓ BILLING → ưu tiên model mạnh nhất (PAID)
+                priority_order = [
+                    'gemini-3.1-pro-preview',      # 🏆 BEST — Thế hệ mới nhất, suy luận siêu sâu
+                    'gemini-2.5-pro',              # Rất tốt — sâu, ổn định
+                    'gemini-2.5-flash',            # Nhanh — fallback
+                    'gemini-2.5-flash-lite',       # Nhẹ — fallback
+                    'gemini-1.5-pro',              # Legacy Pro
+                    'gemini-1.5-flash',            # Legacy
+                ]
+                tier_label = "💎 PREMIUM (Billing Active)"
+            else:
+                # KHÔNG BILLING → chỉ dùng FREE models
+                priority_order = [
+                    'gemini-2.5-pro',              # 🏆 FREE — Suy luận sâu nhất
+                    'gemini-2.5-flash',            # FREE — Nhanh, quota cao
+                    'gemini-2.5-flash-lite',       # FREE — Nhẹ nhất
+                    'gemini-1.5-flash',            # FREE — Legacy
+                ]
+                tier_label = "🆓 FREE Tier"
+            
+            # Find best available model
             first_match = None
             for model_alias in priority_order:
                 if any(model_alias in mn for mn in model_names_short):
@@ -104,9 +120,10 @@ class GeminiQMDGHelper:
             
             if first_match:
                 self.model_name = first_match
-                return True, f"Kết nối OK! ({first_match}) — Sẵn sàng"
+                # V31.4: Update cascade_models theo billing
+                self.cascade_models = priority_order
+                return True, f"Kết nối OK! ({first_match}) — {tier_label}"
             else:
-                # Fallback: use first available model
                 fallback = model_names_short[0] if model_names_short else 'gemini-2.0-flash'
                 self.model_name = fallback
                 return True, f"Kết nối OK! ({fallback})"
