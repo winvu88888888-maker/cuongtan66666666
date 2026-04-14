@@ -1444,23 +1444,49 @@ class FreeAIHelper:
             dt_idx = None
             the_hao = None
             ung_hao = None
+            
+            # V31.4: Normalize DT name cho matching robust hơn
+            # VD: 'Thê Tài (vợ/tiền)' → match 'Thê Tài'
+            LUC_THAN_NAMES = ['Phụ Mẫu', 'Quan Quỷ', 'Huynh Đệ', 'Tử Tôn', 'Thê Tài']
+            dt_base = dung_than
+            for lt_name in LUC_THAN_NAMES:
+                if lt_name in dung_than:
+                    dt_base = lt_name
+                    break
+            
             for i, hao in enumerate(haos):
-                lt = hao.get('luc_than', '') or hao.get('luc_thu', '')
-                tu = hao.get('the_ung', '') or hao.get('marker', '')
-                if lt == dung_than or (dung_than in ['Phụ Mẫu (Cha)', 'Phụ Mẫu (Mẹ)'] and 'Phụ Mẫu' in lt):
+                lt = str(hao.get('luc_than', '') or hao.get('luc_thu', ''))
+                tu = str(hao.get('the_ung', '') or hao.get('marker', ''))
+                
+                # Match bằng chứa (in) thay vì bằng (==) - robust hơn
+                if dt_base in lt or lt in dt_base:
                     dt_hao = hao
                     dt_idx = i + 1
-                if dung_than == 'Bản Thân' and 'Thế' in str(tu):
+                
+                # 'Bản Thân' hoặc 'Thế' → Hào Thế
+                if dung_than in ['Bản Thân', 'Thế'] and 'Thế' in tu:
                     dt_hao = hao
                     dt_idx = i + 1
-                if 'Thế' in str(tu):
+                
+                if 'Thế' in tu:
                     the_hao = hao
-                if 'Ứng' in str(tu):
+                if 'Ứng' in tu:
                     ung_hao = hao
             
+            # V31.4: Fallback — nếu vẫn không match, thử match luc_thu field
+            if not dt_hao:
+                for i, hao in enumerate(haos):
+                    lt2 = str(hao.get('luc_thu', ''))
+                    if dt_base in lt2 or lt2 in dt_base:
+                        dt_hao = hao
+                        dt_idx = i + 1
+                        break
+            
+            # V31.4: Fallback cuối — nếu DT vẫn None, dùng hào Thế
             if not dt_hao and the_hao:
                 dt_hao = the_hao
                 dt_idx = haos.index(the_hao) + 1 if the_hao in haos else None
+                lines.append(f"\n  ⚠️ DT ({dung_than}) không match trực tiếp → DÙNG HÀO THẾ làm đại diện")
             
             if dt_hao:
                 dt_canchi = dt_hao.get('can_chi', '?')
