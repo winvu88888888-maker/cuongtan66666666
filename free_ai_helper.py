@@ -1,8 +1,13 @@
-﻿"""
-Free AI Helper V29.0 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + STREAMLINED PROMPT)
+"""
+Free AI Helper V32.1 — THIÊN CƠ ĐẠI SƯ (LỤC THUẬT HỢP NHẤT + ANTI-HALLUCINATION)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
-V29.0: Streamlined prompt (15K→3K tokens), Answer First protocol,
+V32.1: Anti-hallucination upgrade — Pre-fill Cách Cục/Ứng Kỳ/bảng tổng hợp,
+       Post-validation phát hiện data bịa (sao/cửa không hợp lệ),
+       13 quy tắc system_role chống bịa.
+V32.0: Cừu Thần auto-compute fix, Tứ Thời Vượng Suy 5 trạng thái,
+       Biến Quái luận giải chi tiết (5 quan hệ + ảnh hưởng verdict + Tứ Thời).
+       Kế thừa V29.0: Streamlined prompt, Answer First protocol,
        _enforce_conclusion() post-processing, Single verdict block.
        Kế thừa V28.1: Verdict sync, NHÀ_CỬA keywords, subject mapping.
        Kế thừa V21.0: Lượng Hóa Suy Vượng, Tiến/Thối Thần, Nguyệt Phá.
@@ -1284,6 +1289,55 @@ class FreeAIHelper:
         # Mặc định: GENERAL (trả lời tổng hợp, không ép CÓ/KHÔNG)
         return 'GENERAL'
     
+    def _post_validate_response(self, response, valid_sao_set, valid_cua_set,
+                                 bt_sao, bt_cua, bt_than, dt_sao, dt_cua):
+        """V32.1: POST-VALIDATION — Phát hiện data bịa trong response Gemini.
+        
+        Kiểm tra xem Gemini có nhắc đến sao/cửa KHÔNG có trong chart_data không.
+        Nếu phát hiện → thêm cảnh báo nhỏ, KHÔNG xóa text (vì có thể sai detection).
+        """
+        if not response:
+            return response
+        
+        try:
+            import re
+            
+            # Danh sách TẤT CẢ sao/cửa hợp lệ trong Kỳ Môn
+            ALL_SAO_KM = ['Thiên Bồng', 'Thiên Nhậm', 'Thiên Xung', 'Thiên Phụ',
+                         'Thiên Anh', 'Thiên Nhuế', 'Thiên Cầm', 'Thiên Tâm', 'Thiên Trụ']
+            ALL_CUA_KM = ['Khai Môn', 'Hưu Môn', 'Sinh Môn', 'Thương Môn',
+                         'Đỗ Môn', 'Cảnh Môn', 'Tử Môn', 'Kinh Môn']
+            
+            # Check: Gemini có nhắc sao nào KHÔNG có trong 9 cung?
+            fabricated_items = []
+            for sao in ALL_SAO_KM:
+                if sao in response and sao not in valid_sao_set:
+                    # Sao này KHÔNG có trong bất kỳ cung nào → có thể bịa context
+                    # Nhưng nếu là sao đã extract bt_sao/dt_sao → OK
+                    if sao != str(bt_sao) and sao != str(dt_sao):
+                        fabricated_items.append(f"Sao '{sao}'")
+            
+            for cua in ALL_CUA_KM:
+                if cua in response and cua not in valid_cua_set:
+                    if cua != str(bt_cua) and cua != str(dt_cua):
+                        fabricated_items.append(f"Cửa '{cua}'")
+            
+            if fabricated_items and len(fabricated_items) >= 2:
+                # Chỉ cảnh báo khi phát hiện >= 2 items không hợp lệ
+                warning = (
+                    f"\n\n---\n"
+                    f"*⚠️ Lưu ý: Một số thông tin có thể cần kiểm chứng thêm. "
+                    f"Vui lòng xem phần AI Offline để đối chiếu.*"
+                )
+                response += warning
+                self.log_step("Post-Validate", "WARN", 
+                             f"Phát hiện {len(fabricated_items)} mục có thể bịa: {', '.join(fabricated_items[:3])}")
+            
+        except Exception:
+            pass  # Post-validation failure is non-critical
+        
+        return response
+    
     def _enforce_conclusion(self, raw_response, weighted_pct, dung_than, question=''):
         """V30.0: Kiểm tra + bổ sung kết luận. KHÔNG PHÁ KẾT QUẢ GEMINI.
         - Check 15 dòng đầu thay vì 3
@@ -1586,7 +1640,13 @@ class FreeAIHelper:
                         lines.append(f"\n  🟤 CỪU THẦN (hành {', '.join(cuu_hanh)} sinh Kỵ Thần):")
                         found_ct = False
                         for hao in haos:
-                            h_hanh = hao.get('ngu_hanh', '')
+                            h_hanh = hao.get('ngu_hanh', '') or hao.get('hanh', '')
+                            # V32.0: Auto-compute từ Chi nếu thiếu (giống NT/KT)
+                            if not h_hanh:
+                                for c in CHI_LIST:
+                                    if c in str(hao.get('can_chi', '')):
+                                        h_hanh = CHI_NGU_HANH_LOCAL.get(c, '')
+                                        break
                             if h_hanh in cuu_hanh and hao != dt_hao:
                                 h_cc = hao.get('can_chi', '?')
                                 h_vuong = str(hao.get('vuong_suy', '?'))
@@ -2080,10 +2140,49 @@ class FreeAIHelper:
             from gemini_helper import GeminiQMDGHelper
             gemini = GeminiQMDGHelper(api_key)
             
-            self.log_step("Online AI", "RUNNING", f"Gemini V30.0 XML prompt: {question[:50]}...")
+            self.log_step("Online AI", "RUNNING", f"Gemini V32.1 XML prompt: {question[:50]}...")
             
-            # === V30.0: BUILD XML-STRUCTURED PROMPT ===
+            # === V32.1: BUILD XML-STRUCTURED PROMPT ===
             od = offline_analysis_data or {}
+            
+            # V32.1: Pre-extract Cách Cục KM từ v24_km_factors (chống bịa)
+            _cach_cuc_text = 'Không phát hiện cách cục đặc biệt'
+            _tam_ky_text = ''
+            _km_factors = od.get('v24_km_factors', [])
+            for f in _km_factors:
+                f_str = str(f)
+                if 'Cách Cục' in f_str:
+                    _cach_cuc_text = f_str.replace('├ ⑤ ', '').replace('│  └ 📖 ', ' — ')
+                    break
+            for f in _km_factors:
+                f_str = str(f)
+                if 'Tam Kỳ' in f_str:
+                    _tam_ky_text = f_str.replace('├ ', '').strip()
+                    break
+            if _tam_ky_text:
+                _cach_cuc_text += f' | {_tam_ky_text}'
+            
+            # V32.1: Pre-extract Ứng Kỳ từ v15_timing (chống bịa)
+            _ung_ky_prefill = od.get('v15_timing', '') or 'Chưa xác định rõ'
+            _timeline_prefill = od.get('v15_timeline', '') or 'Xem evidence_data'
+            
+            # V32.1: Pre-extract top factor cho mỗi PP (chống bịa bảng tổng hợp)
+            _km_top_factor = od.get('ky_mon_reason', '?')[:60]
+            _lh_top_factor = od.get('luc_hao_reason', '?')[:60]
+            _mh_top_factor = od.get('mai_hoa_reason', '?')[:60]
+            _ln_top_factor = od.get('luc_nham_reason', '?')[:60]
+            _ta_top_factor = od.get('thai_at_reason', '?')[:60]
+            
+            # V32.1: Build valid sao/cửa/thần list for post-validation
+            _valid_sao_set = set()
+            _valid_cua_set = set()
+            if chart_data and isinstance(chart_data, dict):
+                thien_ban_v = chart_data.get('thien_ban', {})
+                nhan_ban_v = chart_data.get('nhan_ban', {})
+                for cv in thien_ban_v.values():
+                    _valid_sao_set.add(str(cv))
+                for cv in nhan_ban_v.values():
+                    _valid_cua_set.add(str(cv))
             rag_prompt = ""
             
             # V25.0: RAG Feedback
@@ -2506,6 +2605,8 @@ class FreeAIHelper:
                 f"9. DIỄN GIẢI = Giải thích TẠI SAO, KHÔNG chỉ liệt kê.\n"
                 f"10. ĐẾM: bao nhiêu ✅ THUẬN vs ❌ BẤT LỢI → dẫn đến verdict.\n"
                 f"11. ⛔ CẤM tất cả tên tag XML trong output (không hiện gì có dấu < > như dung_than_analysis, evidence_data...).\n"
+                f"12. ⛔ V32.1: Cách Cục, Ứng Kỳ, Bảng Tổng Hợp ĐÃ ĐƯỢC PYTHON ĐIỀN SẴN → CHỈ diễn giải thêm, KHÔNG bịa thêm data mới.\n"
+                f"13. ⛔ V32.1: CẤM bịa thêm sao/cửa/thần ngoài BT={_bt_sao}/{_bt_cua}/{_bt_than} và SV={_dt_sao_km}/{_dt_cua_km}. Nếu muốn nhắc sao/cửa khác → PHẢI trích dẫn từ evidence_data.\n"
                 f"</system_role>\n\n"
                 
                 f"<verdict_lock>\n"
@@ -2548,7 +2649,8 @@ class FreeAIHelper:
                 f"- **Cung Sự Việc:** Cung {_dt_cung_km}, Sao={_dt_sao_km}, Cửa={_dt_cua_km}\n"
                 f"  → [diễn giải ảnh hưởng đến câu hỏi]\n"
                 f"- **Ngũ Hành xung khắc:** [Thiên Bàn vs Địa Bàn — sinh/khắc cụ thể]\n"
-                f"- **Cách Cục đặc biệt:** [có Tam Kỳ Đắc Sử, Ngọc Nữ, hay không?]\n\n"
+                f"- **Cách Cục (V32.1 — PYTHON ĐÃ TÍNH):** {_cach_cuc_text}\n"
+                f"  ⛔ CHỈ nói về cách cục trên, KHÔNG được bịa thêm cách cục khác!\n\n"
                 f"### ☯️ 2. Lục Hào Kinh Dịch — {_lh_v}\n"
                 f"BẮT BUỘC DIỄN GIẢI TẤT CẢ CÁC MỤC SAU (data đã tính sẵn ở trên):\n\n"
                 f"**a) Dụng Thần ({_dung_than}):**\n"
@@ -2605,20 +2707,22 @@ class FreeAIHelper:
                 f"## 🔮 TỔNG HỢP 5 PHƯƠNG PHÁP:\n"
                 f"| PP | Verdict | Yếu tố chính |\n"
                 f"|:---|:---:|:---|\n"
-                f"| 1. Kỳ Môn | {_km_v} | [1 yếu tố quan trọng nhất] |\n"
-                f"| 2. Lục Hào | {_lh_v} | [1 yếu tố quan trọng nhất] |\n"
-                f"| 3. Mai Hoa | {_mh_v} | [1 yếu tố quan trọng nhất] |\n"
-                f"| 4. Đại Lục Nhâm | {_ln_v} | [1 yếu tố quan trọng nhất] |\n"
-                f"| 5. Thái Ất | {_ta_v} | [1 yếu tố quan trọng nhất] |\n"
+                f"| 1. Kỳ Môn | {_km_v} | {_km_top_factor} |\n"
+                f"| 2. Lục Hào | {_lh_v} | {_lh_top_factor} |\n"
+                f"| 3. Mai Hoa | {_mh_v} | {_mh_top_factor} |\n"
+                f"| 4. Đại Lục Nhâm | {_ln_v} | {_ln_top_factor} |\n"
+                f"| 5. Thái Ất | {_ta_v} | {_ta_top_factor} |\n"
                 f"| **TỔNG** | **{_cat_hung}** | **Weighted {_wpct}%** |\n\n"
-                f"## 💡 HƯỚNG DẪN HÀNH ĐỘNG:\n"
-                f"1. [Lời khuyên CỤ THỂ #1 — dựa trên yếu tố thuận lợi nào?]\n"
-                f"2. [Lời khuyên CỤ THỂ #2 — cần tránh điều gì dựa trên Kỵ Thần/Cửa Hung?]\n"
-                f"3. [Lời khuyên CỤ THỂ #3 — thời điểm/hướng tốt nhất?]\n\n"
-                f"## ⏰ THỜI VẬN:\n"
-                f"- **Ứng kỳ:** [ngày/tháng Chi nào dựa trên Ngũ Hành DT + 12 Trường Sinh]\n"
-                f"- **Mốc thuận lợi:** [cụ thể tháng/ngày/giờ]\n"
-                f"- **Cần tránh:** [thời điểm xung khắc DT]\n"
+                f"## 💡 HƯỚNG DẪN HÀNH ĐỘNG (dựa trên evidence_data, KHÔNG tự bịa):\n"
+                f"1. [Lời khuyên CỤ THỂ #1 — PHẢI dựa trên yếu tố THUẬN LỢI trong evidence_data]\n"
+                f"2. [Lời khuyên CỤ THỂ #2 — PHẢI dựa trên yếu tố BẤT LỢI (Kỵ Thần/Cửa) trong evidence_data]\n"
+                f"3. [Lời khuyên CỤ THỂ #3 — PHẢI dựa trên ứng kỳ/thời điểm trong evidence_data]\n\n"
+                f"## ⏰ THỜI VẬN (V32.1 — PYTHON ĐÃ TÍNH, CHỈ DIỄN GIẢI THÊM):\n"
+                f"- **Ứng kỳ (Python đã tính):** {_ung_ky_prefill}\n"
+                f"  → Diễn giải: [giải thích TẠI SAO thời điểm này dựa trên Ngũ Hành DT]\n"
+                f"- **Timeline (Python đã tính):** {_timeline_prefill}\n"
+                f"- **Cần tránh:** [thời điểm xung khắc DT — PHẢI dựa trên Chi DT trong data]\n"
+                f"  ⛔ KHÔNG được bịa thời điểm. Nếu Python chưa tính → nói 'Chưa xác định rõ'\n"
                 f"</output_format>\n\n"
                 
                 f"<evidence_data>\n"
@@ -2646,9 +2750,12 @@ class FreeAIHelper:
                 result = result.strip()
             
             if result and len(str(result)) > 50:
+                # V32.1: POST-VALIDATION — phát hiện data bịa
+                result = self._post_validate_response(result, _valid_sao_set, _valid_cua_set, _bt_sao, _bt_cua, _bt_than, _dt_sao_km, _dt_cua_km)
+                
                 # V30.0: Enforce conclusion nhẹ nhàng — hỗ trợ, không phá
                 result = self._enforce_conclusion(str(result), _wpct, _dung_than, question)
-                self.log_step("Online AI", "DONE", f"Gemini V30.0 trả lời {len(str(result))} ký tự")
+                self.log_step("Online AI", "DONE", f"Gemini V32.1 trả lời {len(str(result))} ký tự")
                 return str(result)
             
             return None
@@ -8333,21 +8440,52 @@ class FreeAIHelper:
                     if uk_info:
                         lines.append(f"  ⏰ Ứng Kỳ: {uk_info.get('giai_thich', '')} (tốc độ: {uk_info.get('toc_do', '?')})")
         
-        # ====== V9.0: LỆNH THÁNG VƯỢNG SUY ======
+        # ====== V32.0: TỨ THỜI VƯỢNG SUY THỂ QUÁI (5 trạng thái) ======
         lenh_hanh, lenh_mua = _get_lenh_thang_hanh()
         if the_el and the_el != '?':
-            if the_el == lenh_hanh:
-                lines.append(f"\n**🌿 LỆNH THÁNG (V9.0):** {lenh_mua} — {lenh_hanh} vượng")
-                lines.append(f"  → Thể quái ({the_el}) ĐANG VƯỢNG theo mùa = Sức mạnh TĂNG GẤP ĐÔI! ✅")
+            # V32.0: Dùng _calc_ngu_khi để tính chính xác 5 trạng thái Vượng/Tướng/Hưu/Tù/Tử
+            the_ngu_khi, the_ngu_khi_power = _calc_ngu_khi(the_el, lenh_hanh)
+            
+            ngu_khi_icons = {
+                'Vượng': ('🟢 CỰC VƯỢNG', '✅✅', 'CÁT'),
+                'Tướng': ('🔵 TƯỚNG', '✅', None),
+                'Hưu': ('🟡 HƯU', '', None),
+                'Tù': ('🟠 TÙ', '⚠️', None),
+                'Tử': ('🔴 TỬ', '❌', None),
+            }
+            nk_icon, nk_marker, nk_verdict_boost = ngu_khi_icons.get(the_ngu_khi, ('🟡 ?', '', None))
+            
+            lines.append(f"\n**🌿 TỨ THỜI VƯỢNG SUY (V32.0):** {lenh_mua} — {lenh_hanh} vượng")
+            lines.append(f"  → Thể quái ({the_el}) trạng thái: **{the_ngu_khi}** ({nk_icon}, lực={the_ngu_khi_power}%) {nk_marker}")
+            
+            if the_ngu_khi == 'Vượng':
+                lines.append(f"  → Thể quái ĐANG VƯỢNG theo mùa = Sức mạnh CỰC ĐẠI, bản thân rất mạnh! ✅✅")
                 if verdict == "HUNG":
                     verdict = "BÌNH"
-                    reason += " + Thể vượng lệnh"
-            elif KHAC.get(lenh_hanh) == the_el:
-                lines.append(f"\n**🍂 LỆNH THÁNG (V9.0):** {lenh_mua} — {lenh_hanh} vượng")
-                lines.append(f"  → Thể quái ({the_el}) BỊ KHẮC bởi Lệnh Tháng ({lenh_hanh}) = SUY YẾU ⚠️")
+                    reason += " + Thể Vượng lệnh tháng"
+            elif the_ngu_khi == 'Tướng':
+                lines.append(f"  → Thể quái TƯỚNG (được sinh) = Sức mạnh KHÁ TỐT, bản thân có lực ✅")
+            elif the_ngu_khi == 'Hưu':
+                lines.append(f"  → Thể quái HƯU (nghỉ) = Sức mạnh TRUNG BÌNH, không mạnh không yếu")
+            elif the_ngu_khi == 'Tù':
+                lines.append(f"  → Thể quái TÙ (bị giam) = Sức mạnh YẾU, bản thân bị kìm hãm ⚠️")
                 if verdict == "CÁT":
                     verdict = "BÌNH"
-                    reason += " + Thể suy lệnh"
+                    reason += " + Thể Tù lệnh tháng"
+            elif the_ngu_khi == 'Tử':
+                lines.append(f"  → Thể quái TỬ (bị khắc) = Sức mạnh RẤT YẾU, bản thân cực kỳ bất lợi! ❌")
+                if verdict == "CÁT":
+                    verdict = "BÌNH"
+                    reason += " + Thể Tử lệnh tháng"
+            
+            # V32.0: Dụng quái Tứ Thời
+            if dung_el and dung_el != '?':
+                dung_ngu_khi, dung_ngu_khi_power = _calc_ngu_khi(dung_el, lenh_hanh)
+                lines.append(f"  → Dụng quái ({dung_el}) trạng thái: **{dung_ngu_khi}** (lực={dung_ngu_khi_power}%)")
+                if dung_ngu_khi in ['Vượng', 'Tướng'] and the_ngu_khi in ['Tù', 'Tử']:
+                    lines.append(f"  → ⚠️ DỤNG MẠNH + THỂ YẾU = Đối phương/sự việc ÁP ĐẢO bản thân!")
+                elif the_ngu_khi in ['Vượng', 'Tướng'] and dung_ngu_khi in ['Tù', 'Tử']:
+                    lines.append(f"  → ✅ THỂ MẠNH + DỤNG YẾU = Bản thân CHIẾM ƯU THẾ!")
         
         # ====== V28.3: NHẬT THẦN SINH KHẮC THỂ/DỤNG ======
         if chart_data and isinstance(chart_data, dict):
@@ -8395,7 +8533,7 @@ class FreeAIHelper:
                 lines.append(f"\n**⚠️ HỖ QUÁI KHẮC THỂ (V9.0):** Hỗ ({ho_el}) khắc Thể ({the_el})")
                 lines.append(f"  → Có TRỞ NGẠI ẨN chưa thấy, bên trong có vấn đề ngầm!")
         
-        # ====== V9.0: BIẾN QUÁI SINH KHẮC THỂ ======
+        # ====== V32.0: BIẾN QUÁI LUẬN GIẢI CHI TIẾT ======
         ten_bien = mai_hoa_data.get('ten_qua_bien', '')
         if ten_bien:
             # Tìm quái biến trong QUAI_Y_NGHIA
@@ -8404,13 +8542,40 @@ class FreeAIHelper:
                 bien_yn = QUAI_Y_NGHIA.get(bp, {})
                 if bien_yn:
                     bien_el = bien_yn.get('hanh', '')
+                    bien_tuong = bien_yn.get('tuong', '')
+                    lines.append(f"\n**🔮 BIẾN QUÁI (V32.0): {bp}** ({bien_el})")
+                    if bien_tuong:
+                        lines.append(f"  → Tượng: {bien_tuong}")
+                    
                     if bien_el and the_el and the_el != '?':
                         if SINH.get(bien_el) == the_el:
-                            lines.append(f"\n**🔮 BIẾN QUÁI SINH THỂ (V9.0):** Biến ({bien_el}) sinh Thể ({the_el})")
-                            lines.append(f"  → Kết cục TỐT HƠN dự kiến, có chuyển biến tích cực! ✅")
+                            lines.append(f"  → Biến ({bien_el}) SINH Thể ({the_el}) → Kết cục TỐT HƠN dự kiến! ✅")
+                            lines.append(f"  → Có chuyển biến TÍCH CỰC, hậu vận thuận lợi.")
+                            if verdict == "HUNG":
+                                verdict = "BÌNH"
+                                reason += " + Biến sinh Thể"
                         elif KHAC.get(bien_el) == the_el:
-                            lines.append(f"\n**🔮 BIẾN QUÁI KHẮC THỂ (V9.0):** Biến ({bien_el}) khắc Thể ({the_el})")
-                            lines.append(f"  → Kết cục XẤU HƠN, hậu quả lâu dài, cần đề phòng! ⚠️")
+                            lines.append(f"  → Biến ({bien_el}) KHẮC Thể ({the_el}) → Kết cục XẤU HƠN! ❌")
+                            lines.append(f"  → Hậu quả LÂU DÀI, cần đề phòng biến cố sau này.")
+                            if verdict == "CÁT":
+                                verdict = "BÌNH"
+                                reason += " + Biến khắc Thể"
+                        elif SINH.get(the_el) == bien_el:
+                            lines.append(f"  → Thể ({the_el}) SINH Biến ({bien_el}) → HAO TỔN SỨC LỰC ⚠️")
+                            lines.append(f"  → Bản thân phải BỎ CÔNG SỨC, tiêu hao vào kết quả.")
+                        elif KHAC.get(the_el) == bien_el:
+                            lines.append(f"  → Thể ({the_el}) KHẮC Biến ({bien_el}) → KIỂM SOÁT tốt kết cục ✅")
+                            lines.append(f"  → Bản thân CHỦ ĐỘNG được kết quả theo ý muốn.")
+                        else:
+                            lines.append(f"  → Thể-Biến Tỷ Hòa ({the_el}) → Kết cục BÌNH, không thay đổi nhiều.")
+                    
+                    # V32.0: Biến quái Tứ Thời (vượng suy theo mùa)
+                    if bien_el and lenh_hanh:
+                        bien_nk, bien_nk_pwr = _calc_ngu_khi(bien_el, lenh_hanh)
+                        if bien_nk in ['Vượng', 'Tướng']:
+                            lines.append(f"  → Biến quái ({bien_el}) VƯỢNG theo mùa = Kết cục CÓ SỨC MẠNH thực thi")
+                        elif bien_nk in ['Tù', 'Tử']:
+                            lines.append(f"  → Biến quái ({bien_el}) SUY theo mùa = Kết cục YẾU, KHÓ THÀNH hiện thực")
                     break
         
         # ====== V9.0: ỨNG KỲ MAI HOA ======
