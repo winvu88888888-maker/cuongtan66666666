@@ -1219,7 +1219,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V28.3 Dai Thong Nhat)"
+        self.name = "Thiên Cơ Đại Sư (V31.1 Deep DT Analysis)"
         self.version = "V26.2-Unified-Strength"
         self.model_name = "offline-rule-engine-v22.0"
         self.logs = []
@@ -1991,7 +1991,7 @@ class FreeAIHelper:
         return "\n".join(lines)
 
     def test_connection(self):
-        return True, "V28.3 Dai Thong Nhat — Offline + Online fallback"
+        return True, "V31.1 Deep DT Analysis — Offline + Online fallback"
 
     def _try_online_ai(self, question, chart_data=None, mai_hoa_data=None, luc_hao_data=None, topic=None,
                         offline_analysis_data=None):
@@ -5820,7 +5820,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V28.3 Dai Thong Nhat). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V31.1 Deep DT Analysis). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp Cừu Thần + Phi/Phục Thần + Hóa Tuyệt/Mộ. Đã học {lc} câu hỏi mới."
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -6028,7 +6028,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V28.3 Dai Thong Nhat\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V31.1 Deep DT Analysis\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ

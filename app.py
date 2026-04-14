@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-04-13-V29.4-SMART-QUESTION-TYPE
+# VERSION: 2026-04-14-V31.1-DEEP-DT-ANALYSIS
 try:
     st.set_page_config(
-        page_title="☯️ Kỳ Môn AI V29.4",
+        page_title="🔮 Kỳ Môn AI V31.1",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -124,7 +124,7 @@ st.sidebar.markdown("""
         <code style='color: #4CAF50; background: none;'>🚀 MODEL: GEMINI-2.5-PRO</code>
     </div>
     <div style='margin-top: 10px; font-size: 0.8em; color: #a0aec0;'>
-        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V29.4</b> —<br>Đại Thống Nhất Đa Môn Phái (6 Môn)
+        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V31.1</b> —<br>Đại Thống Nhất + Deep DT Analysis (6 Môn)
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -214,7 +214,7 @@ try:
     AI_FACTORY_AVAILABLE = True
 except ImportError as e:
     AI_FACTORY_AVAILABLE = False
-    print(f"âš ï¸ AI Factory modules not available: {e}")
+    print(f"âš ï¸  AI Factory modules not available: {e}")
     
 # --- INLINED GEMINI HELPER (DEPLOYMENT FIX V2.2) ---
 # [REMOVED DUPLICATE CLASS DEFINITION]

@@ -1,0 +1,84 @@
+123:         <code style='color: #4CAF50; background: none;'>🚀 MODEL: GEMINI-2.5-PRO</code>
+218: # --- INLINED GEMINI HELPER (DEPLOYMENT FIX V2.2) ---
+221: GEMINI_AVAILABLE = True
+1017:         ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "📊 Vạn Vật Loại Tượng", "🌊 Đại Lục Nhâm", "⭐ Thái Ất Thần Số", "🤖 Hỏi Gemini AI"],
+1039:     else:  # 🤖 Hỏi Gemini AI
+1040:         st.session_state.current_view = "gemini_ai"
+1083:         if st.button("🌐 Online AI", help="Sử dụng Gemini Pro (Yêu cầu API Key)", use_container_width=True):
+1086:             if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
+1093:             if 'gemini_helper' in st.session_state: del st.session_state.gemini_helper
+1103:         st_secret = st.secrets.get("GEMINI_API_KEY", None)
+1109:     saved_key = cookie_manager.get(cookie="GEMINI_API_KEY")
+1111:         saved_key = custom_data.get("GEMINI_API_KEY")
+1124:     manual_key = st.session_state.get("gemini_key")
+1139:     if 'gemini_helper' not in st.session_state:
+1155: # --- IMPORT GEMINI HELPER FROM EXTERNAL MODULE (Unified Logic) ---
+1157:     import gemini_helper
+1159:     # REMOVED: importlib.reload(gemini_helper) - This causes C-extension thread deadlocks and UI freezes!
+1160:     from gemini_helper import GeminiQMDGHelper
+1233:     """Wrapper class to maintain compatibility with existing code while routing to gemini_helper"""
+1234:     def __init__(self, gemini_helper):
+1235:         self.gemini = gemini_helper
+1246:         return self.gemini.answer_question(enhanced_question, chart_data=chart_data, topic=current_topic, mai_hoa_data=mai_hoa_data, luc_hao_data=luc_hao_data)
+1249: if 'gemini_helper' not in st.session_state:
+1252:             st.session_state.gemini_helper = FreeAIHelper()
+1257:         if secret_api_key and GEMINI_AVAILABLE:
+1260:                 _temp_helper = GeminiQMDGHelper(secret_api_key)
+1262:                 st.session_state.gemini_helper = _temp_helper
+1263:                 st.session_state.gemini_key = secret_api_key
+1266:                     st.session_state.ai_type = f"Gemini ({_temp_helper.model_name})"
+1270:                     st.session_state.ai_type = "Gemini (Lỗi kết nối)"
+1275:                 st.session_state.api_status_msg = f"Lỗi Gemini: {e}"
+1277:                     st.session_state.gemini_helper = FreeAIHelper()
+1280:             st.session_state.gemini_helper = FreeAIHelper()
+1326: if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_api_key'):
+1328:         temp_helper = GeminiQMDGHelper(st.session_state._resolved_api_key)
+1329:         st.session_state.gemini_helper = temp_helper
+1337:             st.session_state.gemini_helper = FreeAIHelper()
+1353:                     success, msg = st.session_state.gemini_helper.test_connection()
+1364:     st.markdown("👉 [Lấy Gemini API Key miễn phí](https://aistudio.google.com/app/apikey)")
+1381:             for k in ['api_key', 'gemini_key', 'gemini_helper', 'ai_orchestrator', 'api_status_ok', 'api_status_msg']:
+1387:                 if data.get("GEMINI_API_KEY"):
+1388:                     data["GEMINI_API_KEY"] = ""
+1405:                 cookie_manager.set("GEMINI_API_KEY", "", expires_at=dt_module.datetime.now() + dt_module.timedelta(days=-1))
+1421:                     temp_helper = GeminiQMDGHelper(user_api_input)
+1426:                         st.session_state.gemini_helper = temp_helper
+1427:                         st.session_state.gemini_key = temp_helper.api_key
+1428:                         st.session_state.ai_type = f"Gemini (Updated)"
+1436:                             data["GEMINI_API_KEY"] = _final_key
+1438:                             cookie_manager.set("GEMINI_API_KEY", _final_key, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
+1494:                 _gemini_key = st.session_state.pop("_need_pat_for_activate", "")
+1500:                 st.session_state._push_cloud_key = _gemini_key
+1510:         _gemini_key = st.session_state.pop("_push_cloud_key")
+1522:                 _secrets_content = f'GEMINI_API_KEY = "{_gemini_key}"\nGITHUB_PAT = "{_pat}"\n'
+1543:                         temp_helper = GeminiQMDGHelper(_gemini_key)
+1544:                         st.session_state.gemini_helper = temp_helper
+1545:                         st.session_state.gemini_key = _gemini_key
+1566:         if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'set_n8n_url'):
+1567:             st.session_state.gemini_helper.set_n8n_url(n8n_input)
+2209:                             st.caption("💡 Dùng tab '🤖 Hỏi Gemini AI' → LỤC THUẬT HỢP NHẤT để phân tích tổng hợp")
+2267:         if st.session_state.chart_data and 'gemini_helper' in st.session_state:
+2324:                             final_report = st.session_state.gemini_helper.answer_question(prompt)
+2416:                             st.caption("💡 Dùng '🌟 LỤC THUẬT HỢP NHẤT' trong tab Hỏi Gemini AI để phân tích chuyên sâu")
+2520:                         # ====== V13.0: AI ONLINE đã tích hợp trong answer_question ======
+2528:             # Moved outside of 'gemini_helper' check to persist during API key reload
+2585:                     st.caption("💡 Dùng '🌟 LỤC THUẬT HỢP NHẤT' trong tab Hỏi Gemini AI")
+2712:                                     _api_key = st.secrets.get('GEMINI_API_KEY', '')
+2755:                         # ====== V13.0: AI ONLINE đã tích hợp trong answer_question ======
+2875:         st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
+3084:         st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
+3129:         👉 Hãy chuyển sang Tab <b>"🤖 Hỏi Gemini AI"</b> và chọn <b>"🌟 LỤC THUẬT HỢP NHẤT"</b> để dung hợp Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản vào một câu trả lời duy nhất!
+3134:     st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
+3159:         ("Gemini Pro", "Siêu trí tuệ phân tích chuyên sâu", "🟢")
+3242:                     # orc = PhoenixOrchestrator(st.session_state.gemini_helper)
+3243:                     orc = st.session_state.gemini_helper # Use the main brain
+3256:                     res = st.session_state.gemini_helper._process_response(raw_response)
+3272: elif st.session_state.current_view == "gemini_ai":
+3276:     if not GEMINI_AVAILABLE and not FREE_AI_AVAILABLE:
+3281:     if 'gemini_helper' not in st.session_state:
+3335:         btn_ask_normal = st.button(f"🤖 Hỏi {ai_name} (Thường)", use_container_width=True, key="ask_gemini_btn")
+3425:                         orc = PhoenixOrchestrator(st.session_state.gemini_helper)
+3438:                         raw_response = st.session_state.gemini_helper.answer_question(
+3447:                     response_text = st.session_state.gemini_helper._process_response(raw_response)
+3512:                     if hasattr(st.session_state.gemini_helper, 'render_logs'):
+3513:                         st.session_state.gemini_helper.render_logs()

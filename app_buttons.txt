@@ -1,0 +1,26 @@
+332:             submitted = st.form_submit_button("Lưu Vào Não Bộ 💾")
+965:     if st.button("🔍 −", key="zoom_out", help="Thu nhỏ (Zoom Out)"):
+970:     if st.button(f"{st.session_state.zoom_level}%", key="zoom_reset", help="Đặt lại 100%"):
+975:     if st.button("🔍 +", key="zoom_in", help="Phóng to (Zoom In)"):
+1061:                 submitted = st.form_submit_button("💾 LƯU ÁN LỆ VÀO NÃO AI")
+1083:         if st.button("🌐 Online AI", help="Sử dụng Gemini Pro (Yêu cầu API Key)", use_container_width=True):
+1090:         if st.button("💾 Offline AI", help="Sử dụng Free AI (Dự phòng)", use_container_width=True):
+1351:             if st.button("🔄 Test Kết Nối Lại", key="test_ai_conn_unified", use_container_width=True):
+1358:             if st.button("R", key="force_refresh_unified", help="Reload App", use_container_width=True):
+1372:         btn_activate = st.button("⚡ KÍCH HOẠT + LƯU VĨNH VIỄN", type="primary", use_container_width=True, help="Kích hoạt key ngay + tự lưu lên GitHub vĩnh viễn")
+1375:         btn_clear_keys = st.button("🗑️ XÓA KEY CŨ", use_container_width=True, help="Xóa tất cả API key hết quota để nhập key mới")
+1492:         if st.button("✅ LƯU VĨNH VIỄN", type="primary", use_container_width=True, key="confirm_pat_activate"):
+1661: if st.button("📊 Đếm tổng số chủ đề đang có"):
+1668:         if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
+2280:                 if st.button("🔮 Bắt đầu Phân Tích Tổng Hợp", type="primary", use_container_width=True):
+2362:                 if st.button("🔍 So Sánh", type="primary", use_container_width=True):
+2454:                 unified_clicked = st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", type="primary", key="ai_unified_btn", use_container_width=True)
+2552:                 if st.button("📊 Chạy So Sánh", key="run_comp_btn", use_container_width=True):
+2592:                 if USE_SUPER_DETAILED and st.button("🚀 Tạo Báo Cáo Kỹ Thuật", key="tech_report_btn"):
+2686:                         st.download_button(
+2702:             if st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", key="ai_ask_unified", type="primary", use_container_width=True):
+3184:     if st.button("🚀 Bắt Đầu Quy Trình Tự Động", type="primary"):
+3237:     if st.button("🧙 Triệu hồi Chuyên Gia AI", type="primary"):
+3318:         if st.button("🗑️ Xóa Lịch Sử Hội Thoại", key="clear_chat_history"):
+3335:         btn_ask_normal = st.button(f"🤖 Hỏi {ai_name} (Thường)", use_container_width=True, key="ask_gemini_btn")
+3337:         btn_ask_supreme = st.button("🌟 LỤC THUẬT HỢP NHẤT", type="primary", help="Tự động gieo quẻ Kỳ Môn, Kinh Dịch, Mai Hoa và Thiết Bản để tổng hợp 1 kết quả chính xác nhất.", use_container_width=True, key="ask_supreme_btn")
