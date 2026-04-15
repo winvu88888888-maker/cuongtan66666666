@@ -1115,9 +1115,10 @@ CATEGORY_TO_STRENGTH = {
     'THỜI GIAN': 'thời_gian', 'BAO GIỜ': 'thời_gian', 'KHI NÀO': 'thời_gian',
     'PHƯƠNG HƯỚNG': 'phương_hướng', 'ĐI ĐÂU': 'phương_hướng',
     'TRANH ĐẤU': 'tranh_đấu', 'KIỆN TỤNG': 'tranh_đấu', 'ĐỐI THỦ': 'tranh_đấu',
-    'NHÀ ĐẤT': 'nhà_đất', 'MUA NHÀ': 'nhà_đất',
+    'NHÀ ĐẤT': 'nhà_đất', 'MUA NHÀ': 'nhà_đất', 'NHÀ CỬA': 'nhà_đất',
     'THI CỬ': 'thi_cử', 'HỌC HÀNH': 'thi_cử',
     'VẬN MỆNH': 'vận_mệnh', 'SỐ MỆNH': 'vận_mệnh',
+    'XUẤT HÀNH': 'phương_hướng', 'DI CHUYỂN': 'phương_hướng', 'VỀ QUÊ': 'phương_hướng',
 }
 
 METHOD_NAMES = {
@@ -5986,27 +5987,70 @@ class FreeAIHelper:
             except Exception as e:
                 self.log_step("V32.4 AutoCast", "LH_ERR", str(e)[:60])
         
-        # 3. Chart Data (Kỳ Môn cơ bản): nếu chưa có thì tạo từ thời gian
-        if not chart_data or not isinstance(chart_data, dict):
+        # 3. Chart Data (Kỳ Môn ĐẦY ĐỦ 9 CUNG): gọi hàm thật từ qmdg_calc + qmdg_data
+        if not chart_data or not isinstance(chart_data, dict) or not chart_data.get('thien_ban'):
             try:
-                _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
-                _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
-                _jdn = int(365.25 * (_y + 4716)) + int(30.6001 * (_m + 1)) + _d - 1524
-                _can_n = _cans[(_jdn + 9) % 10]
-                _chi_n = _chis[(_jdn + 1) % 12]
-                _chi_g = _chis[(_h // 2) % 12]
+                from qmdg_calc import calculate_qmdg_params
+                from qmdg_data import lap_ban_qmdg
+                
+                # Tính tham số Kỳ Môn từ thời gian hiện tại
+                _params = calculate_qmdg_params(_now324)
+                
+                # Lập bàn 9 cung đầy đủ (Sao/Cửa/Thần/Can Thiên bàn)
+                _thien_ban, _can_thien_ban, _nhan_ban, _than_ban, _truc_phu_cung = lap_ban_qmdg(
+                    _params['cuc'],
+                    _params['truc_phu'],
+                    _params['truc_su'],
+                    _params['can_gio'],
+                    _params['chi_gio'],
+                    _params['is_duong_don']
+                )
+                
+                # Tạo dia_ban từ qmdg_calc
+                from qmdg_data import an_bai_luc_nghi
+                _dia_ban = an_bai_luc_nghi(_params['cuc'], _params['is_duong_don'])
                 
                 chart_data = {
-                    'can_ngay': _can_n,
-                    'chi_ngay': _chi_n, 
-                    'chi_gio': _chi_g,
-                    'tiet_khi': 'Xuân Phân',  # Default
-                    'can_thien_ban': {},
+                    'can_ngay': _params['can_ngay'],
+                    'chi_ngay': _params['chi_ngay'],
+                    'can_gio': _params['can_gio'],
+                    'chi_gio': _params['chi_gio'],
+                    'can_thang': _params['can_thang'],
+                    'chi_thang': _params['chi_thang'],
+                    'can_nam': _params['can_nam'],
+                    'chi_nam': _params['chi_nam'],
+                    'tiet_khi': _params['tiet_khi'],
+                    'cuc': _params['cuc'],
+                    'is_duong_don': _params['is_duong_don'],
+                    'tuan_thu': _params['tuan_thu'],
+                    'truc_phu': _params['truc_phu'],
+                    'truc_su': _params['truc_su'],
+                    'thien_ban': _thien_ban,
+                    'can_thien_ban': _can_thien_ban,
+                    'nhan_ban': _nhan_ban,
+                    'than_ban': _than_ban,
+                    'dia_ban': _dia_ban,
                     '_auto_generated': True
                 }
-                self.log_step("V32.4 AutoCast", "CHART", f"Can={_can_n} {_chi_n}, Giờ={_chi_g}")
+                self.log_step("V32.5 AutoCast", "CHART_FULL", 
+                    f"9 Cung OK | Can={_params['can_ngay']} {_params['chi_ngay']} | "
+                    f"Cục={_params['cuc']} | TK={_params['tiet_khi']}")
             except Exception as e:
-                self.log_step("V32.4 AutoCast", "CHART_ERR", str(e)[:60])
+                self.log_step("V32.5 AutoCast", "CHART_ERR", str(e)[:100])
+                # Fallback tối thiểu
+                try:
+                    _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                    _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                    _jdn = int(365.25 * (_y + 4716)) + int(30.6001 * (_m + 1)) + _d - 1524
+                    chart_data = {
+                        'can_ngay': _cans[(_jdn + 9) % 10],
+                        'chi_ngay': _chis[(_jdn + 1) % 12],
+                        'chi_gio': _chis[(_h // 2) % 12],
+                        'can_thien_ban': {},
+                        '_auto_generated': True
+                    }
+                except:
+                    pass
 
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
@@ -6041,7 +6085,9 @@ class FreeAIHelper:
                              "xin việc", "nghỉ việc", "sa thải", "hợp đồng", "dự án", "thầu", "đấu thầu",
                              "kiện", "kiện tụng", "tòa", "quan chức", "chức vụ", "đề bạt",
                              "du học", "học hành", "thi cử", "đại học", "đi làm", "chức", "sự nghiệp",
-                             "khởi nghiệp", "startup", "bổ nhiệm", "chuyển công tác"],
+                             "khởi nghiệp", "startup", "bổ nhiệm", "chuyển công tác",
+                             "sản xuất", "phát triển", "thụt lùi", "công ty", "nhà máy", "xưởng",
+                             "doanh nghiệp", "cơ sở", "kinh doanh", "mở rộng", "phá sản"],
                 "dung_than": "Quan Quỷ",
                 "dung_than_detail": {"con trai": "Tử Tôn", "con gái": "Tử Tôn", "con": "Tử Tôn"},
                 "label": "💼 Công Việc / Sự Nghiệp / Thi Cử",
@@ -6075,10 +6121,22 @@ class FreeAIHelper:
                 "label": "🏠 Nhà Cửa / Bất Động Sản",
                 "hint": "Phân tích nhà cửa. Thê Tài = tài sản/nhà. Cấn = núi/nhà cao tầng."
             },
-            "CHUNG": {
-                "keywords": ["vận mệnh", "năm nay", "tháng này", "an toàn", "quý nhân", "may mắn"],
+            "XUẤT_HÀNH": {
+                "keywords": ["về quê", "đi xa", "du lịch", "xuất hành", "đi chơi", "chuyến đi",
+                             "di chuyển", "bay", "máy bay", "tàu", "xe", "đi công tác",
+                             "ra nước ngoài", "đi nước ngoài", "đi đâu", "đi xa", "lên đường",
+                             "khởi hành", "hành trình", "về nhà", "về quê", "đi về"],
                 "dung_than": "Bản Thân",
                 "dung_than_detail": {},
+                "label": "✈️ Xuất Hành / Di Chuyển",
+                "hint": "Phân tích xuất hành. Cửa Khai/Hưu/Sinh=NÊN ĐI. Tử/Kinh=KHÔNG. Dịch Mã=DI CHUYỂN."
+            },
+            "CHUNG": {
+                "keywords": ["vận mệnh", "năm nay", "tháng này", "an toàn", "quý nhân", "may mắn",
+                             "tuổi", "bao nhiêu tuổi", "mấy tuổi"],
+                "dung_than": "Bản Thân",
+                "dung_than_detail": {"vợ": "Thê Tài", "chồng": "Quan Quỷ", "bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu",
+                                     "con": "Tử Tôn", "anh": "Huynh Đệ", "chị": "Huynh Đệ"},
                 "label": "❓ Tổng Quát",
                 "hint": "Phân tích tổng quát dựa trên ngũ hành sinh khắc và tổng hợp 6 phương pháp."
             }
