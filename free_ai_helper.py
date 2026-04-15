@@ -5940,6 +5940,74 @@ class FreeAIHelper:
         if len(question) < 2:
             question = original_question.strip()
         
+        # ═══════════════════════════════════════════════════════
+        # V32.4: TỰ ĐỘNG GIEO QUẺ KHI KHÔNG CÓ DỮ LIỆU
+        # Đảm bảo 6/6 phương pháp LUÔN có data, kể cả Hỏi Nhanh
+        # ═══════════════════════════════════════════════════════
+        import datetime as _dt324
+        _now324 = _dt324.datetime.now()
+        _y, _m, _d, _h = _now324.year, _now324.month, _now324.day, _now324.hour
+        
+        # 1. Mai Hoa: gieo theo thời gian
+        if not mai_hoa_data:
+            try:
+                from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
+                mai_hoa_data = tinh_qua_theo_thoi_gian(_y, _m, _d, _h)
+                mai_hoa_data['interpretation'] = giai_qua(mai_hoa_data, topic or 'Chung')
+                self.log_step("V32.4 AutoCast", "MAI_HOA", f"Quẻ: {mai_hoa_data.get('ten_que', '?')}")
+            except Exception as e:
+                self.log_step("V32.4 AutoCast", "MH_ERR", str(e)[:60])
+        
+        # 2. Lục Hào: gieo theo thời gian
+        if not luc_hao_data:
+            try:
+                from luc_hao_kinh_dich import lap_qua_luc_hao
+                _can_ngay = 'Giáp'
+                _chi_ngay = 'Tý'
+                if chart_data and isinstance(chart_data, dict):
+                    _can_ngay = chart_data.get('can_ngay', 'Giáp')
+                    _chi_ngay = chart_data.get('chi_ngay', 'Tý')
+                else:
+                    # Tính Can Ngày từ thời gian
+                    _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                    _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                    # Công thức Can Ngày đơn giản
+                    _jdn = int(365.25 * (_y + 4716)) + int(30.6001 * (_m + 1)) + _d - 1524
+                    _can_ngay = _cans[(_jdn + 9) % 10]
+                    _chi_ngay = _chis[(_jdn + 1) % 12]
+                
+                luc_hao_data = lap_qua_luc_hao(
+                    _y, _m, _d, _h,
+                    topic=topic or 'Chung',
+                    can_ngay=_can_ngay,
+                    chi_ngay=_chi_ngay
+                )
+                self.log_step("V32.4 AutoCast", "LUC_HAO", f"Can={_can_ngay}, Chi={_chi_ngay}")
+            except Exception as e:
+                self.log_step("V32.4 AutoCast", "LH_ERR", str(e)[:60])
+        
+        # 3. Chart Data (Kỳ Môn cơ bản): nếu chưa có thì tạo từ thời gian
+        if not chart_data or not isinstance(chart_data, dict):
+            try:
+                _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                _jdn = int(365.25 * (_y + 4716)) + int(30.6001 * (_m + 1)) + _d - 1524
+                _can_n = _cans[(_jdn + 9) % 10]
+                _chi_n = _chis[(_jdn + 1) % 12]
+                _chi_g = _chis[(_h // 2) % 12]
+                
+                chart_data = {
+                    'can_ngay': _can_n,
+                    'chi_ngay': _chi_n, 
+                    'chi_gio': _chi_g,
+                    'tiet_khi': 'Xuân Phân',  # Default
+                    'can_thien_ban': {},
+                    '_auto_generated': True
+                }
+                self.log_step("V32.4 AutoCast", "CHART", f"Can={_can_n} {_chi_n}, Giờ={_chi_g}")
+            except Exception as e:
+                self.log_step("V32.4 AutoCast", "CHART_ERR", str(e)[:60])
+
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
         q_lower = question.lower()
