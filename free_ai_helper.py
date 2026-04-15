@@ -1830,9 +1830,22 @@ class FreeAIHelper:
         lh = luc_hao_data if isinstance(luc_hao_data, dict) else {}
         if lh:
             lines.append("#### 📜 LỤC HÀO KINH DỊCH — 6 Hào")
-            haos = lh.get('haos', lh.get('hao_list', []))
-            nguyet = lh.get('nguyet_lenh', lh.get('chi_thang', '?'))
-            nhat = lh.get('nhat_than', lh.get('chi_ngay', '?'))
+            ban_lh = lh.get('ban', {})
+            haos = lh.get('haos', lh.get('hao_list', [])) or ban_lh.get('haos', ban_lh.get('details', []))
+            nguyet = lh.get('nguyet_lenh', lh.get('chi_thang', ''))
+            nhat = lh.get('nhat_than', lh.get('can_ngay', ''))
+            
+            # V32.5: Fallback Nguyệt/Nhật từ calculate_qmdg_params
+            if not nguyet or nguyet == '?':
+                try:
+                    import datetime as _dt_im
+                    from qmdg_calc import calculate_qmdg_params as _calc_im
+                    _pi = _calc_im(_dt_im.datetime.now())
+                    nguyet = _pi.get('chi_thang', '?')
+                    if not nhat: nhat = _pi.get('can_ngay', '?')
+                except:
+                    nguyet = nguyet or '?'
+            nhat = nhat or '?'
             
             if haos and isinstance(haos, list):
                 lines.append(f"Nguyệt Lệnh=**{nguyet}** | Nhật Thần=**{nhat}**")
@@ -1843,14 +1856,17 @@ class FreeAIHelper:
                     if isinstance(hao, dict):
                         pos = ['Sơ', 'Nhị', 'Tam', 'Tứ', 'Ngũ', 'Thượng'][idx] if idx < 6 else str(idx+1)
                         lt = hao.get('luc_than', '?')
-                        chi = hao.get('chi', '?')
-                        hanh = hao.get('hanh', '?')
-                        dong = '🔄' if hao.get('dong') else '—'
+                        chi = hao.get('chi', '') or (hao.get('can_chi','').split('-')[0] if hao.get('can_chi') else '?')
+                        hanh = hao.get('hanh', '') or hao.get('ngu_hanh', '?')
+                        dong = '🔄' if (hao.get('dong') or hao.get('is_moving')) else '—'
                         role = ''
-                        if lt == dung_than or (dung_than == 'Bản Thân' and hao.get('the_hao')):
+                        tu = hao.get('the_ung', '') or hao.get('marker', '')
+                        if lt == dung_than:
                             role = '⭐ DT'
-                        if hao.get('the_hao'): role += ' 👤Thế'
-                        if hao.get('ung_hao'): role += ' 🎯Ứng'
+                        elif dung_than == 'Bản Thân' and 'Thế' in str(tu):
+                            role = '⭐ DT'
+                        if 'Thế' in str(tu): role += ' 👤Thế'
+                        if 'Ứng' in str(tu): role += ' 🎯Ứng'
                         lines.append(f"| {pos} | {lt} | {chi} | {hanh} | {dong} | {role} |")
             
             lines.append("")
