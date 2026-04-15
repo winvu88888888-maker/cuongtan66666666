@@ -896,7 +896,56 @@ def get_tham_tu_mo_ta(hanh, truong_sinh_stage, question=""):
     if cn.get('mo_ta_tang'):
         lines.append(f"🧑 **Người liên quan:** {cn['mo_ta_tang']}")
     
+    # V31.4: Thêm dữ liệu mở rộng
+    try:
+        from van_vat_mo_rong import VAN_VAT_MO_RONG
+        expanded = VAN_VAT_MO_RONG.get(hanh, {})
+        
+        # Phương tiện
+        pt = expanded.get('phuong_tien', {})
+        pt_items = pt.get(truong_sinh_stage, pt.get('chung', []))
+        if pt_items:
+            lines.append(f"🚗 **Phương tiện:** {', '.join(pt_items[:5])}")
+        
+        # Trang phục
+        tp = expanded.get('trang_phuc', {})
+        tp_items = tp.get(truong_sinh_stage, tp.get('chung', []))
+        if tp_items:
+            lines.append(f"👔 **Trang phục:** {', '.join(tp_items[:5])}")
+        
+        # Thực phẩm
+        food = expanded.get('thuc_pham_chi_tiet', {})
+        food_items = food.get('chung', [])
+        drink_items = food.get('do_uong', [])
+        if food_items:
+            lines.append(f"🍜 **Thực phẩm:** {', '.join(food_items[:6])}")
+        if drink_items:
+            lines.append(f"🥤 **Đồ uống:** {', '.join(drink_items[:5])}")
+        
+        # Khoáng sản
+        ks = expanded.get('khoang_san', [])
+        if ks:
+            lines.append(f"💎 **Khoáng sản/Đá quý:** {', '.join(ks[:5])}")
+        
+        # Thể thao
+        tt = expanded.get('the_thao', [])
+        if tt:
+            lines.append(f"⚽ **Thể thao:** {', '.join(tt[:5])}")
+        
+        # Cảm xúc
+        cx = expanded.get('cam_xuc', [])
+        if cx:
+            lines.append(f"🎭 **Cảm xúc:** {', '.join(cx[:5])}")
+        
+        # Thời tiết
+        tw = expanded.get('thoi_tiet', [])
+        if isinstance(tw, list) and tw:
+            lines.append(f"🌤️ **Thời tiết:** {', '.join(tw[:4])}")
+    except ImportError:
+        pass
+    
     # Xu hướng
     lines.append(f"📈 **Xu hướng:** {data.get('xu_huong', '?')}")
     
     return "\n".join(lines)
+
