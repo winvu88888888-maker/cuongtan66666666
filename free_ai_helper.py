@@ -6964,17 +6964,23 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         
         norm_scores = {k: _norm_score(v) for k, v in raw_scores.items()}
         
-        # V21.0: WEIGHTED AVERAGE — trọng số theo loại câu hỏi
-        WEIGHT_MAP = {
-            'SỨC_KHỎE_GIA_ĐÌNH': {'KM': 15, 'LH': 35, 'MH': 15, 'TB': 15, 'LN': 10, 'TA': 10},
-            'TÀI_CHÍNH':         {'KM': 20, 'LH': 30, 'MH': 15, 'TB': 10, 'LN': 15, 'TA': 10},
-            'CÔNG_VIỆC':          {'KM': 25, 'LH': 25, 'MH': 15, 'TB': 10, 'LN': 15, 'TA': 10},
-            'TÌNH_CẢM':           {'KM': 15, 'LH': 30, 'MH': 20, 'TB': 10, 'LN': 15, 'TA': 10},
-            'TÌM_ĐỒ':            {'KM': 35, 'LH': 20, 'MH': 15, 'TB': 10, 'LN': 10, 'TA': 10},
-            'NHÀ_CỬA':           {'KM': 25, 'LH': 25, 'MH': 15, 'TB': 10, 'LN': 15, 'TA': 10},
-            'CHUNG':              {'KM': 20, 'LH': 20, 'MH': 20, 'TB': 15, 'LN': 15, 'TA': 10},
+        # V32.7c: WEIGHTED AVERAGE — dùng METHOD_STRENGTH_MAP (research-backed)
+        # detected_category = key từ CATEGORIES (VD: 'TÀI_CHÍNH', 'TÌM_ĐỒ', 'CÔNG_VIỆC')
+        _CAT_TO_STRENGTH_DIRECT = {
+            'TÀI_CHÍNH': 'tài_chính', 'CÔNG_VIỆC': 'sự_nghiệp',
+            'TÌNH_CẢM': 'tình_cảm', 'SỨC_KHỎE_GIA_ĐÌNH': 'sức_khỏe',
+            'TÌM_ĐỒ': 'tìm_đồ', 'CHUNG': 'tổng_quát',
         }
-        weights = WEIGHT_MAP.get(detected_category, WEIGHT_MAP['CHUNG'])
+        strength_key_w = _CAT_TO_STRENGTH_DIRECT.get(detected_category, CATEGORY_TO_STRENGTH.get(detected_category, 'tổng_quát'))
+        method_w = METHOD_STRENGTH_MAP.get(strength_key_w, METHOD_STRENGTH_MAP.get('tổng_quát', {}))
+        weights = {
+            'KM': method_w.get('ky_mon', 55),
+            'LH': method_w.get('luc_hao', 100),
+            'MH': method_w.get('mai_hoa', 70),
+            'TB': method_w.get('thiet_ban', 40),
+            'LN': method_w.get('luc_nham', 50),
+            'TA': method_w.get('thai_at', 35),
+        }
         
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
         weighted_pct = max(5, min(95, int(weighted_pct)))
