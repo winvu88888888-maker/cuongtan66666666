@@ -2322,7 +2322,13 @@ if st.session_state.current_view == "ky_mon":
                         
                         try:
                             # Use comprehensive_analysis if suitable, or answer_question for flexibility
-                            final_report = st.session_state.gemini_helper.answer_question(prompt)
+                            # V32.4: PHẢI truyền đầy đủ dữ liệu quẻ đã gieo
+                            final_report = st.session_state.gemini_helper.answer_question(
+                                prompt,
+                                chart_data=st.session_state.get('chart_data'),
+                                mai_hoa_data=st.session_state.get('mai_hoa_result'),
+                                luc_hao_data=st.session_state.get('luc_hao_result')
+                            )
                             st.session_state.final_ai_report = final_report
                         except Exception as e:
                             st.error(f"Lỗi phân tích: {e}")
@@ -3247,10 +3253,13 @@ elif st.session_state.current_view == "ai_experts":
                     safe_topic = selected_agent.split('(')[0].strip()
                     full_query = f"Bạn đang đóng vai chuyên gia: {selected_agent}. Hãy trả lời câu hỏi: {exp_q}"
                     
+                    # V32.4: PHẢI truyền đầy đủ dữ liệu quẻ đã gieo
                     raw_response = orc.answer_question(
                         full_query, 
                         topic=safe_topic,
-                        chart_data=st.session_state.get('chart_data')
+                        chart_data=st.session_state.get('chart_data'),
+                        mai_hoa_data=st.session_state.get('mai_hoa_result'),
+                        luc_hao_data=st.session_state.get('luc_hao_result')
                     )
                     
                     # PROCESS & DISPLAY
