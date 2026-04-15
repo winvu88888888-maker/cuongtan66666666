@@ -126,6 +126,16 @@ except ImportError:
     def format_parsed_questions(lst): return ""
     def clean_question(q): return q.strip() if q else ""
 
+# V31.3: Vạn Vật Chi Tiết — 5 Hành × 12 Trường Sinh → 60 tầng mô tả
+try:
+    from van_vat_chi_tiet import (
+        get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
+    )
+except ImportError:
+    def get_van_vat_chi_tiet(h, ts): return {}
+    def format_van_vat_for_ai(h, ts): return ""
+    def get_tham_tu_mo_ta(h, ts, q=""): return ""
+
 # === NGŨ HÀNH ENGINE ===
 SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
 KHAC = {'Mộc': 'Thổ', 'Hỏa': 'Kim', 'Thổ': 'Thủy', 'Kim': 'Mộc', 'Thủy': 'Hỏa'}
@@ -7289,6 +7299,27 @@ class FreeAIHelper:
             final_parts.append(f"📐 **Kích thước:** {vv_data_f['kich_thuoc']} | 🆕 **Tình trạng:** {vv_data_f['tinh_trang']}")
             final_parts.append(f"🔢 **Số lượng:** {vv_data_f['so_luong']} | 💎 **Chất lượng:** {vv_data_f['chat_luong']}")
             final_parts.append(f"🔢 **Con số:** {vv_data_f['so']}")
+            
+            # ═══════════════════════════════════════════════════
+            # V31.3: VẠN VẬT SIÊU CHI TIẾT + THÁM TỬ LẮP GHÉP
+            # ═══════════════════════════════════════════════════
+            try:
+                v33_hanh = hanh_dt_v22 if hanh_dt_v22 else 'Thổ'
+                v33_ts = ts_stage if ts_stage else 'Lâm Quan'
+                
+                v33_detail = format_van_vat_for_ai(v33_hanh, v33_ts)
+                v33_tham_tu = get_tham_tu_mo_ta(v33_hanh, v33_ts, question)
+                
+                if v33_detail:
+                    final_parts.append(f"\n<details>")
+                    final_parts.append(f"<summary><b>🔬 Vạn Vật SIÊU CHI TIẾT: {v33_hanh} × {v33_ts} (nhấn mở)</b></summary>\n")
+                    final_parts.append(v33_detail)
+                    final_parts.append(f"\n</details>")
+                
+                if v33_tham_tu:
+                    final_parts.append(f"\n{v33_tham_tu}")
+            except Exception as e:
+                self.log_step("V31.3 VanVat", "ERROR", str(e)[:80])
             
             # Lời khuyên cuối
             final_parts.append(f"\n### 💡 LỜI KHUYÊN HÀNH ĐỘNG")
