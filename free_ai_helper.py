@@ -3627,7 +3627,7 @@ class FreeAIHelper:
                 nt_found = True
                 break
         if not nt_found and nguyen_hanh:
-            factors.append(f"NT(?) Nguyên Thần ẩn +0")
+            factors.append(f"NT(ẩn) Nguyên Thần ẩn +0")
         
         # ⑤ Kỵ Thần (khắc DT) status (±6)
         ky_hanh = [h for h, k in KHAC.items() if k == dt_hanh] if dt_hanh else []
@@ -3658,7 +3658,7 @@ class FreeAIHelper:
                 kt_found = True
                 break
         if not kt_found and ky_hanh:
-            factors.append(f"KT(?) Kỵ Thần ẩn +0")
+            factors.append(f"KT(ẩn) Kỵ Thần ẩn +0")
         
         # ⑥ Hào Động — DT Động = phát động (±5)
         if dt_idx and dong_hao and dt_idx in dong_hao:
