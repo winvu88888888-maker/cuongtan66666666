@@ -537,3 +537,280 @@ def match_question_to_diagram(question):
             best_id = d_id
     
     return best_id, DIAGRAMS[best_id]
+
+
+# ═══════════════════════════════════════════════════════════════
+# V31.1: PHÂN TÁCH CÂU HỎI PHỨC HỢP (COMPOUND QUESTION PARSER)
+# ═══════════════════════════════════════════════════════════════
+
+# Bảng người → Dụng Thần
+PERSON_DUNG_THAN = {
+    # Dài nhất trước (ưu tiên match chính xác)
+    'con trai': 'Tử Tôn', 'con gái': 'Tử Tôn',
+    'bạn trai': 'Quan Quỷ', 'bạn gái': 'Thê Tài',
+    'người yêu': 'Thê Tài',
+    'anh trai': 'Huynh Đệ', 'chị gái': 'Huynh Đệ',
+    'bố': 'Phụ Mẫu', 'mẹ': 'Phụ Mẫu', 'cha': 'Phụ Mẫu',
+    'ba': 'Phụ Mẫu', 'má': 'Phụ Mẫu',
+    'ông': 'Phụ Mẫu', 'bà': 'Phụ Mẫu',
+    'con': 'Tử Tôn', 'cháu': 'Tử Tôn',
+    'vợ': 'Thê Tài', 'chồng': 'Quan Quỷ',
+    'anh': 'Huynh Đệ', 'chị': 'Huynh Đệ', 'em': 'Huynh Đệ',
+    'sếp': 'Quan Quỷ', 'thầy': 'Phụ Mẫu', 'cô': 'Phụ Mẫu',
+    'bạn': 'Huynh Đệ', 'đối tác': 'Huynh Đệ',
+    'tôi': 'Bản Thân', 'mình': 'Bản Thân', 'em ': 'Bản Thân',
+}
+
+# Bảng chủ đề → Category
+TOPIC_KEYWORDS = {
+    'SỨC_KHỎE': ['bệnh', 'ốm', 'đau', 'sức khỏe', 'khỏe', 'chết', 'sống',
+                  'chữa', 'viện', 'phẫu thuật', 'ung thư', 'tai nạn',
+                  'qua khỏi', 'cứu', 'nặng', 'nhẹ', 'thuốc', 'mổ'],
+    'TÀI_CHÍNH': ['tiền', 'tài chính', 'đầu tư', 'lương', 'nợ', 'vay',
+                  'kinh doanh', 'buôn bán', 'lãi', 'lỗ', 'giàu', 'nghèo',
+                  'vốn', 'cổ phiếu', 'crypto', 'mua bán', 'thu nhập'],
+    'CÔNG_VIỆC': ['việc', 'công việc', 'sếp', 'thăng tiến', 'thi', 'đỗ',
+                  'xin việc', 'nghỉ việc', 'hợp đồng', 'sự nghiệp', 'học'],
+    'TÌNH_CẢM':  ['yêu', 'tình', 'hôn nhân', 'cưới', 'ly hôn', 'chia tay',
+                  'duyên', 'hẹn hò', 'thật lòng', 'ngoại tình', 'tình cảm'],
+    'TÌM_ĐỒ':   ['mất', 'tìm', 'ở đâu', 'thất lạc', 'trộm', 'để đâu'],
+}
+
+# Loại câu hỏi → Diagram mapping
+QTYPE_PATTERNS = [
+    # (keywords_list, question_type, diagram_id, label)
+    (['có nên', 'có được', 'được không', 'nên không', 'có thể', 'liệu có',
+      'có thành', 'có đỗ', 'có không', 'hay không', 'có tốt', 'nặng hay không',
+      'khỏi không', 'sống không', 'chết chưa'], 'CÓ/KHÔNG', 'SD1', '❓ CÓ/KHÔNG'),
+    (['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'bao lâu'], 'KHI NÀO', 'SD5', '⏰ KHI NÀO'),
+    (['ở đâu', 'hướng nào', 'phương nào', 'chỗ nào', 'để đâu'], 'Ở ĐÂU', 'SD4', '📍 Ở ĐÂU'),
+    (['bao nhiêu tuổi', 'mấy tuổi', 'tuổi'], 'TUỔI', 'SD2', '🔢 TUỔI'),
+    (['bao nhiêu', 'mấy', 'số lượng'], 'SỐ LƯỢNG', 'SD2', '🔢 SỐ LƯỢNG'),
+    (['cái gì', 'loại gì', 'là gì', 'vật gì', 'nghề gì', 'ngành gì'], 'CÁI GÌ', 'SD3', '❓ CÁI GÌ'),
+    (['ai ', 'người nào', 'là ai', 'ai vậy'], 'AI', 'SD13', '👤 AI'),
+    (['tại sao', 'vì sao', 'nguyên nhân', 'do đâu', 'lý do'], 'TẠI SAO', 'SD14', '❓ TẠI SAO'),
+    (['thế nào', 'như thế nào', 'ra sao', 'tình trạng'], 'THẾ NÀO', 'SD15', '📊 THẾ NÀO'),
+    (['chọn', 'nên chọn', 'cái nào', 'hay là', 'hoặc'], 'CHỌN', 'SD16', '⚖️ CHỌN'),
+]
+
+def _detect_question_type(text):
+    """Xác định loại câu hỏi từ text.
+    Returns: (question_type, diagram_id, label)
+    """
+    q = text.lower()
+    for keywords, qtype, d_id, label in QTYPE_PATTERNS:
+        for kw in keywords:
+            if kw in q:
+                return qtype, d_id, label
+    return 'CHUNG', 'SD0', '❓ TỔNG QUÁT'
+
+
+def _detect_person(text):
+    """Xác định hỏi cho AI (ai hỏi) và hỏi về AI (hỏi cho ai).
+    Returns: (person_label, dung_than_override, person_keyword)
+    """
+    import re
+    q = text.lower()
+    # Sort by length desc → match longest first
+    sorted_persons = sorted(PERSON_DUNG_THAN.items(), key=lambda x: len(x[0]), reverse=True)
+    
+    # Từ ngắn dễ match sai (ông→không, ba→bao, em→em) → cần word boundary
+    short_ambiguous = {'ông', 'bà', 'ba', 'má', 'em', 'cô', 'con'}
+    
+    def _word_match(keyword, text):
+        """Match keyword as a whole word (không match substring)."""
+        if keyword in short_ambiguous:
+            # Word boundary: trước keyword phải là đầu chuỗi hoặc space
+            # Sau keyword phải là cuối chuỗi, space, hoặc ' tôi', ' của'
+            pattern = r'(?:^|\s)' + re.escape(keyword) + r'(?:\s|$)'
+            return bool(re.search(pattern, text))
+        return keyword in text
+    
+    # Tìm "cho ai" patterns
+    for_patterns = ['cho ', 'của ', 'về ', 'hỏi ']
+    for pattern in for_patterns:
+        idx = q.find(pattern)
+        if idx >= 0:
+            remainder = q[idx + len(pattern):]
+            for person_kw, dt in sorted_persons:
+                if remainder.startswith(person_kw) or f' {person_kw}' in remainder[:20]:
+                    return person_kw.title(), dt, person_kw
+    
+    # Tìm "ai + keyword" patterns (VD: "bố tôi bệnh")
+    for person_kw, dt in sorted_persons:
+        if _word_match(person_kw, q):
+            # Bỏ qua "tôi", "mình", "em " nếu đang tìm subject (tôi = mặc định)
+            if person_kw in ['tôi', 'mình', 'em ']:
+                continue
+            return person_kw.title(), dt, person_kw
+    
+    return None, None, None
+
+
+def _detect_topic(text):
+    """Xác định chủ đề câu hỏi.
+    Returns: (topic_key, topic_label)
+    """
+    q = text.lower()
+    best_topic = 'CHUNG'
+    best_score = 0
+    
+    TOPIC_LABELS = {
+        'SỨC_KHỎE': '🏥 Sức Khỏe',
+        'TÀI_CHÍNH': '💰 Tài Chính',
+        'CÔNG_VIỆC': '💼 Công Việc',
+        'TÌNH_CẢM': '❤️ Tình Cảm',
+        'TÌM_ĐỒ': '🔍 Tìm Đồ',
+        'CHUNG': '❓ Tổng Quát',
+    }
+    
+    for topic_key, keywords in TOPIC_KEYWORDS.items():
+        score = 0
+        for kw in keywords:
+            if kw in q:
+                score += len(kw)
+        if score > best_score:
+            best_score = score
+            best_topic = topic_key
+    
+    return best_topic, TOPIC_LABELS.get(best_topic, '❓')
+
+
+def split_compound_question(full_question):
+    """V31.1: Phân tách câu hỏi phức hợp thành danh sách câu hỏi con.
+    
+    Xử lý:
+    - Câu hỏi dài gộp nhiều ý
+    - Nhiều câu hỏi nối bằng "và", ",", "?"
+    - Xác định WHO, WHAT, TYPE cho từng câu hỏi con
+    
+    VD Input: "bố tôi bị bệnh nặng hay không và khi nào sẽ khỏi?"
+    Output: [
+        {
+            'text': 'bố tôi bị bệnh nặng hay không',
+            'person': 'Bố', 'dung_than': 'Phụ Mẫu',
+            'topic': 'SỨC_KHỎE', 'topic_label': '🏥 Sức Khỏe',
+            'qtype': 'CÓ/KHÔNG', 'diagram_id': 'SD1', 'qtype_label': '❓ CÓ/KHÔNG',
+            'index': 1,
+        },
+        {
+            'text': 'khi nào sẽ khỏi',
+            'person': 'Bố', 'dung_than': 'Phụ Mẫu',  # inherited from first
+            'topic': 'SỨC_KHỎE', 'topic_label': '🏥 Sức Khỏe',
+            'qtype': 'KHI NÀO', 'diagram_id': 'SD5', 'qtype_label': '⏰ KHI NÀO',
+            'index': 2,
+        },
+    ]
+    """
+    if not full_question or len(full_question.strip()) < 3:
+        return []
+    
+    q = full_question.strip()
+    
+    # ═══ BƯỚC 1: TÁCH CÂU HỎI ═══
+    # Delimiters:?, dấu phẩy trước từ nối, "và", "thêm nữa", newline
+    import re
+    
+    # Tách theo ? (nhưng giữ nội dung)
+    parts = re.split(r'\?\s*', q)
+    parts = [p.strip() for p in parts if p.strip()]
+    
+    # Tách tiếp theo "và" / "," nếu phần con có > 10 ký tự
+    expanded = []
+    for part in parts:
+        # Tách theo " và " hoặc ", " khi có từ khóa câu hỏi phía sau
+        sub_splits = re.split(r'\s*(?:,\s+và\s+|,\s+|\s+và\s+|\s+thêm nữa\s+|\s+ngoài ra\s+|\s+còn\s+)', part)
+        for s in sub_splits:
+            s = s.strip().rstrip('?.,;')
+            if len(s) >= 5:  # Tối thiểu 5 ký tự
+                expanded.append(s)
+    
+    # Nếu không tách được gì → giữ nguyên 1 câu
+    if not expanded:
+        expanded = [q.rstrip('?.,;')]
+    
+    # ═══ BƯỚC 2: PHÂN TÍCH TỪNG CÂU ═══
+    results = []
+    
+    # Phân tích câu gốc trước → lấy context chung (person, topic)
+    global_person, global_dt, global_person_kw = _detect_person(q)
+    global_topic, global_topic_label = _detect_topic(q)
+    
+    for i, sub_q in enumerate(expanded):
+        # Phân tích riêng cho từng câu con
+        person, dt_override, person_kw = _detect_person(sub_q)
+        topic, topic_label = _detect_topic(sub_q)
+        qtype, diagram_id, qtype_label = _detect_question_type(sub_q)
+        
+        # Inherit context từ câu trước nếu câu con thiếu
+        if not person and global_person:
+            person = global_person
+            dt_override = global_dt
+            person_kw = global_person_kw
+        
+        if topic == 'CHUNG' and global_topic != 'CHUNG':
+            topic = global_topic
+            topic_label = global_topic_label
+        
+        # Xác định Dụng Thần cuối cùng
+        # Priority: person override > topic default
+        if not dt_override:
+            TOPIC_DEFAULT_DT = {
+                'SỨC_KHỎE': 'Bản Thân',
+                'TÀI_CHÍNH': 'Thê Tài',
+                'CÔNG_VIỆC': 'Quan Quỷ',
+                'TÌNH_CẢM': 'Thê Tài',
+                'TÌM_ĐỒ': 'Thê Tài',
+                'CHUNG': 'Bản Thân',
+            }
+            dt_override = TOPIC_DEFAULT_DT.get(topic, 'Bản Thân')
+        
+        # Cũng match diagram nếu qtype = CHUNG
+        if qtype == 'CHUNG' and diagram_id == 'SD0':
+            # Thử match lại bằng topic
+            TOPIC_DIAGRAM_MAP = {
+                'SỨC_KHỎE': ('SỨC KHỎE', 'SD8', '🏥 SỨC KHỎE'),
+                'TÀI_CHÍNH': ('TÀI LỘC', 'SD6', '💰 TÀI LỘC'),
+                'CÔNG_VIỆC': ('CÔNG VIỆC', 'SD9', '💼 CÔNG VIỆC'),
+                'TÌNH_CẢM': ('TÌNH DUYÊN', 'SD7', '❤️ TÌNH DUYÊN'),
+                'TÌM_ĐỒ': ('MẤT ĐỒ', 'SD11', '🔍 MẤT ĐỒ'),
+            }
+            if topic in TOPIC_DIAGRAM_MAP:
+                qtype, diagram_id, qtype_label = TOPIC_DIAGRAM_MAP[topic]
+        
+        results.append({
+            'text': sub_q,
+            'person': person,
+            'person_kw': person_kw,
+            'dung_than': dt_override,
+            'topic': topic,
+            'topic_label': topic_label,
+            'qtype': qtype,
+            'diagram_id': diagram_id,
+            'qtype_label': qtype_label,
+            'index': i + 1,
+        })
+    
+    return results
+
+
+def format_parsed_questions(parsed_list):
+    """V31.1: Format kết quả phân tách thành bảng markdown hiển thị.
+    """
+    if not parsed_list:
+        return ""
+    
+    lines = []
+    lines.append(f"### 📋 PHÂN TÁCH CÂU HỎI ({len(parsed_list)} câu)")
+    lines.append(f"| # | Câu hỏi | Hỏi cho | DT | Chủ đề | Loại | Sơ đồ |")
+    lines.append(f"|:--|:--------|:--------|:---|:-------|:-----|:------|")
+    
+    for pq in parsed_list:
+        short_q = pq['text'][:35] + '...' if len(pq['text']) > 35 else pq['text']
+        person = pq.get('person', 'Bản thân') or 'Bản thân'
+        lines.append(
+            f"| {pq['index']} | {short_q} | {person} | {pq['dung_than']} | "
+            f"{pq['topic_label']} | {pq['qtype_label']} | {pq['diagram_id']} |"
+        )
+    
+    return "\n".join(lines)

@@ -112,7 +112,8 @@ except ImportError:
 try:
     from interaction_diagrams import (
         DIAGRAM_MASTER, DIAGRAMS as INTERACTION_DIAGRAMS, 
-        match_question_to_diagram, CUNG_PHUONG, QUAI_NGUOI, KY_THAN_NGUYEN_NHAN
+        match_question_to_diagram, CUNG_PHUONG, QUAI_NGUOI, KY_THAN_NGUYEN_NHAN,
+        split_compound_question, format_parsed_questions,
     )
 except ImportError:
     DIAGRAM_MASTER = None
@@ -121,6 +122,8 @@ except ImportError:
     CUNG_PHUONG = {}
     QUAI_NGUOI = {}
     KY_THAN_NGUYEN_NHAN = {}
+    def split_compound_question(q): return []
+    def format_parsed_questions(lst): return ""
 
 # === NGŨ HÀNH ENGINE ===
 SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
@@ -6065,8 +6068,44 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V27.0 Unified + Deep Integration\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V31.1 Unified + Dynamic Diagrams\n")
         sections.append(f"**Câu hỏi:** {question}\n")
+        
+        # ═══════════════════════════════════════════════════
+        # V31.1: PHÂN TÁCH CÂU HỎI PHỨC HỢP
+        # ═══════════════════════════════════════════════════
+        v31_parsed_questions = []
+        v31_primary = None  # Câu hỏi chính (dùng để xác định DT)
+        category_label = cat_data['label']
+        
+        try:
+            v31_parsed_questions = split_compound_question(question)
+            if v31_parsed_questions and len(v31_parsed_questions) >= 1:
+                v31_primary = v31_parsed_questions[0]
+                
+                # Override DT từ parser nếu phát hiện hỏi cho người khác
+                # VD: "bố tôi bệnh" → DT = Phụ Mẫu (parser detect "bố")
+                if v31_primary.get('person') and v31_primary.get('dung_than'):
+                    parser_dt = v31_primary['dung_than']
+                    if parser_dt != 'Bản Thân':
+                        dung_than = parser_dt
+                        self.log_step("V31.1 Parser", "DT_OVERRIDE", 
+                                      f"Hỏi cho {v31_primary['person']} → DT={parser_dt}")
+                
+                # Hiển thị bảng phân tách nếu > 1 câu hỏi
+                if len(v31_parsed_questions) > 1:
+                    parsed_table = format_parsed_questions(v31_parsed_questions)
+                    if parsed_table:
+                        sections.append(parsed_table)
+                        sections.append("")
+                elif len(v31_parsed_questions) == 1:
+                    # 1 câu hỏi → vẫn hiển thị phân tích
+                    pq = v31_parsed_questions[0]
+                    person_info = f" | Hỏi cho: **{pq['person']}**" if pq.get('person') else ""
+                    sections.append(f"📋 **Phân loại:** {pq['qtype_label']} — {pq['topic_label']}{person_info} — Sơ đồ: {pq['diagram_id']}")
+                    sections.append("")
+        except Exception as e:
+            self.log_step("V31.1 Parser", "ERROR", str(e)[:80])
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
         sections.append(f"### BƯỚC 1 — DỤNG THẦN & CHỦ ĐỀ")
@@ -7256,6 +7295,101 @@ class FreeAIHelper:
                 final_parts.append("- 🛑 Dừng lại, không hành động. Chờ chu kỳ mới, mọi thứ sẽ chuyển biến.")
             
             final_parts.append("")
+            
+            # ═══════════════════════════════════════════════════════
+            # V31.1: TRẢ LỜI TỪNG CÂU HỎI CON (COMPOUND)
+            # ═══════════════════════════════════════════════════════
+            if v31_parsed_questions and len(v31_parsed_questions) > 1:
+                final_parts.append(f"\n### 📝 TRẢ LỜI TỪNG CÂU HỎI ({len(v31_parsed_questions)} câu)")
+                
+                for pq in v31_parsed_questions:
+                    sub_q = pq['text']
+                    sub_person = pq.get('person', 'Bản thân') or 'Bản thân'
+                    sub_dt = pq.get('dung_than', dung_than)
+                    sub_topic = pq.get('topic', 'CHUNG')
+                    sub_qtype = pq.get('qtype', 'CHUNG')
+                    sub_diagram_id = pq.get('diagram_id', 'SD0')
+                    
+                    final_parts.append(f"\n---")
+                    final_parts.append(f"**Câu {pq['index']}:** {sub_q}")
+                    final_parts.append(f"*Hỏi cho: {sub_person} | DT: {sub_dt} | {pq.get('qtype_label', '?')} | {pq.get('topic_label', '?')}*")
+                    
+                    # Tạo câu trả lời dựa trên qtype
+                    if sub_qtype == 'CÓ/KHÔNG':
+                        if _cat_count >= 3:
+                            final_parts.append(f"→ ✅ **CÓ** — {sub_dt} vượng ({_cat_count}/5 CÁT)")
+                        elif _hung_count >= 3:
+                            final_parts.append(f"→ ❌ **KHÔNG** — {sub_dt} suy ({_hung_count}/5 HUNG)")
+                        else:
+                            final_parts.append(f"→ 🟡 **LỠ CỠ** — Chưa rõ ràng ({_cat_count}/{_cat_count+_hung_count} CÁT)")
+                    
+                    elif sub_qtype == 'KHI NÀO':
+                        if _cat_count >= 3:
+                            final_parts.append(f"→ ⏰ **NHANH** — 1-7 ngày tới ({sub_dt} vượng)")
+                        elif _cat_count >= 2:
+                            final_parts.append(f"→ ⏰ **TRUNG BÌNH** — 1-3 tháng ({sub_dt} trung bình)")
+                        else:
+                            final_parts.append(f"→ ⏰ **CHẬM** — 3-6 tháng+ ({sub_dt} suy)")
+                        if ts_stage:
+                            final_parts.append(f"→ 12 Trường Sinh: {ts_stage}")
+                    
+                    elif sub_qtype == 'Ở ĐÂU':
+                        if chart_data and isinstance(chart_data, dict):
+                            final_parts.append(f"→ 📍 Xem sơ đồ KM: Cung DT → Phương hướng")
+                        else:
+                            final_parts.append(f"→ 📍 Cần dữ liệu KM để xác định hướng")
+                    
+                    elif sub_qtype in ['SỨC KHỎE']:
+                        if _cat_count >= 3:
+                            final_parts.append(f"→ 🟢 {sub_person} sức khỏe **KHẢ QUAN** ({_cat_count}/5 CÁT)")
+                        elif _cat_count >= 2:
+                            final_parts.append(f"→ 🟡 {sub_person} cần **THEO DÕI SÁT** ({_cat_count}/5 CÁT)")
+                        else:
+                            final_parts.append(f"→ 🔴 {sub_person} tình trạng **NGHIÊM TRỌNG** ({_hung_count}/5 HUNG)")
+                    
+                    elif sub_qtype in ['TÀI LỘC']:
+                        if _cat_count >= 3:
+                            final_parts.append(f"→ 💰 Tài lộc **THUẬN LỢI** ({_cat_count}/5 CÁT)")
+                        else:
+                            final_parts.append(f"→ 💰 Tài lộc **KHÓ KHĂN** ({_hung_count}/5 HUNG)")
+                    
+                    else:
+                        # Default
+                        if _cat_count >= 3:
+                            final_parts.append(f"→ ✅ **THUẬN LỢI** ({_cat_count}/5 CÁT)")
+                        elif _hung_count >= 3:
+                            final_parts.append(f"→ ❌ **BẤT LỢI** ({_hung_count}/5 HUNG)")
+                        else:
+                            final_parts.append(f"→ 🟡 **BÌNH** ({_cat_count}/{_cat_count+_hung_count} CÁT)")
+                    
+                    # Hiển thị sơ đồ nhỏ cho từng sub-question
+                    if sub_diagram_id and sub_diagram_id != 'SD0':
+                        try:
+                            sub_d_filled, sub_d_info = self._fill_question_diagram(
+                                diagram_id=sub_diagram_id,
+                                question=sub_q,
+                                dung_than=sub_dt,
+                                hanh_dt=hanh_dt_v22,
+                                unified_v22=v31_v22_data,
+                                v23_lh_factors=v23_lh_factors,
+                                v24_km_factors=v24_km_factors,
+                                v24_mh_factors=v24_mh_factors,
+                                chart_data=chart_data,
+                                luc_hao_data=luc_hao_data,
+                                mai_hoa_data=mai_hoa_data,
+                                verdicts_dict=v31_verdicts,
+                            )
+                            if sub_d_filled:
+                                final_parts.append(f"\n<details>")
+                                final_parts.append(f"<summary>📐 Sơ đồ {sub_d_info.get('diagram_name', sub_diagram_id)} (nhấn mở)</summary>\n")
+                                final_parts.append(f"```")
+                                final_parts.append(sub_d_filled)
+                                final_parts.append(f"```")
+                                final_parts.append(f"</details>")
+                        except:
+                            pass
+                
+                final_parts.append("\n---")
             
             # MỌI THỨ chi tiết ẩn sau 1 nút bấm duy nhất
             final_parts.append("\n<details>")
