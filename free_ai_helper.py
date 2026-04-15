@@ -1822,6 +1822,17 @@ class FreeAIHelper:
                         generic_slots['cung_dt'] = str(c_num)
                         generic_slots['phuong_km'] = CUNG_PHUONG.get(int(c_num), '?') if c_num else '?'
                 
+                # V32.7e: Fallback cung_dt từ cung_bt
+                if generic_slots['cung_dt'] == '?' and generic_slots['cung_bt'] != '?':
+                    generic_slots['cung_dt'] = generic_slots['cung_bt']
+                    generic_slots['phuong_km'] = CUNG_PHUONG.get(int(generic_slots['cung_bt']), '?')
+                
+                # V32.7e: Fallback cung_sv — cung đối diện BT
+                if generic_slots['cung_sv'] == '?' and generic_slots['cung_bt'] != '?':
+                    bt_num = int(generic_slots['cung_bt'])
+                    _OPP = {1:9, 2:8, 3:7, 4:6, 6:4, 7:3, 8:2, 9:1}
+                    generic_slots['cung_sv'] = str(_OPP.get(bt_num, bt_num))
+                
                 # Cửa at DT cung
                 dt_cung = generic_slots.get('cung_dt', '')
                 if dt_cung and dt_cung.isdigit():
@@ -1837,6 +1848,19 @@ class FreeAIHelper:
                     generic_slots['cua_dt'] = '?'
                     generic_slots['sao_dt'] = '?'
                     generic_slots['cua_y_nghia'] = '?'
+                
+                # V32.7e: Fallback cua_dt từ v24_km_factors
+                if generic_slots['cua_dt'] == '?':
+                    for f in (v24_km_factors or []):
+                        if 'Cửa' in f:
+                            parts = f.split('Cửa')[-1].strip().split(' ')
+                            cua_name = ' '.join(parts[:2]).strip()
+                            if cua_name:
+                                generic_slots['cua_dt'] = cua_name
+                                cua_key2 = cua_name if 'Môn' in cua_name else cua_name + ' Môn'
+                                cua_info2 = CUA_GIAI_THICH.get(cua_key2, {})
+                                generic_slots['cua_y_nghia'] = cua_info2.get('y_nghia', cua_name)
+                            break
                 
                 generic_slots['bt_sv_rel'] = '?'
                 for f in (v24_km_factors or []):
@@ -1903,7 +1927,140 @@ class FreeAIHelper:
                 generic_slots['tuoi_tra_san'] = tuoi_range
                 generic_slots['tuoi_trung_binh'] = str(tuoi_estimate) if tuoi_estimate else tuoi_range
             
-            # V32.7d: Generic slots chỉ điền key chưa có — SD-specific slots ưu tiên
+            # V32.7e: Fill ALL SD-specific slots
+            # --- Lục Thân states ---
+            _lts = {}
+            if luc_hao_data and isinstance(luc_hao_data, dict):
+                _hl = (luc_hao_data.get('haos', []) or luc_hao_data.get('hao_list', []) or luc_hao_data.get('hao', []))
+                _ban = luc_hao_data.get('ban', {})
+                if not _hl and _ban:
+                    _hl = _ban.get('haos', []) or _ban.get('details', [])
+                for _h in _hl:
+                    if isinstance(_h, dict):
+                        _lt = _h.get('luc_than', '')
+                        _chi = _h.get('chi', '')
+                        _hh = _h.get('hanh', '') or _h.get('ngu_hanh', '')
+                        _dong = '🔄Động' if (_h.get('dong') or _h.get('is_moving')) else 'Tĩnh'
+                        _tu = str(_h.get('the_ung', '') or _h.get('marker', ''))
+                        if _lt and _lt not in _lts:
+                            _lts[_lt] = f"{_chi}/{_hh} {_dong}"
+                        if 'Thế' in _tu:
+                            generic_slots.setdefault('the_state', f"{_chi}/{_hh}")
+                        elif 'Ứng' in _tu:
+                            generic_slots.setdefault('ung_state', f"{_chi}/{_hh}")
+            
+            generic_slots.setdefault('the_tai_state', _lts.get('Thê Tài', 'N/A'))
+            generic_slots.setdefault('huynh_de_state', _lts.get('Huynh Đệ', 'N/A'))
+            generic_slots.setdefault('tu_ton_state', _lts.get('Tử Tôn', 'N/A'))
+            generic_slots.setdefault('quan_quy_state', _lts.get('Quan Quỷ', 'N/A'))
+            generic_slots.setdefault('phu_mau_state', _lts.get('Phụ Mẫu', 'N/A'))
+            
+            # --- SD10 Thế↔Ứng ---
+            _ts = generic_slots.get('the_state', '?')
+            _us = generic_slots.get('ung_state', '?')
+            _th10 = _ts.split('/')[-1] if '/' in str(_ts) else ''
+            _uh10 = _us.split('/')[-1] if '/' in str(_us) else ''
+            generic_slots.setdefault('the_ung_relation', _ngu_hanh_relation(_th10, _uh10) if _th10 and _uh10 else 'N/A')
+            
+            # --- SD11 Tìm đồ ---
+            _cdt = generic_slots.get('cua_dt', '?')
+            _ccat = ['Khai Môn', 'Hưu Môn', 'Sinh Môn']
+            _chung = ['Tử Môn', 'Kinh Môn', 'Thương Môn']
+            if any(c in str(_cdt) for c in _ccat):
+                generic_slots.setdefault('tim_duoc', 'TÌM ĐƯỢC ✅')
+            elif any(c in str(_cdt) for c in _chung):
+                generic_slots.setdefault('tim_duoc', 'KHÓ TÌM ❌')
+            else:
+                generic_slots.setdefault('tim_duoc', 'CÒN CƠ HỘI 🟡')
+            generic_slots.setdefault('phuong', generic_slots.get('phuong_km', '?'))
+            _QTUONG = {'Càn':'Kim loại, tròn','Khôn':'Đất, vải, vuông','Chấn':'Gỗ, dài','Tốn':'Gỗ, dây, hoa','Khảm':'Nước, chất lỏng','Ly':'Lửa, điện tử','Cấn':'Đá, đất, nhỏ','Đoài':'Kim loại, hỏng'}
+            _tqn = generic_slots.get('the_quai', '')
+            generic_slots.setdefault('tuong_vat', _QTUONG.get(_tqn, hanh_vat.get('chat_lieu', '?')))
+            generic_slots.setdefault('dt_tk', 'Không')
+            generic_slots.setdefault('tk_y_nghia', 'Bình thường')
+            generic_slots.setdefault('mat_truyen', 'N/A')
+            generic_slots.setdefault('phuong_ln', 'N/A')
+            
+            # --- SD4 Ở đâu ---
+            _QT4 = {'Càn':'Trời, tròn, xa','Khôn':'Đất, vuông, gần','Chấn':'Sấm, dài, xa','Tốn':'Gió, dài, xa','Khảm':'Nước, sâu','Ly':'Lửa, sáng','Cấn':'Núi, nhỏ, gần','Đoài':'Đầm, thấp, gần'}
+            generic_slots.setdefault('bat_quai_tuong', _QT4.get(_tqn, hanh_vat.get('hinh', '?')))
+            _HKC = {'Kim':'Gần, trong nhà','Mộc':'Trung bình','Thủy':'Xa, bên nước','Hỏa':'Gần, nơi sáng','Thổ':'Rất gần, tại chỗ'}
+            generic_slots.setdefault('khoang_cach', _HKC.get(hanh_dt, '?'))
+            
+            # --- SD12 Xuất hành ---
+            if any(c in str(_cdt) for c in _ccat):
+                generic_slots.setdefault('cua_xuat_hanh', 'NÊN ĐI ✅')
+            elif any(c in str(_cdt) for c in _chung):
+                generic_slots.setdefault('cua_xuat_hanh', 'KHÔNG NÊN ❌')
+            else:
+                generic_slots.setdefault('cua_xuat_hanh', 'CÂN NHẮC 🟡')
+            generic_slots.setdefault('dich_ma', 'N/A')
+            generic_slots.setdefault('kv_cung_dich', generic_slots.get('phuong_km', '?'))
+            generic_slots.setdefault('dt_dich_ma', 'N/A')
+            
+            # --- SD13 AI ---
+            _QNGUOI = {'Càn':'Bố/ông','Khôn':'Mẹ/bà','Chấn':'Thanh niên','Tốn':'Phụ nữ','Khảm':'Trí tuệ','Ly':'Nổi tiếng','Cấn':'Trẻ nhỏ','Đoài':'Con gái'}
+            generic_slots.setdefault('the_quai_nguoi', _QNGUOI.get(_tqn, '?'))
+            _TNGUOI = {'Quan Quỷ':'Sếp, người có quyền','Thê Tài':'Vợ/bạn gái','Huynh Đệ':'Bạn bè, đối thủ','Phụ Mẫu':'Bố mẹ, thầy cô','Tử Tôn':'Con cái'}
+            generic_slots.setdefault('luc_than_dt', dung_than)
+            generic_slots.setdefault('luc_than_nguoi', _TNGUOI.get(dung_than, '?'))
+            generic_slots.setdefault('thien_tuong', 'N/A')
+            generic_slots.setdefault('tt_nguoi', 'N/A')
+            
+            # --- SD14 Tại sao ---
+            _kth = {v: k for k, v in KHAC.items()}.get(hanh_dt, '')
+            generic_slots.setdefault('kt_hanh', _kth or '?')
+            _KTNN = {'Kim':'Pháp luật/tranh chấp','Mộc':'Stress/gan','Thủy':'Cảm xúc/thận','Hỏa':'Tim/mắt','Thổ':'Chậm trễ/ì trệ'}
+            generic_slots.setdefault('kt_nguyen_nhan', _KTNN.get(_kth, '?'))
+            _dl = [h.get('luc_than','?') for h in (_hl if '_hl' in dir() else []) if isinstance(h, dict) and (h.get('dong') or h.get('is_moving'))]
+            generic_slots.setdefault('hao_dong', ', '.join(_dl) if _dl else 'Không có hào động')
+            generic_slots.setdefault('cua_hung', str(_cdt) if any(c in str(_cdt) for c in _chung) else 'Không')
+            generic_slots.setdefault('cua_tro_ngai', 'Trở ngại' if generic_slots.get('cua_hung','') != 'Không' else 'Không có')
+            generic_slots.setdefault('than_hung', 'N/A')
+            generic_slots.setdefault('than_nguon_goc', 'N/A')
+            
+            # --- SD15 Thế nào ---
+            generic_slots.setdefault('nguyet_xu_huong', 'N/A')
+            generic_slots.setdefault('hao_dong_tinh', ', '.join(_dl) if _dl else 'Tĩnh (ổn định)')
+            generic_slots.setdefault('cach_giai', generic_slots.get('cua_y_nghia', '?'))
+            
+            # --- SD16 Chọn lựa ---
+            _tdr = generic_slots.get('the_dung_rel', '?')
+            if 'sinh' in str(_tdr).lower():
+                generic_slots.setdefault('dung_sinh_the', 'SINH ✅')
+                generic_slots.setdefault('dung_ket_luan', 'Lựa chọn A HỖ TRỢ')
+            elif 'khắc' in str(_tdr).lower():
+                generic_slots.setdefault('dung_sinh_the', 'KHẮC ❌')
+                generic_slots.setdefault('dung_ket_luan', 'Lựa chọn A BẤT LỢI')
+            else:
+                generic_slots.setdefault('dung_sinh_the', str(_tdr))
+                generic_slots.setdefault('dung_ket_luan', 'Trung lập')
+            generic_slots.setdefault('bien_sinh_the', 'N/A')
+            generic_slots.setdefault('bien_ket_luan', 'Cần xem biến quái')
+            generic_slots.setdefault('cung_a_diem', generic_slots.get('cung_bt', '?'))
+            generic_slots.setdefault('cung_b_diem', generic_slots.get('cung_sv', '?'))
+            
+            # --- SD6/7/8/9 ---
+            generic_slots.setdefault('score_detail', 'Auto từ 5PP')
+            generic_slots.setdefault('total_score', 0)
+            generic_slots.setdefault('sinh_mon', 'N/A')
+            generic_slots.setdefault('dt_duyen', dung_than)
+            generic_slots.setdefault('dt_duyen_state', dt_state)
+            generic_slots.setdefault('dt_ung_relation', generic_slots.get('the_ung_relation', '?'))
+            generic_slots.setdefault('nt_relation', 'N/A')
+            generic_slots.setdefault('kt_relation', 'N/A')
+            generic_slots.setdefault('the_dung_y_nghia', _tdr)
+            _qqh = {v: k for k, v in SINH.items()}.get(hanh_dt, '')
+            _HB = {'Kim':'Phổi, da','Mộc':'Gan, mật','Thủy':'Thận, xương','Hỏa':'Tim, mắt','Thổ':'Dạ dày, lá lách'}
+            generic_slots.setdefault('qq_hanh', _qqh or '?')
+            generic_slots.setdefault('qq_benh', _HB.get(_qqh, '?'))
+            generic_slots.setdefault('qq_tk', 'Không')
+            generic_slots.setdefault('thien_tam', 'N/A')
+            generic_slots.setdefault('dt_tri_the', 'Có' if dung_than == 'Quan Quỷ' else 'Không')
+            generic_slots.setdefault('khai_mon', 'N/A')
+            generic_slots.setdefault('chu_khach', 'N/A')
+            
+            # V32.7d: Generic slots chỉ điền key chưa có
             for k, v in generic_slots.items():
                 if k not in slots or slots[k] in ('', '?', None):
                     slots[k] = v
