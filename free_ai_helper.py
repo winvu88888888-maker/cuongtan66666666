@@ -6459,8 +6459,7 @@ class FreeAIHelper:
         
         # ═══════════════════════════════════════════════════════
         # V26.2: BƯỚC 5.7 — LƯỢNG HÓA LỰC LƯỢNG 3 TẦNG (UNIFIED STRENGTH)
-        # Tích hợp _calc_unified_strength_tier() — hàm V21.0 viết nhưng chưa gọi
-        # 3 nguồn: LH raw (50%) + 12 Trường Sinh (30%) + Ngũ Khí (20%)
+        # V32.3: Auto-detect Hành DT từ thời gian khi không có chart_data
         # ═══════════════════════════════════════════════════════
         hanh_dt_v22 = ''
         cung_bt_hanh_v22 = ''
@@ -6468,6 +6467,36 @@ class FreeAIHelper:
         ngu_khi_pwr_v22 = 50
         unified_v22 = None
         
+        # V32.3: Nếu không có chart_data → tự tính từ thời gian hiện tại
+        if not chart_data or not isinstance(chart_data, dict):
+            try:
+                import datetime
+                now = datetime.datetime.now()
+                # Tính Can giờ hiện tại (đơn giản) → Hành DT
+                can_idx = (now.year % 10)
+                chi_idx = (now.hour // 2) % 12
+                _auto_cans = ['Canh', 'Tân', 'Nhâm', 'Quý', 'Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ']
+                _auto_can = _auto_cans[can_idx]
+                hanh_dt_v22 = CAN_NGU_HANH.get(_auto_can, 'Thổ')
+                
+                # Tính 12 Trường Sinh từ Chi giờ
+                _auto_chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                _auto_chi = _auto_chis[chi_idx]
+                cung_bt_hanh_v22 = CHI_NGU_HANH.get(_auto_chi, 'Thổ')
+                
+                ngu_khi_state_v22, ngu_khi_pwr_v22 = _calc_ngu_khi(hanh_dt_v22, cung_bt_hanh_v22)
+                
+                # Tính Trường Sinh từ thời gian
+                if not ts_stage:
+                    _ts_stages = ['Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Đế Vượng', 'Suy',
+                                  'Bệnh', 'Tử', 'Mộ', 'Tuyệt', 'Thai', 'Dưỡng']
+                    ts_stage = _ts_stages[chi_idx]
+                
+                self.log_step("V32.3 AutoDetect", "OK", f"Hành={hanh_dt_v22}, Chi={_auto_chi}, TS={ts_stage}")
+            except Exception as e:
+                hanh_dt_v22 = 'Thổ'
+                self.log_step("V32.3 AutoDetect", "FALLBACK", str(e)[:60])
+
         if chart_data and isinstance(chart_data, dict):
             hanh_dt_v22 = CAN_NGU_HANH.get(chart_data.get('can_ngay', ''), '')
             # Tìm cung BT để tính Ngũ Khí
