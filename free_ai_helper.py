@@ -126,15 +126,20 @@ except ImportError:
     def format_parsed_questions(lst): return ""
     def clean_question(q): return q.strip() if q else ""
 
-# V31.3: Vạn Vật Chi Tiết — 5 Hành × 12 Trường Sinh → 60 tầng mô tả
+# V31.6: Vạn Vật Tổng Hợp — FILE DUY NHẤT chứa 2226+ items
 try:
-    from van_vat_chi_tiet import (
+    from van_vat_tong_hop import (
         get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
     )
 except ImportError:
-    def get_van_vat_chi_tiet(h, ts): return {}
-    def format_van_vat_for_ai(h, ts): return ""
-    def get_tham_tu_mo_ta(h, ts, q=""): return ""
+    try:
+        from van_vat_chi_tiet import (
+            get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
+        )
+    except ImportError:
+        def get_van_vat_chi_tiet(h, ts): return {}
+        def format_van_vat_for_ai(h, ts): return ""
+        def get_tham_tu_mo_ta(h, ts, q=""): return ""
 
 # === NGŨ HÀNH ENGINE ===
 SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
