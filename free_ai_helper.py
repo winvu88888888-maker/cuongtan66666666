@@ -113,7 +113,7 @@ try:
     from interaction_diagrams import (
         DIAGRAM_MASTER, DIAGRAMS as INTERACTION_DIAGRAMS, 
         match_question_to_diagram, CUNG_PHUONG, QUAI_NGUOI, KY_THAN_NGUYEN_NHAN,
-        split_compound_question, format_parsed_questions,
+        split_compound_question, format_parsed_questions, clean_question,
     )
 except ImportError:
     DIAGRAM_MASTER = None
@@ -124,6 +124,7 @@ except ImportError:
     KY_THAN_NGUYEN_NHAN = {}
     def split_compound_question(q): return []
     def format_parsed_questions(lst): return ""
+    def clean_question(q): return q.strip() if q else ""
 
 # === NGŨ HÀNH ENGINE ===
 SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
@@ -5913,7 +5914,13 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V27.0 Unified + Deep Integration). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V31.2 Unified + Dynamic Diagrams). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Tích hợp 3 tầng LH+TS+NK. Đã học {lc} câu hỏi mới."
+        
+        # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
+        original_question = question
+        question = clean_question(question)
+        if len(question) < 2:
+            question = original_question.strip()
         
         # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể

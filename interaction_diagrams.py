@@ -538,6 +538,89 @@ def match_question_to_diagram(question):
     
     return best_id, DIAGRAMS[best_id]
 
+# ═══════════════════════════════════════════════════════════════
+# V31.2: LÀM SẠCH CÂU HỎI (NOISE REMOVAL)
+# ═══════════════════════════════════════════════════════════════
+
+import re as _re
+
+# Từ vô nghĩa / filler / noise thường gặp trong câu hỏi
+_NOISE_WORDS = {
+    # Filler / padding
+    'ạ', 'á', 'ơi', 'nhé', 'nha', 'hen', 'ha', 'hả', 'nhỉ', 'đi', 'thôi',
+    'vậy đó', 'đấy', 'nè', 'nghe', 'xem', 'giúp', 'giùm', 'dùm', 'hộ',
+    'với', 'luôn', 'rồi', 'đây', 'kìa', 'kia', 'chút', 'xíu', 'tí', 'tý',
+    # Lịch sự thừa (dài→ngắn)
+    'cho tôi hỏi', 'cho em hỏi', 'em muốn hỏi', 'tôi muốn hỏi',
+    'mình muốn hỏi', 'hỏi xíu', 'hỏi chút', 'hỏi tí', 'hỏi tý',
+    'xin hỏi', 'cho hỏi', 'cho tôi', 'cho em', 'bạn ơi',
+    'làm ơn', 'vui lòng', 'cảm ơn', 'thank', 'thanks',
+    # Filler dài
+    'thưa thầy', 'thưa cô', 'dạ thưa', 'dạ', 'vâng',
+    # Noise internet
+    'haha', 'hihi', 'huhu', 'hehe', 'lol', 'omg', 'ok', 'okay',
+    '...', '!!!', '???', '!?',
+}
+
+# Regex patterns cần xóa
+_NOISE_PATTERNS = [
+    r'\.{2,}',           # ... (2+ dots)
+    r'!{2,}',            # !!! (2+ exclamation)
+    r'\?{2,}',           # ??? (2+ question marks) → giữ 1 ?
+    r'~+',               # ~~~
+    r'-{3,}',            # ---- 
+    r'_{3,}',            # ____
+    r'\*{2,}',           # ****
+    r'#{2,}',            # ####
+    r'@\w+',             # @username
+    r'https?://\S+',     # URLs
+    r'\b\d{10,}\b',      # Số điện thoại dài
+    r'[^\w\sáàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ,?.!;:\'\"()/-]',  # Ký tự lạ
+]
+
+def clean_question(text):
+    """V31.2: Làm sạch câu hỏi — loại bỏ noise, dấu thừa, từ vô nghĩa.
+    
+    Input:  "xin hỏi ạ... bố tôi bệnh nặng hay không???!!! cảm ơn"
+    Output: "bố tôi bệnh nặng hay không?"
+    """
+    if not text:
+        return ""
+    
+    q = text.strip()
+    
+    # 1. Xóa regex noise patterns
+    for pattern in _NOISE_PATTERNS:
+        q = _re.sub(pattern, ' ', q)
+    
+    # 2. Xóa noise words (exact match, case-insensitive)
+    # Sắp xếp dài→ngắn để match cụm từ trước
+    sorted_noise = sorted(_NOISE_WORDS, key=len, reverse=True)
+    q_lower = q.lower()
+    for nw in sorted_noise:
+        # Word boundary match để tránh xóa substring
+        # VD: không xóa "ạ" trong "ạnh" 
+        pattern = r'(?:^|\s)' + _re.escape(nw) + r'(?:\s|[,?.!;:]|$)'
+        q = _re.sub(pattern, ' ', q, flags=_re.IGNORECASE)
+    
+    # 3. Normalize whitespace
+    q = _re.sub(r'\s+', ' ', q).strip()
+    
+    # 4. Sửa dấu câu kép: "??" → "?", "!!" → "!"
+    q = _re.sub(r'\?+', '?', q)
+    q = _re.sub(r'!+', '!', q)
+    q = _re.sub(r',+', ',', q)
+    q = _re.sub(r'\.+', '.', q)
+    
+    # 5. Xóa dấu câu ở đầu
+    q = q.lstrip(',.;:!?-_ ')
+    
+    # 6. Nếu sau khi clean quá ngắn (< 3 ký tự) → trả về original
+    if len(q) < 3:
+        return text.strip()
+    
+    return q
+
 
 # ═══════════════════════════════════════════════════════════════
 # V31.1: PHÂN TÁCH CÂU HỎI PHỨC HỢP (COMPOUND QUESTION PARSER)
@@ -615,7 +698,7 @@ def _detect_person(text):
     sorted_persons = sorted(PERSON_DUNG_THAN.items(), key=lambda x: len(x[0]), reverse=True)
     
     # Từ ngắn dễ match sai (ông→không, ba→bao, em→em) → cần word boundary
-    short_ambiguous = {'ông', 'bà', 'ba', 'má', 'em', 'cô', 'con'}
+    short_ambiguous = {'ông', 'bà', 'ba', 'má', 'em', 'cô', 'con', 'bạn'}
     
     def _word_match(keyword, text):
         """Match keyword as a whole word (không match substring)."""
@@ -705,7 +788,10 @@ def split_compound_question(full_question):
     if not full_question or len(full_question.strip()) < 3:
         return []
     
-    q = full_question.strip()
+    # V31.2: Làm sạch câu hỏi trước khi phân tách
+    q = clean_question(full_question)
+    if len(q) < 3:
+        return []
     
     # ═══ BƯỚC 1: TÁCH CÂU HỎI ═══
     # Delimiters:?, dấu phẩy trước từ nối, "và", "thêm nữa", newline
