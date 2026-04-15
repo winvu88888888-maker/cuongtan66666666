@@ -1611,21 +1611,48 @@ class FreeAIHelper:
             total = 0
             
             for f in (v23_lh_factors or []):
-                if 'Nguyệt' in f and ('sinh' in f.lower() or 'khắc' in f.lower()):
-                    nguyet = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    m_rel = 'sinh' if '+' in f else 'khắc'
-                elif 'Nhật' in f and ('sinh' in f.lower() or 'khắc' in f.lower()):
-                    nhat = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    n_rel = 'sinh' if '+' in f else 'khắc'
+                if 'Nguyệt' in f:
+                    # Extract chi/hành from "Nguyệt Lệnh(Thìn/Thổ)" or similar
+                    if '(' in f:
+                        nguyet = f.split('(')[1].split(')')[0]
+                    if 'sinh' in f.lower():
+                        m_rel = 'sinh ✅'
+                    elif 'khắc' in f.lower():
+                        m_rel = 'khắc ❌'
+                    elif 'không tác động' in f.lower():
+                        m_rel = 'bình ⚪'
+                    else:
+                        m_rel = 'bình' if nguyet else '?'
+                elif 'Nhật' in f:
+                    if '(' in f:
+                        nhat = f.split('(')[1].split(')')[0]
+                    if 'sinh' in f.lower():
+                        n_rel = 'sinh ✅'
+                    elif 'khắc' in f.lower():
+                        n_rel = 'khắc ❌'
+                    elif 'không tác động' in f.lower():
+                        n_rel = 'bình ⚪'
+                    else:
+                        n_rel = 'bình' if nhat else '?'
                 elif 'NT(' in f:
                     nt = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    nt_st = 'Vượng' if '+' in f else 'Suy'
+                    if 'Vượng' in f or '+' in f:
+                        nt_st = 'Vượng ✅'
+                    elif 'Suy' in f or '-' in f:
+                        nt_st = 'Suy ❌'
+                    else:
+                        nt_st = 'Bình'
                 elif 'KT(' in f:
                     kt = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    kt_st = 'Vượng' if '-8' in f else 'Có'
+                    if 'ẩn' in kt.lower() or 'Ẩn' in f:
+                        kt_st = '(ẩn) ✅'
+                    elif '-' in f:
+                        kt_st = 'Vượng ⚠️'
+                    else:
+                        kt_st = 'Có'
                 elif 'Cừu' in f:
                     cuu = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    cuu_st = '⚠️ Tiếp sức KT' if '-' in f else 'Yếu'
+                    cuu_st = '⚠️ Tiếp sức KT' if '-' in f else 'Yếu ✅'
                 elif 'Thế' in f and 'Ứng' in f:
                     the_st = 'Vượng' if 'khắc Ứng' in f else 'Suy'
                     ung_st = 'Suy' if 'khắc Ứng' in f else 'Vượng'
@@ -1646,10 +1673,71 @@ class FreeAIHelper:
                             break
                 except: pass
             
-            # KM BT/SV
+            # KM BT/SV + Thế/Ứng
             for f in (v24_km_factors or []):
-                if 'BT' in f and ('sinh' in f.lower() or 'khắc' in f.lower()):
-                    bt_sv = 'BT thắng SV' if ('khắc' in f.lower() and '+' in f) else 'SV thắng'
+                if 'BT' in f and 'SV' in f:
+                    bt_sv = 'BT thắng SV ✅' if ('+' in f) else 'SV thắng ❌'
+                    # Extract cung (số thuần, template đã có prefix 'Cung')
+                    import re as _re2
+                    cm = _re2.findall(r'Cung(\d+)', f)
+                    if len(cm) >= 2:
+                        cung_bt = cm[0]
+                        cung_sv = cm[1]
+                    elif len(cm) == 1:
+                        cung_bt = cm[0]
+                elif 'Thế' in f and ('khắc' in f.lower() or 'sinh' in f.lower()):
+                    if 'khắc Ứng' in f or ('+' in f):
+                        the_st = the_st or 'Vượng'
+                        ung_st = ung_st or 'Suy'
+                    else:
+                        the_st = the_st or 'Suy'
+                        ung_st = ung_st or 'Vượng'
+            
+            # V32.7d: Fallback — lấy Cừu, Thế/Ứng, BT/SV cung từ data gốc
+            if not cuu and luc_hao_data and isinstance(luc_hao_data, dict):
+                cuu = luc_hao_data.get('cuu_than', '')
+                if cuu:
+                    cuu_st = cuu_st or 'Có'
+                else:
+                    cuu = 'N/A'
+                    cuu_st = 'N/A'
+            
+            if not the_st and luc_hao_data and isinstance(luc_hao_data, dict):
+                # Try multiple keys for hào list
+                hao_list = (luc_hao_data.get('hao', []) or 
+                           luc_hao_data.get('haos', []) or 
+                           luc_hao_data.get('hao_list', []))
+                ban_lh = luc_hao_data.get('ban', {})
+                if not hao_list and ban_lh:
+                    hao_list = (ban_lh.get('haos', []) or 
+                               ban_lh.get('details', []) or 
+                               ban_lh.get('hao_list', []))
+                for hao in hao_list:
+                    if isinstance(hao, dict):
+                        tu = str(hao.get('the_ung', '') or hao.get('marker', ''))
+                        hanh_h = hao.get('hanh', '') or hao.get('ngu_hanh', '')
+                        chi_h = hao.get('chi', '')
+                        label = f"{chi_h}/{hanh_h}" if chi_h and hanh_h else (hanh_h or chi_h or 'N/A')
+                        if 'Thế' in tu and not the_st:
+                            the_st = label
+                        elif 'Ứng' in tu and not ung_st:
+                            ung_st = label
+            
+            # Fallback cung_bt/sv từ v24_km_factors text "BT(Cung2)...SV(Cung7)" 
+            if not cung_bt:
+                import re as _re3
+                for f in (v24_km_factors or []):
+                    cm2 = _re3.findall(r'Cung(\d+)', f)
+                    if len(cm2) >= 2:
+                        cung_bt = cm2[0]
+                        cung_sv = cm2[1]
+                        break
+                    elif len(cm2) == 1 and 'BT' in f:
+                        cung_bt = cm2[0]
+            
+            if not cung_bt and chart_data and isinstance(chart_data, dict):
+                cung_bt = str(chart_data.get('cung_ban_than', '?')).replace('Cung', '')
+                cung_sv = str(chart_data.get('cung_su_viec', '?')).replace('Cung', '')
             
             concl = 'CÓ ✅' if total > 10 else 'KHÔNG ❌' if total < -10 else 'LỠ CỠ 🟡'
             
@@ -1815,7 +1903,10 @@ class FreeAIHelper:
                 generic_slots['tuoi_tra_san'] = tuoi_range
                 generic_slots['tuoi_trung_binh'] = str(tuoi_estimate) if tuoi_estimate else tuoi_range
             
-            slots.update(generic_slots)
+            # V32.7d: Generic slots chỉ điền key chưa có — SD-specific slots ưu tiên
+            for k, v in generic_slots.items():
+                if k not in slots or slots[k] in ('', '?', None):
+                    slots[k] = v
         
         # === Fill template ===
         try:
