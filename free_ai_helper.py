@@ -1092,34 +1092,45 @@ QUE_THOAN_DAI_TUONG = {
 # PP có trọng số cao nhất = PP CHÍNH cho loại câu hỏi đó
 # ═══════════════════════════════════════════════════════════
 METHOD_STRENGTH_MAP = {
-    'tài_chính':    {'ky_mon': 70, 'luc_hao': 95, 'mai_hoa': 75, 'thiet_ban': 40, 'luc_nham': 60, 'thai_at': 30},
-    'sự_nghiệp':    {'ky_mon': 80, 'luc_hao': 90, 'mai_hoa': 70, 'thiet_ban': 50, 'luc_nham': 65, 'thai_at': 40},
-    'tình_cảm':     {'ky_mon': 65, 'luc_hao': 90, 'mai_hoa': 80, 'thiet_ban': 40, 'luc_nham': 70, 'thai_at': 30},
-    'sức_khỏe':     {'ky_mon': 80, 'luc_hao': 90, 'mai_hoa': 60, 'thiet_ban': 50, 'luc_nham': 55, 'thai_at': 35},
-    'tìm_đồ':       {'ky_mon': 95, 'luc_hao': 70, 'mai_hoa': 60, 'thiet_ban': 30, 'luc_nham': 85, 'thai_at': 25},
-    'thời_gian':    {'ky_mon': 95, 'luc_hao': 75, 'mai_hoa': 65, 'thiet_ban': 45, 'luc_nham': 70, 'thai_at': 50},
-    'phương_hướng': {'ky_mon': 95, 'luc_hao': 50, 'mai_hoa': 45, 'thiet_ban': 30, 'luc_nham': 80, 'thai_at': 60},
-    'tranh_đấu':    {'ky_mon': 90, 'luc_hao': 75, 'mai_hoa': 55, 'thiet_ban': 40, 'luc_nham': 65, 'thai_at': 85},
-    'tổng_quát':    {'ky_mon': 75, 'luc_hao': 80, 'mai_hoa': 85, 'thiet_ban': 55, 'luc_nham': 65, 'thai_at': 45},
-    'nhà_đất':      {'ky_mon': 75, 'luc_hao': 85, 'mai_hoa': 70, 'thiet_ban': 60, 'luc_nham': 75, 'thai_at': 40},
-    'thi_cử':       {'ky_mon': 70, 'luc_hao': 85, 'mai_hoa': 75, 'thiet_ban': 55, 'luc_nham': 60, 'thai_at': 35},
-    'vận_mệnh':     {'ky_mon': 60, 'luc_hao': 70, 'mai_hoa': 65, 'thiet_ban': 80, 'luc_nham': 60, 'thai_at': 75},
+    # V32.7: RESEARCH-BACKED — Trọng số theo thế mạnh từng môn cho từng loại câu hỏi
+    # LH = vua chi tiết, KM = vua chiến lược/phương vị, MH = nhanh/số, LN = diễn biến/tìm, TB = vận mệnh, TA = vĩ mô
+    'tài_chính':    {'ky_mon': 50, 'luc_hao': 100, 'mai_hoa': 60, 'thiet_ban': 30, 'luc_nham': 50, 'thai_at': 20},
+    'sự_nghiệp':    {'ky_mon': 60, 'luc_hao': 100, 'mai_hoa': 55, 'thiet_ban': 40, 'luc_nham': 55, 'thai_at': 30},
+    'tình_cảm':     {'ky_mon': 45, 'luc_hao': 100, 'mai_hoa': 70, 'thiet_ban': 30, 'luc_nham': 60, 'thai_at': 20},
+    'sức_khỏe':     {'ky_mon': 55, 'luc_hao': 100, 'mai_hoa': 45, 'thiet_ban': 40, 'luc_nham': 70, 'thai_at': 25},
+    'tìm_đồ':       {'ky_mon': 100, 'luc_hao': 55, 'mai_hoa': 45, 'thiet_ban': 20, 'luc_nham': 90, 'thai_at': 15},
+    'thời_gian':    {'ky_mon': 60, 'luc_hao': 100, 'mai_hoa': 85, 'thiet_ban': 35, 'luc_nham': 55, 'thai_at': 40},
+    'phương_hướng': {'ky_mon': 100, 'luc_hao': 40, 'mai_hoa': 35, 'thiet_ban': 20, 'luc_nham': 80, 'thai_at': 50},
+    'tranh_đấu':    {'ky_mon': 100, 'luc_hao': 70, 'mai_hoa': 45, 'thiet_ban': 30, 'luc_nham': 55, 'thai_at': 75},
+    'tổng_quát':    {'ky_mon': 55, 'luc_hao': 100, 'mai_hoa': 70, 'thiet_ban': 40, 'luc_nham': 50, 'thai_at': 35},
+    'nhà_đất':      {'ky_mon': 60, 'luc_hao': 100, 'mai_hoa': 55, 'thiet_ban': 50, 'luc_nham': 60, 'thai_at': 30},
+    'thi_cử':       {'ky_mon': 50, 'luc_hao': 100, 'mai_hoa': 65, 'thiet_ban': 45, 'luc_nham': 50, 'thai_at': 25},
+    'vận_mệnh':     {'ky_mon': 40, 'luc_hao': 55, 'mai_hoa': 50, 'thiet_ban': 100, 'luc_nham': 45, 'thai_at': 90},
+    # V32.7 NEW: Tuổi/Số dùng LH Trường Sinh + MH Tiên Thiên
+    'tuổi_số':      {'ky_mon': 50, 'luc_hao': 100, 'mai_hoa': 90, 'thiet_ban': 30, 'luc_nham': 40, 'thai_at': 20},
+    'con_cái':      {'ky_mon': 50, 'luc_hao': 100, 'mai_hoa': 70, 'thiet_ban': 35, 'luc_nham': 55, 'thai_at': 25},
+    'chiến_lược':   {'ky_mon': 100, 'luc_hao': 55, 'mai_hoa': 50, 'thiet_ban': 30, 'luc_nham': 60, 'thai_at': 70},
 }
 
 # Mapping category_label → strength key
 CATEGORY_TO_STRENGTH = {
-    'TÀI CHÍNH': 'tài_chính', 'KINH DOANH': 'tài_chính', 'ĐẦU TƯ': 'tài_chính',
-    'SỰ NGHIỆP': 'sự_nghiệp', 'CÔNG VIỆC': 'sự_nghiệp', 'THĂNG TIẾN': 'sự_nghiệp',
-    'TÌNH CẢM': 'tình_cảm', 'HÔN NHÂN': 'tình_cảm', 'TÌNH YÊU': 'tình_cảm',
-    'SỨC KHỎE': 'sức_khỏe', 'BỆNH TẬT': 'sức_khỏe',
-    'TÌM ĐỒ': 'tìm_đồ', 'MẤT ĐỒ': 'tìm_đồ', 'TÌM NGƯỜI': 'tìm_đồ',
-    'THỜI GIAN': 'thời_gian', 'BAO GIỜ': 'thời_gian', 'KHI NÀO': 'thời_gian',
+    'TÀI CHÍNH': 'tài_chính', 'KINH DOANH': 'tài_chính', 'ĐẦU TƯ': 'tài_chính', 'TIỀN': 'tài_chính',
+    'SỰ NGHIỆP': 'sự_nghiệp', 'CÔNG VIỆC': 'sự_nghiệp', 'THĂNG TIẾN': 'sự_nghiệp', 'VIỆC LÀM': 'sự_nghiệp',
+    'TÌNH CẢM': 'tình_cảm', 'HÔN NHÂN': 'tình_cảm', 'TÌNH YÊU': 'tình_cảm', 'VỢ CHỒNG': 'tình_cảm',
+    'SỨC KHỎE': 'sức_khỏe', 'BỆNH TẬT': 'sức_khỏe', 'BỆNH': 'sức_khỏe',
+    'TÌM ĐỒ': 'tìm_đồ', 'MẤT ĐỒ': 'tìm_đồ', 'TÌM NGƯỜI': 'tìm_đồ', 'Ở ĐÂU': 'tìm_đồ',
+    'THỜI GIAN': 'thời_gian', 'BAO GIỜ': 'thời_gian', 'KHI NÀO': 'thời_gian', 'BAO LÂU': 'thời_gian',
     'PHƯƠNG HƯỚNG': 'phương_hướng', 'ĐI ĐÂU': 'phương_hướng',
     'TRANH ĐẤU': 'tranh_đấu', 'KIỆN TỤNG': 'tranh_đấu', 'ĐỐI THỦ': 'tranh_đấu',
-    'NHÀ ĐẤT': 'nhà_đất', 'MUA NHÀ': 'nhà_đất', 'NHÀ CỬA': 'nhà_đất',
-    'THI CỬ': 'thi_cử', 'HỌC HÀNH': 'thi_cử',
+    'NHÀ ĐẤT': 'nhà_đất', 'MUA NHÀ': 'nhà_đất', 'NHÀ CỬA': 'nhà_đất', 'NHÀ': 'nhà_đất',
+    'THI CỬ': 'thi_cử', 'HỌC HÀNH': 'thi_cử', 'THI': 'thi_cử',
     'VẬN MỆNH': 'vận_mệnh', 'SỐ MỆNH': 'vận_mệnh',
     'XUẤT HÀNH': 'phương_hướng', 'DI CHUYỂN': 'phương_hướng', 'VỀ QUÊ': 'phương_hướng',
+    # V32.7 NEW
+    'TUỔI': 'tuổi_số', 'SỐ': 'tuổi_số', 'ĐẾM': 'tuổi_số', 'BAO NHIÊU': 'tuổi_số', 'MẤY': 'tuổi_số',
+    'CON CÁI': 'con_cái', 'CON': 'con_cái', 'SINH CON': 'con_cái',
+    'CHIẾN LƯỢC': 'chiến_lược', 'NÊN LÀM GÌ': 'chiến_lược', 'HƯỚNG': 'chiến_lược',
+    'SẢN XUẤT': 'sự_nghiệp', 'CÔNG TY': 'sự_nghiệp',
 }
 
 METHOD_NAMES = {
@@ -4726,6 +4737,21 @@ class FreeAIHelper:
         if conflicts:
             parts.append(f"Mâu thuẫn: {', '.join(conflicts[:3])}")
         
+        # V32.7: Phát hiện lệch mạnh (>2 cấp) giữa PP chính và PP phụ
+        VERDICT_LEVEL = {'ĐẠI CÁT': 4, 'CÁT': 3, 'BÌNH': 2, 'HUNG': 1, 'ĐẠI HUNG': 0}
+        primary_level = VERDICT_LEVEL.get(primary_verdict, 2)
+        deviations = []
+        for m, ws in sorted_methods[1:4]:
+            m_verdict = verdicts.get(m, 'BÌNH')
+            m_level = VERDICT_LEVEL.get(m_verdict, 2)
+            diff = abs(primary_level - m_level)
+            if diff >= 2:
+                m_name = METHOD_NAMES.get(m, m)
+                deviations.append(f"{m_name}({m_verdict}) lệch {diff} cấp vs {primary_name}({primary_verdict})")
+        
+        if deviations:
+            parts.append(f"⚠️ LỆCH MẠNH: {' | '.join(deviations)}")
+        
         return {
             'primary': primary,
             'primary_name': primary_name,
@@ -4737,6 +4763,7 @@ class FreeAIHelper:
             'hung_count': hung_count,
             'total': total,
             'conflicts': conflicts,
+            'deviations': deviations,  # V32.7: Danh sách PP lệch mạnh
             'routing_text': ' | '.join(parts),
         }
     
@@ -7365,6 +7392,9 @@ class FreeAIHelper:
             'v16_ta_score': v16_ta_score,
             # V17.0: Method routing
             'v17_routing': v17_routing,
+            'v17_primary_method': routing.get('primary_name', '?') if routing else '?',
+            'v17_primary_verdict': routing.get('primary_verdict', '?') if routing else '?',
+            'v17_deviations': routing.get('deviations', []) if routing else [],
             # V18.0: Detective deduction
             'v18_detective': v18_detective,
             # V26.2: Unified Strength — 3 tầng tổng hợp
