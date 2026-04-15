@@ -1807,6 +1807,12 @@ class FreeAIHelper:
             lines.append("| Cung | Sao | Cửa | Thần | Can Thiên | Can Địa | Vai trò |")
             lines.append("|:----:|:----|:----|:-----|:---------|:--------|:--------|")
             for i in range(1, 10):
+                if i == 5:
+                    # Cung 5 = Trung Cung → QMDG không xếp Sao/Cửa/Thần
+                    ct5 = can_tb.get(5, can_tb.get('5', '—'))
+                    cd5 = dia_ban.get(5, dia_ban.get('5', '—')) if dia_ban else '—'
+                    lines.append(f"| 5 | *(Trung Cung)* | — | — | {ct5} | {cd5} |  |")
+                    continue
                 sao = thien_ban.get(i, thien_ban.get(str(i), '?'))
                 cua = nhan_ban.get(i, nhan_ban.get(str(i), '?'))
                 than = than_ban.get(i, than_ban.get(str(i), '?'))
@@ -5653,20 +5659,22 @@ class FreeAIHelper:
             dt_hao = None
             for hao in haos:
                 lt = hao.get('luc_than', '')
-                tu = hao.get('the_ung', '')
+                tu = hao.get('the_ung', '') or hao.get('marker', '')
                 if lt == dung_than or (dung_than in ['Phụ Mẫu (Cha)', 'Phụ Mẫu (Mẹ)'] and 'Phụ Mẫu' in lt):
                     dt_hao = hao
                     break
-                if dung_than == 'Bản Thân' and tu == 'Thế':
+                if dung_than == 'Bản Thân' and 'Thế' in str(tu):
                     dt_hao = hao
                     break
             
             if dt_hao:
+                vs = str(dt_hao.get('vuong_suy', '') or dt_hao.get('strength', '') or '?')
+                cc = dt_hao.get('can_chi', '') or dt_hao.get('chi', '') or '?'
                 lh_info = {
                     'hao': dt_hao.get('hao', '?'),
-                    'can_chi': dt_hao.get('can_chi', '?'),
+                    'can_chi': cc,
                     'hanh': dt_hao.get('ngu_hanh', '?'),
-                    'vuong_suy': str(dt_hao.get('vuong_suy', '?')),
+                    'vuong_suy': vs,
                 }
                 dt_info['Lục Hào'] = lh_info
                 if not dt_hanh_primary and lh_info['hanh'] != '?':
@@ -5696,8 +5704,10 @@ class FreeAIHelper:
             if can_ngay and chi_ngay:
                 nap_am = tra_nap_am(f"{can_ngay} {chi_ngay}")
                 if nap_am:
-                    tb_info = {'nap_am': nap_am.get('ten', '?'), 'hanh': nap_am.get('hanh', '?')}
-                    tb_info['giai_thich'] = NAP_AM_GIAI_THICH.get(tb_info['nap_am'], '')
+                    na_ten = nap_am.get('ten', '') or nap_am.get('nap_am', '?')
+                    na_hanh = nap_am.get('hanh', '?')
+                    na_gt = nap_am.get('giai_thich', '') or NAP_AM_GIAI_THICH.get(na_ten, '')
+                    tb_info = {'nap_am': na_ten, 'hanh': na_hanh, 'giai_thich': na_gt}
                     dt_info['Thiết Bản'] = tb_info
         
         # --- 5. VẠN TƯỢNG: Quái Tượng Cung BT/DT ---
@@ -8300,6 +8310,9 @@ class FreeAIHelper:
         if thien_ban:
             lines.append(f"**📊 TỔNG QUAN 9 CUNG:**")
             for cn_i in range(1, 10):
+                if cn_i == 5:
+                    lines.append(f"  Cung 5: *(Trung Cung)* — không xếp Sao/Cửa/Thần")
+                    continue
                 s = thien_ban.get(cn_i, thien_ban.get(str(cn_i), '?'))
                 c = nhan_ban.get(cn_i, nhan_ban.get(str(cn_i), '?'))
                 t = than_ban.get(cn_i, than_ban.get(str(cn_i), '?'))
