@@ -2301,6 +2301,23 @@ class FreeAIHelper:
                             if od.get(k): offline_ctx += f"{lb}: {od[k]}\n"
                     
                     if od.get('v17_routing'): offline_ctx += f"\n--- V17 ROUTING ---\n{od['v17_routing']}\n"
+                    
+                    # V32.7: DEEP ANALYSIS khi có LỆCH MẠNH giữa các phương pháp
+                    v17_devs = od.get('v17_deviations', [])
+                    if v17_devs:
+                        offline_ctx += f"\n--- ⚠️ PHÂN TÍCH SÂU (CÁC PP LỆCH MẠNH) ---\n"
+                        offline_ctx += f"PP chính: {od.get('v17_primary_method','?')} = {od.get('v17_primary_verdict','?')}\n"
+                        offline_ctx += f"Lệch: {' | '.join(v17_devs)}\n"
+                        offline_ctx += f"""
+🔍 YÊU CẦU AI ONLINE: Khi phương pháp CHÍNH và PHỤ lệch mạnh (≥2 cấp), đây là tín hiệu vấn đề PHỨC TẠP.
+KHÔNG đơn giản kết luận CÁT hoặc HUNG. Phải:
+1. SOI TỪNG YẾU TỐ: Mỗi PP cho kết quả khác nhau ở điểm nào cụ thể?
+2. TÌM BẢN CHẤT: VD: PP1 bảo "bệnh nặng" nhưng PP2 bảo "CÁT" → có thể bệnh nặng nhưng ĐƯỢC CỨU CHỮA
+3. PHÂN LỚP KẾT QUẢ: Kết quả gần = X, nhưng sau đó chuyển biến = Y
+4. KẾT LUẬN ĐA TẦNG: Không cho 1 câu CÁT/HUNG đơn giản mà phải mô tả diễn biến chi tiết
+VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chuyển (Môn Y: CÁT vì...)"
+"""
+                    
                     if od.get('v18_detective'): offline_ctx += f"\n--- V18 THÁM TỬ ---\n{od['v18_detective']}\n"
                     
                     if chart_data and isinstance(chart_data, dict):
