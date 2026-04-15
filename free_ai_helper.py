@@ -1682,12 +1682,19 @@ class FreeAIHelper:
             
             # MH data
             if mai_hoa_data and isinstance(mai_hoa_data, dict):
-                generic_slots['the_quai'] = mai_hoa_data.get('the_quai', {}).get('ten', '?') if isinstance(mai_hoa_data.get('the_quai'), dict) else str(mai_hoa_data.get('the_quai', '?'))
-                generic_slots['dung_quai'] = mai_hoa_data.get('dung_quai', {}).get('ten', '?') if isinstance(mai_hoa_data.get('dung_quai'), dict) else str(mai_hoa_data.get('dung_quai', '?'))
-                generic_slots['ho_quai'] = str(mai_hoa_data.get('ho_quai', '?'))
-                generic_slots['bien_quai'] = str(mai_hoa_data.get('bien_quai', '?'))
-                the_h = mai_hoa_data.get('the_quai', {}).get('hanh', '?') if isinstance(mai_hoa_data.get('the_quai'), dict) else '?'
-                dung_h = mai_hoa_data.get('dung_quai', {}).get('hanh', '?') if isinstance(mai_hoa_data.get('dung_quai'), dict) else '?'
+                # V32.5: Unified key mapping — check all possible key names
+                the_q = mai_hoa_data.get('the_quai', '') or mai_hoa_data.get('ten_ha', '') or mai_hoa_data.get('lower', '') or '?'
+                dung_q = mai_hoa_data.get('dung_quai', '') or mai_hoa_data.get('ten_thuong', '') or mai_hoa_data.get('upper', '') or '?'
+                if isinstance(the_q, dict): the_q = the_q.get('ten', '?')
+                if isinstance(dung_q, dict): dung_q = dung_q.get('ten', '?')
+                generic_slots['the_quai'] = str(the_q)
+                generic_slots['dung_quai'] = str(dung_q)
+                generic_slots['ho_quai'] = str(mai_hoa_data.get('ho_quai', '') or mai_hoa_data.get('ten_ho', '') or '?')
+                generic_slots['bien_quai'] = str(mai_hoa_data.get('bien_quai', '') or mai_hoa_data.get('ten_qua_bien', '') or '?')
+                the_h = mai_hoa_data.get('hanh_ha', '') or mai_hoa_data.get('lower_element', '') or '?'
+                dung_h = mai_hoa_data.get('hanh_thuong', '') or mai_hoa_data.get('upper_element', '') or '?'
+                if isinstance(the_q, dict): the_h = the_q.get('hanh', the_h)
+                if isinstance(dung_q, dict): dung_h = dung_q.get('hanh', dung_h)
                 generic_slots['the_quai_hanh'] = the_h  
                 generic_slots['dung_quai_hanh'] = dung_h
                 if the_h != '?' and dung_h != '?':
