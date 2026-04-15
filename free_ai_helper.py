@@ -7329,8 +7329,115 @@ class FreeAIHelper:
             except Exception as e:
                 self.log_step("V31.3 VanVat", "ERROR", str(e)[:80])
             
-            # Lời khuyên cuối
-            final_parts.append(f"\n### 💡 LỜI KHUYÊN HÀNH ĐỘNG")
+            # ═══════════════════════════════════════════════════════
+            # V32.2: KẾT LUẬN TỔNG HỢP OFFLINE — CHẤT LƯỢNG NHƯ AI ONLINE
+            # ═══════════════════════════════════════════════════════
+            final_parts.append(f"\n### 🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE)")
+            
+            # --- Xác định verdict text tự nhiên ---
+            if _cat_count >= 4:
+                verdict_text = "RẤT THUẬN LỢI"
+                verdict_detail = "Tất cả phương pháp đều cho kết quả tích cực"
+            elif _cat_count >= 3:
+                verdict_text = "THUẬN LỢI"
+                verdict_detail = "Đa số phương pháp cho kết quả tốt"
+            elif _cat_count >= 2:
+                verdict_text = "CÒN PHẢI XEM"
+                verdict_detail = "Kết quả trộn lẫn, không rõ ràng"
+            elif _hung_count >= 4:
+                verdict_text = "RẤT BẤT LỢI"
+                verdict_detail = "Hầu hết phương pháp đều cho kết quả tiêu cực"
+            else:
+                verdict_text = "KHÔNG THUẬN LỢI"
+                verdict_detail = "Nhiều yếu tố cản trở"
+            
+            # --- Tổng kết ngắn gọn ---
+            final_parts.append(f"**{v_icon} {verdict_text}** — {verdict_detail}.")
+            final_parts.append(f"")
+            
+            # --- Chain of Reasoning (chuỗi lý luận) ---
+            final_parts.append(f"**📊 Chuỗi lý luận:**")
+            reasoning_steps = []
+            
+            # Bước 1: Dụng Thần
+            dt_state = unified_v22['tier_data']['cap'] if unified_v22 else 'Chưa rõ'
+            reasoning_steps.append(f"1. Dụng Thần **{dung_than}** (hành {hanh_dt_v22 or '?'}) → Trạng thái: **{dt_state}**")
+            
+            # Bước 2: 12 Trường Sinh
+            if ts_stage:
+                ts_p = TRUONG_SINH_POWER.get(ts_stage, {})
+                reasoning_steps.append(f"2. 12 Trường Sinh → **{ts_stage}** (power {ts_p.get('power', 50)}%) → {ts_p.get('con_nguoi', '?')}")
+            
+            # Bước 3: 6 PP
+            cat_pp = [pp for pp, _, v in pp_ranking if v in ['CÁT', 'ĐẠI CÁT', 'TRUNG CÁT']]
+            hung_pp = [pp for pp, _, v in pp_ranking if v in ['HUNG', 'ĐẠI HUNG']]
+            reasoning_steps.append(f"3. 6 Phương Pháp → **{_cat_count} CÁT** ({', '.join(cat_pp) or 'không có'}) vs **{_hung_count} HUNG** ({', '.join(hung_pp) or 'không có'})")
+            
+            # Bước 4: Ngũ Khí
+            reasoning_steps.append(f"4. Ngũ Khí → **{ngu_khi_state_v22}** | Unified Score: **{pct_short}%**")
+            
+            for step in reasoning_steps:
+                final_parts.append(f"   {step}")
+            
+            final_parts.append(f"")
+            
+            # --- TRẢ LỜI CỤ THỂ theo loại câu hỏi ---
+            final_parts.append(f"**🎯 Câu trả lời trực tiếp:**")
+            
+            if is_yesno:
+                if _cat_count >= 3:
+                    final_parts.append(f"→ **CÓ** (xác suất {pct_short}%). Dụng Thần {dung_than} vượng, điều kiện thuận lợi để thực hiện. Hành {hanh_dt_v22} ở {ts_stage or 'Lâm Quan'} cho thấy sự việc đang trong giai đoạn {dt_state.lower()}.")
+                elif _cat_count >= 2:
+                    final_parts.append(f"→ **CHƯA CHẮC** (xác suất {pct_short}%). Cần thêm thời gian hoặc yếu tố hỗ trợ. Nên chờ 1-2 tuần rồi xem xét lại.")
+                else:
+                    final_parts.append(f"→ **KHÔNG NÊN** (xác suất thành công {pct_short}%). {dung_than} suy yếu, quá nhiều trở ngại. Nên hoãn lại hoặc tìm hướng khác.")
+            
+            elif is_health_critical:
+                if _cat_count >= 3:
+                    final_parts.append(f"→ Tình trạng **KHẢ QUAN**. {dung_than} còn sức ({dt_state}), có khả năng hồi phục. Tiếp tục điều trị tích cực.")
+                else:
+                    final_parts.append(f"→ Tình trạng **NGUY HIỂM**. {dung_than} suy ({dt_state}), cần can thiệp y tế khẩn cấp. Tìm bác sĩ giỏi nhất.")
+            
+            elif is_when:
+                if _cat_count >= 3:
+                    final_parts.append(f"→ Dự kiến trong **1-7 ngày** tới. {dung_than} vượng ({ts_stage or '?'}), sự việc sẽ diễn ra nhanh.")
+                elif _cat_count >= 2:
+                    final_parts.append(f"→ Dự kiến **1-3 tháng**. {dung_than} trung bình, cần kiên nhẫn chờ thêm.")
+                else:
+                    final_parts.append(f"→ Dự kiến **3-6 tháng** hoặc lâu hơn. {dung_than} suy ({ts_stage or '?'}), sự việc bị đình trệ.")
+            
+            elif is_find:
+                _hanh_vat_f = NGU_HANH_VAT_CHAT.get(hanh_dt_v22, {})
+                final_parts.append(f"→ Hướng: **{_hanh_vat_f.get('huong', '?')}**. Vật có hình dạng {_hanh_vat_f.get('hinh', '?')}, chất liệu {_hanh_vat_f.get('chat_lieu', '?')}, màu {_hanh_vat_f.get('mau', '?')}.")
+                if _cat_count >= 3:
+                    final_parts.append(f"→ Khả năng tìm thấy: **CAO** ({pct_short}%)")
+                else:
+                    final_parts.append(f"→ Khả năng tìm thấy: **THẤP** ({pct_short}%)")
+            
+            elif is_what:
+                _hanh_vat_w = NGU_HANH_VAT_CHAT.get(hanh_dt_v22, {})
+                final_parts.append(f"→ Thuộc hành **{hanh_dt_v22}** ({ts_stage or '?'}): Hình dạng {_hanh_vat_w.get('hinh', '?')}, chất liệu {_hanh_vat_w.get('chat_lieu', '?')}, màu {_hanh_vat_w.get('mau', '?')}.")
+                _vv_kl = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH') if unified_v22 else 'TRUNG_BÌNH') 
+                if _vv_kl:
+                    final_parts.append(f"→ Đồ vật có thể là: {_vv_kl.get('do_vat', '?')}")
+            
+            elif is_emotion:
+                if _cat_count >= 3:
+                    final_parts.append(f"→ Đối phương **THẬT LÒNG**. {dung_than} vượng ({pct_short}%), tình cảm chân thành.")
+                else:
+                    final_parts.append(f"→ Đối phương **KHÔNG thật lòng**. {dung_than} suy ({pct_short}%), có dấu hiệu giả dối hoặc phai nhạt.")
+            
+            else:
+                if _cat_count >= 3:
+                    final_parts.append(f"→ Tình hình **THUẬN LỢI** ({pct_short}%). {dung_than} vượng ở {ts_stage or '?'}, nên tận dụng cơ hội ngay.")
+                elif _cat_count >= 2:
+                    final_parts.append(f"→ Tình hình **BÌNH THƯỜNG** ({pct_short}%). Giữ nguyên hiện trạng, quan sát thêm.")
+                else:
+                    final_parts.append(f"→ Tình hình **KHÓ KHĂN** ({pct_short}%). Kiên nhẫn chờ, tìm quý nhân hỗ trợ.")
+            
+            # --- Lời khuyên cuối ---
+            final_parts.append(f"")
+            final_parts.append(f"### 💡 LỜI KHUYÊN HÀNH ĐỘNG")
             if pct_short >= 65:
                 final_parts.append("- ✅ Hành động sớm, tận dụng thời cơ. Mọi điều kiện đang có lợi cho bạn.")
             elif pct_short >= 50:
