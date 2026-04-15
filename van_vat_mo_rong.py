@@ -365,6 +365,213 @@ VAN_VAT_MO_RONG = {
     },
 }
 
+# ═══════════════════════════════════════════════════════════════
+# PHẦN 2: DANH MỤC BỔ SUNG — NỘI THẤT, Y TẾ, TÔN GIÁO,
+# ĐỊA LÝ, BỘ PHẬN CƠ THỂ, NÔNG NGHIỆP, VĂN PHÒNG, GIA DỤNG
+# ═══════════════════════════════════════════════════════════════
+
+VAN_VAT_BO_SUNG = {
+    'Kim': {
+        # 🛋️ NỘI THẤT
+        'noi_that': ['Kệ inox', 'Giá treo quần áo kim loại', 'Gương khung bạc', 'Đèn chùm pha lê',
+                     'Bàn kính khung sắt', 'Ghế xoay kim loại', 'Tủ sắt hồ sơ', 'Kệ giày inox',
+                     'Móc treo tường', 'Rèm cửa kim tuyến', 'Bệ lavabo inox', 'Vòi sen inox'],
+        
+        # 🏥 Y TẾ / DƯỢC
+        'y_te': ['Dao mổ', 'Kim tiêm', 'Kéo phẫu thuật', 'Kẹp y tế', 'Nẹp xương', 
+                 'Máy MRI', 'Máy X-quang', 'Stent tim', 'Implant titan', 'Răng giả kim loại',
+                 'Ống nghe y tế', 'Nhiệt kế thủy ngân', 'Xe lăn (khung sắt)', 'Nạng inox',
+                 'Thuốc viên nén', 'Thuốc bọc vỏ nhôm', 'Bình oxy', 'Máy thở'],
+        
+        # ⛪ TÔN GIÁO
+        'ton_giao': ['Chuông chùa/nhà thờ', 'Thánh giá bạc/vàng', 'Lư hương đồng', 
+                     'Kiếm phát ấn', 'Chén thánh', 'Gương phong thủy bát quái',
+                     'Tượng Phật đồng', 'Chuông gió phong thủy', 'La bàn/Kinh Dịch'],
+        
+        # 🗻 ĐỊA LÝ
+        'dia_ly': ['Mỏ vàng', 'Mỏ bạc', 'Mỏ sắt', 'Núi đá vôi', 'Sa mạc (cát kim loại)',
+                   'Khu công nghiệp', 'Nhà máy', 'Ngân hàng', 'Sở giao dịch chứng khoán'],
+        
+        # 🦴 BỘ PHẬN CƠ THỂ
+        'bo_phan_co_the': ['Phổi', 'Ruột già', 'Da', 'Xương', 'Răng', 'Mũi', 'Lông/tóc',
+                           'Móng tay', 'Cột sống', 'Sụn', 'Thanh quản'],
+        
+        # 🌾 NÔNG NGHIỆP
+        'nong_nghiep': ['Liềm', 'Cuốc sắt', 'Xẻng sắt', 'Dao phát cỏ', 'Cày sắt',
+                        'Bừa', 'Máy gặt liên hợp', 'Máy cày', 'Hệ thống tưới phun'],
+        
+        # 📎 VĂN PHÒNG
+        'van_phong': ['Ghim', 'Kẹp giấy', 'Dao rọc giấy', 'Kéo văn phòng', 'Máy dập ghim',
+                      'Khóa tủ hồ sơ', 'Bấm lỗ', 'Thước kẻ kim loại', 'Sọt rác inox'],
+        
+        # 🏡 GIA DỤNG
+        'gia_dung': ['Nồi', 'Chảo', 'Dao bếp', 'Thìa', 'Dĩa', 'Mở nắp chai', 
+                     'Nhíp', 'Bấm móng tay', 'Cạo râu', 'Muỗng canh', 'Vá múc',
+                     'Máy xay sinh tố (lưỡi)', 'Máy ép trái cây', 'Ấm siêu tốc (inox)',
+                     'Bình giữ nhiệt', 'Khay inox', 'Rổ rá inox', 'Kệ gia vị'],
+        
+        # 🖼️ NGHỆ THUẬT
+        'nghe_thuat': ['Tranh đồng đúc', 'Tượng inox', 'Sculpture kim loại', 'Jewelry art',
+                       'Chạm khắc bạc', 'Đúc đồng nghệ thuật', 'Khắc laser trên kim loại'],
+        
+        # 💻 KỸ THUẬT SỐ
+        'ky_thuat_so': ['Bitcoin', 'Cryptocurrency', 'Blockchain', 'Fintech', 'NFT vàng',
+                        'App ngân hàng', 'Ví điện tử', 'Thanh toán contactless'],
+    },
+    
+    'Mộc': {
+        'noi_that': ['Bàn gỗ', 'Ghế gỗ', 'Tủ gỗ', 'Kệ sách gỗ', 'Khung ảnh gỗ',
+                     'Rèm vải cotton', 'Thảm cói', 'Chiếu tre', 'Gối bông', 'Chăn len',
+                     'Đệm cao su', 'Ghế mây', 'Bàn tre', 'Giá sách tre', 'Bình hoa gỗ'],
+        
+        'y_te': ['Thuốc thảo dược', 'Thuốc Đông y', 'Châm cứu (cây kim nhưng kỹ thuật Mộc)',
+                 'Xoa bóp bấm huyệt', 'Yoga', 'Thiền', 'Mát-xa', 'Bó thuốc nam',
+                 'Dầu gió', 'Cao dán', 'Viên uống vitamin tự nhiên', 'Probiotic',
+                 'Thực phẩm chức năng hữu cơ', 'Trà thảo dược', 'Tinh dầu chữa bệnh'],
+        
+        'ton_giao': ['Kinh sách', 'Tràng hạt gỗ', 'Mõ gỗ', 'Bàn thờ gỗ', 'Bài vị gỗ',
+                     'Tượng gỗ', 'Hương trầm', 'Giấy sớ', 'Nón lá tu hành', 'Áo cà sa vải'],
+        
+        'dia_ly': ['Rừng', 'Vườn', 'Công viên', 'Đồng lúa', 'Nương rẫy', 'Rừng nhiệt đới',
+                   'Rừng thông', 'Rừng tre', 'Đồi chè', 'Vườn hoa', 'Nhà kính trồng cây'],
+        
+        'bo_phan_co_the': ['Gan', 'Mật', 'Mắt', 'Gân', 'Cơ bắp', 'Ngón tay', 'Ngón chân',
+                           'Đầu gối', 'Vai', 'Cánh tay', 'Cẳng chân', 'Móng tay (keratin)'],
+        
+        'nong_nghiep': ['Cuốc gỗ', 'Cày gỗ', 'Rổ tre', 'Gánh tre', 'Thúng mủng',
+                        'Hạt giống', 'Phân bón hữu cơ', 'Máy xay lúa gỗ', 'Bồ đựng thóc',
+                        'Nong nia', 'Quang gánh', 'Đòn gánh', 'Liếp tre'],
+        
+        'van_phong': ['Bút chì', 'Bút mực', 'Tập vở', 'Sổ tay', 'Phong bì', 'Giấy note',
+                      'Thước gỗ', 'Hồ dán', 'Băng keo giấy', 'Bìa hồ sơ', 'File đựng tài liệu'],
+        
+        'gia_dung': ['Thớt gỗ', 'Đũa tre', 'Muỗng gỗ', 'Rổ mây', 'Giỏ tre',
+                     'Hộp gỗ đựng trà', 'Giá đỡ nồi tre', 'Lót nồi tre', 'Khay trà gỗ',
+                     'Chổi que', 'Cây lau nhà', 'Thùng gỗ', 'Giỏ đi chợ mây tre'],
+        
+        'nghe_thuat': ['Tranh thủy mặc', 'Thư pháp', 'Điêu khắc gỗ', 'Tranh lụa',
+                       'Tranh giấy dó', 'Origami', 'Ikebana (cắm hoa)', 'Bonsai nghệ thuật'],
+        
+        'ky_thuat_so': ['Ebook', 'Blog', 'Website tin tức', 'App đọc sách', 'Podcast giáo dục',
+                        'Khóa học online', 'Notion', 'Google Docs', 'App trồng cây ảo'],
+    },
+    
+    'Thủy': {
+        'noi_that': ['Bể cá', 'Đài phun nước mini', 'Gương soi', 'Rèm xanh navy',
+                     'Thảm xanh đậm', 'Đèn nước (lava lamp)', 'Bình thủy sinh',
+                     'Tranh biển', 'Đồng hồ cát', 'Bình hoa thủy tinh'],
+        
+        'y_te': ['Thuốc nước/siro', 'Dịch truyền', 'Nước muối sinh lý', 'Thuốc nhỏ mắt',
+                 'Thuốc nhỏ mũi', 'Oxy già', 'Cồn sát trùng', 'Gel khử khuẩn',
+                 'Nước súc miệng', 'Thuốc tẩy giun (lỏng)', 'Kem bôi da', 'Mỡ tra mắt',
+                 'Huyết tương', 'Máu truyền', 'Nước ối', 'Thụt rửa'],
+        
+        'ton_giao': ['Nước thánh', 'Rửa tội', 'Bình tịnh thủy (Quan Âm)', 'Hồ sen chùa',
+                     'Sông Hằng (Ấn Độ)', 'Phép rửa', 'Nước cúng', 'Cốc nước thờ'],
+        
+        'dia_ly': ['Sông', 'Suối', 'Hồ', 'Biển', 'Đại dương', 'Ao', 'Đầm lầy', 'Thác nước',
+                   'Sông ngầm', 'Mạch nước ngầm', 'Vịnh', 'Eo biển', 'Phá', 'Lagoon',
+                   'Bắc Cực', 'Nam Cực', 'Sông Mekong', 'Sông Amazon', 'Biển Đông'],
+        
+        'bo_phan_co_the': ['Thận', 'Bàng quang', 'Tai', 'Xương tủy', 'Tử cung', 'Tinh hoàn',
+                           'Tuyến tiền liệt', 'Niệu đạo', 'Bọng đái', 'Máu', 'Nước bọt',
+                           'Mồ hôi', 'Nước mắt', 'Dịch não tủy'],
+        
+        'nong_nghiep': ['Hệ thống tưới nhỏ giọt', 'Ao nuôi cá', 'Bè nuôi tôm', 'Ruộng muối',
+                        'Trại nuôi tôm hùm', 'Đầm nuôi ngao', 'Hồ nuôi cá tra', 'Bè cá lồng'],
+        
+        'van_phong': ['Mực in', 'Bút bi (mực lỏng)', 'Bút máy', 'Sơn marker', 'Bảng trắng (xóa ướt)',
+                      'Máy hủy giấy (dầu bôi trơn)', 'Bình xịt khử mùi văn phòng'],
+        
+        'gia_dung': ['Bồn rửa', 'Bồn tắm', 'Vòi nước', 'Máy giặt', 'Chậu rửa', 'Xô nước',
+                     'Bình nước nóng', 'Bình lọc nước', 'Giá phơi đồ', 'Bàn ủi hơi nước',
+                     'Nồi áp suất (hơi)', 'Máy làm đá', 'Tủ lạnh', 'Máy hút ẩm'],
+        
+        'nghe_thuat': ['Tranh phong cảnh biển', 'Tranh thủy mặc (nước)', 'Nghệ thuật đá lỏng (resin art)',
+                       'Thủy tinh nghệ thuật', 'Điêu khắc băng (ice sculpture)', 'Múa đương đại (flowing)'],
+        
+        'ky_thuat_so': ['Cloud computing', 'Streaming', 'Flow/pipeline data', 'VPN (tunnel)',
+                        'Crypto liquidity', 'Dark web', 'Deep web', 'Torrent', 'Spotify/Apple Music'],
+    },
+    
+    'Hỏa': {
+        'noi_that': ['Đèn chùm', 'Đèn bàn', 'Đèn ngủ', 'Nến thơm', 'Lò sưởi trang trí',
+                     'Rèm đỏ', 'Thảm đỏ', 'Gương có đèn LED', 'Đèn strip LED',
+                     'Quạt trần (có đèn)', 'Kệ đèn', 'Tranh đèn neon'],
+        
+        'y_te': ['Laser phẫu thuật', 'Đốt điện trị bệnh', 'Xạ trị', 'Hóa trị',
+                 'Tia UV khuẩn', 'Đèn trị liệu ánh sáng', 'Châm cứu (đốt moxa/ngải cứu)',
+                 'Sấy khô vết thương', 'Thuốc viêm/sốt', 'Paracetamol', 'Ibuprofen',
+                 'Vitamin C (chống oxy hóa)', 'Kem chống bỏng', 'Gel hạ sốt'],
+        
+        'ton_giao': ['Hương', 'Nến thờ', 'Đèn dầu', 'Đuốc hỏa', 'Lửa thiêng',
+                     'Pháo (đốt vàng mã)', 'Giấy tiền vàng bạc', 'Bếp thắp hương',
+                     'Đèn hoa đăng', 'Đèn lồng Phật đản', 'Đèn cầy', 'Nhang trầm'],
+        
+        'dia_ly': ['Sa mạc Sahara', 'Thung lũng Chết', 'Miệng núi lửa', 'Suối nước nóng',
+                   'Vùng xích đạo', 'Dubai', 'Death Valley', 'Đảo Hawaii (núi lửa)'],
+        
+        'bo_phan_co_the': ['Tim', 'Ruột non', 'Mắt (viêm)', 'Lưỡi', 'Mạch máu', 'Não',
+                           'Hệ thần kinh', 'Tuyến thượng thận', 'Da (viêm đỏ)'],
+        
+        'nong_nghiep': ['Đốt đồng', 'Phát rẫy đốt nương', 'Lò sấy nông sản', 'Máy sấy thóc',
+                        'Lò hun khói', 'Lò nướng bánh', 'Hệ thống sưởi nhà kính'],
+        
+        'van_phong': ['Máy hủy tài liệu (nhiệt)', 'Máy ép plastic', 'Bảng LED thông báo',
+                      'Đèn bàn', 'Máy photocopy (nhiệt)', 'Máy fax', 'Máy scan'],
+        
+        'gia_dung': ['Bếp gas', 'Bếp điện', 'Bếp từ', 'Lò nướng', 'Lò vi sóng', 'Nồi chiên không dầu',
+                     'Máy nướng bánh mì', 'Ấm đun siêu tốc', 'Lò sưởi', 'Quạt sưởi',
+                     'Bàn ủi', 'Máy sấy tóc', 'Máy uốn tóc', 'Bếp nướng BBQ'],
+        
+        'nghe_thuat': ['Sơn dầu', 'Tranh acrylic', 'Múa lửa', 'Graffiti (spray paint)',
+                       'Neon art', 'Light painting (nhiếp ảnh)', 'Fire dance', 'Fireworks art'],
+        
+        'ky_thuat_so': ['Social media (viral)', 'YouTube', 'TikTok', 'Instagram', 'Livestream',
+                        'Gaming esports', 'Trending', 'Viral marketing', 'Influencer', 'Meme'],
+    },
+    
+    'Thổ': {
+        'noi_that': ['Tường gạch trần', 'Sàn gạch', 'Bàn đá marble', 'Bếp đá granite',
+                     'Chậu sứ', 'Bình gốm', 'Tượng trang trí đá', 'Gạch mosaic',
+                     'Sàn đá hoa', 'Kệ gạch xây', 'Bồn cầu sứ', 'Bồn rửa đá'],
+        
+        'y_te': ['Bó bột (xương gãy)', 'Đắp bùn khoáng', 'Tắm bùn trị liệu',
+                 'Thuốc chống dạ dày (antacid)', 'Thuốc dạ dày Gaviscon', 'Thuốc tiêu hóa',
+                 'Probiotic đường ruột', 'Viên sắt bổ máu', 'Canxi (xương)',
+                 'Thạch cao bó bột', 'Đất sét trị liệu', 'Bùn nóng onsen'],
+        
+        'ton_giao': ['Tượng Phật đá', 'Đền đài', 'Chùa/nhà thờ (bê tông/đá)', 'Mộ phần',
+                     'Lăng tẩm', 'Kim tự tháp', 'Bàn thờ đá', 'Bia đá khắc', 'Bùa đất',
+                     'Tháp Chàm', 'Stonehenge', 'Angkor Wat', 'Đền Parthenon'],
+        
+        'dia_ly': ['Đồng bằng', 'Cao nguyên', 'Thung lũng', 'Hang động', 'Sa mạc',
+                   'Đồi', 'Núi', 'Đảo', 'Bãi biển (cát)', 'Đồng ruộng', 'Rẫy',
+                   'Trung tâm lục địa', 'Lòng chảo', 'Truông', 'Bãi bồi'],
+        
+        'bo_phan_co_the': ['Dạ dày', 'Lách', 'Miệng', 'Cơ bắp', 'Mô mỡ', 'Da thịt',
+                           'Môi', 'Nướu', 'Tuyến nước bọt', 'Tụy', 'Ruột non (phần dưới)'],
+        
+        'nong_nghiep': ['Cày bừa', 'San lấp đất', 'Đào ao', 'Đắp đê', 'Bón phân',
+                        'Ủ phân compost', 'Hệ thống thoát nước ruộng', 'Gieo hạt trực tiếp',
+                        'Trồng khoai', 'Trồng ngô', 'Nuôi giun đất', 'Trại nấm'],
+        
+        'van_phong': ['Chặn giấy đá', 'Ly sứ uống trà', 'Chậu cây văn phòng', 'Pot cây sen đá',
+                      'Máy pha cà phê (gốm)', 'Art ceramic trang trí bàn', 'Đĩa đựng card'],
+        
+        'gia_dung': ['Bát sứ', 'Đĩa sứ', 'Chén trà', 'Ấm trà gốm', 'Bình hoa gốm',
+                     'Chậu rửa đá', 'Thớt đá', 'Cối xay', 'Cối giã', 'Ống đũa gốm',
+                     'Hũ muối chua', 'Chum sành', 'Vại sành', 'Nồi đất', 'Siêu thuốc đất'],
+        
+        'nghe_thuat': ['Gốm sứ Bát Tràng', 'Pottery art', 'Điêu khắc đá', 'Sand art (tranh cát)',
+                       'Mosaic art', 'Terrazzo art', 'Tạc tượng', 'Tranh gạch ceramic'],
+        
+        'ky_thuat_so': ['Database/storage', 'Data center', 'Hard drive', 'Backup & archive',
+                        'App bất động sản', 'Google Maps/Earth', 'CAD (thiết kế xây dựng)',
+                        'Metaverse real estate', 'Digital twin (xây dựng)'],
+    },
+}
+
 
 # ═══════════════════════════════════════════════════════════════
 # HELPER: MERGE VỚI FILE CHÍNH van_vat_chi_tiet.py
@@ -388,34 +595,53 @@ def get_expanded_items(hanh, category):
 def format_expanded_for_ai(hanh, truong_sinh_stage=None):
     """Format toàn bộ dữ liệu mở rộng cho AI đọc."""
     hanh_data = VAN_VAT_MO_RONG.get(hanh, {})
-    if not hanh_data:
+    hanh_bs = VAN_VAT_BO_SUNG.get(hanh, {})
+    
+    # Merge 2 sources
+    merged = {}
+    merged.update(hanh_data)
+    merged.update(hanh_bs)
+    
+    if not merged:
         return ""
     
     lines = []
     lines.append(f"=== MỞ RỘNG VẠN VẬT: {hanh} ===")
     
-    for category, data in hanh_data.items():
-        label = {
-            'phuong_tien': '🚗 Phương tiện',
-            'trang_phuc': '👔 Trang phục',
-            'thuc_pham_chi_tiet': '🍜 Thực phẩm',
-            'khoang_san': '💎 Khoáng sản',
-            'cong_nghe': '📱 Công nghệ',
-            'nhac_cu': '🎵 Nhạc cụ',
-            'cong_nghiep': '🏭 Công nghiệp',
-            'the_thao': '⚽ Thể thao',
-            'thoi_tiet': '🌤️ Thời tiết',
-            'cam_xuc': '🎭 Cảm xúc',
-            'quoc_gia': '🌍 Vùng miền',
-            'my_pham': '💄 Mỹ phẩm',
-            'do_tre_em': '🧸 Đồ trẻ em',
-            'vu_khi': '🪖 Vũ khí',
-        }.get(category, category)
+    label_map = {
+        'phuong_tien': '🚗 Phương tiện',
+        'trang_phuc': '👔 Trang phục',
+        'thuc_pham_chi_tiet': '🍜 Thực phẩm',
+        'khoang_san': '💎 Khoáng sản',
+        'cong_nghe': '📱 Công nghệ',
+        'nhac_cu': '🎵 Nhạc cụ',
+        'cong_nghiep': '🏭 Công nghiệp',
+        'the_thao': '⚽ Thể thao',
+        'thoi_tiet': '🌤️ Thời tiết',
+        'cam_xuc': '🎭 Cảm xúc',
+        'quoc_gia': '🌍 Vùng miền',
+        'my_pham': '💄 Mỹ phẩm',
+        'do_tre_em': '🧸 Đồ trẻ em',
+        'vu_khi': '🪖 Vũ khí',
+        # Bổ sung V31.5
+        'noi_that': '🛋️ Nội thất',
+        'y_te': '🏥 Y tế/Dược',
+        'ton_giao': '⛪ Tôn giáo',
+        'dia_ly': '🗻 Địa lý',
+        'bo_phan_co_the': '🦴 Bộ phận cơ thể',
+        'nong_nghiep': '🌾 Nông nghiệp',
+        'van_phong': '📎 Văn phòng',
+        'gia_dung': '🏡 Gia dụng',
+        'nghe_thuat': '🖼️ Nghệ thuật',
+        'ky_thuat_so': '💻 Kỹ thuật số',
+    }
+    
+    for category, data in merged.items():
+        label = label_map.get(category, category)
         
         if isinstance(data, list):
             lines.append(f"{label}: {', '.join(data[:10])}")
         elif isinstance(data, dict):
-            # Lấy theo tầng nếu có
             items = data.get(truong_sinh_stage, data.get('chung', []))
             if isinstance(items, list):
                 lines.append(f"{label}: {', '.join(items[:10])}")

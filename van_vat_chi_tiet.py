@@ -898,8 +898,9 @@ def get_tham_tu_mo_ta(hanh, truong_sinh_stage, question=""):
     
     # V31.4: Thêm dữ liệu mở rộng
     try:
-        from van_vat_mo_rong import VAN_VAT_MO_RONG
+        from van_vat_mo_rong import VAN_VAT_MO_RONG, VAN_VAT_BO_SUNG
         expanded = VAN_VAT_MO_RONG.get(hanh, {})
+        bo_sung = VAN_VAT_BO_SUNG.get(hanh, {})
         
         # Phương tiện
         pt = expanded.get('phuong_tien', {})
@@ -941,6 +942,31 @@ def get_tham_tu_mo_ta(hanh, truong_sinh_stage, question=""):
         tw = expanded.get('thoi_tiet', [])
         if isinstance(tw, list) and tw:
             lines.append(f"🌤️ **Thời tiết:** {', '.join(tw[:4])}")
+        
+        # V31.5: BỔ SUNG — Nội thất, Y tế, Tôn giáo, Địa lý, Cơ thể
+        nt = bo_sung.get('noi_that', [])
+        if nt:
+            lines.append(f"🛋️ **Nội thất:** {', '.join(nt[:5])}")
+        
+        yt = bo_sung.get('y_te', [])
+        if yt:
+            lines.append(f"🏥 **Y tế:** {', '.join(yt[:5])}")
+        
+        tg_rel = bo_sung.get('ton_giao', [])
+        if tg_rel:
+            lines.append(f"⛪ **Tôn giáo:** {', '.join(tg_rel[:5])}")
+        
+        dl = bo_sung.get('dia_ly', [])
+        if dl:
+            lines.append(f"🗻 **Địa lý:** {', '.join(dl[:5])}")
+        
+        bp = bo_sung.get('bo_phan_co_the', [])
+        if bp:
+            lines.append(f"🦴 **Bộ phận cơ thể:** {', '.join(bp[:6])}")
+        
+        gd = bo_sung.get('gia_dung', [])
+        if gd:
+            lines.append(f"🏡 **Gia dụng:** {', '.join(gd[:5])}")
     except ImportError:
         pass
     
