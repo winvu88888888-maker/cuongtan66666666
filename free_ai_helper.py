@@ -1737,6 +1737,200 @@ class FreeAIHelper:
             'pp_goc': diagram.get('pp_goc', []),
         }
 
+    # ═══════════════════════════════════════════════════════════════
+    # V32.5: SƠ ĐỒ TƯƠNG TÁC 77 YẾU TỐ — CHI TIẾT TÁC ĐỘNG
+    # ═══════════════════════════════════════════════════════════════
+    def _build_factor_interaction_map(self, chart_data, luc_hao_data, mai_hoa_data,
+                                       dung_than, hanh_dt, question='',
+                                       km_verdict='', lh_verdict='', mh_verdict='',
+                                       ln_verdict='', ta_verdict=''):
+        """V32.5: Sinh sơ đồ tương tác chi tiết — hiện TẤT CẢ yếu tố + tác động lẫn nhau."""
+        lines = []
+        cd = chart_data if isinstance(chart_data, dict) else {}
+        
+        # ━━━━━━━ KỲ MÔN ĐỘN GIÁP (41 yếu tố) ━━━━━━━
+        thien_ban = cd.get('thien_ban', {})
+        nhan_ban = cd.get('nhan_ban', {})
+        than_ban = cd.get('than_ban', {})
+        can_tb = cd.get('can_thien_ban', {})
+        dia_ban = cd.get('dia_ban', {})
+        can_ngay = cd.get('can_ngay', '?')
+        can_gio = cd.get('can_gio', '?')
+        
+        # Tìm cung BT và SV
+        chu_cung = sv_cung = None
+        for cn, cv in can_tb.items():
+            if cv == can_ngay: chu_cung = int(cn) if cn else None
+            if cv == can_gio: sv_cung = int(cn) if cn else None
+        if not chu_cung and can_ngay == 'Giáp':
+            for cn, cv in can_tb.items():
+                if cv == 'Mậu': chu_cung = int(cn) if cn else None; break
+        
+        lines.append("### 🔮 SƠ ĐỒ TƯƠNG TÁC 6 PHƯƠNG PHÁP")
+        lines.append("")
+        
+        # ── KỲ MÔN 9 CUNG ──
+        if thien_ban:
+            lines.append("#### ⚔️ KỲ MÔN ĐỘN GIÁP — 9 Cung")
+            lines.append(f"Can Ngày=**{can_ngay}** (BT) | Can Giờ=**{can_gio}** (SV) | "
+                        f"Tiết Khí={cd.get('tiet_khi','?')} | Cục={cd.get('cuc','?')}")
+            lines.append("")
+            lines.append("| Cung | Sao | Cửa | Thần | Can Thiên | Can Địa | Vai trò |")
+            lines.append("|:----:|:----|:----|:-----|:---------|:--------|:--------|")
+            for i in range(1, 10):
+                sao = thien_ban.get(i, thien_ban.get(str(i), '?'))
+                cua = nhan_ban.get(i, nhan_ban.get(str(i), '?'))
+                than = than_ban.get(i, than_ban.get(str(i), '?'))
+                ct = can_tb.get(i, can_tb.get(str(i), '?'))
+                cd_val = dia_ban.get(i, dia_ban.get(str(i), '?')) if dia_ban else '?'
+                role = ""
+                if i == chu_cung: role = "⭐ **BẢN THÂN**"
+                elif i == sv_cung: role = "🎯 **SỰ VIỆC**"
+                lines.append(f"| {i} | {sao} | {cua} | {than} | {ct} | {cd_val} | {role} |")
+            
+            # Tác động BT
+            if chu_cung:
+                bt_sao = thien_ban.get(chu_cung, thien_ban.get(str(chu_cung), '?'))
+                bt_cua = nhan_ban.get(chu_cung, nhan_ban.get(str(chu_cung), '?'))
+                bt_than = than_ban.get(chu_cung, than_ban.get(str(chu_cung), '?'))
+                hanh_cung = CUNG_NGU_HANH.get(chu_cung, '?')
+                hanh_can = CAN_NGU_HANH.get(can_ngay, '?')
+                rel = _ngu_hanh_relation(hanh_can, hanh_cung)
+                
+                lines.append("")
+                lines.append("**📊 Chuỗi tác động BẢN THÂN:**")
+                lines.append(f"```")
+                lines.append(f"Can {can_ngay}({hanh_can}) ──→ Cung {chu_cung}({hanh_cung}) = {rel}")
+                lines.append(f"  ├── Sao: {bt_sao} → {'CÁT ✅' if any(s in str(bt_sao) for s in ['Tâm','Nhậm','Phụ','Xung']) else 'HUNG/BÌNH ⚠️'}")
+                lines.append(f"  ├── Cửa: {bt_cua} → {'CÁT ✅' if any(c in str(bt_cua) for c in ['Khai','Hưu','Sinh']) else 'HUNG ❌' if any(c in str(bt_cua) for c in ['Tử','Kinh','Thương']) else 'BÌNH 🟡'}")
+                lines.append(f"  └── Thần: {bt_than}")
+                
+                if sv_cung and sv_cung != chu_cung:
+                    sv_hanh = CUNG_NGU_HANH.get(sv_cung, '?')
+                    bt_sv_rel = _ngu_hanh_relation(hanh_cung, sv_hanh)
+                    lines.append(f"  BT(Cung{chu_cung}) ──{bt_sv_rel}──→ SV(Cung{sv_cung})")
+                lines.append(f"```")
+            
+            # Đặc biệt
+            specials = []
+            can_thien = can_tb.get(str(chu_cung), can_tb.get(chu_cung, '')) if chu_cung else ''
+            can_dia_bt = dia_ban.get(chu_cung, '') if dia_ban and chu_cung else ''
+            if can_thien and can_dia_bt:
+                pp = _check_phan_phuc_ngam(can_thien, can_dia_bt) if can_thien and can_dia_bt else None
+                if pp: specials.append(f"⚠️ {pp}")
+            if can_thien in ['Ất', 'Bính', 'Đinh']:
+                specials.append(f"✨ Tam Kỳ ({can_thien})")
+            if specials:
+                lines.append(f"**⚡ Đặc biệt:** {' | '.join(specials)}")
+            
+            lines.append(f"**→ KỲ MÔN: {km_verdict}**")
+            lines.append("")
+        
+        # ── LỤC HÀO ──
+        lh = luc_hao_data if isinstance(luc_hao_data, dict) else {}
+        if lh:
+            lines.append("#### 📜 LỤC HÀO KINH DỊCH — 6 Hào")
+            haos = lh.get('haos', lh.get('hao_list', []))
+            nguyet = lh.get('nguyet_lenh', lh.get('chi_thang', '?'))
+            nhat = lh.get('nhat_than', lh.get('chi_ngay', '?'))
+            
+            if haos and isinstance(haos, list):
+                lines.append(f"Nguyệt Lệnh=**{nguyet}** | Nhật Thần=**{nhat}**")
+                lines.append("")
+                lines.append("| Hào | Lục Thân | Chi | Hành | Động | Vai trò |")
+                lines.append("|:---:|:---------|:----|:-----|:----:|:--------|")
+                for idx, hao in enumerate(haos):
+                    if isinstance(hao, dict):
+                        pos = ['Sơ', 'Nhị', 'Tam', 'Tứ', 'Ngũ', 'Thượng'][idx] if idx < 6 else str(idx+1)
+                        lt = hao.get('luc_than', '?')
+                        chi = hao.get('chi', '?')
+                        hanh = hao.get('hanh', '?')
+                        dong = '🔄' if hao.get('dong') else '—'
+                        role = ''
+                        if lt == dung_than or (dung_than == 'Bản Thân' and hao.get('the_hao')):
+                            role = '⭐ DT'
+                        if hao.get('the_hao'): role += ' 👤Thế'
+                        if hao.get('ung_hao'): role += ' 🎯Ứng'
+                        lines.append(f"| {pos} | {lt} | {chi} | {hanh} | {dong} | {role} |")
+            
+            lines.append("")
+            lines.append("**📊 Chuỗi tác động LỤC HÀO:**")
+            lines.append(f"```")
+            lines.append(f"Nguyệt({nguyet}) ──sinh/khắc──→ Dụng Thần({dung_than})")
+            lines.append(f"Nhật({nhat})   ──sinh/khắc──→ Dụng Thần({dung_than})")
+            lines.append(f"Nguyên Thần ──SINH──→ DT (giúp đỡ)")
+            lines.append(f"Kỵ Thần    ──KHẮC──→ DT (phá hoại)")
+            lines.append(f"Cừu Thần   ──KHẮC──→ Kỵ Thần (giải cứu)")
+            lines.append(f"```")
+            lines.append(f"**→ LỤC HÀO: {lh_verdict}**")
+            lines.append("")
+        
+        # ── MAI HOA ──
+        mh = mai_hoa_data if isinstance(mai_hoa_data, dict) else {}
+        if mh:
+            lines.append("#### 🌸 MAI HOA DỊCH SỐ")
+            thuong = mh.get('thuong_quai', mh.get('upper_trigram', '?'))
+            ha = mh.get('ha_quai', mh.get('lower_trigram', '?'))
+            bien = mh.get('bien_quai', mh.get('changed_trigram', '?'))
+            ho = mh.get('ho_quai', mh.get('mutual_trigram', '?'))
+            ten = mh.get('ten_que', '?')
+            hao_dong = mh.get('hao_dong', mh.get('moving_line', '?'))
+            
+            lines.append(f"Quẻ: **{ten}** | Hào Động: {hao_dong}")
+            lines.append(f"```")
+            lines.append(f"Thượng Quái: {thuong} (Ngoại = Môi trường)")
+            lines.append(f"  │")
+            lines.append(f"Hạ Quái:    {ha} (Nội = Bản thân)")
+            lines.append(f"  │")
+            lines.append(f"  ├── Biến Quái: {bien} (Tương lai)")
+            lines.append(f"  └── Hỗ Quái:  {ho} (Ẩn bên trong)")
+            lines.append(f"")
+            lines.append(f"Thể Quái ←sinh/khắc→ Dụng Quái = KẾT QUẢ")
+            lines.append(f"```")
+            
+            interp = mh.get('interpretation', '')
+            if interp:
+                lines.append(f"📖 *{str(interp)[:150]}*")
+            lines.append(f"**→ MAI HOA: {mh_verdict}**")
+            lines.append("")
+        
+        # ── ĐẠI LỤC NHÂM ──
+        if cd.get('can_ngay'):
+            lines.append("#### 🔯 ĐẠI LỤC NHÂM")
+            lines.append(f"```")
+            lines.append(f"[Sơ Truyền]  →  [Trung Truyền]  →  [Mạt Truyền]")
+            lines.append(f" (Nguyên nhân)    (Diễn biến)       (Kết quả)")
+            lines.append(f"```")
+            lines.append(f"**→ ĐẠI LỤC NHÂM: {ln_verdict}**")
+            lines.append("")
+        
+        # ── THÁI ẤT ──
+        lines.append("#### ⭐ THÁI ẤT THẦN SỐ")
+        lines.append(f"```")
+        lines.append(f"Thái Ất Cung → Bát Tướng → Cách Cục → Verdict")
+        lines.append(f"```")
+        lines.append(f"**→ THÁI ẤT: {ta_verdict}**")
+        lines.append("")
+        
+        # ── TỔNG HỢP 6PP ──
+        lines.append("#### 🏆 TỔNG HỢP 6 PHƯƠNG PHÁP")
+        lines.append(f"```")
+        lines.append(f"┌─────────┬─────────┬─────────┐")
+        lines.append(f"│ KỲ MÔN  │ LỤC HÀO │ MAI HOA │")
+        lines.append(f"│ {km_verdict:^7s} │ {lh_verdict:^7s} │ {mh_verdict:^7s} │")
+        lines.append(f"├─────────┼─────────┼─────────┤")
+        lines.append(f"│ THIẾT   │ LỤC     │ THÁI    │")
+        lines.append(f"│ BẢN     │ NHÂM    │ ẤT      │")
+        lines.append(f"│  BÌNH   │ {ln_verdict:^7s} │ {ta_verdict:^7s} │")
+        lines.append(f"└─────────┴─────────┴─────────┘")
+        lines.append(f"         ↓ TỔNG HỢP ↓")
+        verdicts = [km_verdict, lh_verdict, mh_verdict, ln_verdict, ta_verdict]
+        cat = sum(1 for v in verdicts if 'CÁT' in str(v).upper())
+        hung = sum(1 for v in verdicts if 'HUNG' in str(v).upper())
+        lines.append(f"    CÁT: {cat}/5 | HUNG: {hung}/5")
+        lines.append(f"```")
+        
+        return "\n".join(lines)
 
     # V27.0: ENHANCED DETECTIVE - Tich hop qmdg_advanced_rules + qmdg_inference_rules
     def _enhanced_detective(self, chart_data, question, hanh_dt=None):
@@ -7202,6 +7396,31 @@ class FreeAIHelper:
                 final_parts.append(f"\n**📊 CÔNG THỨC:** {v31_question_info.get('formula', '?')}")
                 final_parts.append(f"\n**🎯 KẾT LUẬN:** {v31_question_info.get('conclusion', '?')}")
                 final_parts.append(f"\n</details>")
+            
+            # ═══════════════════════════════════════════════════════
+            # V32.5: SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT (77 yếu tố)
+            # ═══════════════════════════════════════════════════════
+            try:
+                v325_interaction = self._build_factor_interaction_map(
+                    chart_data=chart_data,
+                    luc_hao_data=luc_hao_data,
+                    mai_hoa_data=mai_hoa_data,
+                    dung_than=dung_than,
+                    hanh_dt=hanh_dt_v22,
+                    question=question,
+                    km_verdict=ky_mon_verdict or 'BÌNH',
+                    lh_verdict=luc_hao_verdict or 'BÌNH',
+                    mh_verdict=mai_hoa_verdict or 'BÌNH',
+                    ln_verdict=luc_nham_verdict or 'BÌNH',
+                    ta_verdict=thai_at_verdict or 'BÌNH'
+                )
+                if v325_interaction:
+                    final_parts.append("\n<details>")
+                    final_parts.append("<summary><b>🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT (nhấn để mở)</b></summary>\n")
+                    final_parts.append(v325_interaction)
+                    final_parts.append("\n</details>")
+            except Exception as e:
+                self.log_step("V32.5", "INTERACTION_ERR", str(e)[:100])
             
             # ═══════════════════════════════════════════════════════
             # V21.0: TRẢ LỜI TRỰC TIẾP — THÔNG MINH THEO LOẠI CÂU HỎI
