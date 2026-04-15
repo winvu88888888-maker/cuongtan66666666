@@ -1384,18 +1384,35 @@ class FreeAIHelper:
         if v23_lh_factors:
             for f in v23_lh_factors:
                 if 'Nguyệt' in f and 'DT' in f:
-                    nguyet_tac_dong = 'sinh' if '+' in f else 'khắc' if '-' in f else ''
-                    # Extract Nguyệt value  
+                    # V32.5: Extract tác động chính xác
+                    if 'sinh' in f: nguyet_tac_dong = 'sinh'
+                    elif 'khắc' in f: nguyet_tac_dong = 'khắc'
+                    elif 'tỷ hòa' in f: nguyet_tac_dong = 'tỷ hòa'
+                    else: nguyet_tac_dong = 'không tác động'
                     nguyet_lenh = f.split('(')[1].split(')')[0] if '(' in f else '?'
                 elif 'Nhật' in f and 'DT' in f:
-                    nhat_tac_dong = 'sinh' if '+' in f else 'khắc' if '-' in f else ''
+                    if 'sinh' in f: nhat_tac_dong = 'sinh'
+                    elif 'khắc' in f: nhat_tac_dong = 'khắc'
+                    elif 'tỷ hòa' in f: nhat_tac_dong = 'tỷ hòa'
+                    else: nhat_tac_dong = 'không tác động'
                     nhat_than = f.split('(')[1].split(')')[0] if '(' in f else '?'
                 elif 'NT(' in f or 'Nguyên Thần' in f:
                     nguyen_than = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    nt_state = 'Vượng' if '+' in f else 'Suy'
+                    if 'vượng' in f.lower(): nt_state = 'Vượng'
+                    elif 'suy' in f.lower(): nt_state = 'Suy'
+                    elif 'động' in f.lower(): nt_state = 'Động'
+                    elif 'bình' in f.lower(): nt_state = 'Bình'
+                    elif 'ẩn' in f.lower(): nt_state = 'Ẩn'
+                    else: nt_state = '?'
                 elif 'KT(' in f or 'Kỵ Thần' in f:
                     ky_than = f.split('(')[1].split(')')[0] if '(' in f else '?'
-                    kt_state = 'Vượng+Động' if '-8' in f else 'Suy' if '-' in f else '?'
+                    if 'vượng+động' in f.lower(): kt_state = 'Vượng+Động'
+                    elif 'vượng' in f.lower(): kt_state = 'Vượng'
+                    elif 'suy' in f.lower(): kt_state = 'Suy'
+                    elif 'động' in f.lower(): kt_state = 'Động'
+                    elif 'bình' in f.lower(): kt_state = 'Bình'
+                    elif 'ẩn' in f.lower(): kt_state = 'Ẩn'
+                    else: kt_state = '?'
                 elif 'THAM SINH' in f.upper():
                     dac_biet.append('⚡ THAM SINH VONG KHẮC')
                 elif 'PHẢN NGÂM' in f.upper():
@@ -1417,6 +1434,18 @@ class FreeAIHelper:
                             break
                 except:
                     pass
+        
+        # V32.5: Fallback Nguyệt/Nhật nếu v23_lh_factors không có
+        if not nguyet_lenh or nguyet_lenh == '?':
+            try:
+                import datetime as _dt_fm
+                from qmdg_calc import calculate_qmdg_params as _calc_fm
+                _pf = _calc_fm(_dt_fm.datetime.now())
+                nguyet_lenh = _pf.get('chi_thang', '?')
+                if not nhat_than or nhat_than == '?':
+                    nhat_than = _pf.get('can_ngay', '?')
+            except:
+                pass
         
         dac_biet_str = ', '.join(dac_biet) if dac_biet else 'Không có'
         
