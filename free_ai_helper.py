@@ -3444,25 +3444,40 @@ class FreeAIHelper:
         the_hao = None
         for i, hao in enumerate(haos):
             lt = hao.get('luc_than', '')
-            tu = hao.get('the_ung', '')
+            tu = hao.get('the_ung', '') or hao.get('marker', '')
             if lt == dung_than:
                 dt_hao = hao
                 dt_idx = i + 1
-            elif dung_than == 'Bản Thân' and tu == 'Thế':
+            elif dung_than == 'Bản Thân' and ('Thế' in str(tu)):
                 dt_hao = hao
                 dt_idx = i + 1
-            if tu == 'Thế':
+            if 'Thế' in str(tu):
                 the_hao = hao
         
         if not dt_hao:
             if the_hao:
                 dt_hao = the_hao
             else:
-                return -10, "DT hào ẩn (Phục Thần) → -10"
+                return -10, "DT hào ẩn (Phục Thần) → -10", ["DT ẩn (Phục Thần) -10"]
+        
+        # V32.5: Unified key mapping — support both old (vuong_suy/chi) and new (strength/can_chi) format
+        def _get_vuong(h):
+            return str(h.get('vuong_suy', '') or h.get('strength', '') or '')
+        def _get_chi(h):
+            c = h.get('chi', '')
+            if not c:
+                cc = h.get('can_chi', '')  # Format: 'Sửu-Thổ'
+                if cc and '-' in cc:
+                    c = cc.split('-')[0]
+            return c
+        def _is_dong(h, idx):
+            if h.get('dong') or h.get('is_moving'):
+                return True
+            return idx in (dong_hao or [])
         
         dt_hanh = dt_hao.get('ngu_hanh', '')
-        dt_vuong = str(dt_hao.get('vuong_suy', ''))
-        dt_chi = dt_hao.get('chi', '')
+        dt_vuong = _get_vuong(dt_hao)
+        dt_chi = _get_chi(dt_hao)
         
         # ① DT Vượng/Suy (±10)
         if 'Vượng' in dt_vuong or 'Tướng' in dt_vuong or 'Đế Vượng' in dt_vuong:
@@ -3482,58 +3497,110 @@ class FreeAIHelper:
             factors.append(f"DT Mộ -6")
         
         # ② Nguyệt lệnh sinh/khắc DT (±8)
-        chi_thang = luc_hao_data.get('chi_thang', '')
+        chi_thang = luc_hao_data.get('chi_thang', '') or ban.get('chi_thang', '')
+        can_ngay = luc_hao_data.get('can_ngay', '') or ban.get('can_ngay', '')
+        chi_ngay = luc_hao_data.get('chi_ngay', '') or ban.get('chi_ngay', '')
+        
+        # V32.5: Fallback từ chart_data khi LH không có Nguyệt/Nhật
+        if not chi_thang:
+            try:
+                import datetime as _dt_lh
+                from qmdg_calc import calculate_qmdg_params as _calc_lh
+                _p = _calc_lh(_dt_lh.datetime.now())
+                chi_thang = _p.get('chi_thang', '')
+                if not can_ngay: can_ngay = _p.get('can_ngay', '')
+                if not chi_ngay: chi_ngay = _p.get('chi_ngay', '')
+            except:
+                pass
+        
         hanh_thang = CHI_NGU_HANH.get(chi_thang, '')
         if hanh_thang and dt_hanh:
             if SINH.get(hanh_thang) == dt_hanh:
                 score += 8
-                factors.append(f"Nguyệt sinh DT +8")
+                factors.append(f"Nguyệt({chi_thang}/{hanh_thang}) sinh DT +8")
             elif KHAC.get(hanh_thang) == dt_hanh:
                 score -= 8
-                factors.append(f"Nguyệt khắc DT -8")
+                factors.append(f"Nguyệt({chi_thang}/{hanh_thang}) khắc DT -8")
+            elif hanh_thang == dt_hanh:
+                score += 4
+                factors.append(f"Nguyệt({chi_thang}/{hanh_thang}) tỷ hòa DT +4")
+            else:
+                factors.append(f"Nguyệt({chi_thang}/{hanh_thang}) không tác động DT +0")
         
         # ③ Nhật Thần sinh/khắc DT (±6)
-        can_ngay = luc_hao_data.get('can_ngay', '') or ban.get('can_ngay', '')
         hanh_ngay = CAN_NGU_HANH.get(can_ngay, '')
         if hanh_ngay and dt_hanh:
             if SINH.get(hanh_ngay) == dt_hanh:
                 score += 6
-                factors.append(f"Nhật sinh DT +6")
+                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) sinh DT +6")
             elif KHAC.get(hanh_ngay) == dt_hanh:
                 score -= 6
-                factors.append(f"Nhật khắc DT -6")
+                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) khắc DT -6")
+            elif hanh_ngay == dt_hanh:
+                score += 3
+                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) tỷ hòa DT +3")
+            else:
+                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) không tác động DT +0")
         
         # ④ Nguyên Thần (sinh DT) status (±6)
         nguyen_hanh = [h for h, s in SINH.items() if s == dt_hanh] if dt_hanh else []
+        nt_found = False
         for hao in haos:
             h_hanh = hao.get('ngu_hanh', '')
             if h_hanh in nguyen_hanh:
-                h_vuong = str(hao.get('vuong_suy', ''))
-                if 'Vượng' in h_vuong:
+                h_vuong = _get_vuong(hao)
+                h_lt = hao.get('luc_than', '')
+                h_idx = haos.index(hao) + 1
+                if 'Vượng' in h_vuong or 'Tướng' in h_vuong:
                     score += 6
-                    factors.append("Nguyên Thần vượng +6")
-                elif 'Suy' in h_vuong or 'Tử' in h_vuong:
+                    factors.append(f"NT({h_hanh}) Nguyên Thần vượng +6")
+                elif 'Suy' in h_vuong or 'Tử' in h_vuong or 'Bệnh' in h_vuong:
                     score -= 3
-                    factors.append("Nguyên Thần suy -3")
+                    factors.append(f"NT({h_hanh}) Nguyên Thần suy -3")
+                else:
+                    # V32.5: vuong_suy trống → vẫn ghi nhận NT tồn tại
+                    is_dong_nt = _is_dong(hao, h_idx)
+                    if is_dong_nt:
+                        score += 5
+                        factors.append(f"NT({h_hanh}) Nguyên Thần động +5")
+                    else:
+                        score += 2
+                        factors.append(f"NT({h_hanh}) Nguyên Thần bình +2")
+                nt_found = True
                 break
+        if not nt_found and nguyen_hanh:
+            factors.append(f"NT(?) Nguyên Thần ẩn +0")
         
         # ⑤ Kỵ Thần (khắc DT) status (±6)
         ky_hanh = [h for h, k in KHAC.items() if k == dt_hanh] if dt_hanh else []
+        kt_found = False
         for hao in haos:
             h_hanh = hao.get('ngu_hanh', '')
             if h_hanh in ky_hanh:
-                h_vuong = str(hao.get('vuong_suy', ''))
+                h_vuong = _get_vuong(hao)
                 h_idx = haos.index(hao) + 1
-                if 'Vượng' in h_vuong and h_idx in (dong_hao or []):
+                is_dong_kt = _is_dong(hao, h_idx)
+                if ('Vượng' in h_vuong or 'Tướng' in h_vuong) and is_dong_kt:
                     score -= 8
-                    factors.append("Kỵ Thần vượng+động -8")
-                elif 'Vượng' in h_vuong:
+                    factors.append(f"KT({h_hanh}) Kỵ Thần vượng+động -8")
+                elif 'Vượng' in h_vuong or 'Tướng' in h_vuong:
                     score -= 5
-                    factors.append("Kỵ Thần vượng -5")
-                elif 'Suy' in h_vuong or 'Tử' in h_vuong:
+                    factors.append(f"KT({h_hanh}) Kỵ Thần vượng -5")
+                elif 'Suy' in h_vuong or 'Tử' in h_vuong or 'Bệnh' in h_vuong:
                     score += 3
-                    factors.append("Kỵ Thần suy +3")
+                    factors.append(f"KT({h_hanh}) Kỵ Thần suy +3")
+                else:
+                    # V32.5: vuong_suy trống
+                    if is_dong_kt:
+                        score -= 4
+                        factors.append(f"KT({h_hanh}) Kỵ Thần động -4")
+                    else:
+                        score -= 1
+                        factors.append(f"KT({h_hanh}) Kỵ Thần bình -1")
+                kt_found = True
                 break
+        if not kt_found and ky_hanh:
+            factors.append(f"KT(?) Kỵ Thần ẩn +0")
         
         # ⑥ Hào Động — DT Động = phát động (±5)
         if dt_idx and dong_hao and dt_idx in dong_hao:
