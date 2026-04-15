@@ -466,18 +466,19 @@ def _get_truong_sinh(hanh, chi):
 
 # === V21.0: LƯỢNG HÓA LỰC LƯỢNG — POWER SCORE 12 TRƯỜNG SINH ===
 TRUONG_SINH_POWER = {
-    'Trường Sinh': {'power': 70, 'cap': '🟢 MẠNH',      'con_nguoi': 'Trẻ sơ sinh khỏe mạnh (0-3 tuổi)', 'vat': 'MỚI, SẠCH, BẮT ĐẦU'},
-    'Mộc Dục':     {'power': 50, 'cap': '🟡 TRUNG',      'con_nguoi': 'Trẻ nhỏ chưa tự lập (4-7 tuổi)', 'vat': 'CHƯA HOÀN CHỈNH, DAO ĐỘNG'},
-    'Quan Đới':    {'power': 65, 'cap': '🔵 KHÁ',        'con_nguoi': 'Thiếu niên chuẩn bị (8-15 tuổi)', 'vat': 'GẦN MỚI, ĐANG CHUẨN BỊ'},
-    'Lâm Quan':    {'power': 85, 'cap': '🟢 CỰC MẠNH',  'con_nguoi': 'Thanh niên sung sức (16-30 tuổi)', 'vat': 'LỚN, MỚI, TỐT, NHIỀU'},
-    'Đế Vượng':    {'power': 100,'cap': '🟢 ĐỈNH CAO',  'con_nguoi': 'Trung niên cường thịnh (31-45 tuổi)', 'vat': 'LỚN NHẤT, MỚI NHẤT, NHIỀU NHẤT'},
-    'Suy':         {'power': 40, 'cap': '🟠 YẾU',        'con_nguoi': 'Người bắt đầu già (46-55 tuổi)', 'vat': 'CŨ, NHỎ HƠN, GIẢM SÚT'},
-    'Bệnh':        {'power': 25, 'cap': '🟠 RẤT YẾU',   'con_nguoi': 'Người bệnh nặng (56-65 tuổi)', 'vat': 'HƯ HỎNG, THIẾU, CẦN SỬA'},
-    'Tử':          {'power': 10, 'cap': '🔴 CHẾT',       'con_nguoi': 'Người đã chết (66-75 tuổi)', 'vat': 'NHỎ NHẤT, HƯ HỎNG, VỠ NÁT'},
-    'Mộ':          {'power': 30, 'cap': '🟠 MỘ KHỐ',     'con_nguoi': 'Được cất giữ/chôn cất, ẩn khuất', 'vat': 'CẤT KHO, ẨN GIẤU, BỊ GIỮ LẠI'},
-    'Tuyệt':       {'power': 5,  'cap': '🔴 TUYỆT',     'con_nguoi': 'Tuyệt diệt, không còn dấu vết', 'vat': 'KHÔNG CÒN, ĐÃ MẤT, MÒN NÁT'},
-    'Thai':        {'power': 35, 'cap': '🟡 MANH NHA',   'con_nguoi': 'Thai nhi chưa thành hình', 'vat': 'RẤT NHỎ, CHƯA RÕ RÀNG'},
-    'Dưỡng':       {'power': 55, 'cap': '🟡 NUÔI DƯỠNG','con_nguoi': 'Thai gần sinh, sắp ra đời', 'vat': 'NHỎ, ĐANG PHÁT TRIỂN'},
+    # V32.6: Chia đều 0-100 tuổi theo 12 Trường Sinh
+    'Trường Sinh': {'power': 70, 'cap': '🟢 MẠNH',      'con_nguoi': 'Trẻ sơ sinh khỏe mạnh (0-5 tuổi)', 'vat': 'MỚI, SẠCH, BẮT ĐẦU', 'tuoi_min': 0, 'tuoi_max': 5},
+    'Mộc Dục':     {'power': 50, 'cap': '🟡 TRUNG',      'con_nguoi': 'Trẻ nhỏ chưa tự lập (6-12 tuổi)', 'vat': 'CHƯA HOÀN CHỈNH, DAO ĐỘNG', 'tuoi_min': 6, 'tuoi_max': 12},
+    'Quan Đới':    {'power': 65, 'cap': '🔵 KHÁ',        'con_nguoi': 'Thiếu niên chuẩn bị trưởng thành (13-18 tuổi)', 'vat': 'GẦN MỚI, ĐANG CHUẨN BỊ', 'tuoi_min': 13, 'tuoi_max': 18},
+    'Lâm Quan':    {'power': 85, 'cap': '🟢 CỰC MẠNH',  'con_nguoi': 'Thanh niên sung sức (19-32 tuổi)', 'vat': 'LỚN, MỚI, TỐT, NHIỀU', 'tuoi_min': 19, 'tuoi_max': 32},
+    'Đế Vượng':    {'power': 100,'cap': '🟢 ĐỈNH CAO',  'con_nguoi': 'Trung niên cường thịnh đỉnh cao (33-45 tuổi)', 'vat': 'LỚN NHẤT, MỚI NHẤT, NHIỀU NHẤT', 'tuoi_min': 33, 'tuoi_max': 45},
+    'Suy':         {'power': 40, 'cap': '🟠 YẾU',        'con_nguoi': 'Người bắt đầu suy giảm (46-55 tuổi)', 'vat': 'CŨ, NHỎ HƠN, GIẢM SÚT', 'tuoi_min': 46, 'tuoi_max': 55},
+    'Bệnh':        {'power': 25, 'cap': '🟠 RẤT YẾU',   'con_nguoi': 'Người già yếu bệnh (56-65 tuổi)', 'vat': 'HƯ HỎNG, THIẾU, CẦN SỬA', 'tuoi_min': 56, 'tuoi_max': 65},
+    'Tử':          {'power': 10, 'cap': '🔴 CHẾT',       'con_nguoi': 'Người rất già hoặc đã mất (66-75 tuổi)', 'vat': 'NHỎ NHẤT, HƯ HỎNG, VỠ NÁT', 'tuoi_min': 66, 'tuoi_max': 75},
+    'Mộ':          {'power': 30, 'cap': '🟠 MỘ KHỐ',     'con_nguoi': 'Ẩn khuất, cất giữ (76-85 tuổi)', 'vat': 'CẤT KHO, ẨN GIẤU, BỊ GIỮ LẠI', 'tuoi_min': 76, 'tuoi_max': 85},
+    'Tuyệt':       {'power': 5,  'cap': '🔴 TUYỆT',     'con_nguoi': 'Tuyệt diệt, không còn (86-100 tuổi)', 'vat': 'KHÔNG CÒN, ĐÃ MẤT, MÒN NÁT', 'tuoi_min': 86, 'tuoi_max': 100},
+    'Thai':        {'power': 35, 'cap': '🟡 MANH NHA',   'con_nguoi': 'Chưa sinh, đang hình thành', 'vat': 'RẤT NHỎ, CHƯA RÕ RÀNG', 'tuoi_min': 0, 'tuoi_max': 0},
+    'Dưỡng':       {'power': 55, 'cap': '🟡 NUÔI DƯỠNG','con_nguoi': 'Sắp ra đời, đang nuôi dưỡng', 'vat': 'NHỎ, ĐANG PHÁT TRIỂN', 'tuoi_min': 0, 'tuoi_max': 2},
 }
 
 # V21.0: NGŨ KHÍ POWER — Vượng Tướng Hưu Tù Tử
@@ -493,42 +494,42 @@ NGU_KHI_POWER = {
 STRENGTH_TO_VAN_VAT = {
     'CỰC_VƯỢNG': {
         'range': (85, 100), 'cap': '🟢 CỰC VƯỢNG',
-        'con_nguoi': 'Trung niên sung sức nhất (31-45 tuổi)',
+        'con_nguoi': 'Trung niên cường thịnh đỉnh cao (33-45 tuổi)',
         'kich_thuoc': 'Rất lớn, to, cao, đồ sộ', 'tinh_trang': 'Mới tinh, hoàn hảo, đẹp',
         'so_luong': 'Rất nhiều, dồi dào, dư thừa', 'chat_luong': 'Thượng hạng, đắt tiền',
         'mau_sac': 'Sáng, rực rỡ, tươi', 'toc_do': 'Rất nhanh, tức thì', 'so': '9-10',
     },
     'VƯỢNG': {
         'range': (70, 84), 'cap': '🔵 VƯỢNG',
-        'con_nguoi': 'Thanh niên sung sức (16-30 tuổi)',
+        'con_nguoi': 'Thanh niên sung sức (19-32 tuổi)',
         'kich_thuoc': 'Lớn, to, rộng', 'tinh_trang': 'Mới, tốt, ít lỗi',
         'so_luong': 'Nhiều, đủ dùng', 'chat_luong': 'Tốt, chất lượng cao',
         'mau_sac': 'Sáng, tươi, đẹp', 'toc_do': 'Nhanh, kịp thời', 'so': '7-8',
     },
     'TRUNG_BÌNH': {
         'range': (50, 69), 'cap': '🟡 TRUNG BÌNH',
-        'con_nguoi': 'Thiếu niên hoặc trung niên bình thường (8-15 / 46-55 tuổi)',
+        'con_nguoi': 'Thiếu niên hoặc người trung niên (13-18 / 46-55 tuổi)',
         'kich_thuoc': 'Trung bình, vừa phải', 'tinh_trang': 'Bình thường, dùng được',
         'so_luong': 'Vừa phải, đủ', 'chat_luong': 'Trung bình, tạm',
         'mau_sac': 'Bình thường', 'toc_do': 'Trung bình, chờ đợi', 'so': '5-6',
     },
     'SUY': {
         'range': (30, 49), 'cap': '🟠 SUY',
-        'con_nguoi': 'Người già bắt đầu yếu (56-65 tuổi)',
+        'con_nguoi': 'Người bắt đầu suy giảm (56-65 tuổi)',
         'kich_thuoc': 'Nhỏ, hẹp, thấp', 'tinh_trang': 'Cũ, hao mòn, xuống cấp',
         'so_luong': 'Ít, thiếu, không đủ', 'chat_luong': 'Kém, giảm giá trị',
         'mau_sac': 'Nhạt, phai, xỉn', 'toc_do': 'Chậm, trì trệ', 'so': '3-4',
     },
     'RẤT_YẾU': {
         'range': (15, 29), 'cap': '🟠 RẤT YẾU',
-        'con_nguoi': 'Người bệnh nặng, nằm liệt (66-75 tuổi)',
+        'con_nguoi': 'Người rất già hoặc đã mất (66-75 tuổi)',
         'kich_thuoc': 'Rất nhỏ', 'tinh_trang': 'Hư hỏng, nứt vỡ',
         'so_luong': 'Rất ít, gần hết', 'chat_luong': 'Rất tệ, hàng lỗi',
         'mau_sac': 'Tối, bạc, xám', 'toc_do': 'Rất chậm', 'so': '1-2',
     },
     'TỬ_TUYỆT': {
         'range': (0, 14), 'cap': '🔴 TỬ/TUYỆT',
-        'con_nguoi': 'Người đã chết, không còn sức sống',
+        'con_nguoi': 'Tuyệt diệt, không còn sức sống (76-100 tuổi)',
         'kich_thuoc': 'Không đáng kể, tan rã', 'tinh_trang': 'Vỡ nát, bỏ đi, phế liệu',
         'so_luong': 'Không có, 0, đã hết', 'chat_luong': 'Đồ bỏ, không giá trị',
         'mau_sac': 'Đen, tối, mất màu', 'toc_do': 'Không, đình trệ', 'so': '0',
@@ -1750,6 +1751,58 @@ class FreeAIHelper:
                 generic_slots['conclusion'] = 'BẤT LỢI ❌'
             else:
                 generic_slots['conclusion'] = f'CẦN CÂN NHẮC 🟡 ({cat_c}/{cat_c+hung_c} CÁT)'
+            
+            # V32.6: Fill SĐ2 (TUỔI/SỐ) slots — dùng TRƯỜNG SINH stage
+            if _is_age_question(question) or _is_count_question(question):
+                # Xác định Bát Quái từ DT  
+                bt_quai_name = '?'
+                bt_quai_so = 0
+                tt_so = 0
+                
+                # Từ Mai Hoa: Thể quái
+                if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                    the_q = mai_hoa_data.get('ten_ha', '') or mai_hoa_data.get('the_quai', '') or mai_hoa_data.get('lower', '')
+                    if isinstance(the_q, dict): the_q = the_q.get('ten', '')
+                    if the_q and the_q in TIEN_THIEN:
+                        bt_quai_name = the_q
+                        bt_quai_so = TIEN_THIEN[the_q]
+                        tt_so = bt_quai_so
+                
+                # Từ KM: Quái cung BT
+                if bt_quai_so == 0 and chart_data and isinstance(chart_data, dict):
+                    CUNG_QUAI_MAP = {1: 'Khảm', 2: 'Khôn', 3: 'Chấn', 4: 'Tốn', 6: 'Càn', 7: 'Đoài', 8: 'Cấn', 9: 'Ly'}
+                    bt_cung = generic_slots.get('cung_bt', '')
+                    if bt_cung and bt_cung.isdigit():
+                        bt_quai_name = CUNG_QUAI_MAP.get(int(bt_cung), '?')
+                        bt_quai_so = TIEN_THIEN.get(bt_quai_name, 0)
+                        tt_so = bt_quai_so
+                
+                # V32.6 CORE: Tuổi từ TRƯỜNG SINH stage (lấy trực tiếp từ v22)
+                # ts_stage đã được tính từ _calc_unified_strength_tier → DT Ngũ Hành + Nguyệt Lệnh
+                ts_stage_direct = ts_stage  # Đã có từ v22 (line 1338)
+                ts_data_direct = TRUONG_SINH_POWER.get(ts_stage_direct, {})
+                ts_tuoi_min = ts_data_direct.get('tuoi_min', 0)
+                ts_tuoi_max = ts_data_direct.get('tuoi_max', 0)
+                ts_stage_name = ts_stage_direct
+                
+                # Nếu Thai/Dưỡng (chưa sinh) → fallback Ngũ Khí
+                if ts_tuoi_max <= 2 and ngu_khi:
+                    NGU_KHI_TUOI = {
+                        'Vượng': (33, 45), 'Tướng': (19, 32),
+                        'Hưu': (46, 55), 'Tù': (56, 65), 'Tử': (66, 75),
+                    }
+                    nk_range = NGU_KHI_TUOI.get(ngu_khi, (19, 55))
+                    ts_tuoi_min, ts_tuoi_max = nk_range
+                    ts_stage_name = f"{ts_stage_direct}→{ngu_khi}"
+                
+                tuoi_estimate = (ts_tuoi_min + ts_tuoi_max) // 2 if ts_tuoi_max > 0 else 0
+                tuoi_range = f"{ts_tuoi_min}-{ts_tuoi_max}" if ts_tuoi_max > 0 else '?'
+                
+                generic_slots['bat_quai_dt'] = bt_quai_name
+                generic_slots['bat_quai_so'] = str(bt_quai_so) if bt_quai_so else '?'
+                generic_slots['tien_thien_so'] = str(tt_so) if tt_so else '?'
+                generic_slots['tuoi_tra_san'] = tuoi_range
+                generic_slots['tuoi_trung_binh'] = str(tuoi_estimate) if tuoi_estimate else tuoi_range
             
             slots.update(generic_slots)
         
@@ -8781,14 +8834,28 @@ class FreeAIHelper:
                         lines.append(f"  - Dùng Quái bản thân {quai} (Tiên Thiên = {TIEN_THIEN[quai]})")
                         lines.append(f"  - → **Số lượng ước tính: khoảng {count_num}**")
             
-            # Tuổi
-            if is_age and quai in TIEN_THIEN:
-                tt_num = TIEN_THIEN[quai]
+            # Tuổi — V32.6: Dùng Trường Sinh stage thay vì Tiên Thiên × 3/5
+            if is_age:
+                # Xác định Ngũ Khí trạng thái → Trường Sinh stage → tuổi
                 if 'ĐƯỢC SINH' in relation or 'Tỷ' in relation:
-                    age_num = tt_num * 5
+                    km_age_stage = 'Đế Vượng'  # Vượng → 31-45
+                elif 'BỊ SINH' in relation:
+                    km_age_stage = 'Lâm Quan'  # Tướng → 16-30
+                elif 'BỊ KHẮC' in relation:
+                    km_age_stage = 'Suy'  # Suy → 46-55
+                elif 'KHẮC' in relation:
+                    km_age_stage = 'Bệnh'  # Bệnh → 56-65
                 else:
-                    age_num = tt_num * 3
-                lines.append(f"  - Tuổi (Tiên Thiên {quai}={tt_num}): **{age_num}**")
+                    km_age_stage = 'Quan Đới'  # Trung bình → 8-15
+                
+                ts_data = TRUONG_SINH_POWER.get(km_age_stage, {})
+                tuoi_min = ts_data.get('tuoi_min', 0)
+                tuoi_max = ts_data.get('tuoi_max', 0)
+                age_num = (tuoi_min + tuoi_max) // 2
+                tt_num = TIEN_THIEN.get(quai, 0) if quai else 0
+                lines.append(f"  - Trường Sinh: **{km_age_stage}** → {tuoi_min}-{tuoi_max} tuổi")
+                lines.append(f"  - Tiên Thiên {quai}={tt_num} (tham khảo)")
+                lines.append(f"  - → **Tuổi ước tính (KM): khoảng {tuoi_min}-{tuoi_max} tuổi**")
             
             # Tìm đồ
             if is_find:
@@ -9246,19 +9313,28 @@ class FreeAIHelper:
                     count_num = 1
                     lines.append(f"- Không có Huynh Đệ → Ít anh em, khoảng 1")
             
-            # Tuổi
+            # Tuổi — V32.6: Dùng Trường Sinh stage
             if is_age and the_hao:
-                chi_t = the_hao.get('chi', '')
-                hanh_chi = CHI_NGU_HANH.get(chi_t, '')
-                for q, h in {'Càn': 'Kim', 'Đoài': 'Kim', 'Ly': 'Hỏa', 'Chấn': 'Mộc', 'Tốn': 'Mộc', 'Khảm': 'Thủy', 'Cấn': 'Thổ', 'Khôn': 'Thổ'}.items():
-                    if h == hanh_chi:
-                        tt = TIEN_THIEN[q]
-                        if 'Vượng' in str(vuong):
-                            age_num = tt * 5
-                        else:
-                            age_num = tt * 3
-                        lines.append(f"- Tuổi (Lục Hào: {chi_t} → {q}, Tiên Thiên={tt}): **{age_num}**")
+                vuong_str = str(vuong)
+                lh_age_stage = ''
+                for stage_name in TRUONG_SINH_POWER:
+                    if stage_name in vuong_str:
+                        lh_age_stage = stage_name
                         break
+                if not lh_age_stage:
+                    if 'Vượng' in vuong_str: lh_age_stage = 'Đế Vượng'
+                    elif 'Tướng' in vuong_str: lh_age_stage = 'Lâm Quan'
+                    elif 'Hưu' in vuong_str: lh_age_stage = 'Suy'
+                    elif 'Tù' in vuong_str: lh_age_stage = 'Bệnh'
+                    elif 'Tử' in vuong_str: lh_age_stage = 'Tử'
+                    else: lh_age_stage = 'Quan Đới'
+                
+                ts_d = TRUONG_SINH_POWER.get(lh_age_stage, {})
+                t_min = ts_d.get('tuoi_min', 0)
+                t_max = ts_d.get('tuoi_max', 0)
+                age_num = (t_min + t_max) // 2
+                lines.append(f"- Trường Sinh DT: **{lh_age_stage}** → {t_min}-{t_max} tuổi")
+                lines.append(f"- → **Tuổi ước tính (LH): khoảng {t_min}-{t_max} tuổi**")
         else:
             lines.append("- Không tìm thấy Dụng Thần trong quẻ.")
             reasons_list.append("Thiếu Dụng Thần")
@@ -9454,14 +9530,21 @@ class FreeAIHelper:
         
         lines.append(f"\n  → **MAI HOA: {verdict}** ({reason})")
         
-        # Tuổi
-        if is_age and the_name in TIEN_THIEN:
-            tt = TIEN_THIEN[the_name]
-            if verdict == "CÁT":
-                age_num = tt * 5
+        # Tuổi — V32.6: Dùng Trường Sinh từ Thể-Dụng
+        if is_age:
+            if verdict == 'CÁT':
+                mh_age_stage = 'Đế Vượng'  # 31-45
+            elif verdict == 'HUNG':
+                mh_age_stage = 'Suy'  # 46-55
             else:
-                age_num = tt * 3
-            lines.append(f"- Tuổi (Mai Hoa: Thể={the_name}, Tiên Thiên={tt}): **{age_num}**")
+                mh_age_stage = 'Lâm Quan'  # 16-30
+            
+            ts_mh = TRUONG_SINH_POWER.get(mh_age_stage, {})
+            tm_min = ts_mh.get('tuoi_min', 0)
+            tm_max = ts_mh.get('tuoi_max', 0)
+            age_num = (tm_min + tm_max) // 2
+            lines.append(f"- Trường Sinh: **{mh_age_stage}** → {tm_min}-{tm_max} tuổi")
+            lines.append(f"- → **Tuổi ước tính (MH): khoảng {tm_min}-{tm_max} tuổi**")
         
         lines.append("")
         return "\n".join(lines), verdict, age_num
