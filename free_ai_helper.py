@@ -165,37 +165,88 @@ SAO_HUNG = ['Thiên Bồng', 'Thiên Nhuế', 'Thiên Trụ', 'Thiên Anh', 'Thi
 CUA_CAT = ['Hưu', 'Sinh', 'Khai']
 CUA_HUNG = ['Tử', 'Kinh', 'Thương']
 
-# Bảng Dụng Thần
+# Bảng Dụng Thần — V34.1 CHUẨN THEO VẠN VẬT LOẠI TƯỢNG (6 nguồn uy tín)
+# Nguồn: kinhdichluchao.vn, tusachxua.com, tuviglobal.com, zhycw.com, yixiangqiankun.com
 DUNG_THAN_MAP = {
-    # ═══ PRIORITY 1: Cụm từ dài (match trước) ═══
-    'ngoại tình': 'Thê Tài', 'hợp đồng': 'Phụ Mẫu', 'đầu tư': 'Thê Tài',
-    'cổ phiếu': 'Thê Tài', 'bất động sản': 'Phụ Mẫu', 'anh chị em': 'Huynh Đệ',
-    'anh em': 'Huynh Đệ', 'bình an': 'Tử Tôn', 'đối thủ': 'Huynh Đệ',
+    # ═══ PRIORITY 1: Cụm từ dài (match trước — longest first) ═══
+    # --- Phụ Mẫu: Che chở, văn thư, phương tiện, trang phục, bề trên ---
+    'bất động sản': 'Phụ Mẫu', 'nhà đất': 'Phụ Mẫu', 'căn hộ': 'Phụ Mẫu',
+    'chung cư': 'Phụ Mẫu', 'mua nhà': 'Phụ Mẫu', 'bán nhà': 'Phụ Mẫu',
+    'xây nhà': 'Phụ Mẫu', 'sửa nhà': 'Phụ Mẫu', 'thuê nhà': 'Phụ Mẫu',
+    'mua xe': 'Phụ Mẫu', 'bán xe': 'Phụ Mẫu', 'mua đất': 'Phụ Mẫu',
+    'hợp đồng': 'Phụ Mẫu', 'văn bằng': 'Phụ Mẫu', 'bằng cấp': 'Phụ Mẫu',
+    'giấy phép': 'Phụ Mẫu', 'bằng lái': 'Phụ Mẫu', 'giấy tờ': 'Phụ Mẫu',
+    'hộ chiếu': 'Phụ Mẫu', 'thẻ căn cước': 'Phụ Mẫu',
+    'quần áo': 'Phụ Mẫu', 'trang phục': 'Phụ Mẫu', 'giày dép': 'Phụ Mẫu',
+    'mũ nón': 'Phụ Mẫu', 'ô dù': 'Phụ Mẫu',
+    'sách vở': 'Phụ Mẫu', 'văn bản': 'Phụ Mẫu',
+    'máy bay': 'Phụ Mẫu', 'tàu hỏa': 'Phụ Mẫu',
+    'mồ mả': 'Phụ Mẫu', 'tổ tiên': 'Phụ Mẫu', 'phong thủy': 'Phụ Mẫu',
+    'bảo hiểm': 'Phụ Mẫu',
+    'bố mẹ': 'Phụ Mẫu', 'cha mẹ': 'Phụ Mẫu',
+    'bà ngoại': 'Phụ Mẫu', 'bà nội': 'Phụ Mẫu',
+    'ông ngoại': 'Phụ Mẫu', 'ông nội': 'Phụ Mẫu',
+    # --- Thê Tài: Tiền bạc, tài sản, hàng hóa, lương thực ---
+    'ngoại tình': 'Thê Tài', 'đầu tư': 'Thê Tài',
+    'cổ phiếu': 'Thê Tài', 'chứng khoán': 'Thê Tài',
+    'mất đồ': 'Thê Tài', 'mất tiền': 'Thê Tài', 'mất điện thoại': 'Thê Tài',
+    'tăng lương': 'Thê Tài', 'thu nhập': 'Thê Tài',
+    'người yêu': 'Thê Tài', 'bạn trai': 'Thê Tài', 'bạn gái': 'Thê Tài',
+    'hàng hóa': 'Thê Tài', 'kho hàng': 'Thê Tài', 'cửa hàng': 'Thê Tài',
+    'kim cương': 'Thê Tài', 'trang sức': 'Thê Tài',
+    'điện thoại': 'Thê Tài', 'laptop': 'Thê Tài',
+    'lương thực': 'Thê Tài', 'thức ăn': 'Thê Tài',
+    # --- Quan Quỷ: Công danh, bệnh tật, tai họa, pháp luật ---
+    'thăng chức': 'Quan Quỷ', 'xin việc': 'Quan Quỷ',
+    'đối tác': 'Quan Quỷ', 'khách hàng': 'Quan Quỷ',
+    'ung thư': 'Quan Quỷ', 'tai nạn': 'Quan Quỷ',
+    'kiện tụng': 'Quan Quỷ', 'kiện cáo': 'Quan Quỷ',
+    'công chức': 'Quan Quỷ', 'công an': 'Quan Quỷ', 'quân đội': 'Quan Quỷ',
+    'trầm cảm': 'Quan Quỷ', 'lo âu': 'Quan Quỷ',
+    'hỏa hoạn': 'Quan Quỷ', 'lũ lụt': 'Quan Quỷ', 'động đất': 'Quan Quỷ',
+    # --- Tử Tôn: Con cái, thuốc men, vật nuôi, giải trí ---
     'con trai': 'Tử Tôn', 'con gái': 'Tử Tôn', 'con dâu': 'Tử Tôn',
     'con rể': 'Tử Tôn', 'con cái': 'Tử Tôn',
-    'bà ngoại': 'Phụ Mẫu', 'bà nội': 'Phụ Mẫu', 'ông ngoại': 'Phụ Mẫu',
-    'ông nội': 'Phụ Mẫu', 'bố mẹ': 'Phụ Mẫu', 'cha mẹ': 'Phụ Mẫu',
-    'mua xe': 'Phụ Mẫu', 'mua nhà': 'Phụ Mẫu',
-    'mất đồ': 'Thê Tài', 'mất tiền': 'Thê Tài', 'mất điện thoại': 'Thê Tài',
-    'thăng chức': 'Quan Quỷ', 'tăng lương': 'Thê Tài',
-    'xây nhà': 'Phụ Mẫu', 'sửa nhà': 'Phụ Mẫu',
-    'đối tác': 'Quan Quỷ', 'khách hàng': 'Quan Quỷ',
-    'người yêu': 'Thê Tài', 'bạn trai': 'Thê Tài', 'bạn gái': 'Thê Tài',
+    'bác sĩ': 'Tử Tôn', 'bệnh viện': 'Tử Tôn',
+    'vật nuôi': 'Tử Tôn', 'thú cưng': 'Tử Tôn',
+    'du lịch': 'Tử Tôn', 'giải trí': 'Tử Tôn',
+    'tu hành': 'Tử Tôn', 'nhà sư': 'Tử Tôn',
+    'bình an': 'Tử Tôn',
+    # --- Huynh Đệ: Ngang hàng, cạnh tranh, cờ bạc ---
+    'anh chị em': 'Huynh Đệ', 'anh em': 'Huynh Đệ',
+    'đối thủ': 'Huynh Đệ', 'đối thủ cạnh tranh': 'Huynh Đệ',
+    'cờ bạc': 'Huynh Đệ', 'đánh bạc': 'Huynh Đệ', 'xổ số': 'Huynh Đệ',
+    'đồng nghiệp': 'Huynh Đệ',
+
     # ═══ PRIORITY 2: Từ đơn — Chủ đề ═══
+    # --- Phụ Mẫu: nhà, xe, học, giấy, đất, sách, thuyền ---
+    'nhà': 'Phụ Mẫu', 'xe': 'Phụ Mẫu', 'học': 'Phụ Mẫu',
+    'giấy': 'Phụ Mẫu', 'đất': 'Phụ Mẫu', 'sách': 'Phụ Mẫu',
+    'thi': 'Phụ Mẫu', 'trường': 'Phụ Mẫu',
+    'thuyền': 'Phụ Mẫu', 'tàu': 'Phụ Mẫu',
+    'áo': 'Phụ Mẫu', 'mộ': 'Phụ Mẫu', 'cúng': 'Phụ Mẫu',
+    'passport': 'Phụ Mẫu', 'visa': 'Phụ Mẫu',
+    # --- Thê Tài: tiền, tài, vốn, mua, bán ---
     'tiền': 'Thê Tài', 'tài': 'Thê Tài', 'lương': 'Thê Tài', 'vốn': 'Thê Tài',
     'lãi': 'Thê Tài', 'nợ': 'Thê Tài', 'lời': 'Thê Tài', 'lỗ': 'Thê Tài',
-    'việc': 'Quan Quỷ', 'sếp': 'Quan Quỷ', 'bệnh': 'Quan Quỷ',
-    'kiện': 'Quan Quỷ', 'thi': 'Quan Quỷ', 'ung thư': 'Quan Quỷ',
-    'nhà': 'Phụ Mẫu', 'xe': 'Phụ Mẫu', 'học': 'Phụ Mẫu',
-    'giấy': 'Phụ Mẫu', 'văn bằng': 'Phụ Mẫu',
     'mua': 'Thê Tài', 'bán': 'Thê Tài',
     'mất': 'Thê Tài', 'trộm': 'Thê Tài', 'cắp': 'Thê Tài',
+    'vàng': 'Thê Tài', 'crypto': 'Thê Tài', 'coin': 'Thê Tài',
+    # --- Quan Quỷ: việc, sếp, bệnh, kiện, stress ---
+    'việc': 'Quan Quỷ', 'sếp': 'Quan Quỷ', 'bệnh': 'Quan Quỷ',
+    'kiện': 'Quan Quỷ', 'ốm': 'Quan Quỷ', 'đau': 'Quan Quỷ',
+    'stress': 'Quan Quỷ', 'cháy': 'Quan Quỷ',
+    # --- Tử Tôn: thuốc, chó, mèo, vui ---
+    'thuốc': 'Tử Tôn', 'chó': 'Tử Tôn', 'mèo': 'Tử Tôn',
+    'vui': 'Tử Tôn', 'chơi': 'Tử Tôn',
+
     # ═══ PRIORITY 3: Từ đơn — Người thân ═══
-    'vợ': 'Thê Tài', 'chồng': 'Thê Tài',
+    'vợ': 'Thê Tài',
+    'chồng': 'Quan Quỷ',  # V34.1: Nữ hỏi chồng → Quan Quỷ (khắc ta)
     'con': 'Tử Tôn', 'cháu': 'Tử Tôn',
     'bố': 'Phụ Mẫu', 'mẹ': 'Phụ Mẫu', 'cha': 'Phụ Mẫu',
     'bạn': 'Huynh Đệ', 'anh': 'Huynh Đệ', 'chị': 'Huynh Đệ', 'em': 'Huynh Đệ',
-    'vui': 'Tử Tôn',
+
     # ═══ PRIORITY 4: Bản thân (match cuối) ═══
     'tuổi': 'Bản Thân', 'tôi': 'Bản Thân', 'mình': 'Bản Thân',
 }
