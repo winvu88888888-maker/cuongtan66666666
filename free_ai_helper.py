@@ -6893,17 +6893,67 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 lines.append(f"\n🟡 **CÂU TRẢ LỜI: KHÓ KHĂN nhưng vẫn có cơ hội ({pct}%)**")
                 lines.append(f"- Cần theo dõi sát và tìm thầy thuốc giỏi.")
         
-        # KHI NÀO — "khi nào", "bao giờ"
-        elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao']):
+        # KHI NÀO / THÁNG NÀO / BAO GIỜ — trả lời CỤ THỂ tháng/chi
+        elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao',
+                                   'tháng nào', 'tháng mấy', 'năm nào', 'ngày nào', 'mùa nào']):
+            # Lấy hành DT để tính Ứng Kỳ
+            hanh_dt = cd.get('hanh_dt', '')
+            if not hanh_dt:
+                # Thử suy từ DT
+                from free_ai_helper import _get_dung_than
+                dt_name = _get_dung_than(question)
+                hanh_dt = cd.get('hanh_dt', 'Thổ')
+            
+            # Chi → Tháng Âm Lịch mapping
+            CHI_THANG = {
+                'Dần': 'tháng Giêng (T1 ÂL)', 'Mão': 'tháng 2 ÂL',
+                'Thìn': 'tháng 3 ÂL', 'Tị': 'tháng 4 ÂL', 
+                'Ngọ': 'tháng 5 ÂL', 'Mùi': 'tháng 6 ÂL',
+                'Thân': 'tháng 7 ÂL', 'Dậu': 'tháng 8 ÂL',
+                'Tuất': 'tháng 9 ÂL', 'Hợi': 'tháng 10 ÂL',
+                'Tý': 'tháng 11 ÂL', 'Sửu': 'tháng 12 ÂL',
+            }
+            
+            # Ngũ Hành → Chi ứng kỳ
+            UNG_KY_CHI = {
+                'Kim': ['Thân', 'Dậu'], 'Mộc': ['Dần', 'Mão'], 'Thủy': ['Tý', 'Hợi'],
+                'Hỏa': ['Ngọ', 'Tị'], 'Thổ': ['Thìn', 'Tuất', 'Sửu', 'Mùi']
+            }
+            
+            # Tính ứng kỳ
+            chi_list = UNG_KY_CHI.get(hanh_dt, [])
+            thang_list = [CHI_THANG.get(c, c) for c in chi_list]
+            
+            ung_ky_text = _get_ung_ky(hanh_dt, final_verdict) if hanh_dt else ''
+            
             if final_verdict == 'CÁT' or pct >= 55:
                 lines.append(f"\n{icon} **CÂU TRẢ LỜI: SẮP TỚI — Thuận lợi ({pct}%)**")
-                lines.append(f"- Thời điểm hiện tại đã thuận, nên hành động trong 1-7 ngày.")
+                if chi_list:
+                    lines.append(f"\n📅 **Ứng Kỳ cụ thể (DT hành {hanh_dt}):**")
+                    lines.append(f"- Ngày/tháng có Chi: **{' hoặc '.join(chi_list)}**")
+                    lines.append(f"- Tương ứng: **{', '.join(thang_list)}**")
+                    lines.append(f"- {ung_ky_text}")
+                lines.append(f"- 💡 Thời điểm hiện tại đã thuận, hành động trong vòng Chi vượng.")
             elif pct <= 40:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CÒN LÂU — Chưa tới thời ({pct}%)**")
-                lines.append(f"- Nên chờ ít nhất 2-3 tháng, hoặc chờ xung/hợp mới tới.")
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CHƯA TỚI THỜI ({pct}%)**")
+                # Hung → chờ hành sinh
+                SINH_MAP = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
+                hanh_sinh = SINH_MAP.get(hanh_dt, '')
+                chi_sinh = UNG_KY_CHI.get(hanh_sinh, [])
+                thang_sinh = [CHI_THANG.get(c, c) for c in chi_sinh]
+                if chi_sinh:
+                    lines.append(f"\n📅 **Chờ đến khi có Chi sinh {hanh_dt} (hành {hanh_sinh}):**")
+                    lines.append(f"- Chi chờ: **{' hoặc '.join(chi_sinh)}**")
+                    lines.append(f"- Tương ứng: **{', '.join(thang_sinh)}**")
+                    lines.append(f"- {ung_ky_text}")
+                lines.append(f"- ⚠️ Hiện tại chưa thuận, cần chờ vận khí chuyển.")
             else:
                 lines.append(f"\n🟡 **CÂU TRẢ LỜI: TRONG 1-3 THÁNG TỚI ({pct}%)**")
-                lines.append(f"- Cần chuẩn bị sẵn để nắm bắt khi cơ hội đến.")
+                if chi_list:
+                    lines.append(f"\n📅 **Ứng Kỳ dự kiến (DT hành {hanh_dt}):**")
+                    lines.append(f"- Ngày/tháng Chi: **{' hoặc '.join(chi_list)}**")
+                    lines.append(f"- Tương ứng: **{', '.join(thang_list)}**")
+                lines.append(f"- 💡 Cần chuẩn bị sẵn, hành động khi Chi hợp.")
         
         # TUỔI
         elif any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
