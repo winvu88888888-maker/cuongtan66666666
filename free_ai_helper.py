@@ -399,12 +399,139 @@ def _ngu_hanh_relation(h1, h2):
 
 
 def _get_dung_than(question):
-    """V34.0: Xác định Dụng Thần — priority matching (keywords dài trước ngắn)."""
+    """V34.2: Xác định Dụng Thần — SUBJECT-FIRST (chủ thể luôn thắng ngữ cảnh).
+    
+    Nguyên lý: NGƯỜI/VẬT được hỏi (chủ thể) luôn quyết định DT.
+    - "mẹ bệnh nặng" → chủ thể = mẹ → PHỤ MẪU (ko phải bệnh → Quan Quỷ)
+    - "chồng ngoại tình" → chủ thể = chồng → QUAN QUỶ (ko phải ngoại tình → Thê Tài)
+    - "chó nhà khỏe không" → chủ thể = chó → TỬ TÔN (ko phải nhà → Phụ Mẫu)
+    
+    3 tầng ưu tiên:
+      T1: CHỦ THỂ (người/vật) — match đầu → RETURN luôn
+      T2: NGỮ CẢNH (hành động/trạng thái) — fallback nếu ko có T1
+      T3: Default = Quan Quỷ
+    """
     q = question.lower()
-    for keyword in _DUNG_THAN_SORTED:
-        if keyword in q:
-            return DUNG_THAN_MAP[keyword]
-    return "Quan Quỷ"  # Default
+    
+    # ═══ TIER 1: CHỦ THỂ — Người / Vật được hỏi (LUÔN THẮNG) ═══
+    # Sorted dài→ngắn để "con trai" match trước "con"
+    _SUBJECT_DT = [
+        # Phụ Mẫu — người bề trên + tài sản che chở
+        ('bất động sản', 'Phụ Mẫu'), ('nhà đất', 'Phụ Mẫu'),
+        ('căn hộ', 'Phụ Mẫu'), ('chung cư', 'Phụ Mẫu'),
+        ('ông ngoại', 'Phụ Mẫu'), ('ông nội', 'Phụ Mẫu'),
+        ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
+        ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'),
+        ('tổ tiên', 'Phụ Mẫu'), ('mồ mả', 'Phụ Mẫu'),
+        ('hợp đồng', 'Phụ Mẫu'), ('văn bằng', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'),
+        ('giấy phép', 'Phụ Mẫu'), ('bằng lái', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'),
+        ('hộ chiếu', 'Phụ Mẫu'), ('thẻ căn cước', 'Phụ Mẫu'),
+        ('quần áo', 'Phụ Mẫu'), ('trang phục', 'Phụ Mẫu'), ('giày dép', 'Phụ Mẫu'),
+        ('mũ nón', 'Phụ Mẫu'), ('ô dù', 'Phụ Mẫu'),
+        ('sách vở', 'Phụ Mẫu'), ('văn bản', 'Phụ Mẫu'),
+        ('máy bay', 'Phụ Mẫu'), ('tàu hỏa', 'Phụ Mẫu'),
+        ('bảo hiểm', 'Phụ Mẫu'), ('phong thủy', 'Phụ Mẫu'),
+        ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'),
+        ('sách', 'Phụ Mẫu'), ('giấy', 'Phụ Mẫu'),
+        ('thuyền', 'Phụ Mẫu'), ('tàu', 'Phụ Mẫu'),
+        ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'),
+        ('áo', 'Phụ Mẫu'), ('mộ', 'Phụ Mẫu'),
+        ('passport', 'Phụ Mẫu'), ('visa', 'Phụ Mẫu'),
+
+        # Thê Tài — tài sản, vợ, người yêu
+        ('người yêu', 'Thê Tài'), ('bạn trai', 'Thê Tài'), ('bạn gái', 'Thê Tài'),
+        ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'),
+        ('điện thoại', 'Thê Tài'), ('laptop', 'Thê Tài'),
+        ('kim cương', 'Thê Tài'), ('trang sức', 'Thê Tài'),
+        ('hàng hóa', 'Thê Tài'), ('kho hàng', 'Thê Tài'),
+        ('lương thực', 'Thê Tài'), ('thức ăn', 'Thê Tài'),
+        ('tiền', 'Thê Tài'), ('vốn', 'Thê Tài'), ('lương', 'Thê Tài'),
+        ('vàng', 'Thê Tài'), ('nợ', 'Thê Tài'),
+        ('vợ', 'Thê Tài'), ('crypto', 'Thê Tài'), ('coin', 'Thê Tài'),
+
+        # Quan Quỷ — chồng (nữ hỏi), sếp, đối tác
+        ('đối tác', 'Quan Quỷ'), ('khách hàng', 'Quan Quỷ'),
+        ('công chức', 'Quan Quỷ'), ('công an', 'Quan Quỷ'), ('quân đội', 'Quan Quỷ'),
+        ('chồng', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'),
+
+        # Tử Tôn — con cái, vật nuôi, bác sĩ, thuốc
+        ('con trai', 'Tử Tôn'), ('con gái', 'Tử Tôn'), ('con dâu', 'Tử Tôn'),
+        ('con rể', 'Tử Tôn'), ('con cái', 'Tử Tôn'),
+        ('bác sĩ', 'Tử Tôn'), ('bệnh viện', 'Tử Tôn'),
+        ('vật nuôi', 'Tử Tôn'), ('thú cưng', 'Tử Tôn'),
+        ('nhà sư', 'Tử Tôn'), ('tu hành', 'Tử Tôn'),
+        ('thuốc', 'Tử Tôn'), ('chó', 'Tử Tôn'), ('mèo', 'Tử Tôn'),
+        ('con', 'Tử Tôn'), ('cháu', 'Tử Tôn'),
+
+        # Huynh Đệ — ngang hàng
+        ('anh chị em', 'Huynh Đệ'), ('anh em', 'Huynh Đệ'),
+        ('đối thủ cạnh tranh', 'Huynh Đệ'),
+        ('đồng nghiệp', 'Huynh Đệ'), ('đối thủ', 'Huynh Đệ'),
+        ('bạn', 'Huynh Đệ'), ('anh', 'Huynh Đệ'), ('chị', 'Huynh Đệ'), ('em', 'Huynh Đệ'),
+
+        # Bản Thân
+        ('tuổi', 'Bản Thân'),
+    ]
+    
+    # Tìm chủ thể xuất hiện SỚM NHẤT trong câu (vị trí đầu = chủ thể chính)
+    best_pos = len(q) + 1
+    best_dt = None
+    best_kw = ''
+    for kw, dt in _SUBJECT_DT:
+        pos = q.find(kw)
+        if pos >= 0:
+            # Ưu tiên: vị trí sớm nhất, nếu cùng vị trí thì keyword dài hơn thắng
+            if pos < best_pos or (pos == best_pos and len(kw) > len(best_kw)):
+                best_pos = pos
+                best_dt = dt
+                best_kw = kw
+    if best_dt:
+        return best_dt
+    
+    # ═══ TIER 2: NGỮ CẢNH — Hành động/trạng thái (chỉ khi ko có chủ thể) ═══
+    _CONTEXT_DT = [
+        # Phụ Mẫu — hành động liên quan nhà, học, thi
+        ('xây nhà', 'Phụ Mẫu'), ('sửa nhà', 'Phụ Mẫu'), ('thuê nhà', 'Phụ Mẫu'),
+        ('mua nhà', 'Phụ Mẫu'), ('bán nhà', 'Phụ Mẫu'),
+        ('mua xe', 'Phụ Mẫu'), ('bán xe', 'Phụ Mẫu'), ('mua đất', 'Phụ Mẫu'),
+        ('học', 'Phụ Mẫu'), ('thi', 'Phụ Mẫu'), ('trường', 'Phụ Mẫu'),
+        ('cúng', 'Phụ Mẫu'),
+
+        # Thê Tài — mua bán, đầu tư, mất
+        ('ngoại tình', 'Thê Tài'), ('đầu tư', 'Thê Tài'),
+        ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'),
+        ('mua', 'Thê Tài'), ('bán', 'Thê Tài'),
+        ('mất', 'Thê Tài'), ('trộm', 'Thê Tài'), ('cắp', 'Thê Tài'),
+        ('lãi', 'Thê Tài'), ('lời', 'Thê Tài'), ('lỗ', 'Thê Tài'),
+        ('tài', 'Thê Tài'),
+
+        # Quan Quỷ — bệnh, kiện, tai nạn, việc
+        ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'),
+        ('kiện tụng', 'Quan Quỷ'), ('kiện cáo', 'Quan Quỷ'),
+        ('ung thư', 'Quan Quỷ'), ('tai nạn', 'Quan Quỷ'),
+        ('trầm cảm', 'Quan Quỷ'), ('lo âu', 'Quan Quỷ'),
+        ('hỏa hoạn', 'Quan Quỷ'), ('lũ lụt', 'Quan Quỷ'), ('động đất', 'Quan Quỷ'),
+        ('việc', 'Quan Quỷ'), ('bệnh', 'Quan Quỷ'), ('kiện', 'Quan Quỷ'),
+        ('ốm', 'Quan Quỷ'), ('đau', 'Quan Quỷ'), ('stress', 'Quan Quỷ'),
+        ('cháy', 'Quan Quỷ'),
+
+        # Tử Tôn — giải trí, bình an, chơi
+        ('du lịch', 'Tử Tôn'), ('giải trí', 'Tử Tôn'),
+        ('bình an', 'Tử Tôn'), ('vui', 'Tử Tôn'), ('chơi', 'Tử Tôn'),
+
+        # Huynh Đệ — cờ bạc, cạnh tranh
+        ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
+    ]
+    
+    for kw, dt in _CONTEXT_DT:
+        if kw in q:
+            return dt
+    
+    # ═══ TIER 3: DEFAULT ═══
+    # Nếu ko match gì → xem "tôi/mình" → Bản Thân, còn lại → Quan Quỷ
+    if 'tôi' in q or 'mình' in q:
+        return 'Bản Thân'
+    return "Quan Quỷ"
 
 
 def _match_topic(question, topic=None):
