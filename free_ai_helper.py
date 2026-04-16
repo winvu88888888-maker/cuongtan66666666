@@ -1345,8 +1345,9 @@ class FreeAIHelper:
     # ═══════════════════════════════════════════════════════════════
     
     def _fill_master_diagram(self, question, category_label, dung_than, hanh_dt,
-                              unified_v22, v23_lh_factors, chart_data, luc_hao_data):
-        """V31.0: Điền yếu tố THỜI GIAN THỰC vào SĐ_MASTER.
+                              unified_v22, v23_lh_factors, chart_data, luc_hao_data,
+                              mai_hoa_data=None, v24_km_factors=None):
+        """V33.0: Điền yếu tố THỜI GIAN THỰC vào SĐ_MASTER — 60+ yếu tố từ 6 PP.
         
         SĐ_MASTER = Sơ đồ QUAN TRỌNG NHẤT:
         DT → Suy/Vượng (3 tầng: LH + 12TS + Ngũ Khí) → Vạn Vật Loại Tượng → Chi tiết
@@ -3042,6 +3043,14 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 f"{thai_at_ctx}"
                 f"</data>\n\n"
                 
+                # V33.0: INJECT SĐ MASTER VÀO PROMPT — AI ĐỌC TẤT CẢ 60+ YẾU TỐ
+                f"<sd_master_v33>\n"
+                f"═══ SĐ MASTER V33.0: TẤT CẢ YẾU TỐ TỪ 6 PP ═══\n"
+                f"ĐỌC SƠ ĐỒ NÀY ĐỂ TRÍCH XUẤT DỮ LIỆU CHO CÂU TRẢ LỜI.\n"
+                f"Mỗi yếu tố đã được tính toán OFFLINE — BẠN CHỈ CẦN ĐỌC VÀ SUY LUẬN.\n\n"
+                f"{od.get('v31_master_diagram', '[SĐ MASTER chưa tính]')}\n"
+                f"</sd_master_v33>\n\n"
+                
                 f"<ngu_hanh_rules>\n"
                 f"SINH: Mộc→Hỏa→Thổ→Kim→Thủy→Mộc | KHẮC: Mộc→Thổ→Thủy→Hỏa→Kim→Mộc\n"
                 f"DT: tiền=Thê Tài | sếp/bệnh=Quan Quỷ | con/phúc=Tử Tôn | nhà/cha mẹ=Phụ Mẫu | bạn=Huynh Đệ\n"
@@ -3079,6 +3088,9 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 f"</method_strengths>\n\n"
                 
                 f"<reasoning_protocol>\n"
+                f"BƯỚC 1: ĐỌC <sd_master_v33> — trích xuất DT, 16 yếu tố LH, 14 yếu tố KM, 10 yếu tố MH, 7 DLN, 5 TB+TA.\n"
+                f"BƯỚC 2: Chọn SƠ ĐỒ phù hợp từ <question_type> → đọc factors theo mũi tên → KẾT LUẬN.\n"
+                f"BƯỚC 3: Mỗi yếu tố phải TRÍCH DẪN từ <sd_master_v33> — KHÔNG ĐƯỢC BỊA THÊM.\n\n"
                 f"SƠ ĐỒ TƯƠNG TÁC — ĐỌC SƠ ĐỒ PHÙ HỢP VỚI <question_type> ĐỂ TÌM CÂU TRẢ LỜI:\n\n"
                 f"═══ SĐ1: CÓ/KHÔNG ═══\n"
                 f"LH: [Nguyệt]→sinh/khắc→[DT Vượng/Suy]←sinh/khắc←[Nhật]\n"
@@ -3163,13 +3175,15 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 f"FORMAT BẮT BUỘC (KHÔNG ĐƯỢC THAY ĐỔI):\n\n"
                 f"📐 SƠ ĐỒ: [tên sơ đồ đã dùng, VD: SĐ6 TÀI LỘC]\n"
                 f"PP GỐC: [tên PP chính]\n\n"
-                f"⚡ YẾU TỐ TÁC ĐỘNG:\n"
-                f"• [yếu tố 1 từ data] → [tác động gì] → [kết quả]\n"
-                f"• [yếu tố 2 từ data] → [tác động gì] → [kết quả]\n"
-                f"• [yếu tố 3...]\n\n"
+                f"⚡ YẾU TỐ TÁC ĐỘNG (trích từ <sd_master_v33>, tối thiểu 5):\n"
+                f"• LH: [yếu tố LH từ sd_master] → [tác động] → [kết quả]\n"
+                f"• LH: [biến hào / lục hợp xung...] → [tác động]\n"
+                f"• KM: [yếu tố KM: cửa/sao/trực phù/sử...] → [tác động]\n"
+                f"• MH: [thể/dụng/hỗ quái + vượng suy] → [tác động]\n"
+                f"• DLN/TB/TA: [yếu tố bổ sung] → [tác động]\n\n"
                 f"🎯 CÂU TRẢ LỜI: [trả lời TRỰC TIẾP câu hỏi, 1-2 câu]\n\n"
                 f"(NẾU câu hỏi về THỜI GIAN → thêm phần ⏰ THỜI GIAN: giờ/ngày/tháng/năm dựa trên Ứng Kỳ trong data)\n\n"
-                f"TUYỆT ĐỐI CẤM: viết thêm gì ngoài 4 phần trên. Tối đa 200 chữ.\n"
+                f"TUYỆT ĐỐI CẤM: viết thêm gì ngoài phần trên. Tối đa 300 chữ.\n"
                 f"</output_format>\n"
             )
 
@@ -8060,6 +8074,8 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 v23_lh_factors=v23_lh_factors,
                 chart_data=chart_data,
                 luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                v24_km_factors=v24_km_factors,
             )
             
             # 2. Sơ đồ theo loại câu hỏi (SĐ1-SĐ16)
