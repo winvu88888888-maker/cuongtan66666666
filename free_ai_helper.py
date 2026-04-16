@@ -1474,12 +1474,265 @@ class FreeAIHelper:
         # Build short question
         q_short = question[:40] + '...' if len(question) > 40 else question
         
+        # ═══ V33.0: EXTRACT ALL NEW FACTORS ═══
+        
+        # --- LỤC HÀO: Biến Hào, Lục Hợp/Xung, Tam Hợp, Phục Thần ---
+        cuu_than = ''
+        cuu_state = ''
+        tuan_khong_str = ''
+        nguyet_pha_str = ''
+        tsvk_str = ''
+        phan_phuc_str = ''
+        the_state = ''
+        ung_state = ''
+        bien_hao_str = 'Không biến'
+        dong_hao_list_str = 'Không có'
+        bien_que_str = ''
+        bien_hao_dt_str = ''
+        luc_hop_xung_str = 'Không phát hiện'
+        tam_hop_cuc_str = 'Không phát hiện' 
+        tien_thoai_str = 'N/A'
+        phuc_than_str = 'Không có'
+        
+        if v23_lh_factors:
+            for f in v23_lh_factors:
+                f_upper = f.upper()
+                if 'CỪU' in f_upper or 'CỪU THẦN' in f:
+                    cuu_than = f.split('(')[1].split(')')[0] if '(' in f else '?'
+                    if 'vượng' in f.lower(): cuu_state = 'Vượng'
+                    elif 'suy' in f.lower(): cuu_state = 'Suy'
+                    elif 'động' in f.lower(): cuu_state = 'Động'
+                    else: cuu_state = '?'
+                elif 'TUẦN KHÔNG' in f_upper:
+                    tuan_khong_str = f
+                elif 'NGUYỆT PHÁ' in f_upper:
+                    nguyet_pha_str = f
+                elif 'THAM SINH' in f_upper:
+                    tsvk_str = f
+                elif 'PHẢN NGÂM' in f_upper:
+                    phan_phuc_str += 'Phản Ngâm '
+                elif 'PHỤC NGÂM' in f_upper:
+                    phan_phuc_str += 'Phục Ngâm '
+                elif 'THẾ' in f and 'ỨNG' not in f and ('vượng' in f.lower() or 'suy' in f.lower()):
+                    the_state = f
+                elif 'ỨNG' in f and ('vượng' in f.lower() or 'suy' in f.lower()):
+                    ung_state = f
+                elif 'LỤC HỢP' in f_upper or 'LỤC XUNG' in f_upper:
+                    luc_hop_xung_str = f
+                elif 'TAM HỢP' in f_upper:
+                    tam_hop_cuc_str = f
+                elif 'TIẾN THẦN' in f_upper:
+                    tien_thoai_str = 'Tiến Thần ↗'
+                elif 'THOÁI THẦN' in f_upper:
+                    tien_thoai_str = 'Thoái Thần ↘'
+        
+        # Extract from luc_hao_data
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            # Biến Hào 
+            dong_hao = luc_hao_data.get('dong_hao', [])
+            if dong_hao:
+                dong_hao_list_str = ', '.join([f'Hào {h}' for h in dong_hao])
+                bien = luc_hao_data.get('bien', {})
+                if bien:
+                    bien_que_str = bien.get('name', '?')
+                    bien_details = bien.get('details', [])
+                    # Tìm hào biến DT
+                    for dh in dong_hao:
+                        for bd in bien_details:
+                            if isinstance(bd, dict) and bd.get('hao') == dh:
+                                bien_hao_dt_str += f"Hào {dh} biến {bd.get('luc_than', '?')} ({bd.get('can_chi', '?')}) "
+                bien_hao_str = f"Hào {', '.join(map(str, dong_hao))} ĐỘNG → Biến {bien_que_str}"
+            
+            # Phục Thần
+            phuc_than = luc_hao_data.get('phuc_than', [])
+            if phuc_than:
+                pts = []
+                for pt in phuc_than:
+                    if isinstance(pt, dict):
+                        pts.append(f"{pt.get('luc_than', '?')} ({pt.get('can_chi', '?')}) ẩn dưới hào {pt.get('hao_pos', '?')}")
+                if pts:
+                    phuc_than_str = ' | '.join(pts)
+        
+        # --- KỲ MÔN: Trực Phù/Sử, Không Vong, Mã Tinh, Tam Kỳ, Cục, 4 Trụ ---
+        truc_phu = ''
+        truc_su = ''
+        khong_vong_km = ''
+        ma_tinh = ''
+        tam_ky = 'Không có'
+        km_cuc = ''
+        am_duong_don = ''
+        tu_tru = ''
+        cung_dt_str = ''
+        cung_dt_hanh_str = ''
+        sao_dt_str = ''
+        cua_dt_str = ''
+        than_dt_str = ''
+        cung_bt_str = ''
+        cung_sv_str = ''
+        bt_sv_rel_str = ''
+        dia_ban_dt_str = ''
+        km_phan_phuc_str = 'Không có'
+        
+        if chart_data and isinstance(chart_data, dict):
+            truc_phu = chart_data.get('truc_phu', '?')
+            truc_su = chart_data.get('truc_su', '?')
+            
+            # Không Vong
+            kv = chart_data.get('khong', {})
+            if kv:
+                kv_parts = []
+                for period, cung_list in kv.items():
+                    if isinstance(cung_list, list):
+                        kv_parts.append(f"{period}: Cung {','.join(map(str, cung_list))}")
+                khong_vong_km = ' | '.join(kv_parts) if kv_parts else '?'
+            
+            # Mã Tinh
+            ma = chart_data.get('ma', {})
+            if ma:
+                ma_tinh = f"Giờ:{ma.get('gio','?')} Ngày:{ma.get('ngay','?')} Tháng:{ma.get('thang','?')} Năm:{ma.get('nam','?')}"
+            
+            # Tam Kỳ (Ất/Bính/Đinh)
+            can_ngay_km = chart_data.get('can_ngay', '')
+            if can_ngay_km in ['Ất', 'Bính', 'Đinh']:
+                tam_ky = f"{can_ngay_km} (Tam Kỳ)"
+            
+            # Cục 
+            km_cuc = str(chart_data.get('cuc', '?'))
+            am_duong_don = 'Dương Độn' if chart_data.get('is_duong_don') else 'Âm Độn'
+            
+            # 4 Trụ
+            tu_tru = (
+                f"Năm: {chart_data.get('can_nam', '?')}{chart_data.get('chi_nam', '?')} | "
+                f"Tháng: {chart_data.get('can_thang', '?')}{chart_data.get('chi_thang', '?')} | "
+                f"Ngày: {chart_data.get('can_ngay', '?')}{chart_data.get('chi_ngay', '?')} | "
+                f"Giờ: {chart_data.get('can_gio', '?')}{chart_data.get('chi_gio', '?')}"
+            )
+            
+            # Cung/Sao/Cửa/Thần DT
+            # (These may already be extracted in v24_km_factors)
+            
+        if v24_km_factors:
+            for f in v24_km_factors if isinstance(v24_km_factors, list) else []:
+                f_str = str(f)
+                if 'Cung DT' in f_str or 'cung_dt' in f_str:
+                    cung_dt_str = f_str
+                elif 'Sao' in f_str and 'DT' in f_str:
+                    sao_dt_str = f_str
+                elif 'Cửa' in f_str and 'DT' in f_str:
+                    cua_dt_str = f_str
+                elif 'Thần' in f_str and 'DT' in f_str:
+                    than_dt_str = f_str
+                elif 'BT' in f_str and 'SV' in f_str:
+                    bt_sv_rel_str = f_str
+        
+        # --- MAI HOA: Thể/Dụng Vượng Suy, Hỗ Quái, Biến Quái ---
+        the_quai_str = ''
+        the_quai_hanh_str = ''
+        the_vuong_suy = ''
+        dung_quai_str = ''
+        dung_quai_hanh_str = ''
+        dung_vuong_suy = ''
+        ho_quai_str = ''
+        bien_quai_mh_str = ''
+        the_dung_rel_str = ''
+        the_dung_y_nghia_str = ''
+        ho_the_rel_str = ''
+        ho_the_y_nghia_str = ''
+        ho_dung_rel_str = ''
+        ho_dung_y_nghia_str = ''
+        dong_hao_mh_str = '?'
+        mh_interpretation_str = ''
+        
+        if mai_hoa_data and isinstance(mai_hoa_data, dict):
+            the_quai_str = mai_hoa_data.get('upper_symbol', mai_hoa_data.get('ten_thuong', '?'))
+            the_quai_hanh_str = mai_hoa_data.get('upper_element', mai_hoa_data.get('hanh_thuong', '?'))
+            dung_quai_str = mai_hoa_data.get('lower_symbol', mai_hoa_data.get('ten_ha', '?'))
+            dung_quai_hanh_str = mai_hoa_data.get('lower_element', mai_hoa_data.get('hanh_ha', '?'))
+            ho_quai_str = mai_hoa_data.get('ten_ho', '?')
+            bien_quai_mh_str = mai_hoa_data.get('ten_qua_bien', '?')
+            dong_hao_mh_str = str(mai_hoa_data.get('dong_hao', '?'))
+            mh_interpretation_str = mai_hoa_data.get('interpretation', mai_hoa_data.get('nghĩa', ''))[:80]
+            
+            # Thể/Dụng Vượng Suy (theo tháng hiện tại)
+            chi_thang = ''
+            if chart_data:
+                chi_thang = chart_data.get('chi_thang', '')
+            mua_hanh = CHI_NGU_HANH.get(chi_thang, '')
+            if the_quai_hanh_str and mua_hanh:
+                if the_quai_hanh_str == mua_hanh:
+                    the_vuong_suy = 'VƯỢNG (đương lệnh)'
+                elif SINH.get(mua_hanh) == the_quai_hanh_str:
+                    the_vuong_suy = 'TƯỚNG (được sinh)'
+                elif SINH.get(the_quai_hanh_str) == mua_hanh:
+                    the_vuong_suy = 'HƯU (tiết khí)'
+                elif KHAC.get(the_quai_hanh_str) == mua_hanh:
+                    the_vuong_suy = 'TÙ (bị tiết)'
+                elif KHAC.get(mua_hanh) == the_quai_hanh_str:
+                    the_vuong_suy = 'TỬ (bị khắc)'
+                else:
+                    the_vuong_suy = '?'
+            if dung_quai_hanh_str and mua_hanh:
+                if dung_quai_hanh_str == mua_hanh:
+                    dung_vuong_suy = 'VƯỢNG'
+                elif SINH.get(mua_hanh) == dung_quai_hanh_str:
+                    dung_vuong_suy = 'TƯỚNG'
+                elif SINH.get(dung_quai_hanh_str) == mua_hanh:
+                    dung_vuong_suy = 'HƯU'
+                elif KHAC.get(dung_quai_hanh_str) == mua_hanh:
+                    dung_vuong_suy = 'TÙ'
+                elif KHAC.get(mua_hanh) == dung_quai_hanh_str:
+                    dung_vuong_suy = 'TỬ'
+                else:
+                    dung_vuong_suy = '?'
+            
+            # Thể↔Dụng quan hệ
+            if the_quai_hanh_str and dung_quai_hanh_str:
+                if SINH.get(the_quai_hanh_str) == dung_quai_hanh_str:
+                    the_dung_rel_str = 'sinh'
+                    the_dung_y_nghia_str = 'Thể sinh Dụng → hao tổn, bất lợi cho ta'
+                elif SINH.get(dung_quai_hanh_str) == the_quai_hanh_str:
+                    the_dung_rel_str = 'được sinh'
+                    the_dung_y_nghia_str = 'Dụng sinh Thể → CÁT, thuận lợi'
+                elif KHAC.get(the_quai_hanh_str) == dung_quai_hanh_str:
+                    the_dung_rel_str = 'khắc'
+                    the_dung_y_nghia_str = 'Thể khắc Dụng → ta thắng, CÁT'
+                elif KHAC.get(dung_quai_hanh_str) == the_quai_hanh_str:
+                    the_dung_rel_str = 'bị khắc'
+                    the_dung_y_nghia_str = 'Dụng khắc Thể → ta bị hại, HUNG'
+                elif the_quai_hanh_str == dung_quai_hanh_str:
+                    the_dung_rel_str = 'tỷ hòa'
+                    the_dung_y_nghia_str = 'Thể Dụng đồng hành → hòa hợp, bình thường'
+        
+        # --- ĐẠI LỤC NHÂM: Tam Truyền ---
+        so_truyen = '?'
+        trung_truyen = '?'
+        mat_truyen = '?'
+        thien_tuong = '?'
+        tu_khoa = 'N/A'
+        can_chi_lac_cung = 'N/A'
+        
+        # (DLN data is extracted in v24_km_factors if available)
+        
+        # --- THIẾT BẢN + THÁI ẤT ---
+        nap_am_ten = '?'
+        nap_am_hanh = '?'
+        nap_am_giai_thich = ''
+        chu_khach = '?'
+        ta_cuc = '?'
+        
+        # Extract from verdicts/chart_data if available
+        if chart_data and isinstance(chart_data, dict):
+            nap_am_ten = chart_data.get('nap_am', chart_data.get('nap_am_ten', '?'))
+            nap_am_hanh = chart_data.get('nap_am_hanh', '?') 
+            nap_am_giai_thich = chart_data.get('nap_am_giai_thich', '')
+        
         # === Fill template ===
         slots = {
             'question_short': q_short,
             'category_label': category_label,
             'dung_than': dung_than,
             'hanh_dt': hanh_dt,
+            # LỤC HÀO — 16 yếu tố
             'nguyet_lenh': nguyet_lenh or '?',
             'nguyet_tac_dong': nguyet_tac_dong or '?',
             'nhat_than': nhat_than or '?',
@@ -1488,9 +1741,75 @@ class FreeAIHelper:
             'nt_state': nt_state or '?',
             'ky_than': ky_than or '?',
             'kt_state': kt_state or '?',
+            'cuu_than': cuu_than or '?',
+            'cuu_state': cuu_state or '?',
+            'tuan_khong': tuan_khong_str or 'Không',
+            'nguyet_pha': nguyet_pha_str or 'Không',
+            'tham_sinh_vong_khac': tsvk_str or 'Không',
+            'phan_phuc_ngam': phan_phuc_str.strip() or 'Không',
+            'the_state': the_state or '?',
+            'ung_state': ung_state or '?',
+            'bien_hao': bien_hao_str,
+            'dong_hao_list': dong_hao_list_str,
+            'bien_que': bien_que_str or '?',
+            'bien_hao_dt': bien_hao_dt_str or '?',
+            'luc_hop_xung': luc_hop_xung_str,
+            'tam_hop_cuc': tam_hop_cuc_str,
+            'tien_thoai': tien_thoai_str,
+            'phuc_than_info': phuc_than_str,
             'dac_biet': dac_biet_str,
             'lh_raw_score': lh_raw_score,
             'lh_pct': lh_raw,
+            # KỲ MÔN — 14 yếu tố
+            'cung_dt': cung_dt_str or '?',
+            'cung_dt_hanh': cung_dt_hanh_str or '?',
+            'sao_dt': sao_dt_str or '?',
+            'cua_dt': cua_dt_str or '?',
+            'than_dt': than_dt_str or '?',
+            'truc_phu': truc_phu or '?',
+            'truc_su': truc_su or '?',
+            'khong_vong_km': khong_vong_km or '?',
+            'ma_tinh': ma_tinh or '?',
+            'tam_ky': tam_ky,
+            'km_cuc': km_cuc or '?',
+            'am_duong_don': am_duong_don or '?',
+            'tu_tru': tu_tru or '?',
+            'cung_bt': cung_bt_str or '?',
+            'cung_sv': cung_sv_str or '?',
+            'bt_sv_rel': bt_sv_rel_str or '?',
+            'dia_ban_dt': dia_ban_dt_str or '?',
+            'km_phan_phuc': km_phan_phuc_str,
+            # MAI HOA — 10 yếu tố
+            'the_quai': the_quai_str or '?',
+            'the_quai_hanh': the_quai_hanh_str or '?',
+            'the_vuong_suy': the_vuong_suy or '?',
+            'dung_quai': dung_quai_str or '?',
+            'dung_quai_hanh': dung_quai_hanh_str or '?',
+            'dung_vuong_suy': dung_vuong_suy or '?',
+            'ho_quai': ho_quai_str or '?',
+            'bien_quai_mh': bien_quai_mh_str or '?',
+            'the_dung_rel': the_dung_rel_str or '?',
+            'the_dung_y_nghia': the_dung_y_nghia_str or '?',
+            'ho_the_rel': ho_the_rel_str or 'N/A',
+            'ho_the_y_nghia': ho_the_y_nghia_str or 'N/A',
+            'ho_dung_rel': ho_dung_rel_str or 'N/A',
+            'ho_dung_y_nghia': ho_dung_y_nghia_str or 'N/A',
+            'dong_hao_mh': dong_hao_mh_str,
+            'mh_interpretation': mh_interpretation_str or '?',
+            # ĐAI LỤC NHÂM — 7 yếu tố
+            'so_truyen': so_truyen,
+            'trung_truyen': trung_truyen,
+            'mat_truyen': mat_truyen,
+            'thien_tuong': thien_tuong,
+            'tu_khoa': tu_khoa,
+            'can_chi_lac_cung': can_chi_lac_cung,
+            # THIẾT BẢN + THÁI ẤT — 5 yếu tố
+            'nap_am_ten': nap_am_ten,
+            'nap_am_hanh': nap_am_hanh,
+            'nap_am_giai_thich': nap_am_giai_thich or '?',
+            'chu_khach': chu_khach,
+            'ta_cuc': ta_cuc,
+            # ĐÁNH GIÁ TỔNG HỢP
             'chi_reference': chi_ref or '?',
             'ts_stage': ts_stage or 'N/A',
             'ts_icon': ts_icon,
