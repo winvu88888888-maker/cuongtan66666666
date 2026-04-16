@@ -237,7 +237,7 @@ DIAGRAMS = {
                      'nợ', 'lãi', 'lỗ', 'vốn', 'kinh doanh', 'buôn bán', 'cổ phiếu', 'crypto'],
         'template': """
 ┌─── SĐ6: TÀI LỘC ────────────────────────────────┐
-│  DT = Thê Tài ({hanh_dt})                        │
+│  DT = {dung_than} ({hanh_dt})                     │
 │  ThêTài: {the_tai_state}                          │
 │  HuynhĐệ: {huynh_de_state} (cướp tài)           │
 │  TửTôn: {tu_ton_state} (sinh tài)                │
@@ -306,7 +306,7 @@ DIAGRAMS = {
                      'xin việc', 'nghỉ việc', 'hợp đồng', 'sự nghiệp', 'khởi nghiệp'],
         'template': """
 ┌─── SĐ9: CÔNG VIỆC ───────────────────────────────┐
-│  DT = Quan Quỷ ({hanh_dt})                       │
+│  DT = {dung_than} ({hanh_dt})                       │
 │  QuanQuỷ: {quan_quy_state}                       │
 │  PhụMẫu: {phu_mau_state} (bảo trợ)              │
 │  DT Trì Thế: {dt_tri_the}                        │

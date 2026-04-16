@@ -113,7 +113,7 @@ try:
     from interaction_diagrams import (
         DIAGRAM_MASTER, DIAGRAMS as INTERACTION_DIAGRAMS, 
         match_question_to_diagram, CUNG_PHUONG, QUAI_NGUOI, KY_THAN_NGUYEN_NHAN,
-        split_compound_question, format_parsed_questions, clean_question,
+        clean_question,
     )
 except ImportError:
     DIAGRAM_MASTER = None
@@ -122,9 +122,19 @@ except ImportError:
     CUNG_PHUONG = {}
     QUAI_NGUOI = {}
     KY_THAN_NGUYEN_NHAN = {}
-    def split_compound_question(q): return []
-    def format_parsed_questions(lst): return ""
     def clean_question(q): return q.strip() if q else ""
+
+# V32.5: Smart Question Parser — Grammar-based DT determination
+try:
+    from question_parser import (
+        parse_question as v32_parse_question,
+        format_parsed_questions_v2,
+        analyze_question,
+    )
+except ImportError:
+    def v32_parse_question(q): return []
+    def format_parsed_questions_v2(lst): return ""
+    def analyze_question(q): return None
 
 # V32.0: Vạn Vật Lazy-Load Package — AI chỉ load hành cần thiết
 try:
@@ -6894,40 +6904,46 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # ═══════════════════════════════════════════════════
-        # V31.1: PHÂN TÁCH CÂU HỎI PHỨC HỢP
+        # V32.5: PHÂN TÁCH + NGỮ PHÁP CÂU HỎI (Grammar-based DT)
         # ═══════════════════════════════════════════════════
         v31_parsed_questions = []
         v31_primary = None  # Câu hỏi chính (dùng để xác định DT)
         category_label = cat_data['label']
         
         try:
-            v31_parsed_questions = split_compound_question(question)
+            v31_parsed_questions = v32_parse_question(question)
             if v31_parsed_questions and len(v31_parsed_questions) >= 1:
                 v31_primary = v31_parsed_questions[0]
                 
-                # Override DT từ parser nếu phát hiện hỏi cho người khác
-                # VD: "bố tôi bệnh" → DT = Phụ Mẫu (parser detect "bố")
-                if v31_primary.get('person') and v31_primary.get('dung_than'):
-                    parser_dt = v31_primary['dung_than']
-                    if parser_dt != 'Bản Thân':
-                        dung_than = parser_dt
-                        self.log_step("V31.1 Parser", "DT_OVERRIDE", 
-                                      f"Hỏi cho {v31_primary['person']} → DT={parser_dt}")
+                # V32.5: Override DT từ grammar analyzer — chính xác hơn keyword
+                # Grammar phân biệt: hỏi CHO (bố bệnh) vs hỏi VỀ (người yêu tốt không)
+                parser_dt = v31_primary.get('dung_than')
+                if parser_dt and parser_dt != 'Bản Thân':
+                    dung_than = parser_dt
+                    focus = v31_primary.get('inquiry_focus', '')
+                    purpose = v31_primary.get('ask_purpose', 'CHO')
+                    reason = v31_primary.get('dung_than_reason', '')
+                    self.log_step("V32.5 Grammar", "DT_OVERRIDE", 
+                                  f"Hỏi {purpose} {focus} → DT={parser_dt} | {reason[:60]}")
                 
-                # Hiển thị bảng phân tách nếu > 1 câu hỏi
+                # Hiển thị bảng phân tách
                 if len(v31_parsed_questions) > 1:
-                    parsed_table = format_parsed_questions(v31_parsed_questions)
+                    parsed_table = format_parsed_questions_v2(v31_parsed_questions)
                     if parsed_table:
                         sections.append(parsed_table)
                         sections.append("")
                 elif len(v31_parsed_questions) == 1:
-                    # 1 câu hỏi → vẫn hiển thị phân tích
                     pq = v31_parsed_questions[0]
-                    person_info = f" | Hỏi cho: **{pq['person']}**" if pq.get('person') else ""
-                    sections.append(f"📋 **Phân loại:** {pq['qtype_label']} — {pq['topic_label']}{person_info} — Sơ đồ: {pq['diagram_id']}")
+                    focus = pq.get('inquiry_focus', pq.get('person', 'Bản thân'))
+                    purpose = pq.get('ask_purpose', '?')
+                    person_info = f" | Hỏi {purpose}: **{focus}**" if focus else ""
+                    dt_reason = pq.get('dung_than_reason', '')
+                    sections.append(f"📋 **Phân loại:** {pq['qtype_label']} — {pq['topic_label']}{person_info} — DT: {pq['dung_than']} — SĐ: {pq['diagram_id']}")
+                    if dt_reason:
+                        sections.append(f"└─ *{dt_reason[:100]}*")
                     sections.append("")
         except Exception as e:
-            self.log_step("V31.1 Parser", "ERROR", str(e)[:80])
+            self.log_step("V32.5 Grammar", "ERROR", str(e)[:80])
         
         # BƯỚC 1: DỤNG THẦN & CHỦ ĐỀ
         sections.append(f"### BƯỚC 1 — DỤNG THẦN & CHỦ ĐỀ")
@@ -10146,7 +10162,17 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         return self.answer_question("Phân tích tổng quan", chart_data=chart_data, topic=topic)
 
     def analyze_luc_hao(self, luc_hao_res, topic="Chung"):
-        section, verdict, _, _reason, _cnt = self._analyze_luc_hao_full(luc_hao_res, _get_dung_than(topic), False)
+        # V32.5: Dùng grammar parser nếu có, fallback sang _get_dung_than
+        dt = 'Quan Quỷ'
+        try:
+            parsed = v32_parse_question(topic)
+            if parsed and parsed[0].get('dung_than'):
+                dt = parsed[0]['dung_than']
+            else:
+                dt = _get_dung_than(topic)
+        except Exception:
+            dt = _get_dung_than(topic)
+        section, verdict, _, _reason, _cnt = self._analyze_luc_hao_full(luc_hao_res, dt, False)
         return f"### ☯️ Luận Giải Lục Hào — Offline V8.0\n**Chủ đề:** {topic}\n\n{section}\n→ Kết luận: **{verdict}**"
 
     def analyze_mai_hoa(self, mai_hoa_res, topic="Chung"):
