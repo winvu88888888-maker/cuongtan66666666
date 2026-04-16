@@ -228,9 +228,10 @@ QTYPE_RULES = [
     },
     # CHỌN
     {
-        'keywords': ['nên chọn', 'cái nào tốt hơn', 'chọn cái nào', 
-                     'cái nào', 'hay là', 'A hay B',
-                     'nào tốt nhất', 'nào tốt hơn'],
+        'keywords': ['nên chọn', 'chọn cái nào', 'cái nào tốt hơn',
+                     'cái nào', 'hay là', 'a hay b', 'chọn',
+                     'nào tốt nhất', 'nào tốt hơn', 'nên mua',
+                     'nên đi', 'bên nào', 'nào hơn'],
         'qtype': 'CHỌN',
         'diagram_id': 'SD16',
         'label': '⚖️ CHỌN',
