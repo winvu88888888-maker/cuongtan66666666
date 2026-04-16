@@ -6904,14 +6904,26 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 dt_name = _get_dung_than(question)
                 hanh_dt = cd.get('hanh_dt', 'Thổ')
             
-            # Chi → Tháng Âm Lịch mapping
+            # Chi → Tháng Âm Lịch
             CHI_THANG = {
-                'Dần': 'tháng Giêng (T1 ÂL)', 'Mão': 'tháng 2 ÂL',
-                'Thìn': 'tháng 3 ÂL', 'Tị': 'tháng 4 ÂL', 
-                'Ngọ': 'tháng 5 ÂL', 'Mùi': 'tháng 6 ÂL',
-                'Thân': 'tháng 7 ÂL', 'Dậu': 'tháng 8 ÂL',
-                'Tuất': 'tháng 9 ÂL', 'Hợi': 'tháng 10 ÂL',
-                'Tý': 'tháng 11 ÂL', 'Sửu': 'tháng 12 ÂL',
+                'Dần': 'T1 ÂL (Giêng)', 'Mão': 'T2 ÂL', 'Thìn': 'T3 ÂL',
+                'Tị': 'T4 ÂL', 'Ngọ': 'T5 ÂL', 'Mùi': 'T6 ÂL',
+                'Thân': 'T7 ÂL', 'Dậu': 'T8 ÂL', 'Tuất': 'T9 ÂL',
+                'Hợi': 'T10 ÂL', 'Tý': 'T11 ÂL', 'Sửu': 'T12 ÂL',
+            }
+            # Chi → Giờ (12 thời thần)
+            CHI_GIO = {
+                'Tý': '23h-1h', 'Sửu': '1h-3h', 'Dần': '3h-5h',
+                'Mão': '5h-7h', 'Thìn': '7h-9h', 'Tị': '9h-11h',
+                'Ngọ': '11h-13h', 'Mùi': '13h-15h', 'Thân': '15h-17h',
+                'Dậu': '17h-19h', 'Tuất': '19h-21h', 'Hợi': '21h-23h',
+            }
+            # Chi → Năm gần nhất (từ 2024-2036)
+            CHI_NAM = {
+                'Tý': [2024, 2036], 'Sửu': [2025, 2037], 'Dần': [2026, 2038],
+                'Mão': [2027, 2039], 'Thìn': [2028, 2040], 'Tị': [2029, 2041],
+                'Ngọ': [2030, 2042], 'Mùi': [2031, 2043], 'Thân': [2032, 2044],
+                'Dậu': [2033, 2045], 'Tuất': [2034, 2046], 'Hợi': [2035, 2047],
             }
             
             # Ngũ Hành → Chi ứng kỳ
@@ -6919,41 +6931,54 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 'Kim': ['Thân', 'Dậu'], 'Mộc': ['Dần', 'Mão'], 'Thủy': ['Tý', 'Hợi'],
                 'Hỏa': ['Ngọ', 'Tị'], 'Thổ': ['Thìn', 'Tuất', 'Sửu', 'Mùi']
             }
+            SINH_MAP = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
             
-            # Tính ứng kỳ
-            chi_list = UNG_KY_CHI.get(hanh_dt, [])
-            thang_list = [CHI_THANG.get(c, c) for c in chi_list]
+            # Xác định Chi dùng (CÁT=vượng, HUNG=sinh)
+            if final_verdict == 'CÁT' or pct >= 55:
+                chi_dung = UNG_KY_CHI.get(hanh_dt, [])
+                ly_do = f"hành {hanh_dt} vượng"
+            else:
+                hanh_sinh = SINH_MAP.get(hanh_dt, '')
+                chi_dung = UNG_KY_CHI.get(hanh_sinh, [])
+                ly_do = f"hành {hanh_sinh} sinh {hanh_dt}"
             
             ung_ky_text = _get_ung_ky(hanh_dt, final_verdict) if hanh_dt else ''
             
+            # Build bảng Năm-Tháng-Ngày-Giờ
+            def _build_timing_table(chi_list):
+                """Sinh bảng ứng kỳ đầy đủ từ danh sách Chi"""
+                import datetime
+                now_year = datetime.datetime.now().year
+                result = []
+                for chi in chi_list:
+                    thang = CHI_THANG.get(chi, '?')
+                    gio = CHI_GIO.get(chi, '?')
+                    nam_list = CHI_NAM.get(chi, [])
+                    # Lấy năm gần nhất >= năm hiện tại
+                    nam_gan = [n for n in nam_list if n >= now_year]
+                    nam_str = str(nam_gan[0]) if nam_gan else str(nam_list[0]) if nam_list else '?'
+                    result.append({
+                        'chi': chi, 'thang': thang, 'gio': gio, 'nam': nam_str
+                    })
+                return result
+            
+            timing = _build_timing_table(chi_dung)
+            
             if final_verdict == 'CÁT' or pct >= 55:
                 lines.append(f"\n{icon} **CÂU TRẢ LỜI: SẮP TỚI — Thuận lợi ({pct}%)**")
-                if chi_list:
-                    lines.append(f"\n📅 **Ứng Kỳ cụ thể (DT hành {hanh_dt}):**")
-                    lines.append(f"- Ngày/tháng có Chi: **{' hoặc '.join(chi_list)}**")
-                    lines.append(f"- Tương ứng: **{', '.join(thang_list)}**")
-                    lines.append(f"- {ung_ky_text}")
-                lines.append(f"- 💡 Thời điểm hiện tại đã thuận, hành động trong vòng Chi vượng.")
             elif pct <= 40:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CHƯA TỚI THỜI ({pct}%)**")
-                # Hung → chờ hành sinh
-                SINH_MAP = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
-                hanh_sinh = SINH_MAP.get(hanh_dt, '')
-                chi_sinh = UNG_KY_CHI.get(hanh_sinh, [])
-                thang_sinh = [CHI_THANG.get(c, c) for c in chi_sinh]
-                if chi_sinh:
-                    lines.append(f"\n📅 **Chờ đến khi có Chi sinh {hanh_dt} (hành {hanh_sinh}):**")
-                    lines.append(f"- Chi chờ: **{' hoặc '.join(chi_sinh)}**")
-                    lines.append(f"- Tương ứng: **{', '.join(thang_sinh)}**")
-                    lines.append(f"- {ung_ky_text}")
-                lines.append(f"- ⚠️ Hiện tại chưa thuận, cần chờ vận khí chuyển.")
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CHƯA TỚI THỜI ({pct}%) — chờ Chi sinh**")
             else:
                 lines.append(f"\n🟡 **CÂU TRẢ LỜI: TRONG 1-3 THÁNG TỚI ({pct}%)**")
-                if chi_list:
-                    lines.append(f"\n📅 **Ứng Kỳ dự kiến (DT hành {hanh_dt}):**")
-                    lines.append(f"- Ngày/tháng Chi: **{' hoặc '.join(chi_list)}**")
-                    lines.append(f"- Tương ứng: **{', '.join(thang_list)}**")
-                lines.append(f"- 💡 Cần chuẩn bị sẵn, hành động khi Chi hợp.")
+            
+            if timing:
+                lines.append(f"\n📅 **ỨNG KỲ CHI TIẾT (DT hành {hanh_dt} — {ly_do}):**")
+                lines.append(f"| Chi | Năm | Tháng | Giờ |")
+                lines.append(f"|:---:|:---:|:------|:---:|")
+                for t in timing:
+                    lines.append(f"| **{t['chi']}** | {t['nam']} | {t['thang']} | {t['gio']} |")
+                lines.append(f"\n- 📌 {ung_ky_text}")
+                lines.append(f"- 💡 Ưu tiên: **tháng** > ngày > giờ (tháng ảnh hưởng lớn nhất)")
         
         # TUỔI
         elif any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
