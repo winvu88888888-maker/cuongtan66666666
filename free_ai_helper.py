@@ -1414,10 +1414,18 @@ class FreeAIHelper:
         if chart_data:
             can_ngay = chart_data.get('can_ngay', '')
             can_thien_ban = chart_data.get('can_thien_ban', {})
+            # Giáp/Kỷ ký tại Mậu/Kỷ
+            _can_proxy = can_ngay
+            if can_ngay == 'Giáp': _can_proxy = 'Mậu'
+            elif can_ngay == 'Kỷ': _can_proxy = 'Kỷ'
             for c_num, c_can in can_thien_ban.items():
-                if c_can == can_ngay:
+                if c_can == _can_proxy:
                     cung_hanh = CUNG_NGU_HANH.get(int(c_num), '?') if c_num else '?'
                     break
+            if not cung_hanh or cung_hanh == '?':
+                # Fallback: dùng chi_ngay hành
+                _chi_ngay = chart_data.get('chi_ngay', '')
+                cung_hanh = CHI_NGU_HANH.get(_chi_ngay, '?')
         
         # LH factors -> extract NT, KT, Nguyệt, Nhật
         nguyet_lenh = ''
@@ -1626,7 +1634,11 @@ class FreeAIHelper:
             # Mã Tinh
             ma = chart_data.get('ma', {})
             if ma:
-                ma_tinh = f"Giờ:{ma.get('gio','?')} Ngày:{ma.get('ngay','?')} Tháng:{ma.get('thang','?')} Năm:{ma.get('nam','?')}"
+                ma_tinh = f"Giờ:{ma.get('gio','N/A')} Ngày:{ma.get('ngay','N/A')}"
+                _ma_thang = ma.get('thang', '')
+                _ma_nam = ma.get('nam', '')
+                if _ma_thang: ma_tinh += f" Tháng:{_ma_thang}"
+                if _ma_nam: ma_tinh += f" Năm:{_ma_nam}"
             
             # Tam Kỳ (Ất/Bính/Đinh)
             can_ngay_km = chart_data.get('can_ngay', '')
@@ -1924,6 +1936,117 @@ class FreeAIHelper:
                 ta_cuc = 'Không có cách cục đặc biệt'
         except Exception:
             pass
+        
+        # === V33.1: FIX ALL REMAINING '?' SLOTS ===
+        
+        # --- 1) NHẬT THẦN: extract từ chart_data nếu v23 không có ---
+        if (not nhat_than or nhat_than == '?') and chart_data:
+            _nt_can = chart_data.get('can_ngay', '')
+            _nt_chi = chart_data.get('chi_ngay', '')
+            if _nt_can and _nt_chi:
+                nhat_than = f"{_nt_chi}/{CHI_NGU_HANH.get(_nt_chi, '?')}"
+                # Tính tác động: Nhật Thần hành vs DT hành
+                _nt_hanh = CHI_NGU_HANH.get(_nt_chi, '')
+                if _nt_hanh and hanh_dt:
+                    if _nt_hanh == hanh_dt: nhat_tac_dong = 'tỷ hòa'
+                    elif SINH.get(_nt_hanh) == hanh_dt: nhat_tac_dong = 'sinh'
+                    elif KHAC.get(_nt_hanh) == hanh_dt: nhat_tac_dong = 'khắc'
+                    elif SINH.get(hanh_dt) == _nt_hanh: nhat_tac_dong = 'bị tiết'
+                    elif KHAC.get(hanh_dt) == _nt_hanh: nhat_tac_dong = 'bị khắc'
+                    else: nhat_tac_dong = 'không tác động'
+        
+        # --- 2) THẾ/ỨNG: extract vượng suy từ luc_hao_data ---
+        if (not the_state or the_state == '?') and luc_hao_data and isinstance(luc_hao_data, dict):
+            ban = luc_hao_data.get('ban', {})
+            haos = ban.get('haos', [])
+            for hao in haos:
+                if isinstance(hao, dict):
+                    _tu = hao.get('the_ung', '')
+                    if _tu == 'Thế':
+                        _vs = hao.get('vuong_suy', '?')
+                        _lt = hao.get('luc_than', '?')
+                        _chi = hao.get('chi', '?')
+                        the_state = f"{_lt}({_chi}) {_vs}"
+                    elif _tu == 'Ứng':
+                        _vs = hao.get('vuong_suy', '?')
+                        _lt = hao.get('luc_than', '?')
+                        _chi = hao.get('chi', '?')
+                        ung_state = f"{_lt}({_chi}) {_vs}"
+        
+        # --- 3) CỬU THẦN: Cửu Thần = hành khắc Kỵ Thần ---
+        if (not cuu_than or cuu_than == '?') and ky_than:
+            _kt_hanh = ky_than  # ky_than đã là hành (VD: 'Thủy')
+            if _kt_hanh in KHAC:
+                # Cửu Thần khắc Kỵ Thần → tìm hành khắc KT
+                for _h, _k in KHAC.items():
+                    if _k == _kt_hanh:
+                        cuu_than = _h
+                        cuu_state = 'Hỗ trợ DT'
+                        break
+        
+        # --- 4) NẠP ÂM GIẢI THÍCH ---
+        if (not nap_am_giai_thich or nap_am_giai_thich == '?') and nap_am_ten and nap_am_ten != '?':
+            _NAP_AM_GIAI = {
+                'Hải Trung Kim': 'Vàng trong biển — tiềm ẩn, chưa lộ',
+                'Lô Trung Hỏa': 'Lửa trong lò — sức mạnh kiểm soát',
+                'Đại Lâm Mộc': 'Cây rừng lớn — vững chắc, che chở',
+                'Lộ Bàng Thổ': 'Đất bên đường — khiêm tốn, phổ thông',
+                'Kiếm Phong Kim': 'Vàng mũi kiếm — sắc bén, quyết đoán',
+                'Sơn Đầu Hỏa': 'Lửa trên núi — tỏa sáng, uy nghi',
+                'Giản Hạ Thủy': 'Nước khe suối — linh hoạt, trong sáng',
+                'Thành Đầu Thổ': 'Đất trên thành — vững chãi, bảo vệ',
+                'Bạch Lạp Kim': 'Vàng sáp trắng — mềm dẻo, tinh tế',
+                'Dương Liễu Mộc': 'Cây dương liễu — mềm mại, uyển chuyển',
+                'Tuyền Trung Thủy': 'Nước trong suối — thanh tịnh, ẩn giấu',
+                'Ốc Thượng Thổ': 'Đất trên mái — cao sang, bền vững',
+                'Bích Thượng Thổ': 'Đất trên tường — kiên cố, bảo vệ',
+                'Kim Bạc Kim': 'Vàng lá mỏng — quý nhưng mỏng manh',
+                'Phú Đăng Hỏa': 'Lửa đèn dầu — nhỏ nhưng sáng',
+                'Thiên Hà Thủy': 'Nước sông Ngân — may mắn, quý hiếm',
+                'Đại Dịch Thổ': 'Đất trạm dịch — rộng lớn, phát triển',
+                'Thoa Xuyến Kim': 'Vàng trang sức — đẹp đẽ, giá trị',
+                'Tang Đố Mộc': 'Gỗ cây dâu — cứng cáp, hữu dụng',
+                'Đại Khê Thủy': 'Nước suối lớn — dồi dào, thuận lợi',
+                'Sa Trung Thổ': 'Đất trong cát — mong manh, bất ổn',
+                'Thiên Thượng Hỏa': 'Lửa trên trời — mạnh mẽ, tỏa sáng',
+                'Thạch Lựu Mộc': 'Cây lựu đá — cứng cáp, sống dai',
+                'Đại Hải Thủy': 'Nước biển lớn — bao la, khó kiểm soát',
+                'Sa Trung Kim': 'Vàng trong cát — tiềm ẩn giá trị',
+                'Sơn Hạ Hỏa': 'Lửa dưới núi — âm ỉ, tiềm tàng',
+                'Bình Địa Mộc': 'Cây đồng bằng — thẳng thắn, phát triển',
+                'Trường Lưu Thủy': 'Nước chảy dài — bền bỉ, kiên trì',
+                'Tích Lịch Hỏa': 'Lửa sấm sét — bùng nổ, mãnh liệt',
+                'Tùng Bách Mộc': 'Cây tùng bách — trường thọ, kiên cường',
+            }
+            nap_am_giai_thich = _NAP_AM_GIAI.get(nap_am_ten, f'{nap_am_ten} — {nap_am_hanh}')
+        
+        # --- 5) VẠN VẬT CỤ THỂ FALLBACK ---
+        if not vv_cu_the or all(v == '?' for v in vv_cu_the.values() if isinstance(v, str)):
+            _VV_FALLBACK = {
+                'Kim': {'do_vat': 'Dao, kéo, kim loại, trang sức', 'nha_cua': 'Nhà kiên cố, tường cao',
+                        'nguoi': 'Người cương nghị, quyết đoán', 'benh': 'Phổi, hô hấp, xương'},
+                'Mộc': {'do_vat': 'Sách, vải, đồ gỗ, cây cối', 'nha_cua': 'Nhà gỗ, gần cây xanh',
+                        'nguoi': 'Người nhân từ, thanh cao', 'benh': 'Gan, mật, gân cốt'},
+                'Thủy': {'do_vat': 'Nước, rượu, mực, đồ lỏng', 'nha_cua': 'Nhà gần sông, ao hồ',
+                        'nguoi': 'Người thông minh, linh hoạt', 'benh': 'Thận, bàng quang, tai'},
+                'Hỏa': {'do_vat': 'Đèn, lửa, điện tử, sách vở', 'nha_cua': 'Nhà hướng Nam, nhiều ánh sáng',
+                        'nguoi': 'Người sôi nổi, nhiệt tình', 'benh': 'Tim, mắt, huyết áp'},
+                'Thổ': {'do_vat': 'Gạch, đá, gốm sứ, xi măng', 'nha_cua': 'Nhà trệt, nền đất rộng',
+                        'nguoi': 'Người trung thực, đáng tin', 'benh': 'Dạ dày, tỳ vị, cơ bắp'},
+            }
+            _fb = _VV_FALLBACK.get(hanh_dt, {})
+            if _fb:
+                vv_cu_the = _fb
+        
+        # --- 6) VẠN VẬT MAPPING FALLBACK ---  
+        _VV_TIER_MAPPING = {
+            'VƯỢNG': {'kich_thuoc': 'Lớn', 'tinh_trang': 'Mới, tốt', 'so_luong': 'Nhiều', 'chat_luong': 'Cao', 'con_nguoi': 'Khỏe mạnh, thành đạt'},
+            'TRUNG BÌNH': {'kich_thuoc': 'Vừa', 'tinh_trang': 'Bình thường', 'so_luong': 'Vừa phải', 'chat_luong': 'Trung bình', 'con_nguoi': 'Bình thường, ổn định'},
+            'SUY': {'kich_thuoc': 'Nhỏ', 'tinh_trang': 'Cũ, hỏng', 'so_luong': 'Ít', 'chat_luong': 'Thấp', 'con_nguoi': 'Yếu, khó khăn'},
+        }
+        _tier_key = tier_cap if tier_cap in _VV_TIER_MAPPING else 'TRUNG BÌNH'
+        if not vv_mapping or all(vv_mapping.get(k) in ('?', None, '') for k in ['kich_thuoc', 'tinh_trang']):
+            vv_mapping = _VV_TIER_MAPPING.get(_tier_key, {})
         
         # === Fill template ===
         slots = {
