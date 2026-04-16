@@ -449,8 +449,9 @@ def _get_dung_than(question):
         ('vàng', 'Thê Tài'), ('nợ', 'Thê Tài'),
         ('vợ', 'Thê Tài'), ('crypto', 'Thê Tài'), ('coin', 'Thê Tài'),
 
-        # Quan Quỷ — chồng (nữ hỏi), sếp, đối tác
-        ('đối tác', 'Quan Quỷ'), ('khách hàng', 'Quan Quỷ'),
+        ('thi công chức', 'Phụ Mẫu'),  # thi = giáo dục, thắng công chức
+        # Quan Quỷ — chồng (nữ hỏi), sếp, đối tác, tranh chấp
+        ('tranh chấp', 'Quan Quỷ'), ('đối tác', 'Quan Quỷ'), ('khách hàng', 'Quan Quỷ'),
         ('công chức', 'Quan Quỷ'), ('công an', 'Quan Quỷ'), ('quân đội', 'Quan Quỷ'),
         ('chồng', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'),
 
