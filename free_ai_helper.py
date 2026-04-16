@@ -168,6 +168,14 @@ CUA_HUNG = ['Tử', 'Kinh', 'Thương']
 # Bảng Dụng Thần — V34.1 CHUẨN THEO VẠN VẬT LOẠI TƯỢNG (6 nguồn uy tín)
 # Nguồn: kinhdichluchao.vn, tusachxua.com, tuviglobal.com, zhycw.com, yixiangqiankun.com
 DUNG_THAN_MAP = {
+    # ═══ PRIORITY 0: Cụm từ dài nhất (edge cases) ═══
+    'bố tôi': 'Phụ Mẫu', 'mẹ tôi': 'Phụ Mẫu', 'cha tôi': 'Phụ Mẫu',
+    'bố mình': 'Phụ Mẫu', 'mẹ mình': 'Phụ Mẫu',
+    'mẹ bệnh': 'Phụ Mẫu', 'bố bệnh': 'Phụ Mẫu', 'mẹ ốm': 'Phụ Mẫu',
+    'chồng có ngoại tình': 'Quan Quỷ', 'chồng ngoại tình': 'Quan Quỷ',
+    'chồng có': 'Quan Quỷ', 'chồng bệnh': 'Quan Quỷ', 'chồng đi': 'Quan Quỷ',
+    'chó nhà': 'Tử Tôn', 'chó mèo': 'Tử Tôn', 'con chó': 'Tử Tôn', 'con mèo': 'Tử Tôn',
+    
     # ═══ PRIORITY 1: Cụm từ dài (match trước — longest first) ═══
     # --- Phụ Mẫu: Che chở, văn thư, phương tiện, trang phục, bề trên ---
     'bất động sản': 'Phụ Mẫu', 'nhà đất': 'Phụ Mẫu', 'căn hộ': 'Phụ Mẫu',
