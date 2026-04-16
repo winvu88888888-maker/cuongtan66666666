@@ -6715,17 +6715,77 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                                  ky_mon_reason, luc_hao_reason, mai_hoa_reason,
                                  age_numbers=None, count_numbers=None, chart_data=None):
         """
-        V10.0: Sinh câu trả lời TRỰC TIẾP dựa trên phân tích thực,
-        KHÔNG dùng mẫu cứng theo keyword.
+        V34.4: Sinh câu trả lời TRỰC TIẾP + THÁM TỬ KIỂM CHỨNG.
+        - Bước 1: THÁM TỬ kiểm tra % có đúng ko
+        - Bước 2: Xác định DẠNG câu hỏi (CÓ/KHÔNG, AI, CÁI GÌ, THẾ NÀO, Ở ĐÂU, KHI NÀO...)
+        - Bước 3: Trả lời LINH HOẠT dựa trên Vạn Vật Loại Tượng
         """
         q = question.lower()
         lines = []
         
         lines.append(f"\n**❓ Câu hỏi của bạn:** {question}")
         
-        # Tổng kết bằng chứng CỤ THỂ từ quẻ
+        # ═══════════════════════════════════════════════
+        # BƯỚC 1: THÁM TỬ KIỂM CHỨNG (Detective Validator)
+        # ═══════════════════════════════════════════════
+        detective_issues = []
+        
+        # Check 1: pct phải nằm trong 5-95
+        if pct < 5 or pct > 95:
+            detective_issues.append(f"⚠️ pct={pct}% ngoài phạm vi [5,95]")
+            pct = max(5, min(95, pct))
+        
+        # Check 2: verdict phải khớp với pct
+        if final_verdict == 'CÁT' and pct < 55:
+            detective_issues.append(f"⚠️ verdict=CÁT nhưng pct={pct}%<55 → chỉnh verdict=BÌNH")
+            final_verdict = 'BÌNH'
+        elif final_verdict == 'HUNG' and pct > 50:
+            detective_issues.append(f"⚠️ verdict=HUNG nhưng pct={pct}%>50 → chỉnh verdict=BÌNH")
+            final_verdict = 'BÌNH'
+        
+        # Check 3: evidence phải có ít nhất 1 bằng chứng
+        if not evidence:
+            detective_issues.append(f"⚠️ Không có bằng chứng → dùng pct={pct}% làm cơ sở")
+        
+        # Check 4: Recalculate pct dựa trên good/bad impacts
         good_impacts = [i for i in impacts if i.startswith('✅')]
         bad_impacts = [i for i in impacts if i.startswith('🔴') or i.startswith('⚠️')]
+        total_impacts = len(good_impacts) + len(bad_impacts)
+        
+        if total_impacts >= 3:
+            impact_ratio = len(good_impacts) / total_impacts
+            impact_pct = int(impact_ratio * 100)
+            # Nếu pct và impact_pct chênh nhau > 25% → cảnh báo
+            if abs(pct - impact_pct) > 25:
+                detective_issues.append(
+                    f"⚠️ pct={pct}% vs impact={impact_pct}% (chênh {abs(pct-impact_pct)}%)"
+                    f" → điều chỉnh pct = trung bình"
+                )
+                pct = (pct + impact_pct) // 2
+                # Re-check verdict
+                if pct >= 60:
+                    final_verdict = 'CÁT'
+                elif pct <= 45:
+                    final_verdict = 'HUNG'
+                else:
+                    final_verdict = 'BÌNH'
+        
+        if detective_issues:
+            lines.append(f"\n**🔍 THÁM TỬ KIỂM CHỨNG:**")
+            for issue in detective_issues:
+                lines.append(f"- {issue}")
+            lines.append(f"- ✅ Đã hiệu chỉnh → Kết luận dùng pct={pct}%, verdict={final_verdict}")
+        
+        # ═══════════════════════════════════════════════
+        # BƯỚC 2: Lấy Vạn Vật Loại Tượng chi tiết
+        # ═══════════════════════════════════════════════
+        vv_key, vv_data = _get_van_vat_from_pct(pct)
+        
+        # Lấy Bát Quái info từ chart
+        cd = chart_data if isinstance(chart_data, dict) else {}
+        the_quai = cd.get('the_quai', '')
+        dung_quai = cd.get('dung_quai', '')
+        ung_quai = cd.get('ung_quai', '')
         
         # Icon theo verdict
         if final_verdict == 'CÁT':
@@ -6735,11 +6795,75 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         else:
             icon = '🟡'
         
-        # --- Xác định dạng câu hỏi và trả lời QUYẾT ĐOÁN ---
-        # V34.3: KHÔNG BAO GIỜ trả lời "chưa rõ" — luôn nghiêng CÓ hoặc KHÔNG
+        
+        # ═══════════════════════════════════════════════
+        # BƯỚC 3: XÁC ĐỊNH DẠNG CÂU HỎI + TRẢ LỜI LINH HOẠT
+        # ═══════════════════════════════════════════════
+        # V34.4: Không chỉ CÓ/KHÔNG — mà theo ĐÚNG dạng câu hỏi
+        
+        # THẾ NÀO / RA SAO — mô tả chi tiết bằng Vạn Vật Loại Tượng
+        if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'sao rồi']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: {vv_data['cap']} — {dung_than} {vv_key.replace('_',' ')}**")
+            lines.append(f"\n📋 **Mô tả chi tiết (Vạn Vật Loại Tượng):**")
+            lines.append(f"- 👤 Con người: {vv_data.get('con_nguoi', '?')}")
+            lines.append(f"- 📏 Kích thước: {vv_data.get('kich_thuoc', '?')}")
+            lines.append(f"- 🔧 Tình trạng: {vv_data.get('tinh_trang', '?')}")
+            lines.append(f"- 📊 Số lượng: {vv_data.get('so_luong', '?')}")
+            lines.append(f"- 🎨 Chất lượng: {vv_data.get('chat_luong', '?')}")
+            lines.append(f"- ⏱️ Tốc độ: {vv_data.get('toc_do', '?')}")
+            lines.append(f"- 🔢 Số: {vv_data.get('so', '?')}")
+            if pct >= 60:
+                lines.append(f"\n→ Tình hình **THUẬN LỢI** ({pct}%). Xu hướng tốt lên.")
+            elif pct <= 40:
+                lines.append(f"\n→ Tình hình **KHÓ KHĂN** ({pct}%). Cần chú ý, cải thiện.")
+            else:
+                lines.append(f"\n→ Tình hình **TRUNG BÌNH** ({pct}%). Ổn nhưng cần nỗ lực thêm.")
+        
+        # AI / NGƯỜI NÀO — dùng Lục Thân để xác định
+        elif any(k in q for k in ['ai ', 'người nào', 'ai đó', 'người gì', 'người như thế nào']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: Đặc điểm người được hỏi ({dung_than})**")
+            lines.append(f"\n📋 **Mô tả (Vạn Vật Loại Tượng — {vv_key}):**")
+            lines.append(f"- 👤 {vv_data.get('con_nguoi', '?')}")
+            lines.append(f"- 🎨 Màu sắc liên tưởng: {vv_data.get('mau_sac', '?')}")
+            lines.append(f"- 📏 Dáng vóc: {vv_data.get('kich_thuoc', '?')}")
+            lines.append(f"- ⚡ Tâm tính: {'Mạnh mẽ, tự tin' if pct >= 60 else 'Yếu đuối, do dự' if pct <= 40 else 'Trung tính, ổn định'}")
+            if dung_than == 'Quan Quỷ':
+                lines.append(f"- 🏢 Mối quan hệ: Sếp, cấp trên, chồng (nữ), đối tác")
+            elif dung_than == 'Thê Tài':
+                lines.append(f"- 💰 Mối quan hệ: Vợ, người yêu, khách hàng, đối tượng tài chính")
+            elif dung_than == 'Phụ Mẫu':
+                lines.append(f"- 👨‍👩‍👧 Mối quan hệ: Bố mẹ, bề trên, thầy cô, người bảo trợ")
+            elif dung_than == 'Tử Tôn':
+                lines.append(f"- 👶 Mối quan hệ: Con cái, học trò, người dưới quyền")
+            elif dung_than == 'Huynh Đệ':
+                lines.append(f"- 🤝 Mối quan hệ: Anh em, bạn bè, đồng nghiệp, đối thủ")
+        
+        # CÁI GÌ / ĐIỀU GÌ / MUỐN GÌ — phân tích Lục Thân + Hào động
+        elif any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì', 'chuyện gì', 'việc gì']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: Phân tích nội dung sự việc**")
+            lines.append(f"\n📋 **Dựa trên Dụng Thần ({dung_than}) + Vạn Vật Loại Tượng:**")
+            
+            # Map DT → nội dung sự việc
+            dt_noi_dung = {
+                'Phụ Mẫu': 'Liên quan đến NHÀ CỬA, GIẤY TỜ, HỌC HÀNH, hoặc BỐ MẸ/BỀ TRÊN',
+                'Thê Tài': 'Liên quan đến TIỀN BẠC, TÀI SẢN, MUA BÁN, hoặc TÌNH CẢM',
+                'Quan Quỷ': 'Liên quan đến CÔNG VIỆC, BỆNH TẬT, KIỆN TỤNG, hoặc SẾP/CHỒNG',
+                'Tử Tôn': 'Liên quan đến CON CÁI, GIẢI TRÍ, THUỐC MEN, hoặc VẬT NUÔI',
+                'Huynh Đệ': 'Liên quan đến ANH EM, BẠN BÈ, CẠNH TRANH, hoặc TIÊU XÀI',
+            }
+            lines.append(f"- 📌 **Nội dung:** {dt_noi_dung.get(dung_than, 'Chưa xác định')}")
+            lines.append(f"- 📊 **Tình trạng:** {vv_data.get('tinh_trang', '?')}")
+            lines.append(f"- 🎯 **Tính chất:** {vv_data.get('chat_luong', '?')}")
+            lines.append(f"- ⏱️ **Mức độ khẩn:** {vv_data.get('toc_do', '?')}")
+            if pct >= 60:
+                lines.append(f"- 💡 Sự việc có tính chất **TÍCH CỰC**, người đó/việc đó mang lại lợi ích")
+            elif pct <= 40:
+                lines.append(f"- ⚠️ Sự việc có tính chất **TIÊU CỰC**, cần đề phòng và cẩn trọng")
+            else:
+                lines.append(f"- 🔄 Sự việc **TRUNG TÍNH**, tùy thuộc cách xử lý")
         
         # CÓ/KHÔNG ("có nên", "có được", "đỗ không", etc.)
-        if any(k in q for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể',
+        elif any(k in q for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể',
                                  'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
                                  'có không', 'không']):
             if final_verdict == 'CÁT':
