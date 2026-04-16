@@ -1089,30 +1089,58 @@ def format_parsed_questions_v2(parsed_list):
 # Bảng mapping VẬT → Dụng Thần
 # Khi đối tượng hỏi là VẬT (không phải NGƯỜI), DT phụ thuộc vào loại vật
 OBJECT_DT_MAP = {
-    # Tài sản, tiền bạc → Thê Tài
-    'tiền': 'Thê Tài', 'vàng': 'Thê Tài', 'xe': 'Thê Tài',
-    'nhà': 'Thê Tài', 'đất': 'Thê Tài', 'tài sản': 'Thê Tài',
-    'ví': 'Thê Tài', 'điện thoại': 'Thê Tài', 'máy tính': 'Thê Tài',
-    'đồng hồ': 'Thê Tài', 'túi': 'Thê Tài', 'hàng': 'Thê Tài',
-    'vốn': 'Thê Tài', 'lương': 'Thê Tài', 'nợ': 'Thê Tài',
+    # ═══ PHỤ MẪU — Sinh ngã (sinh ra ta) ═══
+    # Che chở, bảo vệ, bao bọc, văn thư, bề trên
+    # Nhà cửa, xe cộ, quần áo (vật che chở/bao bọc)
+    # Giấy tờ, văn bằng, hợp đồng, sách vở
+    'nhà': 'Phụ Mẫu', 'nhà cửa': 'Phụ Mẫu', 'đất': 'Phụ Mẫu',
+    'phòng': 'Phụ Mẫu', 'căn hộ': 'Phụ Mẫu', 'chung cư': 'Phụ Mẫu',
+    'xe': 'Phụ Mẫu', 'xe máy': 'Phụ Mẫu', 'ô tô': 'Phụ Mẫu',
+    'tàu': 'Phụ Mẫu', 'máy bay': 'Phụ Mẫu', 'thuyền': 'Phụ Mẫu',
+    'quần áo': 'Phụ Mẫu', 'áo': 'Phụ Mẫu', 'nón': 'Phụ Mẫu',
+    'mũ': 'Phụ Mẫu', 'ô': 'Phụ Mẫu', 'chăn': 'Phụ Mẫu',
+    'giấy tờ': 'Phụ Mẫu', 'hợp đồng': 'Phụ Mẫu', 'giấy phép': 'Phụ Mẫu',
+    'bằng': 'Phụ Mẫu', 'bằng cấp': 'Phụ Mẫu', 'chứng chỉ': 'Phụ Mẫu',
+    'sổ': 'Phụ Mẫu', 'hồ sơ': 'Phụ Mẫu', 'đơn': 'Phụ Mẫu',
+    'thư': 'Phụ Mẫu', 'tin nhắn': 'Phụ Mẫu', 'sách': 'Phụ Mẫu',
+    'trường': 'Phụ Mẫu', 'bệnh viện': 'Phụ Mẫu', 'công ty': 'Phụ Mẫu',
+    'tường': 'Phụ Mẫu', 'mái': 'Phụ Mẫu', 'móng': 'Phụ Mẫu',
+    
+    # ═══ THÊ TÀI — Ngã khắc (ta khắc chế) ═══
+    # Tiền bạc, tài sản có giá trị, vật ta sở hữu/chi phối
+    # Vợ (nam mệnh), nhân viên, gia súc
+    'tiền': 'Thê Tài', 'vàng': 'Thê Tài', 'bạc': 'Thê Tài',
+    'tài sản': 'Thê Tài', 'của cải': 'Thê Tài', 'vốn': 'Thê Tài',
+    'lương': 'Thê Tài', 'nợ': 'Thê Tài', 'lãi': 'Thê Tài',
     'cổ phiếu': 'Thê Tài', 'crypto': 'Thê Tài', 'bitcoin': 'Thê Tài',
+    'ví': 'Thê Tài', 'đồng hồ': 'Thê Tài', 'trang sức': 'Thê Tài',
+    'hàng': 'Thê Tài', 'hàng hóa': 'Thê Tài', 'sản phẩm': 'Thê Tài',
+    'điện thoại': 'Thê Tài', 'máy tính': 'Thê Tài', 'laptop': 'Thê Tài',
+    'túi': 'Thê Tài', 'đồ quý': 'Thê Tài', 'kim cương': 'Thê Tài',
+    'nhà đất': 'Thê Tài',  # Khi hỏi GIÁ TRỊ/MUA BÁN (context tài chính)
+    'cửa hàng': 'Thê Tài',
     
-    # Công việc, chức vụ, kiện tụng → Quan Quỷ
-    'việc': 'Quan Quỷ', 'công việc': 'Quan Quỷ', 'hợp đồng': 'Quan Quỷ',
+    # ═══ QUAN QUỶ — Khắc ngã (khắc chế ta) ═══
+    # Công việc, chức vụ, bệnh tật, tai ương, kiện tụng
+    # Sếp, chính quyền, trộm cướp
+    'việc': 'Quan Quỷ', 'công việc': 'Quan Quỷ', 'chức': 'Quan Quỷ',
     'dự án': 'Quan Quỷ', 'kiện': 'Quan Quỷ', 'tòa': 'Quan Quỷ',
-    'chức': 'Quan Quỷ', 'vụ': 'Quan Quỷ', 'thầu': 'Quan Quỷ',
-    
-    # Bệnh tật, tai ương → Quan Quỷ (Quan Quỷ = quỷ hại, bệnh)
+    'vụ': 'Quan Quỷ', 'thầu': 'Quan Quỷ', 'quan': 'Quan Quỷ',
     'bệnh': 'Quan Quỷ', 'ung thư': 'Quan Quỷ', 'tai nạn': 'Quan Quỷ',
-    'dịch': 'Quan Quỷ', 'phẫu thuật': 'Quan Quỷ',
+    'dịch': 'Quan Quỷ', 'phẫu thuật': 'Quan Quỷ', 'đau': 'Quan Quỷ',
+    'quy hoạch': 'Quan Quỷ', 'pháp lý': 'Quan Quỷ',
     
-    # Thi cử, kết quả → Phụ Mẫu (Phụ Mẫu = giấy tờ, bằng cấp)
-    'bằng': 'Phụ Mẫu', 'giấy tờ': 'Phụ Mẫu', 'sổ': 'Phụ Mẫu',
-    'hồ sơ': 'Phụ Mẫu', 'đơn': 'Phụ Mẫu', 'giấy phép': 'Phụ Mẫu',
+    # ═══ TỬ TÔN — Ngã sinh (ta sinh ra) ═══
+    # Con cái, phúc đức, thuốc men, bác sĩ, thú cưng
+    # Niềm vui, giải trí, hóa giải tai họa
+    'thuốc': 'Tử Tôn', 'bác sĩ': 'Tử Tôn',
+    'thú cưng': 'Tử Tôn', 'chó': 'Tử Tôn', 'mèo': 'Tử Tôn',
+    'cá': 'Tử Tôn', 'gia súc': 'Tử Tôn', 'gia cầm': 'Tử Tôn',
+    'thức ăn': 'Tử Tôn', 'đồ chơi': 'Tử Tôn',
     
-    # Thuốc, thức ăn → Tử Tôn (Tử Tôn = thuốc chữa bệnh, phúc đức)
-    'thuốc': 'Tử Tôn', 'thức ăn': 'Tử Tôn', 'thú cưng': 'Tử Tôn',
-    'chó': 'Tử Tôn', 'mèo': 'Tử Tôn',
+    # ═══ HUYNH ĐỆ — Tỷ hòa (ngang hàng) ═══
+    # Cạnh tranh, chia sẻ, hao tán, chi phí sửa chữa
+    'chi phí': 'Huynh Đệ', 'phí': 'Huynh Đệ',
 }
 
 # Bảng ĐẠI TỪ nhân xưng — phân biệt ngôi
