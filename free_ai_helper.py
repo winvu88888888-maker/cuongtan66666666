@@ -3812,7 +3812,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     '📊 PHÂN TÍCH', '📊 PHÂ', 
                     '\n🎴 1.', '\n☯️ 2.', '\n🌸 3.', '\n🏯 4.', '\n🌟 5.',
                     '\n📝 TỔNG KẾT', '\n💡 HƯỚNG DẪN', '\n⏰ THỜI VẬN',
-                    '\n🔮 TỔNG HỢP', '\n🕵️ THÁM TỬ',
+                    '\n🔮 TỔNG HỢP',
                     '\n📋 TỔNG HỢP', '\nBẮT BUỘC DIỄN GIẢI',
                 ]
                 for marker in CUT_MARKERS:
@@ -8995,6 +8995,12 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             final_parts.append(online_result)
             final_parts.append("")
             
+            # V34.8: INJECT THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI vào output cuối
+            if direct_answer:
+                final_parts.append("\n## 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+                final_parts.append(direct_answer)
+                final_parts.append("")
+            
             # V31.0: Chú Giải — Sơ Đồ Tương Tác
             if v31_question_diagram:
                 final_parts.append("\n<details>")
@@ -9066,6 +9072,12 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} ({_cat_count}/5 PP CÁT)")
             final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
             final_parts.append(f"\n**📊 Trạng thái DT:** {unified_v22['tier_data']['cap'] if unified_v22 else '?'} | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
+            
+            # V34.8: INJECT THÁM TỬ KIỂM CHỨNG khi chỉ có Offline
+            if direct_answer:
+                final_parts.append("\n## 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+                final_parts.append(direct_answer)
+                final_parts.append("")
             
             # V26.2: VẠN VẬT CỤ THỂ trong KẾT LUẬN
             vv_cu_the_kl = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH') if unified_v22 else 'TRUNG_BÌNH')
