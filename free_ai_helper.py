@@ -2485,7 +2485,9 @@ class FreeAIHelper:
             elif cat_c >= 3: concl = 'CÁT'
             elif hung_c >= 4: concl = 'ĐẠI HUNG'
             elif hung_c >= 3: concl = 'HUNG'
-            else: concl = 'LỠ CỠ'
+            elif cat_c > hung_c: concl = 'NGHIÊNG THUẬN'
+            elif hung_c > cat_c: concl = 'NGHIÊNG BẤT LỢI'
+            else: concl = 'CÓ THỂ ĐƯỢC'
             
             slots.update({
                 'km_verdict': km_v, 'lh_verdict': lh_v, 'mh_verdict': mh_v,
@@ -2633,7 +2635,7 @@ class FreeAIHelper:
                 cung_bt = str(chart_data.get('cung_ban_than', '?')).replace('Cung', '')
                 cung_sv = str(chart_data.get('cung_su_viec', '?')).replace('Cung', '')
             
-            concl = 'CÓ ✅' if total > 10 else 'KHÔNG ❌' if total < -10 else 'LỠ CỠ 🟡'
+            concl = 'CÓ ✅' if total > 10 else 'KHÔNG ❌' if total < -10 else ('NGHIÊNG CÓ 🟡' if total >= 0 else 'NGHIÊNG KHÔNG 🟡')
             
             slots.update({
                 'nguyet_lenh': nguyet or '?', 'nhat_than': nhat or '?',
@@ -2761,13 +2763,17 @@ class FreeAIHelper:
                     if 'BT' in f and ('sinh' in f or 'khắc' in f):
                         generic_slots['bt_sv_rel'] = f.split('(')[0].strip() if '(' in f else f[:30]
             
-            # Auto-conclusion based on cat/hung
+            # Auto-conclusion based on cat/hung (V34.3: QUYẾT ĐOÁN)
             if cat_c >= 3:
                 generic_slots['conclusion'] = 'THUẬN LỢI ✅'
             elif hung_c >= 3:
                 generic_slots['conclusion'] = 'BẤT LỢI ❌'
+            elif cat_c > hung_c:
+                generic_slots['conclusion'] = f'NGHIÊNG THUẬN ✅ ({cat_c} cát vs {hung_c} hung)'
+            elif hung_c > cat_c:
+                generic_slots['conclusion'] = f'NGHIÊNG BẤT LỢI ⚠️ ({hung_c} hung vs {cat_c} cát)'
             else:
-                generic_slots['conclusion'] = f'CẦN CÂN NHẮC 🟡 ({cat_c}/{cat_c+hung_c} CÁT)'
+                generic_slots['conclusion'] = f'50/50 — CÓ THỂ ĐƯỢC nhưng rủi ro ({cat_c} cát = {hung_c} hung)'
             
             # V32.6: Fill SĐ2 (TUỔI/SỐ) slots — dùng TRƯỜNG SINH stage
             if _is_age_question(question) or _is_count_question(question):
@@ -3766,7 +3772,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 f"  LH: Hào nào Vượng+được sinh → lựa chọn đó TỐT hơn\n"
                 f"  KL: chọn lựa chọn nào SINH Thể/DT nhiều nhất\n\n"
                 f"═══ SĐ0: TỔNG QUÁT (ko thuộc loại nào) ═══\n"
-                f"[5 Verdicts]→Đếm CÁT/HUNG: ≥4CÁT=ĐẠI CÁT|≥3=CÁT|2/2=LỠ CỠ|≥3HUNG=HUNG|≥4=ĐẠI HUNG\n\n"
+                f"[5 Verdicts]→Đếm CÁT/HUNG: ≥4CÁT=ĐẠI CÁT|≥3=CÁT|2/2=NGHIÊNG THUẬN|≥3HUNG=HUNG|≥4=ĐẠI HUNG\n\n"
                 f"CÁCH DÙNG: <question_type>→chọn SƠ ĐỒ→đọc factors→theo mũi tên→KẾT LUẬN ≤300 chữ\n"
                 f"CẤM: liệt kê từng PP, bịa %, tạo format mới, viết quá 300 chữ\n"
                 f"</reasoning_protocol>\n\n"
@@ -6729,39 +6735,51 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         else:
             icon = '🟡'
         
-        # --- Xác định dạng câu hỏi và trả lời thông minh ---
+        # --- Xác định dạng câu hỏi và trả lời QUYẾT ĐOÁN ---
+        # V34.3: KHÔNG BAO GIỜ trả lời "chưa rõ" — luôn nghiêng CÓ hoặc KHÔNG
         
         # CÓ/KHÔNG ("có nên", "có được", "đỗ không", etc.)
         if any(k in q for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể',
-                                 'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt']):
+                                 'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
+                                 'có không', 'không']):
             if final_verdict == 'CÁT':
                 lines.append(f"\n{icon} **CÂU TRẢ LỜI: CÓ — Khả năng thành công {pct}%**")
             elif final_verdict == 'HUNG':
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: KHÔNG NÊN — Xác suất bất lợi {100-pct}%**")
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: KHÔNG — Xác suất bất lợi {100-pct}%**")
+            elif pct >= 55:
+                lines.append(f"\n🟢 **CÂU TRẢ LỜI: CÓ (nghiêng thuận) — {pct}%**")
+                lines.append(f"- Quẻ nghiêng về CÓ nhưng cần chú ý {len(bad_impacts)} yếu tố bất lợi.")
+            elif pct <= 44:
+                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG NÊN (nghiêng bất lợi) — {pct}%**")
+                lines.append(f"- Quẻ nghiêng về KHÔNG, nên chờ thêm hoặc chuẩn bị kỹ hơn.")
             else:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CÒN PHẢI XEM — Tình thế chưa rõ ({pct}%)**")
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC nhưng có rủi ro — {pct}%**")
+                lines.append(f"- Quẻ 50/50: {len(good_impacts)} thuận vs {len(bad_impacts)} bất lợi. Nên chuẩn bị phương án dự phòng.")
         
         # SỐNG/CHẾT — câu hỏi nhạy cảm về sinh tử
         elif any(k in q for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không',
                                    'qua khỏi', 'cứu được', 'mất chưa']):
-            if final_verdict == 'CÁT' and len(good_impacts) >= 2:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: TÌNH TRẠNG KHẢ QUAN ({pct}%)**")
-                lines.append(f"- Quẻ cho thấy {dung_than} CÒN SỨC, có dấu hiệu hồi phục.")
-            elif final_verdict == 'HUNG' and len(bad_impacts) >= 2:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: TÌNH TRẠNG NGHIÊM TRỌNG ({pct}%)**")
-                lines.append(f"- Quẻ cho thấy {dung_than} RẤT YẾU, cần hành động khẩn cấp.")
+            if final_verdict == 'CÁT' or pct >= 55:
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CÒN SỨC — Có khả năng hồi phục ({pct}%)**")
+                lines.append(f"- Quẻ cho thấy {dung_than} còn sức, cần tích cực chữa trị.")
+            elif final_verdict == 'HUNG' or pct <= 40:
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: TÌNH TRẠNG NGUY HIỂM ({pct}%)**")
+                lines.append(f"- Quẻ cho thấy {dung_than} rất yếu, cần can thiệp y tế KHẨN CẤP.")
             else:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CHƯA THỂ KHẲNG ĐỊNH ({pct}%)**")
-                lines.append(f"- Các phương pháp cho kết quả trái chiều, cần theo dõi sát.")
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: KHÓ KHĂN nhưng vẫn có cơ hội ({pct}%)**")
+                lines.append(f"- Cần theo dõi sát và tìm thầy thuốc giỏi.")
         
         # KHI NÀO — "khi nào", "bao giờ"
         elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao']):
-            if final_verdict == 'CÁT':
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: Thời điểm HIỆN TẠI đã thuận lợi ({pct}%)**")
-                lines.append(f"- Nên hành động trong 1-7 ngày tới.")
+            if final_verdict == 'CÁT' or pct >= 55:
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: SẮP TỚI — Thuận lợi ({pct}%)**")
+                lines.append(f"- Thời điểm hiện tại đã thuận, nên hành động trong 1-7 ngày.")
+            elif pct <= 40:
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CÒN LÂU — Chưa tới thời ({pct}%)**")
+                lines.append(f"- Nên chờ ít nhất 2-3 tháng, hoặc chờ xung/hợp mới tới.")
             else:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: Chưa phải thời điểm tốt**")
-                lines.append(f"- Nên chờ 1-3 tháng để tình hình chuyển biến.")
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: TRONG 1-3 THÁNG TỚI ({pct}%)**")
+                lines.append(f"- Cần chuẩn bị sẵn để nắm bắt khi cơ hội đến.")
         
         # TUỔI
         elif any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
@@ -6845,14 +6863,16 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             else:
                 lines.append(f"\n📍 **CÂU TRẢ LỜI:** Không xác định được Cung Sự Việc để tra hướng.")
         
-        # DEFAULT — Câu hỏi chung
+        # DEFAULT — Câu hỏi chung (V34.3: QUYẾT ĐOÁN, không "chưa rõ")
         else:
-            if final_verdict == 'CÁT':
+            if final_verdict == 'CÁT' or pct >= 55:
                 lines.append(f"\n{icon} **CÂU TRẢ LỜI: THUẬN LỢI ({pct}%)**")
-            elif final_verdict == 'HUNG':
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: KHÓ KHĂN ({pct}%)**")
+            elif final_verdict == 'HUNG' or pct <= 40:
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: BẤT LỢI ({pct}%)**")
+                lines.append(f"- Nên cẩn trọng, chuẩn bị phương án dự phòng.")
             else:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: CHƯA RÕ RÀNG ({pct}%)**")
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: NGHIÊNG THUẬN nhưng nhiều biến số ({pct}%)**")
+                lines.append(f"- {len(good_impacts)} yếu tố thuận vs {len(bad_impacts)} bất lợi. Nên thận trọng.")
         
         # --- V10.0: BẰNG CHỨNG CỤ THỂ TỪ QUẺ (thay vì mẫu chung) ---
         lines.append(f"\n**📋 Bằng chứng từ quẻ (tại sao kết luận như trên):**")
@@ -7485,8 +7505,8 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 overall = 'KHÓ KHĂN'
                 narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
             else:
-                overall = 'CHƯA RÕ'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CHƯA RÕ RÀNG / BÌNH BÌNH** ({pct}%) — thế trận giằng co.")
+                overall = 'NGHIÊNG THUẬN' if pct >= 50 else 'NGHIÊNG BẤT LỢI'
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **{overall}** ({pct}%) — thế trận chưa rõ nét, nhưng nghiêng về {'thuận' if pct >= 50 else 'bất lợi'}.")
         else:
             if total_good > total_bad:
                 overall = 'THUẬN LỢI'
@@ -7497,9 +7517,9 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 pct = max(10, 50 - (total_bad - total_good) * 10)
                 narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
             else:
-                overall = 'CHƯA RÕ'
+                overall = 'CÂN BẰNG — CÓ THỂ ĐƯỢC'
                 pct = 50
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CHƯA RÕ RÀNG** — các phương pháp cho kết quả trái chiều.")
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CÂN BẰNG** ({pct}%) — có thể tiến hành nhưng cần chuẩn bị kỹ.")
         
         # Part 2: Bằng chứng cụ thể từ mỗi phương pháp
         method_summaries = []
@@ -8820,7 +8840,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 overall_short = 'CÁT'
                 v_icon = '✅'
             elif _cat_count >= 2 and _hung_count <= 2:
-                overall_short = 'LỠ CỠ — CẦN CÂN NHẮC'
+                overall_short = 'NGHIÊNG THUẬN — CÓ THỂ ĐƯỢC'
                 v_icon = '🟡'
             elif _hung_count >= 4:
                 overall_short = 'ĐẠI HUNG'
@@ -8989,10 +9009,10 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     else:
                         final_parts.append(f"- Nên hành động sớm, tận dụng thời cơ.")
                 elif _cat_count >= 2:
-                    final_parts.append(f"### 🟡 CÂU TRẢ LỜI: CÒN PHẢI XEM — {overall_short}")
-                    final_parts.append(f"Quẻ ở mức CÂN BẰNG ({_cat_count}/5 PP CÁT) — không hẳn tốt, không hẳn xấu.")
-                    final_parts.append(f"- Nên thu thập thêm thông tin, thăm dò trước khi quyết định.")
-                    final_parts.append(f"- Chờ 1-2 tuần sẽ có tín hiệu rõ ràng hơn.")
+                    final_parts.append(f"### 🟡 CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — {overall_short}")
+                    final_parts.append(f"Quẻ nghiêng thuận ({_cat_count}/5 PP CÁT) — có thể tiến hành nhưng cần thận trọng.")
+                    final_parts.append(f"- Chuẩn bị phương án dự phòng trước khi hành động.")
+                    final_parts.append(f"- Nên hành động trong 1-2 tuần tới khi vận khí còn thuận.")
                 else:
                     final_parts.append(f"### 🔴 CÂU TRẢ LỜI: KHÔNG NÊN — {overall_short}")
                     final_parts.append(f"Quẻ cho thấy {dung_than} suy ({_hung_count}/5 PP HUNG), nhiều yếu tố CẢN TRỞ.")
@@ -9100,8 +9120,8 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     final_parts.append(f"- ✅ **CÁT** ({_cat_count}/5 PP CÁT). Tình hình thuận lợi.")
                     final_parts.append(f"- {dung_than} có lực → nắm bắt cơ hội.")
                 elif _cat_count >= 2:
-                    final_parts.append(f"- 🟡 **LỠ CỠ** ({_cat_count}/5 PP CÁT). Chưa rõ ràng.")
-                    final_parts.append(f"- Giữ nguyên hiện trạng, quan sát thêm diễn biến.")
+                    final_parts.append(f"- 🟡 **NGHIÊNG THUẬN** ({_cat_count}/5 PP CÁT). Có thể tiến hành.")
+                    final_parts.append(f"- Chuẩn bị phương án dự phòng, hành động thận trọng.")
                 elif _hung_count >= 4:
                     final_parts.append(f"- 🔴 **ĐẠI HUNG** ({_hung_count}/5 PP HUNG). Tình hình bất lợi nghiêm trọng.")
                     final_parts.append(f"- Không nên ép buộc, chờ chu kỳ mới khởi phát.")
@@ -9192,8 +9212,8 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 verdict_text = "THUẬN LỢI"
                 verdict_detail = "Đa số phương pháp cho kết quả tốt"
             elif _cat_count >= 2:
-                verdict_text = "CÒN PHẢI XEM"
-                verdict_detail = "Kết quả trộn lẫn, không rõ ràng"
+                verdict_text = "CÓ THỂ ĐƯỢC"
+                verdict_detail = "Nghiêng thuận, có thể tiến hành nhưng cần thận trọng"
             elif _hung_count >= 4:
                 verdict_text = "RẤT BẤT LỢI"
                 verdict_detail = "Hầu hết phương pháp đều cho kết quả tiêu cực"
@@ -9324,7 +9344,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                         elif _hung_count >= 3:
                             final_parts.append(f"→ ❌ **KHÔNG** — {sub_dt} suy ({_hung_count}/5 HUNG)")
                         else:
-                            final_parts.append(f"→ 🟡 **LỠ CỠ** — Chưa rõ ràng ({_cat_count}/{_cat_count+_hung_count} CÁT)")
+                            final_parts.append(f"→ 🟡 **CÓ THỂ ĐƯỢC** — Nghiêng thuận ({_cat_count}/{_cat_count+_hung_count} CÁT), cần chuẩn bị kỹ")
                     
                     elif sub_qtype == 'KHI NÀO':
                         if _cat_count >= 3:

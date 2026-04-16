@@ -165,10 +165,10 @@ DIAGRAM_MASTER = {
 """,
     'formula': 'Unified% = LH_raw_normalized×50% + TrườngSinh_power×30% + NgũKhí_power×20%',
     'conclusion_rules': {
-        'high': (70, 100, '🟢 VƯỢNG — Sự việc THUẬN LỢI, đạt kết quả tốt'),
-        'medium': (50, 69, '🟡 TRUNG BÌNH — Cần thêm nỗ lực, kết quả tùy điều kiện'),
-        'low': (30, 49, '🟠 SUY — Khó khăn, cần cân nhắc kỹ'),
-        'very_low': (0, 29, '🔴 RẤT YẾU — Bất lợi, nên tránh hoặc chờ'),
+        'high': (70, 100, '🟢 VƯỢNG — THUẬN LỢI, có thể hành động'),
+        'medium': (50, 69, '🟡 TRUNG BÌNH — Nghiêng thuận nhưng cần chuẩn bị kỹ'),
+        'low': (30, 49, '🟠 SUY — BẤT LỢI, nên chờ hoặc đổi phương án'),
+        'very_low': (0, 29, '🔴 RẤT YẾU — KHÔNG NÊN, nên tránh lúc này'),
     },
 }
 
@@ -206,7 +206,7 @@ DIAGRAMS = {
 └───────────────────────────────────────────────────┘
 """,
         'formula': 'Nguyệt(±8) + Nhật(±6) + NT(±6) − KT(±8) + TK(-15) + NPhá(-12) + TSVK(+10) + BT↔SV(±8)',
-        'conclusion_rule': 'Score > 10 → CÓ | Score < -10 → KHÔNG | Giữa → LỠ CỠ',
+        'conclusion_rule': 'Score > 10 → CÓ | Score < -10 → KHÔNG | Giữa → NGHIÊNG CÓ/KHÔNG',
     },
 
     'SD2': {
@@ -548,7 +548,7 @@ DIAGRAMS = {
 │ KẾT LUẬN: {conclusion}                            │
 └───────────────────────────────────────────────────┘
 """,
-        'formula': '≥4CÁT=ĐẠI CÁT | ≥3CÁT=CÁT | 2/2=LỠ CỠ | ≥3HUNG=HUNG | ≥4HUNG=ĐẠI HUNG',
+        'formula': '≥4CÁT=ĐẠI CÁT | ≥3CÁT=CÁT | 2/2=NGHIÊNG THUẬN | ≥3HUNG=HUNG | ≥4HUNG=ĐẠI HUNG',
     },
 }
 
