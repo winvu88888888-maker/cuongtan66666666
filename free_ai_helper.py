@@ -8678,6 +8678,11 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             weighted_pct=weighted_pct
         )
         
+        # V34.7: HIỂN THỊ direct_answer (Thám Tử + Câu trả lời linh hoạt)
+        if direct_answer:
+            sections.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+            sections.append(direct_answer)
+        
         # ========================================
         # KẾT LUẬN THỐNG NHẤT (V11.0)
         # ========================================
