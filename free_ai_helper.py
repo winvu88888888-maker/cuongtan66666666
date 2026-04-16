@@ -1,5 +1,5 @@
 """
-Free AI Helper V32.2 — THIÊN CƠ ĐẠI SƯ (Unified Index + Offline Engine + Vạn Vật 2226+)
+Free AI Helper V33.0 — THIÊN CƠ ĐẠI SƯ (Unified Index + Offline Engine + Vạn Vật 2226+)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
@@ -167,14 +167,41 @@ CUA_HUNG = ['Tử', 'Kinh', 'Thương']
 
 # Bảng Dụng Thần
 DUNG_THAN_MAP = {
-    'tiền': 'Thê Tài', 'tài': 'Thê Tài', 'đầu tư': 'Thê Tài', 'lương': 'Thê Tài', 'vốn': 'Thê Tài',
-    'việc': 'Quan Quỷ', 'sếp': 'Quan Quỷ', 'bệnh': 'Quan Quỷ', 'kiện': 'Quan Quỷ', 'thi': 'Quan Quỷ',
-    'con': 'Tử Tôn', 'bình an': 'Tử Tôn', 'vui': 'Tử Tôn',
-    'nhà': 'Phụ Mẫu', 'xe': 'Phụ Mẫu', 'học': 'Phụ Mẫu', 'giấy': 'Phụ Mẫu', 'hợp đồng': 'Phụ Mẫu',
-    'bạn': 'Huynh Đệ', 'đối thủ': 'Huynh Đệ', 'anh': 'Huynh Đệ', 'chị': 'Huynh Đệ', 'em': 'Huynh Đệ',
-    'anh chị em': 'Huynh Đệ', 'anh em': 'Huynh Đệ',
+    # ═══ PRIORITY 1: Cụm từ dài (match trước) ═══
+    'ngoại tình': 'Thê Tài', 'hợp đồng': 'Phụ Mẫu', 'đầu tư': 'Thê Tài',
+    'cổ phiếu': 'Thê Tài', 'bất động sản': 'Phụ Mẫu', 'anh chị em': 'Huynh Đệ',
+    'anh em': 'Huynh Đệ', 'bình an': 'Tử Tôn', 'đối thủ': 'Huynh Đệ',
+    'con trai': 'Tử Tôn', 'con gái': 'Tử Tôn', 'con dâu': 'Tử Tôn',
+    'con rể': 'Tử Tôn', 'con cái': 'Tử Tôn',
+    'bà ngoại': 'Phụ Mẫu', 'bà nội': 'Phụ Mẫu', 'ông ngoại': 'Phụ Mẫu',
+    'ông nội': 'Phụ Mẫu', 'bố mẹ': 'Phụ Mẫu', 'cha mẹ': 'Phụ Mẫu',
+    'mua xe': 'Phụ Mẫu', 'mua nhà': 'Phụ Mẫu',
+    'mất đồ': 'Thê Tài', 'mất tiền': 'Thê Tài', 'mất điện thoại': 'Thê Tài',
+    'thăng chức': 'Quan Quỷ', 'tăng lương': 'Thê Tài',
+    'xây nhà': 'Phụ Mẫu', 'sửa nhà': 'Phụ Mẫu',
+    'đối tác': 'Quan Quỷ', 'khách hàng': 'Quan Quỷ',
+    'người yêu': 'Thê Tài', 'bạn trai': 'Thê Tài', 'bạn gái': 'Thê Tài',
+    # ═══ PRIORITY 2: Từ đơn — Chủ đề ═══
+    'tiền': 'Thê Tài', 'tài': 'Thê Tài', 'lương': 'Thê Tài', 'vốn': 'Thê Tài',
+    'lãi': 'Thê Tài', 'nợ': 'Thê Tài', 'lời': 'Thê Tài', 'lỗ': 'Thê Tài',
+    'việc': 'Quan Quỷ', 'sếp': 'Quan Quỷ', 'bệnh': 'Quan Quỷ',
+    'kiện': 'Quan Quỷ', 'thi': 'Quan Quỷ', 'ung thư': 'Quan Quỷ',
+    'nhà': 'Phụ Mẫu', 'xe': 'Phụ Mẫu', 'học': 'Phụ Mẫu',
+    'giấy': 'Phụ Mẫu', 'văn bằng': 'Phụ Mẫu',
+    'mua': 'Thê Tài', 'bán': 'Thê Tài',
+    'mất': 'Thê Tài', 'trộm': 'Thê Tài', 'cắp': 'Thê Tài',
+    # ═══ PRIORITY 3: Từ đơn — Người thân ═══
+    'vợ': 'Thê Tài', 'chồng': 'Thê Tài',
+    'con': 'Tử Tôn', 'cháu': 'Tử Tôn',
+    'bố': 'Phụ Mẫu', 'mẹ': 'Phụ Mẫu', 'cha': 'Phụ Mẫu',
+    'bạn': 'Huynh Đệ', 'anh': 'Huynh Đệ', 'chị': 'Huynh Đệ', 'em': 'Huynh Đệ',
+    'vui': 'Tử Tôn',
+    # ═══ PRIORITY 4: Bản thân (match cuối) ═══
     'tuổi': 'Bản Thân', 'tôi': 'Bản Thân', 'mình': 'Bản Thân',
 }
+
+# V33.0: Priority-sorted keywords — dài trước ngắn, tránh "tôi" override "vợ tôi"
+_DUNG_THAN_SORTED = sorted(DUNG_THAN_MAP.keys(), key=len, reverse=True)
 
 # === V12.0: LỤC THÂN RELATIONSHIP ENGINE ===
 # Mỗi thành viên gia đình/xã hội → Lục Thân + Can tương ứng trong Kỳ Môn
@@ -313,11 +340,11 @@ def _ngu_hanh_relation(h1, h2):
 
 
 def _get_dung_than(question):
-    """Xác định Dụng Thần từ câu hỏi"""
+    """V33.0: Xác định Dụng Thần — priority matching (keywords dài trước ngắn)."""
     q = question.lower()
-    for keyword, dt in DUNG_THAN_MAP.items():
+    for keyword in _DUNG_THAN_SORTED:
         if keyword in q:
-            return dt
+            return DUNG_THAN_MAP[keyword]
     return "Quan Quỷ"  # Default
 
 
@@ -1309,15 +1336,15 @@ NGU_HANH_DETECT = {
 class FreeAIHelper:
 
     """
-    Offline AI V26.2 — Lượng Hóa Suy Vượng Toàn Diện + 3 Tầng Unified Strength.
-    V26.2: Tích hợp _calc_unified_strength_tier() (LH+TS+NK) + Ngũ Hành vật chất.
+    Offline AI V33.0 — Lượng Hóa Suy Vượng Toàn Diện + 3 Tầng Unified Strength.
+    V33.0: Topic-Aware DT Correction + 100% SĐ_MASTER slot coverage + Priority DT matching.
     Kế thừa V21.0: Weighted scoring 5 PP, Tiến/Thối Thần, Nguyệt Phá.
     Kế thừa V12.0: Lục Thân Relationship Engine.
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V32.2 Unified Index + Offline Engine)"
-        self.version = "V26.2-Unified-Strength"
+        self.name = "Thiên Cơ Đại Sư (V33.0 Unified Index + Offline Engine)"
+        self.version = "V33.0-Full-Pipeline"
         self.model_name = "offline-rule-engine-v22.0"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
@@ -1520,12 +1547,21 @@ class FreeAIHelper:
                     ung_state = f
                 elif 'LỤC HỢP' in f_upper or 'LỤC XUNG' in f_upper:
                     luc_hop_xung_str = f
-                elif 'TAM HỢP' in f_upper:
+                elif 'hợp dt' in f.lower() or ('hợp' in f.lower() and 'dt' in f_upper):
+                    luc_hop_xung_str = f'☯ {f}'
+                elif 'xung dt' in f.lower() or 'ÁM ĐỘNG' in f_upper:
+                    if luc_hop_xung_str == 'Không phát hiện': luc_hop_xung_str = f'⚡ {f}'
+                    else: luc_hop_xung_str += f' | ⚡ {f}'
+                elif 'TAM HỢP' in f_upper or 'Tam Hợp' in f:
                     tam_hop_cuc_str = f
                 elif 'TIẾN THẦN' in f_upper:
                     tien_thoai_str = 'Tiến Thần ↗'
                 elif 'THOÁI THẦN' in f_upper:
                     tien_thoai_str = 'Thoái Thần ↘'
+                elif 'Hóa Hồi' in f or 'Hóa Phục' in f or 'Hóa TUYỆT' in f or 'Hóa MỘ' in f:
+                    # V33.0: Capture Hóa Hồi Đầu info
+                    if not bien_hao_dt_str or bien_hao_dt_str == '?':
+                        bien_hao_dt_str = f
         
         # Extract from luc_hao_data
         if luc_hao_data and isinstance(luc_hao_data, dict):
@@ -1609,10 +1645,71 @@ class FreeAIHelper:
                 f"Giờ: {chart_data.get('can_gio', '?')}{chart_data.get('chi_gio', '?')}"
             )
             
-            # Cung/Sao/Cửa/Thần DT
-            # (These may already be extracted in v24_km_factors)
+            # V33.0: Extract Cung/Sao/Cửa/Thần DT TRỰC TIẾP từ chart_data
+            can_thien_ban = chart_data.get('can_thien_ban', {})
+            thien_ban = chart_data.get('thien_ban', {})
+            nhan_ban = chart_data.get('nhan_ban', {})
+            than_ban = chart_data.get('than_ban', {})
             
-        if v24_km_factors:
+            # Tìm Cung DT
+            _dt_can_map_km = {
+                'Quan Quỷ': chart_data.get('can_gio', ''),
+                'Thê Tài': chart_data.get('can_gio', ''),
+                'Tử Tôn': chart_data.get('can_gio', ''),
+                'Phụ Mẫu': chart_data.get('can_nam', ''),
+                'Huynh Đệ': chart_data.get('can_thang', ''),
+                'Bản Thân': can_ngay_km,
+            }
+            _dt_can_km = _dt_can_map_km.get(dung_than, chart_data.get('can_gio', ''))
+            _dt_cung_num = None
+            _bt_cung_num = None
+            for _cn, _cv in can_thien_ban.items():
+                if _cv == can_ngay_km: _bt_cung_num = int(_cn) if _cn else None
+                if not _bt_cung_num and can_ngay_km == 'Giáp' and _cv == 'Mậu': _bt_cung_num = int(_cn) if _cn else None
+            for _cn, _cv in can_thien_ban.items():
+                if _cv == _dt_can_km: _dt_cung_num = int(_cn) if _cn else None
+                if not _dt_cung_num and _dt_can_km == 'Giáp' and _cv == 'Mậu': _dt_cung_num = int(_cn) if _cn else None
+            
+            if _dt_cung_num:
+                _dt_cung_hanh = CUNG_NGU_HANH.get(_dt_cung_num, '?')
+                cung_dt_str = str(_dt_cung_num)
+                cung_dt_hanh_str = _dt_cung_hanh
+                # Sao
+                _sao_raw = thien_ban.get(_dt_cung_num, thien_ban.get(str(_dt_cung_num), '?'))
+                sao_dt_str = str(_sao_raw)
+                # Cửa
+                _cua_raw = nhan_ban.get(_dt_cung_num, nhan_ban.get(str(_dt_cung_num), '?'))
+                cua_dt_str = str(_cua_raw)
+                # Thần
+                _than_raw = than_ban.get(_dt_cung_num, than_ban.get(str(_dt_cung_num), '?'))
+                than_dt_str = str(_than_raw)
+                # BT Cung
+                if _bt_cung_num:
+                    cung_bt_str = str(_bt_cung_num)
+                    _bt_hanh = CUNG_NGU_HANH.get(_bt_cung_num, '?')
+                    # BT↔SV relation
+                    if _dt_cung_hanh and _bt_hanh and _bt_hanh != '?':
+                        if SINH.get(_bt_hanh) == _dt_cung_hanh: bt_sv_rel_str = '→ BT sinh DT (CÁT)'
+                        elif KHAC.get(_bt_hanh) == _dt_cung_hanh: bt_sv_rel_str = '→ BT khắc DT'
+                        elif SINH.get(_dt_cung_hanh) == _bt_hanh: bt_sv_rel_str = '→ DT sinh BT (hao)'
+                        elif KHAC.get(_dt_cung_hanh) == _bt_hanh: bt_sv_rel_str = '→ DT khắc BT (chủ động)'
+                        elif _bt_hanh == _dt_cung_hanh: bt_sv_rel_str = '→ Tỷ Hòa'
+                # Cung SV (= Cung DT trong most cases)
+                cung_sv_str = cung_dt_str
+                # Địa Bàn DT
+                _DIA_BAN_CAN = {1: 'Mậu', 2: 'Kỷ', 3: 'Canh', 4: 'Tân', 5: 'Mậu', 6: 'Nhâm', 7: 'Quý', 8: 'Ất', 9: 'Bính'}
+                _dia_can = _DIA_BAN_CAN.get(_dt_cung_num, '?')
+                dia_ban_dt_str = f"Can {_dia_can} (Địa Bàn Cung {_dt_cung_num})"
+                # Phản/Phục Ngâm cung
+                _dac_biet_km = chart_data.get('dac_biet', [])
+                if isinstance(_dac_biet_km, list):
+                    for _db in _dac_biet_km:
+                        _db_str = str(_db).upper()
+                        if 'PHẢN NGÂM' in _db_str: km_phan_phuc_str = '🔄 Phản Ngâm (Thiên Bàn xung Địa Bàn)'
+                        elif 'PHỤC NGÂM' in _db_str: km_phan_phuc_str = '🔄 Phục Ngâm (Thiên Bàn = Địa Bàn)'
+        
+        # Fallback: parse v24_km_factors text nếu direct extract failed
+        if (not cung_dt_str or cung_dt_str == '?') and v24_km_factors:
             for f in v24_km_factors if isinstance(v24_km_factors, list) else []:
                 f_str = str(f)
                 if 'Cung DT' in f_str or 'cung_dt' in f_str:
@@ -1703,8 +1800,51 @@ class FreeAIHelper:
                 elif the_quai_hanh_str == dung_quai_hanh_str:
                     the_dung_rel_str = 'tỷ hòa'
                     the_dung_y_nghia_str = 'Thể Dụng đồng hành → hòa hợp, bình thường'
+            
+            # V33.0: Hỗ Quái → Thể/Dụng quan hệ
+            ho_hanh = mai_hoa_data.get('hanh_ho', '')
+            if not ho_hanh and ho_quai_str and ho_quai_str != '?':
+                # Derive hành from quái name
+                _quai_hanh_map = {'Càn': 'Kim', 'Đoài': 'Kim', 'Ly': 'Hỏa', 'Chấn': 'Mộc',
+                                  'Tốn': 'Mộc', 'Khảm': 'Thủy', 'Cấn': 'Thổ', 'Khôn': 'Thổ'}
+                for _qn, _qh in _quai_hanh_map.items():
+                    if _qn in ho_quai_str:
+                        ho_hanh = _qh
+                        break
+            if ho_hanh and the_quai_hanh_str:
+                if SINH.get(ho_hanh) == the_quai_hanh_str:
+                    ho_the_rel_str = 'sinh'
+                    ho_the_y_nghia_str = 'Hỗ sinh Thể → nội lực hỗ trợ'
+                elif KHAC.get(ho_hanh) == the_quai_hanh_str:
+                    ho_the_rel_str = 'khắc'
+                    ho_the_y_nghia_str = 'Hỗ khắc Thể → nội bộ trở ngại'
+                elif SINH.get(the_quai_hanh_str) == ho_hanh:
+                    ho_the_rel_str = 'tiết'
+                    ho_the_y_nghia_str = 'Thể sinh Hỗ → hao tổn nội lực'
+                elif KHAC.get(the_quai_hanh_str) == ho_hanh:
+                    ho_the_rel_str = 'bị khắc'
+                    ho_the_y_nghia_str = 'Thể khắc Hỗ → kiểm soát nội bộ'
+                elif ho_hanh == the_quai_hanh_str:
+                    ho_the_rel_str = 'tỷ hòa'
+                    ho_the_y_nghia_str = 'Hỗ đồng hành Thể'
+            if ho_hanh and dung_quai_hanh_str:
+                if SINH.get(ho_hanh) == dung_quai_hanh_str:
+                    ho_dung_rel_str = 'sinh'
+                    ho_dung_y_nghia_str = 'Hỗ sinh Dụng → ẩn ý tăng cường'
+                elif KHAC.get(ho_hanh) == dung_quai_hanh_str:
+                    ho_dung_rel_str = 'khắc'
+                    ho_dung_y_nghia_str = 'Hỗ khắc Dụng → ẩn ý cản trở'
+                elif SINH.get(dung_quai_hanh_str) == ho_hanh:
+                    ho_dung_rel_str = 'tiết'
+                    ho_dung_y_nghia_str = 'Dụng sinh Hỗ → hao tổn'
+                elif KHAC.get(dung_quai_hanh_str) == ho_hanh:
+                    ho_dung_rel_str = 'bị khắc'
+                    ho_dung_y_nghia_str = 'Dụng khắc Hỗ'
+                elif ho_hanh == dung_quai_hanh_str:
+                    ho_dung_rel_str = 'tỷ hòa'
+                    ho_dung_y_nghia_str = 'Hỗ đồng hành Dụng'
         
-        # --- ĐẠI LỤC NHÂM: Tam Truyền ---
+        # --- V33.0: ĐẠI LỤC NHÂM — GỌI TRỰC TIẾP OFFLINE ENGINE ---
         so_truyen = '?'
         trung_truyen = '?'
         mat_truyen = '?'
@@ -1712,20 +1852,78 @@ class FreeAIHelper:
         tu_khoa = 'N/A'
         can_chi_lac_cung = 'N/A'
         
-        # (DLN data is extracted in v24_km_factors if available)
+        try:
+            from dai_luc_nham import tinh_dai_luc_nham as _dln_calc, CAN_KY_CHI as _DLN_CAN_KY
+            if chart_data and chart_data.get('can_ngay'):
+                _dln = _dln_calc(
+                    chart_data.get('can_ngay', 'Giáp'),
+                    chart_data.get('chi_ngay', 'Tý'),
+                    chart_data.get('chi_gio', 'Ngọ'),
+                    chart_data.get('tiet_khi', 'Đông Chí')
+                )
+                _tt = _dln.get('tam_truyen', {})
+                so_truyen = f"{_tt.get('so_truyen', '?')} ({_tt.get('so_truyen_hanh', '?')})"
+                trung_truyen = f"{_tt.get('trung_truyen', '?')} ({_tt.get('trung_truyen_hanh', '?')})"
+                mat_truyen = f"{_tt.get('mat_truyen', '?')} ({_tt.get('mat_truyen_hanh', '?')})"
+                # Thiên Tướng Sơ Truyền
+                _tt_full = _dln.get('thien_tuong_full', {})
+                _so_chi = _tt.get('so_truyen', '')
+                _tuong = _tt_full.get(_so_chi, {})
+                thien_tuong = _tuong.get('ten', '?') if _tuong else '?'
+                # Tứ Khóa summary
+                _tk = _dln.get('tu_khoa', [])
+                if _tk:
+                    tu_khoa = ' | '.join([f"K{i+1}: {k.get('thien','?')}/{k.get('dia','?')}" for i, k in enumerate(_tk)])
+                # Can Chi lạc cung
+                _can_ky = _DLN_CAN_KY.get(chart_data.get('can_ngay', ''), '?')
+                can_chi_lac_cung = f"Can {chart_data.get('can_ngay','')} ký tại {_can_ky}"
+        except Exception:
+            pass
         
-        # --- THIẾT BẢN + THÁI ẤT ---
+        # --- V33.0: THIẾT BẢN + THÁI ẤT — GỌI TRỰC TIẾP ---
         nap_am_ten = '?'
         nap_am_hanh = '?'
         nap_am_giai_thich = ''
         chu_khach = '?'
         ta_cuc = '?'
         
-        # Extract from verdicts/chart_data if available
+        # Extract Nạp Âm from chart_data
         if chart_data and isinstance(chart_data, dict):
             nap_am_ten = chart_data.get('nap_am', chart_data.get('nap_am_ten', '?'))
             nap_am_hanh = chart_data.get('nap_am_hanh', '?') 
             nap_am_giai_thich = chart_data.get('nap_am_giai_thich', '')
+        
+        # V33.0: Gọi Thái Ất trực tiếp
+        try:
+            from thai_at_than_so import tinh_thai_at_than_so as _ta_calc
+            import datetime as _dt_ta
+            _now_ta = _dt_ta.datetime.now()
+            _ta_can = chart_data.get('can_ngay', 'Giáp') if chart_data else 'Giáp'
+            _ta_chi = chart_data.get('chi_ngay', 'Tý') if chart_data else 'Tý'
+            _ta_data = _ta_calc(_now_ta.year, _now_ta.month, _ta_can, _ta_chi)
+            # Chủ↔Khách
+            _bat_tuong = _ta_data.get('bat_tuong', {})
+            _chu = _bat_tuong.get('Chủ Đại Tướng', {})
+            _khach = _bat_tuong.get('Khách Đại Tướng', {})
+            if _chu and _khach:
+                _chu_h = _chu.get('hanh_cung', '?')
+                _khach_h = _khach.get('hanh_cung', '?')
+                _ta_rel = ''
+                if _chu_h and _khach_h and _chu_h != '?' and _khach_h != '?':
+                    if KHAC.get(_chu_h) == _khach_h: _ta_rel = 'Chủ KHẮC Khách → CÁT'
+                    elif KHAC.get(_khach_h) == _chu_h: _ta_rel = 'Khách KHẮC Chủ → HUNG'
+                    elif SINH.get(_khach_h) == _chu_h: _ta_rel = 'Khách SINH Chủ → CÁT'
+                    elif SINH.get(_chu_h) == _khach_h: _ta_rel = 'Chủ SINH Khách → HUNG'
+                    else: _ta_rel = 'Tỷ Hòa'
+                chu_khach = f"Chủ({_chu_h}) vs Khách({_khach_h}) → {_ta_rel}"
+            # Cách Cục
+            _cach_cuc = _ta_data.get('cach_cuc', [])
+            if _cach_cuc:
+                ta_cuc = ' | '.join([cc[:30] for cc in _cach_cuc[:3]])
+            else:
+                ta_cuc = 'Không có cách cục đặc biệt'
+        except Exception:
+            pass
         
         # === Fill template ===
         slots = {
@@ -6947,7 +7145,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V32.2 Unified Index + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V33.0 Full Pipeline + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
@@ -7258,6 +7456,45 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     reason = v31_primary.get('dung_than_reason', '')
                     self.log_step("V32.5 Grammar", "DT_OVERRIDE", 
                                   f"Hỏi {purpose} {focus} → DT={parser_dt} | {reason[:60]}")
+                
+                # V33.0: TOPIC-AWARE DT CORRECTION
+                # Trong Lục Hào, DT theo CHỦ ĐỀ hỏi, KHÔNG theo NGƯỜI hỏi:
+                # - Hỏi BỆNH (cho ai cũng vậy) → DT = Quan Quỷ
+                # - Hỏi TIỀN/TÀI SẢN → DT = Thê Tài
+                # - Hỏi NHÀ/XE/HỌC → DT = Phụ Mẫu
+                # - Hỏi CON CÁI (sinh/đỗ) → DT = Tử Tôn
+                q_lower = question.lower()
+                _topic_dt_override = None
+                
+                # BỆNH → QQ bất kể person
+                if any(kw in q_lower for kw in ['bệnh', 'ung thư', 'khỏi', 'sống', 'chết', 
+                    'phẫu thuật', 'mổ', 'khỏe', 'ốm', 'sức khỏe']):
+                    if detected_category in ('SỨC_KHỎE_GIA_ĐÌNH', 'SỨC_KHỎE', 'CHUNG'):
+                        _topic_dt_override = 'Quan Quỷ'
+                
+                # TÀI CHÍNH → TT
+                elif any(kw in q_lower for kw in ['tiền', 'tài chính', 'đầu tư', 'lương', 'nợ']):
+                    _topic_dt_override = 'Thê Tài'
+                
+                # Hỏi CON sinh/đỗ → TT (Tử Tôn)
+                elif any(kw in q_lower for kw in ['con dâu', 'con rể', 'con trai', 'con gái']):
+                    if any(kw in q_lower for kw in ['sinh', 'đẻ', 'mang thai']):
+                        _topic_dt_override = 'Tử Tôn'
+                    elif any(kw in q_lower for kw in ['thi', 'đỗ', 'học']):
+                        _topic_dt_override = 'Tử Tôn'
+                
+                # ĐỐI TÁC → Quan Quỷ (xem họ như Ứng)
+                elif any(kw in q_lower for kw in ['đối tác', 'khách hàng', 'người lạ']):
+                    _topic_dt_override = 'Quan Quỷ'
+                
+                # NĂM NAY chung → QQ (default)
+                elif detected_category == 'CHUNG' and dung_than == 'Bản Thân':
+                    _topic_dt_override = 'Quan Quỷ'
+                
+                if _topic_dt_override and _topic_dt_override != dung_than:
+                    self.log_step("V33.0 TopicDT", "CORRECT",
+                                  f"Topic override: {dung_than} → {_topic_dt_override} (chủ đề > người)")
+                    dung_than = _topic_dt_override
                 
                 # Hiển thị bảng phân tách
                 if len(v31_parsed_questions) > 1:
