@@ -1541,16 +1541,19 @@ NGU_HANH_DETECT = {
 class FreeAIHelper:
 
     """
-    Offline AI V34.0 — Lượng Hóa Suy Vượng Toàn Diện + 3 Tầng Unified Strength.
-    V34.0: Topic-Aware DT Correction + 100% SĐ_MASTER slot coverage + Priority DT matching.
+    Offline AI V34.6 — SUBJECT-FIRST DT + Detective Validator + Flexible Answers.
+    V34.6: Full Năm-Tháng-Ngày-Giờ Ứng Kỳ + Vạn Vật Loại Tượng chi tiết.
+    V34.4: Thám Tử Kiểm Chứng + Linh Hoạt câu trả lời (THẾ NÀO/AI/CÁI GÌ).
+    V34.3: Decisive Conclusions — không còn mơ hồ (LỠ CỠ/CÒN PHẢI XEM).
+    V34.2: SUBJECT-FIRST DT Engine + Word Boundary + 265 test 100%.
     Kế thừa V21.0: Weighted scoring 5 PP, Tiến/Thối Thần, Nguyệt Phá.
     Kế thừa V12.0: Lục Thân Relationship Engine.
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V34.0 Unified Index + Offline Engine)"
-        self.version = "V34.0-Full-Pipeline"
-        self.model_name = "offline-rule-engine-v22.0"
+        self.name = "Thiên Cơ Đại Sư (V34.6 Detective + Flexible + Full Ứng Kỳ)"
+        self.version = "V34.6-Full-Pipeline"
+        self.model_name = "offline-rule-engine-v34.6"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
