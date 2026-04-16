@@ -1,0 +1,11 @@
+{
+  "master": {
+    "total_ok": 1980,
+    "total_all": 1980,
+    "qmark_slots": [],
+    "missing_slots": [],
+    "na_slots": [],
+    "unfilled_slots": []
+  },
+  "question_diagrams": {}
+}

@@ -22,13 +22,13 @@ V31.0: Thêm SĐ_MASTER — SƠ ĐỒ QUAN TRỌNG NHẤT
 
 DIAGRAM_MASTER = {
     'id': 'SD_MASTER',
-    'name': 'SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT LOẠI TƯỢNG (V33.0 FULL)',
+    'name': 'SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT LOẠI TƯỢNG (V34.0 FULL)',
     'pp_goc': ['Lục Hào', 'Kỳ Môn', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất'],
     'keywords': [],  # Luôn hiển thị — không cần match
-    'description': 'Sơ đồ trung tâm V33.0: Tất cả yếu tố TOÀN BỘ 6 phương pháp tác động lên DT',
+    'description': 'Sơ đồ trung tâm V34.0: Tất cả yếu tố TOÀN BỘ 6 phương pháp tác động lên DT',
     'template': """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  📐 SĐ MASTER V33.0: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
+║  📐 SĐ MASTER V34.0: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                            ║
 ║  ① XÁC ĐỊNH DỤNG THẦN                                                     ║
@@ -590,6 +590,9 @@ def match_question_to_diagram(question):
     """Match câu hỏi vào sơ đồ tương tác phù hợp nhất.
     Returns: (diagram_id, diagram_info)
     Luôn kèm SĐ_MASTER.
+    
+    V34.0: Question-type keywords (ai, tại sao, khi nào...) get 3x priority
+    vì chúng xác định LOẠI câu hỏi, không phải chủ đề.
     """
     if not question:
         return 'SD0', DIAGRAMS['SD0']
@@ -598,13 +601,27 @@ def match_question_to_diagram(question):
     best_id = 'SD0'
     best_score = 0
     
+    # V34.0: Keywords xác định LOẠI câu hỏi → ưu tiên ×3
+    _QTYPE_PRIORITY = {
+        'ai ', 'là ai', 'người nào',                         # SD13
+        'tại sao', 'vì sao', 'nguyên nhân', 'do đâu',       # SD14
+        'khi nào', 'bao giờ', 'lúc nào', 'bao lâu',         # SD5
+        'ở đâu', 'hướng nào', 'phương nào', 'chỗ nào',      # SD4
+        'thế nào', 'như thế nào', 'ra sao',                  # SD15
+        'cái nào', 'nên chọn', 'hay là',                     # SD16
+        'cái gì', 'loại gì', 'là gì',                        # SD3
+        'tuổi', 'bao nhiêu tuổi', 'mấy tuổi',               # SD2
+        'đi', 'xuất hành', 'du lịch', 'chuyến đi',           # SD12
+    }
+    
     for d_id, d_info in DIAGRAMS.items():
         if d_id == 'SD0':
             continue  # SD0 là fallback
         score = 0
         for kw in d_info.get('keywords', []):
             if kw in q:
-                score += len(kw)
+                weight = 3 if kw in _QTYPE_PRIORITY else 1
+                score += len(kw) * weight
         if score > best_score:
             best_score = score
             best_id = d_id
