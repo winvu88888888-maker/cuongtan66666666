@@ -1,9 +1,9 @@
 import streamlit as st
 
-# VERSION: 2026-04-16-V34.0-FULL-PIPELINE
+# VERSION: 2026-04-16-V34.8-FULL-PIPELINE
 try:
     st.set_page_config(
-        page_title="🔮 Kỳ Môn AI V34.0",
+        page_title="🔮 Kỳ Môn AI V34.8",
     page_icon="☯️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -124,7 +124,7 @@ st.sidebar.markdown("""
         <code style='color: #4CAF50; background: none;'>🚀 MODEL: GEMINI-2.5-PRO</code>
     </div>
     <div style='margin-top: 10px; font-size: 0.8em; color: #a0aec0;'>
-        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V34.0</b> —<br>Full Pipeline + Offline Engine (6 Môn + Vạn Vật 2226+)
+        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ V34.8</b> —<br>Full Pipeline + Offline Engine (6 Môn + Vạn Vật 2226+)
     </div>
 </div>
 """, unsafe_allow_html=True)
