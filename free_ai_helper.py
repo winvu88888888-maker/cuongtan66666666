@@ -467,6 +467,8 @@ def _get_dung_than(question):
         ('anh chị em', 'Huynh Đệ'), ('anh em', 'Huynh Đệ'),
         ('đối thủ cạnh tranh', 'Huynh Đệ'),
         ('đồng nghiệp', 'Huynh Đệ'), ('đối thủ', 'Huynh Đệ'),
+        ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
+        ('lô đề', 'Huynh Đệ'),
         ('bạn', 'Huynh Đệ'), ('anh', 'Huynh Đệ'), ('chị', 'Huynh Đệ'), ('em', 'Huynh Đệ'),
 
         # Bản Thân
@@ -477,9 +479,23 @@ def _get_dung_than(question):
     best_pos = len(q) + 1
     best_dt = None
     best_kw = ''
+    
+    # Danh sách keywords ngắn cần kiểm tra word boundary
+    # (tránh 'anh' trong 'kinh doanh', 'em' trong 'xem', 'chị' trong 'chỉ')
+    _SHORT_BOUNDARY = {'anh', 'em', 'chị', 'bạn', 'con', 'áo', 'mộ', 'xe', 'tàu'}
+    
     for kw, dt in _SUBJECT_DT:
         pos = q.find(kw)
         if pos >= 0:
+            # Word boundary check cho keywords ngắn (≤3 chars)
+            if kw in _SHORT_BOUNDARY:
+                # Kiểm tra trước và sau keyword phải là space, đầu/cuối câu, hoặc dấu
+                before_ok = (pos == 0) or (q[pos-1] in ' ,;.!?')
+                after_pos = pos + len(kw)
+                after_ok = (after_pos >= len(q)) or (q[after_pos] in ' ,;.!?')
+                if not (before_ok and after_ok):
+                    continue  # Skip false positive
+            
             # Ưu tiên: vị trí sớm nhất, nếu cùng vị trí thì keyword dài hơn thắng
             if pos < best_pos or (pos == best_pos and len(kw) > len(best_kw)):
                 best_pos = pos
@@ -497,17 +513,19 @@ def _get_dung_than(question):
         ('học', 'Phụ Mẫu'), ('thi', 'Phụ Mẫu'), ('trường', 'Phụ Mẫu'),
         ('cúng', 'Phụ Mẫu'),
 
-        # Thê Tài — mua bán, đầu tư, mất
+        # Thê Tài — mua bán, đầu tư, mất, tình duyên
         ('ngoại tình', 'Thê Tài'), ('đầu tư', 'Thê Tài'),
         ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'),
-        ('mua', 'Thê Tài'), ('bán', 'Thê Tài'),
+        ('tình duyên', 'Thê Tài'), ('kết hôn', 'Thê Tài'), ('ly hôn', 'Thê Tài'),
+        ('kinh doanh', 'Thê Tài'), ('buôn bán', 'Thê Tài'),
+        ('mua', 'Thê Tài'), ('bán', 'Thê Tài'), ('vay', 'Thê Tài'),
         ('mất', 'Thê Tài'), ('trộm', 'Thê Tài'), ('cắp', 'Thê Tài'),
         ('lãi', 'Thê Tài'), ('lời', 'Thê Tài'), ('lỗ', 'Thê Tài'),
         ('tài', 'Thê Tài'),
 
         # Quan Quỷ — bệnh, kiện, tai nạn, việc
         ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'),
-        ('kiện tụng', 'Quan Quỷ'), ('kiện cáo', 'Quan Quỷ'),
+        ('kiện tụng', 'Quan Quỷ'), ('kiện cáo', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'),
         ('ung thư', 'Quan Quỷ'), ('tai nạn', 'Quan Quỷ'),
         ('trầm cảm', 'Quan Quỷ'), ('lo âu', 'Quan Quỷ'),
         ('hỏa hoạn', 'Quan Quỷ'), ('lũ lụt', 'Quan Quỷ'), ('động đất', 'Quan Quỷ'),
