@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V35.6"
+APP_VERSION = "V35.8"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Full Pipeline + Offline Engine + Vạn Vật 2226+)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
