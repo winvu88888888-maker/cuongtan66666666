@@ -9245,33 +9245,41 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             elif is_yesno:
                 if _is_pct_good:
                     final_parts.append(f"### ✅ CÂU TRẢ LỜI: CÓ — {overall_short}")
-                    final_parts.append(f"Quẻ cho thấy {dung_than} vượng (Weighted Score: {weighted_pct}%), điều kiện THUẬN LỢI.")
-                    # Advice per category
-                    if detected_category == 'TÀI_CHÍNH':
-                        final_parts.append(f"- 💰 Thời điểm tốt để giao dịch. Kiểm tra kỹ giấy tờ, hợp đồng.")
-                        final_parts.append(f"- Nên hành động nhanh, tận dụng cơ hội trước khi khí chuyển.")
-                    elif detected_category == 'CÔNG_VIỆC':
-                        final_parts.append(f"- 💼 Công việc/thi cử thuận lợi. Hãy TỰ TIN hành động.")
-                        final_parts.append(f"- Có quý nhân hỗ trợ, nắm bắt cơ hội ngay.")
-                    elif detected_category == 'TÌNH_CẢM':
-                        final_parts.append(f"- 💕 Duyên phận thuận lợi, mối quan hệ có triển vọng tốt đẹp.")
-                    else:
-                        final_parts.append(f"- Nên hành động sớm, tận dụng thời cơ.")
+                    final_parts.append(f"Quẻ cho thấy {dung_than} **{ts_stage or 'Vượng'}** (Weighted: {weighted_pct}%), điều kiện THUẬN LỢI.")
+                    # V35.2: LUẬN CỤ THỂ TỪ QUẺ — không chỉ nói chung chung
+                    final_parts.append(f"\n**📐 Luận giải từ quẻ:**")
+                    final_parts.append(f"- Dụng Thần **{dung_than}** ({hanh_dt_v22}) đang ở trạng thái **{ts_stage or 'Vượng'}** ({ngu_khi_state_v22})")
+                    if ky_mon_reason:
+                        final_parts.append(f"- 🏯 **Kỳ Môn ({ky_mon_verdict}):** {ky_mon_reason}")
+                    if luc_hao_reason:
+                        final_parts.append(f"- 📿 **Lục Hào ({luc_hao_verdict}):** {luc_hao_reason}")
+                    if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 150:
+                        final_parts.append(f"- 🌸 **Mai Hoa ({mai_hoa_verdict}):** {mai_hoa_reason}")
+                    if luc_nham_reason:
+                        final_parts.append(f"- 🔮 **Đại Lục Nhâm ({luc_nham_verdict}):** {luc_nham_reason}")
+                    final_parts.append(f"- 💡 **Khuyên:** Nên hành động sớm, {dung_than} đang được sinh trợ.")
                 elif _is_pct_mid:
                     final_parts.append(f"### 🟡 CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — {overall_short}")
-                    final_parts.append(f"Quẻ nghiêng thuận (Weighted Score: {weighted_pct}%) — có thể tiến hành nhưng cần thận trọng.")
-                    final_parts.append(f"- Chuẩn bị phương án dự phòng trước khi hành động.")
-                    final_parts.append(f"- Nên hành động trong 1-2 tuần tới khi vận khí còn thuận.")
+                    final_parts.append(f"Quẻ nghiêng thuận (Weighted: {weighted_pct}%) nhưng {dung_than} chưa thực sự vượng.")
+                    final_parts.append(f"\n**📐 Luận giải từ quẻ:**")
+                    final_parts.append(f"- Dụng Thần **{dung_than}** ({hanh_dt_v22}) ở trạng thái **{ts_stage or 'Trung bình'}** → lực chưa đủ mạnh để khẳng định")
+                    if ky_mon_reason:
+                        final_parts.append(f"- 🏯 **Kỳ Môn ({ky_mon_verdict}):** {ky_mon_reason}")
+                    if luc_hao_reason:
+                        final_parts.append(f"- 📿 **Lục Hào ({luc_hao_verdict}):** {luc_hao_reason}")
+                    final_parts.append(f"- 💡 **Khuyên:** Chuẩn bị phương án dự phòng, chờ DT vượng lên mới hành động quyết đoán.")
                 else:
                     final_parts.append(f"### 🔴 CÂU TRẢ LỜI: KHÔNG NÊN — {overall_short}")
-                    final_parts.append(f"Quẻ cho thấy {dung_than} suy (Weighted Score: {weighted_pct}%), nhiều yếu tố CẢN TRỞ.")
-                    if detected_category == 'TÀI_CHÍNH':
-                        final_parts.append(f"- ❌ Không nên giao dịch lớn lúc này. Chờ 2-4 tuần.")
-                        final_parts.append(f"- Huynh Đệ (kiếp tài) mạnh → dễ mất tiền, hao tài.")
-                    elif detected_category == 'CÔNG_VIỆC':
-                        final_parts.append(f"- ❌ Chưa phải lúc. Nên chuẩn bị thêm, chờ thời cơ mới.")
-                    else:
-                        final_parts.append(f"- ❌ Kiên nhẫn chờ đợi, tìm quý nhân hỗ trợ.")
+                    final_parts.append(f"Quẻ cho thấy {dung_than} **{ts_stage or 'Suy'}** (Weighted: {weighted_pct}%), nhiều yếu tố CẢN TRỞ.")
+                    final_parts.append(f"\n**📐 Luận giải từ quẻ:**")
+                    final_parts.append(f"- Dụng Thần **{dung_than}** ({hanh_dt_v22}) đang ở trạng thái **{ts_stage or 'Suy'}** ({ngu_khi_state_v22}) → sức yếu")
+                    if ky_mon_reason:
+                        final_parts.append(f"- 🏯 **Kỳ Môn ({ky_mon_verdict}):** {ky_mon_reason}")
+                    if luc_hao_reason:
+                        final_parts.append(f"- 📿 **Lục Hào ({luc_hao_verdict}):** {luc_hao_reason}")
+                    if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 150:
+                        final_parts.append(f"- 🌸 **Mai Hoa ({mai_hoa_verdict}):** {mai_hoa_reason}")
+                    final_parts.append(f"- 💡 **Khuyên:** Kiên nhẫn chờ đợi, tìm quý nhân hỗ trợ.")
                         
             elif is_when:
                 final_parts.append(f"### ⏰ CÂU TRẢ LỜI VỀ THỜI GIAN")
@@ -9304,21 +9312,46 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     
             elif is_count_q:
                 final_parts.append(f"### 📊 CÂU TRẢ LỜI VỀ SỐ LƯỢNG")
+                # V35.2: LUẬN SỐ TỪ HÀ ĐỒ / LẠC THƯ — cách thầy thật sự phán
+                HA_DO_SO = {
+                    'Kim': {'so_sinh': 4, 'so_thanh': 9, 'giai_thich': 'Kim sinh số 4, thành số 9'},
+                    'Mộc': {'so_sinh': 3, 'so_thanh': 8, 'giai_thich': 'Mộc sinh số 3, thành số 8'},
+                    'Thủy': {'so_sinh': 1, 'so_thanh': 6, 'giai_thich': 'Thủy sinh số 1, thành số 6'},
+                    'Hỏa': {'so_sinh': 2, 'so_thanh': 7, 'giai_thich': 'Hỏa sinh số 2, thành số 7'},
+                    'Thổ': {'so_sinh': 5, 'so_thanh': 10, 'giai_thich': 'Thổ sinh số 5, thành số 10'},
+                }
+                hanh_info = HA_DO_SO.get(hanh_dt_v22, HA_DO_SO['Thổ'])
+                
+                # V35.2: DT VƯỢNG → lấy số THÀNH (lớn), DT SUY → lấy số SINH (nhỏ)
+                VUONG_STAGES = ['Đế Vượng', 'Lâm Quan', 'Quan Đới', 'Trường Sinh']
+                SUY_STAGES = ['Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt']
+                
+                if ts_stage in VUONG_STAGES or weighted_pct >= 55:
+                    so_chinh = hanh_info['so_thanh']
+                    ly_do_so = f"DT {dung_than} ({hanh_dt_v22}) đang **{ts_stage or 'Vượng'}** → lấy số THÀNH"
+                elif ts_stage in SUY_STAGES or weighted_pct < 45:
+                    so_chinh = hanh_info['so_sinh']
+                    ly_do_so = f"DT {dung_than} ({hanh_dt_v22}) đang **{ts_stage or 'Suy'}** → lấy số SINH"
+                else:
+                    so_chinh = hanh_info['so_sinh']
+                    ly_do_so = f"DT {dung_than} ({hanh_dt_v22}) ở mức trung bình → lấy số SINH"
+                
+                final_parts.append(f"**📐 Luận theo Hà Đồ/Lạc Thư:**")
+                final_parts.append(f"- Dụng Thần **{dung_than}** thuộc hành **{hanh_dt_v22}** → {hanh_info['giai_thich']}")
+                final_parts.append(f"- {ly_do_so}")
+                final_parts.append(f"- 🔢 **Con số chính: {so_chinh}** (hoặc bội số: {so_chinh}, {so_chinh*2 if so_chinh*2 <= 20 else ''})")
+                final_parts.append(f"- 📊 Phạm vi: **{hanh_info['so_sinh']} — {hanh_info['so_thanh']}**")
+                
+                # Nếu có count_numbers từ quẻ cụ thể → bổ sung
                 if count_numbers:
                     all_nums_s = [n for _, n in count_numbers]
-                    avg_s = int(round(sum(all_nums_s) / len(all_nums_s))) if all_nums_s else 0
+                    avg_s = int(round(sum(all_nums_s) / len(all_nums_s))) if all_nums_s else so_chinh
                     detail_s = ', '.join(f'{pp}={n}' for pp, n in count_numbers)
-                    final_parts.append(f"- Kết luận: Khoảng **{avg_s}** (từ {len(count_numbers)} phương pháp: {detail_s})")
-                else:
-                    # Estimate from verdict count
-                    if _cat_count >= 4: est_count = '4-5+'
-                    elif _cat_count >= 3: est_count = '2-3'
-                    elif _cat_count >= 2: est_count = '1-2'
-                    else: est_count = '0-1'
-                    final_parts.append(f"- Ước tính: Khoảng **{est_count}** (dựa trên {_cat_count}/5 PP CÁT)")
-                # Thêm vạn vật mapping liên quan
-                vv_key_c, vv_data_c = _get_van_vat_from_pct(pct_short)
-                final_parts.append(f"- Vạn Vật: {vv_data_c['so_luong']} | Con số: {vv_data_c['so']}")
+                    final_parts.append(f"- 📎 Xác nhận từ quẻ: {detail_s} → trung bình **{avg_s}**")
+                
+                # Thêm Vạn Vật
+                vv_key_c, vv_data_c = _get_van_vat_from_pct(weighted_pct)
+                final_parts.append(f"- 🎯 Vạn Vật: {vv_data_c.get('so_luong', '?')} | Con số: {vv_data_c.get('so', '?')}")
                     
             elif is_find:
                 final_parts.append(f"### 📍 CÂU TRẢ LỜI VỀ VỊ TRÍ/HƯỚNG")
@@ -9413,19 +9446,35 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 final_parts.append(f"### 🔮 CÂU TRẢ LỜI")
                 if weighted_pct >= 70:
                     final_parts.append(f"- ✅ **ĐẠI CÁT** (Weighted: {weighted_pct}%). Tình hình rất khả quan.")
-                    final_parts.append(f"- {dung_than} vượng → bạn đang ở thế chủ động, tự tin hành động.")
                 elif _is_pct_good:
                     final_parts.append(f"- ✅ **CÁT** (Weighted: {weighted_pct}%). Tình hình thuận lợi.")
-                    final_parts.append(f"- {dung_than} có lực → nắm bắt cơ hội.")
                 elif _is_pct_mid:
-                    final_parts.append(f"- 🟡 **NGHIÊNG THUẬN** (Weighted: {weighted_pct}%). Có thể tiến hành.")
-                    final_parts.append(f"- Chuẩn bị phương án dự phòng, hành động thận trọng.")
+                    final_parts.append(f"- 🟡 **{overall_short}** (Weighted: {weighted_pct}%). Cần cân nhắc.")
                 elif weighted_pct < 30:
                     final_parts.append(f"- 🔴 **ĐẠI HUNG** (Weighted: {weighted_pct}%). Tình hình bất lợi nghiêm trọng.")
-                    final_parts.append(f"- Không nên ép buộc, chờ chu kỳ mới khởi phát.")
                 else:
                     final_parts.append(f"- 🔴 **HUNG** (Weighted: {weighted_pct}%). Nhiều trở ngại.")
-                    final_parts.append(f"- Kiên nhẫn chờ đợi, tìm quý nhân, tránh liều lĩnh.")
+                
+                # V35.2: LUẬN GIẢI CỤ THỂ TỪ QUẺ — thay vì template chung chung
+                final_parts.append(f"\n**📐 Luận giải từ quẻ:**")
+                final_parts.append(f"- Dụng Thần **{dung_than}** ({hanh_dt_v22}) — Trạng thái: **{ts_stage or '?'}** ({ngu_khi_state_v22})")
+                if ky_mon_reason:
+                    final_parts.append(f"- 🏯 **Kỳ Môn ({ky_mon_verdict}):** {ky_mon_reason}")
+                if luc_hao_reason:
+                    final_parts.append(f"- 📿 **Lục Hào ({luc_hao_verdict}):** {luc_hao_reason}")
+                if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 150:
+                    final_parts.append(f"- 🌸 **Mai Hoa ({mai_hoa_verdict}):** {mai_hoa_reason}")
+                if luc_nham_reason:
+                    final_parts.append(f"- 🔮 **Đại Lục Nhâm ({luc_nham_verdict}):** {luc_nham_reason}")
+                if thai_at_reason:
+                    final_parts.append(f"- ⭐ **Thái Ất ({thai_at_verdict}):** {thai_at_reason}")
+                
+                if _is_pct_good:
+                    final_parts.append(f"- 💡 **Khuyên:** {dung_than} được sinh trợ, nắm bắt cơ hội hành động.")
+                elif _is_pct_bad:
+                    final_parts.append(f"- 💡 **Khuyên:** {dung_than} suy yếu, kiên nhẫn chờ thời cơ, tìm quý nhân.")
+                else:
+                    final_parts.append(f"- 💡 **Khuyên:** Cân nhắc kỹ, chuẩn bị phương án dự phòng.")
             
             # ═══════ GIẢI THÍCH TẠI SAO ═══════
             final_parts.append(f"\n### 📋 TẠI SAO KẾT LUẬN NHƯ VẬY?")
