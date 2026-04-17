@@ -1733,8 +1733,8 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V35.0 Weighted-PCT + Detective + Full Ứng Kỳ)"
-        self.version = "V35.0-Full-Pipeline"
+        self.name = "Thiên Cơ Đại Sư (V35.8 PERSON+TOPIC DT + Smart Conclusion)"
+        self.version = "V35.8-Full-Pipeline"
         self.model_name = "offline-rule-engine-v35.0"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
@@ -3836,7 +3836,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 
                 # V34.0: INJECT SĐ MASTER VÀO PROMPT — AI ĐỌC TẤT CẢ 60+ YẾU TỐ
                 f"<sd_master_v33>\n"
-                f"═══ SĐ MASTER V34.0: TẤT CẢ YẾU TỐ TỪ 6 PP ═══\n"
+                f"═══ SĐ MASTER V35.8: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG ═══\n"
                 f"ĐỌC SƠ ĐỒ NÀY ĐỂ TRÍCH XUẤT DỮ LIỆU CHO CÂU TRẢ LỜI.\n"
                 f"Mỗi yếu tố đã được tính toán OFFLINE — BẠN CHỈ CẦN ĐỌC VÀ SUY LUẬN.\n\n"
                 f"{od.get('v31_master_diagram', '[SĐ MASTER chưa tính]')}\n"
@@ -7953,7 +7953,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V35.0 Full Pipeline + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V35.8 Full Pipeline + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
@@ -9302,7 +9302,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V35.0")
+            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V35.8")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
             final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Weighted Score: {weighted_pct}%)")
