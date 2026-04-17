@@ -1367,7 +1367,7 @@ with st.expander(expander_title, expanded=not is_connected):
     # 2. UNIFIED KEY INPUT — 1 Ô Duy Nhất
     st.markdown("👉 [Lấy Gemini API Key miễn phí](https://aistudio.google.com/app/apikey)")
     
-    user_api_input = st.text_area("📋 Dán API Key vào đây:", height=80, key="input_api_key_smart_unified", placeholder="AIzaSy... (hỗ trợ dán nhiều key cùng lúc)")
+    user_api_input = st.text_area("📋 Dán API Key vào đây:", height=80, key="input_api_key_smart_unified", placeholder="AIzaSy... hoặc AQ.Ab8... (hỗ trợ dán nhiều key cùng lúc)")
     
     # --- 2 NÚT HÀNH ĐỘNG ---
     btn_col1, btn_col2 = st.columns(2)
@@ -1424,7 +1424,7 @@ with st.expander(expander_title, expanded=not is_connected):
                     # Bước 1: Kích hoạt ngay trong session
                     temp_helper = GeminiQMDGHelper(user_api_input)
                     if not temp_helper.api_keys:
-                        st.error("❌ Không tìm thấy API Key hợp lệ (AIza...) trong văn bản.")
+                        st.error("❌ Không tìm thấy API Key hợp lệ (AIza... hoặc AQ...) trong văn bản.")
                     else:
                         success, msg = temp_helper.test_connection()
                         st.session_state.gemini_helper = temp_helper

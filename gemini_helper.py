@@ -28,13 +28,17 @@ class GeminiQMDGHelper:
     
     def __init__(self, api_key_input):
         # --- 1. KEY PARSING (Robost) ---
+        # V35.8: Google đổi định dạng key: AIzaSy... (cũ) + AQ.Ab8... (mới 2025+)
         import re
-        keys_from_regex = re.findall(r"AIza[0-9A-Za-z-_]{35,}", str(api_key_input))
+        # Match OLD format: AIzaSy...
+        keys_old = re.findall(r"AIza[0-9A-Za-z-_]{35,}", str(api_key_input))
+        # Match NEW format: AQ.Ab8... (Google Cloud 2025+)
+        keys_new = re.findall(r"AQ\.[A-Za-z0-9_-]{30,}", str(api_key_input))
         raw_text = str(api_key_input).replace("\n", ",").replace(";", ",")
-        keys_from_split = [k.strip() for k in raw_text.split(',') if len(k.strip()) > 30 and "AIza" in k]
-        all_candidates = keys_from_regex + keys_from_split
+        keys_from_split = [k.strip() for k in raw_text.split(',') if len(k.strip()) > 20 and ("AIza" in k or "AQ." in k)]
+        all_candidates = keys_old + keys_new + keys_from_split
         self.api_keys = list(dict.fromkeys(all_candidates)) 
-        self.api_keys = [k for k in self.api_keys if len(k) > 30]
+        self.api_keys = [k for k in self.api_keys if len(k) > 20]
 
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
