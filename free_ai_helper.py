@@ -643,17 +643,22 @@ def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pc
                      mai_hoa_verdict='', mai_hoa_reason='', luc_nham_reason='', thai_at_reason='',
                      detected_category=''):
     """
-    V35.4: TAM THỜI LUẬN GIẢI — LINH HOẠT theo câu hỏi + dữ liệu quẻ thực tế.
-    Không dùng template cố định — mỗi câu hỏi cho kết quả khác nhau.
+    V35.5: TAM THỜI LUẬN GIẢI — TÍNH SỨC MẠNH THỰC TẾ cho mỗi thời kỳ.
+    Dùng TS_STRENGTH (điểm sức mạnh) cho mỗi giai đoạn 12 Trường Sinh.
+    Không dùng mô tả cố định — verdict VƯỢNG/BÌNH/SUY tính từ điểm thực.
     """
     lines = []
     lines.append(f"\n### 🔮 TAM THỜI LUẬN GIẢI (Quá Khứ → Hiện Tại → Tương Lai)")
     
-    q = question.lower()
-    
-    # Chu kỳ 12 Trường Sinh
+    # Chu kỳ 12 Trường Sinh + ĐIỂM SỨC MẠNH mỗi giai đoạn
     TS_CYCLE = ['Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Đế Vượng',
                 'Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt', 'Thai', 'Dưỡng']
+    
+    TS_STRENGTH = {
+        'Trường Sinh': 60, 'Mộc Dục': 35, 'Quan Đới': 50, 'Lâm Quan': 75,
+        'Đế Vượng': 90, 'Suy': 40, 'Bệnh': 25, 'Tử': 10,
+        'Mộ': 15, 'Tuyệt': 5, 'Thai': 20, 'Dưỡng': 45,
+    }
     
     current_ts = ts_stage or 'Quan Đới'
     try:
@@ -663,104 +668,98 @@ def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pc
     except ValueError:
         idx, prev_ts, next_ts = 2, 'Mộc Dục', 'Lâm Quan'
     
-    # === Xác định ngữ cảnh theo LOẠI CÂU HỎI + CHỦ ĐỀ ===
+    prev_str = TS_STRENGTH.get(prev_ts, 50)
+    curr_str = TS_STRENGTH.get(current_ts, 50)
+    next_str = TS_STRENGTH.get(next_ts, 50)
+    
     # DT → ngữ cảnh cụ thể
     DT_CONTEXT = {
-        'Phụ Mẫu': {'doi_tuong': 'nhà cửa/giấy tờ/bề trên', 'hanh_dong': 'mua bán nhà đất/học hành'},
-        'Thê Tài': {'doi_tuong': 'tiền bạc/tài sản/người yêu', 'hanh_dong': 'đầu tư/giao dịch/tình cảm'},
-        'Quan Quỷ': {'doi_tuong': 'công việc/sếp/kiện tụng', 'hanh_dong': 'thăng tiến/chữa bệnh'},
-        'Tử Tôn': {'doi_tuong': 'con cái/giải trí/thuốc men', 'hanh_dong': 'vui chơi/chữa trị'},
-        'Huynh Đệ': {'doi_tuong': 'anh em/bạn bè/đối thủ', 'hanh_dong': 'cạnh tranh/hợp tác'},
+        'Phụ Mẫu': 'nhà cửa/giấy tờ/bề trên',
+        'Thê Tài': 'tiền bạc/tài sản/người yêu',
+        'Quan Quỷ': 'công việc/sếp/kiện tụng',
+        'Tử Tôn': 'con cái/giải trí/thuốc men',
+        'Huynh Đệ': 'anh em/bạn bè/đối thủ',
     }
-    ctx = DT_CONTEXT.get(dung_than, {'doi_tuong': 'sự việc', 'hanh_dong': 'hành động'})
+    dt_obj = DT_CONTEXT.get(dung_than, 'sự việc')
     
-    # Ngũ Hành sinh/khắc relationship cho reasoning
+    # Ngũ Hành sinh/khắc
     HANH_SINH = {'Kim': 'Thổ sinh Kim', 'Mộc': 'Thủy sinh Mộc', 'Thủy': 'Kim sinh Thủy', 'Hỏa': 'Mộc sinh Hỏa', 'Thổ': 'Hỏa sinh Thổ'}
     HANH_KHAC = {'Kim': 'Hỏa khắc Kim', 'Mộc': 'Kim khắc Mộc', 'Thủy': 'Thổ khắc Thủy', 'Hỏa': 'Thủy khắc Hỏa', 'Thổ': 'Mộc khắc Thổ'}
     
-    # 12TS → mô tả PHÙ HỢP theo DT context
-    TS_QK_MAP = {
-        'Trường Sinh': f'{ctx["doi_tuong"]} vừa mới bắt đầu hình thành, chưa có nền tảng',
-        'Mộc Dục': f'{ctx["doi_tuong"]} đã có nhưng trải qua biến động, thay đổi chủ/cải tạo',
-        'Quan Đới': f'{ctx["doi_tuong"]} đã ổn định sau giai đoạn khó khăn, đang tích lũy',
-        'Lâm Quan': f'{ctx["doi_tuong"]} đã phát triển tốt, có nền tảng vững chắc',
-        'Đế Vượng': f'{ctx["doi_tuong"]} đã ở đỉnh cao, nhiều thành tựu trong quá khứ',
-        'Suy': f'{ctx["doi_tuong"]} đã qua thời hoàng kim, bắt đầu có dấu hiệu giảm sút',
-        'Bệnh': f'{ctx["doi_tuong"]} đã gặp trở ngại, có vấn đề kéo dài lâu',
-        'Tử': f'{ctx["doi_tuong"]} đã trải qua tổn thất lớn, gần như đình trệ',
-        'Mộ': f'{ctx["doi_tuong"]} đã kết thúc một giai đoạn, đang bị giữ lại/đóng băng',
-        'Tuyệt': f'{ctx["doi_tuong"]} đã cạn kiệt năng lượng, trống rỗng',
-        'Thai': f'{ctx["doi_tuong"]} vừa có mầm mống mới sau giai đoạn trống rỗng',
-        'Dưỡng': f'{ctx["doi_tuong"]} đang được nuôi dưỡng, chuẩn bị cho bước tiếp theo',
-    }
+    # === HÀM TÍNH VERDICT + MÔ TẢ TỪ ĐIỂM SỨC MẠNH ===
+    def _strength_verdict(strength, stage, obj):
+        """Tạo mô tả LINH HOẠT từ điểm sức mạnh thực tế"""
+        if strength >= 75:
+            return f"🟢 **CỰC VƯỢNG** ({strength}%)", f"{obj} rất mạnh, thuận lợi, phát triển đỉnh cao"
+        elif strength >= 55:
+            return f"🔵 **VƯỢNG** ({strength}%)", f"{obj} có lực, đang phát triển tốt"
+        elif strength >= 40:
+            return f"🟡 **BÌNH** ({strength}%)", f"{obj} ở mức trung bình, không nổi bật"
+        elif strength >= 20:
+            return f"🟠 **SUY** ({strength}%)", f"{obj} yếu, gặp trở ngại, cần hỗ trợ"
+        else:
+            return f"🔴 **CỰC SUY** ({strength}%)", f"{obj} rất yếu, gần như đình trệ"
     
-    TS_HT_MAP = {
-        'Trường Sinh': f'{ctx["doi_tuong"]} đang khởi đầu mới, sinh sôi',
-        'Mộc Dục': f'{ctx["doi_tuong"]} đang bị thử thách, chưa ổn định',
-        'Quan Đới': f'{ctx["doi_tuong"]} đang chuẩn bị, tích lũy, sắp đến thời cơ',
-        'Lâm Quan': f'{ctx["doi_tuong"]} đang phát triển mạnh, thăng tiến',
-        'Đế Vượng': f'{ctx["doi_tuong"]} đang ở ĐỈNH CAO, cực thịnh',
-        'Suy': f'{ctx["doi_tuong"]} đang yếu dần, sức lực giảm sút',
-        'Bệnh': f'{ctx["doi_tuong"]} đang gặp trở ngại lớn, trì trệ',
-        'Tử': f'{ctx["doi_tuong"]} đang đình đốn, không hoạt động',
-        'Mộ': f'{ctx["doi_tuong"]} đang bị giữ lại, cất giấu, chờ giải phóng',
-        'Tuyệt': f'{ctx["doi_tuong"]} đang trống rỗng, chờ cơ hội mới',
-        'Thai': f'{ctx["doi_tuong"]} đang thai nghén ý tưởng/kế hoạch mới',
-        'Dưỡng': f'{ctx["doi_tuong"]} đang nuôi dưỡng, sắp cho kết quả',
-    }
+    # === TÍNH XU HƯỚNG ===
+    def _trend(prev_s, curr_s, next_s):
+        if next_s > curr_s + 10:
+            return "📈 **TĂNG MẠNH**"
+        elif next_s > curr_s:
+            return "📈 TĂNG NHẸ"
+        elif next_s < curr_s - 10:
+            return "📉 **GIẢM MẠNH**"
+        elif next_s < curr_s:
+            return "📉 GIẢM NHẸ"
+        else:
+            return "📊 ỔN ĐỊNH"
     
-    TS_TL_MAP = {
-        'Trường Sinh': f'{ctx["doi_tuong"]} sẽ bắt đầu khởi sắc, phát triển dần',
-        'Mộc Dục': f'{ctx["doi_tuong"]} sẽ trải qua biến động trước khi ổn định',
-        'Quan Đới': f'{ctx["doi_tuong"]} sẽ tích lũy dần, chờ thời cơ bùng nổ',
-        'Lâm Quan': f'{ctx["doi_tuong"]} sẽ phát triển mạnh mẽ, đạt thành tựu',
-        'Đế Vượng': f'{ctx["doi_tuong"]} sẽ đạt đỉnh cao — hành động ngay!',
-        'Suy': f'{ctx["doi_tuong"]} sẽ bắt đầu suy giảm — thịnh cực tất suy',
-        'Bệnh': f'{ctx["doi_tuong"]} sẽ gặp khó khăn, cần thay đổi chiến lược',
-        'Tử': f'{ctx["doi_tuong"]} sẽ đình trệ — cần chuyển hướng hoàn toàn',
-        'Mộ': f'{ctx["doi_tuong"]} sẽ bị đóng lại, tích trữ năng lượng',
-        'Tuyệt': f'{ctx["doi_tuong"]} cạn kiệt — nhưng Tuyệt xứ phùng sinh!',
-        'Thai': f'{ctx["doi_tuong"]} sẽ thai nghén cái mới — mầm mống hình thành',
-        'Dưỡng': f'{ctx["doi_tuong"]} sẽ chuẩn bị chu đáo, sắp hành động',
-    }
+    trend_icon = _trend(prev_str, curr_str, next_str)
     
     # ══════ QUÁ KHỨ ══════
-    lines.append(f"\n**🕰️ QUÁ KHỨ** *(12 Trường Sinh: {prev_ts} → {current_ts})*")
-    qk_text = TS_QK_MAP.get(current_ts, f'{ctx["doi_tuong"]} đã trải qua nhiều biến động')
-    lines.append(f"- {qk_text}")
-    # Kỳ Môn cho QUÁ KHỨ (Sao/Cửa phản ánh nguồn gốc)
+    qk_verdict, qk_desc = _strength_verdict(prev_str, prev_ts, dt_obj)
+    lines.append(f"\n**🕰️ QUÁ KHỨ** *(Giai đoạn: {prev_ts})*")
+    lines.append(f"- {dung_than} ({hanh_dt}) ở {prev_ts}: {qk_verdict}")
+    lines.append(f"- {qk_desc}")
+    # So sánh quá khứ vs hiện tại
+    if prev_str > curr_str:
+        lines.append(f"- ↘️ Quá khứ MẠNH hơn hiện tại ({prev_str}% → {curr_str}%) — đã đi xuống")
+    elif prev_str < curr_str:
+        lines.append(f"- ↗️ Quá khứ YẾU hơn hiện tại ({prev_str}% → {curr_str}%) — đã vươn lên")
+    # Kỳ Môn xác nhận quá khứ
     if ky_mon_reason:
-        lines.append(f"- 🏯 **Kỳ Môn ({ky_mon_verdict}):** {ky_mon_reason}")
-    # Mai Hoa cho QUÁ KHỨ (Thể quái = gốc rễ)
-    if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 150:
-        lines.append(f"- 🌸 **Mai Hoa ({mai_hoa_verdict}):** {mai_hoa_reason}")
-    # Sinh/Khắc relationship → nguyên nhân quá khứ
+        lines.append(f"- 🏯 Kỳ Môn ({ky_mon_verdict}): {ky_mon_reason}")
+    
+    # ══════ HIỆN TẠI ══════
+    ht_verdict, ht_desc = _strength_verdict(curr_str, current_ts, dt_obj)
+    lines.append(f"\n**📍 HIỆN TẠI** *(Giai đoạn: **{current_ts}** | Ngũ Khí: {ngu_khi})*")
+    lines.append(f"- {dung_than} ({hanh_dt}) ở {current_ts}: {ht_verdict}")
+    lines.append(f"- {ht_desc}")
+    lines.append(f"- Weighted Score thực tế: **{weighted_pct}%**")
+    # Sinh/Khắc giải thích
     sinh_info = HANH_SINH.get(hanh_dt, '')
     khac_info = HANH_KHAC.get(hanh_dt, '')
     if weighted_pct >= 55 and sinh_info:
-        lines.append(f"- ↗️ Nguyên nhân thuận: {sinh_info} → {dung_than} được hỗ trợ từ trước")
+        lines.append(f"- ✅ {sinh_info} → {dung_than} được sinh trợ")
     elif weighted_pct < 45 and khac_info:
-        lines.append(f"- ↘️ Nguyên nhân trở ngại: {khac_info} → {dung_than} bị chế từ trước")
-    
-    # ══════ HIỆN TẠI ══════
-    lines.append(f"\n**📍 HIỆN TẠI** *(12 Trường Sinh: **{current_ts}** | Ngũ Khí: {ngu_khi})*")
-    ht_text = TS_HT_MAP.get(current_ts, f'{ctx["doi_tuong"]} đang ở trạng thái trung bình')
-    lines.append(f"- {ht_text}")
-    lines.append(f"- **{dung_than}** ({hanh_dt}) — Sức mạnh: **{weighted_pct}%**")
-    # Lục Hào cho HIỆN TẠI (quẻ gốc = hiện trạng)
+        lines.append(f"- ❌ {khac_info} → {dung_than} bị khắc chế")
+    # Lục Hào hiện trạng
     if luc_hao_reason:
-        lines.append(f"- 📿 **Lục Hào ({luc_hao_verdict}):** {luc_hao_reason}")
-    # Đại Lục Nhâm
+        lines.append(f"- 📿 Lục Hào ({luc_hao_verdict}): {luc_hao_reason}")
     if luc_nham_reason:
-        lines.append(f"- 🔮 **Đại Lục Nhâm:** {luc_nham_reason}")
+        lines.append(f"- 🔮 Đại Lục Nhâm: {luc_nham_reason}")
     
     # ══════ TƯƠNG LAI ══════
-    lines.append(f"\n**🔮 TƯƠNG LAI** *(12 Trường Sinh: {current_ts} → **{next_ts}**)*")
-    tl_text = TS_TL_MAP.get(next_ts, f'{ctx["doi_tuong"]} sẽ tiếp tục biến đổi')
-    lines.append(f"- {tl_text}")
-    # Thái Ất cho TƯƠNG LAI (dự báo xu hướng)
+    tl_verdict, tl_desc = _strength_verdict(next_str, next_ts, dt_obj)
+    lines.append(f"\n**🔮 TƯƠNG LAI** *(Giai đoạn: **{next_ts}**)*")
+    lines.append(f"- {dung_than} ({hanh_dt}) sẽ chuyển sang {next_ts}: {tl_verdict}")
+    lines.append(f"- {tl_desc}")
+    lines.append(f"- Xu hướng: {trend_icon} ({curr_str}% → {next_str}%)")
+    # Thái Ất dự báo
     if thai_at_reason:
-        lines.append(f"- ⭐ **Thái Ất:** {thai_at_reason}")
+        lines.append(f"- ⭐ Thái Ất: {thai_at_reason}")
+    # Mai Hoa bổ sung
+    if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 150:
+        lines.append(f"- 🌸 Mai Hoa ({mai_hoa_verdict}): {mai_hoa_reason}")
     
     # Ứng Kỳ timing
     HA_DO_TIMING = {
@@ -774,27 +773,18 @@ def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pc
     if timing_info:
         lines.append(f"- ⏳ **Ứng kỳ:** {timing_info[0]}, {timing_info[1]}")
     
-    # Xu hướng cụ thể theo weighted_pct
-    if weighted_pct >= 55:
-        lines.append(f"- 📈 Xu hướng: **TĂNG** — {dung_than} đang vượng, sự việc phát triển thuận lợi")
-    elif weighted_pct >= 45:
-        lines.append(f"- 📊 Xu hướng: **ỔN ĐỊNH** — cần thêm tác nhân mới để bứt phá")
+    # Lời tiên tri — DỰA TRÊN XU HƯỚNG THỰC TẾ
+    if next_str > curr_str:
+        lines.append(f"\n> 📜 *\"{dung_than} ({hanh_dt}) đang từ {current_ts} ({curr_str}%) lên {next_ts} ({next_str}%). {dt_obj.capitalize()} sẽ khởi sắc!\"*")
+    elif next_str < curr_str - 20:
+        lines.append(f"\n> 📜 *\"{dung_than} từ {current_ts} ({curr_str}%) xuống {next_ts} ({next_str}%). Thịnh cực tất suy — hành động ngay trước khi quá muộn!\"*")
+    elif next_str < curr_str:
+        lines.append(f"\n> 📜 *\"{dung_than} sẽ giảm nhẹ ({curr_str}% → {next_str}%). Giữ vững, không nên mạo hiểm thêm.\"*")
     else:
-        lines.append(f"- 📉 Xu hướng: **GIẢM** — cần chờ đến khi {hanh_dt} vượng khí (xem Ứng Kỳ)")
-    
-    # Lời tiên tri — DỰA TRÊN DỮ LIỆU CỤ THỂ
-    if weighted_pct >= 70:
-        lines.append(f"\n> 📜 *\"{dung_than} ({hanh_dt}) cực vượng tại {current_ts}. {ctx['doi_tuong'].capitalize()} đang thịnh — {HANH_SINH.get(hanh_dt, '')}. Vạn sự hanh thông!\"*")
-    elif weighted_pct >= 55:
-        lines.append(f"\n> 📜 *\"{dung_than} có lực ({current_ts}). {ctx['doi_tuong'].capitalize()} thuận lợi — chớ gượng ép mà thành.\"*")
-    elif weighted_pct >= 45:
-        lines.append(f"\n> 📜 *\"Âm Dương giằng co — {dung_than} tại {current_ts}. Quan sát thêm rồi mới quyết.\"*")
-    elif weighted_pct >= 30:
-        lines.append(f"\n> 📜 *\"{dung_than} suy ({current_ts}), {HANH_KHAC.get(hanh_dt, '')}. Tĩnh chờ thời cơ mới hành.\"*")
-    else:
-        lines.append(f"\n> 📜 *\"Tuyệt xứ phùng sinh — {dung_than} tại {current_ts}. Chờ {hanh_dt} vượng khí ({HA_DO_TIMING.get(hanh_dt, ('?','?'))[0]}).\"*")
+        lines.append(f"\n> 📜 *\"{dung_than} duy trì ổn định tại {current_ts}. Thuận theo tự nhiên, chờ thời cơ.\"*")
     
     return "\n".join(lines)
+
 
 # === SAO/CỬA/THẦN GIẢI THÍCH CHI TIẾT (V8.0) ===
 SAO_GIAI_THICH = {
