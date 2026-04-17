@@ -27,18 +27,26 @@ class GeminiQMDGHelper:
     """Helper class for Gemini AI with QMDG specific knowledge and grounding"""
     
     def __init__(self, api_key_input):
-        # --- 1. KEY PARSING (Robost) ---
-        # V35.8: Google đổi định dạng key: AIzaSy... (cũ) + AQ.Ab8... (mới 2025+)
+        # --- 1. KEY PARSING (UNIVERSAL — chấp nhận MỌI format key Google) ---
+        # V35.8: KHÔNG phụ thuộc prefix cố định. Google đổi format bất kỳ lúc nào.
+        # Chiến lược: Chấp nhận mọi string đủ dài → test_connection() sẽ validate thật.
         import re
-        # Match OLD format: AIzaSy...
-        keys_old = re.findall(r"AIza[0-9A-Za-z-_]{35,}", str(api_key_input))
-        # Match NEW format: AQ.Ab8... (Google Cloud 2025+)
-        keys_new = re.findall(r"AQ\.[A-Za-z0-9_-]{30,}", str(api_key_input))
-        raw_text = str(api_key_input).replace("\n", ",").replace(";", ",")
-        keys_from_split = [k.strip() for k in raw_text.split(',') if len(k.strip()) > 20 and ("AIza" in k or "AQ." in k)]
-        all_candidates = keys_old + keys_new + keys_from_split
-        self.api_keys = list(dict.fromkeys(all_candidates)) 
-        self.api_keys = [k for k in self.api_keys if len(k) > 20]
+        raw_input = str(api_key_input or '').strip()
+        
+        # Bước 1: Tách nhiều key (user dán nhiều key cùng lúc)
+        raw_text = raw_input.replace("\n", ",").replace(";", ",").replace(" ", ",")
+        candidates = []
+        for part in raw_text.split(','):
+            k = part.strip()
+            if len(k) >= 20 and re.match(r'^[A-Za-z0-9._-]+$', k):
+                candidates.append(k)
+        
+        # Bước 2: Nếu input là 1 key duy nhất (không có dấu phẩy)
+        if not candidates and len(raw_input) >= 20 and re.match(r'^[A-Za-z0-9._-]+$', raw_input):
+            candidates.append(raw_input)
+        
+        # Bước 3: Deduplicate
+        self.api_keys = list(dict.fromkeys(candidates))
 
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None

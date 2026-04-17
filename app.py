@@ -1424,7 +1424,7 @@ with st.expander(expander_title, expanded=not is_connected):
                     # Bước 1: Kích hoạt ngay trong session
                     temp_helper = GeminiQMDGHelper(user_api_input)
                     if not temp_helper.api_keys:
-                        st.error("❌ Không tìm thấy API Key hợp lệ (AIza... hoặc AQ...) trong văn bản.")
+                        st.error("❌ Không tìm thấy API Key hợp lệ. Key phải dài ít nhất 20 ký tự.")
                     else:
                         success, msg = temp_helper.test_connection()
                         st.session_state.gemini_helper = temp_helper
