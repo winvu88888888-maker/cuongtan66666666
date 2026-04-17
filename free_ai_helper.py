@@ -6738,40 +6738,39 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             detective_issues.append(f"⚠️ pct={pct}% ngoài phạm vi [5,95]")
             pct = max(5, min(95, pct))
         
-        # Check 2: verdict phải khớp với pct
-        if final_verdict == 'CÁT' and pct < 55:
-            detective_issues.append(f"⚠️ verdict=CÁT nhưng pct={pct}%<55 → chỉnh verdict=BÌNH")
+        # Check 2: verdict phải khớp với pct — V35.0: Mở rộng vùng hợp lệ
+        if final_verdict == 'CÁT' and pct < 45:
+            detective_issues.append(f"⚠️ verdict=CÁT nhưng pct={pct}%<45 → chỉnh verdict=BÌNH")
             final_verdict = 'BÌNH'
-        elif final_verdict == 'HUNG' and pct > 50:
-            detective_issues.append(f"⚠️ verdict=HUNG nhưng pct={pct}%>50 → chỉnh verdict=BÌNH")
+        elif final_verdict == 'HUNG' and pct > 55:
+            detective_issues.append(f"⚠️ verdict=HUNG nhưng pct={pct}%>55 → chỉnh verdict=BÌNH")
             final_verdict = 'BÌNH'
         
         # Check 3: evidence phải có ít nhất 1 bằng chứng
         if not evidence:
             detective_issues.append(f"⚠️ Không có bằng chứng → dùng pct={pct}% làm cơ sở")
         
-        # Check 4: Recalculate pct dựa trên good/bad impacts
+        # Check 4: V35.0: CHỈ CẢNH BÁO, KHÔNG override pct từ weighted_pct
+        # weighted_pct đã tính chính xác từ 6 PP + 12 Trường Sinh — KHÔNG nên thay đổi
         good_impacts = [i for i in impacts if i.startswith('✅')]
-        bad_impacts = [i for i in impacts if i.startswith('🔴') or i.startswith('⚠️')]
+        bad_impacts = [i for i in impacts if i.startswith('🔴')]
+        # V35.0: ⚠️ chỉ tính là bất lợi NẾU chứa từ khóa xác thực (tránh đếm thông tin trung tính)
+        REAL_BAD_KEYWORDS = ['KHẮC', 'YẾU', 'TỬ', 'TUYỆT', 'HUNG', 'GÂY HẠI', 'CHẶN', 'BẾ TẮC',
+                             'NGUY HIỂM', 'MẤT MÁT', 'XUNG ĐỘT', 'CHẤM DỨT', 'SUY', 'BỊ KHẮC']
+        for i in impacts:
+            if i.startswith('⚠️') and any(kw in i.upper() for kw in REAL_BAD_KEYWORDS):
+                bad_impacts.append(i)
         total_impacts = len(good_impacts) + len(bad_impacts)
         
         if total_impacts >= 3:
             impact_ratio = len(good_impacts) / total_impacts
             impact_pct = int(impact_ratio * 100)
-            # Nếu pct và impact_pct chênh nhau > 25% → cảnh báo
-            if abs(pct - impact_pct) > 25:
+            # V35.0: CHỈ CẢNH BÁO nếu chênh lệch lớn, KHÔNG override pct
+            if abs(pct - impact_pct) > 30:
                 detective_issues.append(
-                    f"⚠️ pct={pct}% vs impact={impact_pct}% (chênh {abs(pct-impact_pct)}%)"
-                    f" → điều chỉnh pct = trung bình"
+                    f"ℹ️ Lưu ý: pct={pct}% vs impact={impact_pct}% (chênh {abs(pct-impact_pct)}%)"
+                    f" — GIỮ NGUYÊN weighted_pct (đã tính chính xác từ 6 PP)"
                 )
-                pct = (pct + impact_pct) // 2
-                # Re-check verdict
-                if pct >= 60:
-                    final_verdict = 'CÁT'
-                elif pct <= 45:
-                    final_verdict = 'HUNG'
-                else:
-                    final_verdict = 'BÌNH'
         
         if detective_issues:
             lines.append(f"\n**🔍 THÁM TỬ KIỂM CHỨNG:**")
@@ -7698,18 +7697,21 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         narrative_parts = []
         
         # Part 1: Mở đầu — trạng thái DT (V26.0 dùng Điểm Trọng Số Thống Nhất)
+        # V35.0: DÙNG final_pct (weighted_pct) làm nguồn chính — THỐNG NHẤT với Detective Validator
         if final_pct is not None:
             pct = final_pct
-            if pct >= 60:
+            if pct >= 55:
                 overall = 'THUẬN LỢI'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** ({pct}%).")
-            elif pct <= 45:
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** (Weighted Score: {pct}%).")
+            elif pct < 45:
                 overall = 'KHÓ KHĂN'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** (Weighted Score: {pct}%).")
             else:
                 overall = 'NGHIÊNG THUẬN' if pct >= 50 else 'NGHIÊNG BẤT LỢI'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **{overall}** ({pct}%) — thế trận chưa rõ nét, nhưng nghiêng về {'thuận' if pct >= 50 else 'bất lợi'}.")
+                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **{overall}** (Weighted Score: {pct}%) — thế trận chưa rõ nét, nhưng nghiêng về {'thuận' if pct >= 50 else 'bất lợi'}.")
         else:
+            # V35.0: Fallback — không nên xảy ra (final_pct luôn được truyền từ answer_question)
+            self.log_step("V35.0 WARNING", "FALLBACK", "final_pct=None → dùng verdict counting (không chính xác)")
             if total_good > total_bad:
                 overall = 'THUẬN LỢI'
                 pct = min(90, 50 + (total_good - total_bad) * 10)
@@ -9038,38 +9040,36 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             
             error_msg = error_reasons[-1] if error_reasons else "Không có API Key hoặc hết hạn mức"
             
-            # === V28.1: BUILD COMPREHENSIVE OFFLINE CONCLUSION (BỎ %, DÙNG MÔ TẢ) ===
+            # === V35.0: BUILD COMPREHENSIVE OFFLINE CONCLUSION — DÙNG weighted_pct ===
             pct_short = weighted_pct  # Từ BƯỚC 6 đã tính (giữ nội bộ)
             
-            # V28.1: Đếm verdicts thay vì dùng % toán học
+            # V35.0: Dùng weighted_pct (đã tính chính xác) thay vì đếm verdict thô
             _verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
             _cat_count = sum(1 for v in _verdicts_list if v and 'CÁT' in str(v).upper())
             _hung_count = sum(1 for v in _verdicts_list if v and 'HUNG' in str(v).upper())
             
-            if _cat_count >= 4:
+            # V35.0: XÁC ĐỊNH verdict TỪ weighted_pct (chính xác hơn verdict counting)
+            if weighted_pct >= 70:
                 overall_short = 'ĐẠI CÁT'
                 v_icon = '✅'
-            elif _cat_count >= 3:
+            elif weighted_pct >= 55:
                 overall_short = 'CÁT'
                 v_icon = '✅'
-            elif _cat_count >= 2 and _hung_count <= 2:
-                overall_short = 'NGHIÊNG THUẬN — CÓ THỂ ĐƯỢC'
+            elif weighted_pct >= 45:
+                overall_short = 'NGHIÊNG THUẬN — CÓ THỂ ĐƯỢC' if weighted_pct >= 50 else 'BÌNH'
                 v_icon = '🟡'
-            elif _hung_count >= 4:
-                overall_short = 'ĐẠI HUNG'
-                v_icon = '🔴'
-            elif _hung_count >= 3:
+            elif weighted_pct >= 30:
                 overall_short = 'HUNG'
                 v_icon = '🔴'
             else:
-                overall_short = 'BÌNH'
-                v_icon = '🟡'
+                overall_short = 'ĐẠI HUNG'
+                v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V32.2")
+            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V35.0")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
-            final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} ({_cat_count}/5 PP CÁT)")
+            final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Weighted Score: {weighted_pct}%)")
             final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
             final_parts.append(f"\n**📊 Trạng thái DT:** {unified_v22['tier_data']['cap'] if unified_v22 else '?'} | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
             
@@ -9169,6 +9169,11 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                                                    'ngành gì', 'là gì', 'thuộc loại', 'hình dạng', 'màu gì',
                                                    'chất liệu', 'tên gì', 'ai vậy', 'người nào', 'giống gì'])
             
+            # V35.0: DÙNG weighted_pct để trả lời (thay vì _cat_count thô)
+            _is_pct_good = weighted_pct >= 55
+            _is_pct_mid = 45 <= weighted_pct < 55
+            _is_pct_bad = weighted_pct < 45
+            
             final_parts.append("")
             final_parts.append(f"**❓ Câu hỏi:** {question}")
             final_parts.append("")
@@ -9196,26 +9201,26 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 final_parts.append(f"\n*→ Dựa trên tổng hợp các phương pháp, sản phẩm/ngành nghề liên quan đến hành {hanh_dt_v22}: {_hanh_vat.get('chat_lieu', '?')}, hình {_hanh_vat.get('hinh', '?')}, màu {_hanh_vat.get('mau', '?')}.*")
                 
             elif is_health_critical:
-                if _cat_count >= 3:
+                if _is_pct_good:
                     final_parts.append(f"### 🟢 CÂU TRẢ LỜI: TÌNH TRẠNG KHẢ QUAN")
-                    final_parts.append(f"Quẻ cho thấy **{dung_than}** còn sức ({_cat_count}/5 PP CÁT), có dấu hiệu hồi phục.")
+                    final_parts.append(f"Quẻ cho thấy **{dung_than}** còn sức (Weighted Score: {weighted_pct}%), có dấu hiệu hồi phục.")
                     final_parts.append(f"- Dụng Thần được sinh trợ → có quý nhân giúp đỡ, y thuật hiệu quả.")
                     final_parts.append(f"- Nên tích cực điều trị, tuân thủ phác đồ bác sĩ.")
-                elif _cat_count >= 2:
+                elif _is_pct_mid:
                     final_parts.append(f"### 🟡 CÂU TRẢ LỜI: TÌNH TRẠNG CẦN THEO DÕI SÁT")
-                    final_parts.append(f"**{dung_than}** đang ở mức trung bình ({_cat_count}/5 PP CÁT), chưa nguy kịch nhưng cần cẩn thận.")
+                    final_parts.append(f"**{dung_than}** đang ở mức trung bình (Weighted Score: {weighted_pct}%), chưa nguy kịch nhưng cần cẩn thận.")
                     final_parts.append(f"- Nên hội chẩn nhiều bác sĩ, không tự ý dùng thuốc.")
                     final_parts.append(f"- Theo dõi sát, tìm phương pháp điều trị phù hợp.")
                 else:
                     final_parts.append(f"### 🔴 CÂU TRẢ LỜI: TÌNH TRẠNG NGHIÊM TRỌNG")
-                    final_parts.append(f"**{dung_than}** rất yếu ({_hung_count}/5 PP HUNG), cần hành động khẩn cấp.")
+                    final_parts.append(f"**{dung_than}** rất yếu (Weighted Score: {weighted_pct}%), cần hành động khẩn cấp.")
                     final_parts.append(f"- Quẻ cho thấy nhiều yếu tố bất lợi → cần can thiệp y tế NGAY.")
                     final_parts.append(f"- Nên tìm bác sĩ giỏi nhất có thể, không trì hoãn.")
                     
             elif is_yesno:
-                if _cat_count >= 3:
+                if _is_pct_good:
                     final_parts.append(f"### ✅ CÂU TRẢ LỜI: CÓ — {overall_short}")
-                    final_parts.append(f"Quẻ cho thấy {dung_than} vượng ({_cat_count}/5 PP CÁT), điều kiện THUẬN LỢI.")
+                    final_parts.append(f"Quẻ cho thấy {dung_than} vượng (Weighted Score: {weighted_pct}%), điều kiện THUẬN LỢI.")
                     # Advice per category
                     if detected_category == 'TÀI_CHÍNH':
                         final_parts.append(f"- 💰 Thời điểm tốt để giao dịch. Kiểm tra kỹ giấy tờ, hợp đồng.")
@@ -9227,14 +9232,14 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                         final_parts.append(f"- 💕 Duyên phận thuận lợi, mối quan hệ có triển vọng tốt đẹp.")
                     else:
                         final_parts.append(f"- Nên hành động sớm, tận dụng thời cơ.")
-                elif _cat_count >= 2:
+                elif _is_pct_mid:
                     final_parts.append(f"### 🟡 CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — {overall_short}")
-                    final_parts.append(f"Quẻ nghiêng thuận ({_cat_count}/5 PP CÁT) — có thể tiến hành nhưng cần thận trọng.")
+                    final_parts.append(f"Quẻ nghiêng thuận (Weighted Score: {weighted_pct}%) — có thể tiến hành nhưng cần thận trọng.")
                     final_parts.append(f"- Chuẩn bị phương án dự phòng trước khi hành động.")
                     final_parts.append(f"- Nên hành động trong 1-2 tuần tới khi vận khí còn thuận.")
                 else:
                     final_parts.append(f"### 🔴 CÂU TRẢ LỜI: KHÔNG NÊN — {overall_short}")
-                    final_parts.append(f"Quẻ cho thấy {dung_than} suy ({_hung_count}/5 PP HUNG), nhiều yếu tố CẢN TRỞ.")
+                    final_parts.append(f"Quẻ cho thấy {dung_than} suy (Weighted Score: {weighted_pct}%), nhiều yếu tố CẢN TRỞ.")
                     if detected_category == 'TÀI_CHÍNH':
                         final_parts.append(f"- ❌ Không nên giao dịch lớn lúc này. Chờ 2-4 tuần.")
                         final_parts.append(f"- Huynh Đệ (kiếp tài) mạnh → dễ mất tiền, hao tài.")
@@ -9245,14 +9250,14 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                         
             elif is_when:
                 final_parts.append(f"### ⏰ CÂU TRẢ LỜI VỀ THỜI GIAN")
-                if _cat_count >= 3:
-                    final_parts.append(f"- Thời điểm HIỆN TẠI đã thuận lợi ({_cat_count}/5 CÁT). Nên hành động trong **1-7 ngày tới**.")
+                if _is_pct_good:
+                    final_parts.append(f"- Thời điểm HIỆN TẠI đã thuận lợi (Weighted: {weighted_pct}%). Nên hành động trong **1-7 ngày tới**.")
                     final_parts.append(f"- Dụng Thần {dung_than} đang vượng → sự việc sẽ xảy ra NHANH.")
-                elif _cat_count >= 2:
-                    final_parts.append(f"- Sự việc cần thêm thời gian ({_cat_count}/5 CÁT). Dự kiến **1-3 tháng** tới.")
+                elif _is_pct_mid:
+                    final_parts.append(f"- Sự việc cần thêm thời gian (Weighted: {weighted_pct}%). Dự kiến **1-3 tháng** tới.")
                     final_parts.append(f"- Dụng Thần ở mức trung bình → cần chờ khí vượng lên.")
                 else:
-                    final_parts.append(f"- Sự việc CHẬM TRỄ ({_hung_count}/5 HUNG). Có thể cần **3-6 tháng** hoặc lâu hơn.")
+                    final_parts.append(f"- Sự việc CHẬM TRỄ (Weighted: {weighted_pct}%). Có thể cần **3-6 tháng** hoặc lâu hơn.")
                     final_parts.append(f"- Dụng Thần suy → cần có yếu tố mới xoay chuyển tình thế.")
                 # Thêm gợi ý từ Trường Sinh
                 if ts_stage:
@@ -9299,53 +9304,53 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                             final_parts.append(line)
                 else:
                     final_parts.append(f"- Xem phần chi tiết bên dưới để biết hướng chính xác từ Kỳ Môn Độn Giáp.")
-                if _cat_count >= 3:
-                    final_parts.append(f"- ✅ Khả năng TÌM THẤY: **CAO** ({_cat_count}/5 PP CÁT)")
+                if _is_pct_good:
+                    final_parts.append(f"- ✅ Khả năng TÌM THẤY: **CAO** (Weighted: {weighted_pct}%)")
                 else:
-                    final_parts.append(f"- ⚠️ Khả năng tìm thấy: **THẤP** ({_hung_count}/5 PP HUNG), đồ có thể đã hư hỏng hoặc mất hẳn.")
+                    final_parts.append(f"- ⚠️ Khả năng tìm thấy: **THẤP** (Weighted: {weighted_pct}%), đồ có thể đã hư hỏng hoặc mất hẳn.")
                     
             elif is_emotion:
                 final_parts.append(f"### 💕 CÂU TRẢ LỜI VỀ TÌNH CẢM")
-                if _cat_count >= 3:
-                    final_parts.append(f"- ✅ Mối quan hệ **TỐT ĐẸP** ({_cat_count}/5 PP CÁT). Đối phương THẬT LÒNG.")
+                if _is_pct_good:
+                    final_parts.append(f"- ✅ Mối quan hệ **TỐT ĐẸP** (Weighted: {weighted_pct}%). Đối phương THẬT LÒNG.")
                     final_parts.append(f"- Dụng Thần {dung_than} vượng → tình cảm chân thành, bền vững.")
                     if 'lấy vợ' in q_lower or 'lấy chồng' in q_lower or 'cưới' in q_lower:
                         final_parts.append(f"- 💒 Duyên phận thuận lợi, nên tiến tới.")
-                elif _cat_count >= 2:
-                    final_parts.append(f"- 🟡 Mối quan hệ ở mức **BÌNH THƯỜNG** ({_cat_count}/5 PP CÁT). Cần thêm thời gian.")
+                elif _is_pct_mid:
+                    final_parts.append(f"- 🟡 Mối quan hệ ở mức **BÌNH THƯỜNG** (Weighted: {weighted_pct}%). Cần thêm thời gian.")
                     final_parts.append(f"- Có yếu tố chưa rõ ràng → nên trò chuyện thẳng thắn.")
                 else:
-                    final_parts.append(f"- 🔴 Mối quan hệ **GẶP KHÓ KHĂN** ({_hung_count}/5 PP HUNG). Đối phương KHÔNG thật lòng.")
+                    final_parts.append(f"- 🔴 Mối quan hệ **GẶP KHÓ KHĂN** (Weighted: {weighted_pct}%). Đối phương KHÔNG thật lòng.")
                     final_parts.append(f"- Dụng Thần {dung_than} suy → tình cảm phai nhạt, có dấu hiệu lừa dối.")
                     
             elif is_health:
                 final_parts.append(f"### 🏥 CÂU TRẢ LỜI VỀ SỨC KHỎE")
-                if _cat_count >= 3:
-                    final_parts.append(f"- ✅ Sức khỏe **TỐT** ({_cat_count}/5 PP CÁT). Thể trạng khỏe mạnh.")
+                if _is_pct_good:
+                    final_parts.append(f"- ✅ Sức khỏe **TỐT** (Weighted: {weighted_pct}%). Thể trạng khỏe mạnh.")
                     final_parts.append(f"- Duy trì lối sống lành mạnh, tập thể dục đều đặn.")
-                elif _cat_count >= 2:
-                    final_parts.append(f"- 🟡 Sức khỏe **BÌNH THƯỜNG** ({_cat_count}/5 PP CÁT). Có vấn đề nhỏ cần chú ý.")
+                elif _is_pct_mid:
+                    final_parts.append(f"- 🟡 Sức khỏe **BÌNH THƯỜNG** (Weighted: {weighted_pct}%). Có vấn đề nhỏ cần chú ý.")
                     final_parts.append(f"- Nên đi khám định kỳ, điều chỉnh chế độ ăn uống.")
                 else:
-                    final_parts.append(f"- 🔴 Sức khỏe **CẦN LƯU Ý** ({_hung_count}/5 PP HUNG). Có dấu hiệu suy yếu.")
+                    final_parts.append(f"- 🔴 Sức khỏe **CẦN LƯU Ý** (Weighted: {weighted_pct}%). Có dấu hiệu suy yếu.")
                     final_parts.append(f"- Nên đi khám bác sĩ sớm, không tự chữa tại nhà.")
             else:
                 # DEFAULT — câu hỏi chung (vận mệnh, quý nhân, tổng quát...)
                 final_parts.append(f"### 🔮 CÂU TRẢ LỜI")
-                if _cat_count >= 4:
-                    final_parts.append(f"- ✅ **ĐẠI CÁT** ({_cat_count}/5 PP CÁT). Tình hình rất khả quan.")
+                if weighted_pct >= 70:
+                    final_parts.append(f"- ✅ **ĐẠI CÁT** (Weighted: {weighted_pct}%). Tình hình rất khả quan.")
                     final_parts.append(f"- {dung_than} vượng → bạn đang ở thế chủ động, tự tin hành động.")
-                elif _cat_count >= 3:
-                    final_parts.append(f"- ✅ **CÁT** ({_cat_count}/5 PP CÁT). Tình hình thuận lợi.")
+                elif _is_pct_good:
+                    final_parts.append(f"- ✅ **CÁT** (Weighted: {weighted_pct}%). Tình hình thuận lợi.")
                     final_parts.append(f"- {dung_than} có lực → nắm bắt cơ hội.")
-                elif _cat_count >= 2:
-                    final_parts.append(f"- 🟡 **NGHIÊNG THUẬN** ({_cat_count}/5 PP CÁT). Có thể tiến hành.")
+                elif _is_pct_mid:
+                    final_parts.append(f"- 🟡 **NGHIÊNG THUẬN** (Weighted: {weighted_pct}%). Có thể tiến hành.")
                     final_parts.append(f"- Chuẩn bị phương án dự phòng, hành động thận trọng.")
-                elif _hung_count >= 4:
-                    final_parts.append(f"- 🔴 **ĐẠI HUNG** ({_hung_count}/5 PP HUNG). Tình hình bất lợi nghiêm trọng.")
+                elif weighted_pct < 30:
+                    final_parts.append(f"- 🔴 **ĐẠI HUNG** (Weighted: {weighted_pct}%). Tình hình bất lợi nghiêm trọng.")
                     final_parts.append(f"- Không nên ép buộc, chờ chu kỳ mới khởi phát.")
                 else:
-                    final_parts.append(f"- 🔴 **HUNG** ({_hung_count}/5 PP HUNG). Nhiều trở ngại.")
+                    final_parts.append(f"- 🔴 **HUNG** (Weighted: {weighted_pct}%). Nhiều trở ngại.")
                     final_parts.append(f"- Kiên nhẫn chờ đợi, tìm quý nhân, tránh liều lĩnh.")
             
             # ═══════ GIẢI THÍCH TẠI SAO ═══════
@@ -9421,24 +9426,24 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             # ═══════════════════════════════════════════════════════
             # V32.2: KẾT LUẬN TỔNG HỢP OFFLINE — CHẤT LƯỢNG NHƯ AI ONLINE
             # ═══════════════════════════════════════════════════════
-            final_parts.append(f"\n### 🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE)")
+            final_parts.append(f"\n### 🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE V35.0)")
             
-            # --- Xác định verdict text tự nhiên ---
-            if _cat_count >= 4:
+            # --- V35.0: Xác định verdict text từ weighted_pct (chính xác) ---
+            if weighted_pct >= 70:
                 verdict_text = "RẤT THUẬN LỢI"
-                verdict_detail = "Tất cả phương pháp đều cho kết quả tích cực"
-            elif _cat_count >= 3:
+                verdict_detail = f"Weighted Score {weighted_pct}% — đa số yếu tố đều tích cực"
+            elif weighted_pct >= 55:
                 verdict_text = "THUẬN LỢI"
-                verdict_detail = "Đa số phương pháp cho kết quả tốt"
-            elif _cat_count >= 2:
-                verdict_text = "CÓ THỂ ĐƯỢC"
-                verdict_detail = "Nghiêng thuận, có thể tiến hành nhưng cần thận trọng"
-            elif _hung_count >= 4:
-                verdict_text = "RẤT BẤT LỢI"
-                verdict_detail = "Hầu hết phương pháp đều cho kết quả tiêu cực"
-            else:
+                verdict_detail = f"Weighted Score {weighted_pct}% — xu hướng tốt, nên hành động"
+            elif weighted_pct >= 45:
+                verdict_text = "CÓ THỂ ĐƯỢC" if weighted_pct >= 50 else "TRUNG BÌNH"
+                verdict_detail = f"Weighted Score {weighted_pct}% — nghiêng thuận nhưng cần thận trọng"
+            elif weighted_pct >= 30:
                 verdict_text = "KHÔNG THUẬN LỢI"
-                verdict_detail = "Nhiều yếu tố cản trở"
+                verdict_detail = f"Weighted Score {weighted_pct}% — nhiều yếu tố cản trở"
+            else:
+                verdict_text = "RẤT BẤT LỢI"
+                verdict_detail = f"Weighted Score {weighted_pct}% — hầu hết yếu tố tiêu cực"
             
             # --- Tổng kết ngắn gọn ---
             final_parts.append(f"**{v_icon} {verdict_text}** — {verdict_detail}.")
@@ -9474,23 +9479,23 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             final_parts.append(f"**🎯 Câu trả lời trực tiếp:**")
             
             if is_yesno:
-                if _cat_count >= 3:
-                    final_parts.append(f"→ **CÓ** (xác suất {pct_short}%). Dụng Thần {dung_than} vượng, điều kiện thuận lợi để thực hiện. Hành {hanh_dt_v22} ở {ts_stage or 'Lâm Quan'} cho thấy sự việc đang trong giai đoạn {dt_state.lower()}.")
-                elif _cat_count >= 2:
-                    final_parts.append(f"→ **CHƯA CHẮC** (xác suất {pct_short}%). Cần thêm thời gian hoặc yếu tố hỗ trợ. Nên chờ 1-2 tuần rồi xem xét lại.")
+                if _is_pct_good:
+                    final_parts.append(f"→ **CÓ** (Weighted: {weighted_pct}%). Dụng Thần {dung_than} vượng, điều kiện thuận lợi để thực hiện. Hành {hanh_dt_v22} ở {ts_stage or 'Lâm Quan'} cho thấy sự việc đang trong giai đoạn {dt_state.lower()}.")
+                elif _is_pct_mid:
+                    final_parts.append(f"→ **CHƯA CHẮC** (Weighted: {weighted_pct}%). Cần thêm thời gian hoặc yếu tố hỗ trợ. Nên chờ 1-2 tuần rồi xem xét lại.")
                 else:
-                    final_parts.append(f"→ **KHÔNG NÊN** (xác suất thành công {pct_short}%). {dung_than} suy yếu, quá nhiều trở ngại. Nên hoãn lại hoặc tìm hướng khác.")
+                    final_parts.append(f"→ **KHÔNG NÊN** (Weighted: {weighted_pct}%). {dung_than} suy yếu, quá nhiều trở ngại. Nên hoãn lại hoặc tìm hướng khác.")
             
             elif is_health_critical:
-                if _cat_count >= 3:
+                if _is_pct_good:
                     final_parts.append(f"→ Tình trạng **KHẢ QUAN**. {dung_than} còn sức ({dt_state}), có khả năng hồi phục. Tiếp tục điều trị tích cực.")
                 else:
                     final_parts.append(f"→ Tình trạng **NGUY HIỂM**. {dung_than} suy ({dt_state}), cần can thiệp y tế khẩn cấp. Tìm bác sĩ giỏi nhất.")
             
             elif is_when:
-                if _cat_count >= 3:
+                if _is_pct_good:
                     final_parts.append(f"→ Dự kiến trong **1-7 ngày** tới. {dung_than} vượng ({ts_stage or '?'}), sự việc sẽ diễn ra nhanh.")
-                elif _cat_count >= 2:
+                elif _is_pct_mid:
                     final_parts.append(f"→ Dự kiến **1-3 tháng**. {dung_than} trung bình, cần kiên nhẫn chờ thêm.")
                 else:
                     final_parts.append(f"→ Dự kiến **3-6 tháng** hoặc lâu hơn. {dung_than} suy ({ts_stage or '?'}), sự việc bị đình trệ.")
