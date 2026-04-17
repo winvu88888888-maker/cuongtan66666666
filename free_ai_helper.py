@@ -939,6 +939,36 @@ def _get_van_vat_from_pct(pct):
             return key, data
     return 'TỬ_TUYỆT', STRENGTH_TO_VAN_VAT['TỬ_TUYỆT']
 
+
+def _get_van_vat_by_hanh(hanh_dt, weighted_pct):
+    """
+    V35.6: Lấy Vạn Vật CỤ THỂ theo HÀNH của Dụng Thần + sức mạnh.
+    - hỏi vợ → Thê Tài → Kim → VAN_VAT_CU_THE['Kim']['VƯỢNG']
+    - hỏi nhà → Phụ Mẫu → Thổ → VAN_VAT_CU_THE['Thổ']['VƯỢNG']
+    Mỗi DT khác nhau → Ngũ Hành khác → Vạn Vật hoàn toàn khác!
+    """
+    # Xác định tầng sức mạnh từ weighted_pct
+    if weighted_pct >= 75:
+        tang = 'CỰC_VƯỢNG'
+    elif weighted_pct >= 55:
+        tang = 'VƯỢNG'
+    elif weighted_pct >= 40:
+        tang = 'TRUNG_BÌNH'
+    elif weighted_pct >= 20:
+        tang = 'SUY'
+    else:
+        tang = 'CỰC_SUY'
+    
+    # Lấy data theo Hành + Tầng
+    hanh_data = VAN_VAT_CU_THE.get(hanh_dt, VAN_VAT_CU_THE.get('Thổ', {}))
+    tang_data = hanh_data.get(tang, hanh_data.get('TRUNG_BÌNH', {}))
+    
+    # Lấy thêm Ngũ Hành Vật Chất
+    vat_chat = NGU_HANH_VAT_CHAT.get(hanh_dt, {})
+    
+    return tang, tang_data, vat_chat
+
+
 def _calc_ngu_khi(hanh_chu, hanh_cung):
     """V21.0: Tính Ngũ Khí (Vượng/Tướng/Hưu/Tù/Tử) của hành chủ tại cung"""
     if not hanh_chu or not hanh_cung or hanh_chu == '?' or hanh_cung == '?':
@@ -9514,9 +9544,10 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     detail_s = ', '.join(f'{pp}={n}' for pp, n in count_numbers)
                     final_parts.append(f"- 📎 Xác nhận từ quẻ: {detail_s} → trung bình **{avg_s}**")
                 
-                # Thêm Vạn Vật
-                vv_key_c, vv_data_c = _get_van_vat_from_pct(weighted_pct)
-                final_parts.append(f"- 🎯 Vạn Vật: {vv_data_c.get('so_luong', '?')} | Con số: {vv_data_c.get('so', '?')}")
+                # V35.6: Vạn Vật CỤ THỂ theo hành DT
+                _vv_tang, _vv_data, _vv_vc = _get_van_vat_by_hanh(hanh_dt_v22, weighted_pct)
+                final_parts.append(f"- 🎯 Vạn Vật ({hanh_dt_v22}/{_vv_tang}): {_vv_data.get('do_vat', '?')}")
+                final_parts.append(f"- 🏠 Nhà cửa: {_vv_data.get('nha_cua', '?')}")
                     
             elif is_find:
                 final_parts.append(f"### 📍 CÂU TRẢ LỜI VỀ VỊ TRÍ/HƯỚNG")
@@ -9558,22 +9589,17 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     final_parts.append(f"- 🔴 Sức khỏe **CẦN LƯU Ý** (Weighted: {weighted_pct}%). Có dấu hiệu suy yếu.")
                     final_parts.append(f"- Nên đi khám bác sĩ sớm, không tự chữa tại nhà.")
             
-            # V35.1: THẾ NÀO / RA SAO — MÔ TẢ bằng Vạn Vật Loại Tượng
             elif is_how:
                 final_parts.append(f"### 📋 CÂU TRẢ LỜI: MÔ TẢ TÌNH TRẠNG")
-                vv_key_h, vv_data_h = _get_van_vat_from_pct(weighted_pct)
-                final_parts.append(f"**{v_icon} Tình trạng: {vv_data_h['cap']}** (Weighted: {weighted_pct}%)")
-                final_parts.append(f"- 👤 **Con người:** {vv_data_h.get('con_nguoi', '?')}")
-                final_parts.append(f"- 📏 **Kích thước:** {vv_data_h.get('kich_thuoc', '?')}")
-                final_parts.append(f"- 🔧 **Tình trạng:** {vv_data_h.get('tinh_trang', '?')}")
-                final_parts.append(f"- 📊 **Số lượng:** {vv_data_h.get('so_luong', '?')}")
-                final_parts.append(f"- 🎨 **Chất lượng:** {vv_data_h.get('chat_luong', '?')}")
-                final_parts.append(f"- ⏱️ **Tốc độ:** {vv_data_h.get('toc_do', '?')}")
-                final_parts.append(f"- 🔢 **Con số:** {vv_data_h.get('so', '?')}")
-                # Thêm Ngũ Hành vật chất
-                _hanh_vat_h = NGU_HANH_VAT_CHAT.get(hanh_dt_v22, {})
-                if _hanh_vat_h:
-                    final_parts.append(f"- 🎯 **Ngũ Hành {hanh_dt_v22}:** Hình {_hanh_vat_h.get('hinh', '?')}, Màu {_hanh_vat_h.get('mau', '?')}, Hướng {_hanh_vat_h.get('huong', '?')}")
+                # V35.6: Vạn Vật CỤ THỂ theo DT
+                _h_tang, _h_data, _h_vc = _get_van_vat_by_hanh(hanh_dt_v22, weighted_pct)
+                final_parts.append(f"**{v_icon} Tình trạng: {_h_tang}** ({dung_than} → {hanh_dt_v22}, Weighted: {weighted_pct}%)")
+                final_parts.append(f"- 🎯 **Đồ vật liên quan:** {_h_data.get('do_vat', '?')}")
+                final_parts.append(f"- 🏠 **Nhà cửa:** {_h_data.get('nha_cua', '?')}")
+                final_parts.append(f"- 👤 **Con người:** {_h_data.get('nguoi', '?')}")
+                final_parts.append(f"- 🏥 **Sức khỏe:** {_h_data.get('benh', '?')}")
+                final_parts.append(f"- 📐 **Hình dáng:** {_h_vc.get('hinh', '?')} | 🎨 **Màu:** {_h_vc.get('mau', '?')}")
+                final_parts.append(f"- 🧪 **Chất liệu:** {_h_vc.get('chat_lieu', '?')} | 🧭 **Hướng:** {_h_vc.get('huong', '?')}")
                 if _is_pct_good:
                     final_parts.append(f"\n→ Tình hình **THUẬN LỢI**. Xu hướng tốt, nên tận dụng.")
                 elif _is_pct_bad:
@@ -9581,13 +9607,14 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 else:
                     final_parts.append(f"\n→ Tình hình **TRUNG BÌNH**. Ổn nhưng cần nỗ lực thêm.")
             
-            # V35.1: AI / NGƯỜI NÀO — dùng Lục Thân + Vạn Vật
             elif is_who:
                 final_parts.append(f"### 👤 CÂU TRẢ LỜI: ĐẶC ĐIỂM NGƯỜI ĐƯỢC HỎI")
-                vv_key_w, vv_data_w = _get_van_vat_from_pct(weighted_pct)
-                final_parts.append(f"**Dụng Thần ({dung_than}) → Mô tả:**")
-                final_parts.append(f"- 👤 **Con người:** {vv_data_w.get('con_nguoi', '?')}")
-                final_parts.append(f"- 📏 **Dáng vóc:** {vv_data_w.get('kich_thuoc', '?')}")
+                # V35.6: Vạn Vật CỤ THỂ theo DT
+                _w_tang, _w_data, _w_vc = _get_van_vat_by_hanh(hanh_dt_v22, weighted_pct)
+                final_parts.append(f"**Dụng Thần {dung_than} ({hanh_dt_v22}/{_w_tang}) → Mô tả:**")
+                final_parts.append(f"- 👤 **Con người:** {_w_data.get('nguoi', '?')}")
+                final_parts.append(f"- 📐 **Dáng vóc:** Hình {_w_vc.get('hinh', '?')}, Màu da {_w_vc.get('mau', '?')}")
+                final_parts.append(f"- 🏥 **Sức khỏe:** {_w_data.get('benh', '?')}")
                 dt_relationship = {
                     'Phụ Mẫu': '👨‍👩‍👧 Bố mẹ, bề trên, thầy cô, người bảo trợ',
                     'Thê Tài': '💰 Vợ, người yêu, khách hàng, đối tượng tài chính',
@@ -9596,9 +9623,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     'Huynh Đệ': '🤝 Anh em, bạn bè, đồng nghiệp, đối thủ',
                 }
                 final_parts.append(f"- 🔗 **Mối quan hệ:** {dt_relationship.get(dung_than, 'Chưa xác định')}")
-                _hanh_vat_w = NGU_HANH_VAT_CHAT.get(hanh_dt_v22, {})
-                if _hanh_vat_w:
-                    final_parts.append(f"- 🎯 **Đặc điểm:** Hành {hanh_dt_v22}, Hướng {_hanh_vat_w.get('huong', '?')}, Cơ thể {_hanh_vat_w.get('co_the', '?')}")
+                final_parts.append(f"- 🧭 **Hướng:** {_w_vc.get('huong', '?')} | 🫀 **Cơ thể:** {_w_vc.get('co_the', '?')}")
                 if _is_pct_good:
                     final_parts.append(f"\n→ Người này **TỐT**, đáng tin cậy, mang lại lợi ích.")
                 elif _is_pct_bad:
@@ -9700,13 +9725,15 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 final_parts.append(f"→ Con người: {ts_info.get('con_nguoi', '?')}")
                 final_parts.append(f"→ Vật: {ts_info.get('vat', '?')}")
             
-            # V21.0: MAPPING VẠN VẬT
-            vv_key_f, vv_data_f = _get_van_vat_from_pct(pct_short)
-            final_parts.append(f"\n### 🧬 MAPPING VẠN VẬT ({vv_data_f['cap']})")
-            final_parts.append(f"🧑 **Vòng đời:** {vv_data_f['con_nguoi']}")
-            final_parts.append(f"📐 **Kích thước:** {vv_data_f['kich_thuoc']} | 🆕 **Tình trạng:** {vv_data_f['tinh_trang']}")
-            final_parts.append(f"🔢 **Số lượng:** {vv_data_f['so_luong']} | 💎 **Chất lượng:** {vv_data_f['chat_luong']}")
-            final_parts.append(f"🔢 **Con số:** {vv_data_f['so']}")
+            # V35.6: MAPPING VẠN VẬT CỤ THỂ theo HÀNH DT
+            _f_tang, _f_data, _f_vc = _get_van_vat_by_hanh(hanh_dt_v22, weighted_pct)
+            final_parts.append(f"\n### 🧬 VẠN VẬT CỤ THỂ ({dung_than} → {hanh_dt_v22} → {_f_tang})")
+            final_parts.append(f"🎯 **Đồ vật:** {_f_data.get('do_vat', '?')}")
+            final_parts.append(f"🏠 **Nhà cửa:** {_f_data.get('nha_cua', '?')}")
+            final_parts.append(f"👤 **Con người:** {_f_data.get('nguoi', '?')}")
+            final_parts.append(f"🏥 **Sức khỏe:** {_f_data.get('benh', '?')}")
+            final_parts.append(f"📐 **Hình dáng:** {_f_vc.get('hinh', '?')} | 🎨 **Màu sắc:** {_f_vc.get('mau', '?')}")
+            final_parts.append(f"🧪 **Chất liệu:** {_f_vc.get('chat_lieu', '?')} | 🧭 **Hướng:** {_f_vc.get('huong', '?')}")
             
             # ═══════════════════════════════════════════════════
             # V31.3: VẠN VẬT SIÊU CHI TIẾT + THÁM TỬ LẮP GHÉP
