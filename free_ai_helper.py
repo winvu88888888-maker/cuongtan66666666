@@ -8300,51 +8300,15 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             if v31_parsed_questions and len(v31_parsed_questions) >= 1:
                 v31_primary = v31_parsed_questions[0]
                 
-                # V32.5: Override DT từ grammar analyzer — chính xác hơn keyword
-                # Grammar phân biệt: hỏi CHO (bố bệnh) vs hỏi VỀ (người yêu tốt không)
+                # V35.8: Grammar parser info (chỉ hiển thị, KHÔNG override DT)
+                # DT đã được xác định chính xác ở V35.8 PERSON+TOPIC logic
                 parser_dt = v31_primary.get('dung_than')
-                if parser_dt and parser_dt != 'Bản Thân':
-                    dung_than = parser_dt
-                    focus = v31_primary.get('inquiry_focus', '')
-                    purpose = v31_primary.get('ask_purpose', 'CHO')
-                    reason = v31_primary.get('dung_than_reason', '')
-                    self.log_step("V32.5 Grammar", "DT_OVERRIDE", 
-                                  f"Hỏi {purpose} {focus} → DT={parser_dt} | {reason[:60]}")
-                
-                # V35.7: TOPIC-AWARE DT CORRECTION
-                # CHỈ override khi DT vẫn là default category (chưa match detail person)
-                # Nếu detail đã match (bố→Phụ Mẫu, con→Tử Tôn) → GIỮU NGUYÊN!
-                q_lower = question.lower()
-                _topic_dt_override = None
-                _dt_already_detailed = dung_than != cat_data["dung_than"]  # True nếu detail đã match
-                
-                if not _dt_already_detailed:
-                    # BỆNH → QQ (chỉ khi chưa xác định person)
-                    if any(kw in q_lower for kw in ['bệnh', 'ung thư', 'phẫu thuật', 'mổ', 'ốm']):
-                        if detected_category in ('SỨC_KHỎE_GIA_ĐÌNH', 'SỨC_KHỎE', 'CHUNG'):
-                            _topic_dt_override = 'Quan Quỷ'
-                    
-                    # TÀI CHÍNH → TT
-                    elif any(kw in q_lower for kw in ['tiền', 'tài chính', 'đầu tư', 'lương', 'nợ']):
-                        _topic_dt_override = 'Thê Tài'
-                    
-                    # ĐỐI TÁC → Quan Quỷ
-                    elif any(kw in q_lower for kw in ['đối tác', 'khách hàng', 'người lạ']):
-                        _topic_dt_override = 'Quan Quỷ'
-                    
-                    # NĂM NAY chung → QQ (default)
-                    elif detected_category == 'CHUNG' and dung_than == 'Bản Thân':
-                        _topic_dt_override = 'Quan Quỷ'
-                
-                # Hỏi CON sinh/đỗ → Tử Tôn (luôn override)
-                if any(kw in q_lower for kw in ['con dâu', 'con rể', 'con trai', 'con gái']):
-                    if any(kw in q_lower for kw in ['sinh', 'đẻ', 'mang thai', 'thi', 'đỗ', 'học']):
-                        _topic_dt_override = 'Tử Tôn'
-                
-                if _topic_dt_override and _topic_dt_override != dung_than:
-                    self.log_step("V34.0 TopicDT", "CORRECT",
-                                  f"Topic override: {dung_than} → {_topic_dt_override} (chủ đề > người)")
-                    dung_than = _topic_dt_override
+                focus = v31_primary.get('inquiry_focus', '')
+                purpose = v31_primary.get('ask_purpose', 'CHO')
+                reason = v31_primary.get('dung_than_reason', '')
+                if parser_dt:
+                    self.log_step("V32.5 Grammar", "INFO", 
+                                  f"Parser suggest: {parser_dt} | V35.8 final: {dung_than} | {reason[:60]}")
                 
                 # Hiển thị bảng phân tách
                 if len(v31_parsed_questions) > 1:
