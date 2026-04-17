@@ -8701,7 +8701,26 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 self.log_step("V32.3 AutoDetect", "FALLBACK", str(e)[:60])
 
         if chart_data and isinstance(chart_data, dict):
-            hanh_dt_v22 = CAN_NGU_HANH.get(chart_data.get('can_ngay', ''), '')
+            # V35.8: Tính Hành DT từ Can Ngày + Dụng Thần (Lục Hào Ngũ Hành)
+            # Can Ngày → Hành bản thân, rồi map DT → Hành theo sinh khắc
+            _hanh_ban_than = CAN_NGU_HANH.get(chart_data.get('can_ngay', ''), 'Thổ')
+            
+            # LỤC HÀO NGŨ HÀNH MAPPING: self_hanh → {DT → hanh_DT}
+            _DT_HANH = {
+                'Mộc': {'Bản Thân': 'Mộc', 'Huynh Đệ': 'Mộc', 'Phụ Mẫu': 'Thủy', 'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa'},
+                'Hỏa': {'Bản Thân': 'Hỏa', 'Huynh Đệ': 'Hỏa', 'Phụ Mẫu': 'Mộc', 'Quan Quỷ': 'Thủy', 'Thê Tài': 'Kim', 'Tử Tôn': 'Thổ'},
+                'Thổ': {'Bản Thân': 'Thổ', 'Huynh Đệ': 'Thổ', 'Phụ Mẫu': 'Hỏa', 'Quan Quỷ': 'Mộc', 'Thê Tài': 'Thủy', 'Tử Tôn': 'Kim'},
+                'Kim': {'Bản Thân': 'Kim', 'Huynh Đệ': 'Kim', 'Phụ Mẫu': 'Thổ', 'Quan Quỷ': 'Hỏa', 'Thê Tài': 'Mộc', 'Tử Tôn': 'Thủy'},
+                'Thủy': {'Bản Thân': 'Thủy', 'Huynh Đệ': 'Thủy', 'Phụ Mẫu': 'Kim', 'Quan Quỷ': 'Thổ', 'Thê Tài': 'Hỏa', 'Tử Tôn': 'Mộc'},
+            }
+            
+            # Map dung_than → hành
+            _dt_map = _DT_HANH.get(_hanh_ban_than, {})
+            hanh_dt_v22 = _dt_map.get(dung_than, _hanh_ban_than)
+            
+            self.log_step("V35.8 HanhDT", "MAP", 
+                          f"Can={chart_data.get('can_ngay','')} → BT={_hanh_ban_than} | DT={dung_than} → Hành={hanh_dt_v22}")
+            
             # Tìm cung BT để tính Ngũ Khí
             can_ngay_v22 = chart_data.get('can_ngay', '')
             can_thien_ban_v22 = chart_data.get('can_thien_ban', {})
