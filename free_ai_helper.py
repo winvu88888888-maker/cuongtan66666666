@@ -8224,7 +8224,6 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             "con": "Tử Tôn", "vợ": "Thê Tài", "chồng": "Quan Quỷ",
             "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ",
             "sếp": "Quan Quỷ", "đối tác": "Quan Quỷ", "khách hàng": "Quan Quỷ",
-            "tôi": "Bản Thân",
         }
         import re as _re_person
         _person_items = sorted(PERSON_DT_MAP.items(), key=lambda x: len(x[0]), reverse=True)
@@ -8240,6 +8239,10 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         # Bước 2: Gán DT
         if _person_dt:
             dung_than = _person_dt
+        elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE'):
+            # "tôi" = Bản Thân CHỈ khi hỏi CHUNG hoặc SỨC_KHỎE (hào Thế)
+            # TÀI_CHÍNH "tôi giàu?" → DT = Thê Tài, CÔNG_VIỆC → Quan Quỷ
+            dung_than = 'Bản Thân'
         else:
             dung_than = cat_data["dung_than"]
         
