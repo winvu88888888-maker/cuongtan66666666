@@ -1,5 +1,5 @@
 """
-Free AI Helper V34.0 — THIÊN CƠ ĐẠI SƯ (Unified Index + Offline Engine + Vạn Vật 2226+)
+Free AI Helper V35.0 — THIÊN CƠ ĐẠI SƯ (Unified Index + Offline Engine + Vạn Vật 2226+)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
@@ -1551,9 +1551,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V34.6 Detective + Flexible + Full Ứng Kỳ)"
-        self.version = "V34.6-Full-Pipeline"
-        self.model_name = "offline-rule-engine-v34.6"
+        self.name = "Thiên Cơ Đại Sư (V35.0 Weighted-PCT + Detective + Full Ứng Kỳ)"
+        self.version = "V35.0-Full-Pipeline"
+        self.model_name = "offline-rule-engine-v35.0"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -7771,7 +7771,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V34.0 Full Pipeline + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V35.0 Full Pipeline + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
