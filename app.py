@@ -120,7 +120,7 @@ except Exception: pass
 
 # --- AI MODEL BADGE ---
 st.sidebar.markdown("---")
-st.sidebar.markdown("""
+st.sidebar.markdown(f"""
 <div style='text-align: center; margin-bottom: 20px;'>
     <h3 style='color: #4CAF50; margin-bottom: 5px;'>Trí Tuệ Nhân Tạo</h3>
     <div style='background-color: #2E3B4E; padding: 5px 10px; border-radius: 15px; display: inline-block;'>

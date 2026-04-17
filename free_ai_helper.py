@@ -615,23 +615,27 @@ def _match_topic(question, topic=None):
 
 def _is_age_question(question):
     q = question.lower()
-    return any(kw in q for kw in ['tuổi', 'bao nhiêu tuổi', 'mấy tuổi', 'số tuổi', 'năm sinh'])
+    return any(kw in q for kw in ['tuổi', 'bao nhiêu tuổi', 'mấy tuổi', 'số tuổi', 'năm sinh',
+                                   'tuoi', 'may tuoi', 'bao nhieu tuoi'])
 
 
 def _is_find_question(question):
     q = question.lower()
-    return any(kw in q for kw in ['ở đâu', 'tìm', 'mất', 'đánh rơi', 'để đâu'])
+    return any(kw in q for kw in ['ở đâu', 'tìm', 'mất', 'đánh rơi', 'để đâu',
+                                   'o dau', 'tim', 'mat', 'de dau'])
 
 
 def _is_yesno_question(question):
     q = question.lower()
-    return any(kw in q for kw in ['có nên', 'có được', 'có không', 'nên không', 'được không', 'liệu có'])
+    return any(kw in q for kw in ['có nên', 'có được', 'có không', 'nên không', 'được không', 'liệu có',
+                                   'co nen', 'co duoc', 'co khong', 'nen khong', 'duoc khong'])
 
 
 def _is_count_question(question):
     """Phát hiện câu hỏi đếm số lượng: bao nhiêu, mấy, số lượng"""
     q = question.lower()
-    return any(kw in q for kw in ['bao nhiêu', 'mấy', 'số lượng', 'đếm', 'có mấy'])
+    return any(kw in q for kw in ['bao nhiêu', 'mấy', 'số lượng', 'đếm', 'có mấy',
+                                   'bao nhieu', 'may ', 'so luong', 'co may'])
 
 
 # === SAO/CỬA/THẦN GIẢI THÍCH CHI TIẾT (V8.0) ===
