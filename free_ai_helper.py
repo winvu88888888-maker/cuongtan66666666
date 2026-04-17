@@ -3694,6 +3694,55 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                         enhanced_det = self._enhanced_detective(chart_data, question, hanh_dt_v27)
                         if enhanced_det: offline_ctx += enhanced_det
                 
+                # ══════════════════════════════════════════════════════════
+                # V35.8: INJECT RAW DIAGRAMS → AI Online đọc ĐỘC LẬP
+                # Cho Gemini đọc DỮ LIỆU THÔ từ MỌI phương pháp
+                # → có góc nhìn riêng, KHÔNG chỉ dựa vào verdict offline
+                # ══════════════════════════════════════════════════════════
+                
+                # --- RAW LỤC HÀO ---
+                if od.get('v23_lh_factors'):
+                    offline_ctx += f"\n═══ SƠ ĐỒ LỤC HÀO (RAW) ═══\n"
+                    for f in od['v23_lh_factors']:
+                        offline_ctx += f"• {f}\n"
+                
+                # --- RAW KỲ MÔN ---
+                if od.get('v24_km_factors'):
+                    offline_ctx += f"\n═══ SƠ ĐỒ KỲ MÔN (RAW) ═══\n"
+                    for f in od['v24_km_factors']:
+                        offline_ctx += f"• {f}\n"
+                
+                # --- RAW MAI HOA ---
+                if od.get('v24_mh_factors'):
+                    offline_ctx += f"\n═══ SƠ ĐỒ MAI HOA (RAW) ═══\n"
+                    for f in (od['v24_mh_factors'] if isinstance(od['v24_mh_factors'], list) else [od['v24_mh_factors']]):
+                        offline_ctx += f"• {f}\n"
+                
+                # --- RAW ĐẠI LỤC NHÂM ---
+                if od.get('v24_ln_factors'):
+                    offline_ctx += f"\n═══ SƠ ĐỒ ĐẠI LỤC NHÂM (RAW) ═══\n"
+                    for f in (od['v24_ln_factors'] if isinstance(od['v24_ln_factors'], list) else [od['v24_ln_factors']]):
+                        offline_ctx += f"• {f}\n"
+                
+                # --- RAW THIẾT BẢN + THÁI ẤT ---
+                if od.get('v24_tb_factors'):
+                    offline_ctx += f"\n═══ SƠ ĐỒ THIẾT BẢN (RAW) ═══\n"
+                    for f in (od['v24_tb_factors'] if isinstance(od['v24_tb_factors'], list) else [od['v24_tb_factors']]):
+                        offline_ctx += f"• {f}\n"
+                if od.get('v24_ta_factors'):
+                    offline_ctx += f"\n═══ SƠ ĐỒ THÁI ẤT (RAW) ═══\n"
+                    for f in (od['v24_ta_factors'] if isinstance(od['v24_ta_factors'], list) else [od['v24_ta_factors']]):
+                        offline_ctx += f"• {f}\n"
+                
+                # --- BẢNG WEIGHTED SCORING ---
+                if od.get('v22_unified_strength'):
+                    v22 = od['v22_unified_strength']
+                    offline_ctx += f"\n═══ BẢNG ĐIỂM TỔNG HỢP ═══\n"
+                    offline_ctx += f"Weighted Score: {v22.get('unified_pct', '?')}%\n"
+                    offline_ctx += f"DT: {od.get('dung_than', '?')} | Hành: {v22.get('hanh_dt', '?')}\n"
+                    offline_ctx += f"Trường Sinh: {v22.get('ts_stage', '?')} | Ngũ Khí: {v22.get('ngu_khi', '?')}\n"
+                    offline_ctx += f"Tier: {v22.get('tier_cap', '?')}\n"
+                
                 offline_ctx += f"=== HẾT OFFLINE ===\n\n"
             
             # V14.0: Inject Đại Lục Nhâm + Thái Ất
@@ -3880,8 +3929,9 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 
                 f"<reasoning_protocol>\n"
                 f"BƯỚC 1: ĐỌC <sd_master_v33> — trích xuất DT, 16 yếu tố LH, 14 yếu tố KM, 10 yếu tố MH, 7 DLN, 5 TB+TA.\n"
-                f"BƯỚC 2: Chọn SƠ ĐỒ phù hợp từ <question_type> → đọc factors theo mũi tên → KẾT LUẬN.\n"
-                f"BƯỚC 3: Mỗi yếu tố phải TRÍCH DẪN từ <sd_master_v33> — KHÔNG ĐƯỢC BỊA THÊM.\n\n"
+                f"BƯỚC 2: ĐỌC CÁC SƠ ĐỒ RAW (═══ SƠ ĐỒ LỤC HÀO/KỲ MÔN/MAI HOA... ═══) — phân tích ĐỘC LẬP từng yếu tố.\n"
+                f"BƯỚC 3: SO SÁNH kết quả BƯỚC 1 (verdict offline) với BƯỚC 2 (phân tích của bạn) → TÌM ĐIỂM KHÁC BIỆT.\n"
+                f"BƯỚC 4: Mỗi yếu tố phải TRÍCH DẪN từ data — KHÔNG ĐƯỢC BỊA THÊM.\n\n"
                 f"SƠ ĐỒ TƯƠNG TÁC — ĐỌC SƠ ĐỒ PHÙ HỢP VỚI <question_type> ĐỂ TÌM CÂU TRẢ LỜI:\n\n"
                 f"═══ SĐ1: CÓ/KHÔNG ═══\n"
                 f"LH: [Nguyệt]→sinh/khắc→[DT Vượng/Suy]←sinh/khắc←[Nhật]\n"
