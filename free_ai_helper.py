@@ -9140,34 +9140,55 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             # ═══════════════════════════════════════════════════════
             # V21.0: TRẢ LỜI TRỰC TIẾP — THÔNG MINH THEO LOẠI CÂU HỎI
             # ═══════════════════════════════════════════════════════
+            # ═══════════════════════════════════════════════════════════
+            # V35.1: THỐNG NHẤT DETECT CÂU HỎI — DÙNG HÀM TRUNG TÂM
+            # Tránh duplicate keyword list gây mất đồng bộ
+            # ═══════════════════════════════════════════════════════════
             q_lower = question.lower()
             
             # --- 1. CÓ/KHÔNG ---
-            is_yesno = any(k in q_lower for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể',
-                                                    'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
-                                                    'có nên mua', 'nên đầu tư', 'có đi', 'có lấy'])
+            is_yesno = _is_yesno_question(question) or any(k in q_lower for k in [
+                'có nên', 'có được', 'được không', 'nên không', 'có thể',
+                'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
+                'có nên mua', 'nên đầu tư', 'có đi', 'có lấy', 'có không'])
             # --- 2. SINH TỬ ---
             is_health_critical = any(k in q_lower for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không',
                                                              'qua khỏi', 'cứu được', 'mất chưa', 'bệnh nặng',
                                                              'phẫu thuật', 'ung thư', 'nguy hiểm'])
             # --- 3. KHI NÀO ---
-            is_when = any(k in q_lower for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao'])
-            # --- 4. BAO NHIÊU ---
-            is_count_q = any(k in q_lower for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh',
-                                                     'mấy chị', 'số lượng', 'có mấy'])
+            is_when = any(k in q_lower for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao',
+                                                   'tháng nào', 'tháng mấy', 'năm nào', 'ngày nào', 'mùa nào'])
+            # --- 4. BAO NHIÊU / MẤY (V35.1: DÙNG HÀM TRUNG TÂM) ---
+            is_count_q = _is_count_question(question) or _is_age_question(question)
             # --- 5. Ở ĐÂU ---
-            is_find = any(k in q_lower for k in ['ở đâu', 'hướng nào', 'phương nào', 'tìm đâu', 'chỗ nào',
-                                                   'nơi nào', 'để đâu', 'để chỗ', 'cất đâu'])
+            is_find = _is_find_question(question) or any(k in q_lower for k in [
+                'ở đâu', 'hướng nào', 'phương nào', 'tìm đâu', 'chỗ nào',
+                'nơi nào', 'để đâu', 'để chỗ', 'cất đâu'])
             # --- 6. TÌNH CẢM ---
             is_emotion = any(k in q_lower for k in ['thật lòng', 'yêu thương', 'còn yêu', 'ngoại tình',
-                                                      'chung thủy', 'lấy vợ', 'lấy chồng', 'cưới', 'chia tay'])
+                                                      'chung thủy', 'lấy vợ', 'lấy chồng', 'cưới', 'chia tay',
+                                                      'tình cảm', 'yêu không', 'người yêu'])
             # --- 7. SỨC KHỎE (không phải sinh tử) ---
             is_health = any(k in q_lower for k in ['sức khỏe', 'khỏe', 'bệnh', 'ốm', 'đau']) and not is_health_critical
-            # --- 8. CÁI GÌ / LOẠI GÌ (V28.1 — câu hỏi CỤ THỂ) ---
+            # --- 8. THẾ NÀO / RA SAO (V35.1: MÔ TẢ bằng Vạn Vật) ---
+            is_how = any(k in q_lower for k in ['thế nào', 'ra sao', 'như thế nào', 'sao rồi',
+                                                  'tình hình', 'tình trạng', 'hiện trạng'])
+            # --- 9. CÁI GÌ / LOẠI GÌ (V28.1 — câu hỏi CỤ THỂ) ---
             is_what = any(k in q_lower for k in ['cái gì', 'loại gì', 'sản xuất gì', 'làm gì', 'mặt hàng',
                                                    'sản phẩm gì', 'buôn bán gì', 'kinh doanh gì', 'nghề gì',
                                                    'ngành gì', 'là gì', 'thuộc loại', 'hình dạng', 'màu gì',
                                                    'chất liệu', 'tên gì', 'ai vậy', 'người nào', 'giống gì'])
+            # --- 10. AI / NGƯỜI NÀO (V35.1) ---
+            is_who = any(k in q_lower for k in ['ai ', 'người nào', 'ai đó', 'người gì', 'người như thế nào'])
+            
+            # V35.1: ƯU TIÊN detect — tránh conflict (mấy tầng = count, KHÔNG phải yesno)
+            # Thứ tự ưu tiên: count > when > find > health_critical > what > who > how > yesno > emotion > health
+            if is_count_q:
+                is_yesno = False  # "mấy tầng" KHÔNG phải câu CÓ/KHÔNG
+            if is_when:
+                is_yesno = False  # "khi nào" KHÔNG phải câu CÓ/KHÔNG
+            if is_find:
+                is_yesno = False
             
             # V35.0: DÙNG weighted_pct để trả lời (thay vì _cat_count thô)
             _is_pct_good = weighted_pct >= 55
@@ -9334,6 +9355,55 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 else:
                     final_parts.append(f"- 🔴 Sức khỏe **CẦN LƯU Ý** (Weighted: {weighted_pct}%). Có dấu hiệu suy yếu.")
                     final_parts.append(f"- Nên đi khám bác sĩ sớm, không tự chữa tại nhà.")
+            
+            # V35.1: THẾ NÀO / RA SAO — MÔ TẢ bằng Vạn Vật Loại Tượng
+            elif is_how:
+                final_parts.append(f"### 📋 CÂU TRẢ LỜI: MÔ TẢ TÌNH TRẠNG")
+                vv_key_h, vv_data_h = _get_van_vat_from_pct(weighted_pct)
+                final_parts.append(f"**{v_icon} Tình trạng: {vv_data_h['cap']}** (Weighted: {weighted_pct}%)")
+                final_parts.append(f"- 👤 **Con người:** {vv_data_h.get('con_nguoi', '?')}")
+                final_parts.append(f"- 📏 **Kích thước:** {vv_data_h.get('kich_thuoc', '?')}")
+                final_parts.append(f"- 🔧 **Tình trạng:** {vv_data_h.get('tinh_trang', '?')}")
+                final_parts.append(f"- 📊 **Số lượng:** {vv_data_h.get('so_luong', '?')}")
+                final_parts.append(f"- 🎨 **Chất lượng:** {vv_data_h.get('chat_luong', '?')}")
+                final_parts.append(f"- ⏱️ **Tốc độ:** {vv_data_h.get('toc_do', '?')}")
+                final_parts.append(f"- 🔢 **Con số:** {vv_data_h.get('so', '?')}")
+                # Thêm Ngũ Hành vật chất
+                _hanh_vat_h = NGU_HANH_VAT_CHAT.get(hanh_dt_v22, {})
+                if _hanh_vat_h:
+                    final_parts.append(f"- 🎯 **Ngũ Hành {hanh_dt_v22}:** Hình {_hanh_vat_h.get('hinh', '?')}, Màu {_hanh_vat_h.get('mau', '?')}, Hướng {_hanh_vat_h.get('huong', '?')}")
+                if _is_pct_good:
+                    final_parts.append(f"\n→ Tình hình **THUẬN LỢI**. Xu hướng tốt, nên tận dụng.")
+                elif _is_pct_bad:
+                    final_parts.append(f"\n→ Tình hình **KHÓ KHĂN**. Cần chú ý, cải thiện.")
+                else:
+                    final_parts.append(f"\n→ Tình hình **TRUNG BÌNH**. Ổn nhưng cần nỗ lực thêm.")
+            
+            # V35.1: AI / NGƯỜI NÀO — dùng Lục Thân + Vạn Vật
+            elif is_who:
+                final_parts.append(f"### 👤 CÂU TRẢ LỜI: ĐẶC ĐIỂM NGƯỜI ĐƯỢC HỎI")
+                vv_key_w, vv_data_w = _get_van_vat_from_pct(weighted_pct)
+                final_parts.append(f"**Dụng Thần ({dung_than}) → Mô tả:**")
+                final_parts.append(f"- 👤 **Con người:** {vv_data_w.get('con_nguoi', '?')}")
+                final_parts.append(f"- 📏 **Dáng vóc:** {vv_data_w.get('kich_thuoc', '?')}")
+                dt_relationship = {
+                    'Phụ Mẫu': '👨‍👩‍👧 Bố mẹ, bề trên, thầy cô, người bảo trợ',
+                    'Thê Tài': '💰 Vợ, người yêu, khách hàng, đối tượng tài chính',
+                    'Quan Quỷ': '🏢 Sếp, cấp trên, chồng (nữ), đối tác',
+                    'Tử Tôn': '👶 Con cái, học trò, người dưới quyền',
+                    'Huynh Đệ': '🤝 Anh em, bạn bè, đồng nghiệp, đối thủ',
+                }
+                final_parts.append(f"- 🔗 **Mối quan hệ:** {dt_relationship.get(dung_than, 'Chưa xác định')}")
+                _hanh_vat_w = NGU_HANH_VAT_CHAT.get(hanh_dt_v22, {})
+                if _hanh_vat_w:
+                    final_parts.append(f"- 🎯 **Đặc điểm:** Hành {hanh_dt_v22}, Hướng {_hanh_vat_w.get('huong', '?')}, Cơ thể {_hanh_vat_w.get('co_the', '?')}")
+                if _is_pct_good:
+                    final_parts.append(f"\n→ Người này **TỐT**, đáng tin cậy, mang lại lợi ích.")
+                elif _is_pct_bad:
+                    final_parts.append(f"\n→ Người này **CẦN ĐỀ PHÒNG**, có dấu hiệu không đáng tin.")
+                else:
+                    final_parts.append(f"\n→ Người này **TRUNG TÍNH**, tùy cách ứng xử.")
+                
             else:
                 # DEFAULT — câu hỏi chung (vận mệnh, quý nhân, tổng quát...)
                 final_parts.append(f"### 🔮 CÂU TRẢ LỜI")
