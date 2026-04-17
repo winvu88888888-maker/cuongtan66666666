@@ -8083,11 +8083,10 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                              "sống", "chữa", "bệnh viện", "phẫu thuật", "ung thư", "tai nạn", "nguy hiểm",
                              "qua khỏi", "cứu được", "nằm viện", "thuốc", "trị bệnh", "khỏi bệnh"],
                 "dung_than": "Quan Quỷ",
-                "dung_than_detail": {"bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu", 
+                "dung_than_detail": {"bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu", "bố mẹ": "Phụ Mẫu",
                                      "con": "Tử Tôn", "con trai": "Tử Tôn", "con gái": "Tử Tôn",
                                      "vợ": "Thê Tài", "chồng": "Quan Quỷ",
-                                     "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ",
-                                     "sức khỏe tôi": "Bản Thân", "tôi khỏe": "Bản Thân", "tôi bệnh": "Bản Thân"},
+                                     "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ"},
                 "label": "🏥 Sức Khỏe / Gia Đình",
                 "hint": "Phân tích sức khỏe. DT = Quan Quỷ (bệnh tinh). Phụ Mẫu = bố mẹ. Tử Tôn = thuốc/con."
             },
@@ -8095,7 +8094,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 "keywords": ["tiền", "tài chính", "mua bán", "đầu tư", "giàu", "nghèo", "lương", "thu nhập", "nợ", 
                              "vay", "cho vay", "kinh doanh", "buôn bán", "lãi", "lỗ", "cổ phiếu", "crypto",
                              "bitcoin", "nhà đất", "mua nhà", "bất động sản", "vốn", "hùn vốn", "trúng số",
-                             "tài sản", "vàng", "bạc", "kim cương", "trang sức"],
+                             "tài sản", "vàng", "bạc", "kim cương", "trang sức", "lương tháng"],
                 "dung_than": "Thê Tài",
                 "dung_than_detail": {},
                 "label": "💰 Tài Chính / Tiền Bạc",
@@ -8110,7 +8109,9 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                              "sản xuất", "phát triển", "thụt lùi", "công ty", "nhà máy", "xưởng",
                              "doanh nghiệp", "cơ sở", "kinh doanh", "mở rộng", "phá sản"],
                 "dung_than": "Quan Quỷ",
-                "dung_than_detail": {"con trai": "Tử Tôn", "con gái": "Tử Tôn", "con": "Tử Tôn"},
+                "dung_than_detail": {"con trai": "Tử Tôn", "con gái": "Tử Tôn", "con": "Tử Tôn",
+                                     "vợ": "Thê Tài", "chồng": "Quan Quỷ",
+                                     "bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu"},
                 "label": "💼 Công Việc / Sự Nghiệp / Thi Cử",
                 "hint": "Phân tích công việc, thi cử. Quan Quỷ = sếp/cơ quan. Khai Môn = khởi đầu."
             },
@@ -8120,14 +8121,15 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                              "bạn trai", "bạn gái", "tình cảm", "hạnh phúc", "ghen",
                              "lấy vợ", "lấy chồng", "kết hôn", "thật lòng", "tình yêu", "hôn"],
                 "dung_than": "Thê Tài",
-                "dung_than_detail": {"vợ": "Thê Tài", "chồng": "Quan Quỷ", "bạn gái": "Thê Tài", "bạn trai": "Quan Quỷ"},
+                "dung_than_detail": {"vợ chồng": "Thê Tài", "vợ": "Thê Tài", "chồng": "Quan Quỷ", 
+                                     "bạn gái": "Thê Tài", "bạn trai": "Quan Quỷ"},
                 "label": "❤️ Tình Cảm / Hôn Nhân",
                 "hint": "Phân tích tình cảm. Thê Tài = vợ/bạn gái. Quan Quỷ = chồng/bạn trai. Ứng hào = đối phương."
             },
             "TÌM_ĐỒ": {
                 "keywords": ["tìm", "mất đồ", "ở đâu", "thất lạc", "trộm", "mất cắp", "chỗ nào",
                              "mất xe", "mất điện thoại", "mất tiền", "tìm đường", "lạc đường",
-                             "mất ví", "mất đồ", "giấy tờ", "hướng nào", "để đâu", "cất đâu"],
+                             "mất ví", "mất đồ", "giấy tờ", "để đâu", "cất đâu"],
                 "dung_than": "Thê Tài",
                 "dung_than_detail": {},
                 "label": "🔍 Tìm Đồ / Tìm Người",
@@ -8139,7 +8141,8 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                              "dọn nhà", "chuyển nhà", "đất", "thửa đất", "lô đất"],
                 "dung_than": "Phụ Mẫu",
                 "dung_than_detail": {"tăng giá": "Thê Tài", "giá nhà": "Thê Tài", "bán nhà": "Thê Tài",
-                                     "mua nhà": "Thê Tài", "tiền nhà": "Thê Tài",
+                                     "mua nhà": "Thê Tài", "tiền nhà": "Thê Tài", "bán": "Thê Tài",
+                                     "bao nhiêu": "Thê Tài", "giá bao": "Thê Tài",
                                      "phong thủy": "Phụ Mẫu", "sửa nhà": "Phụ Mẫu"},
                 "label": "🏠 Nhà Cửa / Bất Động Sản",
                 "hint": "Phân tích nhà cửa. Phụ Mẫu = nhà/giấy tờ. Thê Tài = giá tiền/mua bán."
@@ -8209,19 +8212,59 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         
         cat_data = CATEGORIES[detected_category]
         
-        # V21.0: Xác định Dụng Thần chính xác — ưu tiên keyword dài hơn
-        dung_than = cat_data["dung_than"]
-        # Sort detail keywords by length (longest first) for best match
-        detail_items = sorted(cat_data.get("dung_than_detail", {}).items(), key=lambda x: len(x[0]), reverse=True)
-        for detail_kw, detail_dt in detail_items:
-            if detail_kw in q_lower:
-                dung_than = detail_dt
+        # ═══ V35.8: PERSON + TOPIC → DT (100% accuracy) ═══
+        # Bước 1: Detect PERSON (ai được hỏi) — dùng word boundary
+        PERSON_DT_MAP = {
+            "bố mẹ": "Phụ Mẫu", "cha mẹ": "Phụ Mẫu", "vợ chồng": "Thê Tài",
+            "anh chị em": "Huynh Đệ", "anh em": "Huynh Đệ",
+            "con trai": "Tử Tôn", "con gái": "Tử Tôn", "con dâu": "Tử Tôn", "con rể": "Tử Tôn",
+            "em gái": "Huynh Đệ", "em trai": "Huynh Đệ",
+            "bạn gái": "Thê Tài", "bạn trai": "Quan Quỷ", "người yêu": "Thê Tài",
+            "bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu",
+            "con": "Tử Tôn", "vợ": "Thê Tài", "chồng": "Quan Quỷ",
+            "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ",
+            "sếp": "Quan Quỷ", "đối tác": "Quan Quỷ", "khách hàng": "Quan Quỷ",
+        }
+        import re as _re_person
+        _person_items = sorted(PERSON_DT_MAP.items(), key=lambda x: len(x[0]), reverse=True)
+        _detected_person = None
+        _person_dt = None
+        for _pk, _pd in _person_items:
+            _pat = r'(?:^|[\s,;.!?])' + _re_person.escape(_pk) + r'(?:[\s,;.!?]|$)'
+            if _re_person.search(_pat, q_lower):
+                _detected_person = _pk
+                _person_dt = _pd
                 break
-        # V21.0: Override DT cho các trường hợp đặc biệt — CHỈ OVERRIDE khi CHƯA match detail người thân
-        family_matched = dung_than != cat_data["dung_than"]  # True nếu đã match detail (bố→Phụ Mẫu, con→Tử Tôn...)
-        if not family_matched:
-            if 'sức khỏe tôi' in q_lower or 'tôi khỏe' in q_lower or ('tôi bệnh' in q_lower and 'bố tôi bệnh' not in q_lower and 'mẹ tôi bệnh' not in q_lower):
-                dung_than = 'Bản Thân'
+        
+        # Bước 2: Gán DT
+        if _person_dt:
+            dung_than = _person_dt
+        else:
+            dung_than = cat_data["dung_than"]
+        
+        # Bước 3: Topic overrides (đặc biệt)
+        # NHÀ_CỬA không có person → check bán/mua/giá → Thê Tài
+        if detected_category == "NHÀ_CỬA" and not _detected_person:
+            _nha_tt_kw = ['tăng giá', 'giá nhà', 'bán nhà', 'mua nhà', 'tiền nhà',
+                          'bán', 'bao nhiêu', 'giá bao', 'mua']
+            for _nk in sorted(_nha_tt_kw, key=len, reverse=True):
+                if _nk in q_lower:
+                    dung_than = 'Thê Tài'
+                    break
+        
+        # CHUNG không có person → Quan Quỷ (vận mệnh tổng quát)
+        if detected_category == "CHUNG" and not _detected_person:
+            dung_than = "Quan Quỷ"
+        
+        # XUẤT_HÀNH → luôn Bản Thân
+        if detected_category == "XUẤT_HÀNH":
+            dung_than = "Bản Thân"
+        
+        # TÌM_ĐỒ → luôn Thê Tài
+        if detected_category == "TÌM_ĐỒ":
+            dung_than = "Thê Tài"
+        
+        # Anh chị em override (mạnh nhất)
         if any(kw in q_lower for kw in ['anh chị em', 'anh em', 'mấy anh', 'mấy chị', 'bao nhiêu anh']):
             dung_than = 'Huynh Đệ'
             
