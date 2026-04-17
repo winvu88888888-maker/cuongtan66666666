@@ -8268,39 +8268,35 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     self.log_step("V32.5 Grammar", "DT_OVERRIDE", 
                                   f"Hỏi {purpose} {focus} → DT={parser_dt} | {reason[:60]}")
                 
-                # V34.0: TOPIC-AWARE DT CORRECTION
-                # Trong Lục Hào, DT theo CHỦ ĐỀ hỏi, KHÔNG theo NGƯỜI hỏi:
-                # - Hỏi BỆNH (cho ai cũng vậy) → DT = Quan Quỷ
-                # - Hỏi TIỀN/TÀI SẢN → DT = Thê Tài
-                # - Hỏi NHÀ/XE/HỌC → DT = Phụ Mẫu
-                # - Hỏi CON CÁI (sinh/đỗ) → DT = Tử Tôn
+                # V35.7: TOPIC-AWARE DT CORRECTION
+                # CHỈ override khi DT vẫn là default category (chưa match detail person)
+                # Nếu detail đã match (bố→Phụ Mẫu, con→Tử Tôn) → GIỮU NGUYÊN!
                 q_lower = question.lower()
                 _topic_dt_override = None
+                _dt_already_detailed = dung_than != cat_data["dung_than"]  # True nếu detail đã match
                 
-                # BỆNH → QQ bất kể person
-                if any(kw in q_lower for kw in ['bệnh', 'ung thư', 'khỏi', 'sống', 'chết', 
-                    'phẫu thuật', 'mổ', 'khỏe', 'ốm', 'sức khỏe']):
-                    if detected_category in ('SỨC_KHỎE_GIA_ĐÌNH', 'SỨC_KHỎE', 'CHUNG'):
+                if not _dt_already_detailed:
+                    # BỆNH → QQ (chỉ khi chưa xác định person)
+                    if any(kw in q_lower for kw in ['bệnh', 'ung thư', 'phẫu thuật', 'mổ', 'ốm']):
+                        if detected_category in ('SỨC_KHỎE_GIA_ĐÌNH', 'SỨC_KHỎE', 'CHUNG'):
+                            _topic_dt_override = 'Quan Quỷ'
+                    
+                    # TÀI CHÍNH → TT
+                    elif any(kw in q_lower for kw in ['tiền', 'tài chính', 'đầu tư', 'lương', 'nợ']):
+                        _topic_dt_override = 'Thê Tài'
+                    
+                    # ĐỐI TÁC → Quan Quỷ
+                    elif any(kw in q_lower for kw in ['đối tác', 'khách hàng', 'người lạ']):
+                        _topic_dt_override = 'Quan Quỷ'
+                    
+                    # NĂM NAY chung → QQ (default)
+                    elif detected_category == 'CHUNG' and dung_than == 'Bản Thân':
                         _topic_dt_override = 'Quan Quỷ'
                 
-                # TÀI CHÍNH → TT
-                elif any(kw in q_lower for kw in ['tiền', 'tài chính', 'đầu tư', 'lương', 'nợ']):
-                    _topic_dt_override = 'Thê Tài'
-                
-                # Hỏi CON sinh/đỗ → TT (Tử Tôn)
-                elif any(kw in q_lower for kw in ['con dâu', 'con rể', 'con trai', 'con gái']):
-                    if any(kw in q_lower for kw in ['sinh', 'đẻ', 'mang thai']):
+                # Hỏi CON sinh/đỗ → Tử Tôn (luôn override)
+                if any(kw in q_lower for kw in ['con dâu', 'con rể', 'con trai', 'con gái']):
+                    if any(kw in q_lower for kw in ['sinh', 'đẻ', 'mang thai', 'thi', 'đỗ', 'học']):
                         _topic_dt_override = 'Tử Tôn'
-                    elif any(kw in q_lower for kw in ['thi', 'đỗ', 'học']):
-                        _topic_dt_override = 'Tử Tôn'
-                
-                # ĐỐI TÁC → Quan Quỷ (xem họ như Ứng)
-                elif any(kw in q_lower for kw in ['đối tác', 'khách hàng', 'người lạ']):
-                    _topic_dt_override = 'Quan Quỷ'
-                
-                # NĂM NAY chung → QQ (default)
-                elif detected_category == 'CHUNG' and dung_than == 'Bản Thân':
-                    _topic_dt_override = 'Quan Quỷ'
                 
                 if _topic_dt_override and _topic_dt_override != dung_than:
                     self.log_step("V34.0 TopicDT", "CORRECT",
