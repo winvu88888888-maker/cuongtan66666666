@@ -8224,6 +8224,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             "con": "Tử Tôn", "vợ": "Thê Tài", "chồng": "Quan Quỷ",
             "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ",
             "sếp": "Quan Quỷ", "đối tác": "Quan Quỷ", "khách hàng": "Quan Quỷ",
+            "tôi": "Bản Thân",
         }
         import re as _re_person
         _person_items = sorted(PERSON_DT_MAP.items(), key=lambda x: len(x[0]), reverse=True)
@@ -8252,9 +8253,8 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     dung_than = 'Thê Tài'
                     break
         
-        # CHUNG không có person → Quan Quỷ (vận mệnh tổng quát)
-        if detected_category == "CHUNG" and not _detected_person:
-            dung_than = "Quan Quỷ"
+        # CHUNG: khi không detect person → giữ default = Bản Thân (hào Thế)
+        # (Không override sang Quan Quỷ nữa — hỏi chung = hỏi cho mình)
         
         # XUẤT_HÀNH → luôn Bản Thân
         if detected_category == "XUẤT_HÀNH":
