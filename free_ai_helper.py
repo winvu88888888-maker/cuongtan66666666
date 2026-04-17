@@ -8271,9 +8271,18 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         if any(kw in q_lower for kw in ['anh chị em', 'anh em', 'mấy anh', 'mấy chị', 'bao nhiêu anh']):
             dung_than = 'Huynh Đệ'
             
-        # V26.1: TÔN TRỌNG tuyệt đối quyết định tự chọn Dụng Thần của người dùng (từ Dropdown Streamlit)
-        if selected_subject and selected_subject != "Không Rõ":
-            dung_than = selected_subject
+        # V35.8: Dropdown CHỈ override khi user chủ động chọn (không phải default "Bản thân")
+        # Default "👤 Bản thân" → để V35.8 PERSON+TOPIC tự detect
+        _DROPDOWN_DEFAULTS = {"Không Rõ", "👤 Bản thân", "Bản thân", "Bản Thân", ""}
+        if selected_subject and selected_subject not in _DROPDOWN_DEFAULTS:
+            # User chủ động chọn: "👴👵 Bố mẹ", "👶 Con cái", etc.
+            _DROPDOWN_DT_MAP = {
+                "👨‍👩‍👧 Anh chị em": "Huynh Đệ",
+                "👴👵 Bố mẹ": "Phụ Mẫu",
+                "👶 Con cái": "Tử Tôn",
+                "🤝 Người lạ (theo Can sinh)": "Quan Quỷ",
+            }
+            dung_than = _DROPDOWN_DT_MAP.get(selected_subject, dung_than)
         
         is_age = _is_age_question(question)
         is_find = _is_find_question(question) and detected_category == "TÌM_ĐỒ"
