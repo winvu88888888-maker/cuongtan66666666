@@ -100,12 +100,13 @@ class GeminiQMDGHelper:
             model_names_short = [m.split('/')[-1] if '/' in m else m for m in valid_models]
             
             # Check: có model PAID trong danh sách? → có billing
-            has_billing = any('3.1-pro' in mn or '3.0-pro' in mn for mn in model_names_short)
+            has_billing = any('3.1-pro' in mn or '3.0-pro' in mn or '3.0-flash' in mn for mn in model_names_short)
             
             if has_billing:
                 # CÓ BILLING → ưu tiên model mạnh nhất (PAID)
                 priority_order = [
-                    'gemini-3.1-pro-preview',      # 🏆 BEST — Thế hệ mới nhất, suy luận siêu sâu
+                    'gemini-3.1-pro-preview',      # 🏆 BEST — Thế hệ mới nhất
+                    'gemini-3.0-flash',            # Gemini 3 Flash — nhanh + mạnh
                     'gemini-2.5-pro',              # Rất tốt — sâu, ổn định
                     'gemini-2.5-flash',            # Nhanh — fallback
                     'gemini-2.5-flash-lite',       # Nhẹ — fallback
@@ -118,6 +119,7 @@ class GeminiQMDGHelper:
                 priority_order = [
                     'gemini-2.5-pro',              # 🏆 FREE — Suy luận sâu nhất
                     'gemini-2.5-flash',            # FREE — Nhanh, quota cao
+                    'gemini-3.0-flash',            # Gemini 3 Flash — nếu available
                     'gemini-2.5-flash-lite',       # FREE — Nhẹ nhất
                     'gemini-1.5-flash',            # FREE — Legacy
                 ]
@@ -161,6 +163,7 @@ class GeminiQMDGHelper:
             self.cascade_models = [
                 'gemini-2.5-pro',                  # FREE tier — Suy luận sâu nhất
                 'gemini-2.5-flash',                # FREE — Nhanh, quota cao
+                'gemini-3.0-flash',                # Gemini 3 Flash
                 'gemini-2.5-flash-lite',           # FREE — Nhẹ nhất
                 'gemini-1.5-flash',                # FREE — Legacy
                 'gemini-3.1-pro-preview',          # PAID — Chỉ khi có billing
