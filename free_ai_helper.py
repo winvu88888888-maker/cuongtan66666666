@@ -8082,13 +8082,13 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                              "gia đình", "thai", "mang thai", "bố mất", "mẹ mất", "chết chưa",
                              "sống", "chữa", "bệnh viện", "phẫu thuật", "ung thư", "tai nạn", "nguy hiểm",
                              "qua khỏi", "cứu được", "nằm viện", "thuốc", "trị bệnh", "khỏi bệnh"],
-                "dung_than": "Quan Quỷ",
+                "dung_than": "Bản Thân",
                 "dung_than_detail": {"bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu", "bố mẹ": "Phụ Mẫu",
                                      "con": "Tử Tôn", "con trai": "Tử Tôn", "con gái": "Tử Tôn",
                                      "vợ": "Thê Tài", "chồng": "Quan Quỷ",
                                      "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ"},
                 "label": "🏥 Sức Khỏe / Gia Đình",
-                "hint": "Phân tích sức khỏe. DT = Quan Quỷ (bệnh tinh). Phụ Mẫu = bố mẹ. Tử Tôn = thuốc/con."
+                "hint": "Xem bệnh: DT = Hào Thế (Bản Thân). Quan Quỷ = bệnh tinh. Tử Tôn = thuốc/bác sĩ. Xem cho người khác → DT theo Lục Thân."
             },
             "TÀI_CHÍNH": {
                 "keywords": ["tiền", "tài chính", "mua bán", "đầu tư", "giàu", "nghèo", "lương", "thu nhập", "nợ", 
