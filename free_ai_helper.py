@@ -9007,6 +9007,72 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                 final_parts.append(direct_answer)
                 final_parts.append("")
             
+            # ═══════════════════════════════════════════════════════════════
+            # V35.3: TAM THỜI LUẬN GIẢI — CŨNG HIỆN KHI AI ONLINE
+            # ═══════════════════════════════════════════════════════════════
+            try:
+                TS_CYCLE_OL = ['Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Đế Vượng',
+                            'Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt', 'Thai', 'Dưỡng']
+                TS_EVENTS_OL = {
+                    'Trường Sinh': {'qk': 'Vừa trải qua giai đoạn thai nghén, ấp ủ', 'ht': 'Khởi đầu mới, sinh sôi, mầm mống hình thành', 'tl': 'Sẽ phát triển mạnh, cần nuôi dưỡng cẩn thận'},
+                    'Mộc Dục': {'qk': 'Đã có khởi đầu nhưng còn non nớt', 'ht': 'Đang trong giai đoạn thử thách, tẩy rửa, chưa ổn định', 'tl': 'Sắp vượt qua khó khăn ban đầu, bắt đầu trưởng thành'},
+                    'Quan Đới': {'qk': 'Đã vượt qua giai đoạn khó khăn ban đầu', 'ht': 'Đang chuẩn bị, tích lũy lực lượng, sắp đến thời cơ', 'tl': 'Sẽ bước vào giai đoạn phát triển mạnh mẽ'},
+                    'Lâm Quan': {'qk': 'Đã tích lũy đủ lực, có nền tảng vững chắc', 'ht': 'Đang ở thế phát triển mạnh, sự nghiệp thăng tiến', 'tl': 'Sắp đạt đỉnh cao, tận dụng ngay thời cơ'},
+                    'Đế Vượng': {'qk': 'Đã phát triển mạnh mẽ, đạt nhiều thành tựu', 'ht': 'Đang ở ĐỈNH CAO sức mạnh, cực thịnh', 'tl': 'Thịnh cực tất suy — cần giữ vững, không kiêu ngạo'},
+                    'Suy': {'qk': 'Đã qua thời kỳ hoàng kim, bắt đầu suy giảm', 'ht': 'Đang suy yếu dần, lực lượng giảm sút', 'tl': 'Tiếp tục đi xuống nếu không có tác nhân mới'},
+                    'Bệnh': {'qk': 'Đã suy yếu một thời gian dài', 'ht': 'Đang gặp trở ngại lớn, trì trệ, bế tắc', 'tl': 'Cần thay đổi triệt để hoặc chờ thời cơ mới'},
+                    'Tử': {'qk': 'Đã trải qua nhiều thất bại, tổn thất', 'ht': 'Đang ở trạng thái đình đốn, gần như không hoạt động', 'tl': 'Sẽ chuyển sang giai đoạn tích trữ (Mộ), chờ tái sinh'},
+                    'Mộ': {'qk': 'Đã kết thúc một chu kỳ, sự việc đã đóng lại', 'ht': 'Đang bị giữ lại, cất giấu, tích trữ năng lượng', 'tl': 'Năng lượng sẽ chuyển hóa, chuẩn bị tái sinh'},
+                    'Tuyệt': {'qk': 'Đã mất hết nguồn lực, cạn kiệt hoàn toàn', 'ht': 'Đang ở trạng thái trống rỗng, chờ đợi', 'tl': 'Tuyệt xứ phùng sinh — từ cái không sẽ sinh cái có mới'},
+                    'Thai': {'qk': 'Vừa trải qua giai đoạn tuyệt vọng, trống rỗng', 'ht': 'Mầm mống mới đang hình thành, thai nghén ý tưởng', 'tl': 'Sự việc mới sẽ ra đời, cần kiên nhẫn nuôi dưỡng'},
+                    'Dưỡng': {'qk': 'Ý tưởng/kế hoạch đã được thai nghén', 'ht': 'Đang trong giai đoạn nuôi dưỡng, chuẩn bị chu đáo', 'tl': 'Sắp "sinh" ra kết quả, thời điểm hành động gần kề'},
+                }
+                current_ts_ol = ts_stage or 'Quan Đới'
+                ts_evt_ol = TS_EVENTS_OL.get(current_ts_ol, TS_EVENTS_OL['Quan Đới'])
+                try:
+                    idx_ol = TS_CYCLE_OL.index(current_ts_ol)
+                    prev_ts_ol = TS_CYCLE_OL[(idx_ol - 1) % 12]
+                    next_ts_ol = TS_CYCLE_OL[(idx_ol + 1) % 12]
+                except ValueError:
+                    prev_ts_ol, next_ts_ol = 'Mộc Dục', 'Lâm Quan'
+                
+                next_evt_ol = TS_EVENTS_OL.get(next_ts_ol, {})
+                
+                final_parts.append(f"\n### 🔮 TAM THỜI LUẬN GIẢI (Quá Khứ → Hiện Tại → Tương Lai)")
+                final_parts.append(f"\n**🕰️ QUÁ KHỨ** (Trường Sinh: {prev_ts_ol} → {current_ts_ol})")
+                final_parts.append(f"- {ts_evt_ol['qk']}")
+                final_parts.append(f"\n**📍 HIỆN TẠI** (Trường Sinh: **{current_ts_ol}** | Ngũ Khí: {ngu_khi_state_v22})")
+                final_parts.append(f"- {ts_evt_ol['ht']}")
+                final_parts.append(f"- Dụng Thần {dung_than} ({hanh_dt_v22}) — Sức mạnh: **{weighted_pct}%**")
+                final_parts.append(f"\n**🔮 TƯƠNG LAI** (Trường Sinh: {current_ts_ol} → **{next_ts_ol}**)")
+                final_parts.append(f"- {ts_evt_ol['tl']}")
+                if next_evt_ol:
+                    final_parts.append(f"- Xu hướng tiếp theo ({next_ts_ol}): {next_evt_ol.get('ht', '?')}")
+                
+                HA_DO_TIMING_OL = {
+                    'Kim': 'Ứng kỳ: tháng Thân/Dậu (7-8 ÂL)',
+                    'Mộc': 'Ứng kỳ: tháng Dần/Mão (1-2 ÂL)',
+                    'Thủy': 'Ứng kỳ: tháng Hợi/Tý (10-11 ÂL)',
+                    'Hỏa': 'Ứng kỳ: tháng Tỵ/Ngọ (4-5 ÂL)',
+                    'Thổ': 'Ứng kỳ: tháng Thìn/Tuất/Sửu/Mùi (3/6/9/12 ÂL)',
+                }
+                timing_ol = HA_DO_TIMING_OL.get(hanh_dt_v22, '')
+                if timing_ol:
+                    final_parts.append(f"- ⏳ {timing_ol}")
+                
+                if weighted_pct >= 70:
+                    final_parts.append(f"\n> 📜 *\"Thiên thời - Địa lợi - Nhân hòa đều thuận. {dung_than} cực vượng, vạn sự hanh thông.\"*")
+                elif weighted_pct >= 55:
+                    final_parts.append(f"\n> 📜 *\"Thời vận đang lên, {dung_than} có lực. Thuận theo tự nhiên, chớ gượng ép mà thành.\"*")
+                elif weighted_pct >= 45:
+                    final_parts.append(f"\n> 📜 *\"Âm Dương giằng co, thế trận chưa rõ. Quan sát thêm biến động rồi mới quyết.\"*")
+                elif weighted_pct >= 30:
+                    final_parts.append(f"\n> 📜 *\"Vận khí suy giảm, {dung_than} yếu thế. Tĩnh chờ thời cơ, động tắc sinh họa.\"*")
+                else:
+                    final_parts.append(f"\n> 📜 *\"Tuyệt xứ phùng sinh — bĩ cực thái lai. Chờ đến khi {hanh_dt_v22} vượng khí mới hành động.\"*")
+            except Exception as e:
+                self.log_step("V35.3", "TAM_THOI_ONLINE_ERR", str(e)[:100])
+            
             # V31.0: Chú Giải — Sơ Đồ Tương Tác
             if v31_question_diagram:
                 final_parts.append("\n<details>")
