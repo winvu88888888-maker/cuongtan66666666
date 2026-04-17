@@ -8239,7 +8239,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
         # Bước 2: Gán DT
         if _person_dt:
             dung_than = _person_dt
-        elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE'):
+        elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE_GIA_ĐÌNH'):
             # "tôi" = Bản Thân CHỈ khi hỏi CHUNG hoặc SỨC_KHỎE (hào Thế)
             # TÀI_CHÍNH "tôi giàu?" → DT = Thê Tài, CÔNG_VIỆC → Quan Quỷ
             dung_than = 'Bản Thân'
@@ -9827,7 +9827,7 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
             final_parts.append(f"**🎯 Trả lời câu hỏi: \"{question}\"**")
             final_parts.append("")
             
-            if _cat == 'SỨC_KHỎE':
+            if _cat == 'SỨC_KHỎE_GIA_ĐÌNH':
                 # Sức khỏe: DT = Bản Thân (bệnh mình), QQ = bệnh tinh, TT = thuốc
                 if _dt == 'Bản Thân':
                     if _good:
