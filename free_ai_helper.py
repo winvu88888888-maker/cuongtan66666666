@@ -6799,6 +6799,27 @@ class FreeAIHelper:
         - Bước 3: Trả lời LINH HOẠT dựa trên Vạn Vật Loại Tượng
         """
         q = question.lower()
+        # V36.1: Normalize không dấu → có dấu (same as _detect_category)
+        _THAMTU_NORM = {
+            'qua duoc': 'qua được', 'qua khoi': 'qua khỏi', 'chet chua': 'chết chưa',
+            'con song': 'còn sống', 'da mat': 'đã mất', 'qua doi': 'qua đời',
+            'tu vong': 'tử vong', 'song sot': 'sống sót', 'benh nang': 'bệnh nặng',
+            'nguy kich': 'nguy kịch', 'hap hoi': 'hấp hối', 'cuu duoc': 'cứu được',
+            'mat roi': 'mất rồi', 'song hay': 'sống hay', 'song khong': 'sống không',
+            'co nen': 'có nên', 'co duoc': 'có được', 'duoc khong': 'được không',
+            'nen khong': 'nên không', 'co khong': 'có không',
+            'co tot': 'có tốt', 'co thanh': 'có thành', 'co do': 'có đỗ',
+            'co dat': 'có đạt', 'co thang': 'có thắng', 'co loi': 'có lời',
+            'the nao': 'thế nào', 'nhu the nao': 'như thế nào', 'ra sao': 'ra sao',
+            'khi nao': 'khi nào', 'bao gio': 'bao giờ', 'luc nao': 'lúc nào',
+            'o dau': 'ở đâu', 'cho nao': 'chỗ nào',
+            'bo': 'bố', 'me': 'mẹ', 'vo': 'vợ', 'chong': 'chồng',
+            'ong ngoai': 'ông ngoại', 'ba ngoai': 'bà ngoại',
+            'ong noi': 'ông nội', 'ba noi': 'bà nội', 'ong': 'ông', 'ba': 'bà',
+        }
+        for _nd, _cd in sorted(_THAMTU_NORM.items(), key=lambda x: len(x[0]), reverse=True):
+            if _nd in q:
+                q = q.replace(_nd, _cd)
         lines = []
         
         lines.append(f"\n**❓ Câu hỏi của bạn:** {question}")
@@ -6939,11 +6960,12 @@ class FreeAIHelper:
             else:
                 lines.append(f"- 🔄 Sự việc **TRUNG TÍNH**, tùy thuộc cách xử lý")
         
-        # V36.1: SỐNG/CHẾT — PHẢI CHECK TRƯỚC CÓ/KHÔNG (vì "mất" chứa "không")
+        # V36.1: SỐNG/CHẾT — PHẢI CHECK TRƯỚC CÓ/KHÔNG
         elif any(k in q for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không',
                                    'qua khỏi', 'cứu được', 'mất chưa', 'đã mất', 'sống hay',
                                    'mất rồi', 'chết hay', 'sống chết', 'còn hay mất',
-                                   'qua đời', 'tử vong', 'sống sót']):
+                                   'qua đời', 'tử vong', 'sống sót', 'qua được',
+                                   'bệnh nặng', 'nguy kịch', 'hấp hối']):
             if pct >= 50:
                 lines.append(f"\n✅ **CÂU TRẢ LỜI: CÒN SỐNG — {dung_than} có SINH KHÍ ({pct}%)**")
                 lines.append(f"- {dung_than} VƯỢNG/BÌNH → còn sinh khí, có thể hồi phục.")
@@ -6963,22 +6985,34 @@ class FreeAIHelper:
                 if any('tuyệt' in str(ev).lower() for ev in bad_impacts):
                     lines.append(f"- DT Hóa Tuyệt → giai đoạn TUYỆT = kết thúc.")
         
-        # CÓ/KHÔNG (V36.1: kết luận DỨT KHOÁT hơn)
-        elif any(k in q for k in ['có nên', 'có được', 'được không', 'nên không', 'có thể',
+        # V36.1: CÓ NÊN — Tách riêng TRƯỚC CÓ/KHÔNG, thresholds khớp Phase D (55/45)
+        elif any(k in q for k in ['có nên', 'nên không', 'nên hay']):
+            if pct >= 55:
+                lines.append(f"\n✅ **CÂU TRẢ LỜI: NÊN — THUẬN LỢI ({pct}%)**")
+                lines.append(f"- {dung_than} VƯỢNG, thời điểm tốt. Nên tiến hành.")
+            elif pct >= 45:
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: CÓ THỂ nhưng CẦN THẬN TRỌNG ({pct}%)**")
+                lines.append(f"- Thế trận chưa rõ ({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). Chuẩn bị phương án B.")
+            else:
+                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG NÊN — BẤT LỢI ({pct}%)**")
+                lines.append(f"- {dung_than} SUY, nhiều trở ngại. Chờ thời điểm tốt hơn.")
+        
+        # CÓ/KHÔNG — thresholds khớp Phase D (55/50/45)
+        elif any(k in q for k in ['có được', 'được không', 'có thể',
                                  'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
                                  'có không', 'không']):
-            if final_verdict == 'CÁT' or pct >= 55:
+            if pct >= 55:
                 lines.append(f"\n✅ **CÂU TRẢ LỜI: CÓ — Thành công ({pct}%)**")
                 lines.append(f"- {dung_than} VƯỢNG, thuận lợi. Nắm bắt cơ hội.")
-            elif final_verdict == 'HUNG' or pct <= 40:
-                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG — Bất lợi ({pct}%)**")
-                lines.append(f"- {dung_than} SUY, nhiều trở ngại. Nên chờ hoặc đổi hướng.")
             elif pct >= 50:
                 lines.append(f"\n🟢 **CÂU TRẢ LỜI: CÓ nhưng KHÓ ({pct}%)**")
                 lines.append(f"- Nghiêng CÓ ({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). Cần nỗ lực thêm.")
+            elif pct >= 45:
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: KHÓ nhưng chưa hẳn KHÔNG ({pct}%)**")
+                lines.append(f"- Nghiêng KHÔNG ({len(bad_impacts)} nghịch vs {len(good_impacts)} thuận). Cần nỗ lực lớn.")
             else:
-                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG NÊN ({pct}%)**")
-                lines.append(f"- Nghiêng KHÔNG ({len(bad_impacts)} nghịch vs {len(good_impacts)} thuận). Chờ thời điểm tốt hơn.")
+                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG — Bất lợi ({pct}%)**")
+                lines.append(f"- {dung_than} SUY, nhiều trở ngại. Nên chờ hoặc đổi hướng.")
         
         # KHI NÀO / THÁNG NÀO / BAO GIỜ — trả lời CỤ THỂ tháng/chi
         elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao',
@@ -7885,6 +7919,18 @@ class FreeAIHelper:
         lines.append(f"**✅ KẾT LUẬN (Điểm Tổng Hợp: {pct}% — {overall}):**")
         
         q_lower_kl = question.lower()
+        # V36.1: Normalize không dấu → có dấu cho Phase D (same as Thám Tử)
+        _PD_NORM = {
+            'qua duoc': 'qua được', 'qua khoi': 'qua khỏi', 'chet chua': 'chết chưa',
+            'con song': 'còn sống', 'da mat': 'đã mất', 'qua doi': 'qua đời',
+            'tu vong': 'tử vong', 'song sot': 'sống sót', 'benh nang': 'bệnh nặng',
+            'nguy kich': 'nguy kịch', 'hap hoi': 'hấp hối', 'cuu duoc': 'cứu được',
+            'co nen': 'có nên', 'nen khong': 'nên không', 'co duoc': 'có được',
+            'duoc khong': 'được không', 'co khong': 'có không',
+        }
+        for _nd, _cd in sorted(_PD_NORM.items(), key=lambda x: len(x[0]), reverse=True):
+            if _nd in q_lower_kl:
+                q_lower_kl = q_lower_kl.replace(_nd, _cd)
         # Extract hành DT từ Can ngày
         _hanh_dt_kl = '?'
         if chart_data and isinstance(chart_data, dict):
@@ -7898,7 +7944,8 @@ class FreeAIHelper:
         is_life_death = any(kw in q_lower_kl for kw in [
             'sống', 'chết', 'mất', 'còn sống', 'đã mất', 'qua đời', 'qua khỏi',
             'cứu được', 'sống sót', 'nguy hiểm', 'tử vong', 'chết chưa',
-            'sống hay', 'mất rồi', 'còn hay', 'sống không'
+            'sống hay', 'mất rồi', 'còn hay', 'sống không', 'qua được',
+            'bệnh nặng', 'nguy kịch', 'hấp hối'
         ])
         # 2. Có/Không — câu hỏi nhị phân
         is_yesno_kl = any(kw in q_lower_kl for kw in [
@@ -8235,9 +8282,13 @@ class FreeAIHelper:
             'xuat hanh': 'xuất hành', 'di choi': 'đi chơi', 'chuyen di': 'chuyến đi',
             'may bay': 'máy bay', 'di cong tac': 'đi công tác',
             'toi': 'tôi', 'bo': 'bố', 'me': 'mẹ', 'cha': 'cha',
+            'ong ngoai': 'ông ngoại', 'ba ngoai': 'bà ngoại',
+            'ong noi': 'ông nội', 'ba noi': 'bà nội', 'ong': 'ông', 'ba': 'bà',
             'con trai': 'con trai', 'con gai': 'con gái',
             'anh': 'anh', 'chi': 'chị', 'em': 'em',
             'doi tac': 'đối tác', 'khach hang': 'khách hàng',
+            'qua duoc': 'qua được', 'chet chua': 'chết chưa',
+            'con song': 'còn sống', 'da mat': 'đã mất', 'qua doi': 'qua đời',
             'co nen': 'có nên', 'co duoc': 'có được', 'co tot': 'có tốt',
             'co loi': 'có lợi', 'nhu the nao': 'như thế nào', 'the nao': 'thế nào',
             'bao gio': 'bao giờ', 'khi nao': 'khi nào', 'luc nao': 'lúc nào',
@@ -8398,12 +8449,15 @@ class FreeAIHelper:
         # ═══ V35.8: PERSON + TOPIC → DT (100% accuracy) ═══
         # Bước 1: Detect PERSON (ai được hỏi) — dùng word boundary
         PERSON_DT_MAP = {
+            "ông ngoại": "Phụ Mẫu", "bà ngoại": "Phụ Mẫu",
+            "ông nội": "Phụ Mẫu", "bà nội": "Phụ Mẫu",
             "bố mẹ": "Phụ Mẫu", "cha mẹ": "Phụ Mẫu", "vợ chồng": "Thê Tài",
             "anh chị em": "Huynh Đệ", "anh em": "Huynh Đệ",
             "con trai": "Tử Tôn", "con gái": "Tử Tôn", "con dâu": "Tử Tôn", "con rể": "Tử Tôn",
             "em gái": "Huynh Đệ", "em trai": "Huynh Đệ",
             "bạn gái": "Thê Tài", "bạn trai": "Quan Quỷ", "người yêu": "Thê Tài",
             "bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu",
+            "ông": "Phụ Mẫu", "bà": "Phụ Mẫu",
             "con": "Tử Tôn", "vợ": "Thê Tài", "chồng": "Quan Quỷ",
             "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ",
             "sếp": "Quan Quỷ", "đối tác": "Quan Quỷ", "khách hàng": "Quan Quỷ",
