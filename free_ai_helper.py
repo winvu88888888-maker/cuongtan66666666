@@ -3743,6 +3743,11 @@ VD: "Ban đầu khó khăn (Môn X: HUNG) nhưng sau đó có cơ hội xoay chu
                     offline_ctx += f"Trường Sinh: {v22.get('ts_stage', '?')} | Ngũ Khí: {v22.get('ngu_khi', '?')}\n"
                     offline_ctx += f"Tier: {v22.get('tier_cap', '?')}\n"
                 
+                # V35.8-FIX: Giới hạn offline_ctx → tránh prompt quá lớn gây timeout
+                if len(offline_ctx) > 40000:
+                    # Giữ đầu (verdict + factors quan trọng) + cuối (RAW diagrams + bảng điểm)
+                    offline_ctx = offline_ctx[:20000] + "\n\n[...CONTEXT TRUNCATED FOR SPEED...]\n\n" + offline_ctx[-18000:]
+                
                 offline_ctx += f"=== HẾT OFFLINE ===\n\n"
             
             # V14.0: Inject Đại Lục Nhâm + Thái Ất

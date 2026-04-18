@@ -9,6 +9,8 @@ BASE_HUB_DIR = "data_hub"
 INDEX_FILE = os.path.join(BASE_HUB_DIR, "hub_index.json")
 MAX_ENTRIES_PER_SHARD = 500  # Increased from 100 for better efficiency
 
+_EMPTY_INDEX = {"index": [], "stats": {"total": 0, "categories": {}}}
+
 def initialize_hub():
     """Initialize the directory and index if they don't exist."""
     if not os.path.exists(BASE_HUB_DIR):
@@ -16,7 +18,66 @@ def initialize_hub():
     
     if not os.path.exists(INDEX_FILE):
         with open(INDEX_FILE, 'w', encoding='utf-8') as f:
-            json.dump({"index": [], "stats": {"total": 0, "categories": {}}}, f, indent=2)
+            json.dump(_EMPTY_INDEX, f, indent=2)
+
+
+def _safe_load_json(filepath, default=None):
+    """V35.8-FIX: Safe JSON loader with auto-repair.
+    
+    Handles corrupted JSON files (e.g., 'Extra data' from concurrent writes
+    on Streamlit Cloud) by:
+    1. Normal json.load()
+    2. If fails → try truncating at error position to salvage valid data
+    3. If still fails → reset to default and rewrite file
+    
+    Returns: parsed dict
+    """
+    if default is None:
+        default = dict(_EMPTY_INDEX)
+    
+    if not os.path.exists(filepath):
+        return dict(default)
+    
+    raw = ""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            raw = f.read()
+        if not raw.strip():
+            return dict(default)
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        # Attempt 1: truncate at error position (common with 'Extra data' errors)
+        try:
+            truncated = raw[:e.pos].rstrip()
+            # Find last complete JSON object
+            last_brace = truncated.rfind('}')
+            if last_brace > 0:
+                salvaged = json.loads(truncated[:last_brace + 1])
+                # Validate structure
+                if isinstance(salvaged, dict) and "index" in salvaged:
+                    # Auto-repair: rewrite clean file
+                    try:
+                        temp_path = f"{filepath}.repaired"
+                        with open(temp_path, 'w', encoding='utf-8') as f:
+                            json.dump(salvaged, f, indent=2, ensure_ascii=False)
+                        os.replace(temp_path, filepath)
+                        print(f"✅ Auto-repaired corrupted JSON: {filepath}")
+                    except Exception:
+                        pass
+                    return salvaged
+        except Exception:
+            pass
+        
+        # Attempt 2: complete reset
+        print(f"⚠️ JSON corrupt beyond repair, resetting: {filepath}")
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(default, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
+        return dict(default)
+    except Exception:
+        return dict(default)
 
 def _check_duplicate(title, index_data):
     """Check if an entry with similar title already exists.
@@ -43,9 +104,8 @@ def add_entry(title, content, category="Kiến Thức", source="AI Miner", tags=
     """
     initialize_hub()
     
-    # Load index
-    with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-        index_data = json.load(f)
+    # Load index (safe — handles corrupt JSON)
+    index_data = _safe_load_json(INDEX_FILE)
     
     # Check for duplicates unless explicitly allowed
     if not allow_duplicate:
@@ -112,9 +172,8 @@ def search_index(query="", category="Tất cả"):
     """Search the lightweight index for matches."""
     if not os.path.exists(INDEX_FILE):
         return []
-        
-    with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-        index_data = json.load(f)
+    
+    index_data = _safe_load_json(INDEX_FILE)
         
     results = index_data["index"]
     
@@ -235,8 +294,7 @@ def get_hub_stats():
         return {"total": 0, "categories": {}, "size_mb": 0.0}
     
     try:
-        with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-            index_data = json.load(f)
+        index_data = _safe_load_json(INDEX_FILE)
         
         stats = index_data.get("stats", {"total": 0, "categories": {}})
         
@@ -263,8 +321,7 @@ def cleanup_duplicates():
         return {"removed": 0, "error": "No index file"}
     
     try:
-        with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-            index_data = json.load(f)
+        index_data = _safe_load_json(INDEX_FILE)
         
         seen_titles = {}
         duplicates = []
@@ -305,8 +362,7 @@ def find_similar_entries(query, threshold=0.8, max_results=10):
         return []
     
     try:
-        with open(INDEX_FILE, 'r', encoding='utf-8') as f:
-            index_data = json.load(f)
+        index_data = _safe_load_json(INDEX_FILE)
         
         query_lower = query.lower().strip()
         query_words = set(query_lower.split())

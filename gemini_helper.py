@@ -182,6 +182,12 @@ class GeminiQMDGHelper:
             for model_name in self.cascade_models:
                 # V21.0: Thử TẤT CẢ model — mỗi model có quota RIÊNG!
                 try:
+                    # V35.8-FIX: Giới hạn prompt size → tránh timeout
+                    _prompt = prompt
+                    if isinstance(_prompt, str) and len(_prompt) > 60000:
+                        # Cắt phần offline context giữa (giữ đầu + cuối)
+                        _prompt = _prompt[:30000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-25000:]
+                    
                     gen_config = genai_types.GenerateContentConfig(
                         temperature=0.15,         # V29.2: Giảm mạnh — bám sát data 100%, CẤM sáng tạo/bịa
                         top_p=0.7,                # V29.2: Thu hẹp tối đa — chỉ chọn từ ngữ chính xác nhất
@@ -191,7 +197,7 @@ class GeminiQMDGHelper:
                     )
                     resp = client.models.generate_content(
                         model=model_name,
-                        contents=prompt,
+                        contents=_prompt,
                         config=gen_config,
                     )
 
@@ -222,12 +228,14 @@ class GeminiQMDGHelper:
                     error_str = str(e)
                     if "429" in error_str:
                         error_log.append(f"{model_name}: ⏳ Hết quota — thử model khác...")
-                        time.sleep(0.5)  # V13.0: Giảm wait, thử model tiếp ngay
+                        time.sleep(0.3)  # V35.8-FIX: Giảm wait từ 0.5 → 0.3
                     elif "404" in error_str or "not found" in error_str.lower():
                         error_log.append(f"{model_name}: ❌ Model không khả dụng.")
                     elif "API_KEY_INVALID" in error_str or "expired" in error_str.lower():
                         error_log.append(f"{model_name}: 🔑 Key không hợp lệ!")
                         break  # Key lỗi hoàn toàn → skip key này
+                    elif "timeout" in error_str.lower() or "deadline" in error_str.lower():
+                        error_log.append(f"{model_name}: ⏰ Timeout — thử model nhẹ hơn...")
                     else:
                         error_log.append(f"{model_name}: {error_str[:80]}...")
                     continue

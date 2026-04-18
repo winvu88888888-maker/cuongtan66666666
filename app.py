@@ -1649,13 +1649,17 @@ hub_entries = []
 try:
     from ai_modules.shard_manager import search_index
     hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
-except Exception: pass
+except Exception as _hub_err:
+    # V35.8-FIX: Show warning instead of silent fail
+    try:
+        st.warning(f"⚠️ Dữ liệu hub đang được sửa chữa tự động. Chi tiết: {str(_hub_err)[:100]}")
+    except: pass
 
 # Store full entry list for filtering
 st.session_state.hub_entries = hub_entries
 
-# Filter topics logic simplified for selectbox
-all_titles = sorted(list(set(core_topics + [e['title'] for e in hub_entries])))
+# Filter topics logic simplified for selectbox — safe access with fallback
+all_titles = sorted(list(set(core_topics + [e.get('title', '') for e in hub_entries if isinstance(e, dict) and e.get('title')])))
 st.session_state.all_topics_full = all_titles
 
 
