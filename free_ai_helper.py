@@ -3587,12 +3587,26 @@ class FreeAIHelper:
         Nhận raw data từ 3 phương pháp + offline analysis → phân tích sâu, loại bỏ vô lý."""
         try:
             import streamlit as st
-            # V13.0: Fix key lookup — session_state uses 'gemini_key', not 'api_key'
+            # V35.8-FIX: AGGRESSIVE KEY RESOLUTION — tìm key từ TẤT CẢ nguồn
             api_key = self._api_key
+            
+            # Source 2: session_state.gemini_key (set bởi app.py khi activate)
             if not api_key:
                 api_key = getattr(st, 'session_state', {}).get('gemini_key')
+            
+            # Source 3: session_state._resolved_api_key (set bởi auto-init)
             if not api_key:
                 api_key = getattr(st, 'session_state', {}).get('_resolved_api_key')
+            
+            # Source 4: Lấy từ gemini_helper object trong session (nếu GeminiQMDGHelper đã init)
+            if not api_key:
+                _gh = getattr(st, 'session_state', {}).get('gemini_helper')
+                if _gh and hasattr(_gh, 'api_key') and _gh.api_key:
+                    api_key = _gh.api_key
+                elif _gh and hasattr(_gh, 'api_keys') and _gh.api_keys:
+                    api_key = _gh.api_keys[0]
+            
+            # Source 5: st.secrets (Streamlit Cloud secrets.toml)
             if not api_key:
                 try:
                     api_key = st.secrets.get('GEMINI_API_KEY', '')
@@ -3600,7 +3614,11 @@ class FreeAIHelper:
                     pass
             
             if not api_key:
+                self.log_step("Online AI", "SKIP", "Không tìm thấy API Key từ bất kỳ nguồn nào")
                 return None  # Không có key → fallback về Python
+            
+            # V35.8-FIX: Cache key cho lần gọi sau
+            self._api_key = api_key
             
             from gemini_helper import GeminiQMDGHelper
             gemini = GeminiQMDGHelper(api_key)

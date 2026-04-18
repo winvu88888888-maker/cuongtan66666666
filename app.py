@@ -1253,7 +1253,7 @@ class PhoenixOrchestrator:
 if 'gemini_helper' not in st.session_state:
     if st.session_state.ai_preference == "offline":
         if FREE_AI_AVAILABLE:
-            st.session_state.gemini_helper = FreeAIHelper()
+            st.session_state.gemini_helper = FreeAIHelper(api_key=st.session_state.get('_resolved_api_key'))
             st.session_state.ai_type = "Free AI (Manual Offline)"
             st.session_state.api_status_ok = True
             st.session_state.api_status_msg = "Offline Mode"
@@ -1278,10 +1278,10 @@ if 'gemini_helper' not in st.session_state:
                 st.session_state.api_status_ok = False
                 st.session_state.api_status_msg = f"Lỗi Gemini: {e}"
                 if FREE_AI_AVAILABLE:
-                    st.session_state.gemini_helper = FreeAIHelper()
+                    st.session_state.gemini_helper = FreeAIHelper(api_key=st.session_state.get('_resolved_api_key'))
                     st.session_state.ai_type = "Free AI (Fallback từ Lỗi)"
         elif FREE_AI_AVAILABLE:
-            st.session_state.gemini_helper = FreeAIHelper()
+            st.session_state.gemini_helper = FreeAIHelper(api_key=st.session_state.get('_resolved_api_key'))
             st.session_state.ai_type = "Free AI (Offline Mode)"
             st.session_state.api_status_ok = True
             st.session_state.api_status_msg = "Offline Mode"
@@ -1338,7 +1338,7 @@ if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_a
         st.session_state.api_status_ok = False
         st.session_state.api_status_msg = str(e)
         if FREE_AI_AVAILABLE:
-            st.session_state.gemini_helper = FreeAIHelper()
+            st.session_state.gemini_helper = FreeAIHelper(api_key=st.session_state.get('_resolved_api_key'))
 
 # UNIFIED SETTINGS (One place for everything)
 is_connected = st.session_state.get("api_status_ok", False) is True
