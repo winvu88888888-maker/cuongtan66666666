@@ -734,7 +734,7 @@ def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pc
     lines.append(f"\n**📍 HIỆN TẠI** *(Giai đoạn: **{current_ts}** | Ngũ Khí: {ngu_khi})*")
     lines.append(f"- {dung_than} ({hanh_dt}) ở {current_ts}: {ht_verdict}")
     lines.append(f"- {ht_desc}")
-    lines.append(f"- Weighted Score thực tế: **{weighted_pct}%**")
+    lines.append(f"- Điểm thực tế: **{weighted_pct}%**")
     # Sinh/Khắc giải thích
     sinh_info = HANH_SINH.get(hanh_dt, '')
     khac_info = HANH_KHAC.get(hanh_dt, '')
@@ -3486,7 +3486,7 @@ class FreeAIHelper:
         lines.append(f"DT={od.get('dung_than','?')} | Cat={od.get('category_label','?')}")
         lines.append(f"KM={od.get('ky_mon_verdict','?')} LH={od.get('luc_hao_verdict','?')} MH={od.get('mai_hoa_verdict','?')} LN={od.get('luc_nham_verdict','?')} TA={od.get('thai_at_verdict','?')}")
         
-        # 2) V22 Unified Strength (V28: BỎ % — chỉ giữ trạng thái định tính)
+        # 2) V22 Lực Lượng Tổng Hợp (V28: BỎ % — chỉ giữ trạng thái định tính)
         v22 = od.get('v22_unified_strength', {})
         if v22:
             lines.append(f"Tier={v22.get('tier_cap','?')} NguKhi={v22.get('ngu_khi','?')} HanhDT={v22.get('hanh_dt','?')} 12TS={v22.get('ts_stage','?')}")
@@ -3728,7 +3728,7 @@ class FreeAIHelper:
             if v22:
                 raw_data_section += (
                     f"═══ BẢNG SCORING (chỉ tham khảo) ═══\n"
-                    f"• Weighted Score: {v22.get('unified_pct', '?')}%\n"
+                    f"• Điểm Tổng Hợp: {v22.get('unified_pct', '?')}%\n"
                     f"• Hành DT: {v22.get('hanh_dt', '?')} | Trường Sinh: {v22.get('ts_stage', '?')} | Ngũ Khí: {v22.get('ngu_khi', '?')}\n"
                     f"• Tier: {v22.get('tier_cap', '?')}\n\n"
                 )
@@ -4714,7 +4714,7 @@ class FreeAIHelper:
         elif score >= -8: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"KM Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        summary = f"KM Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
         
         # V27.0: 5 FACTORS BO SUNG CHO KY MON
         # Factor 1: Tuong tac Sao x Mon (tu database_tuong_tac)
@@ -5285,7 +5285,7 @@ class FreeAIHelper:
         elif score >= -25: strength = "🟠 RẤT YẾU"
         else: strength = "🔴 TỬ"
         
-        summary = f"LH Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:6])}{'...' if len(factors) > 6 else ''})"
+        summary = f"LH Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:6])}{'...' if len(factors) > 6 else ''})"
         return score, summary, factors
     
     def _mai_hoa_scoring(self, mai_hoa_data, chart_data=None):
@@ -5412,7 +5412,7 @@ class FreeAIHelper:
         elif score >= -15: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"MH Thể={the_name}({the_el}), Score={score}, {strength} ({len(factors)} yếu: {', '.join(factors[:3])}...)"
+        summary = f"MH Thể={the_name}({the_el}), Điểm={score}, {strength} ({len(factors)} yếu: {', '.join(factors[:3])}...)"
         
         # V27.0: Enrichment tu ICHING_HEXAGRAMS (64 que chi tiet)
         if ICHING_HEXAGRAMS:
@@ -5539,7 +5539,7 @@ class FreeAIHelper:
         elif score >= -8: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"TB Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        summary = f"TB Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
         
         # V27.0: Bo sung Thiet Ban - Dai Van/Luu Nien
         try:
@@ -5650,7 +5650,7 @@ class FreeAIHelper:
         elif score >= -12: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"LN Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        summary = f"LN Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
         
         # V27.0: Bo sung Phan Tich Luc Nham
         # Factor: Sinh khac Tam Truyen voi Can Ngay (chi tiet hon)
@@ -5850,7 +5850,7 @@ class FreeAIHelper:
         elif score >= -12: strength = "🟠 SUY"
         else: strength = "🔴 TỬ"
         
-        summary = f"TA Score={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        summary = f"TA Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
         
         # V27.0: Bo sung Thai At
         # Factor: Sinh khac voi Can Ngay
@@ -6017,13 +6017,13 @@ class FreeAIHelper:
         primary_name = METHOD_NAMES.get(primary, primary)
         parts = []
         parts.append(f"Loại câu hỏi: {strength_key.upper().replace('_', ' ')}")
-        parts.append(f"PP CHÍNH: {primary_name} (trọng số {primary_weight}%) → {primary_verdict}, Score={scores.get(primary, 0)}")
+        parts.append(f"PP CHÍNH: {primary_name} (trọng số {primary_weight}%) → {primary_verdict}, Điểm={scores.get(primary, 0)}")
         
         # Top 2 PP phụ
         for m, ws in sorted_methods[1:3]:
             m_name = METHOD_NAMES.get(m, m)
             m_weight = strengths[m]
-            parts.append(f"PP PHỤ: {m_name} ({m_weight}%) → {verdicts.get(m, 'BÌNH')}, Score={scores.get(m, 0)}")
+            parts.append(f"PP PHỤ: {m_name} ({m_weight}%) → {verdicts.get(m, 'BÌNH')}, Điểm={scores.get(m, 0)}")
         
         parts.append(f"Đồng thuận: {cat_count}/{total} CÁT, {hung_count}/{total} HUNG = {consensus_pct}%")
         if conflicts:
@@ -7882,7 +7882,7 @@ class FreeAIHelper:
             lines.append("")
         
         # Kết luận cuối — V36.1: DỨT KHOÁT theo LOẠI CÂU HỎI
-        lines.append(f"**✅ KẾT LUẬN (Weighted Score: {pct}% — {overall}):**")
+        lines.append(f"**✅ KẾT LUẬN (Điểm Tổng Hợp: {pct}% — {overall}):**")
         
         q_lower_kl = question.lower()
         # Extract hành DT từ Can ngày
@@ -7931,7 +7931,7 @@ class FreeAIHelper:
                 if luc_nham_reason and 'CÁT' in str(luc_nham_verdict).upper():
                     reasons.append(f"Đại Lục Nhâm: Mạt Truyền CÁT = kết quả tốt")
                 if not reasons:
-                    reasons.append(f"Weighted Score {pct}% > 50% = năng lượng dương")
+                    reasons.append(f"Điểm {pct}% > 50% = năng lượng dương")
                 conclusion += "; ".join(reasons) + "."
                 conclusion += f"\n💡 **Khẳng định:** {dung_than} CÒN SỐNG. Tuy có khó khăn ({hung_count} yếu tố nghịch) nhưng sinh khí vẫn còn."
             elif pct >= 40:
@@ -7965,7 +7965,7 @@ class FreeAIHelper:
                 if any('suy' in str(ev).lower() or 'yếu' in str(ev).lower() for ev in chain_evidence):
                     reasons.append("Nhiều yếu tố SUY/YẾU")
                 if not reasons:
-                    reasons.append(f"Weighted Score {pct}% < 50% = năng lượng âm")
+                    reasons.append(f"Điểm {pct}% < 50% = năng lượng âm")
                 conclusion += "; ".join(reasons) + "."
                 conclusion += f"\n💡 **Khẳng định:** Tình trạng RẤT NGUY, {dung_than} suy yếu nghiêm trọng. Nếu hỏi sống/chết → nghiêng về ĐÃ MẤT hoặc rất khó qua."
                 
@@ -8480,7 +8480,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V31.1 Unified + Dynamic Diagrams\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V31.1 Phân Tích Thống Nhất\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # ═══════════════════════════════════════════════════
@@ -8842,7 +8842,7 @@ class FreeAIHelper:
                     ts_bonus = int((ts_power - 50) * 0.15)  # ±7.5 max
         weighted_pct = max(5, min(95, weighted_pct + ts_bonus))
         
-        sections.append(f"| Phương pháp | Kết luận | Score | % | Trọng số |")
+        sections.append(f"| Phương pháp | Kết luận | Điểm | % | Trọng số |")
         sections.append(f"|---|---|---|---|---|")
         pp_names = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất']
         pp_keys = ['KM', 'LH', 'MH', 'TB', 'LN', 'TA']
@@ -8853,10 +8853,10 @@ class FreeAIHelper:
             ns = norm_scores.get(pp_key, 50)
             w = weights.get(pp_key, 10)
             sections.append(f"| {pp_name} | **{v}** | {raw_scores.get(pp_key, 0):+d} | {ns}% | {w}% |")
-        sections.append(f"\n**📊 WEIGHTED SCORE: {weighted_pct}%** (có tính 12 Trường Sinh: {ts_bonus:+d}%)")
+        sections.append(f"\n**📊 ĐIỂM TỔNG HỢP: {weighted_pct}%** (có tính 12 Trường Sinh: {ts_bonus:+d}%)")
         
         # ═══════════════════════════════════════════════════════
-        # V26.2: BƯỚC 5.7 — LƯỢNG HÓA LỰC LƯỢNG 3 TẦNG (UNIFIED STRENGTH)
+        # V26.2: BƯỚC 5.7 — LƯỢNG HÓA LỰC LƯỢNG 3 TẦNG (LỰC LƯỢNG THỐNG NHẤT)
         # V32.3: Auto-detect Hành DT từ thời gian khi không có chart_data
         # ═══════════════════════════════════════════════════════
         hanh_dt_v22 = ''
@@ -8944,17 +8944,17 @@ class FreeAIHelper:
         # Bảng vạn vật từ weighted_pct (5 PP) — giữ lại như cũ
         vv_key, vv_data = _get_van_vat_from_pct(weighted_pct)
         
-        sections.append(f"\n### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V26.2 UNIFIED STRENGTH)")
+        sections.append(f"\n### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V26.2 LỰC LƯỢNG THỐNG NHẤT)")
         
         # A. Bảng 3 tầng Unified
         sections.append(f"\n**A. 3 TẦNG ĐO LỰC LƯỢNG DT:**")
-        sections.append(f"| Tầng | Nguồn | Score | Trọng số |")
+        sections.append(f"| Tầng | Nguồn | Điểm | Trọng số |")
         sections.append(f"|---|---|---|---|")
-        sections.append(f"| ① Lục Hào raw | Score={v16_lh_raw:+d} → normalize | {unified_v22['lh_pct']}% | 50% |")
+        sections.append(f"| ① Lục Hào thô | Điểm={v16_lh_raw:+d} → chuẩn hóa | {unified_v22['lh_pct']}% | 50% |")
         sections.append(f"| ② 12 Trường Sinh | {ts_stage or 'N/A'} ({TRUONG_SINH_POWER.get(ts_stage, {}).get('cap', '?') if ts_stage else '?'}) | {unified_v22['ts_pct']}% | 30% |")
         sections.append(f"| ③ Ngũ Khí | {ngu_khi_state_v22} ({hanh_dt_v22} @ {cung_bt_hanh_v22 or '?'}) | {unified_v22['nk_pct']}% | 20% |")
-        sections.append(f"| **UNIFIED** | **3 tầng tổng hợp** | **{unified_v22['unified_pct']}%** | {unified_v22['tier_data']['cap']} |")
-        sections.append(f"| **WEIGHTED 5PP** | **KM+LH+MH+LN+TA** | **{weighted_pct}%** | {vv_data['cap']} |")
+        sections.append(f"| **TỔNG HỢP** | **3 tầng tổng hợp** | **{unified_v22['unified_pct']}%** | {unified_v22['tier_data']['cap']} |")
+        sections.append(f"| **TỔNG HỢP 5PP** | **KM+LH+MH+LN+TA** | **{weighted_pct}%** | {vv_data['cap']} |")
         
         # A2. V26.2: BẢNG THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT
         if v23_lh_factors:
@@ -9113,7 +9113,7 @@ class FreeAIHelper:
         )
         sections.append(unified_narrative)
         
-        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V26.2 — Unified Strength: Weighted 5PP={weighted_pct}%, Unified 3-Tier={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
+        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V26.2 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP={weighted_pct}%, Tổng Hợp 3 Tầng={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
         
         # ========================================
         # V11.1: AI ONLINE LÀ PHÂN TÍCH CHÍNH
@@ -9287,7 +9287,7 @@ class FreeAIHelper:
             'v17_deviations': routing.get('deviations', []) if routing else [],
             # V18.0: Detective deduction
             'v18_detective': v18_detective,
-            # V26.2: Unified Strength — 3 tầng tổng hợp
+            # V26.2: Lực Lượng Tổng Hợp — 3 tầng tổng hợp
             'v22_unified_strength': {
                 'unified_pct': unified_v22['unified_pct'] if unified_v22 else 50,
                 'lh_pct': unified_v22['lh_pct'] if unified_v22 else 50,
@@ -9448,7 +9448,7 @@ class FreeAIHelper:
             # Chi tiết AI Offline
             final_parts.append("\n---")
             final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V36.0)")
-            final_parts.append(f"*⚙️ Engine tính toán 100% xác định, không dùng AI — Weighted Score: {weighted_pct}%*")
+            final_parts.append(f"*⚙️ Engine tính toán 100% xác định, không dùng AI — Điểm Tổng Hợp: {weighted_pct}%*")
             final_parts.append("\n<details>")
             final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích AI Offline (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
@@ -9492,7 +9492,7 @@ class FreeAIHelper:
             final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V36.0 (Chỉ Offline — AI Online không khả dụng)")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
-            final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Weighted Score: {weighted_pct}%)")
+            final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
             final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
             final_parts.append(f"\n**📊 Trạng thái DT:** {unified_v22['tier_data']['cap'] if unified_v22 else '?'} | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
             
@@ -9647,17 +9647,17 @@ class FreeAIHelper:
             elif is_health_critical:
                 if _is_pct_good:
                     final_parts.append(f"### 🟢 CÂU TRẢ LỜI: TÌNH TRẠNG KHẢ QUAN")
-                    final_parts.append(f"Quẻ cho thấy **{dung_than}** còn sức (Weighted Score: {weighted_pct}%), có dấu hiệu hồi phục.")
+                    final_parts.append(f"Quẻ cho thấy **{dung_than}** còn sức (Điểm Tổng Hợp: {weighted_pct}%), có dấu hiệu hồi phục.")
                     final_parts.append(f"- Dụng Thần được sinh trợ → có quý nhân giúp đỡ, y thuật hiệu quả.")
                     final_parts.append(f"- Nên tích cực điều trị, tuân thủ phác đồ bác sĩ.")
                 elif _is_pct_mid:
                     final_parts.append(f"### 🟡 CÂU TRẢ LỜI: TÌNH TRẠNG CẦN THEO DÕI SÁT")
-                    final_parts.append(f"**{dung_than}** đang ở mức trung bình (Weighted Score: {weighted_pct}%), chưa nguy kịch nhưng cần cẩn thận.")
+                    final_parts.append(f"**{dung_than}** đang ở mức trung bình (Điểm Tổng Hợp: {weighted_pct}%), chưa nguy kịch nhưng cần cẩn thận.")
                     final_parts.append(f"- Nên hội chẩn nhiều bác sĩ, không tự ý dùng thuốc.")
                     final_parts.append(f"- Theo dõi sát, tìm phương pháp điều trị phù hợp.")
                 else:
                     final_parts.append(f"### 🔴 CÂU TRẢ LỜI: TÌNH TRẠNG NGHIÊM TRỌNG")
-                    final_parts.append(f"**{dung_than}** rất yếu (Weighted Score: {weighted_pct}%), cần hành động khẩn cấp.")
+                    final_parts.append(f"**{dung_than}** rất yếu (Điểm Tổng Hợp: {weighted_pct}%), cần hành động khẩn cấp.")
                     final_parts.append(f"- Quẻ cho thấy nhiều yếu tố bất lợi → cần can thiệp y tế NGAY.")
                     final_parts.append(f"- Nên tìm bác sĩ giỏi nhất có thể, không trì hoãn.")
                     
@@ -10007,7 +10007,7 @@ class FreeAIHelper:
                 _v_text = "KHÔNG THUẬN LỢI" if _pct >= 25 else "RẤT BẤT LỢI"
                 _v_icon = "❌"
             
-            final_parts.append(f"**{_v_icon} {_v_text}** (Score: {_pct}%)")
+            final_parts.append(f"**{_v_icon} {_v_text}** (Điểm: {_pct}%)")
             final_parts.append("")
             
             # --- TRẢ LỜI CỤ THỀ THEO CATEGORY ---
@@ -10122,7 +10122,7 @@ class FreeAIHelper:
             final_parts.append("")
             final_parts.append(f"**📊 Bằng chứng:**")
             final_parts.append(f"- DT **{_dt}** (hành {_hanh}) → Trạng thái: **{_ts}**")
-            final_parts.append(f"- 6 Phương Pháp: **{_cat_count} CÁT** / **{_hung_count} HUNG** → Score {_pct}%")
+            final_parts.append(f"- 6 Phương Pháp: **{_cat_count} CÁT** / **{_hung_count} HUNG** → Điểm {_pct}%")
             if ngu_khi_state_v22:
                 final_parts.append(f"- Ngũ Khí: **{ngu_khi_state_v22}** ({_hanh} @ {cung_bt_hanh_v22 or '?'})")
 

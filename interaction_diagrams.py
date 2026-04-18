@@ -63,7 +63,7 @@ DIAGRAM_MASTER = {
 ║  │ ↗ Tiến/Thoái Thần: {tien_thoai}                                 │     ║
 ║  │ 👻 Phục Thần: {phuc_than_info}                                   │     ║
 ║  │                                                                   │     ║
-║  │ ═══ LH Raw = {lh_raw_score:+d} → {lh_pct}%                      │     ║
+║  │ ═══ LH Thô = {lh_raw_score:+d} → {lh_pct}%                      │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
@@ -125,7 +125,7 @@ DIAGRAM_MASTER = {
 ║       ▼                                                                    ║
 ║  ⑦ ĐÁNH GIÁ TỔNG HỢP (3 Tầng)                                             ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
-║  │ Tầng 1: LH Score = {lh_pct}%                                    │     ║
+║  │ Tầng 1: LH Điểm = {lh_pct}%                                    │     ║
 ║  │ Tầng 2: 12 Trường Sinh: {hanh_dt} tại {chi_reference} = {ts_stage} │  ║
 ║  │   {ts_icon} Power = {ts_power}% | {ts_mota}                     │     ║
 ║  │ Tầng 3: Ngũ Khí: {hanh_dt} tại Cung {cung_hanh} = {ngu_khi}    │     ║
@@ -134,7 +134,7 @@ DIAGRAM_MASTER = {
 ║       │                                                                    ║
 ║       ▼                                                                    ║
 ║  ╔══════════════════════════════════════════════╗                          ║
-║  ║ UNIFIED: {unified_pct}% — {tier_cap}        ║                          ║
+║  ║ TỔNG HỢP: {unified_pct}% — {tier_cap}        ║                          ║
 ║  ║ = LH({lh_pct}%)×50% + TS({ts_power}%)×30%   ║                          ║
 ║  ║   + NK({nk_power}%)×20%                      ║                          ║
 ║  ╚══════════════════════════════════════════════╝                          ║
@@ -159,11 +159,11 @@ DIAGRAM_MASTER = {
 ║  │ 🏥 Bệnh tật     : {benh_tat}                                    │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║                                                                            ║
-║  CÔNG THỨC: Unified% = LH×50% + TS×30% + NK×20%                           ║
-║  → Unified ≥70% = VƯỢNG (CÁT) | 50-69% = TRUNG BÌNH | <50% = SUY         ║
+║  CÔNG THỨC: Tổng Hợp% = LH×50% + TS×30% + NK×20%                           ║
+║  → Tổng Hợp ≥70% = VƯỢNG (CÁT) | 50-69% = TRUNG BÌNH | <50% = SUY         ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """,
-    'formula': 'Unified% = LH_raw_normalized×50% + TrườngSinh_power×30% + NgũKhí_power×20%',
+    'formula': 'Tổng Hợp% = LH_raw_normalized×50% + TrườngSinh_power×30% + NgũKhí_power×20%',
     'conclusion_rules': {
         'high': (70, 100, '🟢 VƯỢNG — THUẬN LỢI, có thể hành động'),
         'medium': (50, 69, '🟡 TRUNG BÌNH — Nghiêng thuận nhưng cần chuẩn bị kỹ'),
@@ -201,12 +201,12 @@ DIAGRAMS = {
 │                                                   │
 │  KM: BT(Cung{cung_bt}) {bt_sv_rel} SV(Cung{cung_sv}) │
 ├───────────────────────────────────────────────────┤
-│ Score = {score_detail}                            │
+│ Điểm = {score_detail}                            │
 │ = {total_score:+d} → {conclusion}                 │
 └───────────────────────────────────────────────────┘
 """,
         'formula': 'Nguyệt(±8) + Nhật(±6) + NT(±6) − KT(±8) + TK(-15) + NPhá(-12) + TSVK(+10) + BT↔SV(±8)',
-        'conclusion_rule': 'Score > 10 → CÓ | Score < -10 → KHÔNG | Giữa → NGHIÊNG CÓ/KHÔNG',
+        'conclusion_rule': 'Điểm > 10 → CÓ | Điểm < -10 → KHÔNG | Giữa → NGHIÊNG CÓ/KHÔNG',
     },
 
     'SD2': {
@@ -317,7 +317,7 @@ DIAGRAMS = {
 │  QuanQuỷ: {quan_quy_state} (thuế/kiện)           │
 │                                                   │
 │  KM: Cửa={cua_dt} | Sinh Môn={sinh_mon}          │
-│  Score = {score_detail}                           │
+│  Điểm = {score_detail}                           │
 ├───────────────────────────────────────────────────┤
 │ = {total_score:+d} → {conclusion}                 │
 └───────────────────────────────────────────────────┘
@@ -543,7 +543,7 @@ DIAGRAMS = {
 │  TA: {ta_verdict}                                 │
 │                                                   │
 │  CÁT: {cat_count}/5 | HUNG: {hung_count}/5       │
-│  Unified: {unified_pct}% — {tier_cap}             │
+│  Tổng Hợp: {unified_pct}% — {tier_cap}             │
 ├───────────────────────────────────────────────────┤
 │ KẾT LUẬN: {conclusion}                            │
 └───────────────────────────────────────────────────┘
