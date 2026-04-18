@@ -7755,80 +7755,169 @@ class FreeAIHelper:
             lines.append(f"{connector} {ev}")
         
         # ════════════════════════════════════════════
-        # PHASE D: KẾT LUẬN THỐNG NHẤT
+        # PHASE D: KẾT LUẬN THỐNG NHẤT V36.0
+        # Phân tích chuẩn như AI Online — THUẬN/NGHỊCH + Cross-method + Kết luận sâu
         # ════════════════════════════════════════════
         lines.append("")
         
         # Tổng hợp verdicts
-        verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
-        cat_v = sum(1 for v in verdicts if v in ['CÁT', 'ĐẠI CÁT'])
-        hung_v = sum(1 for v in verdicts if v in ['HUNG', 'ĐẠI HUNG'])
+        verdicts_map = {
+            'Kỳ Môn': (ky_mon_verdict, ky_mon_reason),
+            'Lục Hào': (luc_hao_verdict, luc_hao_reason),
+            'Mai Hoa': (mai_hoa_verdict, mai_hoa_reason if isinstance(mai_hoa_reason, str) else ''),
+            'Đại Lục Nhâm': (luc_nham_verdict, luc_nham_reason),
+            'Thái Ất': (thai_at_verdict, thai_at_reason),
+        }
         
-        # Tính tổng score
-        total_good = good_count + cat_v
-        total_bad = bad_count + hung_v
+        thuan_factors = []  # Yếu tố THUẬN
+        nghich_factors = []  # Yếu tố NGHỊCH
+        binh_factors = []  # Yếu tố BÌNH
         
-        # Build narrative paragraph
-        narrative_parts = []
-        
-        # Part 1: Mở đầu — trạng thái DT (V26.0 dùng Điểm Trọng Số Thống Nhất)
-        # V35.0: DÙNG final_pct (weighted_pct) làm nguồn chính — THỐNG NHẤT với Detective Validator
-        if final_pct is not None:
-            pct = final_pct
-            if pct >= 55:
-                overall = 'THUẬN LỢI'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** (Weighted Score: {pct}%).")
-            elif pct < 45:
-                overall = 'KHÓ KHĂN'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** (Weighted Score: {pct}%).")
+        for method, (verdict, reason) in verdicts_map.items():
+            v_upper = str(verdict).upper() if verdict else ''
+            reason_short = str(reason)[:120] if reason else ''
+            if 'CÁT' in v_upper:
+                thuan_factors.append(f"{method}: {verdict} — {reason_short}")
+            elif 'HUNG' in v_upper:
+                nghich_factors.append(f"{method}: {verdict} — {reason_short}")
             else:
-                overall = 'NGHIÊNG THUẬN' if pct >= 50 else 'NGHIÊNG BẤT LỢI'
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **{overall}** (Weighted Score: {pct}%) — thế trận chưa rõ nét, nhưng nghiêng về {'thuận' if pct >= 50 else 'bất lợi'}.")
+                binh_factors.append(f"{method}: {verdict} — {reason_short}")
+        
+        # Thêm chain_evidence vào THUẬN/NGHỊCH
+        for ev in chain_evidence:
+            ev_lower = ev.lower()
+            if any(k in ev_lower for k in ['thuận', 'mạnh', 'cát', 'sinh lợi', 'hỗ trợ', 'kiểm soát', 'vượng', 'good']):
+                thuan_factors.append(ev)
+            elif any(k in ev_lower for k in ['hung', 'yếu', 'suy', 'khắc', 'trở ngại', 'gây hại', 'tử', 'tuyệt', 'ẩn']):
+                nghich_factors.append(ev)
+        
+        # ═══ PHẦN 1: PHÂN TÍCH TỪNG PHƯƠNG PHÁP ═══
+        lines.append("**📖 PHÂN TÍCH 5 PHƯƠNG PHÁP:**")
+        for method, (verdict, reason) in verdicts_map.items():
+            v_upper = str(verdict).upper() if verdict else ''
+            icon = '✅' if 'CÁT' in v_upper else ('🔴' if 'HUNG' in v_upper else '🟡')
+            # Tìm dt_status chi tiết cho method này
+            method_detail = ''
+            for m, s, _ in dt_statuses:
+                if m == method:
+                    method_detail = s
+                    break
+            reason_str = str(reason)[:150] if reason else ''
+            if method_detail:
+                lines.append(f"{icon} **{method} ({verdict}):** {method_detail}")
+                if reason_str and reason_str != method_detail:
+                    lines.append(f"   → {reason_str}")
+            else:
+                lines.append(f"{icon} **{method} ({verdict}):** {reason_str}")
+        
+        # ═══ PHẦN 2: YẾU TỐ THUẬN vs NGHỊCH ═══
+        lines.append("")
+        lines.append("**⚖️ TỔNG HỢP YẾU TỐ:**")
+        
+        if thuan_factors:
+            lines.append(f"**✅ Yếu tố THUẬN ({len(thuan_factors)}):**")
+            for f in thuan_factors[:6]:
+                lines.append(f"• {f}")
+        
+        if nghich_factors:
+            lines.append(f"**🔴 Yếu tố NGHỊCH ({len(nghich_factors)}):**")
+            for f in nghich_factors[:6]:
+                lines.append(f"• {f}")
+        
+        if binh_factors:
+            lines.append(f"**🟡 Yếu tố BÌNH ({len(binh_factors)}):**")
+            for f in binh_factors[:3]:
+                lines.append(f"• {f}")
+        
+        # ═══ PHẦN 3: KẾT LUẬN SÂU ═══
+        lines.append("")
+        
+        # Xác định overall dựa trên final_pct
+        pct = final_pct if final_pct is not None else 50
+        if pct >= 55:
+            overall = 'THUẬN LỢI'
+        elif pct < 45:
+            overall = 'KHÓ KHĂN'
         else:
-            # V35.0: Fallback — không nên xảy ra (final_pct luôn được truyền từ answer_question)
-            self.log_step("V35.0 WARNING", "FALLBACK", "final_pct=None → dùng verdict counting (không chính xác)")
-            if total_good > total_bad:
-                overall = 'THUẬN LỢI'
-                pct = min(90, 50 + (total_good - total_bad) * 10)
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **THUẬN LỢI** ({pct}%).")
-            elif total_bad > total_good:
-                overall = 'KHÓ KHĂN'
-                pct = max(10, 50 - (total_bad - total_good) * 10)
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho thấy {dung_than} (sự việc) đang ở thế **KHÓ KHĂN** ({pct}%).")
-            else:
-                overall = 'CÂN BẰNG — CÓ THỂ ĐƯỢC'
-                pct = 50
-                narrative_parts.append(f"Tổng hợp **5 phương pháp** cho kết quả **CÂN BẰNG** ({pct}%) — có thể tiến hành nhưng cần chuẩn bị kỹ.")
+            overall = 'NGHIÊNG THUẬN' if pct >= 50 else 'NGHIÊNG BẤT LỢI'
         
-        # Part 2: Bằng chứng cụ thể từ mỗi phương pháp
-        method_summaries = []
-        if ky_mon_reason:
-            method_summaries.append(f"Kỳ Môn ({ky_mon_verdict}: {ky_mon_reason})")
-        if luc_hao_reason:
-            method_summaries.append(f"Lục Hào ({luc_hao_verdict}: {luc_hao_reason})")
-        if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 100:
-            method_summaries.append(f"Mai Hoa ({mai_hoa_verdict}: {mai_hoa_reason})")
-        if luc_nham_reason:
-            method_summaries.append(f"Đại Lục Nhâm ({luc_nham_verdict}: {luc_nham_reason})")
-        if thai_at_reason:
-            method_summaries.append(f"Thái Ất ({thai_at_verdict}: {thai_at_reason})")
+        # Verdict counts
+        cat_count = len(thuan_factors)
+        hung_count = len(nghich_factors)
         
-        if method_summaries:
-            narrative_parts.append("Cụ thể: " + "; ".join(method_summaries) + ".")
+        # Cross-method analysis — tìm điểm đáng chú ý
+        cross_method_notes = []
         
-        # Part 3: Kết luận dứt khoát theo CÂU HỎI (V26.0: Xóa bỏ hardcode keyword match dễ lỗi)
+        # Check: KM và LH có khác nhau không?
+        km_v = str(ky_mon_verdict).upper() if ky_mon_verdict else ''
+        lh_v = str(luc_hao_verdict).upper() if luc_hao_verdict else ''
+        mh_v = str(mai_hoa_verdict).upper() if mai_hoa_verdict else ''
+        
+        if ('CÁT' in km_v and 'HUNG' in lh_v) or ('HUNG' in km_v and 'CÁT' in lh_v):
+            cross_method_notes.append(f"⚡ Kỳ Môn ({ky_mon_verdict}) NGƯỢC với Lục Hào ({luc_hao_verdict}) → Sự việc CÓ THỂ khởi đầu tốt (KM) nhưng quá trình gặp trở ngại (LH) hoặc ngược lại.")
+        
+        if ('CÁT' in mh_v and 'HUNG' in lh_v):
+            cross_method_notes.append(f"⚡ Mai Hoa ({mai_hoa_verdict}) thuận nhưng Lục Hào ({luc_hao_verdict}) bất lợi → Mối quan hệ hai bên TỐT nhưng DT yếu → CẦN thêm thời gian/trợ lực.")
+        
+        # Check: Tất cả đồng nhất?
+        all_verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
+        all_cat = all('CÁT' in str(v).upper() for v in all_verdicts if v and v != 'BÌNH')
+        all_hung = all('HUNG' in str(v).upper() for v in all_verdicts if v and v != 'BÌNH')
+        
+        if all_cat:
+            cross_method_notes.append("🌟 TẤT CẢ 5 phương pháp đều cho CÁT → Xu hướng RẤT RÕ RÀNG, không có mâu thuẫn.")
+        elif all_hung:
+            cross_method_notes.append("⛔ TẤT CẢ 5 phương pháp đều cho HUNG → Xu hướng RẤT RÕ RÀNG — nên DỪ NGÃ hoặc đổi hướng.")
+        
+        if cross_method_notes:
+            lines.append("**🔗 PHÂN TÍCH CHÉO GIỮA CÁC PP:**")
+            for note in cross_method_notes:
+                lines.append(note)
+            lines.append("")
+        
+        # Kết luận cuối
+        lines.append(f"**✅ KẾT LUẬN (Weighted Score: {pct}% — {overall}):**")
+        
         if overall == 'THUẬN LỢI':
-            narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHẢ THI / RẤT TỐT ({pct}%).** {dung_than} được hỗ trợ mạnh mẽ, nên hành động quyết đoán.")
-            narrative_parts.append("💡 **Khuyên:** Thời điểm vượng khí, hãy tận dụng thời cơ đang có để triển khai rốt ráo.")
+            conclusion = (
+                f"Câu hỏi '{question}': **KHẢ THI — NÊN TIẾN HÀNH** ({pct}%).\n"
+                f"{dung_than} được hỗ trợ mạnh ({cat_count} yếu tố thuận vs {hung_count} nghịch). "
+            )
+            if ky_mon_reason:
+                conclusion += f"Kỳ Môn cho thấy {ky_mon_reason[:80]}. "
+            if luc_hao_reason:
+                conclusion += f"Lục Hào xác nhận {luc_hao_reason[:80]}. "
+            conclusion += f"\n💡 **Khuyên:** Thời điểm thuận lợi, hành động quyết đoán. "
+            if any('Dịch Mã' in str(ev) for ev in chain_evidence):
+                conclusion += "Có Dịch Mã → hành động NHANH."
+            elif any('Khai' in str(ev) or 'Sinh Môn' in str(ev) for ev in chain_evidence):
+                conclusion += "Cửa Cát hỗ trợ → cơ hội mở rộng."
         elif overall == 'KHÓ KHĂN':
-            narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': KHÔNG ĐƯỢC / XẤU ({pct}%).** {dung_than} suy yếu, bế tắc, vạn sự khó thành.")
-            narrative_parts.append("💡 **Khuyên:** Năng lượng yếu, tạm thời đình chỉ hành động hoặc tìm thêm nhân tố trợ lực (Quý nhân).")
+            conclusion = (
+                f"Câu hỏi '{question}': **KHÓ KHĂN — NÊN CHỜ ĐỢI** ({pct}%).\n"
+                f"{dung_than} đang suy yếu ({hung_count} yếu tố nghịch vs {cat_count} thuận). "
+            )
+            if luc_hao_reason:
+                conclusion += f"Lục Hào: {luc_hao_reason[:80]}. "
+            if ky_mon_reason:
+                conclusion += f"Kỳ Môn: {ky_mon_reason[:80]}. "
+            conclusion += f"\n💡 **Khuyên:** Tạm hoãn, chờ thời điểm tốt hơn. "
+            if any('Tuần Không' in str(ev) for ev in chain_evidence):
+                conclusion += "Đang Tuần Không → chờ xuất Không mới hành động."
+            elif any('Kỵ Thần' in str(ev) for ev in chain_evidence):
+                conclusion += "Kỵ Thần phát động → cần tránh đối đầu trực tiếp."
         else:
-            narrative_parts.append(f"👉 **KẾT LUẬN TRỰC TIẾP CHO '{question}': BÌNH BÌNH ({pct}%).** Các yếu tố đang ở mức giằng co, lấp lửng thiếu rõ ràng.")
-            narrative_parts.append("💡 **Khuyên:** Quan sát thêm, thu thập thêm thông tin mở rộng cục diện rồi mới quyết định.")
+            conclusion = (
+                f"Câu hỏi '{question}': **BÌNH — CẦN CÂN NHẮC** ({pct}%).\n"
+                f"Thế trận giằng co ({cat_count} thuận vs {hung_count} nghịch), chưa rõ nét. "
+            )
+            if thuan_factors:
+                conclusion += f"Điểm tích cực: {thuan_factors[0][:60]}. "
+            if nghich_factors:
+                conclusion += f"Nhưng: {nghich_factors[0][:60]}. "
+            conclusion += f"\n💡 **Khuyên:** Quan sát thêm. Nếu tiến hành, chuẩn bị phương án dự phòng cho các yếu tố nghịch."
         
-        # Kết hợp narrative
-        lines.append("\n".join(narrative_parts))
+        lines.append(conclusion)
         
         return "\n".join(lines)
 
