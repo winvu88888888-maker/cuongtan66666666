@@ -7935,7 +7935,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V35.8 Full Pipeline + Offline Engine). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V36.0 Deep Analysis + Independent AI). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
@@ -9194,7 +9194,8 @@ class FreeAIHelper:
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
-            final_parts.append(f"## 🌐 AI ONLINE — KẾT QUẢ")
+            final_parts.append(f"## 🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V36.0)")
+            final_parts.append(f"*🤖 AI Online đọc trực tiếp dữ liệu quẻ → phân tích ĐỘC LẬP → so sánh với AI Offline*")
             final_parts.append(online_result)
             final_parts.append("")
             
@@ -9244,8 +9245,11 @@ class FreeAIHelper:
                 final_parts.append("\n</details>")
             
             # Chi tiết AI Offline
+            final_parts.append("\n---")
+            final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V36.0)")
+            final_parts.append(f"*⚙️ Engine tính toán 100% xác định, không dùng AI — Weighted Score: {weighted_pct}%*")
             final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết AI Offline (nhấn để mở)</b></summary>\n")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích AI Offline (nhấn để mở)</b></summary>\n")
             final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             return "\n".join(final_parts)
@@ -9284,7 +9288,7 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V35.8")
+            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V36.0 (Chỉ Offline — AI Online không khả dụng)")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
             final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Weighted Score: {weighted_pct}%)")
