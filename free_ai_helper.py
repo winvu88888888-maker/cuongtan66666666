@@ -8054,6 +8054,66 @@ class FreeAIHelper:
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
         q_lower = question.lower()
         
+        # V36.0: HỖ TRỢ KHÔNG DẤU — map từ không dấu → có dấu
+        _VN_NO_DIAC_MAP = {
+            'benh': 'bệnh', 'om': 'ốm', 'dau': 'đau', 'suc khoe': 'sức khỏe', 'khoe': 'khỏe',
+            'chet': 'chết', 'song': 'sống', 'chua': 'chữa', 'benh vien': 'bệnh viện',
+            'phau thuat': 'phẫu thuật', 'ung thu': 'ung thư', 'tai nan': 'tai nạn',
+            'qua khoi': 'qua khỏi', 'thuoc': 'thuốc', 'tri benh': 'trị bệnh',
+            'gia dinh': 'gia đình', 'mang thai': 'mang thai',
+            'tien': 'tiền', 'tai chinh': 'tài chính', 'mua ban': 'mua bán',
+            'dau tu': 'đầu tư', 'giau': 'giàu', 'ngheo': 'nghèo', 'luong': 'lương',
+            'thu nhap': 'thu nhập', 'no': 'nợ', 'vay': 'vay', 'kinh doanh': 'kinh doanh',
+            'buon ban': 'buôn bán', 'lai': 'lãi', 'lo': 'lỗ', 'co phieu': 'cổ phiếu',
+            'bat dong san': 'bất động sản', 'mua nha': 'mua nhà', 'nha dat': 'nhà đất',
+            'von': 'vốn', 'trung so': 'trúng số', 'tai san': 'tài sản', 'vang': 'vàng',
+            'viec': 'việc', 'cong viec': 'công việc', 'sep': 'sếp',
+            'thang tien': 'thăng tiến', 'thang chuc': 'thăng chức',
+            'thi': 'thi', 'do': 'đỗ', 'truot': 'trượt', 'phong van': 'phỏng vấn',
+            'xin viec': 'xin việc', 'nghi viec': 'nghỉ việc', 'sa thai': 'sa thải',
+            'hop dong': 'hợp đồng', 'du an': 'dự án', 'kien': 'kiện', 'toa': 'tòa',
+            'su nghiep': 'sự nghiệp', 'khoi nghiep': 'khởi nghiệp',
+            'yeu': 'yêu', 'nguoi yeu': 'người yêu', 'vo': 'vợ', 'chong': 'chồng',
+            'hon nhan': 'hôn nhân', 'cuoi': 'cưới', 'ly hon': 'ly hôn',
+            'tinh': 'tình', 'hen ho': 'hẹn hò', 'chia tay': 'chia tay',
+            'ngoai tinh': 'ngoại tình', 'duyen': 'duyên', 'ban trai': 'bạn trai',
+            'ban gai': 'bạn gái', 'tinh cam': 'tình cảm', 'hanh phuc': 'hạnh phúc',
+            'lay vo': 'lấy vợ', 'lay chong': 'lấy chồng', 'ket hon': 'kết hôn',
+            'tinh yeu': 'tình yêu', 'that long': 'thật lòng',
+            'tim': 'tìm', 'mat do': 'mất đồ', 'o dau': 'ở đâu', 'that lac': 'thất lạc',
+            'trom': 'trộm', 'mat cap': 'mất cắp', 'cho nao': 'chỗ nào',
+            'mat vi': 'mất ví', 'de dau': 'để đâu', 'cat dau': 'cất đâu',
+            'nha': 'nhà', 'xay nha': 'xây nhà', 'sua nha': 'sửa nhà',
+            'can ho': 'căn hộ', 'chung cu': 'chung cư', 'phong thuy': 'phong thủy',
+            'huong nha': 'hướng nhà', 'don nha': 'dọn nhà', 'chuyen nha': 'chuyển nhà',
+            'dat': 'đất', 'lo dat': 'lô đất',
+            've que': 'về quê', 'di xa': 'đi xa', 'du lich': 'du lịch',
+            'xuat hanh': 'xuất hành', 'di choi': 'đi chơi', 'chuyen di': 'chuyến đi',
+            'may bay': 'máy bay', 'di cong tac': 'đi công tác',
+            'toi': 'tôi', 'bo': 'bố', 'me': 'mẹ', 'cha': 'cha',
+            'con trai': 'con trai', 'con gai': 'con gái',
+            'anh': 'anh', 'chi': 'chị', 'em': 'em',
+            'doi tac': 'đối tác', 'khach hang': 'khách hàng',
+            'co nen': 'có nên', 'co duoc': 'có được', 'co tot': 'có tốt',
+            'co loi': 'có lợi', 'nhu the nao': 'như thế nào', 'the nao': 'thế nào',
+            'bao gio': 'bao giờ', 'khi nao': 'khi nào', 'luc nao': 'lúc nào',
+            'bao nhieu': 'bao nhiêu', 'may': 'mấy',
+            'ban hang': 'bán hàng', 'loi nhuan': 'lợi nhuận',
+            'bay gio': 'bây giờ', 'hien tai': 'hiện tại', 'sau nay': 'sau này',
+            'nam nay': 'năm nay', 'thang nay': 'tháng này', 'tuan nay': 'tuần này',
+            'sang nam': 'sang năm', 'nam sau': 'năm sau',
+        }
+        
+        # Tạo q_lower_normalized: thay thế ALL từ không dấu → có dấu
+        q_normalized = q_lower
+        # Sort by length descending → match cụm dài trước (VD: "nguoi yeu" trước "yeu")
+        for _nd, _cd in sorted(_VN_NO_DIAC_MAP.items(), key=lambda x: len(x[0]), reverse=True):
+            if _nd in q_normalized:
+                q_normalized = q_normalized.replace(_nd, _cd)
+        
+        # Dùng q_normalized cho category detection thay vì q_lower
+        q_lower = q_normalized
+
         CATEGORIES = {
             "SỨC_KHỎE_GIA_ĐÌNH": {
                 "keywords": ["bệnh", "ốm", "đau", "sức khỏe", "khỏe", "chết", "mất người",
@@ -8072,7 +8132,8 @@ class FreeAIHelper:
                 "keywords": ["tiền", "tài chính", "mua bán", "đầu tư", "giàu", "nghèo", "lương", "thu nhập", "nợ", 
                              "vay", "cho vay", "kinh doanh", "buôn bán", "lãi", "lỗ", "cổ phiếu", "crypto",
                              "bitcoin", "nhà đất", "mua nhà", "bất động sản", "vốn", "hùn vốn", "trúng số",
-                             "tài sản", "vàng", "bạc", "kim cương", "trang sức", "lương tháng"],
+                             "tài sản", "vàng", "bạc", "kim cương", "trang sức", "lương tháng",
+                             "bán hàng", "lợi nhuận", "doanh thu", "thu lời", "lời lãi", "hoa hồng"],
                 "dung_than": "Thê Tài",
                 "dung_than_detail": {},
                 "label": "💰 Tài Chính / Tiền Bạc",
@@ -8127,9 +8188,9 @@ class FreeAIHelper:
             },
             "XUẤT_HÀNH": {
                 "keywords": ["về quê", "đi xa", "du lịch", "xuất hành", "đi chơi", "chuyến đi",
-                             "di chuyển", "bay", "máy bay", "tàu", "xe", "đi công tác",
+                             "di chuyển", "đi bay", "máy bay", "đi tàu", "đi xe", "đi công tác",
                              "ra nước ngoài", "đi nước ngoài", "đi đâu", "đi xa", "lên đường",
-                             "khởi hành", "hành trình", "về nhà", "về quê", "đi về"],
+                             "khởi hành", "hành trình", "đi về"],
                 "dung_than": "Bản Thân",
                 "dung_than_detail": {},
                 "label": "✈️ Xuất Hành / Di Chuyển",
