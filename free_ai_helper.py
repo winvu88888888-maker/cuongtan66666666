@@ -8297,6 +8297,50 @@ class FreeAIHelper:
             'bay gio': 'bây giờ', 'hien tai': 'hiện tại', 'sau nay': 'sau này',
             'nam nay': 'năm nay', 'thang nay': 'tháng này', 'tuan nay': 'tuần này',
             'sang nam': 'sang năm', 'nam sau': 'năm sau',
+            # V36.1: Bổ sung từ search — câu hỏi phổ biến nhất
+            # === TÌNH DUYÊN ===
+            'tinh duyen': 'tình duyên', 'gia dao': 'gia đạo', 'luc duc': 'lục đục',
+            'bat hoa': 'bất hòa', 'chan thanh': 'chân thành', 'that long': 'thật lòng',
+            'lam an': 'làm ăn', 'thuan loi': 'thuận lợi', 'bat loi': 'bất lợi',
+            'hanh phuc': 'hạnh phúc', 'ganh ghet': 'gắn kết', 'ket hon': 'kết hôn',
+            'dan ong': 'đàn ông', 'dan ba': 'đàn bà', 'phu nu': 'phụ nữ',
+            # === CÔNG DANH / HỌC TẬP ===
+            'thi dau': 'thi đậu', 'thi do': 'thi đỗ', 'thi rot': 'thi rớt',
+            'thi truot': 'thi trượt', 'tang luong': 'tăng lương',
+            'thang tien': 'thăng tiến', 'thang chuc': 'thăng chức',
+            'doi cong viec': 'đổi công việc', 'chuyen viec': 'chuyển việc',
+            'phong van': 'phỏng vấn', 'nhan viec': 'nhận việc',
+            'dai hoc': 'đại học', 'tot nghiep': 'tốt nghiệp',
+            # === TÀI LỘC / KINH DOANH ===
+            'thua lo': 'thua lỗ', 'thu hoi von': 'thu hồi vốn',
+            'khai truong': 'khai trương', 'dong tho': 'động thổ',
+            'hop tac': 'hợp tác', 'gop von': 'góp vốn', 'hun von': 'hùn vốn',
+            'hoa hong': 'hoa hồng', 'doanh thu': 'doanh thu',
+            'loi lai': 'lời lãi', 'thu loi': 'thu lời',
+            # === SỨC KHỎE / SINH TỬ ===
+            'hoi phuc': 'hồi phục', 'benh nang': 'bệnh nặng',
+            'nguy kich': 'nguy kịch', 'hap hoi': 'hấp hối',
+            'nam vien': 'nằm viện', 'nhap vien': 'nhập viện',
+            'song sot': 'sống sót', 'tu vong': 'tử vong',
+            'khoi benh': 'khỏi bệnh', 'chua benh': 'chữa bệnh',
+            'suc khoe': 'sức khỏe', 'the luc': 'thể lực',
+            # === KIỆN TỤNG / PHÁP LÝ ===
+            'kien tung': 'kiện tụng', 'thua kien': 'thua kiện', 'thang kien': 'thắng kiện',
+            'ra toa': 'ra tòa', 'tranh chap': 'tranh chấp', 'giai quyet': 'giải quyết',
+            # === VẬN MỆNH / TỔNG QUÁT ===
+            'van menh': 'vận mệnh', 'van han': 'vận hạn', 'may man': 'may mắn',
+            'quy nhan': 'quý nhân', 'an toan': 'an toàn', 'nguy hiem': 'nguy hiểm',
+            'tot': 'tốt', 'xau': 'xấu', 'hung': 'hung', 'cat': 'cát',
+            'tuong lai': 'tương lai', 'dien bien': 'diễn biến',
+            'tro ngai': 'trở ngại', 'kho khan': 'khó khăn',
+            # === XUẤT HÀNH / DI CHUYỂN ===
+            'di nuoc ngoai': 'đi nước ngoài', 'xuat ngoai': 'xuất ngoại',
+            'dinh cu': 'định cư', 'di may bay': 'đi máy bay',
+            'huong di': 'hướng đi', 'huong tot': 'hướng tốt',
+            # === GIA ĐÌNH / NHÀ CỬA ===
+            'sinh con': 'sinh con', 'co con': 'có con', 'con cai': 'con cái',
+            'chia tai san': 'chia tài sản', 'thua ke': 'thừa kế',
+            'xay nha': 'xây nhà', 'sua chua': 'sửa chữa', 'dong tho': 'động thổ',
         }
         
         # Tạo q_lower_normalized: thay thế ALL từ không dấu → có dấu
@@ -8317,6 +8361,8 @@ class FreeAIHelper:
                              "qua khỏi", "cứu được", "nằm viện", "thuốc", "trị bệnh", "khỏi bệnh"],
                 "dung_than": "Bản Thân",
                 "dung_than_detail": {"bố": "Phụ Mẫu", "mẹ": "Phụ Mẫu", "cha": "Phụ Mẫu", "bố mẹ": "Phụ Mẫu",
+                                     "ông ngoại": "Phụ Mẫu", "bà ngoại": "Phụ Mẫu", "ông nội": "Phụ Mẫu", "bà nội": "Phụ Mẫu",
+                                     "ông": "Phụ Mẫu", "bà": "Phụ Mẫu",
                                      "con": "Tử Tôn", "con trai": "Tử Tôn", "con gái": "Tử Tôn",
                                      "vợ": "Thê Tài", "chồng": "Quan Quỷ",
                                      "anh": "Huynh Đệ", "chị": "Huynh Đệ", "em": "Huynh Đệ"},
@@ -8328,7 +8374,8 @@ class FreeAIHelper:
                              "vay", "cho vay", "kinh doanh", "buôn bán", "lãi", "lỗ", "cổ phiếu", "crypto",
                              "bitcoin", "nhà đất", "mua nhà", "bất động sản", "vốn", "hùn vốn", "trúng số",
                              "tài sản", "vàng", "bạc", "kim cương", "trang sức", "lương tháng",
-                             "bán hàng", "lợi nhuận", "doanh thu", "thu lời", "lời lãi", "hoa hồng"],
+                             "bán hàng", "lợi nhuận", "doanh thu", "thu lời", "lời lãi", "hoa hồng",
+                             "làm ăn", "khai trương", "góp vốn", "hợp tác", "thua lỗ", "thu hồi vốn"],
                 "dung_than": "Thê Tài",
                 "dung_than_detail": {},
                 "label": "💰 Tài Chính / Tiền Bạc",
