@@ -7716,22 +7716,10 @@ class FreeAIHelper:
                 chain_evidence.append(f"Mai Hoa: {short_interp}")
         
         # ════════════════════════════════════════════
-        # PHASE B: BẢNG TỔNG HỢP DỤNG THẦN 5 PHƯƠNG PHÁP
+        # PHASE B: (V36.0: Bỏ bảng cũ — đã chuyển sang Phase D chi tiết hơn)
         # ════════════════════════════════════════════
-        lines.append("**📊 DỤNG THẦN QUA 5 PHƯƠNG PHÁP:**")
-        lines.append(f"| Phương Pháp | Dụng Thần ({dung_than}) | Đánh Giá |")
-        lines.append("|:---|:---|:---:|")
-        
-        good_count = 0
-        bad_count = 0
-        for method, status, gb in dt_statuses:
-            icon = '✅' if gb == 'good' else ('🔴' if gb == 'bad' else '🟡')
-            lines.append(f"| {method} | {status} | {icon} |")
-            if gb == 'good': good_count += 1
-            elif gb == 'bad': bad_count += 1
-        
-        if not dt_statuses:
-            lines.append("| (chưa có đủ dữ liệu) | — | — |")
+        good_count = sum(1 for _, _, gb in dt_statuses if gb == 'good')
+        bad_count = sum(1 for _, _, gb in dt_statuses if gb == 'bad')
         
         # ════════════════════════════════════════════
         # PHASE B2: BẢNG QUAN HỆ LỤC THÂN VỚI DỤNG THẦN (V12.0)
@@ -7844,6 +7832,14 @@ class FreeAIHelper:
         # Verdict counts
         cat_count = len(thuan_factors)
         hung_count = len(nghich_factors)
+        
+        # V36.0 FIX: Override — nếu đa số yếu tố NGHỊCH mà pct vẫn cao → điều chỉnh
+        if hung_count >= 3 and cat_count == 0 and pct >= 45:
+            overall = 'KHÓ KHĂN'
+            pct = min(pct, 40)  # Cap tại 40% khi tất cả nghịch
+        elif hung_count > cat_count + 2 and pct >= 50:
+            overall = 'NGHIÊNG BẤT LỢI'
+            pct = min(pct, 45)
         
         # Cross-method analysis — tìm điểm đáng chú ý
         cross_method_notes = []
