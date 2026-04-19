@@ -3776,16 +3776,16 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc TỔNG QUÁT'
             
-            # ═══ PHẦN 4: V37.0 DEEP INDEPENDENT PROMPT — 27 BƯỚC ═══
+            # ═══ PHẦN 4: V38.0 AI ONLINE ĐỘC LẬP — LUẬN GIẢI TỰ DO ═══
+            # V38.0: AI Online KHÔNG dùng 27 bước (chỉ dành cho Offline)
+            # AI Online luận giải ĐỘC LẬP → so sánh Offline → KẾT LUẬN CHÍNH
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V37.0 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V38.0 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
                 f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ V37.0: BẠN PHẢI THỰC HIỆN PHÂN TÍCH THEO BỘ QUY TẮC 27 BƯỚC.\n"
-                f"MỖI BƯỚC phải có KẾT QUẢ CỤ THỂ + ĐIỂM SỐ. KHÔNG được bỏ bước nào.\n"
-                f"KHÔNG nhại lại verdict offline. PHẢI tự đọc data THÔ → phân tích từng yếu tố → cho điểm → tổng kết.\n"
+                f"NHIỆM VỤ V38.0: BẠN PHẢI TỰ ĐỌC DỮ LIỆU THÔ VÀ LUẬN GIẢI ĐỘC LẬP.\n"
+                f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n"
                 f"</system_role>\n\n"
-
                 
                 f"<question>\n"
                 f"LOẠI: {question_type_label}\n"
@@ -3803,271 +3803,74 @@ class FreeAIHelper:
                 f"{offline_verdict_block}"
                 f"</offline_verdict_reference>\n\n"
                 
-                # ═══ V37.0: BỘ QUY TẮC PHÂN TÍCH TỪNG BƯỚC — 27 BƯỚC ═══
-                f"<analysis_protocol_v37>\n"
-                f"═══════════════════════════════════════════════\n"
-                f"  BỘ QUY TẮC PHÂN TÍCH QUẺ — V37.0\n"
-                f"  BẮT BUỘC THỰC HIỆN TỪNG BƯỚC THEO THỨ TỰ\n"
-                f"═══════════════════════════════════════════════\n\n"
+                f"<ngu_hanh_rules>\n"
+                f"SINH: Mộc→Hỏa→Thổ→Kim→Thủy→Mộc | KHẮC: Mộc→Thổ→Thủy→Hỏa→Kim→Mộc\n"
+                f"DT: tiền=Thê Tài | sếp/bệnh=Quan Quỷ | con/phúc=Tử Tôn | nhà/cha mẹ=Phụ Mẫu | bạn=Huynh Đệ\n"
+                f"VƯỢNG: Nguyệt lệnh sinh/tỷ → VƯỢNG | khắc/tiết → SUY\n"
+                f"12 Trường Sinh: Trường Sinh→Đế Vượng=MẠNH | Suy→Tuyệt=YẾU | Thai/Dưỡng=mầm mống\n"
+                f"</ngu_hanh_rules>\n\n"
                 
-                f"NGŨ HÀNH: SINH: Mộc→Hỏa→Thổ→Kim→Thủy→Mộc | KHẮC: Mộc→Thổ→Thủy→Hỏa→Kim→Mộc\n"
-                f"LỤC THÂN: tiền=Thê Tài | sếp/bệnh=Quan Quỷ | con/phúc=Tử Tôn | nhà/cha mẹ=Phụ Mẫu | bạn=Huynh Đệ\n\n"
+                f"<method_expertise>\n"
+                f"THẾ MẠNH TỪNG PP (dùng đúng sở trường):\n"
+                f"① LỤC HÀO: MẠNH NHẤT cho DỤNG THẦN vượng/suy, CÓ/KHÔNG, tình trạng.\n"
+                f"   Key: Nguyệt lệnh ±8 | Nhật thần ±6 | Nguyên Thần sinh ±6 | Kỵ Thần khắc -8\n"
+                f"   Tuần Không = chưa thành | Nguyệt Phá = phá | Phục Thần = ẩn giấu\n"
+                f"   Hào động = đang thay đổi | Tiến Thần/Thoái Thần | Phản/Phục Ngâm\n\n"
+                f"② KỲ MÔN: MẠNH NHẤT cho PHƯƠNG HƯỚNG + CHIẾN LƯỢC + TIMING.\n"
+                f"   Key: BT(Can ngày) vs SV(Can giờ) | Cửu Tinh(Sao) | Bát Môn(Cửa) | Bát Thần\n"
+                f"   Cửa CÁT: Khai+Hưu+Sinh | Cửa HUNG: Tử+Kinh+Thương\n"
+                f"   Sao CÁT: Tâm+Nhậm+Phụ+Xung | Sao HUNG: Bồng+Nhuế+Trụ+Cầm\n"
+                f"   Cách Cục: 81 cách đặc biệt → ảnh hưởng cực mạnh\n\n"
+                f"③ MAI HOA: MẠNH NHẤT cho QUAN HỆ 2 BÊN, kết quả cuối.\n"
+                f"   Key: Thể(mình) vs Dụng(đối phương) → Sinh/Khắc/Tỷ\n"
+                f"   Dụng sinh Thể=ĐẠI CÁT | Thể sinh Dụng=MẤT | Dụng khắc Thể=HUNG\n"
+                f"   Hỗ Quái=diễn biến giữa | Biến Quái=kết quả cuối\n\n"
+                f"④ ĐẠI LỤC NHÂM: MẠNH cho DIỄN BIẾN THỜI GIAN.\n"
+                f"   Key: Sơ Truyền=QUÁ KHỨ | Trung Truyền=HIỆN TẠI | Mạt Truyền=TƯƠNG LAI\n\n"
+                f"⑤ THIẾT BẢN: MẠNH cho VẬT THỂ + SỐ LƯỢNG.\n"
+                f"⑥ THÁI ẤT: MẠNH cho BỨC TRANH LỚN, xu hướng.\n"
+                f"</method_expertise>\n\n"
                 
-                # ═══ PHẦN I: LỤC HÀO — 12 BƯỚC ═══
-                f"══ PHẦN I: LỤC HÀO KINH DỊCH (12 bước) ══\n\n"
+                f"<reasoning_protocol_v38>\n"
+                f"BẠN PHẢI THỰC HIỆN 4 BƯỚC SAU (THEO THỨ TỰ):\n\n"
+                f"BƯỚC 1 — ĐỌC QUẺ ĐỘC LẬP:\n"
+                f"  Đọc <raw_chart_data>, trích xuất TỪNG yếu tố quan trọng từ MỖI phương pháp.\n"
+                f"  Phân tích: yếu tố đó CÁT hay HUNG? TẠI SAO? Dựa trên quy tắc nào?\n"
+                f"  PHẢI trích dẫn DỮ LIỆU CỤ THỂ (VD: 'Nguyệt Lệnh sinh DT (+8) → vượng')\n\n"
+                f"BƯỚC 2 — LUẬN GIẢI TỔNG HỢP:\n"
+                f"  Kết hợp các yếu tố từ 6 PP → đưa ra VERDICT ĐỘC LẬP của BẠN.\n"
+                f"  Phải giải thích LOGIC: Tại sao CÁT? Tại sao HUNG? Yếu tố nào quyết định?\n"
+                f"  Chỉ ra: Yếu tố THUẬN (hỗ trợ) vs Yếu tố NGHỊCH (cản trở)\n\n"
+                f"BƯỚC 3 — SO SÁNH VỚI OFFLINE:\n"
+                f"  Đọc <offline_verdict_reference> → so sánh với phân tích CỦA BẠN.\n"
+                f"  Ở đâu ĐỒNG Ý? Ở đâu KHÁC? Nếu khác → giải thích TẠI SAO bạn nghĩ khác.\n\n"
+                f"BƯỚC 4 — KẾT LUẬN CUỐI CÙNG:\n"
+                f"  Tổng hợp cả 2 góc nhìn (Online + Offline) → đưa ra KẾT LUẬN CUỐI.\n"
+                f"  Phải TRẢ LỜI TRỰC TIẾP câu hỏi — KHÔNG né tránh.\n"
+                f"</reasoning_protocol_v38>\n\n"
                 
-                f"LH-B1. XÁC ĐỊNH DỤNG THẦN:\n"
-                f"  → Từ câu hỏi → xác định Lục Thân nào là DT (Thê Tài/Quan Quỷ/Phụ Mẫu/Tử Tôn/Huynh Đệ)\n"
-                f"  → Tìm hào nào trong quẻ chứa DT\n"
-                f"  → Ghi: 'DT = Hào X — [Lục Thân] [Can Chi] (Hành [X])'\n\n"
-                
-                f"LH-B2. PHI PHỤC (DT ẩn hay hiện?):\n"
-                f"  → DT có xuất hiện trong 6 hào không?\n"
-                f"  → NẾU KHÔNG → tìm PHỤC THẦN (DT ẩn dưới Phi Thần)\n"
-                f"  → Phục Thần bị Phi Thần khắc = RẤT XẤU | Phi Thần sinh Phục = sẽ xuất hiện\n"
-                f"  → Ghi: 'DT [HIỆN/ẨN] — Phục Thần tại Hào X'\n\n"
-                
-                f"LH-B3. NGUYỆT LỆNH (Lệnh Tháng tác động DT):\n"
-                f"  → Chi tháng → Hành tháng\n"
-                f"  → Hành tháng SINH/TỶ DT = VƯỢNG (+8) | KHẮC/TIẾT DT = SUY (-8)\n"
-                f"  → Ghi: 'Nguyệt [Chi] [Hành] → [SINH/KHẮC] DT → ±X'\n\n"
-                
-                f"LH-B4. NHẬT THẦN (Ngày tác động DT):\n"
-                f"  → Chi ngày → Hành ngày\n"
-                f"  → SINH/TỶ DT (+6) | KHẮC/TIẾT DT (-6)\n"
-                f"  → Chi ngày XUNG Chi DT = 'Nhật Phá' (-10) → DT bị phá nát\n"
-                f"  → Chi ngày HỢP Chi DT = 'Nhật Hợp' → bị ràng buộc\n"
-                f"  → Ghi: 'Nhật [Can Chi] → [quan hệ] DT → ±X'\n\n"
-                
-                f"LH-B5. ĐỘNG/TĨNH + TẤN THẦN/THOÁI THẦN:\n"
-                f"  → DT có ĐỘNG không? Nếu ĐỘNG → biến sang Chi nào?\n"
-                f"  → Chi biến TIẾN 1 bước (VD: Dần→Mão) = TẤN THẦN (+5) → phát triển liên tục\n"
-                f"  → Chi biến LÙI 1 bước (VD: Mão→Dần) = THOÁI THẦN (-5) → suy giảm dần\n"
-                f"  → Hào động HÓA HỒI ĐẦU (biến thành chính nó) = BẾ TẮC\n"
-                f"  → Ghi: 'DT [ĐỘNG/TĨNH] → biến [Chi] → [TẤN/THOÁI/HỒI ĐẦU]'\n\n"
-                
-                f"LH-B6. TUẦN KHÔNG (Không Vong):\n"
-                f"  → Tính Tuần Không từ Can Chi ngày → 2 chi rơi Không\n"
-                f"  → Chi DT rơi Tuần Không? → CHÂN KHÔNG (tháng cũng khắc/không sinh = thật sự trống rỗng) (-8)\n"
-                f"  → hay GIẢ KHÔNG (tháng sinh DT = chỉ tạm thời yếu, hết Không sẽ mạnh lại) (-3)\n"
-                f"  → Ghi: 'DT [CÓ/KHÔNG] Tuần Không | [Chân/Giả Không] → ±X'\n\n"
-                
-                f"LH-B7. NGUYÊN THẦN (hào SINH DT):\n"
-                f"  → Tìm hào có Hành SINH Hành DT → đó là Nguyên Thần\n"
-                f"  → NT VƯỢNG + ĐỘNG = ĐẠI CÁT (+6) — hỗ trợ mạnh mẽ\n"
-                f"  → NT SUY/TĨNH = yếu (+2) | NT Tuần Không = không giúp được (0)\n"
-                f"  → Ghi: 'Nguyên Thần = Hào X [Hành] — [VƯỢNG/SUY] [ĐỘNG/TĨNH] → ±X'\n\n"
-                
-                f"LH-B8. KỴ THẦN (hào KHẮC DT):\n"
-                f"  → Tìm hào có Hành KHẮC Hành DT → đó là Kỵ Thần\n"
-                f"  → KT VƯỢNG + ĐỘNG = NGHIÊM TRỌNG (-8) — phá hoại DT\n"
-                f"  → KT SUY/TĨNH = ít ảnh hưởng (-2) | KT Tuần Không = vô hại (0)\n"
-                f"  → Ghi: 'Kỵ Thần = Hào X [Hành] — [VƯỢNG/SUY] [ĐỘNG/TĨNH] → ±X'\n\n"
-                
-                f"LH-B9. CỪU THẦN (hào KHẮC Kỵ Thần → bảo vệ DT):\n"
-                f"  → Tìm hào có Hành KHẮC Hành Kỵ Thần\n"
-                f"  → Cừu Thần vượng + động = cứu DT khỏi Kỵ Thần (+4)\n"
-                f"  → Ghi: 'Cừu Thần = Hào X — [có/không] khắc chế Kỵ Thần'\n\n"
-                
-                f"LH-B10. THẾ vs ỨNG:\n"
-                f"  → Hào Thế (mình) vs Hào Ứng (đối phương/sự việc)\n"
-                f"  → Thế KHẮC Ứng = MÌNH THẮNG (+4) | Ứng KHẮC Thế = MÌNH THUA (-4)\n"
-                f"  → Thế SINH Ứng = BỎ RA/MẤT | Ứng SINH Thế = ĐƯỢC/NHẬN\n"
-                f"  → Thế vượng Ứng suy = thuận | Thế suy Ứng vượng = bất lợi\n"
-                f"  → Ghi: 'Thế [Hành] vs Ứng [Hành] → [THẮNG/THUA/HÒA]'\n\n"
-                
-                f"LH-B11. TAM HỢP / LỤC XUNG / LỤC HỢP:\n"
-                f"  → Tam Hợp Cục: 3 chi hợp thành Hành → SINH DT = ĐẠI CÁT | KHẮC DT = ĐẠI HUNG\n"
-                f"  → Lục Xung quẻ (Thế-Ứng xung nhau) = BẤT HÒA, tan rã (-5)\n"
-                f"  → Lục Hợp quẻ (Thế-Ứng hợp nhau) = THUẬN LỢI, hợp tác (+5)\n"
-                f"  → Ghi: '[CÓ/KHÔNG] Tam Hợp/Xung/Hợp → ±X'\n\n"
-                
-                f"LH-B12. TỔNG KẾT LỤC HÀO:\n"
-                f"  → Cộng TẤT CẢ điểm B3→B11 = TỔNG ĐIỂM LỤC HÀO\n"
-                f"  → ≥+10 = CÁT | 0→+9 = BÌNH | <0 = HUNG\n"
-                f"  → Ghi: '🎴 LỤC HÀO: [CÁT/BÌNH/HUNG] — Tổng [±X] điểm'\n\n"
-                
-                # ═══ PHẦN II: KỲ MÔN ĐỘN GIÁP — 9 BƯỚC ═══
-                f"══ PHẦN II: KỲ MÔN ĐỘN GIÁP (9 bước) ══\n\n"
-                
-                f"KM-B1. XÁC ĐỊNH CUNG BẢN THÂN + CUNG SỰ VIỆC:\n"
-                f"  → Cung BT = cung chứa Can Ngày (nếu Can Ngày=Giáp → tìm Mậu thay thế)\n"
-                f"  → Cung SV = cung chứa Can Giờ\n"
-                f"  → Ghi: 'BT=Cung X | SV=Cung Y'\n\n"
-                
-                f"KM-B2. SAO (Thiên Bàn) tại Cung DT:\n"
-                f"  → Sao CÁT: Thiên Tâm/Thiên Nhậm/Thiên Phụ/Thiên Xung (+5)\n"
-                f"  → Sao HUNG: Thiên Bồng/Thiên Nhuế/Thiên Trụ/Thiên Cầm (-5)\n"
-                f"  → Ghi: 'Sao [tên] — [CÁT/HUNG] → ±X'\n\n"
-                
-                f"KM-B3. CỬA (Nhân Bàn) tại Cung DT:\n"
-                f"  → Cửa CÁT: Khai Môn/Hưu Môn/Sinh Môn (+5)\n"
-                f"  → Cửa HUNG: Tử Môn/Kinh Môn/Thương Môn (-5)\n"
-                f"  → Cửa BÌNH: Đỗ Môn/Cảnh Môn (0)\n"
-                f"  → Ghi: 'Cửa [tên] — [CÁT/HUNG/BÌNH] → ±X'\n\n"
-                
-                f"KM-B4. THẦN (Thần Bàn) tại Cung DT:\n"
-                f"  → Thần CÁT: Trực Phù/Thái Âm/Lục Hợp/Cửu Thiên/Cửu Địa (+3)\n"
-                f"  → Thần HUNG: Đằng Xà/Bạch Hổ/Huyền Vũ (-3)\n"
-                f"  → Ghi: 'Thần [tên] — [CÁT/HUNG] → ±X'\n\n"
-                
-                f"KM-B5. CAN THIÊN BÀN vs CAN ĐỊA BÀN:\n"
-                f"  → Can trên + Can dưới → xét Sinh/Khắc/Hợp/Xung\n"
-                f"  → PHỤC NGÂM (cùng Can) = quái lại, không tiến triển\n"
-                f"  → PHẢN NGÂM (Can xung nhau) = đảo lộn, bất ngờ xấu\n"
-                f"  → Ghi: 'Can [trên]/[dưới] → [quan hệ] → ±X'\n\n"
-                
-                f"KM-B6. ★★★ CÁCH CỤC ĐẶC BIỆT (RẤT QUAN TRỌNG) ★★★:\n"
-                f"  ① TAM KỲ ĐẮC SỬ: Can Ất/Bính/Đinh tại Cung có Cửa CÁT (Khai/Hưu/Sinh)\n"
-                f"     → ĐẠI CÁT (+15) — mọi việc hanh thông, quý nhân phù trợ\n"
-                f"  ② NGỌC NỮ THỦ MÔN: Can Đinh (Ngọc Nữ) gặp Cửa Khai/Hưu\n"
-                f"     → THƯỢNG CÁT (+12) — thành công nhờ mưu trí, có người giúp đỡ\n"
-                f"  ③ THANH LONG PHẢN THỦ: Can Mậu (/Giáp) ở trên Can Bính\n"
-                f"     → CHUYỂN HUNG THÀNH CÁT (+10) — 80-90%% thành công dù khó khăn\n"
-                f"  ④ NGŨ BẤT NGỘ THỜI: Can Giờ xung Can Ngày (VD: Giáp-Canh)\n"
-                f"     → CẢNH BÁO NGHIÊM TRỌNG (-12) — thời điểm cực xấu, không nên làm\n"
-                f"  ⑤ TAM HÌNH: Chi Dần-Tỵ-Thân hoặc Sửu-Mùi-Tuất trong quẻ\n"
-                f"     → CẢNH BÁO kiện tụng, hình phạt (-8)\n"
-                f"  → Ghi: '[CÓ/KHÔNG] cách cục đặc biệt → ±X'\n\n"
-                
-                f"KM-B7. NGŨ HÀNH CUNG tác động DT:\n"
-                f"  → Hành Cung SINH Hành DT = CÁT (+4) | KHẮC Hành DT = HUNG (-4)\n"
-                f"  → Ghi: 'Cung [Hành] → [SINH/KHẮC] DT [Hành] → ±X'\n\n"
-                
-                f"KM-B8. MÃ TINH / TUẦN KHÔNG:\n"
-                f"  → Dịch Mã tại cung DT = có di chuyển/thay đổi\n"
-                f"  → Tuần Không tại cung DT = chưa thành/trì hoãn (-5)\n"
-                f"  → Ghi: '[CÓ/KHÔNG] Mã/Không → ±X'\n\n"
-                
-                f"KM-B9. TỔNG KẾT KỲ MÔN:\n"
-                f"  → Cộng tất cả điểm B2→B8 = TỔNG ĐIỂM KỲ MÔN\n"
-                f"  → Ghi: '🔮 KỲ MÔN: [CÁT/BÌNH/HUNG] — Tổng [±X] điểm'\n\n"
-                
-                # ═══ PHẦN III: MAI HOA DỊCH SỐ — 6 BƯỚC ═══
-                f"══ PHẦN III: MAI HOA DỊCH SỐ (6 bước) ══\n\n"
-                
-                f"MH-B1. XÁC ĐỊNH THỂ/DỤNG:\n"
-                f"  → Quái THỂ (tĩnh) = MÌNH | Quái DỤNG (động) = SỰ VIỆC/ĐỐI PHƯƠNG\n"
-                f"  → Ghi: 'Thể = [Quái] [Hành] | Dụng = [Quái] [Hành]'\n\n"
-                
-                f"MH-B2. THỂ-DỤNG SINH KHẮC (quan trọng nhất):\n"
-                f"  → Dụng SINH Thể = ĐẠI CÁT (+10) — được giúp đỡ\n"
-                f"  → Thể KHẮC Dụng = THÀNH CÔNG (+5) — mình thắng\n"
-                f"  → Tỷ Hòa = BÌNH (0)\n"
-                f"  → Thể SINH Dụng = MẤT/TỐN (-5) — mình bỏ ra cho người\n"
-                f"  → Dụng KHẮC Thể = HUNG (-10) — bị hại\n"
-                f"  → Ghi: '[Quan hệ Thể-Dụng] → ±X'\n\n"
-                
-                f"MH-B3. HỖ QUÁI (nguyên nhân sâu xa, diễn biến giữa):\n"
-                f"  → Tính từ hào 2,3,4 + 3,4,5\n"
-                f"  → Hỗ Quái = diễn biến GIỮA CHỪNG, quá trình xảy ra\n"
-                f"  → Hành Hỗ SINH Thể = thuận | KHẮC Thể = trở ngại giữa đường\n"
-                f"  → Ghi: 'Hỗ Quái = [tên] [Hành] → [ý nghĩa]'\n\n"
-                
-                f"MH-B4. BIẾN QUÁI (kết quả cuối cùng):\n"
-                f"  → Quẻ sau khi hào động biến = KẾT QUẢ CUỐI\n"
-                f"  → Hành Biến SINH Thể = kết cục tốt | KHẮC Thể = kết cục xấu\n"
-                f"  → Ghi: 'Biến Quái = [tên] [Hành] → [SINH/KHẮC] Thể → [ý nghĩa]'\n\n"
-                
-                f"MH-B5. LỆNH THÁNG tác động Thể/Dụng:\n"
-                f"  → Tháng SINH Thể = CÁT (+3) | KHẮC Thể = HUNG (-3)\n"
-                f"  → Tháng SINH Dụng + Dụng khắc Thể = BẤT LỢI (-3)\n"
-                f"  → Ghi: 'Lệnh Tháng [Hành] → [quan hệ] Thể → ±X'\n\n"
-                
-                f"MH-B6. TỔNG KẾT MAI HOA:\n"
-                f"  → Cộng tất cả điểm B2→B5\n"
-                f"  → Ghi: '🌸 MAI HOA: [CÁT/BÌNH/HUNG] — Tổng [±X] điểm'\n\n"
-                
-                # ═══ PHẦN IV: BỔ SUNG ═══
-                f"══ PHẦN IV: ĐẠI LỤC NHÂM + THIẾT BẢN + THÁI ẤT ══\n\n"
-                f"LN. ĐẠI LỤC NHÂM:\n"
-                f"  → Sơ Truyền = quá khứ/nguyên nhân | Trung Truyền = hiện tại | Mạt Truyền = tương lai\n"
-                f"  → Verdict: Sơ CÁT + Trung CÁT + Mạt CÁT = Toàn Cát\n\n"
-                f"TB. THIẾT BẢN:\n"
-                f"  → Nạp Âm → hình tượng cụ thể | 12 Trường Sinh → sức sống\n"
-                f"  → Trường Sinh→Đế Vượng = MẠNH | Suy→Tuyệt = YẾU | Thai/Dưỡng = mầm mống\n\n"
-                f"TA. THÁI ẤT:\n"
-                f"  → Xu hướng lớn, bức tranh tổng quan\n\n"
-                
-                # ═══ PHẦN V: TỔNG KẾT + OUTPUT FORMAT ═══
-                f"══ PHẦN V: TỔNG KẾT + KẾT LUẬN ══\n\n"
-                f"TK-1. BẢNG ĐIỂM TỔNG HỢP:\n"
-                f"  → Liệt kê: LH=[±X], KM=[±X], MH=[±X], LN=[CÁT/HUNG], TB=[CÁT/HUNG], TA=[CÁT/HUNG]\n"
-                f"  → Tính phần trăm: (tổng CÁT / tổng PP) × 100\n\n"
-                f"TK-2. KẾT LUẬN CUỐI:\n"
-                f"  → TRẢ LỜI TRỰC TIẾP câu hỏi — KHÔNG né tránh\n"
-                f"  → Nêu rõ: CÓ/KHÔNG/NÊN/KHÔNG NÊN + lý do từ bước phân tích\n"
-                f"  → Chỉ ra yếu tố QUYẾT ĐỊNH (yếu tố nào mạnh nhất dẫn đến kết luận)\n\n"
-                
-                f"</analysis_protocol_v37>\n\n"
-                
-                # ═══ OUTPUT FORMAT ═══
-                f"<output_format_v37>\n"
-                f"FORMAT BẮT BUỘC — PHẢI THEO ĐÚNG CẤU TRÚC NÀY:\n\n"
-                
-                f"## 🔮 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V37.0)\n\n"
-                
-                f"### 🎴 I. PHÂN TÍCH LỤC HÀO\n"
-                f"| Bước | Yếu tố | Kết quả | Điểm |\n"
-                f"|------|--------|---------|------|\n"
-                f"| LH-B1 | Dụng Thần | [Hào X — LT — Can Chi (Hành)] | - |\n"
-                f"| LH-B2 | Phi Phục | [HIỆN/ẨN] | - |\n"
-                f"| LH-B3 | Nguyệt Lệnh | [Chi tháng → SINH/KHẮC DT] | ±X |\n"
-                f"| LH-B4 | Nhật Thần | [Can Chi ngày → quan hệ DT] | ±X |\n"
-                f"| LH-B5 | Động/Tĩnh | [ĐỘNG→biến Chi→TẤN/THOÁI] | ±X |\n"
-                f"| LH-B6 | Tuần Không | [CÓ/KHÔNG + Chân/Giả] | ±X |\n"
-                f"| LH-B7 | Nguyên Thần | [Hào X — trạng thái] | ±X |\n"
-                f"| LH-B8 | Kỵ Thần | [Hào X — trạng thái] | ±X |\n"
-                f"| LH-B9 | Cừu Thần | [có/không khắc chế KT] | ±X |\n"
-                f"| LH-B10 | Thế vs Ứng | [Hành → quan hệ] | ±X |\n"
-                f"| LH-B11 | Tam Hợp/Xung/Hợp | [CÓ/KHÔNG] | ±X |\n"
-                f"| **LH-B12** | **TỔNG LỤC HÀO** | **[CÁT/BÌNH/HUNG]** | **±X** |\n\n"
-                
-                f"### 🔮 II. PHÂN TÍCH KỲ MÔN\n"
-                f"| Bước | Yếu tố | Kết quả | Điểm |\n"
-                f"|------|--------|---------|------|\n"
-                f"| KM-B1 | Cung BT/SV | [Cung X / Cung Y] | - |\n"
-                f"| KM-B2 | Sao | [tên — CÁT/HUNG] | ±X |\n"
-                f"| KM-B3 | Cửa | [tên — CÁT/HUNG] | ±X |\n"
-                f"| KM-B4 | Thần | [tên — CÁT/HUNG] | ±X |\n"
-                f"| KM-B5 | Can Thiên/Địa | [quan hệ + Phản/Phục Ngâm] | ±X |\n"
-                f"| KM-B6 | Cách Cục ĐB | [Tam Kỳ/Ngọc Nữ/Thanh Long/Ngũ Bất?] | ±X |\n"
-                f"| KM-B7 | Ngũ Hành Cung | [Hành Cung → SINH/KHẮC DT] | ±X |\n"
-                f"| KM-B8 | Mã/Không Vong | [CÓ/KHÔNG] | ±X |\n"
-                f"| **KM-B9** | **TỔNG KỲ MÔN** | **[CÁT/BÌNH/HUNG]** | **±X** |\n\n"
-                
-                f"### 🌸 III. PHÂN TÍCH MAI HOA\n"
-                f"| Bước | Yếu tố | Kết quả | Điểm |\n"
-                f"|------|--------|---------|------|\n"
-                f"| MH-B1 | Thể/Dụng | [Quái Thể (Hành) vs Quái Dụng (Hành)] | - |\n"
-                f"| MH-B2 | Sinh Khắc | [Dụng sinh/khắc Thể...] | ±X |\n"
-                f"| MH-B3 | Hỗ Quái | [tên + Hành + ý nghĩa] | - |\n"
-                f"| MH-B4 | Biến Quái | [tên + Hành → sinh/khắc Thể] | ±X |\n"
-                f"| MH-B5 | Lệnh Tháng | [Hành tháng → Thể] | ±X |\n"
-                f"| **MH-B6** | **TỔNG MAI HOA** | **[CÁT/BÌNH/HUNG]** | **±X** |\n\n"
-                
-                f"### 📊 IV. ĐẠI LỤC NHÂM + THIẾT BẢN + THÁI ẤT\n"
-                f"[Tóm tắt ngắn gọn verdict từ 3 PP bổ sung]\n\n"
-                
-                f"### ⚖️ V. BẢNG TỔNG KẾT\n"
-                f"| PP | Verdict | Điểm | Ghi chú |\n"
-                f"|-----|---------|-------|--------|\n"
-                f"| Lục Hào | [CÁT/HUNG] | ±X | [yếu tố quyết định] |\n"
-                f"| Kỳ Môn | [CÁT/HUNG] | ±X | [yếu tố quyết định] |\n"
-                f"| Mai Hoa | [CÁT/HUNG] | ±X | [yếu tố quyết định] |\n"
-                f"| Đại Lục Nhâm | [CÁT/HUNG] | - | [Sơ-Trung-Mạt] |\n"
-                f"| Thiết Bản | [CÁT/HUNG] | - | [Nạp Âm/Trường Sinh] |\n"
-                f"| Thái Ất | [CÁT/HUNG] | - | [xu hướng] |\n"
-                f"| **TỔNG** | **[X/6 CÁT]** | - | - |\n\n"
-                
-                f"### ✅ VI. KẾT LUẬN CUỐI CÙNG\n"
-                f"**CÂU TRẢ LỜI:** [CÓ/KHÔNG/NÊN/KHÔNG NÊN — trả lời 1 câu rõ ràng]\n"
-                f"**LÝ DO CHÍNH:** [yếu tố quyết định nhất từ bảng phân tích]\n"
-                f"**LỜI KHUYÊN:** [hành động cụ thể nên/không nên làm]\n\n"
-                
-                f"GIỚI HẠN: Tối đa 1200 chữ. Mỗi ô trong bảng PHẢI có dữ liệu CỤ THỂ từ raw_chart_data.\n"
-                f"CẤM TUYỆT ĐỐI: Bịa yếu tố KHÔNG có trong data | Nói 'không thể xác định' | Copy verdict offline.\n"
-                f"</output_format_v37>\n"
+                f"<output_format_v38>\n"
+                f"FORMAT BẮT BUỘC:\n\n"
+                f"## 🔮 AI ONLINE — LUẬN GIẢI ĐỘC LẬP\n\n"
+                f"### 📖 ĐỌC QUẺ (Bước 1)\n"
+                f"**Lục Hào:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data LH]\n"
+                f"**Kỳ Môn:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data KM]\n"
+                f"**Mai Hoa:** [phân tích Thể/Dụng/Hỗ/Biến + sinh khắc]\n"
+                f"**Đại Lục Nhâm:** [Sơ-Trung-Mạt Truyền + diễn biến]\n"
+                f"**Thái Ất:** [xu hướng lớn]\n\n"
+                f"### ⚖️ TỔNG HỢP (Bước 2)\n"
+                f"**Yếu tố THUẬN:** [liệt kê yếu tố hỗ trợ]\n"
+                f"**Yếu tố NGHỊCH:** [liệt kê yếu tố cản trở]\n"
+                f"**Verdict AI Online:** [CÁT/HUNG/BÌNH + lý do chính]\n\n"
+                f"### 📊 SO SÁNH VỚI OFFLINE (Bước 3)\n"
+                f"**Đồng ý:** [điểm giống]\n"
+                f"**Khác biệt:** [điểm khác + giải thích]\n\n"
+                f"### ✅ KẾT LUẬN CUỐI (Bước 4)\n"
+                f"[Trả lời TRỰC TIẾP câu hỏi. Nêu rõ CÓ/KHÔNG/NÊN/KHÔNG NÊN + lý do]\n"
+                f"[Nếu có điều kiện: nêu rõ 'NÊN nếu...' hoặc 'KHÔNG NÊN vì...']\n\n"
+                f"GIỚI HẠN: Tối đa 800 chữ. Mỗi yếu tố phải TRÍCH DẪN từ data.\n"
+                f"CẤM: Bịa yếu tố, nói 'không thể xác định', nhại lại offline verdict.\n"
+                f"</output_format_v38>\n"
             )
 
 
@@ -8321,7 +8124,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V37.0 — 27 Steps Protocol + Independent AI). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V38.0 — Online Independent + Offline 27 Steps). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
@@ -9695,8 +9498,8 @@ class FreeAIHelper:
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
-            final_parts.append(f"## 🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V37.0 — 27 Bước)")
-            final_parts.append(f"*🤖 AI Online phân tích TỪNG BƯỚC theo Bộ Quy Tắc V37.0: 12 bước LH + 9 bước KM + 6 bước MH*")
+            final_parts.append(f"## 🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V38.0)")
+            final_parts.append(f"*🤖 AI Online tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH*")
             final_parts.append(online_result)
             final_parts.append("")
             
@@ -9789,7 +9592,7 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V37.0 (Chỉ Offline — AI Online không khả dụng)")
+            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V38.0 (Chỉ Offline — AI Online không khả dụng)")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
             final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
