@@ -3776,14 +3776,14 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc TỔNG QUÁT'
             
-            # ═══ PHẦN 4: V38.0 AI ONLINE ĐỘC LẬP — LUẬN GIẢI TỰ DO ═══
-            # V38.0: AI Online KHÔNG dùng 27 bước (chỉ dành cho Offline)
+            # ═══ PHẦN 4: V38.2 AI ONLINE ĐỘC LẬP — LUẬN GIẢI TỰ DO ═══
+            # V38.2: AI Online KHÔNG dùng 27 bước (chỉ dành cho Offline)
             # AI Online luận giải ĐỘC LẬP → so sánh Offline → KẾT LUẬN CHÍNH
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V38.0 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V38.2 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
                 f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ V38.0: BẠN PHẢI TỰ ĐỌC DỮ LIỆU THÔ VÀ LUẬN GIẢI ĐỘC LẬP.\n"
+                f"NHIỆM VỤ V38.2: BẠN PHẢI TỰ ĐỌC DỮ LIỆU THÔ VÀ LUẬN GIẢI ĐỘC LẬP.\n"
                 f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n"
                 f"</system_role>\n\n"
                 
@@ -8550,7 +8550,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V38.0 — Online Independent + Offline 27 Steps). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V38.2 — Protocol 27 Bước Thống Nhất). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 78 yếu tố → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
@@ -9955,7 +9955,7 @@ class FreeAIHelper:
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
-            final_parts.append(f"## 🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V38.0)")
+            final_parts.append(f"## 🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V38.2)")
             final_parts.append(f"*🤖 AI Online tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH*")
             final_parts.append(online_result)
             final_parts.append("")
