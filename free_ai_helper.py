@@ -4587,6 +4587,353 @@ class FreeAIHelper:
         return details
     
     # ═══════════════════════════════════════════════════════════
+    # V38.1: PROTOCOL 27 BƯỚC — LUẬN GIẢI AI OFFLINE
+    # ═══════════════════════════════════════════════════════════
+    
+    def _apply_27step_protocol(self, question, dung_than, hanh_dt,
+                                km_factors, lh_factors, mh_factors,
+                                km_score, lh_score, mh_score,
+                                tb_factors, ln_factors, ta_factors,
+                                tb_score, ln_score, ta_score,
+                                weighted_pct, chart_data=None,
+                                luc_hao_data=None, mai_hoa_data=None):
+        """V38.1: Áp dụng 27 bước luận giải có hệ thống.
+        
+        Flow: Câu hỏi → Dụng Thần → Sơ đồ yếu tố → 27 bước → Kết luận.
+        
+        Returns: (protocol_text, conclusion_text, total_score)
+        """
+        lines = []
+        step_results = []  # [(step_id, name, result, score, verdict)]
+        
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # PHẦN 0: SƠ ĐỒ YẾU TỐ
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        lines.append("## 📐 SƠ ĐỒ YẾU TỐ — DỤNG THẦN LÀ TRUNG TÂM")
+        lines.append(f"```")
+        lines.append(f"╔══════════════════════════════════════════════════════╗")
+        lines.append(f"║  CÂU HỎI: {question[:50]}{'...' if len(question)>50 else ''}  ║")
+        lines.append(f"╠══════════════════════════════════════════════════════╣")
+        lines.append(f"║  🎯 DỤNG THẦN: {dung_than} ({hanh_dt})               ║")
+        lines.append(f"╠════════════╦════════════╦════════════════════════════╣")
+        lines.append(f"║  LỤC HÀO   ║  KỲ MÔN   ║  MAI HOA                  ║")
+        lines.append(f"║  {len(lh_factors):2d} yếu tố ║  {len(km_factors):2d} yếu tố║  {len(mh_factors):2d} yếu tố                ║")
+        lines.append(f"║  Σ={lh_score:+d}     ║  Σ={km_score:+d}    ║  Σ={mh_score:+d}                   ║")
+        lines.append(f"╠════════════╬════════════╬════════════════════════════╣")
+        lines.append(f"║  THIẾT BẢN  ║  LỤC NHÂM ║  THÁI ẤT                  ║")
+        lines.append(f"║  {len(tb_factors):2d} yếu tố ║  {len(ln_factors):2d} yếu tố║  {len(ta_factors):2d} yếu tố                ║")
+        lines.append(f"║  Σ={tb_score:+d}     ║  Σ={ln_score:+d}    ║  Σ={ta_score:+d}                   ║")
+        lines.append(f"╠══════════════════════════════════════════════════════╣")
+        total_factors = len(lh_factors)+len(km_factors)+len(mh_factors)+len(tb_factors)+len(ln_factors)+len(ta_factors)
+        lines.append(f"║  TỔNG: {total_factors} yếu tố | Điểm tổng hợp: {weighted_pct}%    ║")
+        lines.append(f"╚══════════════════════════════════════════════════════╝")
+        lines.append(f"```")
+        lines.append("")
+        
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # PHẦN I: LỤC HÀO — 12 BƯỚC (LH-B1 → LH-B12)
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        lines.append("### 📜 I. LỤC HÀO KINH DỊCH — 12 BƯỚC")
+        lines.append("")
+        lines.append("| Bước | Yếu tố | Kết quả | Điểm |")
+        lines.append("|:----:|:-------|:--------|-----:|")
+        
+        # Map factors thành 12 bước
+        lh_step_map = {
+            'LH-B1': {'name': 'Xác định DT', 'keywords': ['DT Vượng','DT Tướng','DT Suy','DT Tử','DT Bệnh','DT Mộ','DT Trường','DT Mộc','DT Đế','DT ẩn','Phục Thần']},
+            'LH-B2': {'name': 'Phi Phục — DT hiện/ẩn', 'keywords': ['Phục Thần','ẩn']},
+            'LH-B3': {'name': 'Nguyệt Lệnh → DT', 'keywords': ['Nguyệt']},
+            'LH-B4': {'name': 'Nhật Thần → DT', 'keywords': ['Nhật(','Nhật Xung','ÁM ĐỘNG']},
+            'LH-B5': {'name': 'Động/Tĩnh + Tiến/Thối', 'keywords': ['DT ĐỘNG','DT TĨNH','TIẾN THẦN','THỐI THẦN','Hóa Hồi','Hóa Phục']},
+            'LH-B6': {'name': 'Tuần Không', 'keywords': ['Tuần Không']},
+            'LH-B7': {'name': 'Nguyên Thần (sinh DT)', 'keywords': ['NT(','Nguyên Thần']},
+            'LH-B8': {'name': 'Kỵ Thần (khắc DT)', 'keywords': ['KT(','Kỵ Thần']},
+            'LH-B9': {'name': 'Cừu Thần + Chain', 'keywords': ['Cừu Thần','THAM SINH','mất nguồn','chain']},
+            'LH-B10': {'name': 'Thế vs Ứng', 'keywords': ['Thế khắc','Ứng khắc','TRÌ THẾ']},
+            'LH-B11': {'name': 'Tam Hợp/Lục Xung/Phản Phục Ngâm', 'keywords': ['Tam Hợp','Lục Hợp','xung DT','hợp DT','PHẢN NGÂM','PHỤC NGÂM','NGUYỆT PHÁ','Hóa TUYỆT','Hóa MỘ','Hào động','hào']},
+            'LH-B12': {'name': '⚖️ TỔNG KẾT LỤC HÀO', 'keywords': []},
+        }
+        
+        lh_used = set()
+        lh_step_scores = {}
+        for step_id, step_info in lh_step_map.items():
+            if step_id == 'LH-B12':
+                continue
+            matched = []
+            for f in lh_factors:
+                if f in lh_used:
+                    continue
+                for kw in step_info['keywords']:
+                    if kw.lower() in f.lower():
+                        matched.append(f)
+                        lh_used.add(f)
+                        break
+            if matched:
+                total = 0
+                results = []
+                for m in matched:
+                    s = self._extract_score_from_factor(m)
+                    total += s
+                    results.append(m)
+                result_text = '; '.join(results[:2])
+                if len(results) > 2:
+                    result_text += f' (+{len(results)-2} thêm)'
+                score_text = f"{total:+d}" if total != 0 else "0"
+                lines.append(f"| {step_id} | {step_info['name']} | {result_text[:60]} | {score_text} |")
+                step_results.append((step_id, step_info['name'], result_text, total, 'CÁT' if total > 0 else ('HUNG' if total < 0 else 'BÌNH')))
+                lh_step_scores[step_id] = total
+            else:
+                lines.append(f"| {step_id} | {step_info['name']} | *(không phát hiện)* | 0 |")
+                step_results.append((step_id, step_info['name'], 'không phát hiện', 0, 'BÌNH'))
+        
+        # Các factor LH chưa phân loại
+        remaining_lh = [f for f in lh_factors if f not in lh_used]
+        remaining_score = sum(self._extract_score_from_factor(f) for f in remaining_lh)
+        if remaining_lh:
+            rem_text = '; '.join(remaining_lh[:2])
+            if len(remaining_lh) > 2:
+                rem_text += f' (+{len(remaining_lh)-2})'
+            lines.append(f"| LH-Bổ | Yếu tố khác ({len(remaining_lh)}) | {rem_text[:60]} | {remaining_score:+d} |")
+        
+        # LH-B12: Tổng kết
+        lh_icon = '✅' if lh_score >= 5 else ('🔴' if lh_score <= -5 else '🟡')
+        lh_verdict = 'CÁT' if lh_score >= 5 else ('HUNG' if lh_score <= -5 else 'BÌNH')
+        lines.append(f"| **LH-B12** | **⚖️ TỔNG KẾT** | **{lh_icon} {lh_verdict}** ({len(lh_factors)} yếu tố) | **{lh_score:+d}** |")
+        step_results.append(('LH-B12', 'TỔNG KẾT LỤC HÀO', f"{lh_verdict} ({len(lh_factors)} yếu tố)", lh_score, lh_verdict))
+        lines.append("")
+        
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # PHẦN II: KỲ MÔN — 9 BƯỚC (KM-B1 → KM-B9)
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        lines.append("### ⚔️ II. KỲ MÔN ĐỘN GIÁP — 9 BƯỚC")
+        lines.append("")
+        lines.append("| Bước | Yếu tố | Kết quả | Điểm |")
+        lines.append("|:----:|:-------|:--------|-----:|")
+        
+        km_step_map = {
+            'KM-B1': {'name': 'Cung BT↔DT sinh khắc', 'keywords': ['Cung DT','Cung BT','tương sinh','Tỷ hòa']},
+            'KM-B2': {'name': 'Sao tại Cung DT', 'keywords': ['Sao']},
+            'KM-B3': {'name': 'Cửa tại Cung DT', 'keywords': ['Cửa']},
+            'KM-B4': {'name': 'Thần tại Cung DT', 'keywords': ['Thần']},
+            'KM-B5': {'name': 'Vượng Suy Can tại Cung', 'keywords': ['Can DT']},
+            'KM-B6': {'name': 'Tuần Không + Mã Tinh', 'keywords': ['Không Vong','Mã Tinh']},
+            'KM-B7': {'name': 'Phản/Phục Ngâm + Cách Cục', 'keywords': ['Phản','Phục','Tam Kỳ','Ngọc Nữ','Thanh Long','Cách cục','Thiên Cầm']},
+            'KM-B8': {'name': 'Nguyệt lệnh + Tương tác', 'keywords': ['Nguyệt','Tương tác','Sao-Cửa','Bát Thần']},
+            'KM-B9': {'name': '⚖️ TỔNG KẾT KỲ MÔN', 'keywords': []},
+        }
+        
+        km_used = set()
+        for step_id, step_info in km_step_map.items():
+            if step_id == 'KM-B9':
+                continue
+            matched = []
+            for f in km_factors:
+                if f in km_used:
+                    continue
+                for kw in step_info['keywords']:
+                    if kw.lower() in f.lower():
+                        matched.append(f)
+                        km_used.add(f)
+                        break
+            if matched:
+                total = sum(self._extract_score_from_factor(m) for m in matched)
+                result_text = '; '.join(matched[:2])
+                if len(matched) > 2:
+                    result_text += f' (+{len(matched)-2})'
+                lines.append(f"| {step_id} | {step_info['name']} | {result_text[:60]} | {total:+d} |")
+                step_results.append((step_id, step_info['name'], result_text, total, 'CÁT' if total > 0 else ('HUNG' if total < 0 else 'BÌNH')))
+            else:
+                lines.append(f"| {step_id} | {step_info['name']} | *(không phát hiện)* | 0 |")
+                step_results.append((step_id, step_info['name'], 'không phát hiện', 0, 'BÌNH'))
+        
+        remaining_km = [f for f in km_factors if f not in km_used]
+        if remaining_km:
+            rem_score = sum(self._extract_score_from_factor(f) for f in remaining_km)
+            rem_text = '; '.join(remaining_km[:2])
+            lines.append(f"| KM-Bổ | Yếu tố khác ({len(remaining_km)}) | {rem_text[:60]} | {rem_score:+d} |")
+        
+        km_icon = '✅' if km_score >= 3 else ('🔴' if km_score <= -3 else '🟡')
+        km_verdict = 'CÁT' if km_score >= 3 else ('HUNG' if km_score <= -3 else 'BÌNH')
+        lines.append(f"| **KM-B9** | **⚖️ TỔNG KẾT** | **{km_icon} {km_verdict}** ({len(km_factors)} yếu tố) | **{km_score:+d}** |")
+        step_results.append(('KM-B9', 'TỔNG KẾT KỲ MÔN', f"{km_verdict} ({len(km_factors)} yếu tố)", km_score, km_verdict))
+        lines.append("")
+        
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # PHẦN III: MAI HOA — 6 BƯỚC (MH-B1 → MH-B6)
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        lines.append("### 🌸 III. MAI HOA DỊCH SỐ — 6 BƯỚC")
+        lines.append("")
+        lines.append("| Bước | Yếu tố | Kết quả | Điểm |")
+        lines.append("|:----:|:-------|:--------|-----:|")
+        
+        mh_step_map = {
+            'MH-B1': {'name': 'Thể↔Dụng sinh khắc', 'keywords': ['Dụng sinh','Dụng khắc','Thể khắc','Thể sinh','Tỷ Hòa']},
+            'MH-B2': {'name': 'Hỗ Quái tác động Thể', 'keywords': ['Hỗ']},
+            'MH-B3': {'name': 'Biến Quái tác động Thể', 'keywords': ['Biến']},
+            'MH-B4': {'name': 'Nguyệt Lệnh + Nhật Thần', 'keywords': ['lệnh','Tháng','Ngày','vượng tại']},
+            'MH-B5': {'name': 'Quái Tượng 64 Quẻ', 'keywords': ['Quẻ','KINH','IChing']},
+            'MH-B6': {'name': '⚖️ TỔNG KẾT MAI HOA', 'keywords': []},
+        }
+        
+        mh_used = set()
+        for step_id, step_info in mh_step_map.items():
+            if step_id == 'MH-B6':
+                continue
+            matched = []
+            for f in mh_factors:
+                if f in mh_used:
+                    continue
+                for kw in step_info['keywords']:
+                    if kw.lower() in f.lower():
+                        matched.append(f)
+                        mh_used.add(f)
+                        break
+            if matched:
+                total = sum(self._extract_score_from_factor(m) for m in matched)
+                result_text = '; '.join(matched[:2])
+                lines.append(f"| {step_id} | {step_info['name']} | {result_text[:60]} | {total:+d} |")
+                step_results.append((step_id, step_info['name'], result_text, total, 'CÁT' if total > 0 else ('HUNG' if total < 0 else 'BÌNH')))
+            else:
+                lines.append(f"| {step_id} | {step_info['name']} | *(không phát hiện)* | 0 |")
+                step_results.append((step_id, step_info['name'], 'không phát hiện', 0, 'BÌNH'))
+        
+        remaining_mh = [f for f in mh_factors if f not in mh_used]
+        if remaining_mh:
+            rem_score = sum(self._extract_score_from_factor(f) for f in remaining_mh)
+            rem_text = '; '.join(remaining_mh[:2])
+            lines.append(f"| MH-Bổ | Yếu tố khác ({len(remaining_mh)}) | {rem_text[:60]} | {rem_score:+d} |")
+        
+        mh_icon = '✅' if mh_score >= 3 else ('🔴' if mh_score <= -3 else '🟡')
+        mh_verdict = 'CÁT' if mh_score >= 3 else ('HUNG' if mh_score <= -3 else 'BÌNH')
+        lines.append(f"| **MH-B6** | **⚖️ TỔNG KẾT** | **{mh_icon} {mh_verdict}** ({len(mh_factors)} yếu tố) | **{mh_score:+d}** |")
+        step_results.append(('MH-B6', 'TỔNG KẾT MAI HOA', f"{mh_verdict} ({len(mh_factors)} yếu tố)", mh_score, mh_verdict))
+        lines.append("")
+        
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # PHẦN IV: BẢNG TỔNG HỢP 27 BƯỚC
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        lines.append("### 🏆 IV. BẢNG TỔNG HỢP 27 BƯỚC + 3 PP BỔ TRỢ")
+        lines.append("")
+        lines.append("| PP | Verdict | Điểm thô | Số yếu tố |")
+        lines.append("|:---|:--------|:---------|:----------|")
+        lines.append(f"| 📜 Lục Hào | **{lh_verdict}** | {lh_score:+d} | {len(lh_factors)} |")
+        lines.append(f"| ⚔️ Kỳ Môn | **{km_verdict}** | {km_score:+d} | {len(km_factors)} |")
+        lines.append(f"| 🌸 Mai Hoa | **{mh_verdict}** | {mh_score:+d} | {len(mh_factors)} |")
+        
+        tb_verdict = 'CÁT' if tb_score >= 3 else ('HUNG' if tb_score <= -3 else 'BÌNH')
+        ln_verdict = 'CÁT' if ln_score >= 3 else ('HUNG' if ln_score <= -3 else 'BÌNH')
+        ta_verdict_s = 'CÁT' if ta_score >= 3 else ('HUNG' if ta_score <= -3 else 'BÌNH')
+        lines.append(f"| 📕 Thiết Bản | **{tb_verdict}** | {tb_score:+d} | {len(tb_factors)} |")
+        lines.append(f"| 🔯 Đại Lục Nhâm | **{ln_verdict}** | {ln_score:+d} | {len(ln_factors)} |")
+        lines.append(f"| ⭐ Thái Ất | **{ta_verdict_s}** | {ta_score:+d} | {len(ta_factors)} |")
+        lines.append(f"| **TỔNG** | | | **{total_factors}** |")
+        lines.append("")
+        
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # PHẦN V: KẾT LUẬN CHÍNH THỨC TỪ 27 BƯỚC
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        all_verdicts = [lh_verdict, km_verdict, mh_verdict, tb_verdict, ln_verdict, ta_verdict_s]
+        cat_count = sum(1 for v in all_verdicts if v == 'CÁT')
+        hung_count = sum(1 for v in all_verdicts if v == 'HUNG')
+        
+        if weighted_pct >= 70:
+            final_verdict = 'ĐẠI CÁT'
+            final_icon = '🟢'
+        elif weighted_pct >= 55:
+            final_verdict = 'CÁT — THUẬN LỢI'
+            final_icon = '✅'
+        elif weighted_pct >= 45:
+            final_verdict = 'BÌNH — CÓ THỂ ĐƯỢC' if weighted_pct >= 50 else 'BÌNH — CẦN CÂN NHẮC'
+            final_icon = '🟡'
+        elif weighted_pct >= 30:
+            final_verdict = 'HUNG — KHÓ KHĂN'
+            final_icon = '🔴'
+        else:
+            final_verdict = 'ĐẠI HUNG — RẤT BẤT LỢI'
+            final_icon = '⛔'
+        
+        # Override — đa số PP hung nhưng % vẫn cao
+        if hung_count >= 4 and weighted_pct >= 50:
+            final_verdict = 'HUNG — ĐA SỐ PP BẤT LỢI'
+            final_icon = '🔴'
+            weighted_pct = min(weighted_pct, 42)
+        elif cat_count >= 4 and weighted_pct < 50:
+            final_verdict = 'CÁT — ĐA SỐ PP THUẬN'
+            final_icon = '✅'
+            weighted_pct = max(weighted_pct, 55)
+        
+        # Top yếu tố ảnh hưởng nhất
+        all_factors = []
+        for f in lh_factors:
+            s = self._extract_score_from_factor(f)
+            all_factors.append(('LH', f, s))
+        for f in km_factors:
+            s = self._extract_score_from_factor(f)
+            all_factors.append(('KM', f, s))
+        for f in mh_factors:
+            s = self._extract_score_from_factor(f)
+            all_factors.append(('MH', f, s))
+        
+        # Sort by absolute score descending
+        all_factors.sort(key=lambda x: abs(x[2]), reverse=True)
+        top_positive = [f for f in all_factors if f[2] > 0][:3]
+        top_negative = [f for f in all_factors if f[2] < 0][:3]
+        
+        lines.append(f"### {final_icon} KẾT LUẬN CHÍNH THỨC — PROTOCOL 27 BƯỚC")
+        lines.append("")
+        lines.append(f"**{final_icon} VERDICT: {final_verdict} ({weighted_pct}%)**")
+        lines.append(f"**Đồng thuận:** {cat_count}/6 CÁT, {hung_count}/6 HUNG")
+        lines.append("")
+        
+        if top_positive:
+            lines.append("**✅ Yếu tố THUẬN lợi nhất:**")
+            for pp, factor, sc in top_positive:
+                lines.append(f"• [{pp}] {factor}")
+        
+        if top_negative:
+            lines.append("**🔴 Yếu tố BẤT LỢI nhất:**")
+            for pp, factor, sc in top_negative:
+                lines.append(f"• [{pp}] {factor}")
+        
+        lines.append("")
+        
+        # Kết luận narrative
+        q_lower = question.lower()
+        if any(kw in q_lower for kw in ['có nên', 'nên không', 'có được', 'được không']):
+            if weighted_pct >= 55:
+                lines.append(f"> 🎯 **CÂU TRẢ LỜI: CÓ — NÊN LÀM** (Tỷ lệ thuận lợi {weighted_pct}%, {cat_count}/6 PP đều CÁT)")
+            elif weighted_pct >= 45:
+                lines.append(f"> 🎯 **CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — nhưng cần cẩn thận** (Tỷ lệ {weighted_pct}%, cần xem xét thêm)")
+            else:
+                lines.append(f"> 🎯 **CÂU TRẢ LỜI: KHÔNG NÊN** (Tỷ lệ bất lợi {100-weighted_pct}%, {hung_count}/6 PP cho HUNG)")
+        elif any(kw in q_lower for kw in ['sống', 'chết', 'mất', 'qua khỏi']):
+            if weighted_pct >= 55:
+                lines.append(f"> 🎯 **CÂU TRẢ LỜI: QUA KHỎI ĐƯỢC** (DT vượng {weighted_pct}%)")
+            else:
+                lines.append(f"> 🎯 **CÂU TRẢ LỜI: NGUY HIỂM** (DT suy {weighted_pct}%)")
+        else:
+            if weighted_pct >= 55:
+                lines.append(f"> 🎯 **KẾT LUẬN: THUẬN LỢI** — Xu hướng tích cực ({weighted_pct}%)")
+            elif weighted_pct >= 45:
+                lines.append(f"> 🎯 **KẾT LUẬN: BÌNH THƯỜNG** — Cần thêm nỗ lực ({weighted_pct}%)")
+            else:
+                lines.append(f"> 🎯 **KẾT LUẬN: BẤT LỢI** — Nên hoãn hoặc đổi hướng ({weighted_pct}%)")
+        
+        protocol_text = "\n".join(lines)
+        conclusion_text = f"{final_icon} {final_verdict} ({weighted_pct}%) — {cat_count}/6 CÁT, {hung_count}/6 HUNG — {total_factors} yếu tố"
+        
+        return protocol_text, conclusion_text, weighted_pct
+    
+    @staticmethod
+    def _extract_score_from_factor(factor_text):
+        """Trích điểm số từ factor string. VD: 'DT Vượng +10' → 10"""
+        import re
+        match = re.search(r'([+-]\d+)\s*$', factor_text)
+        if match:
+            return int(match.group(1))
+        return 0
+    
+    # ═══════════════════════════════════════════════════════════
     # V16.0 / V26.2: ĐẠI THỐNG NHẤT SCORING ĐA PHƯƠNG PHÁP
     # ═══════════════════════════════════════════════════════════
     
@@ -9485,6 +9832,37 @@ class FreeAIHelper:
         except Exception as e:
             self.log_step("V31 Diagrams", "ERROR", str(e)[:80])
         
+        # ═══════════════════════════════════════════════════════════
+        # V38.1: ÁP DỤNG PROTOCOL 27 BƯỚC
+        # ═══════════════════════════════════════════════════════════
+        v38_protocol_text = ''
+        v38_conclusion = ''
+        try:
+            v38_protocol_text, v38_conclusion, weighted_pct = self._apply_27step_protocol(
+                question=question,
+                dung_than=dung_than,
+                hanh_dt=hanh_dt_v22,
+                km_factors=v24_km_factors,
+                lh_factors=v23_lh_factors,
+                mh_factors=v24_mh_factors,
+                km_score=v16_km_raw,
+                lh_score=v16_lh_raw,
+                mh_score=v16_mh_raw,
+                tb_factors=v24_tb_factors,
+                ln_factors=v24_ln_factors,
+                ta_factors=v24_ta_factors,
+                tb_score=v16_tb_raw,
+                ln_score=v16_ln_raw,
+                ta_score=v16_ta_raw,
+                weighted_pct=weighted_pct,
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+            )
+            self.log_step("V38.1", "27-STEP OK", v38_conclusion[:80])
+        except Exception as e:
+            self.log_step("V38.1", "ERROR", str(e)[:80])
+        
         # Gọi AI Online (Gemini) — phân tích sâu
         online_result = self._try_online_ai(
             question=question,
@@ -9548,9 +9926,15 @@ class FreeAIHelper:
                 final_parts.append(f"\n**🎯 KẾT LUẬN:** {v31_master_info.get('conclusion', '?')}")
                 final_parts.append("\n</details>")
             
+            # V38.1: PROTOCOL 27 BƯỚC — HIỆN TRỰC TIẾP
+            if v38_protocol_text:
+                final_parts.append("\n---")
+                final_parts.append("\n## 📊 AI OFFLINE — PROTOCOL 27 BƯỚC (V38.1)")
+                final_parts.append(v38_protocol_text)
+            
             # Chi tiết AI Offline
             final_parts.append("\n---")
-            final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V36.0)")
+            final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V38.1)")
             final_parts.append(f"*⚙️ Engine tính toán 100% xác định, không dùng AI — Điểm Tổng Hợp: {weighted_pct}%*")
             final_parts.append("\n<details>")
             final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích AI Offline (nhấn để mở)</b></summary>\n")
@@ -9592,10 +9976,17 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V38.0 (Chỉ Offline — AI Online không khả dụng)")
+            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V38.1 (Chỉ Offline — AI Online không khả dụng)")
             final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
             final_parts.append("")
-            final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
+            
+            # V38.1: PROTOCOL 27 BƯỚC — HIỆN TRỰC TIẾP (offline-only)
+            if v38_protocol_text:
+                final_parts.append(v38_protocol_text)
+                final_parts.append("")
+            else:
+                final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
+            
             final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
             final_parts.append(f"\n**📊 Trạng thái DT:** {unified_v22['tier_data']['cap'] if unified_v22 else '?'} | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
             
