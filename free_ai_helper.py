@@ -8215,10 +8215,9 @@ class FreeAIHelper:
             lines.append(f"{connector} {ev}")
         
         # ════════════════════════════════════════════
-        # PHASE D: KẾT LUẬN THỐNG NHẤT V36.0
-        # Phân tích chuẩn như AI Online — THUẬN/NGHỊCH + Cross-method + Kết luận sâu
+        # PHASE D: KẾT LUẬN THỐNG NHẤT V39.0 — ANSWER-FIRST + VÌ SAO + GIẢI PHÁP
+        # Mọi suy luận → 1 KẾT LUẬN KHẲNG ĐỊNH + LÝ DO + LỜI KHUYÊN
         # ════════════════════════════════════════════
-        lines.append("")
         
         # Tổng hợp verdicts
         verdicts_map = {
@@ -8229,9 +8228,9 @@ class FreeAIHelper:
             'Thái Ất': (thai_at_verdict, thai_at_reason),
         }
         
-        thuan_factors = []  # Yếu tố THUẬN
-        nghich_factors = []  # Yếu tố NGHỊCH
-        binh_factors = []  # Yếu tố BÌNH
+        thuan_factors = []
+        nghich_factors = []
+        binh_factors = []
         
         for method, (verdict, reason) in verdicts_map.items():
             v_upper = str(verdict).upper() if verdict else ''
@@ -8243,7 +8242,6 @@ class FreeAIHelper:
             else:
                 binh_factors.append(f"{method}: {verdict} — {reason_short}")
         
-        # Thêm chain_evidence vào THUẬN/NGHỊCH
         for ev in chain_evidence:
             ev_lower = ev.lower()
             if any(k in ev_lower for k in ['thuận', 'mạnh', 'cát', 'sinh lợi', 'hỗ trợ', 'kiểm soát', 'vượng', 'good']):
@@ -8251,12 +8249,173 @@ class FreeAIHelper:
             elif any(k in ev_lower for k in ['hung', 'yếu', 'suy', 'khắc', 'trở ngại', 'gây hại', 'tử', 'tuyệt', 'ẩn']):
                 nghich_factors.append(ev)
         
-        # ═══ PHẦN 1: PHÂN TÍCH TỪNG PHƯƠNG PHÁP ═══
+        pct = final_pct if final_pct is not None else 50
+        cat_count = len(thuan_factors)
+        hung_count = len(nghich_factors)
+        
+        # V39.0: KHÔNG override pct — weighted_pct đã tính chính xác từ 6PP + 12TS
+        # Chỉ xác định overall label từ pct gốc
+        if pct >= 55:
+            overall = 'THUẬN LỢI'
+        elif pct < 45:
+            overall = 'BẤT LỢI'
+        elif pct >= 50:
+            overall = 'CÓ — cần nỗ lực thêm'
+        else:
+            overall = 'KHÓ THÀNH — cần đổi hướng hoặc đợi'
+        
+        # ══════════════════════════════════════════════════════════
+        # ★★★ PHẦN 0: PHÁN QUYẾT — ĐẶT ĐẦU TIÊN (ANSWER-FIRST) ★★★
+        # ══════════════════════════════════════════════════════════
+        lines.append("")
+        
+        q_lower_kl = question.lower()
+        _PD_NORM = {
+            'qua duoc': 'qua được', 'qua khoi': 'qua khỏi', 'chet chua': 'chết chưa',
+            'con song': 'còn sống', 'da mat': 'đã mất', 'qua doi': 'qua đời',
+            'tu vong': 'tử vong', 'song sot': 'sống sót', 'benh nang': 'bệnh nặng',
+            'nguy kich': 'nguy kịch', 'hap hoi': 'hấp hối', 'cuu duoc': 'cứu được',
+            'co nen': 'có nên', 'nen khong': 'nên không', 'co duoc': 'có được',
+            'duoc khong': 'được không', 'co khong': 'có không',
+        }
+        for _nd, _cd in sorted(_PD_NORM.items(), key=lambda x: len(x[0]), reverse=True):
+            if _nd in q_lower_kl:
+                q_lower_kl = q_lower_kl.replace(_nd, _cd)
+        
+        _hanh_dt_kl = '?'
+        if chart_data and isinstance(chart_data, dict):
+            _hanh_dt_kl = chart_data.get('hanh_dt', '?')
+        if _hanh_dt_kl == '?':
+            _DT_HANH_DEFAULT = {'Phụ Mẫu': 'Mộc', 'Thê Tài': 'Hỏa', 'Quan Quỷ': 'Thổ', 'Tử Tôn': 'Kim', 'Huynh Đệ': 'Thủy', 'Bản Thân': 'Thủy'}
+            _hanh_dt_kl = _DT_HANH_DEFAULT.get(dung_than, '?')
+        
+        # Phân loại câu hỏi
+        is_life_death = any(kw in q_lower_kl for kw in [
+            'sống', 'chết', 'mất', 'còn sống', 'đã mất', 'qua đời', 'qua khỏi',
+            'cứu được', 'sống sót', 'nguy hiểm', 'tử vong', 'chết chưa',
+            'sống hay', 'mất rồi', 'còn hay', 'sống không', 'qua được',
+            'bệnh nặng', 'nguy kịch', 'hấp hối'
+        ])
+        is_yesno_kl = any(kw in q_lower_kl for kw in [
+            'có không', 'được không', 'không', 'hay không',
+            'có được', 'có tốt', 'chưa', 'rồi chưa', 'xong chưa',
+            'thắng', 'thua', 'đỗ', 'trượt', 'có lời', 'lỗ không'
+        ])
+        is_should = any(kw in q_lower_kl for kw in [
+            'có nên', 'nên không', 'nên chưa', 'nên hay', 'có nên mua',
+            'có nên bán', 'có nên đi', 'có nên làm', 'có nên đầu tư'
+        ])
+        
+        # ═══ TẠO PHÁN QUYẾT KHẲNG ĐỊNH ═══
+        if is_life_death:
+            if pct >= 50:
+                verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG / QUA ĐƯỢC ({pct}%)**"
+            elif pct >= 40:
+                verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG nhưng NGUY KỊCH ({pct}%)**"
+            else:
+                verdict_line = f"📢 **PHÁN QUYẾT: ĐÃ MẤT hoặc KHÔNG QUA ĐƯỢC ({pct}%)**"
+        elif is_should:
+            if pct >= 55:
+                verdict_line = f"📢 **PHÁN QUYẾT: NÊN — THUẬN LỢI ({pct}%)**"
+            elif pct >= 45:
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ THỂ — nhưng phải THẬN TRỌNG ({pct}%)**"
+            else:
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG NÊN — BẤT LỢI ({pct}%)**"
+        elif is_yesno_kl:
+            if pct >= 55:
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ — THÀNH CÔNG ({pct}%)**"
+            elif pct >= 50:
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ — nhưng cần NỖ LỰC ({pct}%)**"
+            elif pct >= 45:
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ THÀNH — cần đổi hướng hoặc đợi ({pct}%)**"
+            else:
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG — BẤT LỢI ({pct}%)**"
+        else:
+            if pct >= 55:
+                verdict_line = f"📢 **PHÁN QUYẾT: THUẬN LỢI ({pct}%)**"
+            elif pct >= 50:
+                verdict_line = f"📢 **PHÁN QUYẾT: TƯƠNG ĐỐI THUẬN — cần cảnh giác ({pct}%)**"
+            elif pct >= 45:
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ KHĂN — cần giải pháp ({pct}%)**"
+            else:
+                verdict_line = f"📢 **PHÁN QUYẾT: BẤT LỢI — nên hoãn hoặc đổi hướng ({pct}%)**"
+        
+        lines.append(verdict_line)
+        lines.append("")
+        
+        # ══════════════════════════════════════════════════════════
+        # ★★★ PHẦN 0B: VÌ SAO — TOP 3 BẰNG CHỨNG QUYẾT ĐỊNH ★★★
+        # ══════════════════════════════════════════════════════════
+        lines.append("**📋 VÌ SAO KẾT LUẬN NHƯ VẬY:**")
+        
+        # Thu thập TOP evidence từ từng PP — ưu tiên PP có verdict rõ nhất
+        top_evidence = []
+        
+        # ① Lục Hào (trọng số cao nhất)
+        if luc_hao_reason and isinstance(luc_hao_reason, str) and len(luc_hao_reason) > 5:
+            lh_icon = '✅' if 'CÁT' in str(luc_hao_verdict).upper() else ('🔴' if 'HUNG' in str(luc_hao_verdict).upper() else '🟡')
+            top_evidence.append(f"{lh_icon} **Lục Hào ({luc_hao_verdict}):** {luc_hao_reason[:100]}")
+        else:
+            # Lấy từ dt_statuses
+            for m, s, gb in dt_statuses:
+                if m == 'Lục Hào':
+                    lh_icon = '✅' if gb == 'good' else ('🔴' if gb == 'bad' else '🟡')
+                    top_evidence.append(f"{lh_icon} **Lục Hào:** {s[:100]}")
+                    break
+        
+        # ② Kỳ Môn
+        if ky_mon_reason and isinstance(ky_mon_reason, str) and len(ky_mon_reason) > 5:
+            km_icon = '✅' if 'CÁT' in str(ky_mon_verdict).upper() else ('🔴' if 'HUNG' in str(ky_mon_verdict).upper() else '🟡')
+            top_evidence.append(f"{km_icon} **Kỳ Môn ({ky_mon_verdict}):** {ky_mon_reason[:100]}")
+        else:
+            for m, s, gb in dt_statuses:
+                if m == 'Kỳ Môn':
+                    km_icon = '✅' if gb == 'good' else ('🔴' if gb == 'bad' else '🟡')
+                    top_evidence.append(f"{km_icon} **Kỳ Môn:** {s[:100]}")
+                    break
+        
+        # ③ Mai Hoa
+        if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) > 5:
+            mh_icon = '✅' if 'CÁT' in str(mai_hoa_verdict).upper() else ('🔴' if 'HUNG' in str(mai_hoa_verdict).upper() else '🟡')
+            top_evidence.append(f"{mh_icon} **Mai Hoa ({mai_hoa_verdict}):** {mai_hoa_reason[:100]}")
+        else:
+            for m, s, gb in dt_statuses:
+                if m == 'Mai Hoa':
+                    mh_icon = '✅' if gb == 'good' else ('🔴' if gb == 'bad' else '🟡')
+                    top_evidence.append(f"{mh_icon} **Mai Hoa:** {s[:100]}")
+                    break
+        
+        # ④ Đại Lục Nhâm (nếu có verdict rõ)
+        if luc_nham_reason and 'CÁT' in str(luc_nham_verdict).upper() or 'HUNG' in str(luc_nham_verdict).upper():
+            ln_icon = '✅' if 'CÁT' in str(luc_nham_verdict).upper() else '🔴'
+            top_evidence.append(f"{ln_icon} **Đại Lục Nhâm ({luc_nham_verdict}):** {str(luc_nham_reason)[:80]}")
+        
+        # ⑤ Thái Ất (nếu có verdict rõ)
+        if thai_at_reason and 'CÁT' in str(thai_at_verdict).upper() or 'HUNG' in str(thai_at_verdict).upper():
+            ta_icon = '✅' if 'CÁT' in str(thai_at_verdict).upper() else '🔴'
+            top_evidence.append(f"{ta_icon} **Thái Ất ({thai_at_verdict}):** {str(thai_at_reason)[:80]}")
+        
+        # Hiển thị TOP evidence với đánh số
+        for i, ev in enumerate(top_evidence[:5], 1):
+            lines.append(f"  {i}. {ev}")
+        
+        if not top_evidence:
+            lines.append(f"  • Điểm tổng hợp 6 phương pháp: **{pct}%** (>50% = thuận, <50% = nghịch)")
+        
+        # Tóm tắt đếm PP
+        cat_pp = sum(1 for _, (v, _) in verdicts_map.items() if 'CÁT' in str(v).upper())
+        hung_pp = sum(1 for _, (v, _) in verdicts_map.items() if 'HUNG' in str(v).upper())
+        binh_pp = 5 - cat_pp - hung_pp
+        lines.append(f"\n→ **Tổng kết: {cat_pp}/5 PP cho CÁT, {hung_pp}/5 PP cho HUNG, {binh_pp}/5 PP BÌNH** → Điểm: {pct}%")
+        lines.append("")
+        
+        # ══════════════════════════════════════════════════════════
+        # PHẦN 1: PHÂN TÍCH CHI TIẾT 5PP (collapsible)
+        # ══════════════════════════════════════════════════════════
         lines.append("**📖 PHÂN TÍCH 5 PHƯƠNG PHÁP:**")
         for method, (verdict, reason) in verdicts_map.items():
             v_upper = str(verdict).upper() if verdict else ''
             icon = '✅' if 'CÁT' in v_upper else ('🔴' if 'HUNG' in v_upper else '🟡')
-            # Tìm dt_status chi tiết cho method này
             method_detail = ''
             for m, s, _ in dt_statuses:
                 if m == method:
@@ -8270,267 +8429,202 @@ class FreeAIHelper:
             else:
                 lines.append(f"{icon} **{method} ({verdict}):** {reason_str}")
         
-        # ═══ PHẦN 2: YẾU TỐ THUẬN vs NGHỊCH ═══
+        # PHẦN 2: YẾU TỐ THUẬN vs NGHỊCH
         lines.append("")
         lines.append("**⚖️ TỔNG HỢP YẾU TỐ:**")
-        
         if thuan_factors:
-            lines.append(f"**✅ Yếu tố THUẬN ({len(thuan_factors)}):**")
-            for f in thuan_factors[:6]:
+            lines.append(f"**✅ THUẬN ({len(thuan_factors)}):**")
+            for f in thuan_factors[:5]:
                 lines.append(f"• {f}")
-        
         if nghich_factors:
-            lines.append(f"**🔴 Yếu tố NGHỊCH ({len(nghich_factors)}):**")
-            for f in nghich_factors[:6]:
+            lines.append(f"**🔴 NGHỊCH ({len(nghich_factors)}):**")
+            for f in nghich_factors[:5]:
                 lines.append(f"• {f}")
         
-        if binh_factors:
-            lines.append(f"**🟡 Yếu tố BÌNH ({len(binh_factors)}):**")
-            for f in binh_factors[:3]:
-                lines.append(f"• {f}")
-        
-        # ═══ PHẦN 3: KẾT LUẬN SÂU ═══
-        lines.append("")
-        
-        # Xác định overall dựa trên final_pct
-        pct = final_pct if final_pct is not None else 50
-        if pct >= 55:
-            overall = 'THUẬN LỢI'
-        elif pct < 45:
-            overall = 'KHÓ KHĂN'
-        else:
-            overall = 'NGHIÊNG THUẬN' if pct >= 50 else 'NGHIÊNG BẤT LỢI'
-        
-        # Verdict counts
-        cat_count = len(thuan_factors)
-        hung_count = len(nghich_factors)
-        
-        # V36.0 FIX: Override — nếu đa số yếu tố NGHỊCH mà pct vẫn cao → điều chỉnh
-        if hung_count >= 3 and cat_count == 0 and pct >= 45:
-            overall = 'KHÓ KHĂN'
-            pct = min(pct, 40)  # Cap tại 40% khi tất cả nghịch
-        elif hung_count > cat_count + 2 and pct >= 50:
-            overall = 'NGHIÊNG BẤT LỢI'
-            pct = min(pct, 45)
-        
-        # Cross-method analysis — tìm điểm đáng chú ý
-        cross_method_notes = []
-        
-        # Check: KM và LH có khác nhau không?
+        # Cross-method notes
         km_v = str(ky_mon_verdict).upper() if ky_mon_verdict else ''
         lh_v = str(luc_hao_verdict).upper() if luc_hao_verdict else ''
         mh_v = str(mai_hoa_verdict).upper() if mai_hoa_verdict else ''
         
+        cross_notes = []
         if ('CÁT' in km_v and 'HUNG' in lh_v) or ('HUNG' in km_v and 'CÁT' in lh_v):
-            cross_method_notes.append(f"⚡ Kỳ Môn ({ky_mon_verdict}) NGƯỢC với Lục Hào ({luc_hao_verdict}) → Sự việc CÓ THỂ khởi đầu tốt (KM) nhưng quá trình gặp trở ngại (LH) hoặc ngược lại.")
-        
+            cross_notes.append(f"⚡ KM ({ky_mon_verdict}) ngược LH ({luc_hao_verdict}): khởi đầu khác quá trình.")
         if ('CÁT' in mh_v and 'HUNG' in lh_v):
-            cross_method_notes.append(f"⚡ Mai Hoa ({mai_hoa_verdict}) thuận nhưng Lục Hào ({luc_hao_verdict}) bất lợi → Mối quan hệ hai bên TỐT nhưng DT yếu → CẦN thêm thời gian/trợ lực.")
+            cross_notes.append(f"⚡ MH ({mai_hoa_verdict}) thuận nhưng LH ({luc_hao_verdict}) nghịch: quan hệ tốt nhưng DT yếu.")
         
-        # Check: Tất cả đồng nhất?
         all_verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
-        all_cat = all('CÁT' in str(v).upper() for v in all_verdicts if v and v != 'BÌNH')
-        all_hung = all('HUNG' in str(v).upper() for v in all_verdicts if v and v != 'BÌNH')
+        non_binh = [v for v in all_verdicts if v and v != 'BÌNH']
+        if non_binh and all('CÁT' in str(v).upper() for v in non_binh):
+            cross_notes.append("🌟 TẤT CẢ PP cho CÁT → Cực kỳ rõ ràng, không mâu thuẫn.")
+        elif non_binh and all('HUNG' in str(v).upper() for v in non_binh):
+            cross_notes.append("⛔ TẤT CẢ PP cho HUNG → Cực kỳ rõ ràng — PHẢI dừng/đổi hướng.")
         
-        if all_cat:
-            cross_method_notes.append("🌟 TẤT CẢ 5 phương pháp đều cho CÁT → Xu hướng RẤT RÕ RÀNG, không có mâu thuẫn.")
-        elif all_hung:
-            cross_method_notes.append("⛔ TẤT CẢ 5 phương pháp đều cho HUNG → Xu hướng RẤT RÕ RÀNG — nên DỪ NGÃ hoặc đổi hướng.")
-        
-        if cross_method_notes:
-            lines.append("**🔗 PHÂN TÍCH CHÉO GIỮA CÁC PP:**")
-            for note in cross_method_notes:
-                lines.append(note)
+        if cross_notes:
             lines.append("")
+            lines.append("**🔗 PHÂN TÍCH CHÉO:**")
+            for note in cross_notes:
+                lines.append(note)
         
-        # Kết luận cuối — V36.1: DỨT KHOÁT theo LOẠI CÂU HỎI
-        lines.append(f"**✅ KẾT LUẬN (Điểm Tổng Hợp: {pct}% — {overall}):**")
+        # ══════════════════════════════════════════════════════════
+        # ★★★ PHẦN 3: KẾT LUẬN KHẲNG ĐỊNH + GIẢI PHÁP + LỜI KHUYÊN ★★★
+        # ══════════════════════════════════════════════════════════
+        lines.append("")
+        lines.append(f"**✅ KẾT LUẬN KHẲNG ĐỊNH (Điểm: {pct}%):**")
         
-        q_lower_kl = question.lower()
-        # V36.1: Normalize không dấu → có dấu cho Phase D (same as Thám Tử)
-        _PD_NORM = {
-            'qua duoc': 'qua được', 'qua khoi': 'qua khỏi', 'chet chua': 'chết chưa',
-            'con song': 'còn sống', 'da mat': 'đã mất', 'qua doi': 'qua đời',
-            'tu vong': 'tử vong', 'song sot': 'sống sót', 'benh nang': 'bệnh nặng',
-            'nguy kich': 'nguy kịch', 'hap hoi': 'hấp hối', 'cuu duoc': 'cứu được',
-            'co nen': 'có nên', 'nen khong': 'nên không', 'co duoc': 'có được',
-            'duoc khong': 'được không', 'co khong': 'có không',
-        }
-        for _nd, _cd in sorted(_PD_NORM.items(), key=lambda x: len(x[0]), reverse=True):
-            if _nd in q_lower_kl:
-                q_lower_kl = q_lower_kl.replace(_nd, _cd)
-        # Extract hành DT từ Can ngày
-        _hanh_dt_kl = '?'
-        if chart_data and isinstance(chart_data, dict):
-            _hanh_dt_kl = chart_data.get('hanh_dt', '?')
-        if _hanh_dt_kl == '?':
-            _DT_HANH_DEFAULT = {'Phụ Mẫu': 'Mộc', 'Thê Tài': 'Hỏa', 'Quan Quỷ': 'Thổ', 'Tử Tôn': 'Kim', 'Huynh Đệ': 'Thủy', 'Bản Thân': 'Thủy'}
-            _hanh_dt_kl = _DT_HANH_DEFAULT.get(dung_than, '?')
-        
-        # ═══ PHÂN BIỆT LOẠI CÂU HỎI → KẾT LUẬN PHÙ HỢP ═══
-        # 1. Sống/Chết — câu hỏi sinh tử
-        is_life_death = any(kw in q_lower_kl for kw in [
-            'sống', 'chết', 'mất', 'còn sống', 'đã mất', 'qua đời', 'qua khỏi',
-            'cứu được', 'sống sót', 'nguy hiểm', 'tử vong', 'chết chưa',
-            'sống hay', 'mất rồi', 'còn hay', 'sống không', 'qua được',
-            'bệnh nặng', 'nguy kịch', 'hấp hối'
-        ])
-        # 2. Có/Không — câu hỏi nhị phân
-        is_yesno_kl = any(kw in q_lower_kl for kw in [
-            'có không', 'được không', 'không', 'hay không', 'có nên',
-            'có được', 'có tốt', 'chưa', 'rồi chưa', 'xong chưa',
-            'thắng', 'thua', 'đỗ', 'trượt', 'có lời', 'lỗ không'
-        ])
-        # 3. Nên/Không nên — câu hỏi quyết định
-        is_should = any(kw in q_lower_kl for kw in [
-            'có nên', 'nên không', 'nên chưa', 'nên hay', 'có nên mua',
-            'có nên bán', 'có nên đi', 'có nên làm', 'có nên đầu tư'
-        ])
-        
-        # ═══ KẾT LUẬN THEO LOẠI ═══
+        # === TẠO KẾT LUẬN DỨT KHOÁT THEO TỪNG LOẠI CÂU HỎI ===
         if is_life_death:
-            # CÂU HỎI SINH TỬ — phải KHẲNG ĐỊNH rõ
             if pct >= 50:
                 conclusion = (
-                    f"**👉 CÒN SỐNG / QUA ĐƯỢC** ({pct}%).\n"
-                    f"{dung_than} ({_hanh_dt_kl}) ở trạng thái **CÓ SINH KHÍ**: "
+                    f"**👉 KHẲNG ĐỊNH: CÒN SỐNG / QUA ĐƯỢC ({pct}%).**\n"
+                    f"• {dung_than} ({_hanh_dt_kl}) CÓ SINH KHÍ — chưa tuyệt.\n"
                 )
-                # Bằng chứng cụ thể
-                reasons = []
-                if luc_hao_reason:
-                    reasons.append(f"Lục Hào: {luc_hao_reason[:80]}")
-                if any('động' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("DT phát ĐỘNG = có sinh khí, đang hoạt động")
-                if any('sinh' in str(ev).lower() and 'dt' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("Có yếu tố SINH DT = được nuôi dưỡng")
-                if luc_nham_reason and 'CÁT' in str(luc_nham_verdict).upper():
-                    reasons.append(f"Đại Lục Nhâm: Mạt Truyền CÁT = kết quả tốt")
-                if not reasons:
-                    reasons.append(f"Điểm {pct}% > 50% = năng lượng dương")
-                conclusion += "; ".join(reasons) + "."
-                conclusion += f"\n💡 **Khẳng định:** {dung_than} CÒN SỐNG. Tuy có khó khăn ({hung_count} yếu tố nghịch) nhưng sinh khí vẫn còn."
+                ev_lines = []
+                if luc_hao_reason: ev_lines.append(f"Lục Hào: {luc_hao_reason[:80]}")
+                if any('sinh' in str(e).lower() for e in chain_evidence): ev_lines.append("Có yếu tố SINH → được nuôi dưỡng")
+                if any('động' in str(e).lower() for e in chain_evidence): ev_lines.append("DT ĐỘNG → còn hoạt động")
+                if ev_lines: conclusion += f"• Bằng chứng: {'; '.join(ev_lines[:3])}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Cần chăm sóc tích cực, tìm phương sinh (hành {SINH.get(_hanh_dt_kl, '?')}) để tăng sinh khí.\n"
+                    f"💡 **LỜI KHUYÊN:** Tuy còn sống nhưng có {hung_count} yếu tố nghịch. Không chủ quan — hành động ngay để cải thiện."
+                )
             elif pct >= 40:
                 conclusion = (
-                    f"**👉 CÒN SỐNG nhưng RẤT YẾU** ({pct}%).\n"
-                    f"{dung_than} ({_hanh_dt_kl}) ở trạng thái **SUY nhưng CHƯA TUYỆT**: "
+                    f"**👉 KHẲNG ĐỊNH: CÒN SỐNG nhưng NGUY KỊCH ({pct}%).**\n"
+                    f"• {dung_than} ({_hanh_dt_kl}) SUY nhưng CHƯA TUYỆT.\n"
+                    f"\n🔧 **GIẢI PHÁP:** Can thiệp KHẨN CẤP. Tìm Tử Tôn (thuốc/bác sĩ) hỗ trợ. Dùng hành {SINH.get(_hanh_dt_kl, '?')} để cứu.\n"
+                    f"💡 **LỜI KHUYÊN:** Tình trạng nguy — mỗi phút đều quý. Đừng chần chừ."
                 )
-                reasons = []
-                if luc_hao_reason:
-                    reasons.append(f"Lục Hào: {luc_hao_reason[:80]}")
-                if any('động' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("DT phát ĐỘNG = vẫn còn sinh khí")
-                if any('suy' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("Yếu tố SUY cho thấy tình trạng kém")
-                if not reasons:
-                    reasons.append(f"Score {pct}% (40-49%) = còn nhưng yếu")
-                conclusion += "; ".join(reasons) + "."
-                conclusion += f"\n💡 **Khẳng định:** {dung_than} VẪN CÒN nhưng sức khỏe RẤT YẾU. Cần can thiệp khẩn cấp."
             else:
                 conclusion = (
-                    f"**👉 ĐÃ MẤT hoặc NGUY KỊCH** ({pct}%).\n"
-                    f"{dung_than} ({_hanh_dt_kl}) ở trạng thái **SUY YẾU NẶNG**: "
+                    f"**👉 KHẲNG ĐỊNH: ĐÃ MẤT hoặc KHÔNG QUA ĐƯỢC ({pct}%).**\n"
+                    f"• {dung_than} ({_hanh_dt_kl}) SUY TUYỆT — sinh khí cạn.\n"
+                    f"\n🔧 **GIẢI PHÁP:** Nếu chưa mất: cần phép lạ hoặc can thiệp đặc biệt. Chuẩn bị tinh thần.\n"
+                    f"💡 **LỜI KHUYÊN:** Chấp nhận thực tế. Lo hậu sự hoặc tìm cách giảm đau khổ."
                 )
-                reasons = []
-                if luc_hao_reason:
-                    reasons.append(f"Lục Hào: {luc_hao_reason[:80]}")
-                if any('tuần không' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("DT Tuần Không = HƯ VÔ, không còn tồn tại")
-                if any('tuyệt' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("DT Hóa Tuyệt = đã đến giai đoạn TUYỆT")
-                if any('suy' in str(ev).lower() or 'yếu' in str(ev).lower() for ev in chain_evidence):
-                    reasons.append("Nhiều yếu tố SUY/YẾU")
-                if not reasons:
-                    reasons.append(f"Điểm {pct}% < 50% = năng lượng âm")
-                conclusion += "; ".join(reasons) + "."
-                conclusion += f"\n💡 **Khẳng định:** Tình trạng RẤT NGUY, {dung_than} suy yếu nghiêm trọng. Nếu hỏi sống/chết → nghiêng về ĐÃ MẤT hoặc rất khó qua."
                 
         elif is_should:
-            # CÂU HỎI "CÓ NÊN" — phải NÊN hoặc KHÔNG NÊN
             if pct >= 55:
                 conclusion = (
-                    f"**👉 NÊN — THUẬN LỢI** ({pct}%).\n"
-                    f"{dung_than} vượng ({cat_count} thuận vs {hung_count} nghịch). "
+                    f"**👉 KHẲNG ĐỊNH: NÊN LÀM — THUẬN LỢI ({pct}%).**\n"
+                    f"• {dung_than} vượng, {cat_count} yếu tố thuận > {hung_count} nghịch.\n"
                 )
-                if ky_mon_reason: conclusion += f"Kỳ Môn: {ky_mon_reason[:70]}. "
-                if luc_hao_reason: conclusion += f"Lục Hào: {luc_hao_reason[:70]}. "
-                conclusion += f"\n💡 **Quyết định:** NÊN TIẾN HÀNH. Thời điểm tốt."
+                if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
+                if luc_hao_reason: conclusion += f"• LH: {luc_hao_reason[:70]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Tiến hành ngay. Chọn thời điểm hành {_hanh_dt_kl} vượng. Tránh ngày xung khắc.\n"
+                    f"💡 **LỜI KHUYÊN:** Đây là thời cơ tốt. Hành động quyết đoán, không do dự."
+                )
             elif pct >= 45:
                 conclusion = (
-                    f"**👉 CÓ THỂ nhưng CẦN THẬN TRỌNG** ({pct}%).\n"
-                    f"Thế trận chưa rõ ({cat_count} thuận vs {hung_count} nghịch). "
+                    f"**👉 KHẲNG ĐỊNH: CÓ THỂ LÀM — nhưng THẬN TRỌNG ({pct}%).**\n"
+                    f"• Thế trận chưa rõ ({cat_count} thuận vs {hung_count} nghịch).\n"
                 )
-                if thuan_factors: conclusion += f"Tích cực: {thuan_factors[0][:50]}. "
-                if nghich_factors: conclusion += f"Rủi ro: {nghich_factors[0][:50]}. "
-                conclusion += f"\n💡 **Quyết định:** CÓ THỂ TIẾN HÀNH nhưng phải chuẩn bị phương án B."
+                if thuan_factors: conclusion += f"• Thuận: {thuan_factors[0][:60]}.\n"
+                if nghich_factors: conclusion += f"• Rủi ro: {nghich_factors[0][:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Chuẩn bị phương án B. Giảm rủi ro bằng cách bổ sung hành {SINH.get(_hanh_dt_kl, '?')}.\n"
+                    f"💡 **LỜI KHUYÊN:** Tiến hành ĐƯỢC nhưng không nên ALL-IN. Dự phòng 30-40% cho trường hợp xấu."
+                )
             else:
                 conclusion = (
-                    f"**👉 KHÔNG NÊN — BẤT LỢI** ({pct}%).\n"
-                    f"{dung_than} suy yếu ({hung_count} nghịch vs {cat_count} thuận). "
+                    f"**👉 KHẲNG ĐỊNH: KHÔNG NÊN LÀM — BẤT LỢI ({pct}%).**\n"
+                    f"• {dung_than} suy ({hung_count} nghịch > {cat_count} thuận).\n"
                 )
-                if ky_mon_reason: conclusion += f"Kỳ Môn: {ky_mon_reason[:70]}. "
-                if luc_hao_reason: conclusion += f"Lục Hào: {luc_hao_reason[:70]}. "
-                conclusion += f"\n💡 **Quyết định:** KHÔNG NÊN vào lúc này. Chờ thời điểm tốt hơn."
+                if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
+                if luc_hao_reason: conclusion += f"• LH: {luc_hao_reason[:70]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Hoãn lại. Đợi khi {dung_than} ({_hanh_dt_kl}) được sinh trợ (tháng hành {SINH.get(_hanh_dt_kl, '?')}).\n"
+                    f"💡 **LỜI KHUYÊN:** Thời điểm này KHÔNG thuận. Kiên nhẫn chờ — không ép khi thế yếu."
+                )
                 
         elif is_yesno_kl:
-            # CÂU HỎI CÓ/KHÔNG — phải CÓ hoặc KHÔNG
             if pct >= 55:
                 conclusion = (
-                    f"**👉 CÓ / ĐƯỢC / THÀNH CÔNG** ({pct}%).\n"
-                    f"{dung_than} vượng, được hỗ trợ ({cat_count} thuận vs {hung_count} nghịch). "
+                    f"**👉 KHẲNG ĐỊNH: CÓ / ĐƯỢC / THÀNH ({pct}%).**\n"
+                    f"• {dung_than} vượng, {cat_count} thuận > {hung_count} nghịch.\n"
                 )
-                if ky_mon_reason: conclusion += f"KM: {ky_mon_reason[:60]}. "
-                if luc_hao_reason: conclusion += f"LH: {luc_hao_reason[:60]}. "
-                conclusion += f"\n💡 **Khẳng định:** CÓ — sự việc có khả năng thành."
-            elif pct >= 45:
-                # 45-54% — vẫn phải chọn 1 bên, không lửng lơ
-                lean = "CÓ nhưng KHÓ" if pct >= 50 else "KHÓ nhưng chưa hẳn KHÔNG"
+                if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:60]}.\n"
+                if luc_hao_reason: conclusion += f"• LH: {luc_hao_reason[:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Tận dụng cơ hội hiện tại. Hành động sớm để đạt kết quả tối ưu.\n"
+                    f"💡 **LỜI KHUYÊN:** Sự việc CÓ KHẢ NĂNG THÀNH. Nắm bắt, không chần chừ."
+                )
+            elif pct >= 50:
                 conclusion = (
-                    f"**👉 {lean}** ({pct}%).\n"
-                    f"Thế trận giằng co ({cat_count} thuận vs {hung_count} nghịch), nhưng: "
+                    f"**👉 KHẲNG ĐỊNH: CÓ — nhưng phải NỖ LỰC ({pct}%).**\n"
+                    f"• Nghiêng CÓ ({cat_count} thuận vs {hung_count} nghịch) nhưng chưa chắc chắn.\n"
                 )
-                if pct >= 50 and thuan_factors:
-                    conclusion += f"Yếu tố quyết định THUẬN: {thuan_factors[0][:60]}. "
-                    conclusion += f"\n💡 **Khẳng định:** Nghiêng về CÓ ({pct}%) nhưng không dễ dàng."
-                elif nghich_factors:
-                    conclusion += f"Yếu tố quyết định NGHỊCH: {nghich_factors[0][:60]}. "
-                    conclusion += f"\n💡 **Khẳng định:** Nghiêng về KHÔNG ({pct}%), cần nỗ lực lớn hoặc đợi thời."
-                else:
-                    conclusion += f"\n💡 **Khẳng định:** Tỷ lệ 50-50, kết quả phụ thuộc nỗ lực bản thân."
+                if thuan_factors: conclusion += f"• Yếu tố quyết định: {thuan_factors[0][:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Cần bổ sung lực. Dùng hành {SINH.get(_hanh_dt_kl, '?')} để tăng {dung_than}.\n"
+                    f"💡 **LỜI KHUYÊN:** Tỷ lệ thành >50% nhưng KHÔNG dễ. Cần nỗ lực thêm 20-30%."
+                )
+            elif pct >= 45:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: KHÓ THÀNH ({pct}%) — cần đổi cách hoặc đợi.**\n"
+                    f"• Nghiêng KHÔNG ({hung_count} nghịch > {cat_count} thuận).\n"
+                )
+                if nghich_factors: conclusion += f"• Trở ngại chính: {nghich_factors[0][:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Đổi phương pháp tiếp cận hoặc đợi tháng {_hanh_dt_kl} vượng.\n"
+                    f"💡 **LỜI KHUYÊN:** Không nên ép. Thay đổi chiến lược hoặc kiên nhẫn chờ thời."
+                )
             else:
                 conclusion = (
-                    f"**👉 KHÔNG / THẤT BẠI / KHÔNG ĐƯỢC** ({pct}%).\n"
-                    f"{dung_than} suy yếu ({hung_count} nghịch vs {cat_count} thuận). "
+                    f"**👉 KHẲNG ĐỊNH: KHÔNG / THẤT BẠI ({pct}%).**\n"
+                    f"• {dung_than} suy ({hung_count} nghịch >> {cat_count} thuận).\n"
                 )
-                if ky_mon_reason: conclusion += f"KM: {ky_mon_reason[:60]}. "
-                if luc_hao_reason: conclusion += f"LH: {luc_hao_reason[:60]}. "
-                conclusion += f"\n💡 **Khẳng định:** KHÔNG — sự việc khó thành. Nên chuyển hướng."
+                if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:60]}.\n"
+                if luc_hao_reason: conclusion += f"• LH: {luc_hao_reason[:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Dừng lại. Tìm hướng đi mới hoặc đợi lúc {dung_than} ({_hanh_dt_kl}) được sinh trợ.\n"
+                    f"💡 **LỜI KHUYÊN:** Sự việc KHÓ THÀNH. Chuyển hướng là lựa chọn khôn ngoan nhất."
+                )
         else:
-            # CÂU HỎI TỔNG QUÁT — vẫn phải rõ ràng
+            # CÂU HỎI TỔNG QUÁT — vẫn KHẲNG ĐỊNH rõ ràng
             if pct >= 55:
                 conclusion = (
-                    f"**👉 THUẬN LỢI** ({pct}%). {dung_than} được hỗ trợ mạnh.\n"
+                    f"**👉 KHẲNG ĐỊNH: THUẬN LỢI ({pct}%).**\n"
+                    f"• {dung_than} được hỗ trợ mạnh ({cat_count} thuận > {hung_count} nghịch).\n"
                 )
-                if ky_mon_reason: conclusion += f"KM: {ky_mon_reason[:70]}. "
-                if luc_hao_reason: conclusion += f"LH: {luc_hao_reason[:70]}. "
-                conclusion += f"\n💡 Tình hình TÍCH CỰC, nắm bắt cơ hội."
-            elif pct >= 45:
-                lean_word = "NGHIÊNG THUẬN" if pct >= 50 else "NGHIÊNG BẤT LỢI"
+                if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
+                if luc_hao_reason: conclusion += f"• LH: {luc_hao_reason[:70]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Tận dụng thế mạnh hiện tại. Phát triển theo hướng hành {_hanh_dt_kl}.\n"
+                    f"💡 **LỜI KHUYÊN:** Tình hình TỐT. Nắm bắt cơ hội, mở rộng."
+                )
+            elif pct >= 50:
                 conclusion = (
-                    f"**👉 {lean_word}** ({pct}%). Thế trận chưa rõ nét.\n"
+                    f"**👉 KHẲNG ĐỊNH: TƯƠNG ĐỐI THUẬN — cần cảnh giác ({pct}%).**\n"
+                    f"• {cat_count} thuận vs {hung_count} nghịch — hơi nghiêng tốt.\n"
                 )
-                if thuan_factors: conclusion += f"Thuận: {thuan_factors[0][:60]}. "
-                if nghich_factors: conclusion += f"Nghịch: {nghich_factors[0][:60]}. "
-                if pct >= 50:
-                    conclusion += f"\n💡 Tình hình CHẤP NHẬN ĐƯỢC, nhưng cần cảnh giác với {hung_count} yếu tố nghịch."
-                else:
-                    conclusion += f"\n💡 Tình hình NẶNG NỀ, cần chuẩn bị giải pháp cho {hung_count} yếu tố nghịch."
+                if thuan_factors: conclusion += f"• Thuận: {thuan_factors[0][:60]}.\n"
+                if nghich_factors: conclusion += f"• Chú ý: {nghich_factors[0][:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Giữ vững. Tránh mạo hiểm. Bổ sung hành {SINH.get(_hanh_dt_kl, '?')} để tăng lực.\n"
+                    f"💡 **LỜI KHUYÊN:** Tình hình OK nhưng KHÔNG phải lúc liều. Ổn định là ưu tiên."
+                )
+            elif pct >= 45:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: KHÓ KHĂN — cần giải pháp ({pct}%).**\n"
+                    f"• {hung_count} nghịch > {cat_count} thuận — thế trận bất lợi.\n"
+                )
+                if nghich_factors: conclusion += f"• Trở ngại: {nghich_factors[0][:60]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Giảm thiểu rủi ro. Tìm quý nhân (hành {SINH.get(_hanh_dt_kl, '?')}) hỗ trợ. Không nên hành động lớn.\n"
+                    f"💡 **LỜI KHUYÊN:** Giai đoạn PHÒNG THỦ. Bảo toàn lực lượng, chờ cơ hội tốt hơn."
+                )
             else:
                 conclusion = (
-                    f"**👉 BẤT LỢI** ({pct}%). {dung_than} suy yếu.\n"
+                    f"**👉 KHẲNG ĐỊNH: BẤT LỢI ({pct}%) — cần đổi hướng.**\n"
+                    f"• {dung_than} suy ({hung_count} nghịch >> {cat_count} thuận).\n"
                 )
-                if ky_mon_reason: conclusion += f"KM: {ky_mon_reason[:70]}. "
-                if luc_hao_reason: conclusion += f"LH: {luc_hao_reason[:70]}. "
-                conclusion += f"\n💡 Tình hình XẤU, nên tạm hoãn hoặc tìm giải pháp mới."
+                if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
+                if luc_hao_reason: conclusion += f"• LH: {luc_hao_reason[:70]}.\n"
+                conclusion += (
+                    f"\n🔧 **GIẢI PHÁP:** Dừng kế hoạch hiện tại. Đợi tháng hành {SINH.get(_hanh_dt_kl, '?')} vượng hoặc tìm hướng mới.\n"
+                    f"💡 **LỜI KHUYÊN:** Thời điểm XẤU. Lui một bước để tiến hai bước — kiên nhẫn là vũ khí."
+                )
         
         lines.append(conclusion)
         
