@@ -10493,22 +10493,47 @@ class FreeAIHelper:
             
             # V40.9: Extract short verdict from direct_answer for header
             _offline_short_answer = ""
+            _offline_evidence = []
             if direct_answer:
                 for _line in direct_answer.split('\n'):
                     _s = _line.strip()
-                    if '📢' in _s or 'CÂU TRẢ LỜI' in _s.upper() or ('KẾT LUẬN' in _s.upper() and ('CÓ' in _s.upper() or 'KHÔNG' in _s.upper() or 'NÊN' in _s.upper())):
-                        _offline_short_answer = _s.replace('**', '').replace('📢', '').replace('#', '').strip()
-                        break
+                    # Tìm dòng verdict chính (có icon 🟢🔴🟡 hoặc "CÂU TRẢ LỜI")
+                    if not _offline_short_answer:
+                        if any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
+                            _offline_short_answer = _s.replace('**', '').replace('#', '').strip()
+                        elif 'CÂU TRẢ LỜI' in _s.upper():
+                            _offline_short_answer = _s.replace('**', '').replace('#', '').strip()
+                        elif _s.startswith(('🟢', '🔴', '🟡')) and len(_s) > 5:
+                            _offline_short_answer = _s.replace('**', '').replace('#', '').strip()
+                    # Tìm evidence lines (top 3)
+                    elif len(_offline_evidence) < 3:
+                        if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
+                            _offline_evidence.append(_s)
+            
             if not _offline_short_answer:
-                _offline_short_answer = f"{v_icon} {overall_short} — Điểm: {weighted_pct}%"
+                # Fallback: tạo câu trả lời từ verdict
+                if overall_short in ('CÁT', 'ĐẠI CÁT'):
+                    _offline_short_answer = f"{v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
+                elif overall_short in ('HUNG', 'ĐẠI HUNG'):
+                    _offline_short_answer = f"{v_icon} KHÔNG — BẤT LỢI ({weighted_pct}%)"
+                else:
+                    _offline_short_answer = f"{v_icon} CẦN CÂN NHẮC — {overall_short} ({weighted_pct}%)"
             
             # === Ô XANH LÁ TO — KẾT LUẬN AI OFFLINE ===
+            _evidence_html = ""
+            if _offline_evidence:
+                _evidence_html = '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);">'
+                for _ev in _offline_evidence:
+                    _evidence_html += f'<div style="font-size:1em;color:#d1fae5;margin:4px 0;">{_ev}</div>'
+                _evidence_html += '</div>'
+            
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                 f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.9</div>'
-                f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">{v_icon} {_offline_short_answer}</div>'
-                f'<div style="font-size:1.1em;color:#a7f3d0;">📊 Điểm Tổng Hợp: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
-                f'</div>'
+                f'<div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">{_offline_short_answer}</div>'
+                f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                + _evidence_html
+                + f'</div>'
             )
             final_parts.append("")
             
