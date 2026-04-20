@@ -67,8 +67,36 @@ zoom = st.sidebar.slider("🔍 Phóng to / Thu nhỏ (%)", 50, 150, st.session_s
 st.session_state.zoom_level = zoom
 
 # Dynamic CSS for Zoom
+st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+""", unsafe_allow_html=True)
+
 st.markdown(f"""
 <style>
+    /* V40.9: FIX OVERLAP — Selectbox input hint */
+    [data-baseweb="select"] input {{
+        opacity: 0 !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
+    }}
+    
+    /* V40.9: FIX Material Icons raw text overlap */
+    .material-symbols-outlined {{
+        font-family: 'Material Symbols Outlined' !important;
+        font-size: 24px !important;
+        display: inline-block !important;
+        width: 24px !important;
+        overflow: hidden !important;
+    }}
+    
+    /* V40.9: FIX Expander toggle — ẩn text thừa */
+    [data-testid="stExpander"] summary > span:first-child {{
+        overflow: hidden !important;
+        max-width: 24px !important;
+    }}
+
     html {{
         font-size: {zoom}% !important;
         transition: font-size 0.2s ease-in-out;
