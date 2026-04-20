@@ -1804,9 +1804,12 @@ class FreeAIHelper:
         if chart_data:
             can_ngay = chart_data.get('can_ngay', '')
             can_thien_ban = chart_data.get('can_thien_ban', {})
-            # Giáp/Kỷ ký tại Mậu/Kỷ
+            # V40.2: Giáp ẩn duới Mậu HOẶC Kỷ (tùy theo chart)
             _can_proxy = can_ngay
-            if can_ngay == 'Giáp': _can_proxy = 'Mậu'
+            if can_ngay == 'Giáp':
+                # Tìm Mậu truớc, nếu không có thì tìm Kỷ
+                _found_mau = any(v == 'Mậu' for v in can_thien_ban.values())
+                _can_proxy = 'Mậu' if _found_mau else 'Kỷ'
             elif can_ngay == 'Kỷ': _can_proxy = 'Kỷ'
             for c_num, c_can in can_thien_ban.items():
                 if c_can == _can_proxy:
@@ -2105,10 +2108,10 @@ class FreeAIHelper:
             _bt_cung_num = None
             for _cn, _cv in can_thien_ban.items():
                 if _cv == can_ngay_km: _bt_cung_num = int(_cn) if _cn else None
-                if not _bt_cung_num and can_ngay_km == 'Giáp' and _cv == 'Mậu': _bt_cung_num = int(_cn) if _cn else None
+                if not _bt_cung_num and can_ngay_km == 'Giáp' and _cv in ('Mậu', 'Kỷ'): _bt_cung_num = int(_cn) if _cn else None
             for _cn, _cv in can_thien_ban.items():
                 if _cv == _dt_can_km: _dt_cung_num = int(_cn) if _cn else None
-                if not _dt_cung_num and _dt_can_km == 'Giáp' and _cv == 'Mậu': _dt_cung_num = int(_cn) if _cn else None
+                if not _dt_cung_num and _dt_can_km == 'Giáp' and _cv in ('Mậu', 'Kỷ'): _dt_cung_num = int(_cn) if _cn else None
             
             if _dt_cung_num:
                 _dt_cung_hanh = CUNG_NGU_HANH.get(_dt_cung_num, '?')
@@ -2614,6 +2617,10 @@ class FreeAIHelper:
             f"LH({lh_raw}%)×50% + TS({ts_power}%)×30% + NK({nk_power}%)×20% "
             f"= {unified_pct}%"
         )
+        
+        # V40.2: Thay thế nghiêng thuận mơ hồ bằng ngôn ngữ dứt khoát
+        conclusion = conclusion.replace('Nghiêng thuận', 'CÓ THỂ ĐƯỢC')
+        conclusion = conclusion.replace('nghiêng thuận', 'có thể được')
         
         return filled, {
             'conclusion': conclusion,
@@ -5100,13 +5107,13 @@ class FreeAIHelper:
         dt_cung = None
         for cung_num, can_val in can_thien_ban.items():
             if can_val == can_ngay: bt_cung = int(cung_num) if cung_num else None
-            # Trường hợp Lục Nghi Kích Hình: Giáp ẩn dưới Mậu
-            if not bt_cung and can_ngay == 'Giáp' and can_val == 'Mậu':
+            # V40.2: Giáp ẩn duới Mậu HOẶC Kỷ
+            if not bt_cung and can_ngay == 'Giáp' and can_val in ('Mậu', 'Kỷ'):
                 bt_cung = int(cung_num) if cung_num else None
                 
         for cung_num, can_val in can_thien_ban.items():
             if can_val == dt_can: dt_cung = int(cung_num) if cung_num else None
-            if not dt_cung and dt_can == 'Giáp' and can_val == 'Mậu':
+            if not dt_cung and dt_can == 'Giáp' and can_val in ('Mậu', 'Kỷ'):
                 dt_cung = int(cung_num) if cung_num else None
         
         if not dt_cung:
@@ -5197,126 +5204,113 @@ class FreeAIHelper:
         
         summary = f"KM Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
         
-        # V27.0: 5 FACTORS BO SUNG CHO KY MON
-        # Factor 1: Tuong tac Sao x Mon (tu database_tuong_tac)
-        if TUONG_TAC_SAO_MON and dt_cung is not None:
-            sao_dt = ''
-            mon_dt = ''
-            if isinstance(thien_ban, dict):
-                sao_dt = thien_ban.get(dt_cung, {}).get('sao', '') if isinstance(thien_ban.get(dt_cung), dict) else str(thien_ban.get(dt_cung, ''))
-            if isinstance(nhan_ban, dict):
-                mon_dt = nhan_ban.get(dt_cung, {}).get('mon', '') if isinstance(nhan_ban.get(dt_cung), dict) else str(nhan_ban.get(dt_cung, ''))
-            sao_mon_key = (sao_dt, mon_dt)
-            sm_result = TUONG_TAC_SAO_MON.get(sao_mon_key, '')
-            if sm_result:
-                if 'Cat' in str(sm_result) or 'Cát' in str(sm_result):
-                    score += 5
-                    factors.append(f"V27 KM Sao×Môn Cát +5: {sao_dt}×{mon_dt}")
-                else:
-                    score -= 3
-                    factors.append(f"V27 KM Sao×Môn: {sm_result}")
-        
-        # Factor 2: Sinh khac Cung BT <-> DT (tu phan_tich_da_tang)
-        if bt_cung is not None and dt_cung is not None:
-            hanh_bt_cung = CUNG_NGU_HANH.get(bt_cung, '')
-            hanh_dt_cung = CUNG_NGU_HANH.get(dt_cung, '')
-            if hanh_bt_cung and hanh_dt_cung:
-                rel = DATANG_SINH_KHAC(hanh_bt_cung, hanh_dt_cung)
-                if 'Sinh' in str(rel) and 'Bi' not in str(rel):
-                    score += 6
-                    factors.append(f"V27 KM Cung BT sinh DT +6 ({hanh_bt_cung}→{hanh_dt_cung})")
-                elif 'Khac' in str(rel) or 'Khắc' in str(rel):
-                    if 'Bi' in str(rel) or 'Bị' in str(rel):
-                        score -= 6
-                        factors.append(f"V27 KM Cung BT bị khắc -6 ({hanh_bt_cung}←{hanh_dt_cung})")
-                    else:
-                        score += 4
-                        factors.append(f"V27 KM Cung BT khắc DT +4")
-        
-        # Factor 3: Vuong Suy theo mua (tu blind_reading)
-        if dt_can:
-            can_hanh_km = CAN_NGU_HANH.get(dt_can, '')
-            tiet_khi = chart_data.get('tiet_khi', '')
-            if can_hanh_km and tiet_khi:
-                vs = BLIND_VUONG_SUY(can_hanh_km, tiet_khi)
-                if vs:
-                    vs_str = str(vs)
-                    if 'Vuong' in vs_str or 'Vượng' in vs_str:
+        # V40.2: V27 BONUS FACTORS — save base, try bonus, restore on fail
+        _base_score, _base_factors = score, list(factors)
+        try:
+            # Factor 1: Tuong tac Sao x Mon
+            if TUONG_TAC_SAO_MON and dt_cung is not None:
+                sao_dt = ''
+                mon_dt = ''
+                if isinstance(thien_ban, dict):
+                    sao_dt = thien_ban.get(dt_cung, {}).get('sao', '') if isinstance(thien_ban.get(dt_cung), dict) else str(thien_ban.get(dt_cung, ''))
+                if isinstance(nhan_ban, dict):
+                    mon_dt = nhan_ban.get(dt_cung, {}).get('mon', '') if isinstance(nhan_ban.get(dt_cung), dict) else str(nhan_ban.get(dt_cung, ''))
+                sao_mon_key = (sao_dt, mon_dt)
+                sm_result = TUONG_TAC_SAO_MON.get(sao_mon_key, '')
+                if sm_result:
+                    if 'Cat' in str(sm_result) or 'Cát' in str(sm_result):
                         score += 5
-                        factors.append(f"V27 KM DT Vượng mùa +5")
-                    elif 'Tu' in vs_str or 'Tử' in vs_str or 'Tù' in vs_str:
-                        score -= 5
-                        factors.append(f"V27 KM DT Tử/Tù mùa -5")
-        
-        # Factor 4: Anh huong mua len Hanh DT (tu database_tuong_tac)
-        if DB_MUA and can_hanh_km:
-            for mua_key, mua_data in DB_MUA.items():
-                if isinstance(mua_data, dict) and can_hanh_km in mua_data:
-                    trang_thai = mua_data[can_hanh_km]
-                    if 'Vuong' in str(trang_thai) or 'Vượng' in str(trang_thai):
-                        factors.append(f"V27 KM Mua {mua_key}: DT {trang_thai}")
-                    break
-
-        # V28.7 Factor 5: CÁCH CỤC — Thiên Can trên Thiên Bàn + Địa Bàn
-        if dt_cung and can_thien_ban:
-            thien_can_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
-            # Địa bàn Can = Can gốc tại cung đó (tĩnh)
-            DIA_BAN_CAN = {1: 'Mậu', 2: 'Kỷ', 3: 'Canh', 4: 'Tân', 5: 'Mậu', 6: 'Nhâm', 7: 'Quý', 8: 'Ất', 9: 'Bính'}
-            dia_can_dt = DIA_BAN_CAN.get(dt_cung if isinstance(dt_cung, int) else int(dt_cung), '')
-            if thien_can_dt and dia_can_dt:
-                # Cát Cách
-                CAT_CACH = {
-                    ('Ất', 'Bính'): 'Nhật Kỳ → CÁT',
-                    ('Ất', 'Đinh'): 'Tinh Kỳ → CÁT',
-                    ('Bính', 'Đinh'): 'Nhật Nguyệt Kỳ → ĐẠI CÁT',
-                    ('Đinh', 'Ất'): 'Ngọc Nữ → CÁT',
-                }
-                # Hung Cách
-                HUNG_CACH = {
-                    ('Canh', 'Ất'): 'Bạch Hổ xướng cuồng → HUNG',
-                    ('Canh', 'Bính'): 'Phi Can Cách → HUNG',
-                    ('Canh', 'Đinh'): 'Thiên Ất → HUNG',
-                    ('Tân', 'Ất'): 'Thanh Long đào giấu → HUNG',
-                    ('Tân', 'Bính'): 'Đằng Xà yêu kiếp → HUNG',
-                    ('Tân', 'Đinh'): 'Chu Tước → HƯU',
-                }
-                key_cc = (str(thien_can_dt), str(dia_can_dt))
-                if key_cc in CAT_CACH:
-                    score += 6
-                    factors.append(f"V28 KM Cách Cục: {CAT_CACH[key_cc]} +6 ({thien_can_dt}/{dia_can_dt})")
-                elif key_cc in HUNG_CACH:
-                    score -= 6
-                    factors.append(f"V28 KM Cách Cục: {HUNG_CACH[key_cc]} -6 ({thien_can_dt}/{dia_can_dt})")
-        
-        # V28.7 Factor 6: TAM KỲ nhập cung DT — Ất/Bính/Đinh ở cung DT = CÁT LỰC
-        if dt_cung and can_thien_ban:
-            thien_can_at_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
-            if thien_can_at_dt in ('Ất', 'Bính', 'Đinh'):
-                score += 5
-                tam_ky_name = {'Ất': 'Nhật Kỳ', 'Bính': 'Nguyệt Kỳ', 'Đinh': 'Tinh Kỳ'}.get(thien_can_at_dt, '')
-                factors.append(f"V28 KM Tam Kỳ: {tam_ky_name}({thien_can_at_dt}) nhập cung DT +5")
-        
-        # V28.7 Factor 7: CUNG SỰ VIỆC (Can giờ) — so sánh BT vs SV
-        sv_cung = None
-        can_gio = chart_data.get('can_gio', '')
-        if can_gio and can_thien_ban:
-            for cung_num, can_val in can_thien_ban.items():
-                if can_val == can_gio:
-                    sv_cung = int(cung_num) if cung_num else None
-                    break
-        if sv_cung and bt_cung and sv_cung != bt_cung:
-            sv_hanh = CUNG_NGU_HANH.get(sv_cung, '')
-            if bt_hanh and sv_hanh:
-                if KHAC.get(bt_hanh) == sv_hanh:
+                        factors.append(f"V27 KM Sao×Môn Cát +5: {sao_dt}×{mon_dt}")
+                    else:
+                        score -= 3
+                        factors.append(f"V27 KM Sao×Môn: {sm_result}")
+            # Factor 2: Sinh khac BT<->DT
+            if bt_cung is not None and dt_cung is not None:
+                hanh_bt_cung = CUNG_NGU_HANH.get(bt_cung, '')
+                hanh_dt_cung = CUNG_NGU_HANH.get(dt_cung, '')
+                if hanh_bt_cung and hanh_dt_cung:
+                    rel = DATANG_SINH_KHAC(hanh_bt_cung, hanh_dt_cung)
+                    if 'Sinh' in str(rel) and 'Bi' not in str(rel):
+                        score += 6
+                        factors.append(f"V27 KM Cung BT sinh DT +6 ({hanh_bt_cung}→{hanh_dt_cung})")
+                    elif 'Khac' in str(rel) or 'Khắc' in str(rel):
+                        if 'Bi' in str(rel) or 'Bị' in str(rel):
+                            score -= 6
+                            factors.append(f"V27 KM Cung BT bị khắc -6 ({hanh_bt_cung}←{hanh_dt_cung})")
+                        else:
+                            score += 4
+                            factors.append(f"V27 KM Cung BT khắc DT +4")
+            # Factor 3: Vuong Suy theo mua
+            if dt_can:
+                can_hanh_km = CAN_NGU_HANH.get(dt_can, '')
+                tiet_khi = chart_data.get('tiet_khi', '')
+                if can_hanh_km and tiet_khi:
+                    vs = BLIND_VUONG_SUY(can_hanh_km, tiet_khi)
+                    if vs:
+                        vs_str = str(vs)
+                        if 'Vuong' in vs_str or 'Vượng' in vs_str:
+                            score += 5
+                            factors.append(f"V27 KM DT Vượng mùa +5")
+                        elif 'Tu' in vs_str or 'Tử' in vs_str or 'Tù' in vs_str:
+                            score -= 5
+                            factors.append(f"V27 KM DT Tử/Tù mùa -5")
+            # Factor 5: Cách Cục
+            if dt_cung and can_thien_ban:
+                thien_can_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
+                DIA_BAN_CAN = {1: 'Mậu', 2: 'Kỷ', 3: 'Canh', 4: 'Tân', 5: 'Mậu', 6: 'Nhâm', 7: 'Quý', 8: 'Ất', 9: 'Bính'}
+                dia_can_dt = DIA_BAN_CAN.get(dt_cung if isinstance(dt_cung, int) else int(dt_cung), '')
+                if thien_can_dt and dia_can_dt:
+                    CAT_CACH = {
+                        ('Ất', 'Bính'): 'Nhật Kỳ → CÁT',
+                        ('Ất', 'Đinh'): 'Tinh Kỳ → CÁT',
+                        ('Bính', 'Đinh'): 'Nhật Nguyệt Kỳ → ĐẠI CÁT',
+                        ('Đinh', 'Ất'): 'Ngọc Nữ → CÁT',
+                    }
+                    HUNG_CACH = {
+                        ('Canh', 'Ất'): 'Bạch Hổ xướng cuồng → HUNG',
+                        ('Canh', 'Bính'): 'Phi Can Cách → HUNG',
+                        ('Canh', 'Đinh'): 'Thiên Ất → HUNG',
+                        ('Tân', 'Ất'): 'Thanh Long đào giấu → HUNG',
+                        ('Tân', 'Bính'): 'Đằng Xà yêu kiếp → HUNG',
+                        ('Tân', 'Đinh'): 'Chu Tước → HƯU',
+                    }
+                    key_cc = (str(thien_can_dt), str(dia_can_dt))
+                    if key_cc in CAT_CACH:
+                        score += 6
+                        factors.append(f"V28 KM Cách Cục: {CAT_CACH[key_cc]} +6 ({thien_can_dt}/{dia_can_dt})")
+                    elif key_cc in HUNG_CACH:
+                        score -= 6
+                        factors.append(f"V28 KM Cách Cục: {HUNG_CACH[key_cc]} -6 ({thien_can_dt}/{dia_can_dt})")
+            # Factor 6: Tam Kỳ nhập cung DT
+            if dt_cung and can_thien_ban:
+                thien_can_at_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
+                if thien_can_at_dt in ('Ất', 'Bính', 'Đinh'):
                     score += 5
-                    factors.append(f"V28 KM BT khắc Cung SV → chủ THẮNG +5")
-                elif KHAC.get(sv_hanh) == bt_hanh:
-                    score -= 5
-                    factors.append(f"V28 KM Cung SV khắc BT → bị THUA -5")
-                elif SINH.get(sv_hanh) == bt_hanh:
-                    score += 3
-                    factors.append(f"V28 KM Cung SV sinh BT → được giúp +3")
-
+                    tam_ky_name = {'Ất': 'Nhật Kỳ', 'Bính': 'Nguyệt Kỳ', 'Đinh': 'Tinh Kỳ'}.get(thien_can_at_dt, '')
+                    factors.append(f"V28 KM Tam Kỳ: {tam_ky_name}({thien_can_at_dt}) nhập cung DT +5")
+            # Factor 7: Cung Sự Việc
+            sv_cung = None
+            can_gio = chart_data.get('can_gio', '')
+            if can_gio and can_thien_ban:
+                for cung_num, can_val in can_thien_ban.items():
+                    if can_val == can_gio:
+                        sv_cung = int(cung_num) if cung_num else None
+                        break
+            if sv_cung and bt_cung and sv_cung != bt_cung:
+                sv_hanh = CUNG_NGU_HANH.get(sv_cung, '')
+                if bt_hanh and sv_hanh:
+                    if KHAC.get(bt_hanh) == sv_hanh:
+                        score += 5
+                        factors.append(f"V28 KM BT khắc Cung SV → chủ THẮNG +5")
+                    elif KHAC.get(sv_hanh) == bt_hanh:
+                        score -= 5
+                        factors.append(f"V28 KM Cung SV khắc BT → bị THUA -5")
+                    elif SINH.get(sv_hanh) == bt_hanh:
+                        score += 3
+                        factors.append(f"V28 KM Cung SV sinh BT → được giúp +3")
+        except Exception:
+            score, factors = _base_score, _base_factors
+        
         return score, summary, factors
 
     def _luc_hao_scoring(self, luc_hao_data, dung_than):
@@ -10021,6 +10015,14 @@ class FreeAIHelper:
             'v24_ta_factors': v24_ta_factors,
             # V14.0: Gửi báo cáo offline (V26.3: giảm xuống 4000 ký tự tránh Gemini ngộp)
             'full_offline_report': offline_full_output[:4000] if offline_full_output else '',
+            # V40.2: Mai Hoa — Hỗ Quái + Biến Quái + Nghĩa (keys thật từ engine)
+            'mai_hoa_ho_quai': mai_hoa_data.get('ten_ho', '') if mai_hoa_data else '',
+            'mai_hoa_bien_quai': mai_hoa_data.get('ten_qua_bien', '') if mai_hoa_data else '',
+            'mai_hoa_nghia': mai_hoa_data.get('nghĩa', mai_hoa_data.get('nghia', '')) if mai_hoa_data else '',
+            'mai_hoa_interpretation': mai_hoa_data.get('interpretation', '') if mai_hoa_data else '',
+            # V40.2: Lục Hào — Tên quẻ
+            'luc_hao_ten_que': luc_hao_data.get('ban', {}).get('name', '') if luc_hao_data and isinstance(luc_hao_data, dict) else '',
+            'luc_hao_cung': luc_hao_data.get('ban', {}).get('palace', '') if luc_hao_data and isinstance(luc_hao_data, dict) else '',
         }
         
         # ═══════════════════════════════════════════════════════════
