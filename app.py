@@ -69,25 +69,33 @@ st.session_state.zoom_level = zoom
 # Dynamic CSS for Zoom
 st.markdown(f"""
 <style>
-    /* V40.9: HIDE broken Material Symbols text — font CDN blocked by CSP */
-    /* EXACT target: stExpanderToggleIcon contains "keyboard_arrow_right" text */
-    [data-testid="stExpanderToggleIcon"] {{
+    /* V40.9: EXACT FIX — ẩn text "keyboard_arrow_right" bên trong summary */
+    /* Element nằm sâu: summary > span > span > span — cần catch ALL */
+    [data-testid="stExpander"] summary span {{
         font-size: 0 !important;
         color: transparent !important;
+        overflow: hidden !important;
+    }}
+    /* Giữ lại text label của expander — chỉ span chứa title */
+    [data-testid="stExpander"] summary p,
+    [data-testid="stExpander"] summary p span {{
+        font-size: inherit !important;
+        color: inherit !important;
+    }}
+    /* Thay icon bằng Unicode arrow */
+    [data-testid="stExpander"] summary > span:first-child {{
         width: 20px !important;
         height: 20px !important;
-        overflow: hidden !important;
         display: inline-block !important;
         position: relative !important;
     }}
-    [data-testid="stExpanderToggleIcon"]::before {{
+    [data-testid="stExpander"] summary > span:first-child::before {{
         content: "▸" !important;
         font-size: 16px !important;
         color: #94a3b8 !important;
-        position: absolute !important;
-        top: 0; left: 0;
     }}
-    details[open] > summary [data-testid="stExpanderToggleIcon"]::before {{
+    [data-testid="stExpander"] details[open] summary > span:first-child::before,
+    details[open] > summary > span:first-child::before {{
         content: "▾" !important;
     }}
     
