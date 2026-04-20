@@ -69,8 +69,46 @@ st.session_state.zoom_level = zoom
 # Dynamic CSS for Zoom
 st.markdown(f"""
 <style>
-    /* V40.9: Load Material Symbols font via @import (more reliable than <link>) */
-    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+    /* V40.9: HIDE broken Material Symbols text — font CDN blocked by CSP */
+    /* Expander toggle arrows — hide "arrow_right"/"expand_more" raw text */
+    [data-testid="stExpander"] details summary svg + span,
+    [data-testid="stExpander"] details summary > div > span:last-child,
+    [data-testid="stExpander"] summary span[class*="material"],
+    [data-testid="stExpander"] summary > span {{
+        font-size: 0 !important;
+        color: transparent !important;
+        width: 0 !important;
+        overflow: hidden !important;
+        display: inline-block !important;
+    }}
+    
+    /* Sidebar collapse/expand button */  
+    [data-testid="stSidebarCollapseButton"] span,
+    [data-testid="collapsedControl"] span {{
+        font-size: 0 !important;
+        color: transparent !important;
+        width: 0 !important;
+    }}
+    
+    /* Fullscreen buttons on charts/textareas */
+    [data-testid="StyledFullScreenButton"] span {{
+        font-size: 0 !important;
+        color: transparent !important;
+    }}
+    [data-testid="StyledFullScreenButton"]::before {{
+        content: "⛶" !important;
+        font-size: 14px !important;
+        color: #94a3b8 !important;
+    }}
+    
+    /* TextArea/TextInput clear/action buttons */
+    [data-testid="stTextArea"] button span,
+    [data-testid="stTextInput"] button span,
+    [data-testid="stChatInput"] button span,
+    [data-testid="stNumberInput"] button span {{
+        font-size: 0 !important;
+        color: transparent !important;
+    }}
     
     /* V40.9: FIX OVERLAP — Selectbox input hint text */
     [data-baseweb="select"] input {{
