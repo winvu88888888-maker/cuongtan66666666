@@ -405,7 +405,9 @@ def render_van_vat_view():
     # ─── TAB 4: CHI TIẾT 12 TRƯỜNG SINH × NGŨ HÀNH ───
     with tab4:
         st.markdown("### 🔮 VẠN VẬT CHI TIẾT — 12 TRƯỜNG SINH × NGŨ HÀNH")
-        st.markdown("> *Chọn Hành + Trường Sinh để xem TẤT CẢ thông tin chi tiết (45 mục)*")
+        st.markdown("> *Chọn Hành + Trường Sinh để xem TẤT CẢ thông tin chi tiết*")
+        
+        import re
         
         try:
             from van_vat_tong_hop import format_van_vat_for_ai
@@ -421,32 +423,73 @@ def render_van_vat_view():
             
             # Get data
             result = format_van_vat_for_ai(hanh_sel, ts_sel)
-            lines = result.split('\n')
+            all_lines = result.split('\n')
             
-            # Render as premium HTML
-            hanh_colors = {"Kim": "#94a3b8", "Mộc": "#22c55e", "Thủy": "#3b82f6", "Hỏa": "#ef4444", "Thổ": "#eab308"}
-            hanh_color = hanh_colors.get(hanh_sel, "#64748b")
+            hanh_colors_map = {"Kim": "#94a3b8", "Mộc": "#22c55e", "Thủy": "#3b82f6", "Hỏa": "#ef4444", "Thổ": "#eab308"}
+            hanh_color = hanh_colors_map.get(hanh_sel, "#64748b")
             
-            # Header
+            # ── Classify lines into sections ──
+            sections = {
+                "📋 THUỘC TÍNH CƠ BẢN": [],
+                "👁️ NGŨ GIÁC QUAN": [],
+                "🧑 CON NGƯỜI": [],
+                "🌍 ĐỊA LÝ & TỰ NHIÊN": [],
+                "🔮 ĐỒ VẬT & VẠN VẬT": [],
+                "📱 MỞ RỘNG HIỆN ĐẠI": [],
+            }
+            section_colors = {
+                "📋 THUỘC TÍNH CƠ BẢN": "#94a3b8",
+                "👁️ NGŨ GIÁC QUAN": "#8b5cf6",
+                "🧑 CON NGƯỜI": "#ec4899",
+                "🌍 ĐỊA LÝ & TỰ NHIÊN": "#22c55e",
+                "🔮 ĐỒ VẬT & VẠN VẬT": "#a855f7",
+                "📱 MỞ RỘNG HIỆN ĐẠI": "#3b82f6",
+            }
+            
+            for line in all_lines:
+                if not line.strip() or line.startswith("==="):
+                    continue
+                # Classify
+                if any(k in line for k in ["👁", "👂", "👃", "👅", "✋"]):
+                    sections["👁️ NGŨ GIÁC QUAN"].append(line)
+                elif any(k in line for k in ["🧑", "Tính cách", "Nghề:", "Tầng "]):
+                    sections["🧑 CON NGƯỜI"].append(line)
+                elif any(k in line for k in ["🏠", "🏥", "🐾", "🧭", "📈", "🗻", "🌤", "⛪"]):
+                    sections["🌍 ĐỊA LÝ & TỰ NHIÊN"].append(line)
+                elif any(k in line for k in ["🔮", "⚔", "🎵", "🏭", "⚽", "💎", "🚗", "👔", "🛋", "💉", "🌾", "🏢", "🏡", "🎨", "🧸"]):
+                    sections["🔮 ĐỒ VẬT & VẠN VẬT"].append(line)
+                elif any(k in line for k in ["📱", "💻", "🍜", "🥤", "🎭", "🌍", "💄"]):
+                    sections["📱 MỞ RỘNG HIỆN ĐẠI"].append(line)
+                else:
+                    sections["📋 THUỘC TÍNH CƠ BẢN"].append(line)
+            
+            # ── Header ──
+            total_items = sum(len(v) for v in sections.values())
             st.markdown(f"""
             <div style="
-                background: linear-gradient(135deg, #0f172a, #1e293b);
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
                 border: 2px solid {hanh_color};
                 border-radius: 16px;
                 padding: 20px 24px;
-                margin: 16px 0;
+                margin: 16px 0 8px 0;
                 box-shadow: 0 8px 24px rgba(0,0,0,0.4);
             ">
-                <h2 style="color:{hanh_color}; margin:0 0 4px 0; font-size:1.5rem;">
+                <h2 style="color:{hanh_color}; margin:0 0 6px 0; font-size:1.6rem;">
                     🔮 {hanh_sel} × {ts_sel}
                 </h2>
                 <p style="color:#94a3b8; margin:0; font-size:0.9rem;">
-                    Tổng: <strong style="color:#fbbf24;">{len(lines)} mục</strong> dữ liệu
+                    Tổng: <strong style="color:#fbbf24;">{total_items} mục</strong> — 
+                    📋 {len(sections['📋 THUỘC TÍNH CƠ BẢN'])} | 
+                    👁️ {len(sections['👁️ NGŨ GIÁC QUAN'])} | 
+                    🧑 {len(sections['🧑 CON NGƯỜI'])} | 
+                    🌍 {len(sections['🌍 ĐỊA LÝ & TỰ NHIÊN'])} | 
+                    🔮 {len(sections['🔮 ĐỒ VẬT & VẠN VẬT'])} | 
+                    📱 {len(sections['📱 MỞ RỘNG HIỆN ĐẠI'])}
                 </p>
             </div>
             """, unsafe_allow_html=True)
             
-            # Render each line
+            # Icon → color mapping
             icon_colors = {
                 "👁": "#8b5cf6", "👂": "#06b6d4", "👃": "#f59e0b", "👅": "#ef4444", "✋": "#22c55e",
                 "🔮": "#a855f7", "🧑": "#ec4899", "🏠": "#6366f1", "🏥": "#dc2626", "🐾": "#f97316",
@@ -458,78 +501,92 @@ def render_van_vat_view():
                 "🎨": "#e879f9", "💻": "#38bdf8",
             }
             
-            items_html = ""
-            for line in lines:
-                if not line.strip():
+            # ── Render each section ──
+            for section_name, section_lines in sections.items():
+                if not section_lines:
                     continue
-                if line.startswith("==="):
-                    continue  # Skip header, already shown above
                 
-                # Find icon color
-                line_color = "#e2e8f0"
-                for icon, color in icon_colors.items():
-                    if icon in line:
-                        line_color = color
-                        break
+                sec_color = section_colors.get(section_name, "#94a3b8")
                 
-                # Bold the **text**
-                import re
-                display_line = re.sub(r'\*\*(.+?)\*\*', r'<strong style="color:#fbbf24;">\1</strong>', line)
-                
-                items_html += f"""
+                # Section header
+                items_html = f"""
                 <div style="
-                    background: rgba(15,23,42,0.6);
-                    border-left: 3px solid {line_color};
-                    padding: 8px 14px;
-                    margin: 4px 0;
-                    border-radius: 0 8px 8px 0;
-                    color: #e2e8f0;
-                    font-size: 0.95rem;
-                    line-height: 1.6;
+                    background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.9));
+                    border: 1px solid {sec_color}50;
+                    border-radius: 14px;
+                    padding: 14px;
+                    margin: 12px 0 6px 0;
                 ">
-                    {display_line}
-                </div>"""
+                    <div style="
+                        color:{sec_color}; 
+                        font-weight:800; 
+                        font-size:1.05rem; 
+                        margin-bottom:10px;
+                        padding-bottom:6px;
+                        border-bottom: 1px solid {sec_color}30;
+                    ">{section_name} ({len(section_lines)})</div>
+                """
+                
+                for line in section_lines:
+                    line_color = "#94a3b8"
+                    for icon, color in icon_colors.items():
+                        if icon in line:
+                            line_color = color
+                            break
+                    
+                    display_line = re.sub(r'\*\*(.+?)\*\*', r'<strong style="color:#fbbf24;">\1</strong>', line)
+                    
+                    items_html += f"""
+                    <div style="
+                        background: rgba(10,10,26,0.5);
+                        border-left: 3px solid {line_color};
+                        padding: 7px 12px;
+                        margin: 3px 0;
+                        border-radius: 0 8px 8px 0;
+                        color: #e2e8f0;
+                        font-size: 0.92rem;
+                        line-height: 1.55;
+                    ">{display_line}</div>"""
+                
+                items_html += "</div>"
+                st.markdown(items_html, unsafe_allow_html=True)
             
-            st.markdown(f"""
-            <div style="
-                background: linear-gradient(180deg, #0f172a, #1e293b);
-                border-radius: 12px;
-                padding: 12px;
-                max-height: 800px;
-                overflow-y: auto;
-            ">
-                {items_html}
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Quick view: ALL 12 stages summary
+            # ── Quick view: ALL 12 stages ──
             st.markdown("---")
-            st.markdown(f"### 📊 Tổng quan {hanh_sel} — TẤT CẢ 12 Trường Sinh")
+            st.markdown(f"### 📊 Tổng quan {hanh_sel} — 12 Trường Sinh")
             
             all_stages = ["Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng",
                           "Suy", "Bệnh", "Tử", "Mộ", "Tuyệt", "Thai", "Dưỡng"]
             stage_icons = ["🌱", "🛁", "👑", "🏛️", "⭐", "📉", "🤒", "💀", "⚰️", "❌", "🤰", "🍼"]
             
-            cols = st.columns(4)
-            for i, (stage, icon) in enumerate(zip(all_stages, stage_icons)):
-                with cols[i % 4]:
-                    r = format_van_vat_for_ai(hanh_sel, stage)
-                    n_lines = len(r.split('\n'))
-                    stage_color = "#22c55e" if i <= 4 else "#f59e0b" if i <= 6 else "#ef4444" if i <= 9 else "#a855f7"
-                    st.markdown(f"""
-                    <div style="
-                        background: rgba(15,23,42,0.7);
-                        border: 1px solid {stage_color}40;
-                        border-radius: 10px;
-                        padding: 10px;
-                        margin: 4px 0;
-                        text-align: center;
-                    ">
-                        <div style="font-size:1.5rem;">{icon}</div>
-                        <div style="color:{stage_color}; font-weight:800; font-size:0.85rem;">{stage}</div>
-                        <div style="color:#94a3b8; font-size:0.75rem;">{n_lines} mục</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+            # 3 rows × 4 cols
+            for row in range(3):
+                cols = st.columns(4)
+                for col_idx in range(4):
+                    i = row * 4 + col_idx
+                    if i >= len(all_stages):
+                        break
+                    stage = all_stages[i]
+                    icon = stage_icons[i]
+                    with cols[col_idx]:
+                        is_selected = (stage == ts_sel)
+                        border_w = "3px" if is_selected else "1px"
+                        stage_color = "#22c55e" if i <= 4 else "#f59e0b" if i <= 6 else "#ef4444" if i <= 9 else "#a855f7"
+                        glow = f"box-shadow: 0 0 12px {stage_color}60;" if is_selected else ""
+                        st.markdown(f"""
+                        <div style="
+                            background: rgba(15,23,42,0.8);
+                            border: {border_w} solid {stage_color};
+                            border-radius: 10px;
+                            padding: 10px 6px;
+                            margin: 3px 0;
+                            text-align: center;
+                            {glow}
+                        ">
+                            <div style="font-size:1.4rem;">{icon}</div>
+                            <div style="color:{stage_color}; font-weight:800; font-size:0.82rem;">{stage}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
         except ImportError:
             st.error("⚠️ Không tìm thấy module van_vat_tong_hop.py")
         except Exception as e:
