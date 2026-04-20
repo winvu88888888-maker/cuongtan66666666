@@ -1352,6 +1352,157 @@ def get_van_vat_chi_tiet(hanh, truong_sinh_stage):
     return result
 
 
+# ═══════════════════════════════════════════════════════════════
+# V40.9: SMART VẠN VẬT FILTER — LỌC THÔNG MINH THEO CÂU HỎI
+# AI chỉ nhận dữ liệu LIÊN QUAN, không dump toàn bộ 45 dòng
+# ═══════════════════════════════════════════════════════════════
+
+# Bản đồ: keyword trong câu hỏi → categories cần lấy
+QUESTION_CATEGORY_MAP = {
+    # === NGƯỜI (ngoại hình, tính cách, nghề) ===
+    'nguoi': {
+        'keys': ['người', 'ai', 'anh', 'chị', 'ông', 'bà', 'đối tác', 'đối phương', 'bạn gái', 'bạn trai',
+                 'vợ', 'chồng', 'con', 'cha', 'mẹ', 'sếp', 'nhân viên', 'trông như', 'ngoại hình', 'tính cách',
+                 'đẹp', 'xấu', 'cao', 'thấp', 'mập', 'gầy', 'tóc', 'mắt', 'mặt', 'da', 'giọng'],
+        'icons': ['🧑', 'Tính cách', 'Nghề', 'Tầng '],
+        'extra_icons': ['👁', '👂'],  # Giác quan hỗ trợ mô tả người
+    },
+    # === ĐỒ VẬT (vật gì, hình dáng, chất liệu) ===
+    'vat': {
+        'keys': ['vật', 'đồ', 'cầm', 'mang', 'đeo', 'hình dáng', 'chất liệu', 'màu', 'kích', 'nặng', 'nhẹ',
+                 'mất', 'tìm', 'trộm', 'ăn cắp', 'quên', 'để đâu', 'giấu', 'hàng hóa', 'sản phẩm',
+                 'mua', 'bán', 'xe', 'điện thoại', 'máy', 'dao', 'kéo', 'trang sức', 'nhẫn', 'đồng hồ'],
+        'icons': ['🔮', '🚗', '👔', '💎', '🎵', '🏭', '⚔', '⚽', '🛋', '🏡', '🎨', '🧸', '📱', '💻'],
+        'extra_icons': ['👁', '✋', '👃'],  # Nhìn, sờ, ngửi
+    },
+    # === BỆNH TẬT (sức khỏe, y tế) ===
+    'benh': {
+        'keys': ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'thuốc', 'bác sĩ', 'viện', 'phẫu thuật',
+                 'mổ', 'triệu chứng', 'ho', 'sốt', 'nhức', 'phổi', 'gan', 'thận', 'tim', 'xương',
+                 'chết', 'sống', 'nguy', 'cấp cứu', 'chữa', 'trị'],
+        'icons': ['🏥', '💉', '🦴'],
+        'extra_icons': [],
+    },
+    # === NHÀ CỬA, ĐỊA LÝ (phong thủy, nơi ở) ===
+    'nha': {
+        'keys': ['nhà', 'đất', 'phong thủy', 'xây', 'mua nhà', 'bán nhà', 'thuê', 'căn hộ', 'phòng',
+                 'hướng', 'nơi', 'ở đâu', 'địa chỉ', 'vùng', 'miền', 'quốc gia', 'nước', 'thành phố',
+                 'chùa', 'đền', 'núi', 'sông', 'biển'],
+        'icons': ['🏠', '🗻', '🧭', '⛪', '🌍'],
+        'extra_icons': [],
+    },
+    # === NGHỀ NGHIỆP, KINH DOANH ===
+    'nghe': {
+        'keys': ['nghề', 'việc', 'công việc', 'kinh doanh', 'buôn bán', 'đầu tư', 'lương', 'tiền',
+                 'giàu', 'nghèo', 'thăng tiến', 'sa thải', 'tuyển', 'hợp đồng', 'dự án', 'startup',
+                 'bitcoin', 'crypto', 'chứng khoán', 'cổ phiếu', 'ngân hàng', 'vốn'],
+        'icons': ['📱', '💻', '🏭', '🏢'],
+        'extra_icons': ['🧑'],  # Nghề trong phần người
+    },
+    # === THỜI TIẾT, MÙA, THỜI GIAN ===
+    'thoi_tiet': {
+        'keys': ['thời tiết', 'mưa', 'nắng', 'gió', 'bão', 'tuyết', 'mùa', 'lạnh', 'nóng'],
+        'icons': ['🌤', '🧭'],
+        'extra_icons': [],
+    },
+    # === TÌNH CẢM, TÂM LÝ ===
+    'tinh_cam': {
+        'keys': ['yêu', 'tình', 'cảm xúc', 'buồn', 'vui', 'giận', 'hận', 'ghen', 'chia tay', 'ly hôn',
+                 'kết hôn', 'cưới', 'hẹn hò', 'tình duyên', 'nhớ', 'thương', 'ghét'],
+        'icons': ['🎭'],
+        'extra_icons': ['🧑'],
+    },
+    # === THỰC PHẨM, ĐỒ ĂN UỐNG ===
+    'an_uong': {
+        'keys': ['ăn', 'uống', 'thức ăn', 'đồ ăn', 'nhà hàng', 'quán', 'nấu', 'bếp', 'bia', 'rượu',
+                 'cà phê', 'trà', 'nước', 'thực phẩm', 'ngon'],
+        'icons': ['🍜', '🥤'],
+        'extra_icons': ['👅', '👃'],
+    },
+    # === ĐỘNG VẬT, CÂY CỎ ===
+    'dong_vat': {
+        'keys': ['con gì', 'thú', 'chó', 'mèo', 'ngựa', 'chim', 'cá', 'rắn', 'cây', 'hoa', 'trồng',
+                 'nuôi', 'vật nuôi', 'thú cưng', 'nông', 'ruộng', 'vườn'],
+        'icons': ['🐾', '🌾'],
+        'extra_icons': [],
+    },
+}
+
+def smart_van_vat_for_question(hanh, truong_sinh_stage, question=""):
+    """V40.9: Lọc Vạn Vật thông minh theo câu hỏi.
+    
+    Thay vì dump 45 dòng → chỉ trả 15-20 dòng LIÊN QUAN.
+    - Luôn giữ: Thuộc tính cơ bản (5 dòng) + Xu hướng
+    - Lọc thêm: Categories phù hợp với câu hỏi
+    - Nếu không nhận dạng được → trả full (fallback)
+    
+    Returns: (filtered_text, matched_topics)
+    """
+    full_text = format_van_vat_for_ai(hanh, truong_sinh_stage)
+    all_lines = full_text.split('\n')
+    
+    if not question or not question.strip():
+        return full_text, ['full']
+    
+    q = question.lower().strip()
+    
+    # Tìm topics phù hợp
+    matched_topics = []
+    matched_icons = set()
+    
+    for topic, config in QUESTION_CATEGORY_MAP.items():
+        for keyword in config['keys']:
+            if keyword in q:
+                matched_topics.append(topic)
+                matched_icons.update(config['icons'])
+                matched_icons.update(config.get('extra_icons', []))
+                break  # Chỉ cần match 1 keyword per topic
+    
+    # Nếu không match gì → trả full
+    if not matched_topics:
+        return full_text, ['full']
+    
+    # Lọc lines
+    filtered_lines = []
+    for line in all_lines:
+        if not line.strip():
+            continue
+        
+        # LUÔN GIỮ: Header + thuộc tính cơ bản (không có icon) + Xu hướng
+        if line.startswith('==='):
+            filtered_lines.append(line)
+            continue
+        
+        has_icon = any(icon in line for icon in ['👁','👂','👃','👅','✋','🔮','🧑','🏠','🏥',
+                       '🐾','🧭','📈','🚗','👔','🍜','🥤','💎','📱','🎵','🏭','⚔','⚽',
+                       '🌤','🎭','🌍','💄','🧸','🛋','💉','⛪','🗻','🦴','🌾','🏢','🏡','🎨','💻'])
+        
+        # Dòng không có icon → thuộc tính cơ bản → LUÔN GIỮ
+        if not has_icon:
+            # Trừ Tính cách/Nghề/Tầng — chỉ giữ nếu match 'nguoi'
+            if any(k in line for k in ['Tính cách', 'Nghề:', 'Tầng ']):
+                if any(k in line for k in matched_icons):
+                    filtered_lines.append(line)
+            else:
+                filtered_lines.append(line)
+            continue
+        
+        # Dòng có icon → chỉ giữ nếu icon nằm trong matched_icons
+        for icon in matched_icons:
+            if icon in line:
+                filtered_lines.append(line)
+                break
+    
+    # Đảm bảo luôn có Xu hướng
+    xu_huong = [l for l in all_lines if '📈' in l]
+    for xh in xu_huong:
+        if xh not in filtered_lines:
+            filtered_lines.append(xh)
+    
+    filtered_text = '\n'.join(filtered_lines)
+    return filtered_text, matched_topics
+
+
 def format_van_vat_for_ai(hanh, truong_sinh_stage):
     """Format vạn vật chi tiết thành text cho AI đọc và đối chiếu.
     Output ngắn gọn nhưng ĐẦY ĐỦ để AI trả lời chính xác.

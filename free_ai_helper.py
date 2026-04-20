@@ -139,20 +139,24 @@ except ImportError:
 # V32.0: Vạn Vật Lazy-Load Package — AI chỉ load hành cần thiết
 try:
     from van_vat import get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta
+    from van_vat import smart_van_vat_for_question
 except ImportError:
     try:
         from van_vat_tong_hop import (
             get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
+            smart_van_vat_for_question,
         )
     except ImportError:
         try:
             from van_vat_tong_hop import (
                 get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
+                smart_van_vat_for_question,
             )
         except ImportError:
             def get_van_vat_chi_tiet(h, ts): return {}
             def format_van_vat_for_ai(h, ts): return ""
             def get_tham_tu_mo_ta(h, ts, q=""): return ""
+            def smart_van_vat_for_question(h, ts, q=""): return ("", ['full'])
 
 # === NGŨ HÀNH ENGINE ===
 SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
@@ -3823,11 +3827,12 @@ class FreeAIHelper:
             _ts_stage = v22.get('ts_stage', '')
             if _vv_hanh:
                 try:
-                    from van_vat_tong_hop import format_van_vat_for_ai, get_tham_tu_mo_ta
-                    # Format đầy đủ: 5 giác quan + đồ vật + con người + bệnh + nhà + thú + cây
-                    _vv_text = format_van_vat_for_ai(_vv_hanh, _ts_stage or 'Quan Đới')
+                    from van_vat_tong_hop import smart_van_vat_for_question, get_tham_tu_mo_ta
+                    # V40.9: Smart filter — chỉ lấy categories LIÊN QUAN câu hỏi
+                    _vv_text, _vv_topics = smart_van_vat_for_question(_vv_hanh, _ts_stage or 'Quan Đới', question)
                     if _vv_text:
-                        raw_data_section += f"═══ VẠN VẬT LOẠI TƯỢNG — TỔNG HỢP ĐẦY ĐỦ (2226+ items) ═══\n"
+                        _topic_str = ', '.join(_vv_topics)
+                        raw_data_section += f"═══ VẠN VẬT LOẠI TƯỢNG — LỌC THEO CÂU HỎI [{_topic_str}] ═══\n"
                         raw_data_section += _vv_text + "\n\n"
                     # Thám tử mô tả chi tiết (cho câu hỏi cụ thể)
                     _thamtu_text = get_tham_tu_mo_ta(_vv_hanh, _ts_stage or 'Quan Đới', question)
@@ -7489,7 +7494,7 @@ class FreeAIHelper:
         # V40.6: Lấy thêm Vạn Vật TỔNG HỢP đầy đủ (5 giác quan + đồ vật + người)
         _vv_full_text = ''
         try:
-            from van_vat_tong_hop import format_van_vat_for_ai
+            from van_vat_tong_hop import smart_van_vat_for_question
             _ts_map = {}
             if pct >= 75: _ts_map = 'Đế Vượng'
             elif pct >= 55: _ts_map = 'Lâm Quan'
@@ -7497,7 +7502,8 @@ class FreeAIHelper:
             elif pct >= 25: _ts_map = 'Suy'
             elif pct >= 10: _ts_map = 'Bệnh'
             else: _ts_map = 'Tử'
-            _vv_full_text = format_van_vat_for_ai(hanh_dt or 'Thổ', _ts_map)
+            # V40.9: Smart filter cho AI Online
+            _vv_full_text, _vv_topics = smart_van_vat_for_question(hanh_dt or 'Thổ', _ts_map, question)
         except Exception:
             pass
         
