@@ -7430,7 +7430,7 @@ class FreeAIHelper:
         if not km_factors: km_factors = []
         if not mh_factors: mh_factors = []
         
-        lines.append(f"\n**❓ Câu hỏi của bạn:** {question}")
+        lines.append(f'\n<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:16px 20px;border-radius:12px;margin:10px 0;border-left:5px solid #f59e0b;"><span style="color:#fbbf24;font-size:1.1em;font-weight:800;">❓ CÂU HỎI:</span> <span style="color:#f1f5f9;font-size:1.05em;font-weight:600;">{question}</span></div>')
         
         # ═══════════════════════════════════════════════
         # BƯỚC 1: THÁM TỬ KIỂM CHỨNG (Detective Validator)
@@ -7477,10 +7477,10 @@ class FreeAIHelper:
                 )
         
         if detective_issues:
-            lines.append(f"\n**🔍 THÁM TỬ KIỂM CHỨNG:**")
+            lines.append(f'\n<div style="background:#fef3c7;padding:12px 16px;border-radius:10px;border-left:4px solid #f59e0b;"><b style="color:#92400e;font-size:1em;">🔍 THÁM TỬ KIỂM CHỨNG</b></div>')
             for issue in detective_issues:
                 lines.append(f"- {issue}")
-            lines.append(f"- ✅ Đã hiệu chỉnh → Kết luận dùng pct={pct}%, verdict={final_verdict}")
+            lines.append(f'- <span style="color:#16a34a;font-weight:700;">✅ Đã hiệu chỉnh → pct={pct}%, verdict={final_verdict}</span>')
         
         # ═══════════════════════════════════════════════
         # BƯỚC 2: Lấy Vạn Vật Loại Tượng chi tiết — V40.6: dùng file TỔNG HỢP
@@ -7525,8 +7525,9 @@ class FreeAIHelper:
         # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
         if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
                                   'nghĩ gì', 'hành động', 'làm gì', 'xử lý', 'tính sao']):
-            lines.append(f"\n{icon} **VỀ \"{_q_short}\":** {vv_data['cap']} ({pct}%)")
-            lines.append(f"\n📋 **Mô tả chi tiết (Vạn Vật Loại Tượng {hanh_dt} × {_ts_map}):**")
+            _color = '#16a34a' if pct >= 55 else '#dc2626' if pct <= 40 else '#ca8a04'
+            lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid {_color};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_color};">{icon} VỀ "{_q_short}"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">{vv_data["cap"]} — {pct}%</span></div>')
+            lines.append(f'\n<b style="color:#94a3b8;font-size:0.95em;">📋 Mô tả chi tiết (Vạn Vật Loại Tượng {hanh_dt} × {_ts_map}):</b>')
             if _vv_full_text:
                 for _line in _vv_full_text.split('\n')[:15]:
                     if _line.strip():
@@ -7593,18 +7594,18 @@ class FreeAIHelper:
                                    'qua đời', 'tử vong', 'sống sót', 'qua được',
                                    'bệnh nặng', 'nguy kịch', 'hấp hối']):
             if pct >= 50:
-                lines.append(f"\n✅ **CÂU TRẢ LỜI: CÒN SỐNG — {dung_than} có SINH KHÍ ({pct}%)**")
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#22c55e;">✅ CÂU TRẢ LỜI: CÒN SỐNG</span><br><span style="color:#bbf7d0;font-size:1.1em;">{dung_than} có SINH KHÍ ({pct}%)</span></div>')
                 lines.append(f"- {dung_than} VƯỢNG/BÌNH → còn sinh khí, có thể hồi phục.")
                 if any('động' in str(ev).lower() for ev in good_impacts):
                     lines.append(f"- DT phát ĐỘNG = đang hoạt động, có sự sống.")
                 if any('sinh' in str(ev).lower() for ev in good_impacts):
                     lines.append(f"- Có yếu tố SINH DT = được nuôi dưỡng, hỗ trợ.")
             elif pct >= 40:
-                lines.append(f"\n⚠️ **CÂU TRẢ LỜI: CÒN SỐNG nhưng RẤT YẾU ({pct}%)**")
+                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #f59e0b;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">⚠️ CÂU TRẢ LỜI: CÒN SỐNG nhưng RẤT YẾU</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} suy nhưng chưa tuyệt → vẫn còn nhưng nguy hiểm.")
                 lines.append(f"- Cần can thiệp KHẨN CẤP.")
             else:
-                lines.append(f"\n🔴 **CÂU TRẢ LỜI: ĐÃ MẤT hoặc NGUY KỊCH ({pct}%)**")
+                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#ef4444;">🔴 CÂU TRẢ LỜI: ĐÃ MẤT hoặc NGUY KỊCH</span><br><span style="color:#fecaca;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} SUY TUYỆT → sinh khí cạn kiệt.")
                 if any('tuần không' in str(ev).lower() for ev in bad_impacts):
                     lines.append(f"- DT Tuần Không = HƯ VÔ → ĐÃ MẤT.")
@@ -7853,7 +7854,7 @@ class FreeAIHelper:
                     lines.append(f"\n🟡 **VỀ \"{_q_short}\":** TRUNG BÌNH — {pct}%")
         
         # --- V40.6: VÌ SAO — bằng chứng THẬT từ factors + evidence ---
-        lines.append(f"\n**📋 VÌ SAO (bằng chứng từ quẻ):**")
+        lines.append(f'\n<div style="background:#1e1b4b;padding:14px 18px;border-radius:10px;border-left:5px solid #818cf8;margin:12px 0;"><b style="color:#a5b4fc;font-size:1.05em;">📋 VÌ SAO — BẰNG CHỨNG TỪ QUẺ</b></div>')
         _vi_sao_items = []
         # Ưu tiên factors thật từ engine
         if lh_factors:
@@ -7892,10 +7893,10 @@ class FreeAIHelper:
         _dt_hanh = hanh_dt or ''
         _uk = _UK_TIMING.get(_dt_hanh, {})
         if _uk:
-            lines.append(f"\n**⏳ ỨNG KỲ:** {_uk.get('thang','?')}, ngày {_uk.get('ngay','?')} | Hướng: {_uk.get('huong','?')}")
+            lines.append(f'\n<div style="background:#172554;padding:14px 18px;border-radius:10px;border-left:5px solid #60a5fa;margin:8px 0;"><b style="color:#93c5fd;font-size:1.05em;">⏳ ỨNG KỲ:</b> <span style="color:#dbeafe;font-weight:600;">{_uk.get("thang","?")}</span> | Ngày <span style="color:#dbeafe;font-weight:600;">{_uk.get("ngay","?")}</span> | Hướng <span style="color:#fbbf24;font-weight:700;">{_uk.get("huong","?")}</span></div>')
         
         # --- V40.6: GIẢI PHÁP — cụ thể theo câu hỏi + Ngũ Hành ---
-        lines.append(f"\n**🔧 GIẢI PHÁP CHO \"{_q_short}\":**")
+        lines.append(f'\n<div style="background:#14532d;padding:14px 18px;border-radius:10px;border-left:5px solid #4ade80;margin:12px 0;"><b style="color:#86efac;font-size:1.05em;">🔧 GIẢI PHÁP CHO "{_q_short}"</b></div>')
         _HANH_HELP = {
             'Kim': 'Tìm quý nhân hành Thổ (sinh Kim). Hướng Tây. Màu trắng/bạc.',
             'Mộc': 'Tìm quý nhân hành Thủy (sinh Mộc). Hướng Đông. Màu xanh lá.',
@@ -10371,14 +10372,13 @@ class FreeAIHelper:
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
-            final_parts.append(f"## 🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP (Gemini V40.6)")
-            final_parts.append(f"*🤖 AI Online tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH*")
+            final_parts.append(f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #34d399;"><span style="font-size:1.4em;font-weight:900;color:#6ee7b7;">🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP</span><br><span style="color:#a7f3d0;font-size:0.9em;">🤖 Gemini V40.6 | Tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH</span></div>')
             final_parts.append(online_result)
             final_parts.append("")
             
             # V34.8: INJECT THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI vào output cuối
             if direct_answer:
-                final_parts.append("\n## 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+                final_parts.append(f'\n<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;margin:14px 0;border:2px solid #818cf8;"><span style="font-size:1.3em;font-weight:900;color:#a5b4fc;">🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI</span></div>')
                 final_parts.append(direct_answer)
                 final_parts.append("")
             
@@ -10456,8 +10456,7 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f"## 🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V38.1 (Chỉ Offline — AI Online không khả dụng)")
-            final_parts.append(f"*⚠️ AI Online không khả dụng: {error_msg}*")
+            final_parts.append(f'<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #f59e0b;"><span style="font-size:1.4em;font-weight:900;color:#fbbf24;">🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.6</span><br><span style="color:#fef3c7;font-size:0.9em;">⚠️ AI Online không khả dụng: {error_msg}</span></div>')
             final_parts.append("")
             
             # V38.1: PROTOCOL 27 BƯỚC — HIỆN TRỰC TIẾP (offline-only)
@@ -10472,7 +10471,7 @@ class FreeAIHelper:
             
             # V34.8: INJECT THÁM TỬ KIỂM CHỨNG khi chỉ có Offline
             if direct_answer:
-                final_parts.append("\n## 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+                final_parts.append(f'\n<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;margin:14px 0;border:2px solid #818cf8;"><span style="font-size:1.3em;font-weight:900;color:#a5b4fc;">🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI</span></div>')
                 final_parts.append(direct_answer)
                 final_parts.append("")
             
@@ -10619,7 +10618,7 @@ class FreeAIHelper:
             # ═══════════════════════════════════════════════════════
             # V35.8: KẾT LUẬN TỔNG HỢP — THÔNG MINH THEO NGỮ CẢNH
             # ═══════════════════════════════════════════════════════
-            final_parts.append(f"\n### 🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE V35.8)")
+            final_parts.append(f'\n<div style="background:linear-gradient(135deg,#7c2d12,#9a3412);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #fb923c;"><span style="font-size:1.4em;font-weight:900;color:#fed7aa;">🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE V40.6)</span></div>')
             
             # --- V35.8: Câu trả lời ngữ cảnh theo category ---
             _q = question.lower()
@@ -10643,7 +10642,8 @@ class FreeAIHelper:
                 _v_text = "KHÔNG THUẬN LỢI" if _pct >= 25 else "RẤT BẤT LỢI"
                 _v_icon = "❌"
             
-            final_parts.append(f"**{_v_icon} {_v_text}** (Điểm: {_pct}%)")
+            _vcolor = '#22c55e' if _good else '#ef4444' if _bad else '#eab308'
+            final_parts.append(f'<div style="text-align:center;padding:16px;margin:10px 0;"><span style="font-size:2em;font-weight:900;color:{_vcolor};text-shadow:0 2px 8px rgba(0,0,0,0.3);">{_v_icon} {_v_text}</span><br><span style="font-size:1.5em;font-weight:800;color:{_vcolor};">{_pct}%</span></div>')
             final_parts.append("")
             
             # --- TRẢ LỜI CỤ THỀ THEO CATEGORY ---
