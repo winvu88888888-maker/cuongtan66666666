@@ -10372,11 +10372,42 @@ class FreeAIHelper:
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
-            final_parts.append(f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.3);">' 
-                f'<div style="font-size:2em;font-weight:900;color:#fef3c7;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE</div>' 
-                f'<div style="font-size:1.1em;color:#fde68a;">🤖 Gemini V40.9 | Tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH</div>' 
-                f'</div>')
+            
+            # V40.9: Extract verdict line from online_result for header display
+            _online_verdict_line = ""
+            _online_visao = ""
+            _online_ungky = ""
+            _online_giaiphap = ""
+            for _line in online_result.split('\n'):
+                _stripped = _line.strip()
+                if '📢' in _stripped and 'CÂU TRẢ LỜI' in _stripped.upper():
+                    _online_verdict_line = _stripped.replace('**', '').replace('📢', '').replace('CÂU TRẢ LỜI:', '').replace('CÂU TRẢ LỜI', '').strip()
+                elif '📋' in _stripped and 'VÌ SAO' in _stripped.upper():
+                    _online_visao = _stripped.replace('**', '').replace('📋', '').replace('VÌ SAO:', '').strip()
+                elif '⏳' in _stripped and 'ỨNG KỲ' in _stripped.upper():
+                    _online_ungky = _stripped.replace('**', '').replace('⏳', '').replace('ỨNG KỲ:', '').strip()
+                elif '🔧' in _stripped and 'GIẢI PHÁP' in _stripped.upper():
+                    _online_giaiphap = _stripped.replace('**', '').replace('🔧', '').replace('GIẢI PHÁP:', '').strip()
+            
+            if not _online_verdict_line:
+                _online_verdict_line = "Xem chi tiết bên dưới"
+            
+            # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
+            final_parts.append(
+                f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V40.9)</div>'
+                f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
+                + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
+                + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
+                + (f'<div style="font-size:1.1em;color:#fbbf24;">🔧 <b>Giải pháp:</b> {_online_giaiphap}</div>' if _online_giaiphap else '')
+                + f'</div>'
+            )
+            
+            # Chi tiết phân tích → collapse
+            final_parts.append("\n<details>")
+            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI ONLINE (nhấn để mở)</b></summary>\n")
             final_parts.append(online_result)
+            final_parts.append("\n</details>")
             final_parts.append("")
             
             # V34.8: INJECT THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI vào output cuối
@@ -10459,21 +10490,41 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 20px rgba(52,211,153,0.3);">' 
-                f'<div style="font-size:2em;font-weight:900;color:#a7f3d0;margin-bottom:8px;">🖥️ KẾT LUẬN AI OFFLINE — {v_icon} {overall_short}</div>' 
-                f'<div style="font-size:1.1em;color:#6ee7b7;">⚙️ Điểm Tổng Hợp: {weighted_pct}% | AI Online không khả dụng: {error_msg}</div>' 
-                f'</div>')
+            
+            # V40.9: Extract short verdict from direct_answer for header
+            _offline_short_answer = ""
+            if direct_answer:
+                for _line in direct_answer.split('\n'):
+                    _s = _line.strip()
+                    if '📢' in _s or 'CÂU TRẢ LỜI' in _s.upper() or ('KẾT LUẬN' in _s.upper() and ('CÓ' in _s.upper() or 'KHÔNG' in _s.upper() or 'NÊN' in _s.upper())):
+                        _offline_short_answer = _s.replace('**', '').replace('📢', '').replace('#', '').strip()
+                        break
+            if not _offline_short_answer:
+                _offline_short_answer = f"{v_icon} {overall_short} — Điểm: {weighted_pct}%"
+            
+            # === Ô XANH LÁ TO — KẾT LUẬN AI OFFLINE ===
+            final_parts.append(
+                f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
+                f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.9</div>'
+                f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">{v_icon} {_offline_short_answer}</div>'
+                f'<div style="font-size:1.1em;color:#a7f3d0;">📊 Điểm Tổng Hợp: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                f'</div>'
+            )
             final_parts.append("")
             
-            # V38.1: PROTOCOL 27 BƯỚC — HIỆN TRỰC TIẾP (offline-only)
+            # Chi tiết phân tích → collapse
+            final_parts.append("\n<details>")
+            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
+            
+            # V38.1: PROTOCOL 27 BƯỚC
             if v38_protocol_text:
                 final_parts.append(v38_protocol_text)
-                final_parts.append("")
             else:
                 final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
             
             final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
             final_parts.append(f"\n**📊 Trạng thái DT:** {unified_v22['tier_data']['cap'] if unified_v22 else '?'} | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
+            final_parts.append("\n</details>")
             
             # V34.8: INJECT THÁM TỬ KIỂM CHỨNG khi chỉ có Offline
             if direct_answer:
