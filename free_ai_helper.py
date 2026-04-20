@@ -10660,18 +10660,71 @@ class FreeAIHelper:
                 + f'</div>'
             )
             
-            # Chi tiết phân tích → collapse
+            # Chi tiết phân tích Online → collapse
             final_parts.append("\n<details>")
             final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI ONLINE (nhấn để mở)</b></summary>\n")
             final_parts.append(online_result)
             final_parts.append("\n</details>")
             final_parts.append("")
             
-            # V34.8: INJECT THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI vào output cuối
+            # V40.9: LUÔN HIỆN Ô XANH LÁ — KẾT LUẬN AI OFFLINE (ngay cả khi có Online)
+            # Tính verdict offline
+            _off_v_icon = '🟢' if weighted_pct >= 65 else '🟡' if weighted_pct >= 45 else '🔴'
+            _off_verdict = 'CÁT' if weighted_pct >= 65 else 'BÌNH' if weighted_pct >= 45 else 'HUNG'
+            
+            # Extract câu trả lời từ direct_answer
+            _off_answer = ""
+            _off_evidence = []
             if direct_answer:
-                final_parts.append(f'\n<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;margin:14px 0;border:2px solid #818cf8;"><span style="font-size:1.3em;font-weight:900;color:#a5b4fc;">🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI</span></div>')
-                final_parts.append(direct_answer)
-                final_parts.append("")
+                for _line in direct_answer.split('\n'):
+                    _s = _line.strip()
+                    if not _off_answer:
+                        if any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN',
+                                                  '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU', '✅ CÂU TRẢ LỜI', '✅ CÓ', '🔴 KHÔNG']):
+                            _off_answer = _s.replace('**', '').replace('#', '').strip()
+                        elif 'CÂU TRẢ LỜI' in _s.upper():
+                            _off_answer = _s.replace('**', '').replace('#', '').strip()
+                        elif _s.startswith(('🟢', '🔴', '🟡')) and len(_s) > 5:
+                            _off_answer = _s.replace('**', '').replace('#', '').strip()
+                    elif len(_off_evidence) < 3:
+                        if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 🏭', '- 🧭', '- ⛔', '- 🏥', '- ⏱️')):
+                            _off_evidence.append(_s)
+            
+            if not _off_answer:
+                if _off_verdict == 'CÁT':
+                    _off_answer = f"{_off_v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
+                elif _off_verdict == 'HUNG':
+                    _off_answer = f"{_off_v_icon} KHÔNG — BẤT LỢI ({weighted_pct}%)"
+                else:
+                    _off_answer = f"{_off_v_icon} CẦN CÂN NHẮC — {_off_verdict} ({weighted_pct}%)"
+            
+            _off_ev_html = ""
+            if _off_evidence:
+                _off_ev_html = '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);">'
+                for _ev in _off_evidence:
+                    _off_ev_html += f'<div style="font-size:1em;color:#d1fae5;margin:4px 0;">{_ev}</div>'
+                _off_ev_html += '</div>'
+            
+            final_parts.append(
+                f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
+                f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.9</div>'
+                f'<div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">{_off_answer}</div>'
+                f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                + _off_ev_html
+                + f'</div>'
+            )
+            
+            # Chi tiết Offline → collapse
+            if v38_protocol_text or direct_answer:
+                final_parts.append("\n<details>")
+                final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
+                if v38_protocol_text:
+                    final_parts.append(v38_protocol_text)
+                if direct_answer:
+                    final_parts.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+                    final_parts.append(direct_answer)
+                final_parts.append("\n</details>")
+            final_parts.append("")
             
             # V40.6: TAM THỜI đã bỏ — thông tin 12 Trường Sinh đã inject trực tiếp vào prompt
             
