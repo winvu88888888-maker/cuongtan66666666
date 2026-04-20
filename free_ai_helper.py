@@ -7483,9 +7483,23 @@ class FreeAIHelper:
             lines.append(f"- ✅ Đã hiệu chỉnh → Kết luận dùng pct={pct}%, verdict={final_verdict}")
         
         # ═══════════════════════════════════════════════
-        # BƯỚC 2: Lấy Vạn Vật Loại Tượng chi tiết
+        # BƯỚC 2: Lấy Vạn Vật Loại Tượng chi tiết — V40.6: dùng file TỔNG HỢP
         # ═══════════════════════════════════════════════
         vv_key, vv_data = _get_van_vat_from_pct(pct)
+        # V40.6: Lấy thêm Vạn Vật TỔNG HỢP đầy đủ (5 giác quan + đồ vật + người)
+        _vv_full_text = ''
+        try:
+            from van_vat_tong_hop import format_van_vat_for_ai
+            _ts_map = {}
+            if pct >= 75: _ts_map = 'Đế Vượng'
+            elif pct >= 55: _ts_map = 'Lâm Quan'
+            elif pct >= 40: _ts_map = 'Quan Đới'
+            elif pct >= 25: _ts_map = 'Suy'
+            elif pct >= 10: _ts_map = 'Bệnh'
+            else: _ts_map = 'Tử'
+            _vv_full_text = format_van_vat_for_ai(hanh_dt or 'Thổ', _ts_map)
+        except Exception:
+            pass
         
         # Lấy Bát Quái info từ chart
         cd = chart_data if isinstance(chart_data, dict) else {}
@@ -7501,24 +7515,26 @@ class FreeAIHelper:
         else:
             icon = '🟡'
         
+        # V40.6: Tái khẳng định câu hỏi ở TẤT CẢ dạng
+        _q_short = question[:80] if len(question) > 80 else question
         
         # ═══════════════════════════════════════════════
         # BƯỚC 3: XÁC ĐỊNH DẠNG CÂU HỎI + TRẢ LỜI LINH HOẠT
         # ═══════════════════════════════════════════════
-        # V34.4: Không chỉ CÓ/KHÔNG — mà theo ĐÚNG dạng câu hỏi
         
         # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
         if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
                                   'nghĩ gì', 'hành động', 'làm gì', 'xử lý', 'tính sao']):
-            lines.append(f"\n{icon} **CÂU TRẢ LỜI: {vv_data['cap']} — {dung_than} {vv_key.replace('_',' ')}**")
-            lines.append(f"\n📋 **Mô tả chi tiết (Vạn Vật Loại Tượng):**")
-            lines.append(f"- 👤 Con người: {vv_data.get('con_nguoi', '?')}")
-            lines.append(f"- 📏 Kích thước: {vv_data.get('kich_thuoc', '?')}")
-            lines.append(f"- 🔧 Tình trạng: {vv_data.get('tinh_trang', '?')}")
-            lines.append(f"- 📊 Số lượng: {vv_data.get('so_luong', '?')}")
-            lines.append(f"- 🎨 Chất lượng: {vv_data.get('chat_luong', '?')}")
-            lines.append(f"- ⏱️ Tốc độ: {vv_data.get('toc_do', '?')}")
-            lines.append(f"- 🔢 Số: {vv_data.get('so', '?')}")
+            lines.append(f"\n{icon} **VỀ \"{_q_short}\":** {vv_data['cap']} ({pct}%)")
+            lines.append(f"\n📋 **Mô tả chi tiết (Vạn Vật Loại Tượng {hanh_dt} × {_ts_map}):**")
+            if _vv_full_text:
+                for _line in _vv_full_text.split('\n')[:15]:
+                    if _line.strip():
+                        lines.append(f"  {_line}")
+            else:
+                lines.append(f"- 👤 Con người: {vv_data.get('con_nguoi', '?')}")
+                lines.append(f"- 🔧 Tình trạng: {vv_data.get('tinh_trang', '?')}")
+                lines.append(f"- 🎨 Chất lượng: {vv_data.get('chat_luong', '?')}")
             if pct >= 60:
                 lines.append(f"\n→ Tình hình **THUẬN LỢI** ({pct}%). Xu hướng tốt lên.")
             elif pct <= 40:
@@ -7836,23 +7852,33 @@ class FreeAIHelper:
                 else:
                     lines.append(f"\n🟡 **VỀ \"{_q_short}\":** TRUNG BÌNH — {pct}%")
         
-        # --- V40.3: VÌ SAO — trích dẫn bằng chứng THẬT từ factors ---
+        # --- V40.6: VÌ SAO — bằng chứng THẬT từ factors + evidence ---
         lines.append(f"\n**📋 VÌ SAO (bằng chứng từ quẻ):**")
-        # Inject real factors
         _vi_sao_items = []
+        # Ưu tiên factors thật từ engine
         if lh_factors:
             for f in lh_factors[:3]:
-                _vi_sao_items.append(f"✅ LH: {f}")
+                _vi_sao_items.append(f"📿 LH: {f}")
         if km_factors:
             for f in km_factors[:2]:
-                _vi_sao_items.append(f"✅ KM: {f}")
+                _vi_sao_items.append(f"🏯 KM: {f}")
         if mh_factors:
             for f in mh_factors[:1]:
-                _vi_sao_items.append(f"✅ MH: {f}")
+                _vi_sao_items.append(f"🌸 MH: {f}")
+        # Fallback: dùng evidence đã thu thập + reason
         if not _vi_sao_items:
-            _vi_sao_items.append(f"- Kỳ Môn ({ky_mon_reason if ky_mon_reason else 'Bình'})")
-            _vi_sao_items.append(f"- Lục Hào ({luc_hao_reason if luc_hao_reason else 'Bình'})")
-        for item in _vi_sao_items[:5]:
+            if evidence:
+                for ev in evidence[:3]:
+                    _vi_sao_items.append(f"📌 {ev}")
+            if ky_mon_reason:
+                _vi_sao_items.append(f"🏯 Kỳ Môn: {ky_mon_reason}")
+            if luc_hao_reason:
+                _vi_sao_items.append(f"📿 Lục Hào: {luc_hao_reason}")
+            if mai_hoa_reason:
+                _vi_sao_items.append(f"🌸 Mai Hoa: {mai_hoa_reason}")
+        if not _vi_sao_items:
+            _vi_sao_items.append(f"📊 Tổng hợp 6PP → weighted_pct={pct}%")
+        for item in _vi_sao_items[:6]:
             lines.append(f"- {item}")
         
         # --- V40.3: ỨNG KỲ — thời gian cụ thể ---
@@ -7868,28 +7894,44 @@ class FreeAIHelper:
         if _uk:
             lines.append(f"\n**⏳ ỨNG KỲ:** {_uk.get('thang','?')}, ngày {_uk.get('ngay','?')} | Hướng: {_uk.get('huong','?')}")
         
-        # --- V40.3: GIẢI PHÁP — dựa trên verdict + ngữ cảnh ---
-        lines.append(f"\n**🔧 GIẢI PHÁP:**")
+        # --- V40.6: GIẢI PHÁP — cụ thể theo câu hỏi + Ngũ Hành ---
+        lines.append(f"\n**🔧 GIẢI PHÁP CHO \"{_q_short}\":**")
+        _HANH_HELP = {
+            'Kim': 'Tìm quý nhân hành Thổ (sinh Kim). Hướng Tây. Màu trắng/bạc.',
+            'Mộc': 'Tìm quý nhân hành Thủy (sinh Mộc). Hướng Đông. Màu xanh lá.',
+            'Thủy': 'Tìm quý nhân hành Kim (sinh Thủy). Hướng Bắc. Màu đen/xanh đậm.',
+            'Hỏa': 'Tìm quý nhân hành Mộc (sinh Hỏa). Hướng Nam. Màu đỏ/cam.',
+            'Thổ': 'Tìm quý nhân hành Hỏa (sinh Thổ). Hướng Trung Tâm. Màu vàng/nâu.',
+        }
         if final_verdict == 'CÁT' or pct >= 55:
             if any(k in q for k in ['mua', 'đầu tư', 'kinh doanh', 'vốn', 'tiền', 'thuế']):
-                lines.append("- ✅ Thời điểm tốt để giao dịch. Kiểm tra kỹ giấy tờ.")
+                lines.append("- ✅ Thời điểm tốt để giao dịch. Kiểm tra kỹ giấy tờ trước khi ký.")
             elif any(k in q for k in ['bệnh', 'ốm', 'khỏe', 'sức khỏe', 'đau']):
-                lines.append("- ✅ Bệnh sẽ khỏi, tìm bác sĩ chuyên khoa để trị dứt.")
-            elif any(k in q for k in ['yêu', 'tình', 'vợ', 'chồng', 'cưới']):
-                lines.append("- ✅ Mối quan hệ tốt đẹp, thời điểm thuận lợi.")
-            elif any(k in q for k in ['việc', 'công ty', 'thi', 'đỗ', 'sếp']):
-                lines.append("- ✅ Công việc/sự nghiệp thuận lợi, hành động sớm.")
+                lines.append("- ✅ Bệnh sẽ hồi phục, tìm bác sĩ chuyên khoa để trị dứt.")
+            elif any(k in q for k in ['yêu', 'tình', 'vợ', 'chồng', 'cưới', 'hẹn hò']):
+                lines.append("- ✅ Mối quan hệ thuận lợi, chủ động bày tỏ.")
+            elif any(k in q for k in ['việc', 'công ty', 'thi', 'đỗ', 'sếp', 'lương']):
+                lines.append("- ✅ Thời cơ tốt, hành động quyết đoán sẽ thành công.")
             else:
-                lines.append("- ✅ Nên hành động sớm, tận dụng thời cơ.")
+                lines.append("- ✅ Nắm bắt cơ hội ngay, đừng chần chừ.")
         elif final_verdict == 'HUNG' or pct <= 40:
             if any(k in q for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'mất']):
-                lines.append("- ⚠️ Cần đi khám sớm, không tự chữa tại nhà.")
+                lines.append("- ⚠️ Cần đi khám ngay, không nên tự chữa. Theo dõi sát.")
             elif any(k in q for k in ['mua', 'đầu tư', 'vốn', 'tiền', 'thuế']):
-                lines.append("- ❌ Chưa nên giao dịch lớn, chờ thêm 2-4 tuần.")
+                lines.append("- ❌ KHÔNG nên giao dịch lúc này. Chờ 2-4 tuần hoặc sang tháng sinh hành.")
             else:
                 lines.append("- ❌ Kiên nhẫn chờ đợi, tìm quý nhân hỗ trợ.")
+            lines.append(f"- 💡 {_HANH_HELP.get(hanh_dt, 'Tìm người hỗ trợ.')}")
         else:
-            lines.append("- ⏸️ Chuẩn bị kỹ, chờ thời điểm hành vượng mới hành động quyết đoán.")
+            lines.append("- ⏸️ Chuẩn bị kỹ, chờ thời điểm hành vượng mới hành động.")
+            lines.append(f"- 💡 {_HANH_HELP.get(hanh_dt, 'Cân nhắc kỹ.')}")
+        
+        # V40.6: Thêm impacts tóm tắt cuối
+        if good_impacts and len(good_impacts) > 0:
+            lines.append(f"\n✅ **Thuận lợi ({len(good_impacts)}):** {good_impacts[0][:80]}")
+        if bad_impacts and len(bad_impacts) > 0:
+            lines.append(f"⚠️ **Trở ngại ({len(bad_impacts)}):** {bad_impacts[0][:80]}")
+        
         
         return "\n".join(lines)
 
