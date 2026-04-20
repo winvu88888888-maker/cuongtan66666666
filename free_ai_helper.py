@@ -7259,14 +7259,18 @@ class FreeAIHelper:
                                                      0, 0, evidence, impacts,
                                                      ky_mon_reason, luc_hao_reason, mai_hoa_reason,
                                                      age_numbers=age_numbers, count_numbers=count_numbers,
-                                                     chart_data=chart_data)
+                                                     chart_data=chart_data,
+                                                     lh_factors=kwargs.get('lh_factors'),
+                                                     km_factors=kwargs.get('km_factors'),
+                                                     mh_factors=kwargs.get('mh_factors'))
         
         return impact_text, direct_answer, evidence
     
     def _generate_direct_answer(self, question, dung_than, final_verdict, pct,
                                  cat_count, hung_count, evidence, impacts,
                                  ky_mon_reason, luc_hao_reason, mai_hoa_reason,
-                                 age_numbers=None, count_numbers=None, chart_data=None):
+                                 age_numbers=None, count_numbers=None, chart_data=None,
+                                 lh_factors=None, km_factors=None, mh_factors=None):
         """
         V34.4: Sinh câu trả lời TRỰC TIẾP + THÁM TỬ KIỂM CHỨNG.
         - Bước 1: THÁM TỬ kiểm tra % có đúng ko
@@ -7296,6 +7300,12 @@ class FreeAIHelper:
             if _nd in q:
                 q = q.replace(_nd, _cd)
         lines = []
+        # V40.3: Derive hanh_dt
+        _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+        hanh_dt = _LT_HANH.get(dung_than, '')
+        if not lh_factors: lh_factors = []
+        if not km_factors: km_factors = []
+        if not mh_factors: mh_factors = []
         
         lines.append(f"\n**❓ Câu hỏi của bạn:** {question}")
         
@@ -7374,8 +7384,9 @@ class FreeAIHelper:
         # ═══════════════════════════════════════════════
         # V34.4: Không chỉ CÓ/KHÔNG — mà theo ĐÚNG dạng câu hỏi
         
-        # THẾ NÀO / RA SAO — mô tả chi tiết bằng Vạn Vật Loại Tượng
-        if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'sao rồi']):
+        # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
+        if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
+                                  'nghĩ gì', 'hành động', 'làm gì', 'xử lý', 'tính sao']):
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: {vv_data['cap']} — {dung_than} {vv_key.replace('_',' ')}**")
             lines.append(f"\n📋 **Mô tả chi tiết (Vạn Vật Loại Tượng):**")
             lines.append(f"- 👤 Con người: {vv_data.get('con_nguoi', '?')}")
@@ -7398,6 +7409,7 @@ class FreeAIHelper:
             lines.append(f"\n📋 **Mô tả (Vạn Vật Loại Tượng — {vv_key}):**")
             lines.append(f"- 👤 {vv_data.get('con_nguoi', '?')}")
             lines.append(f"- 🎨 Màu sắc liên tưởng: {vv_data.get('mau_sac', '?')}")
+
             lines.append(f"- 📏 Dáng vóc: {vv_data.get('kich_thuoc', '?')}")
             lines.append(f"- ⚡ Tâm tính: {'Mạnh mẽ, tự tin' if pct >= 60 else 'Yếu đuối, do dự' if pct <= 40 else 'Trung tính, ổn định'}")
             if dung_than == 'Quan Quỷ':
@@ -7658,56 +7670,73 @@ class FreeAIHelper:
             else:
                 lines.append(f"\n📍 **CÂU TRẢ LỜI:** Không xác định được Cung Sự Việc để tra hướng.")
         
-        # DEFAULT — Câu hỏi chung (V34.3: QUYẾT ĐOÁN, không "chưa rõ")
+        # DEFAULT — V40.3: CÂU TRẢ LỜI KHẲNG ĐỊNH + VÌ SAO + ỨNG KỲ + GIẢI PHÁP
         else:
+            # Xác định CÓ/KHÔNG dứt khoát
             if final_verdict == 'CÁT' or pct >= 55:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: THUẬN LỢI ({pct}%)**")
+                _verdict_word = 'CÓ' if any(k in q for k in ['có ', 'được', 'không', 'chứ', 'hả']) else 'THUẬN LỢI'
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: {_verdict_word} — {pct}%**")
             elif final_verdict == 'HUNG' or pct <= 40:
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: BẤT LỢI ({pct}%)**")
-                lines.append(f"- Nên cẩn trọng, chuẩn bị phương án dự phòng.")
+                _verdict_word = 'KHÔNG' if any(k in q for k in ['có ', 'được', 'không', 'chứ', 'hả']) else 'BẤT LỢI'
+                lines.append(f"\n{icon} **CÂU TRẢ LỜI: {_verdict_word} — {pct}%**")
             else:
-                lines.append(f"\n🟡 **CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — cần thận trọng ({pct}%)**")
-                lines.append(f"- {len(good_impacts)} yếu tố thuận vs {len(bad_impacts)} bất lợi. Cần chuẩn bị kỹ.")
+                _verdict_word = 'CÓ THỂ ĐƯỢC' if any(k in q for k in ['có ', 'được', 'không']) else 'TRUNG BÌNH'
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: {_verdict_word} — cần thận trọng ({pct}%)**")
         
-        # --- V10.0: BẰNG CHỨNG CỤ THỂ TỪ QUẺ (thay vì mẫu chung) ---
-        lines.append(f"\n**📋 Bằng chứng từ quẻ (tại sao kết luận như trên):**")
-        lines.append(f"- Kỳ Môn ({ky_mon_reason if ky_mon_reason else 'Bình'})")
-        lines.append(f"- Lục Hào ({luc_hao_reason if luc_hao_reason else 'Bình'})")
-        if mai_hoa_reason and isinstance(mai_hoa_reason, str) and len(mai_hoa_reason) < 100:
-            lines.append(f"- Mai Hoa ({mai_hoa_reason})")
+        # --- V40.3: VÌ SAO — trích dẫn bằng chứng THẬT từ factors ---
+        lines.append(f"\n**📋 VÌ SAO (bằng chứng từ quẻ):**")
+        # Inject real factors
+        _vi_sao_items = []
+        if lh_factors:
+            for f in lh_factors[:3]:
+                _vi_sao_items.append(f"✅ LH: {f}")
+        if km_factors:
+            for f in km_factors[:2]:
+                _vi_sao_items.append(f"✅ KM: {f}")
+        if mh_factors:
+            for f in mh_factors[:1]:
+                _vi_sao_items.append(f"✅ MH: {f}")
+        if not _vi_sao_items:
+            _vi_sao_items.append(f"- Kỳ Môn ({ky_mon_reason if ky_mon_reason else 'Bình'})")
+            _vi_sao_items.append(f"- Lục Hào ({luc_hao_reason if luc_hao_reason else 'Bình'})")
+        for item in _vi_sao_items[:5]:
+            lines.append(f"- {item}")
         
-        if good_impacts:
-            lines.append(f"\n**✅ Yếu tố thuận lợi ({len(good_impacts)}):**")
-            for gi in good_impacts[:3]:
-                lines.append(f"- {gi.replace('✅ ', '')}")
+        # --- V40.3: ỨNG KỲ — thời gian cụ thể ---
+        _UK_TIMING = {
+            'Kim': {'thang': 'Thân/Dậu (tháng 7-8 ÂL)', 'ngay': 'Canh/Tân', 'huong': 'Tây'},
+            'Mộc': {'thang': 'Dần/Mão (tháng 1-2 ÂL)', 'ngay': 'Giáp/Ất', 'huong': 'Đông'},
+            'Thủy': {'thang': 'Hợi/Tý (tháng 10-11 ÂL)', 'ngay': 'Nhâm/Quý', 'huong': 'Bắc'},
+            'Hỏa': {'thang': 'Tị/Ngọ (tháng 4-5 ÂL)', 'ngay': 'Bính/Đinh', 'huong': 'Nam'},
+            'Thổ': {'thang': 'Thìn/Tuất/Sửu/Mùi (tháng 3/6/9/12 ÂL)', 'ngay': 'Mậu/Kỷ', 'huong': 'Trung Tâm'},
+        }
+        _dt_hanh = hanh_dt or ''
+        _uk = _UK_TIMING.get(_dt_hanh, {})
+        if _uk:
+            lines.append(f"\n**⏳ ỨNG KỲ:** {_uk.get('thang','?')}, ngày {_uk.get('ngay','?')} | Hướng: {_uk.get('huong','?')}")
         
-        if bad_impacts:
-            lines.append(f"\n**⚠️ Yếu tố bất lợi ({len(bad_impacts)}):**")
-            for bi in bad_impacts[:3]:
-                lines.append(f"- {bi.replace('🔴 ', '').replace('⚠️ ', '')}")
-        
-        # --- LỜI KHUYÊN DỰA TRÊN NGỮ CẢNH CÂU HỎI + BẰNG CHỨNG ---
-        lines.append(f"\n**💡 Lời khuyên hành động:**")
-        if final_verdict == 'CÁT':
-            if any(k in q for k in ['mua', 'đầu tư', 'kinh doanh', 'vốn', 'tiền']):
+        # --- V40.3: GIẢI PHÁP — dựa trên verdict + ngữ cảnh ---
+        lines.append(f"\n**🔧 GIẢI PHÁP:**")
+        if final_verdict == 'CÁT' or pct >= 55:
+            if any(k in q for k in ['mua', 'đầu tư', 'kinh doanh', 'vốn', 'tiền', 'thuế']):
                 lines.append("- ✅ Thời điểm tốt để giao dịch. Kiểm tra kỹ giấy tờ.")
             elif any(k in q for k in ['bệnh', 'ốm', 'khỏe', 'sức khỏe', 'đau']):
                 lines.append("- ✅ Bệnh sẽ khỏi, tìm bác sĩ chuyên khoa để trị dứt.")
             elif any(k in q for k in ['yêu', 'tình', 'vợ', 'chồng', 'cưới']):
                 lines.append("- ✅ Mối quan hệ tốt đẹp, thời điểm thuận lợi.")
-            elif any(k in q for k in ['việc', 'công ty', 'thi', 'đỗ']):
-                lines.append("- ✅ Công việc/thi cử thuận lợi, hành động ngay.")
+            elif any(k in q for k in ['việc', 'công ty', 'thi', 'đỗ', 'sếp']):
+                lines.append("- ✅ Công việc/sự nghiệp thuận lợi, hành động sớm.")
             else:
                 lines.append("- ✅ Nên hành động sớm, tận dụng thời cơ.")
-        elif final_verdict == 'HUNG':
+        elif final_verdict == 'HUNG' or pct <= 40:
             if any(k in q for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'mất']):
                 lines.append("- ⚠️ Cần đi khám sớm, không tự chữa tại nhà.")
-            elif any(k in q for k in ['mua', 'đầu tư', 'vốn', 'tiền']):
+            elif any(k in q for k in ['mua', 'đầu tư', 'vốn', 'tiền', 'thuế']):
                 lines.append("- ❌ Chưa nên giao dịch lớn, chờ thêm 2-4 tuần.")
             else:
                 lines.append("- ❌ Kiên nhẫn chờ đợi, tìm quý nhân hỗ trợ.")
         else:
-            lines.append("- ⏸️ Giữ nguyên hiện trạng, quan sát thêm.")
+            lines.append("- ⏸️ Chuẩn bị kỹ, chờ thời điểm hành vượng mới hành động quyết đoán.")
         
         return "\n".join(lines)
 
@@ -9782,7 +9811,10 @@ class FreeAIHelper:
             count_numbers=count_numbers,
             luc_nham_verdict=luc_nham_verdict,
             thai_at_verdict=thai_at_verdict,
-            weighted_pct=weighted_pct
+            weighted_pct=weighted_pct,
+            lh_factors=v23_lh_factors,
+            km_factors=v24_km_factors if 'v24_km_factors' in dir() else [],
+            mh_factors=v24_mh_factors if 'v24_mh_factors' in dir() else [],
         )
         
         # V34.7: HIỂN THỊ direct_answer (Thám Tử + Câu trả lời linh hoạt)
