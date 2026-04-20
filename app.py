@@ -1058,7 +1058,97 @@ st.markdown("""
         color: #ecf0f1 !important;
     }
 
-
+    /* ═══ V40.9 FIX: FORCE DARK cho MỌI Streamlit component ═══ */
+    
+    /* Alert boxes (st.info, st.success, st.warning, st.error) */
+    [data-testid="stAlert"],
+    [data-testid="stNotification"],
+    .stAlert, .element-container .stAlert {
+        background: rgba(30,41,59,0.9) !important;
+        color: #e2e8f0 !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stAlert"] p,
+    [data-testid="stAlert"] span,
+    [data-testid="stAlert"] div {
+        color: #e2e8f0 !important;
+    }
+    
+    /* Chat message */
+    [data-testid="stChatMessage"] {
+        background: rgba(30,41,59,0.7) !important;
+        border: 1px solid rgba(100,116,139,0.3) !important;
+    }
+    
+    /* Forms */
+    [data-testid="stForm"] {
+        background: rgba(30,41,59,0.5) !important;
+        border: 1px solid rgba(100,116,139,0.2) !important;
+        border-radius: 12px !important;
+    }
+    
+    /* Code blocks */
+    [data-testid="stCode"], code, pre {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* DataFrames & Tables */
+    [data-testid="stDataFrame"],
+    [data-testid="stTable"],
+    .stDataFrame, .stTable {
+        background: rgba(30,41,59,0.7) !important;
+    }
+    [data-testid="stDataFrame"] th,
+    [data-testid="stTable"] th {
+        background: #1e293b !important;
+        color: #fbbf24 !important;
+    }
+    [data-testid="stDataFrame"] td,
+    [data-testid="stTable"] td {
+        background: rgba(15,23,42,0.5) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Status containers (st.status) */
+    [data-testid="stStatusWidget"] {
+        background: rgba(30,41,59,0.8) !important;
+    }
+    
+    /* Toast messages */
+    [data-testid="stToast"] {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Caption text */
+    [data-testid="stCaptionContainer"] {
+        color: #94a3b8 !important;
+    }
+    
+    /* NUCLEAR FIX: Any remaining light backgrounds */
+    .element-container > div[style*="background-color: rgb(255"],
+    .element-container > div[style*="background-color: rgb(252"],
+    .element-container > div[style*="background-color: rgb(250"],
+    .element-container > div[style*="background-color: rgb(248"],
+    .element-container > div[style*="background-color: rgb(245"],
+    .element-container > div[style*="background-color: rgb(240"],
+    .element-container > div[style*="background-color: rgb(235"] {
+        background-color: rgba(30,41,59,0.9) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Streamlit info/success/warning/error specific selectors */
+    div[data-testid="stAlert"] > div {
+        background: transparent !important;
+    }
+    
+    /* Bottom toolbar / footer */
+    [data-testid="stBottomBlockContainer"],
+    [data-testid="stToolbar"] {
+        background: #0f172a !important;
+    }
+    footer { background: #0f172a !important; color: #64748b !important; }
 
 </style>
 """, unsafe_allow_html=True)
