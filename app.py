@@ -67,13 +67,12 @@ zoom = st.sidebar.slider("🔍 Phóng to / Thu nhỏ (%)", 50, 150, st.session_s
 st.session_state.zoom_level = zoom
 
 # Dynamic CSS for Zoom
-st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-""", unsafe_allow_html=True)
-
 st.markdown(f"""
 <style>
-    /* V40.9: FIX OVERLAP — Selectbox input hint */
+    /* V40.9: Load Material Symbols font via @import (more reliable than <link>) */
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+    
+    /* V40.9: FIX OVERLAP — Selectbox input hint text */
     [data-baseweb="select"] input {{
         opacity: 0 !important;
         position: absolute !important;
@@ -82,19 +81,50 @@ st.markdown(f"""
         pointer-events: none !important;
     }}
     
-    /* V40.9: FIX Material Icons raw text overlap */
-    .material-symbols-outlined {{
+    /* V40.9: FIX Material Symbols — force proper font rendering */
+    .material-symbols-outlined,
+    [data-testid="stSidebarCollapseButton"] span,
+    [data-testid="collapsedControl"] span,
+    button[kind="headerNoPadding"] span {{
         font-family: 'Material Symbols Outlined' !important;
         font-size: 24px !important;
-        display: inline-block !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         width: 24px !important;
+        height: 24px !important;
         overflow: hidden !important;
+        -webkit-font-feature-settings: 'liga' !important;
+        font-feature-settings: 'liga' !important;
     }}
     
-    /* V40.9: FIX Expander toggle — ẩn text thừa */
+    /* V40.9: NUCLEAR — nếu font vẫn không load, ẩn text thô hoàn toàn */
+    @supports not (font-family: 'Material Symbols Outlined') {{
+        .material-symbols-outlined,
+        [data-testid="stSidebarCollapseButton"] span,
+        [data-testid="collapsedControl"] span {{
+            font-size: 0 !important;
+            color: transparent !important;
+        }}
+    }}
+    
+    /* V40.9: FIX Expander toggle icon text */
     [data-testid="stExpander"] summary > span:first-child {{
         overflow: hidden !important;
         max-width: 24px !important;
+        display: inline-flex !important;
+    }}
+    
+    /* V40.9: FIX Sidebar toggle button */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="collapsedControl"] {{
+        overflow: hidden !important;
+    }}
+    [data-testid="stSidebarCollapseButton"] button,
+    [data-testid="collapsedControl"] button {{
+        overflow: hidden !important;
+        width: 32px !important;
+        height: 32px !important;
     }}
 
     html {{
