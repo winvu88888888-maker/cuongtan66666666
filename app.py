@@ -126,6 +126,36 @@ st.markdown(f"""
         width: 32px !important;
         height: 32px !important;
     }}
+    
+    /* V40.9: NUCLEAR FIX — ẩn MỌI broken Material Symbols text */
+    /* TextArea expand/fullscreen button */
+    [data-testid="stTextArea"] button span,
+    [data-testid="stTextInput"] button span,
+    [data-testid="stChatInput"] button span,
+    [data-testid="stNumberInput"] button span,
+    textarea + div span,
+    [data-testid="StyledFullScreenButton"] span,
+    button[data-testid="StyledFullScreenButton"] span {{
+        font-family: 'Material Symbols Outlined', sans-serif !important;
+        font-size: 18px !important;
+        width: 20px !important;
+        height: 20px !important;
+        overflow: hidden !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        -webkit-font-feature-settings: 'liga' !important;
+    }}
+    
+    /* V40.9: Fullscreen overlay button on ALL containers */
+    [data-testid="StyledFullScreenButton"] {{
+        overflow: hidden !important;
+    }}
+    [data-testid="StyledFullScreenButton"] span {{
+        font-family: 'Material Symbols Outlined' !important;
+        -webkit-font-feature-settings: 'liga' !important;
+        font-feature-settings: 'liga' !important;
+    }}
 
     html {{
         font-size: {zoom}% !important;
