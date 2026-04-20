@@ -261,9 +261,9 @@ def render_van_vat_view():
             for col_idx, cell in enumerate(row):
                 if col_idx == 0:
                     # Category column
-                    html += f'<td style="padding:10px 8px;font-weight:800;color:#1e293b;border:1px solid #cbd5e1;background:#f1f5f9;white-space:nowrap;">{cell}</td>'
+                    html += f'<td style="padding:10px 8px;font-weight:800;color:#fbbf24;border:1px solid rgba(100,116,139,0.3);background:rgba(22,33,62,0.8);white-space:nowrap;">{cell}</td>'
                 else:
-                    html += f'<td style="padding:10px 8px;color:#1e293b;border:1px solid #cbd5e1;text-align:center;font-weight:600;">{cell}</td>'
+                    html += f'<td style="padding:10px 8px;color:#ecf0f1;border:1px solid rgba(100,116,139,0.3);text-align:center;font-weight:600;">{cell}</td>'
             html += "</tr>"
 
         html += "</tbody></table></div>"
@@ -275,24 +275,24 @@ def render_van_vat_view():
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("""
-            <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:15px;padding:20px;">
+            <div style="background:rgba(22,78,22,0.4);border:2px solid #22c55e;border-radius:15px;padding:20px;">
                 <h4 style="color:#16a34a;text-align:center;">✅ TƯƠNG SINH (Hỗ trợ)</h4>
-                <p style="text-align:center;font-size:1.3rem;font-weight:800;color:#1e293b;">
+                <p style="text-align:center;font-size:1.3rem;font-weight:800;color:#ecf0f1;">
                     💧→🌳→🔥→🏔️→⚔️→💧
                 </p>
-                <p style="text-align:center;color:#374151;font-weight:700;">
+                <p style="text-align:center;color:#94a3b8;font-weight:700;">
                     Thủy sinh Mộc → Mộc sinh Hỏa → Hỏa sinh Thổ → Thổ sinh Kim → Kim sinh Thủy
                 </p>
             </div>
             """, unsafe_allow_html=True)
         with col2:
             st.markdown("""
-            <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:15px;padding:20px;">
+            <div style="background:rgba(78,22,22,0.4);border:2px solid #ef4444;border-radius:15px;padding:20px;">
                 <h4 style="color:#dc2626;text-align:center;">❌ TƯƠNG KHẮC (Kìm hãm)</h4>
-                <p style="text-align:center;font-size:1.3rem;font-weight:800;color:#1e293b;">
+                <p style="text-align:center;font-size:1.3rem;font-weight:800;color:#ecf0f1;">
                     💧→🔥→⚔️→🌳→🏔️→💧
                 </p>
-                <p style="text-align:center;color:#374151;font-weight:700;">
+                <p style="text-align:center;color:#94a3b8;font-weight:700;">
                     Thủy khắc Hỏa → Hỏa khắc Kim → Kim khắc Mộc → Mộc khắc Thổ → Thổ khắc Thủy
                 </p>
             </div>
@@ -321,9 +321,9 @@ def render_van_vat_view():
             html2 += f'<tr style="background:{bg_row};">'
             for col_idx, cell in enumerate(row):
                 if col_idx == 0:
-                    html2 += f'<td style="padding:8px 6px;font-weight:800;color:#1e293b;border:1px solid #cbd5e1;background:#f1f5f9;white-space:nowrap;">{cell}</td>'
+                    html2 += f'<td style="padding:8px 6px;font-weight:800;color:#fbbf24;border:1px solid rgba(100,116,139,0.3);background:rgba(22,33,62,0.8);white-space:nowrap;">{cell}</td>'
                 else:
-                    html2 += f'<td style="padding:8px 6px;color:#1e293b;border:1px solid #cbd5e1;text-align:center;font-weight:600;font-size:0.85rem;">{cell}</td>'
+                    html2 += f'<td style="padding:8px 6px;color:#ecf0f1;border:1px solid rgba(100,116,139,0.3);text-align:center;font-weight:600;font-size:0.85rem;">{cell}</td>'
             html2 += "</tr>"
 
         html2 += "</tbody></table></div>"
@@ -367,9 +367,9 @@ def render_van_vat_view():
         st.markdown(f"### {data['mai_hoa']['title']}")
         for idx, rule in enumerate(data['mai_hoa']['rules'], 1):
             st.markdown(f"""
-            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 15px;margin:8px 0;border-radius:0 8px 8px 0;">
-                <strong style="color:#92400e;">📌 Quy tắc {idx}:</strong>
-                <span style="color:#451a03;font-weight:600;"> {rule}</span>
+            <div style="background:rgba(30,27,75,0.6);border-left:4px solid #f59e0b;padding:10px 15px;margin:8px 0;border-radius:0 8px 8px 0;">
+                <strong style="color:#fbbf24;">📌 Quy tắc {idx}:</strong>
+                <span style="color:#ecf0f1;font-weight:600;"> {rule}</span>
             </div>
             """, unsafe_allow_html=True)
 

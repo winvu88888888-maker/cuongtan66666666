@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V40.8"
+APP_VERSION = "V40.9"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 2226+ + 12 Trường Sinh)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -3334,8 +3334,8 @@ elif st.session_state.current_view == "luc_hao":
         
         # ========== COMPACT HEADER (giống xinhdich.com) ==========
         st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #b45309; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-size: 13px;">
-            <div style="text-align:center; font-weight:900; font-size:15px; color:#92400e; margin-bottom:6px;">
+        <div style="background: linear-gradient(135deg, rgba(30,27,75,0.9), rgba(22,33,62,0.9)); border: 2px solid #7c3aed; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-size: 13px;">
+            <div style="text-align:center; font-weight:900; font-size:15px; color:#a78bfa; margin-bottom:6px;">
                 📜 PHẦN MỀM LẬP QUẺ DỊCH — Phương pháp: Mai Hoa
             </div>
             <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
