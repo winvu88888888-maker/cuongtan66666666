@@ -7569,10 +7569,13 @@ class FreeAIHelper:
             elif dung_than == 'Huynh Đệ':
                 lines.append(f"- 🤝 Mối quan hệ: Anh em, bạn bè, đồng nghiệp, đối thủ")
         
-        # CÁI GÌ / ĐIỀU GÌ / MUỐN GÌ — phân tích Lục Thân + Hào động
-        elif any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì', 'chuyện gì', 'việc gì']):
-            lines.append(f"\n{icon} **CÂU TRẢ LỜI: Phân tích nội dung sự việc**")
-            lines.append(f"\n📋 **Dựa trên Dụng Thần ({dung_than}) + Vạn Vật Loại Tượng:**")
+        # CÁI GÌ / VẬT GÌ / SẢN PHẨM GÌ / ĐỒ GÌ — phân tích Lục Thân + Vạn Vật
+        elif any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì',
+                                   'chuyện gì', 'việc gì', 'vật gì', 'sản phẩm', 'hàng gì',
+                                   'đồ gì', 'loại gì', 'mặt hàng', 'sản xuất gì', 'bán gì',
+                                   'kinh doanh gì', 'buôn gì', 'mua gì', 'đầu tư gì', 'ngành gì']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: Phân tích sản phẩm/sự việc phù hợp**")
+            lines.append(f"\n📋 **Dựa trên Dụng Thần ({dung_than}) — Hành {hanh_dt} + Vạn Vật Loại Tượng:**")
             
             # Map DT → nội dung sự việc
             dt_noi_dung = {
@@ -7582,16 +7585,43 @@ class FreeAIHelper:
                 'Tử Tôn': 'Liên quan đến CON CÁI, GIẢI TRÍ, THUỐC MEN, hoặc VẬT NUÔI',
                 'Huynh Đệ': 'Liên quan đến ANH EM, BẠN BÈ, CẠNH TRANH, hoặc TIÊU XÀI',
             }
+            # V40.9: Map HÀNH → SẢN PHẨM CỤ THỂ (Vạn Vật Loại Tượng)
+            HANH_SAN_PHAM = {
+                'Mộc': '🌳 GỖ, GIẤY, VẢI, may mặc, nội thất gỗ, sách vở, thuốc thảo dược, rau quả, nông sản, cây cảnh, đồ handmade',
+                'Hỏa': '🔥 ĐIỆN TỬ, công nghệ, ánh sáng, năng lượng, mỹ phẩm, thực phẩm nấu chín, nhà hàng, quảng cáo, truyền thông, giải trí',
+                'Thổ': '🏔️ BẤT ĐỘNG SẢN, vật liệu xây dựng, gạch đá, xi măng, gốm sứ, thực phẩm chế biến, nông nghiệp, khoáng sản',
+                'Kim': '⚔️ KIM LOẠI, máy móc, ô tô, xe máy, thiết bị cơ khí, trang sức, vàng bạc, công nghiệp nặng, linh kiện',
+                'Thủy': '💧 NƯỚC UỐNG, đồ uống, thủy sản, vận tải biển, du lịch, logistics, hóa chất lỏng, dầu mỡ, nhà hàng hải sản',
+            }
+            HANH_HUONG = {
+                'Mộc': 'Đông', 'Hỏa': 'Nam', 'Thổ': 'Trung Tâm', 'Kim': 'Tây', 'Thủy': 'Bắc'
+            }
+            
             lines.append(f"- 📌 **Nội dung:** {dt_noi_dung.get(dung_than, 'Chưa xác định')}")
             lines.append(f"- 📊 **Tình trạng:** {vv_data.get('tinh_trang', '?')}")
             lines.append(f"- 🎯 **Tính chất:** {vv_data.get('chat_luong', '?')}")
             lines.append(f"- ⏱️ **Mức độ khẩn:** {vv_data.get('toc_do', '?')}")
+            
+            # V40.9: SẢN PHẨM CỤ THỂ theo Hành DT
+            _sp = HANH_SAN_PHAM.get(hanh_dt, '')
+            if _sp:
+                lines.append(f"\n🏭 **SẢN PHẨM/NGÀNH NGHỀ PHÙ HỢP (Hành {hanh_dt}):**")
+                lines.append(f"- {_sp}")
+                lines.append(f"- 🧭 Hướng tốt: **{HANH_HUONG.get(hanh_dt, '?')}**")
+            
+            # V40.9: Sản phẩm TRÁNH (Hành bị khắc)
+            HANH_KHAC = {'Mộc': 'Kim', 'Hỏa': 'Thủy', 'Thổ': 'Mộc', 'Kim': 'Hỏa', 'Thủy': 'Thổ'}
+            _hanh_tranh = HANH_KHAC.get(hanh_dt, '')
+            if _hanh_tranh and _hanh_tranh in HANH_SAN_PHAM:
+                lines.append(f"\n⛔ **NÊN TRÁNH (Hành {_hanh_tranh} khắc {hanh_dt}):**")
+                lines.append(f"- {HANH_SAN_PHAM[_hanh_tranh]}")
+            
             if pct >= 60:
-                lines.append(f"- 💡 Sự việc có tính chất **TÍCH CỰC**, người đó/việc đó mang lại lợi ích")
+                lines.append(f"\n- 💡 Sự việc có tính chất **TÍCH CỰC**, người đó/việc đó mang lại lợi ích")
             elif pct <= 40:
-                lines.append(f"- ⚠️ Sự việc có tính chất **TIÊU CỰC**, cần đề phòng và cẩn trọng")
+                lines.append(f"\n- ⚠️ Sự việc có tính chất **TIÊU CỰC**, cần đề phòng và cẩn trọng")
             else:
-                lines.append(f"- 🔄 Sự việc **TRUNG TÍNH**, tùy thuộc cách xử lý")
+                lines.append(f"\n- 🔄 Sự việc **TRUNG TÍNH**, tùy thuộc cách xử lý")
         
         # V36.1: SỐNG/CHẾT — PHẢI CHECK TRƯỚC CÓ/KHÔNG
         elif any(k in q for k in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không',
