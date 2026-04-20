@@ -1004,6 +1004,128 @@ st.markdown("""
     ::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#7c3aed,#4c1d95); border-radius: 8px; }
     ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
 
+    /* ═══ V40.8 FIX: DARK BACKGROUND TOÀN BỘ ═══ */
+    
+    /* MAIN APP BACKGROUND — dark */
+    .stApp, [data-testid="stAppViewContainer"], 
+    [data-testid="stMain"], .main, .block-container {
+        background: linear-gradient(180deg, #0a0a1a 0%, #0f172a 50%, #0a0a1a 100%) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* ALL CONTAINERS — dark */
+    [data-testid="stVerticalBlock"],
+    [data-testid="stHorizontalBlock"],
+    [data-testid="column"] {
+        background: transparent !important;
+    }
+    
+    /* FIX: INPUT LABEL overlapping — tăng khoảng cách */
+    [data-testid="stTextInput"] label,
+    [data-testid="stTextArea"] label,
+    [data-testid="stNumberInput"] label,
+    .stSelectbox label, .stMultiSelect label {
+        color: #a78bfa !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 4px !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    /* FIX: SELECTBOX dropdown — dark */
+    [data-testid="stSelectbox"] > div > div,
+    .stSelectbox > div > div {
+        background: rgba(15,23,42,0.9) !important;
+        border: 1px solid rgba(139,92,246,0.3) !important;
+        border-radius: 12px !important;
+        color: #e2e8f0 !important;
+    }
+    [data-testid="stSelectbox"] svg { fill: #a78bfa !important; }
+    
+    /* FIX: DROPDOWN options — dark */
+    [data-baseweb="popover"], [data-baseweb="menu"],
+    [data-baseweb="select"] [role="listbox"] {
+        background: #1e1b4b !important;
+        border: 1px solid rgba(139,92,246,0.3) !important;
+    }
+    [data-baseweb="menu"] li,
+    [data-baseweb="select"] [role="option"] {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+    }
+    [data-baseweb="menu"] li:hover,
+    [data-baseweb="select"] [role="option"]:hover {
+        background: rgba(139,92,246,0.2) !important;
+    }
+    
+    /* FIX: TAB — dark */
+    [data-testid="stTabs"] button {
+        background: transparent !important;
+        color: #94a3b8 !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid transparent !important;
+    }
+    [data-testid="stTabs"] button[aria-selected="true"] {
+        color: #fbbf24 !important;
+        border-bottom: 3px solid #fbbf24 !important;
+    }
+    [data-testid="stTabs"] [data-testid="stTabContent"] {
+        background: transparent !important;
+    }
+    
+    /* FIX: EXPANDER — dark glassmorphism */
+    [data-testid="stExpander"] {
+        background: rgba(15,23,42,0.7) !important;
+        border: 1px solid rgba(148,163,184,0.2) !important;
+        border-radius: 14px !important;
+    }
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] [data-testid="stExpanderToggleDetails"] {
+        color: #a78bfa !important;
+        font-weight: 700 !important;
+    }
+    [data-testid="stExpander"] [data-testid="stExpanderContent"] * {
+        color: #e2e8f0 !important;
+    }
+    
+    /* FIX: RADIO + CHECKBOX — dark */
+    [data-testid="stRadio"] label,
+    [data-testid="stCheckbox"] label {
+        color: #e2e8f0 !important;
+    }
+    
+    /* FIX: STATUS/SPINNER */
+    .stSpinner > div { color: #a78bfa !important; }
+    
+    /* FIX: HTML CONTENT inside st.markdown — override inline white backgrounds */
+    [data-testid="stMarkdown"] div[style*="background:#fff"],
+    [data-testid="stMarkdown"] div[style*="background: #fff"],
+    [data-testid="stMarkdown"] div[style*="background:white"],
+    [data-testid="stMarkdown"] div[style*="background: white"] {
+        background: rgba(15,23,42,0.8) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* FIX: ALL text in main — readable */
+    .main p, .main li, .main span, .main td, .main th,
+    .element-container p, .element-container li {
+        color: #e2e8f0 !important;
+    }
+    .main strong, .main b { color: #fbbf24 !important; }
+    .main h1, .main h2, .main h3, .main h4 {
+        color: #fbbf24 !important;
+    }
+    
+    /* FIX: METRIC — dark */
+    [data-testid="stMetric"] {
+        background: rgba(15,23,42,0.7) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+    }
+    [data-testid="stMetric"] label { color: #94a3b8 !important; }
+    [data-testid="stMetric"] [data-testid="stMetricValue"] { color: #fbbf24 !important; }
+
 </style>
 """, unsafe_allow_html=True)
 # Zoom level already initialized in session state
