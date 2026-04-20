@@ -7846,6 +7846,233 @@ class FreeAIHelper:
             else:
                 lines.append(f"\n📍 **CÂU TRẢ LỜI:** Không xác định được Cung Sự Việc để tra hướng.")
         
+        # ═══ V40.9: BỔ SUNG 12 DẠNG CÂU HỎI MỚI ═══
+        
+        # [11] TẠI SAO / VÌ SAO — phân tích nguyên nhân
+        elif any(k in q for k in ['tại sao', 'vì sao', 'nguyên nhân', 'do đâu', 'lý do',
+                                   'vì đâu', 'tại vì', 'nguyên cớ', 'căn nguyên']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: PHÂN TÍCH NGUYÊN NHÂN**")
+            # Nguyên nhân từ Kỵ Thần
+            KY_THAN_MAP = {
+                'Phụ Mẫu': 'Do NHÀ CỬA, GIẤY TỜ, HỌC HÀNH, hoặc ÁP LỰC TỪ BỀ TRÊN',
+                'Thê Tài': 'Do TIỀN BẠC, TÀI CHÍNH, MUA BÁN, hoặc VẤN ĐỀ TÌNH CẢM',
+                'Quan Quỷ': 'Do CÔNG VIỆC, BỆNH TẬT, KIỆN TỤNG, hoặc SẾP/CHÍNH QUYỀN',
+                'Tử Tôn': 'Do CON CÁI, GIẢI TRÍ, MẤT TẬP TRUNG, hoặc QUÁ LẠC QUAN',
+                'Huynh Đệ': 'Do BẠN BÈ, ĐỐI THỦ, CẠNH TRANH, hoặc TIÊU XÀI HOANG PHÍ',
+            }
+            # Kỵ Thần = cái khắc DT
+            KY_MAP = {'Phụ Mẫu': 'Thê Tài', 'Thê Tài': 'Huynh Đệ', 'Quan Quỷ': 'Tử Tôn',
+                      'Tử Tôn': 'Quan Quỷ', 'Huynh Đệ': 'Quan Quỷ'}
+            ky_than = KY_MAP.get(dung_than, '')
+            lines.append(f"\n📋 **Nguyên nhân chính (từ Kỵ Thần = {ky_than}):**")
+            lines.append(f"- {KY_THAN_MAP.get(ky_than, 'Chưa xác định')}")
+            lines.append(f"\n📊 **Mức độ nghiêm trọng:** {'Nhẹ, dễ khắc phục' if pct >= 55 else 'Nghiêm trọng, khó giải quyết nhanh' if pct <= 40 else 'Trung bình, cần nỗ lực'}")
+            lines.append(f"- 🔧 **Giải pháp:** Bổ sung Hành {hanh_dt} (Nguyên Thần sinh DT)")
+        
+        # [12] BAO LÂU / MẤT BAO LÂU — tính thời gian
+        elif any(k in q for k in ['bao lâu', 'mất bao lâu', 'mấy ngày', 'mấy tháng',
+                                   'mấy năm', 'bao nhiêu ngày', 'kéo dài']):
+            # Ước tính dựa trên Hành DT + pct
+            HANH_TGIAN = {'Mộc': '3-8 ngày/tháng', 'Hỏa': '2-7 ngày/tháng', 'Thổ': '5-10 ngày/tháng',
+                          'Kim': '4-9 ngày/tháng', 'Thủy': '1-6 ngày/tháng'}
+            tg = HANH_TGIAN.get(hanh_dt, '?')
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: ƯỚC TÍNH THỜI GIAN**")
+            lines.append(f"- ⏱️ **Dự kiến:** {tg} (theo Hành {hanh_dt} của Dụng Thần)")
+            if pct >= 60:
+                lines.append(f"- ✅ Thời gian **NGẮN**, thuận lợi giải quyết nhanh")
+            elif pct <= 40:
+                lines.append(f"- 🔴 Thời gian **DÀI**, nhiều trở ngại kéo dài")
+            else:
+                lines.append(f"- 🟡 Thời gian **TRUNG BÌNH**, cần kiên nhẫn")
+        
+        # [13] MÀU GÌ / MÀU SẮC — theo Hành DT
+        elif any(k in q for k in ['màu gì', 'màu nào', 'màu sắc', 'mặc màu', 'chọn màu',
+                                   'sơn màu', 'xe màu']):
+            HANH_MAU = {
+                'Mộc': ('🟢 XANH LÁ, xanh ngọc, xanh rêu', 'Đỏ, cam, hồng (Hỏa khắc Mộc)'),
+                'Hỏa': ('🔴 ĐỎ, cam, hồng, tím', 'Đen, xanh dương (Thủy khắc Hỏa)'),
+                'Thổ': ('🟡 VÀNG, nâu, be, kem', 'Xanh lá (Mộc khắc Thổ)'),
+                'Kim': ('⚪ TRẮNG, bạc, xám, ánh kim', 'Đỏ, cam (Hỏa khắc Kim)'),
+                'Thủy': ('⚫ ĐEN, xanh dương, tím than', 'Vàng, nâu (Thổ khắc Thủy)'),
+            }
+            mau_tot, mau_tranh = HANH_MAU.get(hanh_dt, ('?', '?'))
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: MÀU SẮC PHÙ HỢP (Hành {hanh_dt})**")
+            lines.append(f"- ✅ **Nên dùng:** {mau_tot}")
+            lines.append(f"- ⛔ **Nên tránh:** {mau_tranh}")
+            # Hành sinh DT
+            SINH_DT = {'Mộc': 'Thủy', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa', 'Kim': 'Thổ', 'Thủy': 'Kim'}
+            hanh_sinh = SINH_DT.get(hanh_dt, '')
+            if hanh_sinh:
+                mau_sinh, _ = HANH_MAU.get(hanh_sinh, ('?', '?'))
+                lines.append(f"- 💡 **Màu bổ trợ (Hành {hanh_sinh} sinh {hanh_dt}):** {mau_sinh}")
+        
+        # [14] SỐ MẤY / CHỌN SỐ — theo Hành DT
+        elif any(k in q for k in ['số mấy', 'chọn số', 'số nào', 'biển số', 'số đẹp',
+                                   'số điện thoại', 'số may mắn', 'con số']):
+            HANH_SO = {
+                'Mộc': ('3, 8', 'Số liên quan Đông phương'),
+                'Hỏa': ('2, 7', 'Số liên quan Nam phương'),
+                'Thổ': ('5, 0, 10', 'Số liên quan Trung ương'),
+                'Kim': ('4, 9', 'Số liên quan Tây phương'),
+                'Thủy': ('1, 6', 'Số liên quan Bắc phương'),
+            }
+            so_tot, so_note = HANH_SO.get(hanh_dt, ('?', '?'))
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: SỐ MAY MẮN (Hành {hanh_dt})**")
+            lines.append(f"- ✅ **Số tốt:** {so_tot} — {so_note}")
+            SINH_DT = {'Mộc': 'Thủy', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa', 'Kim': 'Thổ', 'Thủy': 'Kim'}
+            hanh_sinh = SINH_DT.get(hanh_dt, '')
+            if hanh_sinh:
+                so_sinh, _ = HANH_SO.get(hanh_sinh, ('?', '?'))
+                lines.append(f"- 💡 **Số bổ trợ ({hanh_sinh} sinh {hanh_dt}):** {so_sinh}")
+            HANH_KHAC = {'Mộc': 'Kim', 'Hỏa': 'Thủy', 'Thổ': 'Mộc', 'Kim': 'Hỏa', 'Thủy': 'Thổ'}
+            hanh_xau = HANH_KHAC.get(hanh_dt, '')
+            if hanh_xau:
+                so_xau, _ = HANH_SO.get(hanh_xau, ('?', '?'))
+                lines.append(f"- ⛔ **Số nên tránh ({hanh_xau} khắc {hanh_dt}):** {so_xau}")
+        
+        # [15] GIẢI PHÁP / LÀM SAO / CÁCH NÀO — hành động cụ thể
+        elif any(k in q for k in ['làm sao', 'giải pháp', 'cách nào', 'khắc phục', 'cải thiện',
+                                   'phải làm', 'nên làm', 'hóa giải', 'giải cứu', 'thoát khỏi']):
+            HANH_GIAI_PHAP = {
+                'Mộc': 'Trồng cây, dùng đồ gỗ, mặc xanh lá, hướng Đông, ăn rau xanh',
+                'Hỏa': 'Thắp đèn sáng, dùng đồ đỏ, hướng Nam, tập thể dục, kinh doanh ánh sáng',
+                'Thổ': 'Bất động sản, đeo đá quý, dùng đồ vàng/nâu, hướng Trung Tâm, kiên nhẫn',
+                'Kim': 'Đeo vàng/bạc, dùng đồ kim loại, hướng Tây, tập kỷ luật, cắt giảm',
+                'Thủy': 'Uống nhiều nước, gần sông hồ, hướng Bắc, linh hoạt, du lịch, mặc đen/xanh dương',
+            }
+            SINH_DT = {'Mộc': 'Thủy', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa', 'Kim': 'Thổ', 'Thủy': 'Kim'}
+            hanh_sinh = SINH_DT.get(hanh_dt, '')
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: GIẢI PHÁP CỤ THỂ**")
+            lines.append(f"\n🔧 **Bổ sung Hành {hanh_dt} (DT {dung_than}):**")
+            lines.append(f"- {HANH_GIAI_PHAP.get(hanh_dt, '?')}")
+            if hanh_sinh:
+                lines.append(f"\n💡 **Bổ sung Hành {hanh_sinh} (sinh {hanh_dt}):**")
+                lines.append(f"- {HANH_GIAI_PHAP.get(hanh_sinh, '?')}")
+            HANH_KHAC = {'Mộc': 'Kim', 'Hỏa': 'Thủy', 'Thổ': 'Mộc', 'Kim': 'Hỏa', 'Thủy': 'Thổ'}
+            hanh_tranh = HANH_KHAC.get(hanh_dt, '')
+            if hanh_tranh:
+                lines.append(f"\n⛔ **Tránh Hành {hanh_tranh} (khắc {hanh_dt}):**")
+                lines.append(f"- {HANH_GIAI_PHAP.get(hanh_tranh, '?')}")
+        
+        # [16] SO SÁNH / CHỌN A HAY B — so hành
+        elif any(k in q for k in ['hay là', 'hay B', ' hay ', 'chọn cái nào', 'nên chọn',
+                                   'cái nào tốt', 'lựa chọn', 'option', 'phương án']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: SO SÁNH & LỰA CHỌN**")
+            lines.append(f"\n📋 **Nguyên tắc chọn (Dụng Thần = {dung_than}, Hành {hanh_dt}):**")
+            lines.append(f"- ✅ Chọn phương án **thuộc Hành {hanh_dt}** hoặc **Hành sinh {hanh_dt}**")
+            SINH_DT = {'Mộc': 'Thủy', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa', 'Kim': 'Thổ', 'Thủy': 'Kim'}
+            lines.append(f"- 💡 Hành sinh: **{SINH_DT.get(hanh_dt, '?')}** → hỗ trợ DT")
+            HANH_KHAC = {'Mộc': 'Kim', 'Hỏa': 'Thủy', 'Thổ': 'Mộc', 'Kim': 'Hỏa', 'Thủy': 'Thổ'}
+            lines.append(f"- ⛔ Tránh phương án **thuộc Hành {HANH_KHAC.get(hanh_dt, '?')}** (khắc DT)")
+            if pct >= 55:
+                lines.append(f"- 🟢 Phương án **ĐẦU TIÊN** (trong quẻ) trội hơn")
+            else:
+                lines.append(f"- 🔴 Phương án **THỨ HAI** có thể tốt hơn (DT yếu → chọn an toàn)")
+        
+        # [17] LỪA ĐẢO / THẬT GIẢ — kiểm tra Huynh Đệ + Quan Quỷ
+        elif any(k in q for k in ['lừa đảo', 'lừa', 'giả', 'thật giả', 'tin được',
+                                   'có thật', 'đáng tin', 'trung thực', 'gian lận', 'bịp']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: KIỂM TRA ĐỘ TIN CẬY**")
+            # Huynh Đệ vượng = tranh giành, lừa đảo
+            if pct <= 40:
+                lines.append(f"- 🔴 **CẢNH BÁO CAO:** Huynh Đệ vượng, nhiều dấu hiệu KHÔNG ĐÁNG TIN")
+                lines.append(f"- ⚠️ Cần KIỂM TRA KỸ, có khả năng bị lừa/giả dối")
+            elif pct >= 60:
+                lines.append(f"- ✅ **ĐỘ TIN CẬY CAO:** DT vượng, tình hình minh bạch")
+                lines.append(f"- 💡 Có thể tin tưởng, nhưng vẫn nên kiểm tra hợp đồng/giấy tờ")
+            else:
+                lines.append(f"- 🟡 **CẦN THẬN:** Chưa rõ ràng, vừa có yếu tố tốt vừa đáng ngờ")
+                lines.append(f"- ⚠️ Nên xác minh thêm trước khi cam kết")
+        
+        # [18] TÌNH CẢM / HÔN NHÂN / YÊU ĐƯƠNG
+        elif any(k in q for k in ['yêu', 'hợp không', 'có cưới', 'hôn nhân', 'tình cảm',
+                                   'chia tay', 'quay lại', 'người yêu', 'vợ chồng', 'kết hôn',
+                                   'tái hợp', 'ngoại tình', 'chung thủy', 'có người', 'đám cưới']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: TÌNH CẢM / HÔN NHÂN**")
+            lines.append(f"\n📋 **Phân tích (DT: {dung_than}, Hành {hanh_dt}):**")
+            if pct >= 60:
+                lines.append(f"- ✅ **THUẬN LỢI** — Tình cảm tốt, có cơ hội phát triển")
+                lines.append(f"- 💕 DT vượng → hai bên hòa hợp, có tương lai")
+            elif pct <= 40:
+                lines.append(f"- 🔴 **BẤT LỢI** — Nhiều trở ngại, khó hòa hợp")
+                lines.append(f"- 💔 DT suy → mâu thuẫn, thiếu tin tưởng")
+            else:
+                lines.append(f"- 🟡 **BÌNH THƯỜNG** — Có một số thử thách cần vượt qua")
+                lines.append(f"- 💛 Cần kiên nhẫn và hy sinh từ cả hai phía")
+            # Thế Ứng sinh khắc
+            lines.append(f"- 📊 Tình trạng: {vv_data.get('tinh_trang', '?')}")
+        
+        # [19] BỆNH TẬT / SỨC KHỎE — Quan Quỷ Hành → Tạng phủ
+        elif any(k in q for k in ['bệnh gì', 'bệnh', 'sức khỏe', 'ốm', 'đau', 'khỏi bệnh',
+                                   'nặng không', 'viện', 'mổ', 'phẫu thuật', 'thuốc', 'chữa',
+                                   'khám', 'triệu chứng', 'tạng', 'tim', 'gan', 'phổi']):
+            HANH_BENH = {
+                'Mộc': '🌳 GAN-MẬT, mắt, gân cơ, tay chân, đau đầu, stress',
+                'Hỏa': '🔥 TIM-MẠCH, huyết áp, mắt, lưỡi, sốt, viêm',
+                'Thổ': '🏔️ DẠ DÀY-TỤNG, tiêu hóa, da, miệng, phù thũng',
+                'Kim': '⚔️ PHỔI-ĐẠI TRÀNG, hô hấp, da, mũi, răng, xương',
+                'Thủy': '💧 THẬN-BÀNG QUANG, sinh dục, tai, xương sống, tiểu tiện',
+            }
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: PHÂN TÍCH SỨC KHỎE**")
+            # Bệnh theo Hành Quan Quỷ (gây bệnh)
+            lines.append(f"\n🏥 **Tạng phủ bị ảnh hưởng (Hành {hanh_dt}):**")
+            lines.append(f"- {HANH_BENH.get(hanh_dt, '?')}")
+            if pct >= 60:
+                lines.append(f"\n- ✅ **Tiên lượng TỐT:** Bệnh nhẹ, dễ hồi phục")
+                lines.append(f"- 💊 Tử Tôn (thuốc) mạnh → điều trị hiệu quả")
+            elif pct <= 40:
+                lines.append(f"\n- 🔴 **Tiên lượng XẤU:** Bệnh có thể kéo dài, cần chữa tích cực")
+                lines.append(f"- ⚠️ Quan Quỷ vượng → bệnh mạnh, cần can thiệp y tế")
+            else:
+                lines.append(f"\n- 🟡 **Tiên lượng TRUNG BÌNH:** Bệnh điều trị được nhưng cần thời gian")
+        
+        # [20] MẤT ĐỒ / TÌM VẬT — Thê Tài + Hướng
+        elif any(k in q for k in ['mất đồ', 'tìm đồ', 'tìm thấy', 'mất rồi', 'đánh mất',
+                                   'để quên', 'rơi ở', 'trộm', 'mất cắp', 'mất xe', 'mất tiền']):
+            HANH_HUONG = {'Mộc': 'Đông', 'Hỏa': 'Nam', 'Thổ': 'Trung Tâm', 'Kim': 'Tây', 'Thủy': 'Bắc'}
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: TÌM ĐỒ MẤT**")
+            if pct >= 55:
+                lines.append(f"- ✅ **TÌM THẤY ĐƯỢC!** Đồ vật còn nguyên")
+                lines.append(f"- 🧭 Hướng tìm: **{HANH_HUONG.get(hanh_dt, '?')}**")
+                lines.append(f"- 📍 Vật ở: {vv_data.get('hinh', '?')} — nơi {vv_data.get('tinh_trang', '?')}")
+            elif pct <= 40:
+                lines.append(f"- 🔴 **KHÓ TÌM!** Đồ có thể đã mất hẳn hoặc bị phá hủy")
+                lines.append(f"- ⚠️ DT suy → vật không còn nguyên vẹn")
+            else:
+                lines.append(f"- 🟡 **CÓ THỂ TÌM nhưng tốn thời gian**")
+                lines.append(f"- 🧭 Hướng: **{HANH_HUONG.get(hanh_dt, '?')}**, kiểm tra kỹ")
+        
+        # [21] KIỆN TỤNG / TRANH CHẤP
+        elif any(k in q for k in ['kiện', 'tòa', 'tranh chấp', 'thắng kiện', 'thưa kiện',
+                                   'pháp lý', 'luật sư', 'tố cáo', 'khiếu nại', 'đòi lại']):
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: KIỆN TỤNG / TRANH CHẤP**")
+            if pct >= 55:
+                lines.append(f"- ✅ **THUẬN LỢI — Có khả năng THẮNG** ({pct}%)")
+                lines.append(f"- 📋 DT vượng, bên mình có lý, pháp luật ủng hộ")
+            elif pct <= 40:
+                lines.append(f"- 🔴 **BẤT LỢI — Khó THẮNG** ({pct}%)")
+                lines.append(f"- ⚠️ DT suy, đối phương mạnh hơn. Nên hòa giải thay vì kiện")
+            else:
+                lines.append(f"- 🟡 **50/50 — Kết quả chưa rõ**")
+                lines.append(f"- 💡 Nên tìm luật sư giỏi, chuẩn bị bằng chứng kỹ")
+        
+        # [22] THỜI TIẾT / MƯA NẮNG
+        elif any(k in q for k in ['thời tiết', 'mưa', 'nắng', 'gió', 'bão', 'lũ',
+                                   'trời', 'nóng', 'lạnh', 'ẩm']):
+            HANH_THOITIET = {
+                'Thủy': '🌧️ MƯA, ẩm ướt, có nước',
+                'Hỏa': '☀️ NẮNG, nóng, khô ráo',
+                'Mộc': '🌬️ GIÓ, mát mẻ, se se',
+                'Kim': '❄️ LẠNH, hanh khô, có sương',
+                'Thổ': '☁️ ÂM U, nhiều mây, oi bức',
+            }
+            lines.append(f"\n{icon} **CÂU TRẢ LỜI: DỰ BÁO THỜI TIẾT (theo Huyền Học)**")
+            lines.append(f"- 🌤️ **Xu hướng (Hành {hanh_dt} thịnh):** {HANH_THOITIET.get(hanh_dt, '?')}")
+            if pct >= 55:
+                lines.append(f"- ✅ Thời tiết ỔN ĐỊNH, thuận lợi cho hoạt động ngoài trời")
+            else:
+                lines.append(f"- ⚠️ Thời tiết KHÔNG ỔN ĐỊNH, nên chuẩn bị phương án dự phòng")
+        
         # DEFAULT — V40.6: TRẢ LỜI TRỰC TIẾP CÂU HỎI + VÌ SAO + ỨNG KỲ + GIẢI PHÁP
         else:
             # V40.6: Tái khẳng định câu hỏi
