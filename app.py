@@ -1150,6 +1150,37 @@ st.markdown("""
     }
     footer { background: #0f172a !important; color: #64748b !important; }
 
+    /* V40.9: Tượng Quẻ box — dark */
+    .tuong-que-box {
+        background: rgba(22,33,62,0.9) !important;
+        border: 1px solid rgba(139,92,246,0.3);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin: 8px 0;
+        color: #ecf0f1;
+    }
+    .tuong-que-box strong { color: #fbbf24; }
+
+    /* V40.9: interpret-box — dark */
+    .interpret-box {
+        background: rgba(22,33,62,0.9) !important;
+        border-top: 5px solid #7c3aed !important;
+        border-radius: 12px;
+        padding: 16px;
+        color: #ecf0f1 !important;
+    }
+    .interpret-box * { color: #ecf0f1 !important; }
+    .interpret-box strong, .interpret-box b { color: #fbbf24 !important; }
+    .interpret-box h1, .interpret-box h2, .interpret-box h3 { color: #a78bfa !important; }
+
+    /* V40.9: Fix Material Icons showing as raw text */
+    [data-testid="stExpander"] span.material-symbols-outlined,
+    span[class*="material"] {
+        font-size: 0 !important;
+        width: 0 !important;
+        overflow: hidden !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 # Zoom level already initialized in session state
@@ -1538,7 +1569,7 @@ def display_ai_result(text, key_prefix="ai"):
     # ═══ 2. NỘI DUNG CHÍNH — RENDER GIỐNG HỆT "Bắt đầu Phân Tích Tổng Hợp" (dòng 2370) ═══
     # Y HỆT: st.markdown(f'<div class="interpret-box">{text}</div>', unsafe_allow_html=True)
     st.markdown(f"""
-    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
+    <div class="interpret-box" style="background: rgba(22,33,62,0.9); border-top: 5px solid #7c3aed; color: #ecf0f1;">
         {text}
     </div>
     """, unsafe_allow_html=True)
@@ -2653,7 +2684,7 @@ if st.session_state.current_view == "ky_mon":
                 
                 if st.session_state.get('final_ai_report'):
                     st.markdown(f"""
-                    <div class="interpret-box" style="background: white; border-top: 5px solid #1e3a8a;">
+                    <div class="interpret-box" style="background: rgba(22,33,62,0.9); border-top: 5px solid #7c3aed; color: #ecf0f1;">
                         {st.session_state.final_ai_report}
                     </div>
                     """, unsafe_allow_html=True)
@@ -3366,7 +3397,7 @@ elif st.session_state.current_view == "luc_hao":
         
         # ========== FOOTER INFO ==========
         st.markdown(f"""
-        <div style="background:#f1f5f9; border-radius:8px; padding:8px 12px; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
+        <div style="background:rgba(22,33,62,0.8); border-radius:8px; padding:8px 12px; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
             <span>💡 {res['the_ung']}</span>
             <span>📝 Dụng Thần: {res['ban']['details'][2]['luc_than']}</span>
             <span>🔄 Động hào: {', '.join([str(h) for h in moving_hao])}</span>
@@ -3377,7 +3408,7 @@ elif st.session_state.current_view == "luc_hao":
         phuc_than_data = res.get('phuc_than', [])
         if phuc_than_data:
             pt_html = """
-            <div style="background:#faf5ff; border:2px solid #7c3aed; border-radius:8px; padding:8px 12px; margin:8px 0;">
+            <div style="background:rgba(30,27,75,0.8); border:2px solid #7c3aed; border-radius:8px; padding:8px 12px; margin:8px 0;">
                 <div style="font-weight:700; color:#7c3aed; font-size:13px; margin-bottom:6px;">🔮 PHỤC THẦN (伏神) — Lục Thân Ẩn</div>
                 <table style="width:100%; font-size:12px; border-collapse:collapse;">
                 <tr style="background:#7c3aed; color:white;">
@@ -3489,9 +3520,9 @@ elif st.session_state.current_view == "ai_factory":
         col = rows[i // 3][i % 3]
         with col:
             st.markdown(f"""
-            <div style="background: white; padding: 15px; border-radius: 10px; border-left: 5px solid #1e3a8a; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <div style="font-weight: 800; color: #1e3a8a;">{status} {name}</div>
-                <div style="font-size: 13px; color: #666;">{desc}</div>
+            <div style="background: rgba(22,33,62,0.9); padding: 15px; border-radius: 10px; border-left: 5px solid #7c3aed; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                <div style="font-weight: 800; color: #a78bfa;">{status} {name}</div>
+                <div style="font-size: 13px; color: #94a3b8;">{desc}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -3638,7 +3669,7 @@ elif st.session_state.current_view == "gemini_ai":
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
-                <div style="background: #f0f2f6; padding: 10px 15px; border-radius: 10px; color: #1e293b; margin: 5px 0; margin-right: 20%; border-left: 4px solid #667eea;">
+                <div style="background: rgba(22,33,62,0.8); padding: 10px 15px; border-radius: 10px; color: #ecf0f1; margin: 5px 0; margin-right: 20%; border-left: 4px solid #667eea;">
                     <b>🤖 AI:</b> {msg['content'][:300]}{'...' if len(msg['content']) > 300 else ''}
                 </div>
                 """, unsafe_allow_html=True)

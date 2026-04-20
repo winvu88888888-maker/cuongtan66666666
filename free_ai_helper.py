@@ -7482,7 +7482,7 @@ class FreeAIHelper:
                 )
         
         if detective_issues:
-            lines.append(f'\n<div style="background:#fef3c7;padding:12px 16px;border-radius:10px;border-left:4px solid #f59e0b;"><b style="color:#92400e;font-size:1em;">🔍 THÁM TỬ KIỂM CHỨNG</b></div>')
+            lines.append(f'\n<div style="background:rgba(30,27,75,0.8);padding:12px 16px;border-radius:10px;border-left:4px solid #f59e0b;"><b style="color:#fbbf24;font-size:1em;">🔍 THÁM TỬ KIỂM CHỨNG</b></div>')
             for issue in detective_issues:
                 lines.append(f"- {issue}")
             lines.append(f'- <span style="color:#16a34a;font-weight:700;">✅ Đã hiệu chỉnh → pct={pct}%, verdict={final_verdict}</span>')
