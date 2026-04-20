@@ -7615,13 +7615,13 @@ class FreeAIHelper:
         # V36.1: CÓ NÊN — Tách riêng TRƯỚC CÓ/KHÔNG, thresholds khớp Phase D (55/45)
         elif any(k in q for k in ['có nên', 'nên không', 'nên hay']):
             if pct >= 55:
-                lines.append(f"\n✅ **CÂU TRẢ LỜI: NÊN — THUẬN LỢI ({pct}%)**")
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#22c55e;">✅ CÂU TRẢ LỜI: NÊN — THUẬN LỢI</span><br><span style="color:#bbf7d0;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} VƯỢNG, thời điểm tốt. Nên tiến hành.")
             elif pct >= 45:
-                lines.append(f"\n🟡 **CÂU TRẢ LỜI: CÓ THỂ nhưng CẦN THẬN TRỌNG ({pct}%)**")
+                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 CÓ THỂ nhưng CẦN THẬN TRỌNG</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- Thế trận chưa rõ ({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). Chuẩn bị phương án B.")
             else:
-                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG NÊN — BẤT LỢI ({pct}%)**")
+                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#ef4444;">🔴 KHÔNG NÊN — BẤT LỢI</span><br><span style="color:#fecaca;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} SUY, nhiều trở ngại. Chờ thời điểm tốt hơn.")
         
         # CÓ/KHÔNG — thresholds khớp Phase D (55/50/45)
@@ -7629,16 +7629,16 @@ class FreeAIHelper:
                                  'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
                                  'có không', 'không']):
             if pct >= 55:
-                lines.append(f"\n✅ **CÂU TRẢ LỜI: CÓ — Thành công ({pct}%)**")
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#22c55e;">✅ CÓ — Thành công</span><br><span style="color:#bbf7d0;font-size:1.2em;font-weight:700;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} VƯỢNG, thuận lợi. Nắm bắt cơ hội.")
             elif pct >= 50:
-                lines.append(f"\n🟢 **CÂU TRẢ LỜI: CÓ nhưng KHÓ ({pct}%)**")
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #86efac;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#86efac;">🟢 CÓ nhưng KHÓ</span><br><span style="color:#bbf7d0;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- Nghiêng CÓ ({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). Cần nỗ lực thêm.")
             elif pct >= 45:
-                lines.append(f"\n🟡 **CÂU TRẢ LỜI: KHÓ nhưng chưa hẳn KHÔNG ({pct}%)**")
+                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 KHÓ nhưng chưa hẳn KHÔNG</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- Nghiêng KHÔNG ({len(bad_impacts)} nghịch vs {len(good_impacts)} thuận). Cần nỗ lực lớn.")
             else:
-                lines.append(f"\n🔴 **CÂU TRẢ LỜI: KHÔNG — Bất lợi ({pct}%)**")
+                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#ef4444;">🔴 KHÔNG — Bất lợi</span><br><span style="color:#fecaca;font-size:1.2em;font-weight:700;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} SUY, nhiều trở ngại. Nên chờ hoặc đổi hướng.")
         
         # KHI NÀO / THÁNG NÀO / BAO GIỜ — trả lời CỤ THỂ tháng/chi
@@ -7788,7 +7788,7 @@ class FreeAIHelper:
                 huong = quai_huong.get(sv_quai, '?')
                 mota = quai_mota.get(sv_quai, '')
                 hanh_sv = CUNG_NGU_HANH.get(sv_cung, '?')
-                lines.append(f"\n📍 **CÂU TRẢ LỜI: HƯỚNG {huong.upper()} (Cung {sv_cung} - {sv_quai})**")
+                lines.append(f'\n<div style="background:#1e1b4b;padding:18px;border-radius:14px;border-left:6px solid #818cf8;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#a5b4fc;">📍 HƯỚNG {huong.upper()}</span><br><span style="color:#c7d2fe;font-size:1.05em;">Cung {sv_cung} — {sv_quai} — {hanh_sv}</span></div>')
                 lines.append(f"- Vị trí: {mota}")
                 lines.append(f"- Ngũ Hành cung: {hanh_sv}")
                 # Thêm thông tin Sao/Cửa tại cung SV để suy luận sâu
@@ -7831,27 +7831,21 @@ class FreeAIHelper:
                     _mota = f"Tiêu cực, e dè, có ý đồ không tốt. Tính chất {_hanh}: bất lợi."
                 else:
                     _mota = f"Trung lập, chưa rõ ràng, cân nhắc. Tính chất {_hanh}: {_vv.get('hinh', '')}."
-                lines.append(f"\n**📋 VỀ CÂU HỎI: \"{_q_short}\"**")
-                lines.append(f"- {_mota}")
-                lines.append(f"- Mức độ: **{pct}%** ({final_verdict})")
+                _dcolor = '#16a34a' if pct >= 55 else '#dc2626' if pct <= 40 else '#ca8a04'
+                lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px;border-radius:14px;border-left:6px solid {_dcolor};margin:12px 0;"><span style="font-size:1.2em;font-weight:900;color:{_dcolor};">📋 VỀ: "{_q_short}"</span><br><span style="color:#e2e8f0;font-size:1em;">- {_mota}</span><br><span style="color:{_dcolor};font-weight:700;">Mức độ: {pct}% ({final_verdict})</span></div>')
             elif _is_yesno:
                 # Câu hỏi CÓ/KHÔNG → dứt khoát
                 if final_verdict == 'CÁT' or pct >= 55:
-                    _verdict_word = 'CÓ'
-                    lines.append(f"\n{icon} **CÂU TRẢ LỜI CHO \"{_q_short}\":** **{_verdict_word}** — {pct}%")
+                    lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#22c55e;">✅ CÓ</span> <span style="color:#bbf7d0;font-size:1.1em;">cho "{_q_short}" — {pct}%</span></div>')
                 elif final_verdict == 'HUNG' or pct <= 40:
-                    _verdict_word = 'KHÔNG'
-                    lines.append(f"\n{icon} **CÂU TRẢ LỜI CHO \"{_q_short}\":** **{_verdict_word}** — {pct}%")
+                    lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#ef4444;">❌ KHÔNG</span> <span style="color:#fecaca;font-size:1.1em;">cho "{_q_short}" — {pct}%</span></div>')
                 else:
-                    lines.append(f"\n🟡 **CÂU TRẢ LỜI CHO \"{_q_short}\":** **CÓ THỂ ĐƯỢC** — cần thận trọng ({pct}%)")
+                    lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 CÓ THỂ ĐƯỢC</span> <span style="color:#fef3c7;font-size:1.05em;">cho "{_q_short}" — cần thận trọng ({pct}%)</span></div>')
             else:
                 # Câu hỏi TỔNG QUÁT → khẳng định + context
-                if pct >= 55:
-                    lines.append(f"\n{icon} **VỀ \"{_q_short}\":** THUẬN LỢI — {pct}%")
-                elif pct <= 40:
-                    lines.append(f"\n{icon} **VỀ \"{_q_short}\":** BẤT LỢI — {pct}%")
-                else:
-                    lines.append(f"\n🟡 **VỀ \"{_q_short}\":** TRUNG BÌNH — {pct}%")
+                _gcolor = '#22c55e' if pct >= 55 else '#ef4444' if pct <= 40 else '#eab308'
+                _gtext = 'THUẬN LỢI' if pct >= 55 else 'BẤT LỢI' if pct <= 40 else 'TRUNG BÌNH'
+                lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px;border-radius:14px;border-left:6px solid {_gcolor};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_gcolor};">{icon} VỀ "{_q_short}"</span><br><span style="color:#f1f5f9;font-size:1.15em;font-weight:700;">{_gtext} — {pct}%</span></div>')
         
         # --- V40.6: VÌ SAO — bằng chứng THẬT từ factors + evidence ---
         lines.append(f'\n<div style="background:#1e1b4b;padding:14px 18px;border-radius:10px;border-left:5px solid #818cf8;margin:12px 0;"><b style="color:#a5b4fc;font-size:1.05em;">📋 VÌ SAO — BẰNG CHỨNG TỪ QUẺ</b></div>')
