@@ -1402,6 +1402,69 @@ def format_van_vat_for_ai(hanh, truong_sinh_stage):
     lines.append(f"🧭 Hướng: {data.get('huong', '')} | Mùa: {data.get('mua', '')} | Số: {data.get('so', [])}")
     lines.append(f"📈 Xu hướng: {data.get('xu_huong', '')}")
     
+    # === V40.8: XUẤT TẤT CẢ CATEGORIES TỪ MO_RONG + BO_SUNG ===
+    try:
+        expanded = VAN_VAT_MO_RONG.get(hanh, {})
+        bo_sung = VAN_VAT_BO_SUNG.get(hanh, {})
+        pt = expanded.get('phuong_tien', {})
+        pt_items = pt.get(truong_sinh_stage, pt.get('chung', [])) if isinstance(pt, dict) else pt
+        if pt_items: lines.append(f"🚗 **Phương tiện:** {', '.join(pt_items[:5])}")
+        tp = expanded.get('trang_phuc', {})
+        tp_items = tp.get(truong_sinh_stage, tp.get('chung', [])) if isinstance(tp, dict) else tp
+        if tp_items: lines.append(f"👔 **Trang phục:** {', '.join(tp_items[:5])}")
+        food = expanded.get('thuc_pham_chi_tiet', {})
+        food_items = food.get('chung', []) if isinstance(food, dict) else food
+        drink_items = food.get('do_uong', []) if isinstance(food, dict) else []
+        if food_items: lines.append(f"🍜 **Thực phẩm:** {', '.join(food_items[:6])}")
+        if drink_items: lines.append(f"🥤 **Đồ uống:** {', '.join(drink_items[:5])}")
+        ks = expanded.get('khoang_san', [])
+        if ks: lines.append(f"💎 **Khoáng sản:** {', '.join(ks[:5])}")
+        cn_tech = expanded.get('cong_nghe', {})
+        cn_items = cn_tech.get(truong_sinh_stage, cn_tech.get('chung', [])) if isinstance(cn_tech, dict) else cn_tech
+        if cn_items: lines.append(f"📱 **Công nghệ:** {', '.join(cn_items[:5])}")
+        nc = expanded.get('nhac_cu', [])
+        if nc: lines.append(f"🎵 **Nhạc cụ:** {', '.join(nc[:5])}")
+        cng = expanded.get('cong_nghiep', [])
+        if cng: lines.append(f"🏭 **Công nghiệp:** {', '.join(cng[:5])}")
+        vk = expanded.get('vu_khi', [])
+        if vk: lines.append(f"⚔️ **Vũ khí:** {', '.join(vk[:5])}")
+        tt_sp = expanded.get('the_thao', [])
+        if tt_sp: lines.append(f"⚽ **Thể thao:** {', '.join(tt_sp[:5])}")
+        tw = expanded.get('thoi_tiet', [])
+        if isinstance(tw, list) and tw: lines.append(f"🌤️ **Thời tiết:** {', '.join(tw[:4])}")
+        cx = expanded.get('cam_xuc', [])
+        if cx: lines.append(f"🎭 **Cảm xúc:** {', '.join(cx[:5])}")
+        qg = expanded.get('quoc_gia', [])
+        if qg: lines.append(f"🌍 **Quốc gia:** {', '.join(qg[:5])}")
+        mp = expanded.get('my_pham', [])
+        if isinstance(mp, dict): mp = mp.get('chung', [])
+        if mp: lines.append(f"💄 **Mỹ phẩm:** {', '.join(mp[:5])}")
+        te = expanded.get('do_tre_em', [])
+        if isinstance(te, dict): te = te.get('chung', [])
+        if te: lines.append(f"🧸 **Đồ trẻ em:** {', '.join(te[:5])}")
+        nt_f = bo_sung.get('noi_that', [])
+        if nt_f: lines.append(f"🛋️ **Nội thất:** {', '.join(nt_f[:5])}")
+        yt = bo_sung.get('y_te', [])
+        if yt: lines.append(f"💉 **Y tế:** {', '.join(yt[:5])}")
+        tg_rel = bo_sung.get('ton_giao', [])
+        if tg_rel: lines.append(f"⛪ **Tôn giáo:** {', '.join(tg_rel[:5])}")
+        dl = bo_sung.get('dia_ly', [])
+        if dl: lines.append(f"🗻 **Địa lý:** {', '.join(dl[:5])}")
+        bp = bo_sung.get('bo_phan_co_the', [])
+        if bp: lines.append(f"🦴 **Cơ thể:** {', '.join(bp[:6])}")
+        nn = bo_sung.get('nong_nghiep', [])
+        if nn: lines.append(f"🌾 **Nông nghiệp:** {', '.join(nn[:5])}")
+        vp = bo_sung.get('van_phong', [])
+        if vp: lines.append(f"🏢 **Văn phòng:** {', '.join(vp[:5])}")
+        gd = bo_sung.get('gia_dung', [])
+        if gd: lines.append(f"🏡 **Gia dụng:** {', '.join(gd[:5])}")
+        nt_art = bo_sung.get('nghe_thuat', [])
+        if nt_art: lines.append(f"🎨 **Nghệ thuật:** {', '.join(nt_art[:5])}")
+        kts = bo_sung.get('ky_thuat_so', [])
+        if kts: lines.append(f"💻 **Kỹ thuật số:** {', '.join(kts[:5])}")
+    except Exception:
+        pass
+
     return "\n".join(lines)
 
 
@@ -1518,7 +1581,70 @@ def get_tham_tu_mo_ta(hanh, truong_sinh_stage, question=""):
         gd = bo_sung.get('gia_dung', [])
         if gd:
             lines.append(f"🏡 **Gia dụng:** {', '.join(gd[:5])}")
-    except ImportError:
+        
+        # === THÊM CÁC CATEGORY CÒN THIẾU TỪ MO_RONG ===
+        # Công nghệ
+        cn_tech = expanded.get('cong_nghe', {})
+        cn_items = cn_tech.get(truong_sinh_stage, cn_tech.get('chung', [])) if isinstance(cn_tech, dict) else cn_tech
+        if cn_items:
+            lines.append(f"📱 **Công nghệ:** {', '.join(cn_items[:5])}")
+        
+        # Nhạc cụ
+        nc = expanded.get('nhac_cu', [])
+        if nc:
+            lines.append(f"🎵 **Nhạc cụ:** {', '.join(nc[:5])}")
+        
+        # Công nghiệp
+        cng = expanded.get('cong_nghiep', [])
+        if cng:
+            lines.append(f"🏭 **Công nghiệp:** {', '.join(cng[:5])}")
+        
+        # Vũ khí (Kim)
+        vk = expanded.get('vu_khi', [])
+        if vk:
+            lines.append(f"⚔️ **Vũ khí:** {', '.join(vk[:5])}")
+        
+        # Quốc gia/Vùng
+        qg = expanded.get('quoc_gia', [])
+        if qg:
+            lines.append(f"🌍 **Quốc gia/Vùng:** {', '.join(qg[:5])}")
+        
+        # Mỹ phẩm
+        mp = expanded.get('my_pham', [])
+        if isinstance(mp, dict):
+            mp = mp.get('chung', [])
+        if mp:
+            lines.append(f"💄 **Mỹ phẩm:** {', '.join(mp[:5])}")
+        
+        # Đồ trẻ em
+        te = expanded.get('do_tre_em', [])
+        if isinstance(te, dict):
+            te = te.get('chung', [])
+        if te:
+            lines.append(f"🧸 **Đồ trẻ em:** {', '.join(te[:5])}")
+        
+        # === THÊM CÁC CATEGORY CÒN THIẾU TỪ BO_SUNG ===
+        # Nông nghiệp
+        nn = bo_sung.get('nong_nghiep', [])
+        if nn:
+            lines.append(f"🌾 **Nông nghiệp:** {', '.join(nn[:5])}")
+        
+        # Văn phòng
+        vp = bo_sung.get('van_phong', [])
+        if vp:
+            lines.append(f"🏢 **Văn phòng:** {', '.join(vp[:5])}")
+        
+        # Nghệ thuật
+        nt_art = bo_sung.get('nghe_thuat', [])
+        if nt_art:
+            lines.append(f"🎨 **Nghệ thuật:** {', '.join(nt_art[:5])}")
+        
+        # Kỹ thuật số
+        kts = bo_sung.get('ky_thuat_so', [])
+        if kts:
+            lines.append(f"💻 **Kỹ thuật số:** {', '.join(kts[:5])}")
+    except Exception as _dbg_e:
+        import traceback; traceback.print_exc()
         pass
     
     # Xu hướng
