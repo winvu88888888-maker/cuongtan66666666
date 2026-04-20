@@ -5145,9 +5145,9 @@ class FreeAIHelper:
             if weighted_pct >= 55:
                 lines.append(f"> 📢 **KẾT LUẬN: THUẬN LỢI ({weighted_pct}%)**")
             elif weighted_pct >= 45:
-                lines.append(f"> 📢 **KẾT LUẬN: TƯƠNG ĐỐI — cần cảnh giác ({weighted_pct}%)**")
+                lines.append(f"> 📢 **KẾT LUẬN: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG ({weighted_pct}%)**")
             else:
-                lines.append(f"> 📢 **KẾT LUẬN: BẤT LỢI — nên hoãn hoặc đổi hướng ({weighted_pct}%)**")
+                lines.append(f"> 📢 **KẾT LUẬN: KHÔNG THUẬN — nên hoãn hoặc đổi hướng ({weighted_pct}%)**")
         
         lines.append("")
         
@@ -8607,11 +8607,11 @@ class FreeAIHelper:
             if pct >= 55:
                 verdict_line = f"📢 **PHÁN QUYẾT: THUẬN LỢI ({pct}%)**"
             elif pct >= 50:
-                verdict_line = f"📢 **PHÁN QUYẾT: TƯƠNG ĐỐI THUẬN — cần cảnh giác ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG ({pct}%)**"
             elif pct >= 45:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ KHĂN — cần giải pháp ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ KHĂN — cần tìm giải pháp ({pct}%)**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT: BẤT LỢI — nên hoãn hoặc đổi hướng ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG THUẬN — nên hoãn hoặc đổi hướng ({pct}%)**"
         
         lines.append(verdict_line)
         lines.append("")
@@ -8900,7 +8900,7 @@ class FreeAIHelper:
                 )
             elif pct >= 50:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: TƯƠNG ĐỐI THUẬN — cần cảnh giác ({pct}%).**\n"
+                    f"**👉 KHẲNG ĐỊNH: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG ({pct}%).**\n"
                     f"• {cat_count} thuận vs {hung_count} nghịch — hơi nghiêng tốt.\n"
                 )
                 if thuan_factors: conclusion += f"• Thuận: {thuan_factors[0][:60]}.\n"
