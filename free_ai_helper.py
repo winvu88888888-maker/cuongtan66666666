@@ -3818,26 +3818,40 @@ class FreeAIHelper:
                             raw_data_section += f"• Cung {_cung}: Sao={_sao_str} | Cửa={_cua_str} | Thần={_than_str} | Can={_can}\n"
                     raw_data_section += "\n"
             
-            # --- V40.4: VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP TỪ ENGINE (không gián tiếp nữa) ---
+            # --- V40.5: VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP TỪ FILE TỔNG HỢP (2226+ items) ---
             _vv_hanh = v22.get('hanh_dt', '')
-            _vv_tier = v22.get('tier_cap', '')
-            _vv_vat = v22.get('hanh_vat', NGU_HANH_VAT_CHAT.get(_vv_hanh, {}))
-            _vv_cu_the = v22.get('van_vat_cu_the', {})
+            _ts_stage = v22.get('ts_stage', '')
             if _vv_hanh:
-                raw_data_section += f"═══ VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP ═══\n"
-                raw_data_section += f"• Hành DT: {_vv_hanh} | Tier: {_vv_tier}\n"
-                raw_data_section += f"• Hình dáng: {_vv_vat.get('hinh', '?')}\n"
-                raw_data_section += f"• Chất liệu: {_vv_vat.get('chat_lieu', '?')}\n"
-                raw_data_section += f"• Màu sắc: {_vv_vat.get('mau', '?')}\n"
-                raw_data_section += f"• Hướng: {_vv_vat.get('huong', '?')}\n"
-                raw_data_section += f"• Vị: {_vv_vat.get('vi', '?')}\n"
-                raw_data_section += f"• Cơ thể: {_vv_vat.get('co_the', '?')}\n"
-                if _vv_cu_the:
-                    raw_data_section += f"• Đồ vật cụ thể: {_vv_cu_the.get('do_vat', '?')}\n"
-                    raw_data_section += f"• Nhà cửa: {_vv_cu_the.get('nha_cua', '?')}\n"
-                    raw_data_section += f"• Con người: {_vv_cu_the.get('nguoi', '?')}\n"
-                    raw_data_section += f"• Bệnh tật: {_vv_cu_the.get('benh', '?')}\n"
-                raw_data_section += "\n"
+                try:
+                    from van_vat_tong_hop import format_van_vat_for_ai, get_tham_tu_mo_ta
+                    # Format đầy đủ: 5 giác quan + đồ vật + con người + bệnh + nhà + thú + cây
+                    _vv_text = format_van_vat_for_ai(_vv_hanh, _ts_stage or 'Quan Đới')
+                    if _vv_text:
+                        raw_data_section += f"═══ VẠN VẬT LOẠI TƯỢNG — TỔNG HỢP ĐẦY ĐỦ (2226+ items) ═══\n"
+                        raw_data_section += _vv_text + "\n\n"
+                    # Thám tử mô tả chi tiết (cho câu hỏi cụ thể)
+                    _thamtu_text = get_tham_tu_mo_ta(_vv_hanh, _ts_stage or 'Quan Đới', question)
+                    if _thamtu_text:
+                        raw_data_section += _thamtu_text + "\n\n"
+                except Exception:
+                    # Fallback: dùng data inline nếu file không có
+                    _vv_vat = v22.get('hanh_vat', NGU_HANH_VAT_CHAT.get(_vv_hanh, {}))
+                    _vv_cu_the = v22.get('van_vat_cu_the', {})
+                    _vv_tier = v22.get('tier_cap', '')
+                    raw_data_section += f"═══ VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP ═══\n"
+                    raw_data_section += f"• Hành DT: {_vv_hanh} | Tier: {_vv_tier}\n"
+                    raw_data_section += f"• Hình dáng: {_vv_vat.get('hinh', '?')}\n"
+                    raw_data_section += f"• Chất liệu: {_vv_vat.get('chat_lieu', '?')}\n"
+                    raw_data_section += f"• Màu sắc: {_vv_vat.get('mau', '?')}\n"
+                    raw_data_section += f"• Hướng: {_vv_vat.get('huong', '?')}\n"
+                    raw_data_section += f"• Vị: {_vv_vat.get('vi', '?')}\n"
+                    raw_data_section += f"• Cơ thể: {_vv_vat.get('co_the', '?')}\n"
+                    if _vv_cu_the:
+                        raw_data_section += f"• Đồ vật: {_vv_cu_the.get('do_vat', '?')}\n"
+                        raw_data_section += f"• Nhà: {_vv_cu_the.get('nha_cua', '?')}\n"
+                        raw_data_section += f"• Người: {_vv_cu_the.get('nguoi', '?')}\n"
+                        raw_data_section += f"• Bệnh: {_vv_cu_the.get('benh', '?')}\n"
+                    raw_data_section += "\n"
             
             # --- V40.4: 12 TRƯỜNG SINH — TRỰC TIẾP (chi tiết đầy đủ) ---
             _ts_stage = v22.get('ts_stage', '')
