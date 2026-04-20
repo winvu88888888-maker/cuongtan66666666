@@ -10372,7 +10372,10 @@ class FreeAIHelper:
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
-            final_parts.append(f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #34d399;"><span style="font-size:1.4em;font-weight:900;color:#6ee7b7;">🌐 AI ONLINE — LUẬN GIẢI ĐỘC LẬP</span><br><span style="color:#a7f3d0;font-size:0.9em;">🤖 Gemini V40.6 | Tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH</span></div>')
+            final_parts.append(f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.3);">' 
+                f'<div style="font-size:2em;font-weight:900;color:#fef3c7;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE</div>' 
+                f'<div style="font-size:1.1em;color:#fde68a;">🤖 Gemini V40.9 | Tự đọc data thô → luận giải độc lập → so sánh Offline → KẾT LUẬN CHÍNH</div>' 
+                f'</div>')
             final_parts.append(online_result)
             final_parts.append("")
             
@@ -10456,7 +10459,10 @@ class FreeAIHelper:
                 v_icon = '🔴'
             
             final_parts = []
-            final_parts.append(f'<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #f59e0b;"><span style="font-size:1.4em;font-weight:900;color:#fbbf24;">🖥️ AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.6</span><br><span style="color:#fef3c7;font-size:0.9em;">⚠️ AI Online không khả dụng: {error_msg}</span></div>')
+            final_parts.append(f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 20px rgba(52,211,153,0.3);">' 
+                f'<div style="font-size:2em;font-weight:900;color:#a7f3d0;margin-bottom:8px;">🖥️ KẾT LUẬN AI OFFLINE — {v_icon} {overall_short}</div>' 
+                f'<div style="font-size:1.1em;color:#6ee7b7;">⚙️ Điểm Tổng Hợp: {weighted_pct}% | AI Online không khả dụng: {error_msg}</div>' 
+                f'</div>')
             final_parts.append("")
             
             # V38.1: PROTOCOL 27 BƯỚC — HIỆN TRỰC TIẾP (offline-only)
