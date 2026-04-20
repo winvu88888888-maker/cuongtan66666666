@@ -1033,15 +1033,38 @@ st.markdown("""
         z-index: 1 !important;
     }
     
-    /* FIX: SELECTBOX dropdown — dark */
+    /* FIX: SELECTBOX dropdown — dark + fix overlap */
     [data-testid="stSelectbox"] > div > div,
     .stSelectbox > div > div {
         background: rgba(15,23,42,0.9) !important;
         border: 1px solid rgba(139,92,246,0.3) !important;
         border-radius: 12px !important;
         color: #e2e8f0 !important;
+        min-height: 42px !important;
     }
     [data-testid="stSelectbox"] svg { fill: #a78bfa !important; }
+    
+    /* FIX: Hide Streamlit arrow key hint text that overlaps */
+    [data-testid="stSelectbox"] [data-baseweb="select"] input {
+        color: transparent !important;
+        caret-color: transparent !important;
+    }
+    [data-testid="stSelectbox"] [data-baseweb="select"] .css-1dimb5e-singleValue,
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div > div > div:first-child {
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
+        padding: 4px 8px !important;
+    }
+    
+    /* FIX: Selectbox label — position above, not overlapping */
+    [data-testid="stSelectbox"] label {
+        color: #a78bfa !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        padding-bottom: 2px !important;
+    }
     
     /* FIX: DROPDOWN options — dark */
     [data-baseweb="popover"], [data-baseweb="menu"],
