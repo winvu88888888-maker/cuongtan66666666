@@ -7793,18 +7793,48 @@ class FreeAIHelper:
             else:
                 lines.append(f"\n📍 **CÂU TRẢ LỜI:** Không xác định được Cung Sự Việc để tra hướng.")
         
-        # DEFAULT — V40.3: CÂU TRẢ LỜI KHẲNG ĐỊNH + VÌ SAO + ỨNG KỲ + GIẢI PHÁP
+        # DEFAULT — V40.6: TRẢ LỜI TRỰC TIẾP CÂU HỎI + VÌ SAO + ỨNG KỲ + GIẢI PHÁP
         else:
-            # Xác định CÓ/KHÔNG dứt khoát
-            if final_verdict == 'CÁT' or pct >= 55:
-                _verdict_word = 'CÓ' if any(k in q for k in ['có ', 'được', 'không', 'chứ', 'hả']) else 'THUẬN LỢI'
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: {_verdict_word} — {pct}%**")
-            elif final_verdict == 'HUNG' or pct <= 40:
-                _verdict_word = 'KHÔNG' if any(k in q for k in ['có ', 'được', 'không', 'chứ', 'hả']) else 'BẤT LỢI'
-                lines.append(f"\n{icon} **CÂU TRẢ LỜI: {_verdict_word} — {pct}%**")
+            # V40.6: Tái khẳng định câu hỏi
+            _q_short = question[:80] if len(question) > 80 else question
+            
+            # Detect loại câu hỏi để trả lời đúng kiểu
+            _is_yesno = any(k in q for k in ['có ', 'được', 'không', 'chứ', 'hả', 'có nên', 'nên không'])
+            _is_how = any(k in q for k in ['thế nào', 'như nào', 'ra sao', 'nghĩ gì', 'hành động', 'làm sao'])
+            _is_who = any(k in q for k in ['ai ', 'người nào', 'là ai'])
+            
+            if _is_how:
+                # Câu hỏi MÔ TẢ → dùng Vạn Vật
+                _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+                _hanh = _LT_HANH.get(dung_than, '')
+                _vv = NGU_HANH_VAT_CHAT.get(_hanh, {})
+                if pct >= 55:
+                    _mota = f"Tích cực, chủ động, có thiện ý. Tính chất {_hanh}: {_vv.get('hinh', '')}."
+                elif pct <= 40:
+                    _mota = f"Tiêu cực, e dè, có ý đồ không tốt. Tính chất {_hanh}: bất lợi."
+                else:
+                    _mota = f"Trung lập, chưa rõ ràng, cân nhắc. Tính chất {_hanh}: {_vv.get('hinh', '')}."
+                lines.append(f"\n**📋 VỀ CÂU HỎI: \"{_q_short}\"**")
+                lines.append(f"- {_mota}")
+                lines.append(f"- Mức độ: **{pct}%** ({final_verdict})")
+            elif _is_yesno:
+                # Câu hỏi CÓ/KHÔNG → dứt khoát
+                if final_verdict == 'CÁT' or pct >= 55:
+                    _verdict_word = 'CÓ'
+                    lines.append(f"\n{icon} **CÂU TRẢ LỜI CHO \"{_q_short}\":** **{_verdict_word}** — {pct}%")
+                elif final_verdict == 'HUNG' or pct <= 40:
+                    _verdict_word = 'KHÔNG'
+                    lines.append(f"\n{icon} **CÂU TRẢ LỜI CHO \"{_q_short}\":** **{_verdict_word}** — {pct}%")
+                else:
+                    lines.append(f"\n🟡 **CÂU TRẢ LỜI CHO \"{_q_short}\":** **CÓ THỂ ĐƯỢC** — cần thận trọng ({pct}%)")
             else:
-                _verdict_word = 'CÓ THỂ ĐƯỢC' if any(k in q for k in ['có ', 'được', 'không']) else 'TRUNG BÌNH'
-                lines.append(f"\n🟡 **CÂU TRẢ LỜI: {_verdict_word} — cần thận trọng ({pct}%)**")
+                # Câu hỏi TỔNG QUÁT → khẳng định + context
+                if pct >= 55:
+                    lines.append(f"\n{icon} **VỀ \"{_q_short}\":** THUẬN LỢI — {pct}%")
+                elif pct <= 40:
+                    lines.append(f"\n{icon} **VỀ \"{_q_short}\":** BẤT LỢI — {pct}%")
+                else:
+                    lines.append(f"\n🟡 **VỀ \"{_q_short}\":** TRUNG BÌNH — {pct}%")
         
         # --- V40.3: VÌ SAO — trích dẫn bằng chứng THẬT từ factors ---
         lines.append(f"\n**📋 VÌ SAO (bằng chứng từ quẻ):**")
@@ -10310,22 +10340,7 @@ class FreeAIHelper:
                 final_parts.append(direct_answer)
                 final_parts.append("")
             
-            # ═══════════════════════════════════════════════════════════════
-            # V35.4: TAM THỜI LUẬN GIẢI — LINH HOẠT theo câu hỏi + dữ liệu quẻ
-            # ═══════════════════════════════════════════════════════════════
-            try:
-                tam_thoi_text = _build_tam_thoi(
-                    question=question, dung_than=dung_than, hanh_dt=hanh_dt_v22,
-                    ts_stage=ts_stage, ngu_khi=ngu_khi_state_v22, weighted_pct=weighted_pct,
-                    ky_mon_verdict=ky_mon_verdict, ky_mon_reason=ky_mon_reason,
-                    luc_hao_verdict=luc_hao_verdict, luc_hao_reason=luc_hao_reason,
-                    mai_hoa_verdict=mai_hoa_verdict, mai_hoa_reason=mai_hoa_reason,
-                    luc_nham_reason=luc_nham_reason, thai_at_reason=thai_at_reason,
-                    detected_category=detected_category
-                )
-                final_parts.append(tam_thoi_text)
-            except Exception as e:
-                self.log_step("V35.4", "TAM_THOI_ONLINE_ERR", str(e)[:100])
+            # V40.6: TAM THỜI đã bỏ — thông tin 12 Trường Sinh đã inject trực tiếp vào prompt
             
             # V31.0: Chú Giải — Sơ Đồ Tương Tác
             if v31_question_diagram:
@@ -10807,22 +10822,7 @@ class FreeAIHelper:
                 else:
                     final_parts.append(f"- 💡 **Khuyên:** Cân nhắc kỹ, chuẩn bị phương án dự phòng.")
             
-            # ═══════════════════════════════════════════════════════════════
-            # V35.4: TAM THỜI LUẬN GIẢI — LINH HOẠT theo câu hỏi + dữ liệu quẻ
-            # ═══════════════════════════════════════════════════════════════
-            try:
-                tam_thoi_offline = _build_tam_thoi(
-                    question=question, dung_than=dung_than, hanh_dt=hanh_dt_v22,
-                    ts_stage=ts_stage, ngu_khi=ngu_khi_state_v22, weighted_pct=weighted_pct,
-                    ky_mon_verdict=ky_mon_verdict, ky_mon_reason=ky_mon_reason,
-                    luc_hao_verdict=luc_hao_verdict, luc_hao_reason=luc_hao_reason,
-                    mai_hoa_verdict=mai_hoa_verdict, mai_hoa_reason=mai_hoa_reason,
-                    luc_nham_reason=luc_nham_reason, thai_at_reason=thai_at_reason,
-                    detected_category=detected_category
-                )
-                final_parts.append(tam_thoi_offline)
-            except Exception as e:
-                self.log_step("V35.4", "TAM_THOI_OFFLINE_ERR", str(e)[:100])
+            # V40.6: TAM THỜI đã bỏ — 12 Trường Sinh inject trực tiếp
 
 
             # ═══════ GIẢI THÍCH TẠI SAO ═══════
