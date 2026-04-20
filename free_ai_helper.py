@@ -146,7 +146,7 @@ except ImportError:
         )
     except ImportError:
         try:
-            from van_vat_chi_tiet import (
+            from van_vat_tong_hop import (
                 get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
             )
         except ImportError:
