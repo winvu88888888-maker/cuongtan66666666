@@ -2670,9 +2670,9 @@ class FreeAIHelper:
             elif cat_c >= 3: concl = 'CÁT'
             elif hung_c >= 4: concl = 'ĐẠI HUNG'
             elif hung_c >= 3: concl = 'HUNG'
-            elif cat_c > hung_c: concl = 'NGHIÊNG THUẬN'
-            elif hung_c > cat_c: concl = 'NGHIÊNG BẤT LỢI'
-            else: concl = 'CÓ THỂ ĐƯỢC'
+            elif cat_c > hung_c: concl = 'CÓ — THUẬN LỢI'
+            elif hung_c > cat_c: concl = 'KHÔNG — BẤT LỢI'
+            else: concl = 'CÓ THỂ — CẦN THẬN TRỌNG'
             
             slots.update({
                 'km_verdict': km_v, 'lh_verdict': lh_v, 'mh_verdict': mh_v,
@@ -2954,11 +2954,11 @@ class FreeAIHelper:
             elif hung_c >= 3:
                 generic_slots['conclusion'] = 'BẤT LỢI ❌'
             elif cat_c > hung_c:
-                generic_slots['conclusion'] = f'NGHIÊNG THUẬN ✅ ({cat_c} cát vs {hung_c} hung)'
+                generic_slots['conclusion'] = f'CÓ — THUẬN LỢI ✅ ({cat_c} cát vs {hung_c} hung)'
             elif hung_c > cat_c:
-                generic_slots['conclusion'] = f'NGHIÊNG BẤT LỢI ⚠️ ({hung_c} hung vs {cat_c} cát)'
+                generic_slots['conclusion'] = f'KHÔNG — BẤT LỢI ⚠️ ({hung_c} hung vs {cat_c} cát)'
             else:
-                generic_slots['conclusion'] = f'50/50 — CÓ THỂ ĐƯỢC nhưng rủi ro ({cat_c} cát = {hung_c} hung)'
+                generic_slots['conclusion'] = f'CÓ THỂ — CẦN THẬN TRỌNG ({cat_c} cát = {hung_c} hung)'
             
             # V32.6: Fill SĐ2 (TUỔI/SỐ) slots — dùng TRƯỜNG SINH stage
             if _is_age_question(question) or _is_count_question(question):
@@ -7672,8 +7672,8 @@ class FreeAIHelper:
                 lines.append(f"\n{icon} **CÂU TRẢ LỜI: BẤT LỢI ({pct}%)**")
                 lines.append(f"- Nên cẩn trọng, chuẩn bị phương án dự phòng.")
             else:
-                lines.append(f"\n🟡 **CÂU TRẢ LỜI: NGHIÊNG THUẬN nhưng nhiều biến số ({pct}%)**")
-                lines.append(f"- {len(good_impacts)} yếu tố thuận vs {len(bad_impacts)} bất lợi. Nên thận trọng.")
+                lines.append(f"\n🟡 **CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — cần thận trọng ({pct}%)**")
+                lines.append(f"- {len(good_impacts)} yếu tố thuận vs {len(bad_impacts)} bất lợi. Cần chuẩn bị kỹ.")
         
         # --- V10.0: BẰNG CHỨNG CỤ THỂ TỪ QUẺ (thay vì mẫu chung) ---
         lines.append(f"\n**📋 Bằng chứng từ quẻ (tại sao kết luận như trên):**")
@@ -10228,7 +10228,7 @@ class FreeAIHelper:
                 overall_short = 'CÁT'
                 v_icon = '✅'
             elif weighted_pct >= 45:
-                overall_short = 'NGHIÊNG THUẬN — CÓ THỂ ĐƯỢC' if weighted_pct >= 50 else 'BÌNH'
+                overall_short = 'CÓ THỂ ĐƯỢC — CẦN THẬN TRỌNG' if weighted_pct >= 50 else 'BÌNH'
                 v_icon = '🟡'
             elif weighted_pct >= 30:
                 overall_short = 'HUNG'
@@ -10435,7 +10435,7 @@ class FreeAIHelper:
                     final_parts.append(f"- 💡 **Khuyên:** Nên hành động sớm, {dung_than} đang được sinh trợ.")
                 elif _is_pct_mid:
                     final_parts.append(f"### 🟡 CÂU TRẢ LỜI: CÓ THỂ ĐƯỢC — {overall_short}")
-                    final_parts.append(f"Quẻ nghiêng thuận (Điểm: {weighted_pct}%) nhưng {dung_than} chưa thực sự vượng.")
+                    final_parts.append(f"CÓ THỂ ĐƯỢC (Điểm: {weighted_pct}%) — {dung_than} chưa thực sự vượng, cần thận trọng.")
                     final_parts.append(f"\n**📐 Luận giải từ quẻ:**")
                     final_parts.append(f"- Dụng Thần **{dung_than}** ({hanh_dt_v22}) ở trạng thái **{ts_stage or 'Trung bình'}** → lực chưa đủ mạnh để khẳng định")
                     if ky_mon_reason:
@@ -10922,7 +10922,7 @@ class FreeAIHelper:
                         elif _hung_count >= 3:
                             final_parts.append(f"→ ❌ **KHÔNG** — {sub_dt} suy ({_hung_count}/5 HUNG)")
                         else:
-                            final_parts.append(f"→ 🟡 **CÓ THỂ ĐƯỢC** — Nghiêng thuận ({_cat_count}/{_cat_count+_hung_count} CÁT), cần chuẩn bị kỹ")
+                            final_parts.append(f"→ 🟡 **CÓ THỂ ĐƯỢC** — Thuận lợi ({_cat_count}/{_cat_count+_hung_count} CÁT), cần chuẩn bị kỹ")
                     
                     elif sub_qtype == 'KHI NÀO':
                         if _cat_count >= 3:
