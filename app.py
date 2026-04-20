@@ -1655,62 +1655,15 @@ except ImportError:
 # V19.0: DISPLAY AI RESULT — Beautiful answer layout
 # ════════════════════════════════════════════════════
 def display_ai_result(text, key_prefix="ai"):
-    """V20.5: Trình bày kết quả AI giống hệt nút 'Bắt đầu Phân Tích Tổng Hợp' - dễ đọc, rõ ràng."""
+    """V40.9: Render AI result — verdict box đã được tạo sẵn trong text, chỉ cần render."""
     if not text:
         st.warning("❌ Không có kết quả")
         return
     
-    import re
     text = str(text).strip()
     
-    # ═══ PHÁT HIỆN KẾT LUẬN CHÍNH (CÁT/HUNG/BÌNH) ═══
-    conclusion = ""
-    verdict_badge = ""
-    for line in text.split('\n'):
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if re.search(r'(?:KẾT LUẬN|PHÁN QUYẾT|TỔNG KẾT|VERDICT)', stripped, re.IGNORECASE):
-            conclusion = stripped
-        elif re.search(r'^\*\*.*(?:CÁT|ĐẠI CÁT|HUNG|ĐẠI HUNG|THUẬN LỢI|KHÓ KHĂN).*\*\*', stripped, re.IGNORECASE):
-            conclusion = stripped
-        if conclusion:
-            if re.search(r'CÁT|ĐẠI CÁT|THUẬN LỢI|TỐT|THÀNH CÔNG', conclusion, re.IGNORECASE):
-                verdict_badge = "cat"
-            elif re.search(r'HUNG|ĐẠI HUNG|KHÓ|XẤU|THẤT BẠI', conclusion, re.IGNORECASE):
-                verdict_badge = "hung"
-            else:
-                verdict_badge = "binh"
-            break
-    
-    # ═══ 1. VERDICT BOX (nổi bật) ═══
-    if conclusion:
-        if verdict_badge == "cat":
-            gradient = "linear-gradient(135deg, #065f46, #047857)"
-            border_color = "#10b981"
-            v_icon = "✅"; label = "THUẬN LỢI"
-        elif verdict_badge == "hung":
-            gradient = "linear-gradient(135deg, #7f1d1d, #b91c1c)"
-            border_color = "#ef4444"
-            v_icon = "⚠️"; label = "KHÓ KHĂN"
-        else:
-            gradient = "linear-gradient(135deg, #78350f, #b45309)"
-            border_color = "#f59e0b"
-            v_icon = "⚖️"; label = "CÂN NHẮC"
-        
-        clean_conclusion = conclusion.replace('**', '').replace('##', '').replace('#', '').strip()
-        st.markdown(f"""
-        <div style="background:{gradient}; border-radius:16px; padding:24px 28px; margin:16px 0; box-shadow:0 8px 32px rgba(0,0,0,0.15); border-left:6px solid {border_color};">
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                <span style="font-size:28px;">{v_icon}</span>
-                <span style="background:{border_color}; color:white; padding:4px 16px; border-radius:20px; font-weight:800; font-size:13px; letter-spacing:1px;">{label}</span>
-            </div>
-            <div style="color:white; font-size:1.3rem; font-weight:700; line-height:1.6; text-shadow:0 1px 3px rgba(0,0,0,0.3);">{clean_conclusion}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ═══ 2. NỘI DUNG CHÍNH — RENDER GIỐNG HỆT "Bắt đầu Phân Tích Tổng Hợp" (dòng 2370) ═══
-    # Y HỆT: st.markdown(f'<div class="interpret-box">{text}</div>', unsafe_allow_html=True)
+    # V40.9: KHÔNG tạo thêm verdict box — đã có sẵn trong text (NÂU + XANH LÁ)
+    # Chỉ render text trực tiếp
     st.markdown(f"""
     <div class="interpret-box" style="background: rgba(22,33,62,0.9); border-top: 5px solid #7c3aed; color: #ecf0f1;">
         {text}
