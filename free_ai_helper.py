@@ -3769,6 +3769,55 @@ class FreeAIHelper:
                 if _lh_cung: raw_data_section += f"• Cung: {_lh_cung}\n"
                 raw_data_section += "\n"
             
+            # --- V40.5: LỤC HÀO — BẢNG 6 HÀO RAW (chi tiết từng hào) ---
+            if luc_hao_data and isinstance(luc_hao_data, dict):
+                _lh_ban = luc_hao_data.get('ban', {})
+                if _lh_ban and isinstance(_lh_ban, dict):
+                    raw_data_section += f"═══ [1c] LỤC HÀO — BẢNG 6 HÀO CHI TIẾT ═══\n"
+                    _dong_hao = luc_hao_data.get('dong_hao', [])
+                    for _h_num in range(1, 7):
+                        _h = _lh_ban.get(_h_num, _lh_ban.get(str(_h_num), {}))
+                        if isinstance(_h, dict):
+                            _chi = _h.get('chi', '?')
+                            _hanh = _h.get('hanh', '?')
+                            _lt = _h.get('luc_than', _h.get('luc_thu', '?'))
+                            _dong = '🔴 ĐỘNG' if _h_num in _dong_hao else '⚪ Tĩnh'
+                            _hoa = _h.get('hoa', _h.get('bien', ''))
+                            _the_ung = ''
+                            if _h.get('the'): _the_ung = ' [THẾ]'
+                            if _h.get('ung'): _the_ung = ' [ỨNG]'
+                            _line = f"• Hào {_h_num}: {_chi}({_hanh}) | {_lt}{_the_ung} | {_dong}"
+                            if _hoa: _line += f" → Hóa {_hoa}"
+                            raw_data_section += _line + "\n"
+                    # Chi tháng/ngày bổ sung
+                    _ct = luc_hao_data.get('chi_thang', '')
+                    _cn = luc_hao_data.get('chi_ngay', '')
+                    if _ct or _cn:
+                        raw_data_section += f"• Nguyệt Kiến: {_ct} | Nhật Thần: {_cn}\n"
+                    raw_data_section += "\n"
+            
+            # --- V40.5: KỲ MÔN — BÀN 9 CUNG RAW (layout đầy đủ) ---
+            if chart_data and isinstance(chart_data, dict):
+                _tb = chart_data.get('thien_ban', {})
+                _nb = chart_data.get('nhan_ban', {})
+                _sb = chart_data.get('than_ban', {})
+                _ctb = chart_data.get('can_thien_ban', {})
+                if _tb and isinstance(_tb, dict) and len(_tb) >= 8:
+                    raw_data_section += f"═══ [2b] KỲ MÔN — BÀN 9 CUNG CHI TIẾT ═══\n"
+                    raw_data_section += f"• Cục: {chart_data.get('cuc', '?')} | Tiết Khí: {chart_data.get('tiet_khi', '?')}\n"
+                    raw_data_section += f"• Can Ngày: {chart_data.get('can_ngay', '?')}{chart_data.get('chi_ngay', '?')} | Can Giờ: {chart_data.get('can_gio', '?')}{chart_data.get('chi_gio', '?')}\n"
+                    for _cung in range(1, 10):
+                        _sao = _tb.get(_cung, _tb.get(str(_cung), ''))
+                        _cua = _nb.get(_cung, _nb.get(str(_cung), ''))
+                        _than = _sb.get(_cung, _sb.get(str(_cung), ''))
+                        _can = _ctb.get(_cung, _ctb.get(str(_cung), ''))
+                        if _sao or _cua or _than:
+                            _sao_str = _sao if isinstance(_sao, str) else str(_sao.get('sao', '?')) if isinstance(_sao, dict) else str(_sao)
+                            _cua_str = _cua if isinstance(_cua, str) else str(_cua.get('mon', '?')) if isinstance(_cua, dict) else str(_cua)
+                            _than_str = _than if isinstance(_than, str) else str(_than.get('than', '?')) if isinstance(_than, dict) else str(_than)
+                            raw_data_section += f"• Cung {_cung}: Sao={_sao_str} | Cửa={_cua_str} | Thần={_than_str} | Can={_can}\n"
+                    raw_data_section += "\n"
+            
             # --- V40.4: VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP TỪ ENGINE (không gián tiếp nữa) ---
             _vv_hanh = v22.get('hanh_dt', '')
             _vv_tier = v22.get('tier_cap', '')
@@ -3807,9 +3856,9 @@ class FreeAIHelper:
                     raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
                 raw_data_section += "\n"
             
-            # V40.0: Giới hạn RAW data section → 30K chars max (ưu tiên LH+KM)
-            if len(raw_data_section) > 30000:
-                raw_data_section = raw_data_section[:15000] + "\n\n[...DỮ LIỆU CẮT NGẮN...]\n\n" + raw_data_section[-13000:]
+            # V40.5: Giới hạn RAW data section → 40K chars max (đủ cho bảng hào + 9 cung)
+            if len(raw_data_section) > 40000:
+                raw_data_section = raw_data_section[:18000] + "\n\n[...DỮ LIỆU CẮT NGẮN...]\n\n" + raw_data_section[-18000:]
             
             # ═══ PHẦN 2: OFFLINE VERDICT (chỉ 1 block ngắn để so sánh) ═══
             offline_verdict_block = (
