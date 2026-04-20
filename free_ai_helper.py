@@ -1,5 +1,5 @@
 """
-Free AI Helper V40.6 — THIÊN CƠ ĐẠI SƯ (100% Data Direct + Answer-First + Vạn Vật 2226+)
+Free AI Helper V40.8 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 2226+)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
@@ -1733,7 +1733,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V40.6 Answer-First + 100% Direct Data)"
+        self.name = "Thiên Cơ Đại Sư (V40.8 Siêu Premium + Answer-First + 100% Direct Data)"
         self.version = "V35.8-Full-Pipeline"
         self.model_name = "offline-rule-engine-v35.0"
         self.logs = []
@@ -3911,9 +3911,9 @@ class FreeAIHelper:
             # AI Online luận giải ĐỘC LẬP → so sánh Offline → KẾT LUẬN CHÍNH
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V40.6 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V40.8 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
                 f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ V40.6: BẠN PHẢI TỰ ĐỌC DỮ LIỆU THÔ VÀ LUẬN GIẢI ĐỘC LẬP.\n"
+                f"NHIỆM VỤ V40.8: BẠN PHẢI TỰ ĐỌC DỮ LIỆU THÔ VÀ LUẬN GIẢI ĐỘC LẬP.\n"
                 f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n"
                 f"</system_role>\n\n"
                 

@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V40.7"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Premium UI + Answer-First + Vạn Vật 2226+ + 12 Trường Sinh)"
+APP_VERSION = "V40.8"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 2226+ + 12 Trường Sinh)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -121,13 +121,19 @@ except Exception: pass
 # --- AI MODEL BADGE ---
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"""
-<div style='text-align: center; margin-bottom: 20px;'>
-    <h3 style='color: #4CAF50; margin-bottom: 5px;'>Trí Tuệ Nhân Tạo</h3>
-    <div style='background-color: #2E3B4E; padding: 5px 10px; border-radius: 15px; display: inline-block;'>
-        <code style='color: #4CAF50; background: none;'>🚀 MODEL: GEMINI-2.5-PRO</code>
-    </div>
-    <div style='margin-top: 10px; font-size: 0.8em; color: #a0aec0;'>
-        Trạng thái: <b>THIÊN CƠ ĐẠI SƯ {APP_VERSION}</b> —<br>Full Pipeline + Offline Engine (6 Môn + Vạn Vật 2226+)
+<div style='text-align:center;margin:15px 0;'>
+    <div style='background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:24px 16px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;overflow:hidden;'>
+        <div style='position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(255,215,0,0.05),transparent 40%);animation:spin 8s linear infinite;'></div>
+        <div style='position:relative;z-index:1;'>
+            <div style='font-size:2em;margin-bottom:8px;filter:drop-shadow(0 0 10px rgba(255,215,0,0.5));'>☯️</div>
+            <div style='font-size:1.1em;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#ffd700,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;'>THIÊN CƠ ĐẠI SƯ</div>
+            <div style='font-size:0.75em;color:#a78bfa;font-weight:600;margin:6px 0;letter-spacing:1px;'>{APP_VERSION}</div>
+            <div style='display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.15);padding:6px 14px;border-radius:20px;border:1px solid rgba(34,197,94,0.3);margin:8px 0;'>
+                <span style='width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;box-shadow:0 0 8px #22c55e;'></span>
+                <span style='color:#86efac;font-size:0.8em;font-weight:700;'>HOẠT ĐỘNG TỐT</span>
+            </div>
+            <div style='font-size:0.7em;color:#94a3b8;margin-top:8px;line-height:1.5;'>🤖 Gemini AI | 6 Phương Pháp<br>📦 Vạn Vật 2226+ | 12 Trường Sinh<br>🎯 Answer-First Protocol</div>
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -363,10 +369,19 @@ CUA_8 = list(BAT_MON_CO_DINH_DISPLAY.keys())
 # ======================================================================
 st.markdown("""
 <style>
-    /* Imperial Silk & High-Contrast Theme */
+    /* === V40.8 SIÊU PREMIUM THEME === */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+    
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; }
+    
+    @keyframes spin { from {transform:rotate(0deg)} to {transform:rotate(360deg)} }
+    @keyframes pulse-glow { 0%,100% {box-shadow:0 0 5px rgba(34,197,94,0.3)} 50% {box-shadow:0 0 20px rgba(34,197,94,0.6)} }
+    @keyframes shimmer { 0% {background-position:-200% 0} 100% {background-position:200% 0} }
+    @keyframes fadeInUp { from {opacity:0;transform:translateY(20px)} to {opacity:1;transform:translateY(0)} }
+    
     .stApp {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        color: #1e293b;
+        background: linear-gradient(160deg, #0f0c29 0%, #1a1145 30%, #0c1222 60%, #0a0a1a 100%) !important;
+        color: #e2e8f0;
     }
     
     /* SPECIFIC HIGH-CONTRAST FOR EXPLANATIONS (TABLES & INFO) */
@@ -839,6 +854,156 @@ st.markdown("""
         position: absolute;
         left: 0;
     }
+
+    /* ═══════════════════════════════════════════════════════ */
+    /* V40.8 SIÊU PREMIUM — DARK LUXE THEME                 */
+    /* ═══════════════════════════════════════════════════════ */
+    
+    /* SIDEBAR — Glassmorphism Dark */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0f0c29 0%, #1a1145 50%, #0c1222 100%) !important;
+        border-right: 1px solid rgba(255,215,0,0.15) !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #cbd5e1 !important;
+    }
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stTextInput label,
+    [data-testid="stSidebar"] .stTextArea label {
+        color: #a78bfa !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+    }
+    
+    /* HEADER — Premium gradient */
+    [data-testid="stHeader"] {
+        background: linear-gradient(90deg, #0f0c29, #302b63, #24243e) !important;
+        border-bottom: 1px solid rgba(255,215,0,0.2) !important;
+    }
+    
+    /* MARKDOWN — Dark premium typography */
+    [data-testid="stMarkdown"] { animation: fadeInUp 0.3s ease-out; }
+    [data-testid="stMarkdown"] p,
+    [data-testid="stMarkdown"] li {
+        color: #e2e8f0 !important;
+        line-height: 1.7 !important;
+    }
+    [data-testid="stMarkdown"] h1,
+    [data-testid="stMarkdown"] h2,
+    [data-testid="stMarkdown"] h3 {
+        background: linear-gradient(90deg, #ffd700, #ff8c00) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        font-weight: 900 !important;
+    }
+    [data-testid="stMarkdown"] strong,
+    [data-testid="stMarkdown"] b {
+        color: #fbbf24 !important;
+        font-weight: 800 !important;
+    }
+    [data-testid="stMarkdown"] code {
+        background: rgba(139,92,246,0.15) !important;
+        color: #c4b5fd !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
+    }
+    [data-testid="stMarkdown"] pre {
+        background: rgba(15,23,42,0.8) !important;
+        border: 1px solid rgba(100,116,139,0.3) !important;
+        border-radius: 12px !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* DETAILS — Glassmorphism */
+    details {
+        background: rgba(15,23,42,0.6) !important;
+        border: 1px solid rgba(148,163,184,0.2) !important;
+        border-radius: 14px !important;
+        padding: 4px 16px !important;
+        margin: 12px 0 !important;
+        backdrop-filter: blur(10px) !important;
+    }
+    details summary {
+        cursor: pointer !important;
+        padding: 12px 8px !important;
+        color: #a78bfa !important;
+        font-weight: 700 !important;
+    }
+    details summary:hover { color: #c4b5fd !important; }
+    details[open] summary {
+        border-bottom: 1px solid rgba(167,139,250,0.2) !important;
+        margin-bottom: 12px !important;
+    }
+    
+    /* TABLE — Dark premium */
+    [data-testid="stTable"] {
+        background-color: rgba(15,23,42,0.7) !important;
+        border: 1px solid rgba(148,163,184,0.2) !important;
+        border-radius: 12px !important;
+    }
+    [data-testid="stTable"] th {
+        background: linear-gradient(135deg,#312e81,#1e1b4b) !important;
+        color: #c4b5fd !important;
+        font-weight: 800 !important;
+    }
+    [data-testid="stTable"] td {
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* BUTTON — Premium glow */
+    .stButton>button {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9, #5b21b6) !important;
+        color: #f5f3ff !important;
+        border: none !important;
+        padding: 14px 28px !important;
+        border-radius: 16px !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 8px 24px rgba(124,58,237,0.4) !important;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    .stButton>button:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 12px 32px rgba(124,58,237,0.6), 0 0 20px rgba(139,92,246,0.3) !important;
+    }
+    
+    /* ALERT — Dark */
+    .stAlert {
+        background: rgba(30,41,59,0.8) !important;
+        border-radius: 12px !important;
+    }
+    .stAlert p { color: #e2e8f0 !important; }
+    
+    /* INPUT — Dark luxury */
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background: rgba(15,23,42,0.8) !important;
+        border: 1px solid rgba(139,92,246,0.3) !important;
+        border-radius: 12px !important;
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stTextInput"] input:focus,
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 12px rgba(139,92,246,0.3) !important;
+    }
+    
+    /* DIVIDER — Gradient glow */
+    [data-testid="stMarkdown"] hr {
+        border: none !important;
+        height: 1px !important;
+        background: linear-gradient(90deg, transparent, rgba(167,139,250,0.4), transparent) !important;
+    }
+    
+    /* SCROLLBAR — Premium */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f0c29; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#7c3aed,#4c1d95); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+
 </style>
 """, unsafe_allow_html=True)
 # Zoom level already initialized in session state
