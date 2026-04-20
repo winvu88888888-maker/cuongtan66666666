@@ -3747,6 +3747,66 @@ class FreeAIHelper:
                     raw_data_section += f"• {e}\n"
                 raw_data_section += "\n"
             
+            # --- V40.4: MAI HOA — HỖ QUÁI + BIẾN QUÁI + NGHĨA (INJECT TRỰC TIẾP) ---
+            _mh_ho = od.get('mai_hoa_ho_quai', '')
+            _mh_bien = od.get('mai_hoa_bien_quai', '')
+            _mh_nghia = od.get('mai_hoa_nghia', '')
+            _mh_interp = od.get('mai_hoa_interpretation', '')
+            if _mh_ho or _mh_bien or _mh_nghia:
+                raw_data_section += f"═══ [3b] MAI HOA — HỖ QUÁI + BIẾN QUÁI ═══\n"
+                if _mh_ho: raw_data_section += f"• Hỗ Quái: {_mh_ho}\n"
+                if _mh_bien: raw_data_section += f"• Biến Quái: {_mh_bien}\n"
+                if _mh_nghia: raw_data_section += f"• Quẻ Nghĩa: {_mh_nghia}\n"
+                if _mh_interp: raw_data_section += f"• Giải nghĩa: {_mh_interp}\n"
+                raw_data_section += "\n"
+            
+            # --- V40.4: LỤC HÀO — TÊN QUẺ + CUNG (INJECT TRỰC TIẾP) ---
+            _lh_ten = od.get('luc_hao_ten_que', '')
+            _lh_cung = od.get('luc_hao_cung', '')
+            if _lh_ten or _lh_cung:
+                raw_data_section += f"═══ [1b] LỤC HÀO — TÊN QUẺ + CUNG ═══\n"
+                if _lh_ten: raw_data_section += f"• Tên quẻ: {_lh_ten}\n"
+                if _lh_cung: raw_data_section += f"• Cung: {_lh_cung}\n"
+                raw_data_section += "\n"
+            
+            # --- V40.4: VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP TỪ ENGINE (không gián tiếp nữa) ---
+            _vv_hanh = v22.get('hanh_dt', '')
+            _vv_tier = v22.get('tier_cap', '')
+            _vv_vat = v22.get('hanh_vat', NGU_HANH_VAT_CHAT.get(_vv_hanh, {}))
+            _vv_cu_the = v22.get('van_vat_cu_the', {})
+            if _vv_hanh:
+                raw_data_section += f"═══ VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP ═══\n"
+                raw_data_section += f"• Hành DT: {_vv_hanh} | Tier: {_vv_tier}\n"
+                raw_data_section += f"• Hình dáng: {_vv_vat.get('hinh', '?')}\n"
+                raw_data_section += f"• Chất liệu: {_vv_vat.get('chat_lieu', '?')}\n"
+                raw_data_section += f"• Màu sắc: {_vv_vat.get('mau', '?')}\n"
+                raw_data_section += f"• Hướng: {_vv_vat.get('huong', '?')}\n"
+                raw_data_section += f"• Vị: {_vv_vat.get('vi', '?')}\n"
+                raw_data_section += f"• Cơ thể: {_vv_vat.get('co_the', '?')}\n"
+                if _vv_cu_the:
+                    raw_data_section += f"• Đồ vật cụ thể: {_vv_cu_the.get('do_vat', '?')}\n"
+                    raw_data_section += f"• Nhà cửa: {_vv_cu_the.get('nha_cua', '?')}\n"
+                    raw_data_section += f"• Con người: {_vv_cu_the.get('nguoi', '?')}\n"
+                    raw_data_section += f"• Bệnh tật: {_vv_cu_the.get('benh', '?')}\n"
+                raw_data_section += "\n"
+            
+            # --- V40.4: 12 TRƯỜNG SINH — TRỰC TIẾP (chi tiết đầy đủ) ---
+            _ts_stage = v22.get('ts_stage', '')
+            _ts_info = TRUONG_SINH_POWER.get(_ts_stage, {}) if _ts_stage else {}
+            if _ts_stage:
+                raw_data_section += f"═══ 12 TRƯỜNG SINH — TRỰC TIẾP ═══\n"
+                raw_data_section += f"• Giai đoạn hiện tại: {_ts_stage}\n"
+                raw_data_section += f"• Power: {_ts_info.get('power', '?')}% | Cấp: {_ts_info.get('cap', '?')}\n"
+                raw_data_section += f"• Con người: {_ts_info.get('con_nguoi', '?')}\n"
+                raw_data_section += f"• Tình trạng vật: {_ts_info.get('vat', '?')}\n"
+                raw_data_section += f"• Tuổi ước lượng: {_ts_info.get('tuoi_min', '?')}-{_ts_info.get('tuoi_max', '?')}\n"
+                # Ngũ Khí bổ sung
+                _nk = v22.get('ngu_khi', '')
+                _nk_info = NGU_KHI_POWER.get(_nk, {})
+                if _nk:
+                    raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
+                raw_data_section += "\n"
+            
             # V40.0: Giới hạn RAW data section → 30K chars max (ưu tiên LH+KM)
             if len(raw_data_section) > 30000:
                 raw_data_section = raw_data_section[:15000] + "\n\n[...DỮ LIỆU CẮT NGẮN...]\n\n" + raw_data_section[-13000:]
