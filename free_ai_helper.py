@@ -9845,7 +9845,7 @@ class FreeAIHelper:
                         break
                 if not chu_cung_v15 and can_ngay_v15 == 'Giáp':
                     for cn, cv in can_thien_ban_v15.items():
-                        if cv == 'Mậu':
+                        if cv in ('Mậu', 'Kỷ'):  # V40.2: Giáp ẩn dưới Mậu HOẶC Kỷ
                             chu_cung_v15 = int(cn) if cn else None
                             break
                 
@@ -9873,10 +9873,14 @@ class FreeAIHelper:
                 
                 # DT Score summary
                 dt_score_val = 0
-                if dt_cung_v15 and dt_cung_v15 != chu_cung_v15:
-                    dt_s, dt_d, dt_str = self._analyze_cung_factors(dt_cung_v15, chart_data, question, f"DỤNG THẦN ({dung_than})")
-                    v15_dt_score = f"Cung {dt_cung_v15} ({QUAI_TUONG.get(dt_cung_v15, '?')}, {CUNG_NGU_HANH.get(dt_cung_v15, '?')}): Score={dt_s}, {dt_str}"
-                    dt_score_val = dt_s
+                if dt_cung_v15:
+                    if dt_cung_v15 != chu_cung_v15:
+                        dt_s, dt_d, dt_str = self._analyze_cung_factors(dt_cung_v15, chart_data, question, f"DỤNG THẦN ({dung_than})")
+                        v15_dt_score = f"Cung {dt_cung_v15} ({QUAI_TUONG.get(dt_cung_v15, '?')}, {CUNG_NGU_HANH.get(dt_cung_v15, '?')}): Score={dt_s}, {dt_str}"
+                        dt_score_val = dt_s
+                    else:
+                        # V40.2: BT=DT cùng cung → dùng BT score
+                        v15_dt_score = v15_bt_score.replace('BẢN THÂN', f'DỤNG THẦN ({dung_than})') if v15_bt_score else ''
                 
                 # Timeline summary
                 tl_cung = dt_cung_v15 or chu_cung_v15
