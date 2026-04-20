@@ -70,16 +70,25 @@ st.session_state.zoom_level = zoom
 st.markdown(f"""
 <style>
     /* V40.9: HIDE broken Material Symbols text — font CDN blocked by CSP */
-    /* Expander toggle arrows — hide "arrow_right"/"expand_more" raw text */
-    [data-testid="stExpander"] details summary svg + span,
-    [data-testid="stExpander"] details summary > div > span:last-child,
-    [data-testid="stExpander"] summary span[class*="material"],
-    [data-testid="stExpander"] summary > span {{
+    /* EXACT target: stExpanderToggleIcon contains "keyboard_arrow_right" text */
+    [data-testid="stExpanderToggleIcon"] {{
         font-size: 0 !important;
         color: transparent !important;
-        width: 0 !important;
+        width: 20px !important;
+        height: 20px !important;
         overflow: hidden !important;
         display: inline-block !important;
+        position: relative !important;
+    }}
+    [data-testid="stExpanderToggleIcon"]::before {{
+        content: "▸" !important;
+        font-size: 16px !important;
+        color: #94a3b8 !important;
+        position: absolute !important;
+        top: 0; left: 0;
+    }}
+    details[open] > summary [data-testid="stExpanderToggleIcon"]::before {{
+        content: "▾" !important;
     }}
     
     /* Sidebar collapse/expand button */  
