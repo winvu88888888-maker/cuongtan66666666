@@ -219,10 +219,11 @@ def render_van_vat_view():
     """, unsafe_allow_html=True)
 
     # === TAB LAYOUT ===
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         "🌳🔥🏔️⚔️💧 Ngũ Hành Loại Tượng",
         "☯️ Bát Quái Loại Tượng",
-        "📜 Kinh Dịch • Mai Hoa • Thiết Bản"
+        "📜 Kinh Dịch • Mai Hoa • Thiết Bản",
+        "🔮 Chi Tiết 12 Trường Sinh"
     ])
 
     # ─── TAB 1: NGŨ HÀNH ───
@@ -400,6 +401,139 @@ def render_van_vat_view():
             </tr>"""
         na_html += "</tbody></table></div>"
         st.markdown(na_html, unsafe_allow_html=True)
+
+    # ─── TAB 4: CHI TIẾT 12 TRƯỜNG SINH × NGŨ HÀNH ───
+    with tab4:
+        st.markdown("### 🔮 VẠN VẬT CHI TIẾT — 12 TRƯỜNG SINH × NGŨ HÀNH")
+        st.markdown("> *Chọn Hành + Trường Sinh để xem TẤT CẢ thông tin chi tiết (45 mục)*")
+        
+        try:
+            from van_vat_tong_hop import format_van_vat_for_ai
+            
+            col_h, col_ts = st.columns(2)
+            with col_h:
+                hanh_sel = st.selectbox("🌿 Chọn Hành:", ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"], key="vv_hanh")
+            with col_ts:
+                ts_sel = st.selectbox("🔄 Chọn Trường Sinh:", [
+                    "Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng",
+                    "Suy", "Bệnh", "Tử", "Mộ", "Tuyệt", "Thai", "Dưỡng"
+                ], key="vv_ts")
+            
+            # Get data
+            result = format_van_vat_for_ai(hanh_sel, ts_sel)
+            lines = result.split('\n')
+            
+            # Render as premium HTML
+            hanh_colors = {"Kim": "#94a3b8", "Mộc": "#22c55e", "Thủy": "#3b82f6", "Hỏa": "#ef4444", "Thổ": "#eab308"}
+            hanh_color = hanh_colors.get(hanh_sel, "#64748b")
+            
+            # Header
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+                border: 2px solid {hanh_color};
+                border-radius: 16px;
+                padding: 20px 24px;
+                margin: 16px 0;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            ">
+                <h2 style="color:{hanh_color}; margin:0 0 4px 0; font-size:1.5rem;">
+                    🔮 {hanh_sel} × {ts_sel}
+                </h2>
+                <p style="color:#94a3b8; margin:0; font-size:0.9rem;">
+                    Tổng: <strong style="color:#fbbf24;">{len(lines)} mục</strong> dữ liệu
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Render each line
+            icon_colors = {
+                "👁": "#8b5cf6", "👂": "#06b6d4", "👃": "#f59e0b", "👅": "#ef4444", "✋": "#22c55e",
+                "🔮": "#a855f7", "🧑": "#ec4899", "🏠": "#6366f1", "🏥": "#dc2626", "🐾": "#f97316",
+                "🧭": "#0ea5e9", "📈": "#10b981", "🚗": "#64748b", "👔": "#8b5cf6", "🍜": "#f59e0b",
+                "🥤": "#06b6d4", "💎": "#a855f7", "📱": "#3b82f6", "🎵": "#ec4899", "🏭": "#78716c",
+                "⚔": "#ef4444", "⚽": "#22c55e", "🌤": "#fbbf24", "🎭": "#c084fc", "🌍": "#0ea5e9",
+                "💄": "#f472b6", "🧸": "#fb923c", "🛋": "#a78bfa", "💉": "#dc2626", "⛪": "#fbbf24",
+                "🗻": "#6b7280", "🦴": "#f8fafc", "🌾": "#84cc16", "🏢": "#6366f1", "🏡": "#10b981",
+                "🎨": "#e879f9", "💻": "#38bdf8",
+            }
+            
+            items_html = ""
+            for line in lines:
+                if not line.strip():
+                    continue
+                if line.startswith("==="):
+                    continue  # Skip header, already shown above
+                
+                # Find icon color
+                line_color = "#e2e8f0"
+                for icon, color in icon_colors.items():
+                    if icon in line:
+                        line_color = color
+                        break
+                
+                # Bold the **text**
+                import re
+                display_line = re.sub(r'\*\*(.+?)\*\*', r'<strong style="color:#fbbf24;">\1</strong>', line)
+                
+                items_html += f"""
+                <div style="
+                    background: rgba(15,23,42,0.6);
+                    border-left: 3px solid {line_color};
+                    padding: 8px 14px;
+                    margin: 4px 0;
+                    border-radius: 0 8px 8px 0;
+                    color: #e2e8f0;
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                ">
+                    {display_line}
+                </div>"""
+            
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(180deg, #0f172a, #1e293b);
+                border-radius: 12px;
+                padding: 12px;
+                max-height: 800px;
+                overflow-y: auto;
+            ">
+                {items_html}
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Quick view: ALL 12 stages summary
+            st.markdown("---")
+            st.markdown(f"### 📊 Tổng quan {hanh_sel} — TẤT CẢ 12 Trường Sinh")
+            
+            all_stages = ["Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng",
+                          "Suy", "Bệnh", "Tử", "Mộ", "Tuyệt", "Thai", "Dưỡng"]
+            stage_icons = ["🌱", "🛁", "👑", "🏛️", "⭐", "📉", "🤒", "💀", "⚰️", "❌", "🤰", "🍼"]
+            
+            cols = st.columns(4)
+            for i, (stage, icon) in enumerate(zip(all_stages, stage_icons)):
+                with cols[i % 4]:
+                    r = format_van_vat_for_ai(hanh_sel, stage)
+                    n_lines = len(r.split('\n'))
+                    stage_color = "#22c55e" if i <= 4 else "#f59e0b" if i <= 6 else "#ef4444" if i <= 9 else "#a855f7"
+                    st.markdown(f"""
+                    <div style="
+                        background: rgba(15,23,42,0.7);
+                        border: 1px solid {stage_color}40;
+                        border-radius: 10px;
+                        padding: 10px;
+                        margin: 4px 0;
+                        text-align: center;
+                    ">
+                        <div style="font-size:1.5rem;">{icon}</div>
+                        <div style="color:{stage_color}; font-weight:800; font-size:0.85rem;">{stage}</div>
+                        <div style="color:#94a3b8; font-size:0.75rem;">{n_lines} mục</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        except ImportError:
+            st.error("⚠️ Không tìm thấy module van_vat_tong_hop.py")
+        except Exception as e:
+            st.error(f"⚠️ Lỗi: {e}")
 
     # Footer
     st.markdown("""
