@@ -3961,7 +3961,7 @@ class FreeAIHelper:
             _ts_stage = v22.get('ts_stage', '')
             if _vv_hanh:
                 try:
-                    from van_vat_tong_hop import smart_van_vat_for_question, get_tham_tu_mo_ta
+                    from van_vat_tong_hop import smart_van_vat_for_question, get_tham_tu_mo_ta, TRUONG_SINH_TRANG_THAI
                     # V40.9: Smart filter — chỉ lấy categories LIÊN QUAN câu hỏi
                     _vv_text, _vv_topics = smart_van_vat_for_question(_vv_hanh, _ts_stage or 'Quan Đới', question)
                     if _vv_text:
@@ -3972,6 +3972,22 @@ class FreeAIHelper:
                     _thamtu_text = get_tham_tu_mo_ta(_vv_hanh, _ts_stage or 'Quan Đới', question)
                     if _thamtu_text:
                         raw_data_section += _thamtu_text + "\n\n"
+                    
+                    # V41.2: INJECT SỐ LƯỢNG TỪ VẠN VẬT — ĐÂY LÀ NGUỒN CHÍNH CHO CÂU HỎI SỐ
+                    _ts_trang_thai = TRUONG_SINH_TRANG_THAI.get(_ts_stage or 'Quan Đới', {})
+                    _HD_SO = {'Thủy': '1,6', 'Hỏa': '2,7', 'Mộc': '3,8', 'Kim': '4,9', 'Thổ': '5,10'}
+                    raw_data_section += f"═══ SỐ HỌC VẠN VẬT (NGUỒN CHÍNH CHO CÂU HỎI SỐ LƯỢNG) ═══\n"
+                    raw_data_section += f"• Hành DT: {_vv_hanh} → Hà Đồ Số: {_HD_SO.get(_vv_hanh, '5,10')}\n"
+                    raw_data_section += f"• 12 Trường Sinh: {_ts_stage} → Số lượng: {_ts_trang_thai.get('so_luong', '?')}\n"
+                    raw_data_section += f"• Con số cụ thể: {_ts_trang_thai.get('so', '?')}\n"
+                    raw_data_section += f"• Kích thước: {_ts_trang_thai.get('kich_thuoc', '?')}\n"
+                    raw_data_section += f"• Chất lượng: {_ts_trang_thai.get('chat_luong', '?')}\n"
+                    raw_data_section += f"• Tình trạng: {_ts_trang_thai.get('tinh_trang', '?')}\n"
+                    raw_data_section += f"• Trọng lượng: {_ts_trang_thai.get('trong_luong', '?')}\n"
+                    raw_data_section += f"• Nhiệt độ: {_ts_trang_thai.get('nhiet_do', '?')}\n"
+                    raw_data_section += f"• Âm thanh: {_ts_trang_thai.get('am_thanh', '?')}\n"
+                    raw_data_section += f"• Xu hướng: {_ts_trang_thai.get('huong_phat_trien', '?')}\n"
+                    raw_data_section += f"⚠️ KHI TRẢ LỜI CÂU HỎI SỐ LƯỢNG: PHẢI dùng con số từ mục này, KHÔNG ĐƯỢC nói 'không xác định'\n\n"
                 except Exception:
                     # Fallback: dùng data inline nếu file không có
                     _vv_vat = v22.get('hanh_vat', NGU_HANH_VAT_CHAT.get(_vv_hanh, {}))
@@ -4050,10 +4066,16 @@ class FreeAIHelper:
             # AI Online luận giải ĐỘC LẬP → so sánh Offline → KẾT LUẬN CHÍNH
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V40.8 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V41.2 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
                 f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ V40.8: BẠN PHẢI TỰ ĐỌC DỮ LIỆU THÔ VÀ LUẬN GIẢI ĐỘC LẬP.\n"
-                f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n"
+                f"NHIỆM VỤ V41.2: TỰ ĐỌC DỮ LIỆU THÔ + VẠN VẬT LOẠI TƯỢNG VÀ LUẬN GIẢI ĐỘC LẬP.\n"
+                f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n\n"
+                f"QUY TẮC TUYỆT ĐỐI V41.2:\n"
+                f"① VẠN VẬT LOẠI TƯỢNG là NGUỒN CHÍNH để trả lời mọi câu hỏi cụ thể.\n"
+                f"② Câu hỏi SỐ LƯỢNG (bao nhiêu/mấy) → PHẢI tra Hà Đồ Số + Trường Sinh Số → trả SỐ CỤ THỂ.\n"
+                f"③ Câu hỏi VẬT GÌ (cái gì/loại gì/sản xuất gì) → PHẢI tra đồ vật theo Hành + Trường Sinh.\n"
+                f"④ Câu hỏi Ở ĐÂU → PHẢI tra hướng theo Ngũ Hành (Kim=Tây, Mộc=Đông, Thủy=Bắc, Hỏa=Nam, Thổ=Trung Tâm).\n"  
+                f"⑤ TUYỆT ĐỐI KHÔNG được nói 'không thể xác định' hoặc 'không biết' — PHẢI cho câu trả lời cụ thể từ VẠN VẬT.\n"
                 f"</system_role>\n\n"
                 
                 f"<question>\n"
