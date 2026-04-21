@@ -1462,6 +1462,12 @@ def smart_van_vat_for_question(hanh, truong_sinh_stage, question=""):
     if not matched_topics:
         return full_text, ['full']
     
+    # V41.2: Câu hỏi WHAT/COUNT/AGE → trả FULL (cần tất cả dữ liệu)
+    q_needs_full = any(kw in q for kw in ['cái gì', 'loại gì', 'sản xuất', 'làm gì', 'nghề gì',
+                                           'bao nhiêu', 'mấy', 'số lượng', 'tuổi'])
+    if q_needs_full:
+        return full_text, matched_topics + ['full_for_detail']
+    
     # Lọc lines
     filtered_lines = []
     for line in all_lines:
@@ -1550,7 +1556,10 @@ def format_van_vat_for_ai(hanh, truong_sinh_stage):
     bt = data.get('benh_tat', {})
     lines.append(f"🏥 Bệnh: {bt.get('loai', '')} | Chi tiết: {', '.join(bt.get('cu_the', [])[:5])}")
     lines.append(f"🐾 Thú: {data.get('dong_vat', '')} | 🌿 Cây: {data.get('thuc_vat', '')}")
-    lines.append(f"🧭 Hướng: {data.get('huong', '')} | Mùa: {data.get('mua', '')} | Số: {data.get('so', [])}")
+    _so_list = data.get('so', [])
+    _so_str = ', '.join(str(s) for s in _so_list) if isinstance(_so_list, list) else str(_so_list)
+    lines.append(f"🧭 Hướng: {data.get('huong', '')} | Mùa: {data.get('mua', '')} | Giờ: {data.get('gio', '')}")
+    lines.append(f"🔢 Số lượng: {data.get('so_luong', '?')} | Con số: {_so_str}")
     lines.append(f"📈 Xu hướng: {data.get('xu_huong', '')}")
     
     # === V40.8: XUẤT TẤT CẢ CATEGORIES TỪ MO_RONG + BO_SUNG ===
