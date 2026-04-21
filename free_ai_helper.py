@@ -1,5 +1,5 @@
 """
-Free AI Helper V40.8 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 2226+)
+Free AI Helper V41.3 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 3378+ + 12 Trường Sinh)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
@@ -1865,7 +1865,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V40.8 Siêu Premium + Answer-First + 100% Direct Data)"
+        self.name = "Thiên Cơ Đại Sư (V41.3 Siêu Premium + Answer-First + 100% Direct Data + VV 3378)"
         self.version = "V35.8-Full-Pipeline"
         self.model_name = "offline-rule-engine-v35.0"
         self.logs = []
