@@ -4079,6 +4079,16 @@ class FreeAIHelper:
                 f"12 Trường Sinh: Trường Sinh→Đế Vượng=MẠNH | Suy→Tuyệt=YẾU | Thai/Dưỡng=mầm mống\n"
                 f"</ngu_hanh_rules>\n\n"
                 
+                f"<count_number_rules>\n"
+                f"KHI CÂU HỎI VỀ SỐ LƯỢNG (bao nhiêu, mấy, số lượng):\n"
+                f"PHẢI TRA BẢNG HÀ ĐỒ: Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
+                f"BẢNG LẠC THƯ: Thủy=1 | Mộc=3 | Thổ=5 | Kim=7 | Hỏa=9\n"
+                f"BẢNG QUÁI SỐ: Càn=1 | Đoài=2 | Ly=3 | Chấn=4 | Tốn=5 | Khảm=6 | Cấn=7 | Khôn=8\n"
+                f"QUY TẮC: DT VƯỢNG → lấy THÀNH SỐ (lớn) | DT BÌNH → lấy SINH SỐ (nhỏ) | DT SUY → giảm 1\n"
+                f"VÍ DỤ: Hỏi 'mấy đứa con', DT=Tử Tôn(Thổ), Vượng → Số = 10 | Bình → Số = 5 | Suy → Số = 4\n"
+                f"PHẢI KHẲNG ĐỊNH SỐ CỤ THỂ, KHÔNG ĐƯỢC nói 'không thể xác định'!\n"
+                f"</count_number_rules>\n\n"
+                
                 f"<method_expertise>\n"
                 f"THẾ MẠNH TỪNG PP (dùng đúng sở trường):\n"
                 f"① LỤC HÀO: MẠNH NHẤT cho DỤNG THẦN vượng/suy, CÓ/KHÔNG, tình trạng.\n"
@@ -5255,7 +5265,32 @@ class FreeAIHelper:
         q_lower = question.lower()
         
         # 1. XÁC ĐỊNH CÂU TRẢ LỜI KHẲNG ĐỊNH
-        if any(kw in q_lower for kw in ['có nên', 'nên không', 'có được', 'được không']):
+        # V41.0: Thêm branch COUNT/AGE — trả số cụ thể từ Ngũ Hành
+        _HANH_SO_VERDICT = {
+            'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)
+        }
+        
+        if any(kw in q_lower for kw in ['bao nhiêu', 'mấy', 'số lượng', 'có mấy', 'bao nhieu', 'may ']):
+            # Câu hỏi SỐ LƯỢNG → trả con số cụ thể
+            _hd = _HANH_SO_VERDICT.get(hanh_dt, (5, 10))
+            _so_chinh = _hd[0]  # Sinh số
+            _so_phu = _hd[1]    # Thành số
+            # Chọn số dựa trên Vượng/Suy
+            if weighted_pct >= 60:
+                _so_ket = _so_phu  # Vượng → dùng thành số (lớn hơn)
+            elif weighted_pct >= 40:
+                _so_ket = _so_chinh  # Bình → dùng sinh số
+            else:
+                _so_ket = max(1, _so_chinh - 1)  # Suy → giảm
+            lines.append(f"> 📢 **CÂU TRẢ LỜI: SỐ LƯỢNG = {_so_ket}** (Hành {hanh_dt}: sinh số {_so_chinh}, thành số {_so_phu})")
+            lines.append(f"> *Phạm vi: {_so_chinh} — {_so_phu} | DT {hanh_dt} {'VƯỢNG→lấy thành số' if weighted_pct >= 60 else 'BÌNH→lấy sinh số' if weighted_pct >= 40 else 'SUY→giảm'}*")
+        elif any(kw in q_lower for kw in ['tuổi', 'bao nhiêu tuổi', 'mấy tuổi']):
+            # Câu hỏi TUỔI → trả tuổi từ 12 Trường Sinh
+            _ts_tuoi = TRUONG_SINH_POWER.get(ts_stage, {})
+            _tuoi_min = _ts_tuoi.get('tuoi_min', '?')
+            _tuoi_max = _ts_tuoi.get('tuoi_max', '?')
+            lines.append(f"> 📢 **CÂU TRẢ LỜI: KHOẢNG {_tuoi_min}–{_tuoi_max} TUỔI** (Trường Sinh: {ts_stage})")
+        elif any(kw in q_lower for kw in ['có nên', 'nên không', 'có được', 'được không']):
             if weighted_pct >= 55:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: CÓ — NÊN LÀM ({weighted_pct}%)**")
             elif weighted_pct >= 45:
@@ -8114,22 +8149,29 @@ class FreeAIHelper:
             else:
                 lines.append(f"\n📊 **CÂU TRẢ LỜI:** Không đủ dữ liệu tuổi từ quẻ.")
         
-        # BAO NHIÊU / MẤY
-        elif any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng']):
+        # BAO NHIÊU / MẤY — V41.0: Luôn trả số cụ thể
+        elif any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con']):
+            # V41.0: Nếu chưa có count_numbers → tự tính từ Ngũ Hành
+            if not count_numbers and hanh_dt:
+                _HD = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                _hd = _HD.get(hanh_dt, (5, 10))
+                if pct >= 60:
+                    _so = _hd[1]  # Thành số
+                elif pct >= 40:
+                    _so = _hd[0]  # Sinh số
+                else:
+                    _so = max(1, _hd[0] - 1)
+                count_numbers = [('Ngũ Hành Hà Đồ', _so)]
+            
             if count_numbers:
                 all_nums = [n for _, n in count_numbers]
                 avg = int(round(sum(all_nums) / len(all_nums))) if all_nums else 0
                 detail = ', '.join(f'{pp}={n}' for pp, n in count_numbers)
-                lines.append(f"\n📊 **CÂU TRẢ LỜI: Khoảng {avg}**")
-                lines.append(f"- Dựa trên {len(count_numbers)} phương pháp: {detail}")
-            elif age_numbers:
-                all_nums = [n for _, n in age_numbers]
-                avg = int(sum(all_nums) / len(all_nums)) if all_nums else 0
-                detail = ', '.join(f'{pp}={n}' for pp, n in age_numbers)
-                lines.append(f"\n📊 **CÂU TRẢ LỜI: Khoảng {avg}**")
-                lines.append(f"- Dựa trên {len(age_numbers)} phương pháp: {detail}")
+                lines.append(f"\n📊 **CÂU TRẢ LỜI: SỐ LƯỢNG = {avg}** (Hành DT: {hanh_dt})")
+                lines.append(f"- Nguồn: {detail}")
             else:
-                lines.append(f"\n📊 **CÂU TRẢ LỜI:** Không đủ dữ liệu số lượng từ quẻ.")
+                lines.append(f"\n📊 **CÂU TRẢ LỜI: SỐ LƯỢNG = 5** (mặc định Thổ — không xác định hành)")
+
         
         # Ở ĐÂU / CHỖ NÀO / NƠI NÀO / TÌM ĐÂU
         elif any(k in q for k in ['ở đâu', 'hướng nào', 'phương nào', 'tìm đâu', 'chỗ nào',
@@ -10564,17 +10606,73 @@ class FreeAIHelper:
             sections.append(f"| 🧑 Người | {vv_cu_the.get('nguoi', '?')} |")
             sections.append(f"| 🏥 Bệnh | {vv_cu_the.get('benh', '?')} |")
         
-        # Đếm số lượng (V8.0)
-        if is_count and count_numbers:
-            sections.append(f"\n**📊 Bảng số lượng từ các phương pháp:**")
-            for pp, num in count_numbers:
-                sections.append(f"- {pp}: **{num}**")
-            all_nums = [n for _, n in count_numbers]
-            if len(all_nums) >= 2:
-                avg = sum(all_nums) / len(all_nums)
-                sections.append(f"\n→ **KẾT LUẬN SỐ LƯỢNG: Khoảng {int(round(avg))}** (tổng hợp từ {len(count_numbers)} phương pháp)")
-            elif len(all_nums) == 1:
-                sections.append(f"\n→ **KẾT LUẬN SỐ LƯỢNG: Khoảng {all_nums[0]}**")
+        # Đếm số lượng (V41.0 — ENHANCED: Tự động tính số từ Ngũ Hành + Quái + Vạn Vật)
+        if is_count or is_age:
+            # V41.0: Nếu count_numbers rỗng → TỰ ĐỘNG tính từ Vạn Vật + Ngũ Hành + Quái
+            _HANH_SO_HA_DO = {
+                'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)
+            }
+            _HANH_SO_LAC_THU = {
+                'Thủy': 1, 'Hỏa': 9, 'Mộc': 3, 'Kim': 7, 'Thổ': 5
+            }
+            _QUAI_SO = {
+                'Càn': 1, 'Đoài': 2, 'Ly': 3, 'Chấn': 4,
+                'Tốn': 5, 'Khảm': 6, 'Cấn': 7, 'Khôn': 8
+            }
+            
+            if not count_numbers and hanh_dt_v22:
+                # ① Số từ Ngũ Hành DT (Hà Đồ — sinh số + thành số)
+                hd_so = _HANH_SO_HA_DO.get(hanh_dt_v22, (5, 10))
+                count_numbers.append(('Ngũ Hành (Hà Đồ)', hd_so[0]))
+                count_numbers.append(('Ngũ Hành (Thành Số)', hd_so[1]))
+                
+                # ② Số từ Lạc Thư
+                lt_so = _HANH_SO_LAC_THU.get(hanh_dt_v22, 5)
+                count_numbers.append(('Lạc Thư', lt_so))
+                
+                # ③ Số từ Quái Tượng (Mai Hoa Thượng Quái)
+                if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                    _mh_ten = mai_hoa_data.get('ten_thuong', mai_hoa_data.get('thuong_quai', ''))
+                    for qname, qnum in _QUAI_SO.items():
+                        if qname in str(_mh_ten):
+                            count_numbers.append(('Quái Tượng (Thượng)', qnum))
+                            break
+                    _mh_ha = mai_hoa_data.get('ten_ha', mai_hoa_data.get('ha_quai', ''))
+                    for qname, qnum in _QUAI_SO.items():
+                        if qname in str(_mh_ha):
+                            count_numbers.append(('Quái Tượng (Hạ)', qnum))
+                            break
+                
+                # ④ Số từ Vạn Vật tier (vv_data['so'] = "7-8")
+                vv_so_str = vv_data.get('so', '')
+                if vv_so_str:
+                    try:
+                        if '-' in str(vv_so_str):
+                            parts = str(vv_so_str).split('-')
+                            vv_so_avg = (int(parts[0]) + int(parts[1])) / 2
+                        else:
+                            vv_so_avg = float(vv_so_str)
+                        count_numbers.append(('Vạn Vật (Vượng/Suy)', int(round(vv_so_avg))))
+                    except (ValueError, IndexError):
+                        pass
+            
+            if count_numbers:
+                sections.append(f"\n**📊 BẢNG SỐ LƯỢNG TỪ CÁC PHƯƠNG PHÁP:**")
+                sections.append(f"| Phương Pháp | Số |")
+                sections.append(f"|---|---|")
+                for pp, num in count_numbers:
+                    sections.append(f"| {pp} | **{num}** |")
+                all_nums = [n for _, n in count_numbers]
+                if len(all_nums) >= 2:
+                    # Lấy MEDIAN (trung vị) thay vì trung bình → tránh bị kéo lệch
+                    sorted_nums = sorted(all_nums)
+                    mid = len(sorted_nums) // 2
+                    median = sorted_nums[mid] if len(sorted_nums) % 2 else int(round((sorted_nums[mid-1] + sorted_nums[mid]) / 2))
+                    avg = sum(all_nums) / len(all_nums)
+                    sections.append(f"\n→ **🔢 KẾT LUẬN SỐ LƯỢNG: {median}** (Trung vị) hoặc **{int(round(avg))}** (TB) — từ {len(count_numbers)} nguồn")
+                    sections.append(f"→ *Phạm vi: {min(all_nums)} — {max(all_nums)}*")
+                elif len(all_nums) == 1:
+                    sections.append(f"\n→ **🔢 KẾT LUẬN SỐ LƯỢNG: {all_nums[0]}**")
         elif is_age and age_numbers:
             sections.append(f"\n**📊 Bảng số tuổi từ các phương pháp:**")
             for pp, num in age_numbers:
