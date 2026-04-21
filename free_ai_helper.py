@@ -326,21 +326,53 @@ def _get_luc_than_hanh(bt_hanh, luc_than_name):
 
 # === SYNONYM MAP (V7.0) — Từ đồng nghĩa để tăng matching ===
 SYNONYM_MAP = {
+    # Vietnamese synonyms
     'lương': ['tiền', 'thu nhập'], 'crypto': ['bitcoin', 'coin', 'tiền điện tử'],
     'bitcoin': ['crypto', 'coin'], 'chung cư': ['căn hộ'],
-    'job': ['việc', 'công việc'], 'work': ['việc'],
-    'love': ['yêu', 'tình'], 'crush': ['thích', 'yêu'],
-    'sick': ['bệnh', 'ốm'], 'health': ['sức khỏe', 'khỏe'],
-    'house': ['nhà'], 'car': ['xe', 'ô tô'],
-    'exam': ['thi', 'kiểm tra'], 'marry': ['cưới', 'hôn nhân', 'kết hôn'],
-    'divorce': ['ly hôn', 'chia tay'], 'invest': ['đầu tư'],
-    'stock': ['chứng khoán', 'cổ phiếu'], 'travel': ['du lịch', 'đi chơi'],
-    'startup': ['khởi nghiệp'], 'freelance': ['tự do'],
-    'youtube': ['youtuber', 'kênh'], 'tiktok': ['livestream', 'bán hàng'],
-    'bảo hiểm': ['insurance'], 'ngân hàng': ['bank', 'vay'],
-    'phẫu thuật': ['mổ'], 'trầm cảm': ['stress', 'lo âu'],
     'nợ': ['vay', 'đòi'], 'thất nghiệp': ['mất việc', 'sa thải'],
     'giấc mơ': ['mộng', 'nằm mơ'], 'cúng': ['lễ', 'cầu'],
+    'phẫu thuật': ['mổ'], 'trầm cảm': ['stress', 'lo âu'],
+    'bảo hiểm': ['insurance'], 'ngân hàng': ['bank', 'vay'],
+    'startup': ['khởi nghiệp'], 'freelance': ['tự do'],
+    'youtube': ['youtuber', 'kênh'], 'tiktok': ['livestream', 'bán hàng'],
+    # V41.0: English → Vietnamese (expanded)
+    'job': ['việc', 'công việc', 'nghề'], 'work': ['việc', 'làm'],
+    'career': ['sự nghiệp', 'công việc'], 'promotion': ['thăng chức', 'lên chức'],
+    'salary': ['lương', 'thu nhập'], 'boss': ['sếp', 'chủ'],
+    'love': ['yêu', 'tình', 'tình cảm'], 'crush': ['thích', 'yêu'],
+    'relationship': ['quan hệ', 'tình cảm'], 'boyfriend': ['bạn trai', 'người yêu'],
+    'girlfriend': ['bạn gái', 'người yêu'], 'husband': ['chồng'],
+    'wife': ['vợ'], 'wedding': ['cưới', 'kết hôn'],
+    'sick': ['bệnh', 'ốm'], 'health': ['sức khỏe', 'khỏe'],
+    'hospital': ['bệnh viện', 'viện'], 'doctor': ['bác sĩ'],
+    'cancer': ['ung thư'], 'surgery': ['mổ', 'phẫu thuật'],
+    'medicine': ['thuốc'], 'pregnant': ['mang thai', 'có bầu'],
+    'house': ['nhà'], 'apartment': ['căn hộ', 'chung cư'],
+    'car': ['xe', 'ô tô'], 'phone': ['điện thoại'],
+    'exam': ['thi', 'kiểm tra'], 'school': ['trường', 'học'],
+    'university': ['đại học', 'trường'], 'study': ['học', 'thi'],
+    'marry': ['cưới', 'hôn nhân', 'kết hôn'],
+    'divorce': ['ly hôn', 'chia tay'], 'breakup': ['chia tay'],
+    'invest': ['đầu tư'], 'investment': ['đầu tư'],
+    'stock': ['chứng khoán', 'cổ phiếu'], 'trading': ['giao dịch'],
+    'money': ['tiền', 'tài chính'], 'rich': ['giàu', 'tiền'],
+    'travel': ['du lịch', 'đi chơi'], 'trip': ['chuyến đi', 'du lịch'],
+    'business': ['kinh doanh', 'buôn bán'], 'company': ['công ty'],
+    'death': ['chết', 'mất'], 'accident': ['tai nạn'],
+    'lawsuit': ['kiện', 'kiện tụng'], 'court': ['tòa', 'kiện'],
+    'lost': ['mất', 'thất lạc'], 'find': ['tìm', 'kiếm'],
+    'steal': ['trộm', 'cắp'], 'thief': ['kẻ trộm', 'trộm'],
+    'lucky': ['may mắn', 'hên'], 'unlucky': ['xui', 'xui xẻo'],
+    'success': ['thành công', 'đạt'], 'fail': ['thất bại', 'trượt'],
+    'should': ['có nên', 'nên'], 'when': ['khi nào', 'bao giờ'],
+    'where': ['ở đâu', 'hướng nào'], 'how': ['như thế nào', 'ra sao'],
+    'gamble': ['cờ bạc', 'đánh bạc'], 'lottery': ['xổ số', 'lô đề'],
+    'child': ['con', 'con cái'], 'baby': ['em bé', 'con'],
+    'parent': ['bố mẹ', 'cha mẹ'], 'father': ['bố', 'cha'],
+    'mother': ['mẹ', 'má'], 'pet': ['thú cưng', 'vật nuôi'],
+    'dog': ['chó'], 'cat': ['mèo'],
+    'land': ['đất', 'bất động sản'], 'gold': ['vàng'],
+    'debt': ['nợ', 'vay'], 'loan': ['vay', 'nợ'],
 }
 
 # === AUTO-LEARN FILE (V7.0) ===
@@ -555,6 +587,66 @@ def _get_dung_than(question):
     if 'tôi' in q or 'mình' in q:
         return 'Bản Thân'
     return "Quan Quỷ"
+
+
+def _get_all_dung_than(question):
+    """V41.0: Trả về TẤT CẢ Dụng Thần cho câu hỏi phức hợp.
+    
+    Ví dụ: "vợ bệnh, con thất học" → ['Thê Tài', 'Tử Tôn']
+    Ví dụ: "mẹ tôi bệnh" → ['Phụ Mẫu']
+    
+    Returns: list[str] — danh sách DT (primary đứng đầu)
+    """
+    q = question.lower()
+    
+    # Reuse SUBJECT_DT from _get_dung_than
+    _SUBJECT_DT = [
+        ('bất động sản', 'Phụ Mẫu'), ('nhà đất', 'Phụ Mẫu'),
+        ('ông ngoại', 'Phụ Mẫu'), ('ông nội', 'Phụ Mẫu'),
+        ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
+        ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'),
+        ('hợp đồng', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'),
+        ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'),
+        ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'),
+        ('người yêu', 'Thê Tài'), ('bạn trai', 'Thê Tài'), ('bạn gái', 'Thê Tài'),
+        ('cổ phiếu', 'Thê Tài'), ('điện thoại', 'Thê Tài'),
+        ('tiền', 'Thê Tài'), ('vốn', 'Thê Tài'), ('lương', 'Thê Tài'),
+        ('vợ', 'Thê Tài'), ('crypto', 'Thê Tài'),
+        ('chồng', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'), ('đối tác', 'Quan Quỷ'),
+        ('con trai', 'Tử Tôn'), ('con gái', 'Tử Tôn'), ('con cái', 'Tử Tôn'),
+        ('bác sĩ', 'Tử Tôn'), ('thuốc', 'Tử Tôn'),
+        ('chó', 'Tử Tôn'), ('mèo', 'Tử Tôn'), ('con', 'Tử Tôn'), ('cháu', 'Tử Tôn'),
+        ('anh em', 'Huynh Đệ'), ('đồng nghiệp', 'Huynh Đệ'),
+        ('xổ số', 'Huynh Đệ'), ('cờ bạc', 'Huynh Đệ'),
+        ('bạn', 'Huynh Đệ'),
+    ]
+    
+    _SHORT_BOUNDARY = {'anh', 'em', 'chị', 'bạn', 'con', 'áo', 'mộ', 'xe', 'tàu'}
+    
+    found = []  # list of (position, dt_name, keyword)
+    seen_dt = set()
+    
+    for kw, dt in _SUBJECT_DT:
+        pos = q.find(kw)
+        if pos >= 0:
+            if kw in _SHORT_BOUNDARY:
+                before_ok = (pos == 0) or (q[pos-1] in ' ,;.!?')
+                after_pos = pos + len(kw)
+                after_ok = (after_pos >= len(q)) or (q[after_pos] in ' ,;.!?')
+                if not (before_ok and after_ok):
+                    continue
+            if dt not in seen_dt:
+                found.append((pos, dt, kw))
+                seen_dt.add(dt)
+    
+    # Sort by position → primary DT first
+    found.sort(key=lambda x: x[0])
+    result = [f[1] for f in found]
+    
+    if not result:
+        result = [_get_dung_than(question)]
+    
+    return result
 
 
 def _match_topic(question, topic=None):
@@ -1296,6 +1388,42 @@ LUC_HOP_CHI = {'Tý': 'Sửu', 'Sửu': 'Tý', 'Dần': 'Hợi', 'Hợi': 'Dần
                'Thìn': 'Dậu', 'Dậu': 'Thìn', 'Tị': 'Thân', 'Thân': 'Tị', 'Ngọ': 'Mùi', 'Mùi': 'Ngọ'}
 LUC_XUNG_CHI = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu', 'Dần': 'Thân', 'Thân': 'Dần',
                 'Mão': 'Dậu', 'Dậu': 'Mão', 'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
+
+# === V41.0: TAM HÌNH (Triple Punishment) — Cổ thư Tam Hình quy tắc ===
+TAM_HINH = {
+    # Vô Ân Chi Hình (Hình phạt vô ơn) — mạnh nhất
+    frozenset(['Dần', 'Tị', 'Thân']): ('Vô Ân Chi Hình', '⚠️ TAI HỌA do phản bội/vong ơn — cực HUNG'),
+    # Trì Thế Chi Hình (Hình cậy thế)
+    frozenset(['Sửu', 'Tuất', 'Mùi']): ('Trì Thế Chi Hình', '⚠️ TAI HỌA do cậy quyền/ỷ thế — HUNG'),
+    # Vô Lễ Chi Hình (Hình phạt vô lễ)
+    frozenset(['Tý', 'Mão']): ('Vô Lễ Chi Hình', '⚠️ TAI HỌA do xúc phạm/vô lễ — HUNG'),
+    # Tự Hình (Tự phạt)
+    frozenset(['Thìn']): ('Tự Hình Thìn', '⚠️ Tự mình gây họa — bất lợi'),
+    frozenset(['Ngọ']): ('Tự Hình Ngọ', '⚠️ Tự mình gây họa — bất lợi'),
+    frozenset(['Dậu']): ('Tự Hình Dậu', '⚠️ Tự mình gây họa — bất lợi'),
+    frozenset(['Hợi']): ('Tự Hình Hợi', '⚠️ Tự mình gây họa — bất lợi'),
+}
+
+# Tam Hình pair lookup (2 chi cũng trigger partial punishment)
+TAM_HINH_PAIRS = {
+    ('Dần', 'Tị'): 'Vô Ân Chi Hình (bán cục)', ('Tị', 'Thân'): 'Vô Ân Chi Hình (bán cục)',
+    ('Dần', 'Thân'): 'Vô Ân Chi Hình (bán cục — xung)',
+    ('Sửu', 'Tuất'): 'Trì Thế Chi Hình (bán cục)', ('Tuất', 'Mùi'): 'Trì Thế Chi Hình (bán cục)',
+    ('Sửu', 'Mùi'): 'Trì Thế Chi Hình (bán cục — xung)',
+    ('Tý', 'Mão'): 'Vô Lễ Chi Hình',
+}
+
+def _check_tam_hinh(chi1, chi2):
+    """V41.0: Kiểm tra 2 Chi có tạo Tam Hình không.
+    Returns: str mô tả hình phạt hoặc None."""
+    if not chi1 or not chi2:
+        return None
+    # Tự Hình
+    if chi1 == chi2 and chi1 in ['Thìn', 'Ngọ', 'Dậu', 'Hợi']:
+        return f'Tự Hình ({chi1}) — tự mình gây họa'
+    # Pair check (order-insensitive)
+    pair = TAM_HINH_PAIRS.get((chi1, chi2)) or TAM_HINH_PAIRS.get((chi2, chi1))
+    return pair
 
 # === V9.0: TAM HỢP CỤC ===
 TAM_HOP_CUC = {
@@ -3655,9 +3783,15 @@ class FreeAIHelper:
             raw_data_section += (
                 f"═══ THÔNG TIN CHUNG ═══\n"
                 f"Câu hỏi: {question}\n"
-                f"Dụng Thần: {dung_than_ak} | Hành DT: {hanh_dt}\n"
-                f"Chủ đề: {category_label}\n\n"
+                f"Dụng Thần CHÍNH: {dung_than_ak} | Hành DT: {hanh_dt}\n"
+                f"Chủ đề: {category_label}\n"
             )
+            # V41.0: Multi-DT cho câu hỏi phức hợp
+            all_dts = _get_all_dung_than(question)
+            if len(all_dts) > 1:
+                raw_data_section += f"⚠️ CÂU HỎI PHỨC HỢP — Có {len(all_dts)} Dụng Thần: {' + '.join(all_dts)}\n"
+                raw_data_section += f"   → Phân tích primary DT ({all_dts[0]}) trước, rồi bổ sung secondary DT ({', '.join(all_dts[1:])})\n"
+            raw_data_section += "\n"
             
             # --- 1B: RAW LỤC HÀO (chi tiết nhất) ---
             if od.get('v23_lh_factors'):
@@ -3984,31 +4118,32 @@ class FreeAIHelper:
                 f"  Phải TRẢ LỜI TRỰC TIẾP câu hỏi — KHÔNG né tránh.\n"
                 f"</reasoning_protocol_v38>\n\n"
                 
-                f"<output_format_v38>\n"
-                f"FORMAT BẮT BUỘC:\n\n"
-                f"## 🔮 AI ONLINE — LUẬN GIẢI ĐỘC LẬP\n\n"
-                f"### 📖 ĐỌC QUẺ (Bước 1)\n"
-                f"**Lục Hào:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data LH]\n"
-                f"**Kỳ Môn:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data KM]\n"
-                f"**Mai Hoa:** [phân tích Thể/Dụng/Hỗ/Biến + sinh khắc]\n"
-                f"**Đại Lục Nhâm:** [Sơ-Trung-Mạt Truyền + diễn biến]\n"
-                f"**Thái Ất:** [xu hướng lớn]\n\n"
-                f"### ⚖️ TỔNG HỢP (Bước 2)\n"
-                f"**Yếu tố THUẬN:** [liệt kê yếu tố hỗ trợ]\n"
-                f"**Yếu tố NGHỊCH:** [liệt kê yếu tố cản trở]\n"
-                f"**Verdict AI Online:** [CÁT/HUNG/BÌNH + lý do chính]\n\n"
-                f"### 📊 SO SÁNH VỚI OFFLINE (Bước 3)\n"
-                f"**Đồng ý:** [điểm giống]\n"
-                f"**Khác biệt:** [điểm khác + giải thích]\n\n"
-                f"### ✅ KẾT LUẬN CUỐI (Bước 4)\n"
-                f"**📢 CÂU TRẢ LỜI:** [KHẲNG ĐỊNH CÓ/KHÔNG/NÊN/KHÔNG NÊN — PHẢI DỨT KHOÁT]\n"
+                f"<output_format_v41>\n"
+                f"FORMAT BẮT BUỘC — DÒNG ĐẦU TIÊN LÀ VERDICT:\n\n"
+                f"### 🏆 KẾT LUẬN CUỐI CÙNG\n"
+                f"**📢 VERDICT: [CÁT/HUNG/BÌNH] — [CÓ/KHÔNG/NÊN/KHÔNG NÊN] ([XX]%)**\n"
+                f"**📋 1 CÂU TÓM TẮT:** [Trả lời trực tiếp câu hỏi trong 1 câu ngắn gọn, dứt khoát]\n\n"
+                f"---\n\n"
+                f"### 🔮 AI ONLINE — LUẬN GIẢI ĐỘC LẬP\n\n"
+                f"**📖 ĐỌC QUẺ (Bước 1):**\n"
+                f"• **Lục Hào:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data LH]\n"
+                f"• **Kỳ Môn:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data KM]\n"
+                f"• **Mai Hoa:** [phân tích Thể/Dụng/Hỗ/Biến + sinh khắc]\n"
+                f"• **Đại Lục Nhâm / Thái Ất:** [tóm tắt ngắn]\n\n"
+                f"**⚖️ TỔNG HỢP (Bước 2):**\n"
+                f"• Yếu tố THUẬN: [liệt kê]\n"
+                f"• Yếu tố NGHỊCH: [liệt kê]\n\n"
+                f"**📊 SO SÁNH (Bước 3):**\n"
+                f"• Đồng ý/Khác biệt với Offline Engine\n\n"
+                f"**📢 CÂU TRẢ LỜI:** [KHẲNG ĐỊNH CÓ/KHÔNG — DỨT KHOÁT]\n"
                 f"**📋 VÌ SAO:** [TOP 3 bằng chứng CỤ THỂ trích từ data thô, có số điểm]\n"
                 f"**⏳ ỨNG KỲ:** [Tháng/ngày/hướng cụ thể dựa trên Hành của DT — BẮT BUỘC]\n"
                 f"**🔧 GIẢI PHÁP:** [Hành động cụ thể: nên làm gì, đợi khi nào, bổ sung hành gì]\n\n"
                 f"GIỚI HẠN: Tối đa 800 chữ. Mỗi yếu tố phải TRÍCH DẪN từ data.\n"
-                f"CẤM TUYỆT ĐỐI: Bịa yếu tố, nói 'không thể xác định chính xác', nói 'cần xem thêm', nhại lại offline verdict.\n"
+                f"⛔ QUAN TRỌNG: DÒNG ĐẦU TIÊN PHẢI LÀ '### 🏆 KẾT LUẬN CUỐI CÙNG' + VERDICT.\n"
+                f"CẤM TUYỆT ĐỐI: Bịa yếu tố, nói 'không thể xác định', nhại lại offline verdict.\n"
                 f"BẮT BUỘC: Phải KHẲNG ĐỊNH CÓ hoặc KHÔNG. KHÔNG được né tránh.\n"
-                f"</output_format_v38>\n"
+                f"</output_format_v41>\n"
             )
 
 
@@ -5186,6 +5321,78 @@ class FreeAIHelper:
             _sinh_hanh = {v: k for k, v in SINH.items()}.get(hanh_dt, '?')
             lines.append(f"**🔧 GIẢI PHÁP:** Hoãn lại. Đợi tháng hành {_sinh_hanh} vượng hoặc tìm hướng đi mới.")
         
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # 5. VẠN VẬT LOẠI TƯỢNG — SECTION NỔI BẬT (V41.0)
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        lines.append("")
+        lines.append("---")
+        lines.append("### 🎴 VẠN VẬT LOẠI TƯỢNG")
+        lines.append("")
+        
+        # A. Vạn Vật theo Ngũ Hành DT
+        _VV_HANH_MAP = {
+            'Kim': {'tuong': '⚔️ Kim loại, dao kéo, trang sức', 'mau': 'Trắng, bạc',
+                    'huong': 'Tây', 'co_the': 'Phổi, hô hấp, xương, da',
+                    'nguoi': 'Người cương nghị, sắc sảo, quyết đoán',
+                    'nha': 'Nhà kiên cố, tường gạch, gần đường lớn'},
+            'Mộc': {'tuong': '🌳 Gỗ, sách vở, vải, cây cối', 'mau': 'Xanh lá',
+                    'huong': 'Đông', 'co_the': 'Gan, mật, gân, mắt',
+                    'nguoi': 'Người nhân từ, thanh cao, gầy cao',
+                    'nha': 'Nhà gỗ, gần cây xanh, vườn'},
+            'Thủy': {'tuong': '💧 Nước, rượu, mực, đồ lỏng', 'mau': 'Đen, xanh đen',
+                     'huong': 'Bắc', 'co_the': 'Thận, bàng quang, tai, xương',
+                     'nguoi': 'Người thông minh, linh hoạt, mập',
+                     'nha': 'Nhà gần sông/ao, nơi ẩm thấp'},
+            'Hỏa': {'tuong': '🔥 Đèn, lửa, điện tử, đồ nóng', 'mau': 'Đỏ, tím',
+                     'huong': 'Nam', 'co_the': 'Tim, mắt, huyết áp, lưỡi',
+                     'nguoi': 'Người sôi nổi, nóng tính, hồng hào',
+                     'nha': 'Nhà hướng Nam, nhiều ánh sáng'},
+            'Thổ': {'tuong': '🏔️ Đá, gạch, gốm sứ, xi măng', 'mau': 'Vàng, nâu',
+                    'huong': 'Trung tâm', 'co_the': 'Dạ dày, tỳ vị, miệng, cơ bắp',
+                    'nguoi': 'Người trung thực, chắc nịch, đáng tin',
+                    'nha': 'Nhà trệt, nền đất rộng, bằng phẳng'},
+        }
+        
+        vv_data = _VV_HANH_MAP.get(hanh_dt, {})
+        if vv_data:
+            lines.append(f"**Hành Dụng Thần:** {hanh_dt}")
+            lines.append(f"- 🎨 **Tượng vật:** {vv_data.get('tuong', '?')}")
+            lines.append(f"- 🧭 **Hướng:** {vv_data.get('huong', '?')} | **Màu sắc:** {vv_data.get('mau', '?')}")
+            
+            # Context-aware: chỉ hiện thông tin liên quan đến câu hỏi
+            if any(k in q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'thuốc', 'viện']):
+                lines.append(f"- 🏥 **Cơ thể cần chú ý:** {vv_data.get('co_the', '?')}")
+            if any(k in q_lower for k in ['nhà', 'đất', 'ở', 'mua nhà', 'xây']):
+                lines.append(f"- 🏠 **Nhà cửa:** {vv_data.get('nha', '?')}")
+            if any(k in q_lower for k in ['tìm', 'mất', 'trộm', 'ai', 'người']):
+                lines.append(f"- 👤 **Người liên quan:** {vv_data.get('nguoi', '?')}")
+                lines.append(f"- 🎨 **Màu sắc vật/người:** {vv_data.get('mau', '?')}")
+                lines.append(f"- 🧭 **Hướng tìm:** {vv_data.get('huong', '?')}")
+            
+            # Luôn hiện tượng + người mặc định nếu không match context
+            if not any(k in q_lower for k in ['bệnh', 'nhà', 'tìm', 'mất', 'ai']):
+                lines.append(f"- 👤 **Người liên quan:** {vv_data.get('nguoi', '?')}")
+                lines.append(f"- 🏠 **Nhà cửa/Vị trí:** {vv_data.get('nha', '?')}")
+        
+        # B. Quái Tượng từ Mai Hoa (nếu có)
+        try:
+            if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                _mh_ten = mai_hoa_data.get('ten_thuong', mai_hoa_data.get('thuong_quai', ''))
+                _mh_ha = mai_hoa_data.get('ten_ha', mai_hoa_data.get('ha_quai', ''))
+                _q_up = QUAI_Y_NGHIA.get(_mh_ten, {})
+                _q_lo = QUAI_Y_NGHIA.get(_mh_ha, {})
+                if _q_up or _q_lo:
+                    lines.append("")
+                    lines.append(f"**Quái Tượng:**")
+                    if _q_up:
+                        lines.append(f"- Thượng Quái ({_mh_ten}): {_q_up.get('tuong', '?')} — {_q_up.get('tc', '?')}")
+                    if _q_lo:
+                        lines.append(f"- Hạ Quái ({_mh_ha}): {_q_lo.get('tuong', '?')} — {_q_lo.get('tc', '?')}")
+        except Exception:
+            pass
+        
+        lines.append("")
+        
         protocol_text = "\n".join(lines)
         conclusion_text = f"{final_icon} {final_verdict} ({weighted_pct}%) — {cat_count}/6 CÁT — {total_factors} yếu tố"
         
@@ -5789,6 +5996,24 @@ class FreeAIHelper:
                         score -= 6
                         factors.append(f"Tam Hợp {thc_hanh} khắc DT -6")
                     break
+        # ⑰b V41.0: TAM HÌNH — Chi DT bị Hình phạt (HUNG mạnh)
+        if dt_chi:
+            all_chi = [h.get('chi', '') for h in haos if h.get('chi')]
+            # Check Tam Hình pairs giữa DT chi và các hào khác
+            for h_chi in all_chi:
+                if h_chi == dt_chi:
+                    continue
+                hinh = _check_tam_hinh(dt_chi, h_chi)
+                if hinh:
+                    score -= 5
+                    factors.append(f"TAM HÌNH: DT({dt_chi})↔({h_chi}) = {hinh} -5")
+                    break  # Chỉ tính 1 lần
+            # Check Tam Hình giữa DT chi và Chi Ngày
+            if chi_ngay and chi_ngay != dt_chi:
+                hinh_ngay = _check_tam_hinh(dt_chi, chi_ngay)
+                if hinh_ngay:
+                    score -= 3
+                    factors.append(f"TAM HÌNH: DT({dt_chi})↔Nhật({chi_ngay}) = {hinh_ngay} -3")
         
         # ⑱ Hào Động KHÁC sinh/khắc DT (QUAN TRỌNG NHẤT — scan TẤT CẢ hào động)
         if dong_hao and dt_hanh:
@@ -6046,79 +6271,176 @@ class FreeAIHelper:
         return score, summary, factors
     
     def _thiet_ban_scoring(self, chart_data, luc_hao_data, mai_hoa_data):
-        """V26.2: Chấm điểm Thiết Bản — Đại Vận/Nạp Âm + 12 Trường Sinh + Quái Tượng."""
+        """V41.0: Chấm điểm Thiết Bản — 7 tiêu chí, luôn >= 3 yếu tố.
+        
+        FIX: NAP_AM_GIAI_THICH dùng tên Nạp Âm làm key nhưng code lookup bằng CanChi
+        → Thêm bảng 60 Giáp Tý Nạp Âm chuẩn để tra ngược.
+        """
         score = 0
         factors = []
         
         can_ngay = ''
         chi_ngay = ''
         chi_nam = ''
+        can_hanh = ''
         
-        # ① Nạp Âm & Sinh khắc Can-Chi Ngày (±6)
+        # === BẢNG 60 GIÁP TỬ NẠP ÂM (Chính xác theo cổ thư) ===
+        _NAP_AM_60 = {
+            'GiápTý': ('Hải Trung Kim', 'Kim'), 'ẤtSửu': ('Hải Trung Kim', 'Kim'),
+            'BínhDần': ('Lô Trung Hỏa', 'Hỏa'), 'ĐinhMão': ('Lô Trung Hỏa', 'Hỏa'),
+            'MậuThìn': ('Đại Lâm Mộc', 'Mộc'), 'KỷTị': ('Đại Lâm Mộc', 'Mộc'),
+            'CanhNgọ': ('Lộ Bàng Thổ', 'Thổ'), 'TânMùi': ('Lộ Bàng Thổ', 'Thổ'),
+            'NhâmThân': ('Kiếm Phong Kim', 'Kim'), 'QuýDậu': ('Kiếm Phong Kim', 'Kim'),
+            'GiápTuất': ('Sơn Đầu Hỏa', 'Hỏa'), 'ẤtHợi': ('Sơn Đầu Hỏa', 'Hỏa'),
+            'BínhTý': ('Giản Hạ Thủy', 'Thủy'), 'ĐinhSửu': ('Giản Hạ Thủy', 'Thủy'),
+            'MậuDần': ('Thành Đầu Thổ', 'Thổ'), 'KỷMão': ('Thành Đầu Thổ', 'Thổ'),
+            'CanhThìn': ('Bạch Lạp Kim', 'Kim'), 'TânTị': ('Bạch Lạp Kim', 'Kim'),
+            'NhâmNgọ': ('Dương Liễu Mộc', 'Mộc'), 'QuýMùi': ('Dương Liễu Mộc', 'Mộc'),
+            'GiápThân': ('Tuyền Trung Thủy', 'Thủy'), 'ẤtDậu': ('Tuyền Trung Thủy', 'Thủy'),
+            'BínhTuất': ('Ốc Thượng Thổ', 'Thổ'), 'ĐinhHợi': ('Ốc Thượng Thổ', 'Thổ'),
+            'MậuTý': ('Tích Lịch Hỏa', 'Hỏa'), 'KỷSửu': ('Tích Lịch Hỏa', 'Hỏa'),
+            'CanhDần': ('Tùng Bách Mộc', 'Mộc'), 'TânMão': ('Tùng Bách Mộc', 'Mộc'),
+            'NhâmThìn': ('Trường Lưu Thủy', 'Thủy'), 'QuýTị': ('Trường Lưu Thủy', 'Thủy'),
+            'GiápNgọ': ('Sa Trung Kim', 'Kim'), 'ẤtMùi': ('Sa Trung Kim', 'Kim'),
+            'BínhThân': ('Sơn Hạ Hỏa', 'Hỏa'), 'ĐinhDậu': ('Sơn Hạ Hỏa', 'Hỏa'),
+            'MậuTuất': ('Bình Địa Mộc', 'Mộc'), 'KỷHợi': ('Bình Địa Mộc', 'Mộc'),
+            'CanhTý': ('Bích Thượng Thổ', 'Thổ'), 'TânSửu': ('Bích Thượng Thổ', 'Thổ'),
+            'NhâmDần': ('Kim Bạc Kim', 'Kim'), 'QuýMão': ('Kim Bạc Kim', 'Kim'),
+            'GiápThìn': ('Phúc Đăng Hỏa', 'Hỏa'), 'ẤtTị': ('Phúc Đăng Hỏa', 'Hỏa'),
+            'BínhNgọ': ('Thiên Hà Thủy', 'Thủy'), 'ĐinhMùi': ('Thiên Hà Thủy', 'Thủy'),
+            'MậuThân': ('Đại Trạch Thổ', 'Thổ'), 'KỷDậu': ('Đại Trạch Thổ', 'Thổ'),
+            'CanhTuất': ('Thoa Xuyến Kim', 'Kim'), 'TânHợi': ('Thoa Xuyến Kim', 'Kim'),
+            'NhâmTý': ('Tang Đố Mộc', 'Mộc'), 'QuýSửu': ('Tang Đố Mộc', 'Mộc'),
+            'GiápDần': ('Đại Khê Thủy', 'Thủy'), 'ẤtMão': ('Đại Khê Thủy', 'Thủy'),
+            'BínhThìn': ('Sa Trung Thổ', 'Thổ'), 'ĐinhTị': ('Sa Trung Thổ', 'Thổ'),
+            'MậuNgọ': ('Thiên Thượng Hỏa', 'Hỏa'), 'KỷMùi': ('Thiên Thượng Hỏa', 'Hỏa'),
+            'CanhThân': ('Thạch Lựu Mộc', 'Mộc'), 'TânDậu': ('Thạch Lựu Mộc', 'Mộc'),
+            'NhâmTuất': ('Đại Hải Thủy', 'Thủy'), 'QuýHợi': ('Đại Hải Thủy', 'Thủy'),
+        }
+        
+        # Nạp Âm MẠNH/YẾU phân loại (theo cổ thư Thiết Bản)
+        _NAP_AM_STRENGTH = {
+            'Đại Lâm Mộc': 8, 'Đại Hải Thủy': 8, 'Thiên Thượng Hỏa': 8,  # Cực mạnh
+            'Kiếm Phong Kim': 6, 'Tùng Bách Mộc': 6, 'Thiên Hà Thủy': 6,  # Mạnh
+            'Đại Khê Thủy': 5, 'Thạch Lựu Mộc': 5, 'Thành Đầu Thổ': 5,   # Khá mạnh
+            'Trường Lưu Thủy': 4, 'Bình Địa Mộc': 4, 'Ốc Thượng Thổ': 4, # Trung bình khá
+            'Hải Trung Kim': 3, 'Sa Trung Kim': 3, 'Tuyền Trung Thủy': 3, # Ẩn giấu
+            'Sơn Đầu Hỏa': 2, 'Tích Lịch Hỏa': 2, 'Đại Trạch Thổ': 2,   # Bình
+            'Lô Trung Hỏa': 1, 'Giản Hạ Thủy': 1, 'Lộ Bàng Thổ': 1,     # Yếu
+            'Sơn Hạ Hỏa': 0, 'Tang Đố Mộc': 0, 'Sa Trung Thổ': 0,       # Yếu thể
+            'Bạch Lạp Kim': -1, 'Kim Bạc Kim': -1, 'Dương Liễu Mộc': -1, # Mỏng manh
+            'Phúc Đăng Hỏa': -2, 'Bích Thượng Thổ': -2, 'Thoa Xuyến Kim': -2, # Khá yếu
+        }
+        
         if chart_data and isinstance(chart_data, dict):
             can_ngay = chart_data.get('can_ngay', '')
             chi_ngay = chart_data.get('chi_ngay', '')
             chi_nam = chart_data.get('chi_nam', '')
-            can_chi = can_ngay + chi_ngay if can_ngay and chi_ngay else ''
-            
-            # Nạp âm mệnh
-            if can_chi and NAP_AM_GIAI_THICH:
-                nap_am = NAP_AM_GIAI_THICH.get(can_chi, {})
-                if nap_am:
-                    cat_hung = nap_am.get('cat_hung', '')
-                    if 'Cát' in str(cat_hung):
-                        score += 5
-                        factors.append(f"TB Nạp Âm {can_chi} Cát +5")
-                    elif 'Hung' in str(cat_hung):
-                        score -= 5
-                        factors.append(f"TB Nạp Âm {can_chi} Hung -5")
-            
-            # Sinh khắc Can (Thiên) Chi (Địa) Ngày
             can_hanh = CAN_NGU_HANH.get(can_ngay, '')
-            chi_hanh = CHI_NGU_HANH.get(chi_ngay, '')
-            if can_hanh and chi_hanh:
-                if SINH.get(chi_hanh) == can_hanh:
-                    score += 4
-                    factors.append(f"TB Địa Chi sinh Thiên Can +4")
-                elif KHAC.get(chi_hanh) == can_hanh:
-                    score -= 4
-                    factors.append(f"TB Địa Chi khắc Thiên Can -4")
-                elif can_hanh == chi_hanh:
-                    score += 2
-                    factors.append(f"TB Thiên Địa Tỷ Hòa +2")
         
-        # ② Thái Tuế (Lưu Niên) sinh khắc Mệnh Chủ (Can Ngày) (±6)
+        # ① NẠP ÂM NGÀY — Tra bảng 60 Giáp Tý (±5)
+        nap_am_ten = ''
+        nap_am_hanh = ''
+        can_chi_key = can_ngay + chi_ngay if can_ngay and chi_ngay else ''
+        if can_chi_key and can_chi_key in _NAP_AM_60:
+            nap_am_ten, nap_am_hanh = _NAP_AM_60[can_chi_key]
+            na_str = _NAP_AM_STRENGTH.get(nap_am_ten, 0)
+            na_desc = NAP_AM_GIAI_THICH.get(nap_am_ten, nap_am_ten)
+            if na_str >= 5:
+                score += 5
+                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] MẠNH ({na_desc}) +5")
+            elif na_str >= 2:
+                score += 2
+                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] TRUNG ({na_desc}) +2")
+            elif na_str <= -1:
+                score -= 3
+                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] YẾU ({na_desc}) -3")
+            else:
+                score += 0
+                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] BÌNH ({na_desc}) +0")
+        elif can_ngay and chi_ngay:
+            # Fallback: Nạp Âm từ chart_data
+            nap_am_ten = chart_data.get('nap_am', chart_data.get('nap_am_ten', '')) if chart_data else ''
+            nap_am_hanh = chart_data.get('nap_am_hanh', '') if chart_data else ''
+            if nap_am_ten and nap_am_ten != '?':
+                na_str = _NAP_AM_STRENGTH.get(nap_am_ten, 0)
+                if na_str >= 5:
+                    score += 5
+                    factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] MẠNH +5")
+                elif na_str <= -1:
+                    score -= 3
+                    factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] YẾU -3")
+                else:
+                    factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] BÌNH +0")
+        
+        # ② NẠP ÂM vs DỤNG THẦN HÀNH — Sinh Khắc (±4)
+        if nap_am_hanh and can_hanh:
+            if SINH.get(nap_am_hanh) == can_hanh:
+                score += 4
+                factors.append(f"TB-2 Nạp Âm({nap_am_hanh}) SINH Mệnh({can_hanh}) +4")
+            elif KHAC.get(nap_am_hanh) == can_hanh:
+                score -= 4
+                factors.append(f"TB-2 Nạp Âm({nap_am_hanh}) KHẮC Mệnh({can_hanh}) -4")
+            elif nap_am_hanh == can_hanh:
+                score += 2
+                factors.append(f"TB-2 Nạp Âm Tỷ Hòa Mệnh +2")
+            elif SINH.get(can_hanh) == nap_am_hanh:
+                score -= 1
+                factors.append(f"TB-2 Mệnh TIẾT KHÍ cho Nạp Âm -1")
+            else:
+                factors.append(f"TB-2 Nạp Âm({nap_am_hanh}) ↔ Mệnh({can_hanh}) Bình hòa +0")
+        
+        # ③ THIÊN ĐỊA SINH KHẮC — Can Ngày vs Chi Ngày (±4)
+        chi_hanh = CHI_NGU_HANH.get(chi_ngay, '')
+        if can_hanh and chi_hanh:
+            if SINH.get(chi_hanh) == can_hanh:
+                score += 4
+                factors.append(f"TB-3 Địa Chi({chi_ngay}/{chi_hanh}) SINH Thiên Can({can_ngay}/{can_hanh}) +4")
+            elif KHAC.get(chi_hanh) == can_hanh:
+                score -= 4
+                factors.append(f"TB-3 Địa Chi({chi_ngay}/{chi_hanh}) KHẮC Thiên Can({can_ngay}/{can_hanh}) -4")
+            elif can_hanh == chi_hanh:
+                score += 2
+                factors.append(f"TB-3 Thiên Địa Tỷ Hòa({can_hanh}) +2")
+        
+        # ④ THÁI TUẾ (Lưu Niên) sinh khắc Mệnh Chủ (±6)
         if can_ngay and chi_nam:
-            can_hanh = CAN_NGU_HANH.get(can_ngay, '')
             nam_hanh = CHI_NGU_HANH.get(chi_nam, '')
             if can_hanh and nam_hanh:
                 if SINH.get(nam_hanh) == can_hanh:
                     score += 6
-                    factors.append(f"TB Thái Tuế ({chi_nam}) sinh Mệnh +6")
+                    factors.append(f"TB-4 Thái Tuế({chi_nam}/{nam_hanh}) SINH Mệnh +6")
                 elif KHAC.get(nam_hanh) == can_hanh:
                     score -= 6
-                    factors.append(f"TB Thái Tuế ({chi_nam}) khắc Mệnh -6")
+                    factors.append(f"TB-4 Thái Tuế({chi_nam}/{nam_hanh}) KHẮC Mệnh -6")
                 elif nam_hanh == can_hanh:
                     score += 3
-                    factors.append(f"TB Mệnh đắc Thái Tuế +3")
+                    factors.append(f"TB-4 Mệnh đắc Thái Tuế +3")
         
-        # ③ 12 Trường Sinh (±8)
-        if chart_data and isinstance(chart_data, dict):
-            hanh_can = CAN_NGU_HANH.get(can_ngay, '')
-            if hanh_can and chi_ngay:
-                ts_stage, ts_explain = _get_truong_sinh(hanh_can, chi_ngay)
-                if ts_stage:
-                    if ts_stage in ['Đế Vượng', 'Lâm Quan', 'Trường Sinh']:
-                        score += 8
-                        factors.append(f"TB 12TrSinh Mệnh {ts_stage} +8")
-                    elif ts_stage in ['Tử', 'Mộ', 'Tuyệt']:
-                        score -= 8
-                        factors.append(f"TB 12TrSinh Mệnh {ts_stage} -8")
-                    elif ts_stage in ['Suy', 'Bệnh']:
-                        score -= 4
-                        factors.append(f"TB 12TrSinh Mệnh {ts_stage} -4")
-                        
-        # ④ Bổ trợ từ Quẻ (±5)
+        # ⑤ 12 TRƯỜNG SINH — Mệnh tại Chi Ngày (±8)
+        if can_hanh and chi_ngay:
+            ts_stage, ts_explain = _get_truong_sinh(can_hanh, chi_ngay)
+            if ts_stage:
+                if ts_stage in ['Đế Vượng', 'Lâm Quan', 'Trường Sinh']:
+                    score += 8
+                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] CỰC VƯỢNG +8")
+                elif ts_stage in ['Quan Đới', 'Mộc Dục']:
+                    score += 4
+                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] KHÁ +4")
+                elif ts_stage in ['Tử', 'Mộ', 'Tuyệt']:
+                    score -= 8
+                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] CỰC SUY -8")
+                elif ts_stage in ['Suy', 'Bệnh']:
+                    score -= 4
+                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] SUY -4")
+                elif ts_stage == 'Thai':
+                    score += 1
+                    factors.append(f"TB-5 12TrSinh Mệnh ở [Thai] khởi đầu mới +1")
+                elif ts_stage == 'Dưỡng':
+                    score += 2
+                    factors.append(f"TB-5 12TrSinh Mệnh ở [Dưỡng] đang nuôi dưỡng +2")
+        
+        # ⑥ QUẺ TƯỢNG Cát Hung (±5)
         que_name = ''
         if luc_hao_data:
             que_name = luc_hao_data.get('ban', {}).get('name', '')
@@ -6130,41 +6452,58 @@ class FreeAIHelper:
                     cat_hung = v.get('cat_hung', '')
                     if 'Cát' in cat_hung:
                         score += 5
-                        factors.append(f"TB Cục diện Quẻ {que_name} Cát +5")
+                        factors.append(f"TB-6 Quẻ [{que_name}] Cát +5")
                     elif 'Hung' in cat_hung:
                         score -= 5
-                        factors.append(f"TB Cục diện Quẻ {que_name} Hung -5")
+                        factors.append(f"TB-6 Quẻ [{que_name}] Hung -5")
+                    else:
+                        factors.append(f"TB-6 Quẻ [{que_name}] Bình +0")
                     break
         
-        if score >= 10: strength = "🟢 CỰC VƯỢNG"
-        elif score >= 4: strength = "🔵 TƯỚNG"
+        # ⑦ MÙA VƯỢNG SUY — Mệnh Hành vs Mùa hiện tại (±3)
+        try:
+            mua_hanh, mua_ten = _get_lenh_thang_hanh()
+            if mua_hanh and can_hanh:
+                if mua_hanh == can_hanh:
+                    score += 3
+                    factors.append(f"TB-7 Mệnh({can_hanh}) ĐẮCL LỆNH {mua_ten} +3")
+                elif SINH.get(mua_hanh) == can_hanh:
+                    score += 2
+                    factors.append(f"TB-7 Mệnh({can_hanh}) được {mua_ten}({mua_hanh}) sinh +2")
+                elif KHAC.get(mua_hanh) == can_hanh:
+                    score -= 3
+                    factors.append(f"TB-7 Mệnh({can_hanh}) bị {mua_ten}({mua_hanh}) khắc -3")
+        except Exception:
+            pass
+        
+        # === VERDICT ===
+        if score >= 12: strength = "🟢 CỰC VƯỢNG"
+        elif score >= 5: strength = "🔵 TƯỚNG"
         elif score >= -3: strength = "🟡 BÌNH"
         elif score >= -8: strength = "🟠 SUY"
-        else: strength = "🔴 TỬ"
+        else: strength = "🔴 TỬ TUYỆT"
         
-        summary = f"TB Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
+        summary = f"TB Điểm={score}, {strength} ({len(factors)} yếu tố: {' | '.join(factors[:4])})"
         
-        # V27.0: Bo sung Thiet Ban - Dai Van/Luu Nien
+        # V27.0: Bổ sung Đại Vận/Lưu Niên từ JSON (nếu có)
         try:
             import datetime as _dt_tb
             current_year = _dt_tb.datetime.now().year
-            # Load thiet_ban_than_toan.json neu co
             import json as _json_tb
             tb_json_path = os.path.join(os.path.dirname(__file__), 'thiet_ban_than_toan.json')
             if os.path.exists(tb_json_path):
                 with open(tb_json_path, 'r', encoding='utf-8') as _f:
                     tb_json = _json_tb.load(_f)
-                    # Tim Luu Nien hien tai
                     luu_nien = tb_json.get('luu_nien', {}).get(str(current_year), {})
                     if luu_nien:
                         ln_hanh = luu_nien.get('hanh', '')
                         if ln_hanh and can_hanh:
                             if SINH.get(ln_hanh) == can_hanh:
                                 score += 4
-                                factors.append(f"V27 TB Luu Nien {current_year} sinh Menh +4")
+                                factors.append(f"TB-X Lưu Niên {current_year} sinh Mệnh +4")
                             elif KHAC.get(ln_hanh) == can_hanh:
                                 score -= 4
-                                factors.append(f"V27 TB Luu Nien {current_year} khac Menh -4")
+                                factors.append(f"TB-X Lưu Niên {current_year} khắc Mệnh -4")
         except Exception:
             pass
 
@@ -10756,9 +11095,16 @@ class FreeAIHelper:
                 final_parts.append("\n## 📊 AI OFFLINE — PROTOCOL 27 BƯỚC (V38.1)")
                 final_parts.append(v38_protocol_text)
             
+            # V41.0: THÁM TỬ KIỂM CHỨNG — HIỆN TRỰC TIẾP (Fix #5)
+            if v18_detective and len(str(v18_detective)) > 20:
+                final_parts.append("\n---")
+                final_parts.append("\n## 🔍 THÁM TỬ KIỂM CHỨNG (Cross-Reference)")
+                final_parts.append("*🕵️ Kiểm chứng chéo giữa các phương pháp — phát hiện mâu thuẫn/đồng thuận*\n")
+                final_parts.append(str(v18_detective))
+            
             # Chi tiết AI Offline
             final_parts.append("\n---")
-            final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V38.1)")
+            final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V41.0)")
             final_parts.append(f"*⚙️ Engine tính toán 100% xác định, không dùng AI — Điểm Tổng Hợp: {weighted_pct}%*")
             final_parts.append("\n<details>")
             final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích AI Offline (nhấn để mở)</b></summary>\n")
