@@ -8214,18 +8214,105 @@ class FreeAIHelper:
         q = question.lower()
         # V36.1: Normalize không dấu → có dấu (same as _detect_category)
         _THAMTU_NORM = {
+            # Sống/Chết
             'qua duoc': 'qua được', 'qua khoi': 'qua khỏi', 'chet chua': 'chết chưa',
             'con song': 'còn sống', 'da mat': 'đã mất', 'qua doi': 'qua đời',
             'tu vong': 'tử vong', 'song sot': 'sống sót', 'benh nang': 'bệnh nặng',
             'nguy kich': 'nguy kịch', 'hap hoi': 'hấp hối', 'cuu duoc': 'cứu được',
             'mat roi': 'mất rồi', 'song hay': 'sống hay', 'song khong': 'sống không',
+            # CÓ/KHÔNG + NÊN/KHÔNG NÊN
             'co nen': 'có nên', 'co duoc': 'có được', 'duoc khong': 'được không',
             'nen khong': 'nên không', 'co khong': 'có không',
             'co tot': 'có tốt', 'co thanh': 'có thành', 'co do': 'có đỗ',
             'co dat': 'có đạt', 'co thang': 'có thắng', 'co loi': 'có lời',
+            # THẾ NÀO / RA SAO
             'the nao': 'thế nào', 'nhu the nao': 'như thế nào', 'ra sao': 'ra sao',
+            'nhu nao': 'như nào', 'sao roi': 'sao rồi', 'tinh sao': 'tính sao',
+            # KHI NÀO / BAO GIỜ
             'khi nao': 'khi nào', 'bao gio': 'bao giờ', 'luc nao': 'lúc nào',
-            'o dau': 'ở đâu', 'cho nao': 'chỗ nào',
+            'thoi diem': 'thời điểm', 'thang nao': 'tháng nào', 'nam nao': 'năm nào',
+            'ngay nao': 'ngày nào', 'mua nao': 'mùa nào',
+            # Ở ĐÂU / TÌM ĐÂU
+            'o dau': 'ở đâu', 'cho nao': 'chỗ nào', 'huong nao': 'hướng nào',
+            'phuong nao': 'phương nào', 'noi nao': 'nơi nào', 'tim dau': 'tìm đâu',
+            'de dau': 'để đâu', 'de cho': 'để chỗ', 'de o': 'để ở',
+            'cat dau': 'cất đâu', 'cat o': 'cất ở', 'giau dau': 'giấu đâu',
+            'vi tri': 'vị trí', 'nam dau': 'nằm đâu',
+            # CÁI GÌ / VẬT GÌ / SẢN PHẨM  
+            'cai gi': 'cái gì', 'dieu gi': 'điều gì', 'lam gi': 'làm gì',
+            'san pham': 'sản phẩm', 'hang gi': 'hàng gì', 'do gi': 'đồ gì',
+            'loai gi': 'loại gì', 'mat hang': 'mặt hàng', 'san xuat gi': 'sản xuất gì',
+            'ban gi': 'bán gì', 'kinh doanh gi': 'kinh doanh gì', 'buon gi': 'buôn gì',
+            'mua gi': 'mua gì', 'dau tu gi': 'đầu tư gì', 'nganh gi': 'ngành gì',
+            'nghe gi': 'nghề gì', 'trong gi': 'trồng gì', 'nuoi gi': 'nuôi gì',
+            'bang gi': 'bằng gì', 'la gi': 'là gì', 'gi vay': 'gì vậy', 'gi day': 'gì đây',
+            'thuoc loai': 'thuộc loại', 'loai nao': 'loại nào', 'kieu gi': 'kiểu gì',
+            'san xuat cai': 'sản xuất cái', 'san xuat': 'sản xuất',
+            'vat gi': 'vật gì', 'chuyen gi': 'chuyện gì', 'viec gi': 'việc gì',
+            'muon gi': 'muốn gì', 'hoi gi': 'hỏi gì', 'noi gi': 'nói gì',
+            # MÀU SẮC
+            'mau gi': 'màu gì', 'mau nao': 'màu nào', 'mau sac': 'màu sắc',
+            'chon mau': 'chọn màu', 'son mau': 'sơn màu',
+            # SỐ
+            'so may': 'số mấy', 'chon so': 'chọn số', 'so nao': 'số nào',
+            'bien so': 'biển số', 'so dep': 'số đẹp', 'so may man': 'số may mắn',
+            # GIẢI PHÁP
+            'lam sao': 'làm sao', 'giai phap': 'giải pháp', 'cach nao': 'cách nào',
+            'khac phuc': 'khắc phục', 'cai thien': 'cải thiện', 'hoa giai': 'hóa giải',
+            # SO SÁNH
+            'chon cai nao': 'chọn cái nào', 'nen chon': 'nên chọn',
+            'cai nao tot': 'cái nào tốt', 'lua chon': 'lựa chọn',
+            # LỪA ĐẢO
+            'lua dao': 'lừa đảo', 'that gia': 'thật giả', 'dang tin': 'đáng tin',
+            'co that': 'có thật', 'gian lan': 'gian lận',
+            # TÌNH CẢM
+            'hon nhan': 'hôn nhân', 'tinh cam': 'tình cảm', 'chia tay': 'chia tay',
+            'quay lai': 'quay lại', 'nguoi yeu': 'người yêu', 'vo chong': 'vợ chồng',
+            'ket hon': 'kết hôn', 'tai hop': 'tái hợp', 'ngoai tinh': 'ngoại tình',
+            'chung thuy': 'chung thủy', 'dam cuoi': 'đám cưới',
+            # BỆNH TẬT
+            'benh gi': 'bệnh gì', 'suc khoe': 'sức khỏe', 'khoi benh': 'khỏi bệnh',
+            'phau thuat': 'phẫu thuật', 'trieu chung': 'triệu chứng',
+            # MẤT ĐỒ
+            'mat do': 'mất đồ', 'tim do': 'tìm đồ', 'tim thay': 'tìm thấy',
+            'danh mat': 'đánh mất', 'mat xe': 'mất xe', 'mat tien': 'mất tiền',
+            # KIỆN TỤNG
+            'tranh chap': 'tranh chấp', 'thang kien': 'thắng kiện',
+            'phap ly': 'pháp lý', 'to cao': 'tố cáo', 'khieu nai': 'khiếu nại',
+            # THỜI TIẾT
+            'thoi tiet': 'thời tiết',
+            # THAI SẢN
+            'mang thai': 'mang thai', 'co thai': 'có thai', 'sinh con': 'sinh con',
+            'trai hay gai': 'trai hay gái', 'gioi tinh': 'giới tính', 'co bau': 'có bầu',
+            # HỢP TÁC
+            'hop tac': 'hợp tác', 'doi tac': 'đối tác', 'cong su': 'cộng sự',
+            'chung von': 'chung vốn', 'gop von': 'góp vốn', 'lam chung': 'làm chung',
+            # ĐÚNG/SAI
+            'dung khong': 'đúng không', 'sai khong': 'sai không', 'dung hay sai': 'đúng hay sai',
+            'co dung': 'có đúng', 'co sai': 'có sai', 'noi doi': 'nói dối', 'noi that': 'nói thật',
+            # CHỜ / HÀNH ĐỘNG
+            'cho hay': 'chờ hay', 'doi hay': 'đợi hay', 'nen doi': 'nên đợi',
+            'nen cho': 'nên chờ', 'tien hay lui': 'tiến hay lùi', 'xuat phat': 'xuất phát',
+            # NHÀ CỬA
+            'xay nha': 'xây nhà', 'mua nha': 'mua nhà', 'nha moi': 'nhà mới',
+            'phong thuy': 'phong thủy', 'sua nha': 'sửa nhà', 'chuyen nha': 'chuyển nhà',
+            'nha dat': 'nhà đất', 'dat dai': 'đất đai', 'lo dat': 'lô đất',
+            # THI CỬ
+            'ket qua thi': 'kết quả thi', 'diem thi': 'điểm thi',
+            'hoc hanh': 'học hành', 'xet tuyen': 'xét tuyển', 'trung tuyen': 'trúng tuyển',
+            # BAO LÂU
+            'bao lau': 'bao lâu', 'mat bao lau': 'mất bao lâu', 'keo dai': 'kéo dài',
+            'may ngay': 'mấy ngày', 'may thang': 'mấy tháng',
+            # TẠI SAO
+            'tai sao': 'tại sao', 'vi sao': 'vì sao', 'nguyen nhan': 'nguyên nhân',
+            'do dau': 'do đâu', 'ly do': 'lý do',
+            # BAO NHIÊU  
+            'bao nhieu': 'bao nhiêu', 'so luong': 'số lượng',
+            'may nguoi': 'mấy người', 'may cai': 'mấy cái', 'may dua': 'mấy đứa',
+            # TUỔI
+            'bao nhieu tuoi': 'bao nhiêu tuổi', 'may tuoi': 'mấy tuổi',
+            'nam sinh': 'năm sinh',
+            # Gia đình
             'bo': 'bố', 'me': 'mẹ', 'vo': 'vợ', 'chong': 'chồng',
             'ong ngoai': 'ông ngoại', 'ba ngoai': 'bà ngoại',
             'ong noi': 'ông nội', 'ba noi': 'bà nội', 'ong': 'ông', 'ba': 'bà',
