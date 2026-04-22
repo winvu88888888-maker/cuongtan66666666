@@ -1,0 +1,176 @@
+def _analyze_kv_dich_ma_deep(khong_vong_list, dich_ma_chi, dung_than_chi, dung_than_name,
+                              haos=None, dong_hao=None, chi_ngay='', chi_thang='', verdict=''):
+    """V42.1: Phân tích tác động sâu của Không Vong và Dịch Mã.
+    
+    Nguồn: tuvilyso.org, vuphac.com
+    - Không Vong: Chân Không vs Giả Không, tác động lên DT, thời gian xuất Không
+    - Dịch Mã: Mã gặp Xung/Hợp/Hào Động, phân tích di chuyển/biến động
+    """
+    lines = []
+    
+    # ====== PHÂN TÍCH KHÔNG VONG SÂU ======
+    if khong_vong_list:
+        # 1. Check DT lâm Không Vong
+        dt_in_kv = dung_than_chi and dung_than_chi in khong_vong_list
+        if dt_in_kv:
+            lines.append(f"\n**🕳️ PHÂN TÍCH KHÔNG VONG CHUYÊN SÂU (V42.1):**")
+            lines.append(f"  Dụng Thần **{dung_than_name}** ({dung_than_chi}) lâm Tuần Không [{', '.join(khong_vong_list)}]")
+            
+            # Chân Không vs Giả Không
+            # Chân Không: DT suy + Không Vong → thật sự không có
+            # Giả Không: DT vượng + Không Vong → chỉ tạm chưa hiện, sẽ ứng khi xuất Không
+            if verdict in ('HUNG', 'ĐẠI HUNG'):
+                lines.append(f"  → 🔴 **CHÂN KHÔNG**: DT suy + Không Vong = Sự việc THẬT SỰ KHÔNG CÓ, hư vô!")
+                lines.append(f"    *Quẻ HUNG + KV → không có cơ hội phục hồi*")
+            elif verdict in ('CÁT', 'ĐẠI CÁT'):
+                lines.append(f"  → 🟡 **GIẢ KHÔNG**: DT vượng + Không Vong = Sự việc ĐÃ CÓ nhưng CHƯA HIỆN")
+                lines.append(f"    *Quẻ CÁT + KV → chờ xuất Không (ngày/giờ Chi {dung_than_chi}) sẽ ứng nghiệm*")
+            else:
+                lines.append(f"  → 🟠 **BÁN KHÔNG**: Sự việc bấp bênh, chưa rõ thực hư")
+                lines.append(f"    *Cần chờ xuất Không (ngày Chi {dung_than_chi}) để xác định*")
+            
+            # Thời gian xuất Không
+            xung_kv = LUC_XUNG_CHI.get(dung_than_chi, '')
+            if xung_kv:
+                lines.append(f"  → ⏰ **Xuất Không khi:** Gặp ngày/giờ Chi **{dung_than_chi}** (trùng) hoặc **{xung_kv}** (xung)")
+        
+        # 2. Check các hào khác lâm KV
+        if haos:
+            kv_haos = []
+            for i, hao in enumerate(haos):
+                h_chi = hao.get('chi', '')
+                h_lt = hao.get('luc_than', '')
+                if h_chi and h_chi in khong_vong_list and h_lt != dung_than_name:
+                    kv_haos.append((i+1, h_lt, h_chi))
+            if kv_haos:
+                if not dt_in_kv:
+                    lines.append(f"\n**🕳️ KHÔNG VONG CÁC HÀO (V42.1):**")
+                for h_idx, h_lt, h_chi in kv_haos:
+                    impact = ''
+                    if h_lt == 'Quan Quỷ':
+                        impact = '→ Quan Quỷ KV = Sếp/bệnh không thực → Giảm áp lực ✅'
+                    elif h_lt == 'Thê Tài':
+                        impact = '→ Thê Tài KV = Tiền tài hư → Khó kiếm tiền ⚠️'
+                    elif h_lt == 'Huynh Đệ':
+                        impact = '→ Huynh Đệ KV = Đối thủ yếu → Bớt cạnh tranh ✅'
+                    elif h_lt == 'Phụ Mẫu':
+                        impact = '→ Phụ Mẫu KV = Giấy tờ hư → Hợp đồng/nhà chưa chắc ⚠️'
+                    elif h_lt == 'Tử Tôn':
+                        impact = '→ Tử Tôn KV = Vui vẻ hư → Niềm vui chưa đến ⚠️'
+                    lines.append(f"  - Hào {h_idx} **{h_lt}** ({h_chi}) lâm KV {impact}")
+    
+    # ====== PHÂN TÍCH DỊCH MÃ SÂU ======
+    if dich_ma_chi:
+        lines.append(f"\n**🐎 PHÂN TÍCH DỊCH MÃ CHUYÊN SÂU (V42.1):**")
+        lines.append(f"  Dịch Mã tại Chi **{dich_ma_chi}**")
+        
+        # 1. Dịch Mã gặp Xung → di chuyển RẤT NHANH
+        xung_ma = LUC_XUNG_CHI.get(dich_ma_chi, '')
+        if xung_ma and chi_ngay and chi_ngay == xung_ma:
+            lines.append(f"  → ⚡ **MÃ TINH BỊ XUNG** (Nhật {chi_ngay} xung Mã {dich_ma_chi}): Di chuyển/thay đổi CỰC NHANH!")
+        
+        # 2. Dịch Mã gặp Hợp → bị giữ lại, di chuyển bị cản
+        hop_ma = LUC_HOP_CHI.get(dich_ma_chi, '')
+        if hop_ma and chi_ngay and chi_ngay == hop_ma:
+            lines.append(f"  → 🤝 **MÃ TINH BỊ HỢP** (Nhật {chi_ngay} hợp Mã {dich_ma_chi}): Bị GIỮ LẠI, muốn đi mà không đi được!")
+        
+        # 3. Mã rơi KV → di chuyển hư
+        if khong_vong_list and dich_ma_chi in khong_vong_list:
+            lines.append(f"  → 🕳️ **MÃ TINH LÂM KHÔNG VONG**: Muốn đi nhưng KHÔNG ĐI ĐƯỢC, kế hoạch di chuyển bị hủy!")
+        
+        # 4. DT lâm Dịch Mã
+        if dung_than_chi == dich_ma_chi:
+            lines.append(f"  → 🐎 **DT LÂM DỊCH MÃ**: Sự việc GẮN VỚI DI CHUYỂN, thay đổi, không ổn định tại chỗ!")
+        
+        # 5. Hào nào mang Dịch Mã
+        if haos:
+            for i, hao in enumerate(haos):
+                h_chi = hao.get('chi', '')
+                if h_chi == dich_ma_chi:
+                    h_lt = hao.get('luc_than', '')
+                    is_dong = (i+1) in (dong_hao or [])
+                    dong_str = '**ĐỘNG**' if is_dong else 'tĩnh'
+                    lines.append(f"  → 🏇 Hào {i+1} **{h_lt}** ({h_chi}) mang Dịch Mã ({dong_str})")
+                    if is_dong:
+                        lines.append(f"    *Mã Tinh PHÁT ĐỘNG = Sự di chuyển/thay đổi CHẮC CHẮN xảy ra!*")
+    
+    return "\n".join(lines)
+
+
+def _build_thien_dia_nhan_than(thien_ban, nhan_ban, than_ban, chu_cung, sv_cung, lenh_thang_hanh):
+    """V42.1: Xây bảng Thiên-Địa-Nhân-Thần chiến lược — góc nhìn tổng quát Kỳ Môn.
+    
+    Nguồn: Học viện Minh Việt — "4 trụ chiến lược KM:
+    - Thiên Thời = Cửu Tinh (thời cơ, vận may)
+    - Địa Lợi = Bát Quái + Cung (môi trường, điều kiện)
+    - Nhân Hòa = Bát Môn (con người, hành động)
+    - Thần Trợ = Bát Thần (lực lượng siêu nhiên)"
+    """
+    lines = []
+    if not thien_ban or not nhan_ban or not than_ban:
+        return ''
+    
+    lines.append(f"\n**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN (V42.1):**")
+    lines.append(f"*Kỳ Môn Độn Giáp phân tích theo 4 trụ chiến lược*")
+    
+    # Lấy data từ cung Bản Thân
+    bt_sao = thien_ban.get(chu_cung, thien_ban.get(str(chu_cung), '?')) if chu_cung else '?'
+    bt_cua = nhan_ban.get(chu_cung, nhan_ban.get(str(chu_cung), '?')) if chu_cung else '?'
+    bt_than = than_ban.get(chu_cung, than_ban.get(str(chu_cung), '?')) if chu_cung else '?'
+    
+    # Lấy data từ cung Sự Việc  
+    sv_sao = thien_ban.get(sv_cung, thien_ban.get(str(sv_cung), '?')) if sv_cung else '?'
+    sv_cua = nhan_ban.get(sv_cung, nhan_ban.get(str(sv_cung), '?')) if sv_cung else '?'
+    sv_than = than_ban.get(sv_cung, than_ban.get(str(sv_cung), '?')) if sv_cung else '?'
+    
+    # Đánh giá từng trụ
+    # 1. THIÊN THỜI (Cửu Tinh)
+    bt_sao_hanh = CUU_TINH_NGU_HANH.get(str(bt_sao), '')
+    bt_sao_status = ''
+    if bt_sao_hanh and lenh_thang_hanh:
+        bt_sao_strength, bt_sao_icon = _get_seasonal_strength(bt_sao_hanh, lenh_thang_hanh)
+        bt_sao_status = f"{bt_sao_icon} {bt_sao_strength}"
+    
+    sao_cat = any(s in str(bt_sao) for s in ['Tâm', 'Nhậm', 'Phụ', 'Xung'])
+    sao_hung = any(s in str(bt_sao) for s in ['Bồng', 'Nhuế', 'Trụ', 'Anh'])
+    thien_verdict = '✅ THUẬN' if sao_cat else ('⚠️ NGHỊCH' if sao_hung else '🟡 BÌNH')
+    lines.append(f"\n| Trụ | Yếu tố | Cung BT | Cung SV | Đánh giá |")
+    lines.append(f"|:---|:---|:---:|:---:|:---:|")
+    lines.append(f"| 🌤️ **THIÊN THỜI** | Cửu Tinh (thời cơ) | {bt_sao} {bt_sao_status} | {sv_sao} | {thien_verdict} |")
+    
+    # 2. ĐỊA LỢI (Cung + Quái)
+    bt_cung_hanh = CUNG_NGU_HANH.get(chu_cung, '?') if chu_cung else '?'
+    sv_cung_hanh = CUNG_NGU_HANH.get(sv_cung, '?') if sv_cung else '?'
+    dia_verdict = '✅ THUẬN' if bt_cung_hanh == lenh_thang_hanh else ('⚠️ NGHỊCH' if KHAC.get(lenh_thang_hanh) == bt_cung_hanh else '🟡 BÌNH')
+    lines.append(f"| 🌍 **ĐỊA LỢI** | Cung + Quái (môi trường) | Cung {chu_cung or '?'} ({bt_cung_hanh}) | Cung {sv_cung or '?'} ({sv_cung_hanh}) | {dia_verdict} |")
+    
+    # 3. NHÂN HÒA (Bát Môn)
+    cua_cat_list = ['Khai', 'Hưu', 'Sinh']
+    cua_hung_list = ['Tử', 'Kinh', 'Thương']
+    bt_cua_ok = any(c in str(bt_cua) for c in cua_cat_list)
+    bt_cua_bad = any(c in str(bt_cua) for c in cua_hung_list)
+    nhan_verdict = '✅ THUẬN' if bt_cua_ok else ('⚠️ NGHỊCH' if bt_cua_bad else '🟡 BÌNH')
+    lines.append(f"| 👥 **NHÂN HÒA** | Bát Môn (hành động) | {bt_cua} | {sv_cua} | {nhan_verdict} |")
+    
+    # 4. THẦN TRỢ (Bát Thần)
+    than_cat_list = ['Trực Phù', 'Thái Âm', 'Lục Hợp', 'Cửu Địa', 'Cửu Thiên']
+    than_hung_list = ['Bạch Hổ', 'Huyền Vũ', 'Đằng Xà']
+    bt_than_ok = any(t in str(bt_than) for t in than_cat_list)
+    bt_than_bad = any(t in str(bt_than) for t in than_hung_list)
+    than_verdict = '✅ CÁT' if bt_than_ok else ('⚠️ HUNG' if bt_than_bad else '🟡 BÌNH')
+    lines.append(f"| 🙏 **THẦN TRỢ** | Bát Thần (siêu nhiên) | {bt_than} | {sv_than} | {than_verdict} |")
+    
+    # Tổng kết chiến lược
+    total_ok = sum([1 for v in [thien_verdict, dia_verdict, nhan_verdict, than_verdict] if '✅' in v])
+    total_bad = sum([1 for v in [thien_verdict, dia_verdict, nhan_verdict, than_verdict] if '⚠️' in v])
+    
+    if total_ok >= 3:
+        lines.append(f"\n→ **🏆 TỔNG KẾT CHIẾN LƯỢC: {total_ok}/4 trụ THUẬN** — Thiên thời + Địa lợi + Nhân hòa HỘI TỤ → ĐẠI CÁT!")
+    elif total_ok >= 2:
+        lines.append(f"\n→ **✅ TỔNG KẾT CHIẾN LƯỢC: {total_ok}/4 trụ THUẬN** — Đa số thuận, có thể hành động nhưng cần lưu ý trụ yếu.")
+    elif total_bad >= 3:
+        lines.append(f"\n→ **🔴 TỔNG KẾT CHIẾN LƯỢC: {total_bad}/4 trụ NGHỊCH** — Thiên-Địa-Nhân-Thần đều bất lợi → TUYỆT ĐỐI KHÔNG NÊN hành động!")
+    else:
+        lines.append(f"\n→ **🟡 TỔNG KẾT CHIẾN LƯỢC: Cân bằng** — Có thuận có nghịch, cần cân nhắc kỹ từng yếu tố.")
+    
+    return "\n".join(lines)
