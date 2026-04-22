@@ -10282,6 +10282,79 @@ class FreeAIHelper:
         is_competition_kl = _is_competition_question(question)
         _side_a, _side_b = _extract_two_sides(question) if is_competition_kl else ('Bên A', 'Bên B')
         
+        # V42.3: Phát hiện câu hỏi THỜI GIAN (Ứng Kỳ)
+        is_timing_kl = any(kw in q_lower_kl for kw in [
+            'khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'bao lâu',
+            'tháng nào', 'tháng mấy', 'năm nào', 'ngày nào', 'mùa nào',
+            'nhanh', 'chậm', 'kéo dài', 'tồn tại', 'bao nhiêu năm',
+            'bao nhiêu tháng', 'bao nhiêu ngày', 'trong bao lâu',
+            'xảy ra lúc', 'biết kết quả', 'có kết quả',
+        ])
+        
+        # V42.3: TÍNH ỨNG KỲ CỤ THỂ (ngày dương lịch)
+        _timing_fast = ''
+        _timing_slow = ''
+        _timing_detail = []
+        if is_timing_kl:
+            import datetime as _dt_uk
+            _now_uk = _dt_uk.datetime.now()
+            
+            _UNG_KY_CHI = {
+                'Kim': ['Thân', 'Dậu'], 'Mộc': ['Dần', 'Mão'], 'Thủy': ['Tý', 'Hợi'],
+                'Hỏa': ['Ngọ', 'Tị'], 'Thổ': ['Thìn', 'Tuất', 'Sửu', 'Mùi']
+            }
+            _CHI_GIO = {
+                'Tý': '23h-1h', 'Sửu': '1h-3h', 'Dần': '3h-5h', 'Mão': '5h-7h',
+                'Thìn': '7h-9h', 'Tị': '9h-11h', 'Ngọ': '11h-13h', 'Mùi': '13h-15h',
+                'Thân': '15h-17h', 'Dậu': '17h-19h', 'Tuất': '19h-21h', 'Hợi': '21h-23h',
+            }
+            _CHI_THANG = {
+                'Dần': 'T1 ÂL', 'Mão': 'T2 ÂL', 'Thìn': 'T3 ÂL', 'Tị': 'T4 ÂL',
+                'Ngọ': 'T5 ÂL', 'Mùi': 'T6 ÂL', 'Thân': 'T7 ÂL', 'Dậu': 'T8 ÂL',
+                'Tuất': 'T9 ÂL', 'Hợi': 'T10 ÂL', 'Tý': 'T11 ÂL', 'Sửu': 'T12 ÂL',
+            }
+            # Tìm ngày Chi gần nhất từ hôm nay
+            def _next_chi_date(chi_name, from_date):
+                """Tìm ngày dương lịch gần nhất có Chi = chi_name"""
+                chi_idx = CHI_ORDER.index(chi_name) if chi_name in CHI_ORDER else 0
+                # Tính Can Chi ngày hiện tại
+                # Dùng công thức: ngày 01/01/2024 = Giáp Tý (Giáp=0, Tý=0)
+                _base = _dt_uk.datetime(2024, 1, 1)  # Giáp Tý
+                _diff_days = (from_date - _base).days
+                _cur_chi_idx = _diff_days % 12
+                _delta = (chi_idx - _cur_chi_idx) % 12
+                if _delta == 0:
+                    _delta = 12  # Không lấy hôm nay, lấy chu kỳ tiếp
+                return from_date + _dt_uk.timedelta(days=_delta)
+            
+            _SINH_MAP = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
+            
+            # Chi nhanh (vượng) và chi chậm (sinh)
+            _chi_fast = _UNG_KY_CHI.get(_hanh_dt_kl, [])
+            _hanh_sinh = _SINH_MAP.get(_hanh_dt_kl, '')
+            _chi_slow = _UNG_KY_CHI.get(_hanh_sinh, []) if _hanh_sinh else []
+            
+            # Tìm ngày gần nhất cho từng Chi
+            _fast_dates = []
+            for _c in _chi_fast:
+                _d = _next_chi_date(_c, _now_uk)
+                _fast_dates.append((_c, _d))
+            _slow_dates = []
+            for _c in _chi_slow:
+                _d = _next_chi_date(_c, _now_uk)
+                _slow_dates.append((_c, _d))
+            
+            if _fast_dates:
+                _earliest = min(_fast_dates, key=lambda x: x[1])
+                _timing_fast = f"Nhanh nhất: ngày {_earliest[0]} ({_earliest[1].strftime('%d/%m/%Y')}) — giờ {_CHI_GIO.get(_earliest[0], '?')} — tháng {_CHI_THANG.get(_earliest[0], '?')}"
+                for _c, _d in _fast_dates:
+                    _timing_detail.append(f"NHANH: Ngày {_c} = {_d.strftime('%d/%m/%Y')} (giờ {_CHI_GIO.get(_c, '?')})")
+            if _slow_dates:
+                _latest = max(_slow_dates, key=lambda x: x[1])
+                _timing_slow = f"Chậm nhất: ngày {_latest[0]} ({_latest[1].strftime('%d/%m/%Y')}) — giờ {_CHI_GIO.get(_latest[0], '?')} — tháng {_CHI_THANG.get(_latest[0], '?')}"
+                for _c, _d in _slow_dates:
+                    _timing_detail.append(f"CHẬM: Ngày {_c} = {_d.strftime('%d/%m/%Y')} (giờ {_CHI_GIO.get(_c, '?')})")
+        
         # ═══ V42.3: PHÂN TÍCH THẾ VS ỨNG (cho câu hỏi THẮNG THUA) ═══
         _the_score = 0
         _ung_score = 0
@@ -10408,6 +10481,16 @@ class FreeAIHelper:
                 verdict_line = f"📢 **PHÁN QUYẾT: KHÓ THÀNH — cần đổi hướng hoặc đợi ({pct}%)**"
             else:
                 verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG — BẤT LỢI ({pct}%)**"
+        elif is_timing_kl:
+            # --- PHÁN QUYẾT THỜI GIAN ---
+            if pct >= 55 and _timing_fast:
+                verdict_line = f"📢 **PHÁN QUYẾT: SẮP TỚI — {_timing_fast}**"
+            elif pct >= 45 and _timing_fast:
+                verdict_line = f"📢 **PHÁN QUYẾT: TRUNG BÌNH — {_timing_fast}**"
+            elif _timing_slow:
+                verdict_line = f"📢 **PHÁN QUYẾT: CHẬM / CHƯA TỚI — {_timing_slow}**"
+            else:
+                verdict_line = f"📢 **PHÁN QUYẾT: CHƯA XÁC ĐỊNH THỜI GIAN ({pct}%)**"
         else:
             if pct >= 55:
                 verdict_line = f"📢 **PHÁN QUYẾT: THUẬN LỢI ({pct}%)**"
@@ -10636,6 +10719,46 @@ class FreeAIHelper:
                     f"• **Kỳ Môn:** {_side_b} (Khách) khắc/trội {_side_a} (Chủ)\n"
                     f"• **Mai Hoa:** {_side_b} (Dụng) khắc {_side_a} (Thể)\n"
                     f"\n💡 **LỜI KHUYÊN:** {_side_b} có ưu thế lớn. Nếu đặt cược → chọn {_side_b}."
+                )
+        elif is_timing_kl:
+            # ═══ V42.3: KẾT LUẬN THỜI GIAN CỤ THỂ ═══
+            _td_lines = []
+            for _td in _timing_detail:
+                _td_lines.append(f"• {_td}")
+            _td_str = '\n'.join(_td_lines) if _td_lines else '• Không đủ dữ liệu'
+            
+            if pct >= 55:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: SỰ VIỆC SẮP XẢY RA ({pct}%)**\n"
+                    f"• {dung_than} ({_hanh_dt_kl}) VƯỢNG → sự việc đến NHANH.\n"
+                    f"\n**⏰ THỜI GIAN CỤ THỂ:**\n"
+                    f"• ⚡ {_timing_fast}\n"
+                    f"• 🕒 {_timing_slow}\n"
+                    f"\n**📊 CHI TIẾT ỨNG KỲ TỪ 3 PHƯƠNG PHÁP:**\n{_td_str}\n"
+                    f"\n**🏆 QUY TẮC XÁC ĐỊNH:**\n"
+                    f"• DT hành {_hanh_dt_kl} VƯỢNG → ứng nghiệm vào ngày/tháng/năm Chi cùng hành (Trị)\n"
+                    f"• DT hành {_hanh_dt_kl} SUY → chờ hành SINH ({SINH.get(_hanh_dt_kl, '?')}) đến giải cứu\n"
+                    f"\n💡 **LỜI KHUYÊN:** Sự việc sẽ đến SớM. Chú ý những ngày Chi vượng đã nêu (ưu tiên ngày gần nhất)."
+                )
+            elif pct >= 45:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: SỰ VIỆC ĐẾN TRUNG BÌNH ({pct}%)**\n"
+                    f"• {dung_than} ({_hanh_dt_kl}) BÌNH → không nhanh không chậm.\n"
+                    f"\n**⏰ THỜI GIAN CỤ THỂ:**\n"
+                    f"• ⚡ {_timing_fast}\n"
+                    f"• 🕒 {_timing_slow}\n"
+                    f"\n**📊 CHI TIẾT:**\n{_td_str}\n"
+                    f"\n💡 **LỜI KHUYÊN:** Sự việc sẽ đến nhưng cần kiên nhẫn. Chú ý các ngày Chi nêu trên."
+                )
+            else:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: SỰ VIỆC ĐẾN CHẬM / CHƯA TỚI ({pct}%)**\n"
+                    f"• {dung_than} ({_hanh_dt_kl}) SUY → chưa đủ lực, cần chờ hành sinh.\n"
+                    f"\n**⏰ THỜI GIAN CỤ THỂ:**\n"
+                    f"• ⚡ {_timing_fast or 'Khó đến nhanh'}\n"
+                    f"• 🕒 {_timing_slow or 'Cần chờ thêm'}\n"
+                    f"\n**📊 CHI TIẾT:**\n{_td_str}\n"
+                    f"\n💡 **LỜI KHUYÊN:** Sự việc chưa tới lúc. Kiên nhẫn chờ hành {SINH.get(_hanh_dt_kl, '?')} vượng (xem bảng \u1ee8ng K\u1ef3)."
                 )
         elif is_life_death:
             if pct >= 50:
