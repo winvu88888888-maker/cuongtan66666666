@@ -13060,7 +13060,33 @@ class FreeAIHelper:
                     marker = " ← **SỰ VIỆC**"
                 lines.append(f"  Cung {cn_i}: Sao {s} | Cửa {c} | Thần {t} | Can {ct}{marker}")
             lines.append("")
-            
+        
+        # V42.2: BẢNG NHÂN BÀN (BÁT MÔN) RÕ RÀNG
+        if nhan_ban:
+            lines.append(f"**🚪 NHÂN BÀN (Bát Môn) — V42.2:**")
+            nb_row = []
+            for cn_i in range(1, 10):
+                if cn_i == 5:
+                    nb_row.append("5: —")
+                    continue
+                c = nhan_ban.get(cn_i, nhan_ban.get(str(cn_i), '?'))
+                nb_row.append(f"{cn_i}:{c}")
+            lines.append("  " + " | ".join(nb_row))
+            lines.append("")
+        
+        # V42.2: BẢNG THẦN BÀN (BÁT THẦN) RÕ RÀNG
+        if than_ban:
+            lines.append(f"**👁️ THẦN BÀN (Bát Thần) — V42.2:**")
+            tb_row = []
+            for cn_i in range(1, 10):
+                if cn_i == 5:
+                    tb_row.append("5: —")
+                    continue
+                t = than_ban.get(cn_i, than_ban.get(str(cn_i), '?'))
+                tb_row.append(f"{cn_i}:{t}")
+            lines.append("  " + " | ".join(tb_row))
+            lines.append("")
+        
             # V42.0: BẢNG VƯỢNG/SUY CỬU TINH + BÁT MÔN THEO MÙA
             try:
                 _lenh_result_km = _get_lenh_thang_hanh()
@@ -13617,17 +13643,19 @@ class FreeAIHelper:
         huynh_de_count = 0  # Đếm Huynh Đệ cho is_count
         
         if haos:
-            lines.append(f"\n**☯️ Bảng 6 Hào:**")
-            lines.append(f"| Hào | Lục Thân | Can Chi | Ngũ Hành | Thế/Ứng | Động |")
-            lines.append(f"|:---:|:---:|:---:|:---:|:---:|:---:|")
+            lines.append(f"\n**☯️ Bảng 6 Hào (V42.2 — Lục Thần + Lục Thân đầy đủ):**")
+            lines.append(f"| Hào | Lục Thần | Lục Thân | Can Chi | Ngũ Hành | Thế/Ứng | Động |")
+            lines.append(f"|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
             for i, hao in enumerate(haos):
                 luc_than = hao.get('luc_than', '?')
+                luc_than_td = hao.get('luc_than_td', hao.get('luc_thu', hao.get('luc_than_kd', '—')))
                 can_chi = hao.get('can_chi', '?')
                 ngu_hanh = hao.get('ngu_hanh', '?')
                 the_ung = hao.get('the_ung', '')
                 is_dong = '🔴 Động' if (i+1) in dong_hao else ''
                 
-                lines.append(f"| {i+1} | {luc_than} | {can_chi} | {ngu_hanh} | {the_ung} | {is_dong} |")
+                lines.append(f"| {i+1} | {luc_than_td} | {luc_than} | {can_chi} | {ngu_hanh} | {the_ung} | {is_dong} |")
+
                 
                 # Track Thế/Ứng
                 if the_ung == 'Thế':
@@ -14189,11 +14217,18 @@ class FreeAIHelper:
         the_name = QUAI_NAMES.get(the_quai, '?')
         dung_name = QUAI_NAMES.get(dung_quai, '?')
         
+        lines.append(f"- **🌟 Thể Quẻ ({the_label}):** {the_name} | Hành {the_el}")
+        lines.append(f"- **⚡ Dụng Quẻ ({dung_label}):** {dung_name} | Hành {dung_el}")
         lines.append(f"- **Quẻ Chủ:** {mai_hoa_data.get('ten', '?')}")
         lines.append(f"- **Quẻ Biến:** {mai_hoa_data.get('ten_qua_bien', '?')}")
         lines.append(f"- **Hào Động:** {dong_hao}")
-        lines.append(f"- **Thể ({the_label}):** {the_name} ({the_el})")
-        lines.append(f"- **Dụng ({dung_label}):** {dung_name} ({dung_el})")
+        
+        # V42.2: Hỗ Quẻ từ data (nếu có sẵn)
+        if mai_hoa_data.get('ten_ho'):
+            lines.append(f"- **🔍 Hỗ Quẻ (Quẻ ẩn):** {mai_hoa_data.get('ten_ho', '?')}")
+        if mai_hoa_data.get('ten_bien'):
+            lines.append(f"- **🔄 Biến Quẻ:** {mai_hoa_data.get('ten_bien', mai_hoa_data.get('ten_qua_bien', '?'))}")
+
         
         # V8.1: Đọc Tượng Quẻ + Ý Nghĩa từ phần mềm (nếu có)
         tuong = mai_hoa_data.get('tuong', '')
