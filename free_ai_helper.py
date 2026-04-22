@@ -2250,7 +2250,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V41.3 Siêu Premium + Answer-First + 100% Direct Data + VV 3378)"
+        self.name = "Thiên Cơ Đại Sư (V42.1 Siêu Premium + Answer-First + 28 Handlers + VV 3378)"
         self.version = "V35.8-Full-Pipeline"
         self.model_name = "offline-rule-engine-v35.0"
         self.logs = []

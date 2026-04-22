@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V41.3"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 2226+ + 12 Trường Sinh)"
+APP_VERSION = "V42.1"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + 28 Handlers + Vạn Vật 3378+ + 12 Trường Sinh)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
