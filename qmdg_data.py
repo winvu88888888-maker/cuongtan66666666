@@ -624,8 +624,14 @@ def kiem_tra_cau_truc_tranh(can_thien_ban, dia_can):
     return ket_qua
 
 
-def tinh_khong_vong(can_gio, dia_chi_gio):
-    """Tính Khổng Vong dựa vào Can Giờ và Chi Giờ."""
+def tinh_khong_vong(can_ngay, chi_ngay):
+    """
+    V42.2: Tính Tuần Không (Không Vong) dựa vào Can NGÀY và Chi NGÀY.
+    Chuẩn QMDG: KV tra bảng theo ngày, không theo giờ.
+    Trả về list số cung bị Không (ví dụ: [3, 4])
+    """
+    can_gio = can_ngay        # alias — logic dưới dùng biến can_gio/dia_chi_gio
+    dia_chi_gio = chi_ngay
     if not can_gio: return []
     CAN_LIST = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
     CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
@@ -663,16 +669,19 @@ def tinh_khong_vong(can_gio, dia_chi_gio):
         return []
 
 
-def tinh_dich_ma(dia_chi_gio):
-    """Tính Dịch Mã thực tế."""
-    # Thân Tý Thìn -> Dần (Cung 8)
-    # Dần Ngọ Tuất -> Thân (Cung 2)
-    # Tị Dậu Sửu -> Hợi (Cung 6)
-    # Hợi Mão Mùi -> Tị (Cung 4)
-    if dia_chi_gio in ["Thân", "Tý", "Thìn"]: return 8
-    if dia_chi_gio in ["Dần", "Ngọ", "Tuất"]: return 2
-    if dia_chi_gio in ["Tị", "Dậu", "Sửu"]: return 6
-    if dia_chi_gio in ["Hợi", "Mão", "Mùi"]: return 4
+def tinh_dich_ma(chi_ngay):
+    """
+    V42.2: Tính Dịch Mã (Postal Horse) dựa vào Chi NGÀY (chuẩn QMDG).
+    Tam Hợp cục của Chi Ngày quyết định Cung chứa Dịch Mã:
+      Thân Tý Thìn (Thủy cục) → Mã tại Cung 8 (Dần)
+      Dần Ngọ Tuất (Hỏa cục) → Mã tại Cung 2 (Thân)
+      Tị Dậu Sửu (Kim cục) → Mã tại Cung 6 (Hợi)
+      Hợi Mão Mùi (Mộc cục) → Mã tại Cung 4 (Tị)
+    """
+    if chi_ngay in ["Thân", "Tý", "Thìn"]: return 8
+    if chi_ngay in ["Dần", "Ngọ", "Tuất"]: return 2
+    if chi_ngay in ["Tị", "Dậu", "Sửu"]: return 6
+    if chi_ngay in ["Hợi", "Mão", "Mùi"]: return 4
     return None
 
 

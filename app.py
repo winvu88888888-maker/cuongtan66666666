@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.1"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + 28 Handlers + Vạn Vật 3378+ + 12 Trường Sinh)"
+APP_VERSION = "V42.2"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + 28 Handlers + Vạn Vật 3378+ + 12 Trường Sinh + KV/DM Chuẩn QMDG)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -2221,9 +2221,10 @@ if st.session_state.current_view == "ky_mon":
                 can_gio, params['chi_gio'], params['is_duong_don']
             )
             
-            # Calculate special palaces
-            khong_vong = tinh_khong_vong(can_gio, params['chi_gio'])
-            dich_ma = tinh_dich_ma(params['chi_gio'])
+            # V42.2 FIX: Tuần Không & Dịch Mã tính theo Can+Chi NGÀY (chuẩn QMDG)
+            # KV theo Chi Giờ là sai — phải dùng Chi Ngày làm cơ sở tra bảng
+            khong_vong = tinh_khong_vong(params['can_ngay'], params['chi_ngay'])
+            dich_ma = tinh_dich_ma(params['chi_ngay'])
             
             # Store in session state
             if 'chart_data' not in st.session_state:

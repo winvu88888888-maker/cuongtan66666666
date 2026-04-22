@@ -1,8 +1,8 @@
 """
-Free AI Helper V42.0 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 3378+ + 12 Trường Sinh)
+Free AI Helper V42.2 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 3378+ + 12 Trường Sinh)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
-V42.0: +7 thiếu sót chuyên gia (Ứng Kỳ chuyên sâu, Hóa Hồi Đầu, Hào Từ, Phản/Phục Ngâm,
+V42.2: +7 thiếu sót chuyên gia (Ứng Kỳ chuyên sâu, Hóa Hồi Đầu, Hào Từ, Phản/Phục Ngâm,
        Ám Động, Lục Thần sâu, Bảng Vượng/Suy theo mùa).
 V26.2: Tích hợp _calc_unified_strength_tier() — 3 tầng LH+TS+NK → Unified %.
        Ngũ Hành vật chất mapping (hình, chất liệu, màu sắc).
@@ -1955,6 +1955,245 @@ def _build_phan_phuc_ngam_warning(chart_data, luc_hao_data=None):
         )
     return "\n".join(html_parts)
 
+# === V42.1: GÓC NHÌN THIÊN-ĐỊA-NHÂN-THẦN (4 Trụ Chiến Lược KM) ===
+def _build_thien_dia_nhan_than(thien_ban, nhan_ban, than_ban, chu_cung, sv_cung, lenh_thang_hanh):
+    """V42.1: Xây bảng Thiên-Địa-Nhân-Thần chiến lược — góc nhìn tổng quát Kỳ Môn.
+    
+    Nguồn: Học viện Minh Việt — "4 trụ chiến lược KM:
+    - Thiên Thời = Cửu Tinh (thời cơ, vận may)
+    - Địa Lợi = Bát Quái + Cung (môi trường, điều kiện)
+    - Nhân Hòa = Bát Môn (con người, hành động)
+    - Thần Trợ = Bát Thần (lực lượng siêu nhiên)"
+    """
+    lines = []
+    if not thien_ban or not nhan_ban or not than_ban:
+        return ''
+    
+    lines.append(f"\n**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN (V42.1):**")
+    lines.append(f"*Kỳ Môn Độn Giáp phân tích theo 4 trụ chiến lược*")
+    
+    # Lấy data từ cung Bản Thân
+    bt_sao = thien_ban.get(chu_cung, thien_ban.get(str(chu_cung), '?')) if chu_cung else '?'
+    bt_cua = nhan_ban.get(chu_cung, nhan_ban.get(str(chu_cung), '?')) if chu_cung else '?'
+    bt_than = than_ban.get(chu_cung, than_ban.get(str(chu_cung), '?')) if chu_cung else '?'
+    
+    # Lấy data từ cung Sự Việc  
+    sv_sao = thien_ban.get(sv_cung, thien_ban.get(str(sv_cung), '?')) if sv_cung else '?'
+    sv_cua = nhan_ban.get(sv_cung, nhan_ban.get(str(sv_cung), '?')) if sv_cung else '?'
+    sv_than = than_ban.get(sv_cung, than_ban.get(str(sv_cung), '?')) if sv_cung else '?'
+    
+    # Đánh giá từng trụ
+    # 1. THIÊN THỜI (Cửu Tinh)
+    bt_sao_hanh = CUU_TINH_NGU_HANH.get(str(bt_sao), '')
+    bt_sao_status = ''
+    if bt_sao_hanh and lenh_thang_hanh:
+        bt_sao_strength, bt_sao_icon = _get_seasonal_strength(bt_sao_hanh, lenh_thang_hanh)
+        bt_sao_status = f"{bt_sao_icon} {bt_sao_strength}"
+    
+    sao_cat = any(s in str(bt_sao) for s in ['Tâm', 'Nhậm', 'Phụ', 'Xung'])
+    sao_hung = any(s in str(bt_sao) for s in ['Bồng', 'Nhuế', 'Trụ', 'Anh'])
+    thien_verdict = '✅ THUẬN' if sao_cat else ('⚠️ NGHỊCH' if sao_hung else '🟡 BÌNH')
+    lines.append(f"\n| Trụ | Yếu tố | Cung BT | Cung SV | Đánh giá |")
+    lines.append(f"|:---|:---|:---:|:---:|:---:|")
+    lines.append(f"| 🌤️ **THIÊN THỜI** | Cửu Tinh (thời cơ) | {bt_sao} {bt_sao_status} | {sv_sao} | {thien_verdict} |")
+    
+    # 2. ĐỊA LỢI (Cung + Quái)
+    bt_cung_hanh = CUNG_NGU_HANH.get(chu_cung, '?') if chu_cung else '?'
+    sv_cung_hanh = CUNG_NGU_HANH.get(sv_cung, '?') if sv_cung else '?'
+    dia_verdict = '✅ THUẬN' if bt_cung_hanh == lenh_thang_hanh else ('⚠️ NGHỊCH' if KHAC.get(lenh_thang_hanh) == bt_cung_hanh else '🟡 BÌNH')
+    lines.append(f"| 🌍 **ĐỊA LỢI** | Cung + Quái (môi trường) | Cung {chu_cung or '?'} ({bt_cung_hanh}) | Cung {sv_cung or '?'} ({sv_cung_hanh}) | {dia_verdict} |")
+    
+    # 3. NHÂN HÒA (Bát Môn)
+    cua_cat_list = ['Khai', 'Hưu', 'Sinh']
+    cua_hung_list = ['Tử', 'Kinh', 'Thương']
+    bt_cua_ok = any(c in str(bt_cua) for c in cua_cat_list)
+    bt_cua_bad = any(c in str(bt_cua) for c in cua_hung_list)
+    nhan_verdict = '✅ THUẬN' if bt_cua_ok else ('⚠️ NGHỊCH' if bt_cua_bad else '🟡 BÌNH')
+    lines.append(f"| 👥 **NHÂN HÒA** | Bát Môn (hành động) | {bt_cua} | {sv_cua} | {nhan_verdict} |")
+    
+    # 4. THẦN TRỢ (Bát Thần)
+    than_cat_list = ['Trực Phù', 'Thái Âm', 'Lục Hợp', 'Cửu Địa', 'Cửu Thiên']
+    than_hung_list = ['Bạch Hổ', 'Huyền Vũ', 'Đằng Xà']
+    bt_than_ok = any(t in str(bt_than) for t in than_cat_list)
+    bt_than_bad = any(t in str(bt_than) for t in than_hung_list)
+    than_verdict = '✅ CÁT' if bt_than_ok else ('⚠️ HUNG' if bt_than_bad else '🟡 BÌNH')
+    lines.append(f"| 🙏 **THẦN TRỢ** | Bát Thần (siêu nhiên) | {bt_than} | {sv_than} | {than_verdict} |")
+    
+    # Tổng kết chiến lược
+    total_ok = sum([1 for v in [thien_verdict, dia_verdict, nhan_verdict, than_verdict] if '✅' in v])
+    total_bad = sum([1 for v in [thien_verdict, dia_verdict, nhan_verdict, than_verdict] if '⚠️' in v])
+    
+    if total_ok >= 3:
+        lines.append(f"\n→ **🏆 TỔNG KẾT CHIẾN LƯỢC: {total_ok}/4 trụ THUẬN** — Thiên thời + Địa lợi + Nhân hòa HỘI TỤ → ĐẠI CÁT!")
+    elif total_ok >= 2:
+        lines.append(f"\n→ **✅ TỔNG KẾT CHIẾN LƯỢC: {total_ok}/4 trụ THUẬN** — Đa số thuận, có thể hành động nhưng cần lưu ý trụ yếu.")
+    elif total_bad >= 3:
+        lines.append(f"\n→ **🔴 TỔNG KẾT CHIẾN LƯỢC: {total_bad}/4 trụ NGHỊCH** — Thiên-Địa-Nhân-Thần đều bất lợi → TUYỆT ĐỐI KHÔNG NÊN hành động!")
+    else:
+        lines.append(f"\n→ **🟡 TỔNG KẾT CHIẾN LƯỢC: Cân bằng** — Có thuận có nghịch, cần cân nhắc kỹ từng yếu tố.")
+    
+    return "\n".join(lines)
+
+
+# === V42.1: PHÂN TÍCH TÁC ĐỘNG SÂU KHÔNG VONG + DỊCH MÃ ===
+def _analyze_kv_dich_ma_deep(khong_vong_list, dich_ma_chi, dung_than_chi, dung_than_name,
+                              haos=None, dong_hao=None, chi_ngay='', chi_thang='', verdict=''):
+    """V42.1: Phân tích tác động sâu của Không Vong và Dịch Mã.
+    
+    Nguồn: tuvilyso.org, vuphac.com
+    - Không Vong: Chân Không vs Giả Không, tác động lên DT, thời gian xuất Không
+    - Dịch Mã: Mã gặp Xung/Hợp/Hào Động, phân tích di chuyển/biến động
+    """
+    lines = []
+    
+    # ====== PHÂN TÍCH KHÔNG VONG SÂU ======
+    if khong_vong_list:
+        # 1. Check DT lâm Không Vong
+        dt_in_kv = dung_than_chi and dung_than_chi in khong_vong_list
+        if dt_in_kv:
+            lines.append(f"\n**🕳️ PHÂN TÍCH KHÔNG VONG CHUYÊN SÂU (V42.1):**")
+            lines.append(f"  Dụng Thần **{dung_than_name}** ({dung_than_chi}) lâm Tuần Không [{', '.join(khong_vong_list)}]")
+            
+            # Chân Không vs Giả Không
+            # Chân Không: DT suy + Không Vong → thật sự không có
+            # Giả Không: DT vượng + Không Vong → chỉ tạm chưa hiện, sẽ ứng khi xuất Không
+            if verdict in ('HUNG', 'ĐẠI HUNG'):
+                lines.append(f"  → 🔴 **CHÂN KHÔNG**: DT suy + Không Vong = Sự việc THẬT SỰ KHÔNG CÓ, hư vô!")
+                lines.append(f"    *Quẻ HUNG + KV → không có cơ hội phục hồi*")
+            elif verdict in ('CÁT', 'ĐẠI CÁT'):
+                lines.append(f"  → 🟡 **GIẢ KHÔNG**: DT vượng + Không Vong = Sự việc ĐÃ CÓ nhưng CHƯA HIỆN")
+                lines.append(f"    *Quẻ CÁT + KV → chờ xuất Không (ngày/giờ Chi {dung_than_chi}) sẽ ứng nghiệm*")
+            else:
+                lines.append(f"  → 🟠 **BÁN KHÔNG**: Sự việc bấp bênh, chưa rõ thực hư")
+                lines.append(f"    *Cần chờ xuất Không (ngày Chi {dung_than_chi}) để xác định*")
+            
+            # Thời gian xuất Không
+            xung_kv = LUC_XUNG_CHI.get(dung_than_chi, '')
+            if xung_kv:
+                lines.append(f"  → ⏰ **Xuất Không khi:** Gặp ngày/giờ Chi **{dung_than_chi}** (trùng) hoặc **{xung_kv}** (xung)")
+        
+        # 2. Check các hào khác lâm KV
+        if haos:
+            kv_haos = []
+            for i, hao in enumerate(haos):
+                h_chi = hao.get('chi', '')
+                h_lt = hao.get('luc_than', '')
+                if h_chi and h_chi in khong_vong_list and h_lt != dung_than_name:
+                    kv_haos.append((i+1, h_lt, h_chi))
+            if kv_haos:
+                if not dt_in_kv:
+                    lines.append(f"\n**🕳️ KHÔNG VONG CÁC HÀO (V42.1):**")
+                for h_idx, h_lt, h_chi in kv_haos:
+                    impact = ''
+                    if h_lt == 'Quan Quỷ':
+                        impact = '→ Quan Quỷ KV = Sếp/bệnh không thực → Giảm áp lực ✅'
+                    elif h_lt == 'Thê Tài':
+                        impact = '→ Thê Tài KV = Tiền tài hư → Khó kiếm tiền ⚠️'
+                    elif h_lt == 'Huynh Đệ':
+                        impact = '→ Huynh Đệ KV = Đối thủ yếu → Bớt cạnh tranh ✅'
+                    elif h_lt == 'Phụ Mẫu':
+                        impact = '→ Phụ Mẫu KV = Giấy tờ hư → Hợp đồng/nhà chưa chắc ⚠️'
+                    elif h_lt == 'Tử Tôn':
+                        impact = '→ Tử Tôn KV = Vui vẻ hư → Niềm vui chưa đến ⚠️'
+                    lines.append(f"  - Hào {h_idx} **{h_lt}** ({h_chi}) lâm KV {impact}")
+    
+    # ====== PHÂN TÍCH DỊCH MÃ SÂU ======
+    if dich_ma_chi:
+        lines.append(f"\n**🐎 PHÂN TÍCH DỊCH MÃ CHUYÊN SÂU (V42.1):**")
+        lines.append(f"  Dịch Mã tại Chi **{dich_ma_chi}**")
+        
+        # 1. Dịch Mã gặp Xung → di chuyển RẤT NHANH
+        xung_ma = LUC_XUNG_CHI.get(dich_ma_chi, '')
+        if xung_ma and chi_ngay and chi_ngay == xung_ma:
+            lines.append(f"  → ⚡ **MÃ TINH BỊ XUNG** (Nhật {chi_ngay} xung Mã {dich_ma_chi}): Di chuyển/thay đổi CỰC NHANH!")
+        
+        # 2. Dịch Mã gặp Hợp → bị giữ lại, di chuyển bị cản
+        hop_ma = LUC_HOP_CHI.get(dich_ma_chi, '')
+        if hop_ma and chi_ngay and chi_ngay == hop_ma:
+            lines.append(f"  → 🤝 **MÃ TINH BỊ HỢP** (Nhật {chi_ngay} hợp Mã {dich_ma_chi}): Bị GIỮ LẠI, muốn đi mà không đi được!")
+        
+        # 3. Mã rơi KV → di chuyển hư
+        if khong_vong_list and dich_ma_chi in khong_vong_list:
+            lines.append(f"  → 🕳️ **MÃ TINH LÂM KHÔNG VONG**: Muốn đi nhưng KHÔNG ĐI ĐƯỢC, kế hoạch di chuyển bị hủy!")
+        
+        # 4. DT lâm Dịch Mã
+        if dung_than_chi == dich_ma_chi:
+            lines.append(f"  → 🐎 **DT LÂM DỊCH MÃ**: Sự việc GẮN VỚI DI CHUYỂN, thay đổi, không ổn định tại chỗ!")
+        
+        # 5. Hào nào mang Dịch Mã
+        if haos:
+            for i, hao in enumerate(haos):
+                h_chi = hao.get('chi', '')
+                if h_chi == dich_ma_chi:
+                    h_lt = hao.get('luc_than', '')
+                    is_dong = (i+1) in (dong_hao or [])
+                    dong_str = '**ĐỘNG**' if is_dong else 'tĩnh'
+                    lines.append(f"  → 🏇 Hào {i+1} **{h_lt}** ({h_chi}) mang Dịch Mã ({dong_str})")
+                    if is_dong:
+                        lines.append(f"    *Mã Tinh PHÁT ĐỘNG = Sự di chuyển/thay đổi CHẮC CHẮN xảy ra!*")
+    
+    return "\n".join(lines)
+
+
+# === V42.1: CẢNH BÁO NGUYỆT PHÁ VISUAL — Hiển thị prominent ===
+def _build_nguyet_pha_warning(dung_than_chi, chi_thang, dung_than_name='Dụng Thần',
+                                haos=None, method='LỤC HÀO'):
+    """V42.1: Xây cảnh báo Nguyệt Phá prominent.
+    
+    Nguồn: vuphac.com, kinhdichluchao.vn
+    Nguyệt Phá = Chi tháng XUNG Chi hào → Hào bị PHÁ, VÔ LỰC, suy đến cực.
+    Đây là yếu tố RẤT NẶNG: dù hào có vượng cũng bị Nguyệt Phá → mất sức.
+    """
+    lines = []
+    html_parts = []
+    
+    if not chi_thang:
+        return '', ''
+    
+    # 1. Check DT bị Nguyệt Phá
+    if dung_than_chi and LUC_XUNG_CHI.get(chi_thang) == dung_than_chi:
+        html_parts.append(
+            f'<div style="background:linear-gradient(135deg,#4a1942,#6b2fa0);padding:18px;border-radius:14px;'
+            f'margin:10px 0;border:3px solid #a855f7;box-shadow:0 4px 20px rgba(168,85,247,0.3);">'
+            f'<div style="font-size:1.3em;font-weight:900;color:#e9d5ff;">💥 NGUYỆT PHÁ — {dung_than_name} VÔ LỰC!</div>'
+            f'<div style="font-size:1.1em;color:#f5d0fe;margin-top:6px;">'
+            f'Chi tháng ({chi_thang}) XUNG {dung_than_name} ({dung_than_chi}) → Sức mạnh TAN VỠ! '
+            f'Dù {dung_than_name} có vượng cũng bị Nguyệt Phá phá hoại. '
+            f'Sự việc KHÓ THÀNH trong tháng này, chờ qua tháng mới có cơ hội.</div>'
+            f'</div>'
+        )
+        lines.append(f"💥 **NGUYỆT PHÁ:** {dung_than_name} ({dung_than_chi}) bị Chi tháng ({chi_thang}) xung → VÔ LỰC!")
+    
+    # 2. Check các hào khác bị Nguyệt Phá (LH)
+    nguyet_pha_haos = []
+    if haos and method == 'LỤC HÀO':
+        for i, hao in enumerate(haos):
+            h_chi = hao.get('chi', '')
+            h_lt = hao.get('luc_than', '')
+            if h_chi and h_chi != dung_than_chi and LUC_XUNG_CHI.get(chi_thang) == h_chi:
+                nguyet_pha_haos.append((i+1, h_lt, h_chi))
+        
+        if nguyet_pha_haos:
+            lines.append(f"\n**💥 CÁC HÀO BỊ NGUYỆT PHÁ (V42.1):**")
+            for h_idx, h_lt, h_chi in nguyet_pha_haos:
+                impact = ''
+                if h_lt == 'Kỵ Thần' or h_lt == 'Quan Quỷ':
+                    impact = '→ Kỵ Thần/Quan Quỷ bị phá = Áp lực GIẢM ✅'
+                elif h_lt == 'Nguyên Thần':
+                    impact = '→ Nguyên Thần bị phá = Nguồn trợ giúp BỊ MẤT ⚠️'
+                elif h_lt == 'Thê Tài':
+                    impact = '→ Thê Tài bị phá = Tài chính bị TỔN THẤT ⚠️'
+                elif h_lt == 'Huynh Đệ':
+                    impact = '→ Huynh Đệ bị phá = Đối thủ YẾU ĐI ✅'
+                elif h_lt == 'Phụ Mẫu':
+                    impact = '→ Phụ Mẫu bị phá = Giấy tờ/hợp đồng BẤT LỢI ⚠️'
+                elif h_lt == 'Tử Tôn':
+                    impact = '→ Tử Tôn bị phá = Niềm vui/giải trừ BỊ MẤT ⚠️'
+                lines.append(f"  - Hào {h_idx} **{h_lt}** ({h_chi}) bị Nguyệt Phá {impact}")
+    
+    return "\n".join(lines), "\n".join(html_parts)
+
+
 # === V9.0: MỞ RỘNG QUÁI Ý NGHĨA — VẠN VẬT LOẠI TƯỢNG CHI TIẾT ===
 QUAI_Y_NGHIA = {
     'Càn': {'tuong': 'Trời ☰', 'tc': 'Mạnh mẽ, lãnh đạo, cha, cương kiện', 'hanh': 'Kim',
@@ -2250,7 +2489,7 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V42.1 Siêu Premium + Answer-First + 28 Handlers + VV 3378)"
+        self.name = "Thiên Cơ Đại Sư (V42.2 Siêu Premium + Answer-First + 28 Handlers + VV 3378 + KV/DM Chuẩn QMDG)"
         self.version = "V35.8-Full-Pipeline"
         self.model_name = "offline-rule-engine-v35.0"
         self.logs = []
@@ -10318,7 +10557,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V40.6 — Answer-First + 100% Data Direct). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 78 yếu tố → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.2 — Answer-First + 100% Data Direct + KV/DM Chuẩn QMDG). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 78 yếu tố → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
@@ -11825,6 +12064,28 @@ class FreeAIHelper:
             except Exception:
                 pass
             
+            # === V42.1: CẢNH BÁO NGUYỆT PHÁ — Hiển thị TRƯỚC kết luận ===
+            try:
+                _lh_dt_chi_np = ''
+                _lh_chi_thang_np = ''
+                if luc_hao_data:
+                    _lh_haos_np = luc_hao_data.get('ban', {}).get('haos', luc_hao_data.get('haos', []))
+                    _lh_chi_thang_np = luc_hao_data.get('chi_thang', '')
+                    if _lh_haos_np and dung_than:
+                        for _h_np in _lh_haos_np:
+                            if _h_np.get('luc_than', '') == dung_than:
+                                _lh_dt_chi_np = _h_np.get('chi', '')
+                                break
+                    if _lh_dt_chi_np and _lh_chi_thang_np:
+                        _, _np_html_online = _build_nguyet_pha_warning(
+                            _lh_dt_chi_np, _lh_chi_thang_np,
+                            dung_than_name=dung_than or 'Dụng Thần'
+                        )
+                        if _np_html_online:
+                            final_parts.append(_np_html_online)
+            except Exception:
+                pass
+            
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
@@ -12060,6 +12321,28 @@ class FreeAIHelper:
                 _ppn_warning = _build_phan_phuc_ngam_warning(chart_data, luc_hao_data)
                 if _ppn_warning:
                     final_parts.append(_ppn_warning)
+            except Exception:
+                pass
+            
+            # === V42.1: CẢNH BÁO NGUYỆT PHÁ — Hiển thị TRƯỚC kết luận ===
+            try:
+                _lh_dt_chi_np2 = ''
+                _lh_chi_thang_np2 = ''
+                if luc_hao_data:
+                    _lh_haos_np2 = luc_hao_data.get('ban', {}).get('haos', luc_hao_data.get('haos', []))
+                    _lh_chi_thang_np2 = luc_hao_data.get('chi_thang', '')
+                    if _lh_haos_np2 and dung_than:
+                        for _h_np2 in _lh_haos_np2:
+                            if _h_np2.get('luc_than', '') == dung_than:
+                                _lh_dt_chi_np2 = _h_np2.get('chi', '')
+                                break
+                    if _lh_dt_chi_np2 and _lh_chi_thang_np2:
+                        _, _np_html_offline = _build_nguyet_pha_warning(
+                            _lh_dt_chi_np2, _lh_chi_thang_np2,
+                            dung_than_name=dung_than or 'Dụng Thần'
+                        )
+                        if _np_html_offline:
+                            final_parts.append(_np_html_offline)
             except Exception:
                 pass
             
@@ -12789,6 +13072,23 @@ class FreeAIHelper:
                     _seasonal_table = _build_seasonal_strength_table(thien_ban, nhan_ban, _lenh_hanh_km)
                     if _seasonal_table:
                         lines.append(_seasonal_table)
+                        lines.append("")
+            except Exception:
+                pass
+            
+            # V42.1: GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN
+            try:
+                _lenh_hanh_tdnt = _lenh_hanh_km if '_lenh_hanh_km' in dir() else None
+                if not _lenh_hanh_tdnt:
+                    _lr = _get_lenh_thang_hanh()
+                    _lenh_hanh_tdnt = _lr[0] if isinstance(_lr, tuple) else _lr
+                if _lenh_hanh_tdnt and chu_cung:
+                    _tdnt_view = _build_thien_dia_nhan_than(
+                        thien_ban, nhan_ban, than_ban,
+                        chu_cung, sv_cung, _lenh_hanh_tdnt
+                    )
+                    if _tdnt_view:
+                        lines.append(_tdnt_view)
                         lines.append("")
             except Exception:
                 pass
@@ -13580,15 +13880,37 @@ class FreeAIHelper:
                     else:
                         lines.append(f"    → {ad_lt} Ám Động = Yếu tố này đang ngầm ảnh hưởng sự việc")
             
-            # ====== V9.0: NGUYỆT PHÁ ======
+            # ====== V42.1: PHÂN TÍCH SÂU KHÔNG VONG + DỊCH MÃ ======
+            try:
+                _dt_chi_deep = dung_than_hao.get('chi', '') if dung_than_hao else ''
+                _dm_chi = DICH_MA_MAP.get(chi_ngay_lh, '') if chi_ngay_lh else ''
+                _chi_thang_lh_deep = luc_hao_data.get('chi_thang', '')
+                _kv_dm_deep = _analyze_kv_dich_ma_deep(
+                    khong_vong_list, _dm_chi, _dt_chi_deep, dung_than or '',
+                    haos=haos, dong_hao=dong_hao,
+                    chi_ngay=chi_ngay_lh, chi_thang=_chi_thang_lh_deep,
+                    verdict=verdict
+                )
+                if _kv_dm_deep:
+                    lines.append(_kv_dm_deep)
+            except Exception:
+                pass
+            
+            # ====== V42.1: NGUYỆT PHÁ NÂNG CẤP — Visual Warning ======
             chi_thang_lh = luc_hao_data.get('chi_thang', '')
             if chi_thang_lh and dung_than_hao:
                 dt_chi = dung_than_hao.get('chi', '')
+                _np_text, _np_html = _build_nguyet_pha_warning(
+                    dt_chi, chi_thang_lh, dung_than_name=dung_than or 'Dụng Thần',
+                    haos=haos, method='LỤC HÀO'
+                )
                 if dt_chi and LUC_XUNG_CHI.get(chi_thang_lh) == dt_chi:
-                    lines.append(f"\n**💥 NGUYỆT PHÁ (V9.0):** Chi tháng {chi_thang_lh} xung Dụng Thần ({dt_chi})")
+                    lines.append(f"\n**💥 NGUYỆT PHÁ (V42.1):** Chi tháng {chi_thang_lh} xung Dụng Thần ({dt_chi})")
                     lines.append(f"  → Dụng Thần bị NGUYỆT PHÁ = Sức mạnh TAN VỠ, sự việc KHÓ THÀNH! ⚠️")
                     reasons_list.append("Dụng Thần Nguyệt Phá")
                     verdict = "HUNG"
+                if _np_text:
+                    lines.append(_np_text)
             
             # ====== V9.0: TAM HỢP CỤC ======
             if haos:
