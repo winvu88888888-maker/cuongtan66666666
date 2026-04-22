@@ -782,6 +782,51 @@ def _is_competition_question(question):
     return False
 
 
+def _extract_two_sides(question):
+    """V42.3: Trích xuất TÊN 2 BÊN từ câu hỏi thắng thua.
+    
+    Ví dụ:
+    - "Đội MU đấu với đội Liverpool" → ("MU", "Liverpool")
+    - "Việt Nam gặp Thái Lan" → ("Việt Nam", "Thái Lan")
+    - "A vs B ai thắng" → ("A", "B")
+    
+    Returns: (side_a, side_b) hoặc ("Bên được hỏi đầu", "Đối phương") nếu không tìm thấy.
+    """
+    import re as _re_sides
+    q = question.strip()
+    
+    # Pattern 1: "đội X đấu/gặp/vs đội Y"
+    m = _re_sides.search(r'[Đđ]ội\s+(.+?)\s+(?:đấu với|đấu|gặp|đá với|vs|và)\s+[Đđ]ội\s+(.+?)(?:\s+đội|\s+ai|\s+bên|\s+thắng|\s+thua|\?|$)', q, _re_sides.IGNORECASE)
+    if m:
+        return (m.group(1).strip().rstrip(',. '), m.group(2).strip().rstrip('?,. '))
+    
+    # Pattern 2: "X đấu/gặp/vs Y" (không có chữ "đội")
+    m = _re_sides.search(r'(?:trận\s+)?(.+?)\s+(?:đấu với|đấu|gặp|vs|đá với)\s+(.+?)(?:\s+ai|\s+đội nào|\s+bên nào|\s+thắng|\s+thua|\s+kết quả|\?|$)', q, _re_sides.IGNORECASE)
+    if m:
+        a = m.group(1).strip().rstrip(',. ')
+        b = m.group(2).strip().rstrip('?,. ')
+        # Bỏ prefix thừa
+        for prefix in ['trận ', 'cuộc ', 'kết quả ', 'chung kết ']:
+            if a.lower().startswith(prefix):
+                a = a[len(prefix):]
+        if len(a) > 1 and len(b) > 1:
+            return (a, b)
+    
+    # Pattern 3: "X và Y đội nào thắng"
+    m = _re_sides.search(r'(.+?)\s+và\s+(.+?)\s+(?:đội nào|ai|bên nào)', q, _re_sides.IGNORECASE)
+    if m:
+        a = m.group(1).strip().rstrip(',. ')
+        b = m.group(2).strip().rstrip('?,. ')
+        for prefix in ['đội ', 'Đội ']:
+            if a.startswith(prefix):
+                a = a[len(prefix):]
+            if b.startswith(prefix):
+                b = b[len(prefix):]
+        if len(a) > 0 and len(b) > 0:
+            return (a, b)
+    
+    return ("Bên được hỏi đầu", "Đối phương")
+
 def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pct,
                      ky_mon_verdict='', ky_mon_reason='', luc_hao_verdict='', luc_hao_reason='',
                      mai_hoa_verdict='', mai_hoa_reason='', luc_nham_reason='', thai_at_reason='',
@@ -10235,6 +10280,7 @@ class FreeAIHelper:
         
         # V42.3: Phát hiện competition ở tầng kết luận
         is_competition_kl = _is_competition_question(question)
+        _side_a, _side_b = _extract_two_sides(question) if is_competition_kl else ('Bên A', 'Bên B')
         
         # ═══ V42.3: PHÂN TÍCH THẾ VS ỨNG (cho câu hỏi THẮNG THUA) ═══
         _the_score = 0
@@ -10330,15 +10376,15 @@ class FreeAIHelper:
             # --- PHÁN QUYẾT THẮNG THUA dựa trên Thế vs Ứng ---
             _diff = _the_score - _ung_score
             if _diff >= 5:
-                verdict_line = f"📢 **PHÁN QUYẾT: BÊN CHỦ (THẾ) THẮNG — Chênh lệch +{_diff} (Điểm chung: {pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: {_side_a} THẮNG ✅ (Thế +{_diff}) — {_side_b} THUA**"
             elif _diff >= 2:
-                verdict_line = f"📢 **PHÁN QUYẾT: BÊN CHỦ (THẾ) HƠI TRỘI — Chênh lệch +{_diff} (Điểm: {pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: {_side_a} HƠI TRỘI ↗️ (Thế +{_diff}) — {_side_b} yếu hơn**"
             elif _diff >= -1:
-                verdict_line = f"📢 **PHÁN QUYẾT: CÂN BẰNG / HÒA — Chênh lệch {_diff:+d} (Điểm: {pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: HÒA / CÂN BẰNG ⚖️ ({_side_a} ≈ {_side_b}, chênh {_diff:+d})**"
             elif _diff >= -4:
-                verdict_line = f"📢 **PHÁN QUYẾT: BÊN KHÁCH (ỨNG) HƠI TRỘI — Chênh lệch {_diff:+d} (Điểm: {pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: {_side_b} HƠI TRỘI ↗️ (Ứng {abs(_diff):+d}) — {_side_a} yếu hơn**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT: BÊN KHÁCH (ỨNG) THẮNG — Chênh lệch {_diff:+d} (Điểm: {pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: {_side_b} THẮNG ✅ (Ứng {abs(_diff):+d}) — {_side_a} THUA**"
         elif is_life_death:
             if pct >= 50:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG / QUA ĐƯỢC ({pct}%)**"
@@ -10548,48 +10594,48 @@ class FreeAIHelper:
             
             if _diff_kl >= 5:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: BÊN CHỦ (THẾ) THẮNG RÕ RÀNG (Chênh: +{_diff_kl})**\n"
-                    f"• Thế={_the_score:+d} >> Ứng={_ung_score:+d} → Bên chủ/bên đầu áp đảo.\n"
+                    f"**👉 KHẲNG ĐỊNH: ✅ {_side_a} THẮNG — {_side_b} THUA (Chênh: +{_diff_kl})**\n"
+                    f"• {_side_a} (Thế={_the_score:+d}) >> {_side_b} (Ứng={_ung_score:+d}) → {_side_a} áp đảo.\n"
                     f"\n**📊 CĂN CỨ 3 PHƯƠNG PHÁP:**\n"
                     f"{_evidence_str}\n"
-                    f"\n**🏆 PHƯƠNG PHÁP XÁC ĐỊNH:**\n"
-                    f"• **Lục Hào:** Thế (己方 = bên mình/bên A) vs Ứng (對方 = đối phương/bên B) — so Vượng/Suy + Sinh/Khắc\n"
-                    f"• **Kỳ Môn:** Nhật Can (Chủ) vs Thời Can (Khách) — Ngũ Hành đối kháng\n"
-                    f"• **Mai Hoa:** Thể Quái vs Dụng Quái — Quái không động = Thể (chủ), Quái động = Dụng (đối)\n"
-                    f"\n💡 **LỜI KHUYÊN:** Bên chủ/bên được hỏi đầu có ưu thế lớn. Nếu đặt cược → chọn bên Thế."
+                    f"\n**🏆 QUY TẮC XÁC ĐỊNH THẮNG THUA:**\n"
+                    f"• **Lục Hào:** {_side_a} = hào Thế (己方), {_side_b} = hào Ứng (對方) — so Vượng/Suy + Sinh/Khắc\n"
+                    f"• **Kỳ Môn:** {_side_a} = Nhật Can (Chủ), {_side_b} = Thời Can (Khách)\n"
+                    f"• **Mai Hoa:** {_side_a} = Thể Quái, {_side_b} = Dụng Quái\n"
+                    f"\n💡 **LỜI KHUYÊN:** {_side_a} có ưu thế lớn. Nếu đặt cược → chọn {_side_a}."
                 )
             elif _diff_kl >= 2:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: BÊN CHỦ (THẾ) HƠI TRỘI (Chênh: +{_diff_kl})**\n"
-                    f"• Thế={_the_score:+d} > Ứng={_ung_score:+d} → Bên chủ nhỉnh hơn nhưng chưa chắc chắn.\n"
+                    f"**👉 KHẲNG ĐỊNH: ↗️ {_side_a} HƠI TRỘI hơn {_side_b} (Chênh: +{_diff_kl})**\n"
+                    f"• {_side_a} (Thế={_the_score:+d}) > {_side_b} (Ứng={_ung_score:+d}) → {_side_a} nhỉnh hơn.\n"
                     f"\n**📊 CĂN CỨ:**\n{_evidence_str}\n"
-                    f"\n💡 **LỜI KHUYÊN:** Nghiêng về bên Thế nhưng không áp đảo. Cần thêm yếu tố phụ (Nhật/Nguyệt trợ) để chắc chắn."
+                    f"\n💡 **LỜI KHUYÊN:** Nghiêng về {_side_a} nhưng không áp đảo. Cần thêm yếu tố phụ."
                 )
             elif _diff_kl >= -1:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: CÂN BẰNG / CÓ THỂ HÒA (Chênh: {_diff_kl:+d})**\n"
-                    f"• Thế={_the_score:+d} ≈ Ứng={_ung_score:+d} → Hai bên ngang sức.\n"
+                    f"**👉 KHẲNG ĐỊNH: ⚖️ HÒA — {_side_a} ≈ {_side_b} (Chênh: {_diff_kl:+d})**\n"
+                    f"• {_side_a} (Thế={_the_score:+d}) ≈ {_side_b} (Ứng={_ung_score:+d}) → Ngang sức.\n"
                     f"\n**📊 CĂN CỨ:**\n{_evidence_str}\n"
-                    f"\n💡 **LỜI KHUYÊN:** Kết quả phụ thuộc vào yếu tố phụ (Nhật Thần, Động Hào). Khó đoán chắc — nên xem thêm cung cụ thể."
+                    f"\n💡 **LỜI KHUYÊN:** {_side_a} và {_side_b} ngang sức. Phụ thuộc yếu tố phụ."
                 )
             elif _diff_kl >= -4:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: BÊN KHÁCH (ỨNG) HƠI TRỘI (Chênh: {_diff_kl:+d})**\n"
-                    f"• Ứng={_ung_score:+d} > Thế={_the_score:+d} → Bên khách/đối phương nhỉnh hơn.\n"
+                    f"**👉 KHẲNG ĐỊNH: ↗️ {_side_b} HƠI TRỘI hơn {_side_a} (Chênh: {_diff_kl:+d})**\n"
+                    f"• {_side_b} (Ứng={_ung_score:+d}) > {_side_a} (Thế={_the_score:+d}) → {_side_b} nhỉnh hơn.\n"
                     f"\n**📊 CĂN CỨ:**\n{_evidence_str}\n"
-                    f"\n💡 **LỜI KHUYÊN:** Nghiêng về bên Ứng (đối phương/bên B). Bên Thế cần thêm trợ lực."
+                    f"\n💡 **LỜI KHUYÊN:** Nghiêng về {_side_b}. {_side_a} cần thêm trợ lực."
                 )
             else:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: BÊN KHÁCH (ỨNG) THẮNG RÕ RÀNG (Chênh: {_diff_kl:+d})**\n"
-                    f"• Ứng={_ung_score:+d} >> Thế={_the_score:+d} → Đối phương/bên B áp đảo.\n"
+                    f"**👉 KHẲNG ĐỊNH: ✅ {_side_b} THẮNG — {_side_a} THUA (Chênh: {_diff_kl:+d})**\n"
+                    f"• {_side_b} (Ứng={_ung_score:+d}) >> {_side_a} (Thế={_the_score:+d}) → {_side_b} áp đảo.\n"
                     f"\n**📊 CĂN CỨ 3 PHƯƠNG PHÁP:**\n"
                     f"{_evidence_str}\n"
-                    f"\n**🏆 PHƯƠNG PHÁP XÁC ĐỊNH:**\n"
-                    f"• **Lục Hào:** Ứng vượng hơn Thế → đối phương mạnh\n"
-                    f"• **Kỳ Môn:** Khách khắc/sinh trội Chủ → bên khách lợi\n"
-                    f"• **Mai Hoa:** Dụng khắc Thể → đối phương thắng\n"
-                    f"\n💡 **LỜI KHUYÊN:** Bên đối phương/bên B có ưu thế lớn. Nếu đặt cược → chọn bên Ứng."
+                    f"\n**🏆 QUY TẮC XÁC ĐỊNH:**\n"
+                    f"• **Lục Hào:** {_side_b} (Ứng) vượng hơn {_side_a} (Thế)\n"
+                    f"• **Kỳ Môn:** {_side_b} (Khách) khắc/trội {_side_a} (Chủ)\n"
+                    f"• **Mai Hoa:** {_side_b} (Dụng) khắc {_side_a} (Thể)\n"
+                    f"\n💡 **LỜI KHUYÊN:** {_side_b} có ưu thế lớn. Nếu đặt cược → chọn {_side_b}."
                 )
         elif is_life_death:
             if pct >= 50:
