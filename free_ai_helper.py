@@ -736,6 +736,52 @@ def _is_count_question(question):
                                    'bao nhieu', 'may ', 'so luong', 'co may'])
 
 
+def _is_competition_question(question):
+    """V42.3: Phát hiện câu hỏi THẮNG THUA / đối kháng / cạnh tranh.
+    
+    Bao gồm: thể thao, kiện tụng, cạnh tranh kinh doanh, thi đấu, so sánh 2 bên.
+    Khi câu hỏi là dạng so sánh 2 bên → dùng phân tích Thế vs Ứng.
+    """
+    q = question.lower()
+    
+    # Layer 1: Từ khóa trực tiếp thắng thua + đối kháng
+    _COMP_DIRECT = [
+        'đội nào thắng', 'đội nào thua', 'ai thắng', 'ai thua', 'bên nào thắng',
+        'bên nào thua', 'phe nào thắng', 'đội nào chiến thắng', 'đội nào vô địch',
+        'thắng hay thua', 'thắng thua', 'hơn hay kém',
+        # Không dấu
+        'doi nao thang', 'doi nao thua', 'ai thang', 'ai thua',
+        'ben nao thang', 'thang hay thua', 'thang thua',
+    ]
+    if any(kw in q for kw in _COMP_DIRECT):
+        return True
+    
+    # Layer 2: Pattern "A vs/và/đấu/gặp B" + câu hỏi thắng thua
+    import re as _re_comp
+    _COMP_PATTERNS = [
+        r'đội\s+\w+\s+(vs|và|đấu|gặp|đá với)\s+đội\s+\w+',
+        r'\w+\s+(vs|đấu với|gặp)\s+\w+.*(thắng|thua|hơn|kém)',
+        r'(trận|cuộc)\s+\w+.*(thắng|thua|kết quả)',
+    ]
+    if any(_re_comp.search(pat, q) for pat in _COMP_PATTERNS):
+        return True
+    
+    # Layer 3: Combo — sport/contest + thắng/thua
+    _SPORT_KW = ['bóng đá', 'bóng rổ', 'bóng chuyền', 'tennis', 'cầu lông',
+                 'boxing', 'quyền anh', 'trận đấu', 'giải đấu', 'thi đấu',
+                 'vòng bảng', 'bán kết', 'chung kết', 'tứ kết',
+                 'world cup', 'champions league', 'premier league', 'ngoại hạng',
+                 'v-league', 'sea games', 'olympic', 'bong da', 'tran dau']
+    _PREDICT_KW = ['thắng', 'thua', 'hòa', 'kết quả', 'vô địch', 'tỷ số',
+                   'thang', 'thua', 'hoa', 'ket qua', 'vo dich', 'ty so']
+    _has_sport = any(kw in q for kw in _SPORT_KW)
+    _has_predict = any(kw in q for kw in _PREDICT_KW)
+    if _has_sport and _has_predict:
+        return True
+    
+    return False
+
+
 def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pct,
                      ky_mon_verdict='', ky_mon_reason='', luc_hao_verdict='', luc_hao_reason='',
                      mai_hoa_verdict='', mai_hoa_reason='', luc_nham_reason='', thai_at_reason='',
@@ -10187,8 +10233,113 @@ class FreeAIHelper:
             'có nên bán', 'có nên đi', 'có nên làm', 'có nên đầu tư'
         ])
         
+        # V42.3: Phát hiện competition ở tầng kết luận
+        is_competition_kl = _is_competition_question(question)
+        
+        # ═══ V42.3: PHÂN TÍCH THẾ VS ỨNG (cho câu hỏi THẮNG THUA) ═══
+        _the_score = 0
+        _ung_score = 0
+        _the_ung_detail = []
+        if is_competition_kl:
+            # --- LỤC HÀO: Thế vs Ứng ---
+            if luc_hao_data and isinstance(luc_hao_data, dict):
+                _lh_ban = luc_hao_data.get('ban', {})
+                _lh_haos = _lh_ban.get('haos') or _lh_ban.get('details', [])
+                _the_h = None
+                _ung_h = None
+                for _h in _lh_haos:
+                    _tu = str(_h.get('the_ung', '') or _h.get('marker', ''))
+                    if 'Thế' in _tu:
+                        _the_h = _h
+                    elif 'Ứng' in _tu:
+                        _ung_h = _h
+                if _the_h and _ung_h:
+                    _the_hanh = _the_h.get('ngu_hanh', '')
+                    _ung_hanh = _ung_h.get('ngu_hanh', '')
+                    _the_vs = str(_the_h.get('vuong_suy', '') or _the_h.get('strength', ''))
+                    _ung_vs = str(_ung_h.get('vuong_suy', '') or _ung_h.get('strength', ''))
+                    # Điểm Vượng/Suy
+                    _VS_SCORE = {'Đế Vượng': 10, 'Lâm Quan': 8, 'Trường Sinh': 6, 'Mộc Dục': 4,
+                                 'Quan Đới': 3, 'Dưỡng': 2, 'Thai': 1, 'Suy': -4, 'Bệnh': -6,
+                                 'Tử': -8, 'Mộ': -5, 'Tuyệt': -10}
+                    for _stage, _sc in _VS_SCORE.items():
+                        if _stage in _the_vs:
+                            _the_score += _sc
+                            break
+                    for _stage, _sc in _VS_SCORE.items():
+                        if _stage in _ung_vs:
+                            _ung_score += _sc
+                            break
+                    # Sinh/Khắc
+                    if SINH.get(_the_hanh) == _ung_hanh:
+                        _the_score -= 3  # Thế sinh Ứng = Thế hao tổn
+                        _ung_score += 3
+                    elif KHAC.get(_the_hanh) == _ung_hanh:
+                        _the_score += 5  # Thế khắc Ứng = Thế thắng
+                        _ung_score -= 5
+                    elif SINH.get(_ung_hanh) == _the_hanh:
+                        _the_score += 3  # Ứng sinh Thế = Thế được lợi
+                        _ung_score -= 3
+                    elif KHAC.get(_ung_hanh) == _the_hanh:
+                        _the_score -= 5  # Ứng khắc Thế = Thế thua
+                        _ung_score += 5
+                    _the_ung_detail.append(f"LH: Thế({_the_hanh}/{_the_vs}) {_the_score:+d} vs Ứng({_ung_hanh}/{_ung_vs}) {_ung_score:+d}")
+            
+            # --- KỲ MÔN: Chủ (Nhật Can) vs Khách (Thời Can) ---
+            if chart_data and isinstance(chart_data, dict):
+                _can_ngay_km = chart_data.get('can_ngay', '')
+                _can_gio_km = chart_data.get('can_gio', '')
+                _hanh_chu = CAN_NGU_HANH.get(_can_ngay_km, '')
+                _hanh_khach = CAN_NGU_HANH.get(_can_gio_km, '')
+                if _hanh_chu and _hanh_khach:
+                    if KHAC.get(_hanh_chu) == _hanh_khach:
+                        _the_score += 4  # Chủ khắc Khách → Chủ thắng
+                    elif SINH.get(_hanh_chu) == _hanh_khach:
+                        _the_score -= 2  # Chủ sinh Khách → Chủ hao
+                    elif KHAC.get(_hanh_khach) == _hanh_chu:
+                        _ung_score += 4  # Khách khắc Chủ → Khách thắng
+                    elif SINH.get(_hanh_khach) == _hanh_chu:
+                        _ung_score -= 2  # Khách sinh Chủ → Khách hao
+                    _the_ung_detail.append(f"KM: Chủ({_can_ngay_km}/{_hanh_chu}) vs Khách({_can_gio_km}/{_hanh_khach})")
+            
+            # --- MAI HOA: Thể vs Dụng ---
+            if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                _mh_hanh_thuong = mai_hoa_data.get('hanh_thuong', '')
+                _mh_hanh_ha = mai_hoa_data.get('hanh_ha', '')
+                _mh_dong = mai_hoa_data.get('dong_hao', 0)
+                # Thể = quái không động, Dụng = quái động
+                if _mh_dong and int(_mh_dong) <= 3:
+                    _the_hanh_mh = _mh_hanh_thuong  # Thượng quái = Thể
+                    _dung_hanh_mh = _mh_hanh_ha     # Hạ quái = Dụng
+                else:
+                    _the_hanh_mh = _mh_hanh_ha      # Hạ quái = Thể
+                    _dung_hanh_mh = _mh_hanh_thuong  # Thượng quái = Dụng
+                if _the_hanh_mh and _dung_hanh_mh:
+                    if KHAC.get(_the_hanh_mh) == _dung_hanh_mh:
+                        _the_score += 3  # Thể khắc Dụng → Thể thắng
+                    elif SINH.get(_dung_hanh_mh) == _the_hanh_mh:
+                        _the_score += 2  # Dụng sinh Thể → Thể được lợi
+                    elif KHAC.get(_dung_hanh_mh) == _the_hanh_mh:
+                        _ung_score += 3  # Dụng khắc Thể → Dụng thắng
+                    elif SINH.get(_the_hanh_mh) == _dung_hanh_mh:
+                        _ung_score += 2  # Thể sinh Dụng → Thể hao
+                    _the_ung_detail.append(f"MH: Thể({_the_hanh_mh}) vs Dụng({_dung_hanh_mh})")
+        
         # ═══ TẠO PHÁN QUYẾT KHẲNG ĐỊNH ═══
-        if is_life_death:
+        if is_competition_kl:
+            # --- PHÁN QUYẾT THẮNG THUA dựa trên Thế vs Ứng ---
+            _diff = _the_score - _ung_score
+            if _diff >= 5:
+                verdict_line = f"📢 **PHÁN QUYẾT: BÊN CHỦ (THẾ) THẮNG — Chênh lệch +{_diff} (Điểm chung: {pct}%)**"
+            elif _diff >= 2:
+                verdict_line = f"📢 **PHÁN QUYẾT: BÊN CHỦ (THẾ) HƠI TRỘI — Chênh lệch +{_diff} (Điểm: {pct}%)**"
+            elif _diff >= -1:
+                verdict_line = f"📢 **PHÁN QUYẾT: CÂN BẰNG / HÒA — Chênh lệch {_diff:+d} (Điểm: {pct}%)**"
+            elif _diff >= -4:
+                verdict_line = f"📢 **PHÁN QUYẾT: BÊN KHÁCH (ỨNG) HƠI TRỘI — Chênh lệch {_diff:+d} (Điểm: {pct}%)**"
+            else:
+                verdict_line = f"📢 **PHÁN QUYẾT: BÊN KHÁCH (ỨNG) THẮNG — Chênh lệch {_diff:+d} (Điểm: {pct}%)**"
+        elif is_life_death:
             if pct >= 50:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG / QUA ĐƯỢC ({pct}%)**"
             elif pct >= 40:
@@ -10385,7 +10536,62 @@ class FreeAIHelper:
         lines.append(f"**✅ KẾT LUẬN KHẲNG ĐỊNH (Điểm: {pct}%):**")
         
         # === TẠO KẾT LUẬN DỨT KHOÁT THEO TỪNG LOẠI CÂU HỎI ===
-        if is_life_death:
+        if is_competition_kl:
+            # ═══ V42.3: KẾT LUẬN THẮNG THUA — THẾ VS ỨNG ═══
+            _diff_kl = _the_score - _ung_score
+            
+            # Bằng chứng từ 3 phương pháp
+            _evidence_lines = []
+            for _td in _the_ung_detail:
+                _evidence_lines.append(f"• {_td}")
+            _evidence_str = '\n'.join(_evidence_lines) if _evidence_lines else '• Chưa đủ dữ liệu chi tiết'
+            
+            if _diff_kl >= 5:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: BÊN CHỦ (THẾ) THẮNG RÕ RÀNG (Chênh: +{_diff_kl})**\n"
+                    f"• Thế={_the_score:+d} >> Ứng={_ung_score:+d} → Bên chủ/bên đầu áp đảo.\n"
+                    f"\n**📊 CĂN CỨ 3 PHƯƠNG PHÁP:**\n"
+                    f"{_evidence_str}\n"
+                    f"\n**🏆 PHƯƠNG PHÁP XÁC ĐỊNH:**\n"
+                    f"• **Lục Hào:** Thế (己方 = bên mình/bên A) vs Ứng (對方 = đối phương/bên B) — so Vượng/Suy + Sinh/Khắc\n"
+                    f"• **Kỳ Môn:** Nhật Can (Chủ) vs Thời Can (Khách) — Ngũ Hành đối kháng\n"
+                    f"• **Mai Hoa:** Thể Quái vs Dụng Quái — Quái không động = Thể (chủ), Quái động = Dụng (đối)\n"
+                    f"\n💡 **LỜI KHUYÊN:** Bên chủ/bên được hỏi đầu có ưu thế lớn. Nếu đặt cược → chọn bên Thế."
+                )
+            elif _diff_kl >= 2:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: BÊN CHỦ (THẾ) HƠI TRỘI (Chênh: +{_diff_kl})**\n"
+                    f"• Thế={_the_score:+d} > Ứng={_ung_score:+d} → Bên chủ nhỉnh hơn nhưng chưa chắc chắn.\n"
+                    f"\n**📊 CĂN CỨ:**\n{_evidence_str}\n"
+                    f"\n💡 **LỜI KHUYÊN:** Nghiêng về bên Thế nhưng không áp đảo. Cần thêm yếu tố phụ (Nhật/Nguyệt trợ) để chắc chắn."
+                )
+            elif _diff_kl >= -1:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: CÂN BẰNG / CÓ THỂ HÒA (Chênh: {_diff_kl:+d})**\n"
+                    f"• Thế={_the_score:+d} ≈ Ứng={_ung_score:+d} → Hai bên ngang sức.\n"
+                    f"\n**📊 CĂN CỨ:**\n{_evidence_str}\n"
+                    f"\n💡 **LỜI KHUYÊN:** Kết quả phụ thuộc vào yếu tố phụ (Nhật Thần, Động Hào). Khó đoán chắc — nên xem thêm cung cụ thể."
+                )
+            elif _diff_kl >= -4:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: BÊN KHÁCH (ỨNG) HƠI TRỘI (Chênh: {_diff_kl:+d})**\n"
+                    f"• Ứng={_ung_score:+d} > Thế={_the_score:+d} → Bên khách/đối phương nhỉnh hơn.\n"
+                    f"\n**📊 CĂN CỨ:**\n{_evidence_str}\n"
+                    f"\n💡 **LỜI KHUYÊN:** Nghiêng về bên Ứng (đối phương/bên B). Bên Thế cần thêm trợ lực."
+                )
+            else:
+                conclusion = (
+                    f"**👉 KHẲNG ĐỊNH: BÊN KHÁCH (ỨNG) THẮNG RÕ RÀNG (Chênh: {_diff_kl:+d})**\n"
+                    f"• Ứng={_ung_score:+d} >> Thế={_the_score:+d} → Đối phương/bên B áp đảo.\n"
+                    f"\n**📊 CĂN CỨ 3 PHƯƠNG PHÁP:**\n"
+                    f"{_evidence_str}\n"
+                    f"\n**🏆 PHƯƠNG PHÁP XÁC ĐỊNH:**\n"
+                    f"• **Lục Hào:** Ứng vượng hơn Thế → đối phương mạnh\n"
+                    f"• **Kỳ Môn:** Khách khắc/sinh trội Chủ → bên khách lợi\n"
+                    f"• **Mai Hoa:** Dụng khắc Thể → đối phương thắng\n"
+                    f"\n💡 **LỜI KHUYÊN:** Bên đối phương/bên B có ưu thế lớn. Nếu đặt cược → chọn bên Ứng."
+                )
+        elif is_life_death:
             if pct >= 50:
                 conclusion = (
                     f"**👉 KHẲNG ĐỊNH: CÒN SỐNG / QUA ĐƯỢC ({pct}%).**\n"
@@ -10559,6 +10765,7 @@ class FreeAIHelper:
             lc = len(_load_learned_topics())
             return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.2 — Answer-First + 100% Data Direct + KV/DM Chuẩn QMDG). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 78 yếu tố → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
         
+
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
         original_question = question
         question = clean_question(question)
@@ -10873,6 +11080,16 @@ class FreeAIHelper:
                 "label": "✈️ Xuất Hành / Di Chuyển",
                 "hint": "Phân tích xuất hành. Cửa Khai/Hưu/Sinh=NÊN ĐI. Tử/Kinh=KHÔNG. Dịch Mã=DI CHUYỂN."
             },
+            "THẮNG_THUA": {
+                "keywords": ["thắng", "thua", "đội nào", "ai thắng", "ai thua", "bên nào",
+                             "bóng đá", "trận đấu", "giải đấu", "thi đấu", "đối kháng",
+                             "cạnh tranh", "vô địch", "hòa", "tỷ số", "kết quả trận",
+                             "thắng thua", "tranh tài", "đấu", "gặp", "vs"],
+                "dung_than": "Bản Thân",
+                "dung_than_detail": {},
+                "label": "⚔️ Thắng Thua / Đối Kháng",
+                "hint": "Phân tích thắng thua dựa trên Thế vs Ứng (Lục Hào), Chủ vs Khách (Kỳ Môn), Thể vs Dụng (Mai Hoa). Thế = bên chủ/bên hỏi. Ứng = đối phương."
+            },
             "CHUNG": {
                 "keywords": ["vận mệnh", "năm nay", "tháng này", "an toàn", "quý nhân", "may mắn",
                              "tuổi", "bao nhiêu tuổi", "mấy tuổi"],
@@ -11007,6 +11224,12 @@ class FreeAIHelper:
         is_find = _is_find_question(question) and detected_category == "TÌM_ĐỒ"
         is_yesno = _is_yesno_question(question)
         is_count = _is_count_question(question)
+        is_competition = _is_competition_question(question) or detected_category == "THẮNG_THUA"
+        
+        # V42.3: Nếu là competition → force DT = Bản Thân (Thế = bên chủ)
+        if is_competition:
+            dung_than = 'Bản Thân'
+            detected_category = 'THẮNG_THUA'
         
         # V8.2: Nếu topic được truyền từ dropdown → vẫn match topic cũ
         # Nếu topic=None (Q&A tự do) → dùng smart category
