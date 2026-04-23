@@ -3407,36 +3407,63 @@ PHÂN TÍCH LIÊN MẠCH:
                                 from tu_vi import format_la_so_text, CAN as _TV_CAN, CHI as _TV_CHI
                                 _tv_text = format_la_so_text(_tv_la_so)
                                 
-                                # Trích xuất dữ liệu chi tiết từ lá số
+                                # V42.8d FIX: Trích xuất ĐÚNG key từ lap_la_so() return
                                 _tv_can = _tv_la_so.get('can_nam', '?')
                                 _tv_chi = _tv_la_so.get('chi_nam', '?')
-                                _tv_menh = _tv_la_so.get('menh_cung', '?')
-                                _tv_than = _tv_la_so.get('than_cung', '?')
-                                _tv_cuc = _tv_la_so.get('cuc', '?')
+                                # menh_cung/than_cung là dict {"chi":"X","idx":N} — lấy chi
+                                _mc = _tv_la_so.get('menh_cung', {})
+                                _tv_menh = _mc.get('chi', str(_mc)) if isinstance(_mc, dict) else str(_mc)
+                                _tc = _tv_la_so.get('than_cung', {})
+                                _tv_than = _tc.get('chi', str(_tc)) if isinstance(_tc, dict) else str(_tc)
+                                # cuc là số (2-6) — dùng cuc_ten
+                                _tv_cuc = _tv_la_so.get('cuc_ten', _tv_la_so.get('cuc', '?'))
                                 _tv_nap_am = _tv_la_so.get('nap_am', '?')
                                 _tv_tu_hoa = _tv_la_so.get('tu_hoa', {})
-                                _tv_12cung = _tv_la_so.get('cung', {})
+                                # 12 cung nằm trong key 'cung_map' (không phải 'cung')
+                                _tv_12cung = _tv_la_so.get('cung_map', _tv_la_so.get('cung', {}))
                                 
                                 # Build chi tiết 12 cung
                                 _cung_detail = ""
                                 if _tv_12cung:
                                     for _cn, _cv in _tv_12cung.items():
-                                        _stars = ', '.join(_cv.get('chinh_tinh', [])) if _cv.get('chinh_tinh') else 'Không'
-                                        _phu = ', '.join(_cv.get('phu_tinh', [])[:5]) if _cv.get('phu_tinh') else ''
-                                        _cung_detail += f"  {_cn}: Chính tinh=[{_stars}] {('| Phụ=['+_phu+']') if _phu else ''}\n"
+                                        _stars = ', '.join(_cv.get('chinh_tinh', [])) if _cv.get('chinh_tinh') else '—'
+                                        _phu = ', '.join(_cv.get('phu_tinh', [])[:8]) if _cv.get('phu_tinh') else ''
+                                        _chi_c = _cv.get('chi', '')
+                                        _cung_detail += f"  {_cn} ({_chi_c}): [{_stars}] {('+ ['+_phu+']') if _phu else ''}\n"
+                                
+                                # Tính Đại Hạn hiện tại từ danh sách đại hạn
+                                _dai_han_list = _tv_la_so.get('dai_han', [])
+                                _luu_nien = _tv_la_so.get('luu_nien', {})
+                                _tuoi_ht = _luu_nien.get('tuoi', 0) if isinstance(_luu_nien, dict) else 0
+                                _dh_hien_tai = "Chưa xác định"
+                                _dh_detail = ""
+                                for _dh in _dai_han_list:
+                                    if isinstance(_dh, dict) and _dh.get('tu', 0) <= _tuoi_ht <= _dh.get('den', 0):
+                                        _dh_hien_tai = f"Tuổi {_dh['tuoi_range']} — Cung {_dh.get('cung','?')} ({_dh.get('chi','?')})"
+                                        break
+                                # Lưu Niên text
+                                _ln_text = f"Năm {_luu_nien.get('nam','?')}, Tuổi {_luu_nien.get('tuoi','?')}, Cung {_luu_nien.get('cung','?')} ({_luu_nien.get('chi','?')})" if isinstance(_luu_nien, dict) else str(_luu_nien)
+                                
+                                # Đại Hạn full list
+                                _dh_full = ""
+                                for _dh in _dai_han_list[:12]:
+                                    if isinstance(_dh, dict):
+                                        _marker = " ◀ HIỆN TẠI" if _dh.get('tu', 0) <= _tuoi_ht <= _dh.get('den', 0) else ""
+                                        _dh_full += f"  {_dh.get('tuoi_range','?')}: {_dh.get('cung','?')} ({_dh.get('chi','?')}){_marker}\n"
                                 
                                 _extra_context.append(
                                     f"\n\n{'='*60}\n"
                                     f"🔯 DỮ LIỆU TỬ VI ĐẨU SỐ — PHÂN TÍCH VẬN MỆNH CÁ NHÂN\n"
                                     f"{'='*60}\n"
-                                    f"▶ Năm sinh ÂL: {_tv_can} {_tv_chi} | Giới tính: {_tv_la_so.get('gioi_tinh', '?')}\n"
+                                    f"▶ Năm sinh ÂL: {_tv_can} {_tv_chi} ({_tv_la_so.get('nam_sinh','?')}) | Giờ: {_tv_la_so.get('gio','?')} | GT: {_tv_la_so.get('gioi_tinh', '?')}\n"
                                     f"▶ Nạp Âm: {_tv_nap_am}\n"
                                     f"▶ Mệnh Cung: {_tv_menh} | Thân Cung: {_tv_than}\n"
                                     f"▶ Cục: {_tv_cuc}\n"
                                     f"▶ Tứ Hóa (Can {_tv_can}): Lộc={_tv_tu_hoa.get('Hóa Lộc','?')}, Quyền={_tv_tu_hoa.get('Hóa Quyền','?')}, Khoa={_tv_tu_hoa.get('Hóa Khoa','?')}, Kỵ={_tv_tu_hoa.get('Hóa Kỵ','?')}\n"
-                                    f"▶ Đại Hạn hiện tại: {_tv_la_so.get('dai_han_hien_tai', '?')}\n"
-                                    f"▶ Lưu Niên 2026: {_tv_la_so.get('luu_nien', '?')}\n"
+                                    f"▶ ĐẠI HẠN hiện tại: {_dh_hien_tai}\n"
+                                    f"▶ LƯU NIÊN: {_ln_text}\n"
                                     f"\n--- 12 CUNG CHI TIẾT ---\n{_cung_detail}\n"
+                                    f"--- ĐẠI HẠN 12 KỲ ---\n{_dh_full}\n"
                                     f"--- LÁ SỐ ĐẦY ĐỦ ---\n{_tv_text}\n"
                                     f"\n{'='*60}\n"
                                     f"📋 HƯỚNG DẪN LUẬN GIẢI TỬ VI (BẮT BUỘC TUÂN THEO):\n"
