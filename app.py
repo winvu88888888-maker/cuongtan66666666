@@ -1503,7 +1503,7 @@ with st.sidebar:
     # View selection
     view_option = st.radio(
         "Chọn Phương Pháp:",
-        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "📊 Vạn Vật Loại Tượng", "🌊 Đại Lục Nhâm", "⭐ Thái Ất Thần Số", "🤖 Hỏi Gemini AI"],
+        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "📊 Vạn Vật Loại Tượng", "🌊 Đại Lục Nhâm", "⭐ Thái Ất Thần Số", "📅 Xem Ngày Đẹp", "🤖 Hỏi Gemini AI"],
         index=0
     )
     
@@ -1525,6 +1525,8 @@ with st.sidebar:
         st.session_state.current_view = "dai_luc_nham"
     elif view_option == "⭐ Thái Ất Thần Số":
         st.session_state.current_view = "thai_at"
+    elif view_option == "📅 Xem Ngày Đẹp":
+        st.session_state.current_view = "xem_ngay"
     else:  # 🤖 Hỏi Gemini AI
         st.session_state.current_view = "gemini_ai"
 
@@ -4131,6 +4133,191 @@ elif st.session_state.current_view == "thai_at":
         st.error(f"⚠️ Module thai_at_than_so.py chưa có: {e}")
     except Exception as e:
         st.error(f"⚠️ Lỗi Thái Ất Thần Số: {e}")
+
+# ======================================================================
+# XEM NGÀY ĐẸP VIEW (V42.4)
+# ======================================================================
+elif st.session_state.current_view == "xem_ngay":
+    st.markdown("""
+    <div style='text-align:center;margin-bottom:30px;'>
+        <div style='font-size:2.5rem;margin-bottom:10px;'>📅</div>
+        <h1 style='background:linear-gradient(90deg,#ffd700,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:2rem;margin:0;'>XEM NGÀY GIỜ ĐẸP</h1>
+        <p style='color:#94a3b8;font-size:0.9rem;margin-top:8px;'>Tổng hợp: Hiệp Kỷ Biện Phương Thư • Ngọc Hạp Thông Thư • Đổng Công Trạch Nhật • Thọ Mai Gia Lễ</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    try:
+        from xem_ngay_dep import (
+            danh_gia_ngay, tinh_trung_tang, VIEC_XEM_NGAY, CHI_12, CAN_10,
+            TRUC_TINH_CHAT, SAO_12
+        )
+        from qmdg_calc import calculate_qmdg_params
+        import datetime
+
+        # ── TABS ──
+        tab_xn, tab_tt, tab_ref = st.tabs(["📅 Xem Ngày", "⚰️ Tra Trùng Tang", "📚 Bảng Tra Cứu"])
+
+        # ════════════════ TAB 1: XEM NGÀY ════════════════
+        with tab_xn:
+            col_input1, col_input2 = st.columns(2)
+            with col_input1:
+                ngay_xem = st.date_input("📆 Chọn ngày dương lịch:", value=datetime.date.today(), key="xn_date")
+            with col_input2:
+                viec_keys = list(VIEC_XEM_NGAY.keys())
+                viec_labels = [VIEC_XEM_NGAY[k]["ten"] for k in viec_keys]
+                viec_idx = st.selectbox("🎯 Chọn loại việc:", range(len(viec_labels)), format_func=lambda i: viec_labels[i], key="xn_viec")
+                loai_viec = viec_keys[viec_idx]
+
+            dt_xem = datetime.datetime(ngay_xem.year, ngay_xem.month, ngay_xem.day, 12, 0)
+            try:
+                p = calculate_qmdg_params(dt_xem)
+                can_ngay = p.get('can_ngay', 'Giáp')
+                chi_ngay = p.get('chi_ngay', 'Tý')
+                thang_am = p.get('thang_am', 1)
+                ngay_am = p.get('ngay_am', 1)
+            except Exception:
+                can_ngay, chi_ngay, thang_am, ngay_am = 'Giáp', 'Tý', 1, 1
+
+            if st.button("🔍 XEM NGÀY", type="primary", key="btn_xem_ngay", use_container_width=True):
+                result = danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec)
+                st.markdown(f"""
+                <div style='background:linear-gradient(135deg,#0f0c29,#302b63);padding:30px;border-radius:20px;
+                    border:2px solid {result['verdict_color']};text-align:center;margin:20px 0;
+                    box-shadow:0 10px 40px rgba(0,0,0,0.5);'>
+                    <div style='font-size:3rem;'>{result['verdict'].split()[0]}</div>
+                    <div style='font-size:1.8rem;font-weight:900;color:{result['verdict_color']};margin:10px 0;'>
+                        {result['verdict']}
+                    </div>
+                    <div style='font-size:1.2rem;color:#fbbf24;font-weight:700;'>Điểm: {result['diem']}/100</div>
+                    <div style='color:#94a3b8;margin-top:10px;font-size:0.95rem;'>
+                        📅 Ngày {can_ngay} {chi_ngay} — Tháng {thang_am} ÂL — Ngày {ngay_am} ÂL<br>
+                        🎯 Xem cho: {result['loai_viec']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                col_d1, col_d2 = st.columns(2)
+                with col_d1:
+                    sao = result['sao_hoang_dao']
+                    hd_bg = '#064e3b' if result['is_hoang_dao'] else '#7f1d1d'
+                    st.markdown(f"""
+                    <div style='background:{hd_bg};padding:18px;border-radius:14px;margin:8px 0;'>
+                        <div style='font-size:1.3rem;font-weight:800;color:white;'>
+                            {sao[2]} {sao[0]} — {sao[1]}
+                        </div>
+                        <div style='color:#d1d5db;font-size:0.9rem;'>{sao[3]}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    truc = result['truc']
+                    ti = result['truc_info']
+                    truc_bg = '#064e3b' if result['truc_tot_cho_viec'] else ('#7f1d1d' if result['truc_xau_cho_viec'] else '#78350f')
+                    st.markdown(f"""
+                    <div style='background:{truc_bg};padding:18px;border-radius:14px;margin:8px 0;'>
+                        <div style='font-size:1.3rem;font-weight:800;color:white;'>
+                            {ti.get('icon','')} Trực {truc} — {ti.get('cat_hung','')}
+                        </div>
+                        <div style='color:#d1d5db;font-size:0.9rem;'>{ti.get('mo_ta','')}</div>
+                        <div style='color:#86efac;font-size:0.85rem;margin-top:5px;'>Nên: {', '.join(ti.get('nen',[]))}</div>
+                        <div style='color:#fca5a5;font-size:0.85rem;'>Kỵ: {', '.join(ti.get('ky',[]))}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col_d2:
+                    if result['ly_do_tot']:
+                        for r in result['ly_do_tot']:
+                            st.success(r)
+                    if result['ly_do_xau']:
+                        for r in result['ly_do_xau']:
+                            st.error(r)
+                    if result['is_tam_nuong']:
+                        st.warning(f"⚠️ NGÀY TAM NƯƠNG (ngày {ngay_am} ÂL) — Kiêng việc lớn!")
+                    if result['is_nguyet_pha']:
+                        st.warning("⚠️ NGÀY NGUYỆT PHÁ — Xung tháng, đại kỵ!")
+
+        # ════════════════ TAB 2: TRA TRÙNG TANG ════════════════
+        with tab_tt:
+            st.markdown("""
+            <div style='background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px;border-radius:15px;
+                border-left:4px solid #e74c3c;margin-bottom:20px;'>
+                <h3 style='color:#fca5a5;margin:0 0 10px 0;'>⚰️ Tra Cứu Trùng Tang</h3>
+                <p style='color:#94a3b8;margin:0;font-size:0.9rem;'>Theo Thọ Mai Gia Lễ + Tam Giáo Chính Hội</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            col_tt1, col_tt2 = st.columns(2)
+            with col_tt1:
+                tuoi_mat = st.number_input("Tuổi người mất (tuổi âm):", min_value=1, max_value=120, value=70, key="tt_tuoi")
+                gioi_tinh = st.radio("Giới tính:", ["Nam", "Nữ"], key="tt_gioi", horizontal=True)
+            with col_tt2:
+                nam_mat_val = st.number_input("Chi năm mất (1-12):", min_value=1, max_value=12, value=1, key="tt_nam")
+                thang_mat_val = st.number_input("Tháng mất (ÂL):", min_value=1, max_value=12, value=1, key="tt_thang")
+                ngay_mat_val = st.number_input("Ngày mất (ÂL):", min_value=1, max_value=30, value=1, key="tt_ngay")
+                gio_mat_val = st.number_input("Giờ mất (1-12):", min_value=1, max_value=12, value=1, key="tt_gio")
+
+            if st.button("🔍 TRA TRÙNG TANG", type="primary", key="btn_trung_tang", use_container_width=True):
+                gt = 'nam' if gioi_tinh == "Nam" else 'nu'
+                kq = tinh_trung_tang(tuoi_mat, gt, nam_mat_val, thang_mat_val, ngay_mat_val, gio_mat_val)
+                kl = kq.get('ket_luan', '')
+                kl_color = '#ef4444' if 'TRÙNG TANG' in kl else ('#22c55e' if 'NHẬP MỘ' in kl or 'AN TOÀN' in kl else '#fbbf24')
+                st.markdown(f"""
+                <div style='background:linear-gradient(135deg,#0f0c29,#302b63);padding:25px;border-radius:15px;
+                    border:2px solid {kl_color};text-align:center;margin:15px 0;'>
+                    <div style='font-size:1.5rem;font-weight:900;color:{kl_color};'>{kl}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                cols_tru = st.columns(4)
+                for i, tru_name in enumerate(["Năm", "Tháng", "Ngày", "Giờ"]):
+                    data = kq.get(tru_name, {})
+                    if isinstance(data, dict):
+                        cung = data.get('cung', '?')
+                        loai = data.get('loai', '?')
+                        bg = '#7f1d1d' if loai == 'TRÙNG TANG' else ('#064e3b' if loai == 'NHẬP MỘ' else '#78350f')
+                        icon = '🔴' if loai == 'TRÙNG TANG' else ('🟢' if loai == 'NHẬP MỘ' else '🟡')
+                        with cols_tru[i]:
+                            st.markdown(f"""
+                            <div style='background:{bg};padding:15px;border-radius:12px;text-align:center;'>
+                                <div style='color:#94a3b8;font-size:0.8rem;'>{tru_name}</div>
+                                <div style='font-size:1.5rem;font-weight:900;color:white;'>{cung}</div>
+                                <div style='font-size:0.85rem;color:white;'>{icon} {loai}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+        # ════════════════ TAB 3: BẢNG TRA CỨU ════════════════
+        with tab_ref:
+            ref_tab1, ref_tab2 = st.tabs(["📋 12 Trực", "⭐ Hoàng Đạo/Hắc Đạo"])
+            with ref_tab1:
+                st.markdown("### 📋 BẢNG 12 TRỰC (Đổng Công Trạch Nhật)")
+                for truc_name, info in TRUC_TINH_CHAT.items():
+                    bg = '#064e3b' if info['cat_hung'] == 'Cát' else ('#7f1d1d' if info['cat_hung'] == 'Hung' else '#78350f')
+                    st.markdown(f"""
+                    <div style='background:{bg};padding:12px 18px;border-radius:10px;margin:6px 0;'>
+                        <span style='font-size:1.1rem;font-weight:800;color:white;'>{info['icon']} {truc_name}</span>
+                        <span style='color:#d1d5db;margin-left:10px;'>{info['mo_ta']} ({info['cat_hung']})</span><br>
+                        <span style='color:#86efac;font-size:0.85rem;'>✅ {', '.join(info['nen'])}</span>
+                        <span style='color:#fca5a5;font-size:0.85rem;margin-left:15px;'>❌ {', '.join(info['ky'])}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            with ref_tab2:
+                st.markdown("### ⭐ 12 SAO HOÀNG ĐẠO / HẮC ĐẠO")
+                for sao_name, loai, icon, mota in SAO_12:
+                    bg = '#064e3b' if loai == 'Hoàng Đạo' else '#7f1d1d'
+                    st.markdown(f"""
+                    <div style='background:{bg};padding:10px 18px;border-radius:10px;margin:5px 0;'>
+                        <span style='font-size:1.1rem;font-weight:800;color:white;'>{icon} {sao_name}</span>
+                        <span style='color:#fbbf24;margin-left:10px;font-weight:700;'>[{loai}]</span>
+                        <span style='color:#d1d5db;margin-left:10px;'>{mota}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    except ImportError as e:
+        st.error(f"⚠️ Chưa có module xem_ngay_dep.py: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Lỗi: {e}")
+        import traceback
+        st.code(traceback.format_exc())
 
 st.markdown("---")
 st.markdown("""
