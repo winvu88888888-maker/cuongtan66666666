@@ -4696,18 +4696,56 @@ elif st.session_state.current_view == "tu_vi":
         </div>
         """, unsafe_allow_html=True)
 
-        c1, c2, c3, c4, c5 = st.columns(5)
+        c1, c2 = st.columns(2)
         with c1:
-            tv_nam = st.number_input("Năm sinh (DL):", 1920, 2026, 1990, key="tv_nam")
+            tv_input_mode = st.radio(
+                "📅 Cách nhập ngày sinh:",
+                ["🌞 Dương lịch (tự đổi sang Âm)", "🌙 Âm lịch (nhập trực tiếp)"],
+                key="tv_input_mode", horizontal=True
+            )
         with c2:
-            tv_thang = st.number_input("Tháng ÂL:", 1, 12, 1, key="tv_thang")
-        with c3:
-            tv_ngay = st.number_input("Ngày ÂL:", 1, 30, 15, key="tv_ngay")
-        with c4:
-            gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
-            tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio")
-        with c5:
             tv_gt = st.radio("Giới tính:", ["Nam","Nữ"], key="tv_gt", horizontal=True)
+
+        if tv_input_mode.startswith("🌞"):
+            # ═══ NHẬP DƯƠNG LỊCH → TỰ CONVERT SANG ÂM ═══
+            c_dl1, c_dl2, c_dl3 = st.columns(3)
+            with c_dl1:
+                tv_ngay_dl = st.date_input("📆 Ngày sinh dương lịch:", value=datetime.date(1990, 1, 15), key="tv_ngay_dl")
+            with c_dl2:
+                gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
+                tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio_dl")
+            with c_dl3:
+                # Convert dương → âm
+                try:
+                    d_al, m_al, y_al, is_leap = solar2lunar(tv_ngay_dl.day, tv_ngay_dl.month, tv_ngay_dl.year)
+                    _leap_text = " (Nhuận)" if is_leap else ""
+                    can_nam_idx = (tv_ngay_dl.year - 4) % 10
+                    chi_nam_idx = (tv_ngay_dl.year - 4) % 12
+                    st.markdown(f"""
+                    <div style='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:14px;border-radius:12px;margin-top:24px;text-align:center;'>
+                        <div style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>📆 Âm lịch: {d_al}/{m_al}/{y_al}{_leap_text}</div>
+                        <div style='color:#a78bfa;font-size:0.9rem;margin-top:4px;'>Năm {CAN[can_nam_idx]} {CHI[chi_nam_idx]}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Lỗi chuyển đổi: {e}")
+                    d_al, m_al, y_al = 15, 1, 1990
+            
+            tv_nam = tv_ngay_dl.year
+            tv_thang = m_al
+            tv_ngay = d_al
+        else:
+            # ═══ NHẬP ÂM LỊCH TRỰC TIẾP ═══
+            c_al1, c_al2, c_al3, c_al4 = st.columns(4)
+            with c_al1:
+                tv_nam = st.number_input("Năm sinh (DL):", 1920, 2026, 1990, key="tv_nam")
+            with c_al2:
+                tv_thang = st.number_input("Tháng ÂL:", 1, 12, 1, key="tv_thang")
+            with c_al3:
+                tv_ngay = st.number_input("Ngày ÂL:", 1, 30, 15, key="tv_ngay")
+            with c_al4:
+                gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
+                tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio")
 
         if st.button("🔯 LẬP LÁ SỐ TỬ VI", type="primary", key="btn_lap_tu_vi", use_container_width=True):
             gt = 'nam' if tv_gt == 'Nam' else 'nu'
