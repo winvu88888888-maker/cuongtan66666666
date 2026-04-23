@@ -4298,11 +4298,29 @@ elif st.session_state.current_view == "xem_ngay":
                 st.markdown("<div class='xn-input-label'>📆 Chọn ngày dương lịch</div>", unsafe_allow_html=True)
                 ngay_xem = st.date_input("Chọn ngày:", value=datetime.date.today(), key="xn_date", label_visibility="collapsed")
             with col_input2:
-                st.markdown("<div class='xn-input-label'>🎯 Chọn loại việc</div>", unsafe_allow_html=True)
+                st.markdown("<div class='xn-input-label'>🎯 Chọn loại việc (hoặc tự nhập bên dưới)</div>", unsafe_allow_html=True)
                 viec_keys = list(VIEC_XEM_NGAY.keys())
                 viec_labels = [VIEC_XEM_NGAY[k]["ten"] for k in viec_keys]
                 viec_idx = st.selectbox("Loại việc:", range(len(viec_labels)), format_func=lambda i: viec_labels[i], key="xn_viec", label_visibility="collapsed")
                 loai_viec = viec_keys[viec_idx]
+            
+            # ── Ô nhập tự do ──
+            xn_custom_viec = st.text_input(
+                "✍️ Hoặc tự nhập loại việc theo ý bạn:",
+                placeholder="Ví dụ: Ký hợp đồng thuê nhà / Nhận xe mới / Khai trương quán ăn / Phẫu thuật...",
+                key="xn_custom_viec"
+            )
+            if xn_custom_viec and xn_custom_viec.strip():
+                # Ghi đè loại việc bằng input tự do
+                st.session_state['xn_custom_viec_text'] = xn_custom_viec.strip()
+                st.markdown(f"""
+                <div style='background:linear-gradient(135deg,#064e3b,#065f46);padding:10px 16px;border-radius:10px;
+                    border:1px solid #10b981;margin:4px 0;'>
+                    <span style='color:#6ee7b7;font-weight:700;'>✅ Sử dụng: "{xn_custom_viec.strip()}" (thay cho danh sách có sẵn)</span>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.session_state['xn_custom_viec_text'] = None
 
             # ── THÔNG TIN NGƯỜI HỎI ──
             st.markdown("""
@@ -4458,6 +4476,11 @@ elif st.session_state.current_view == "xem_ngay":
                 st.session_state['xn_result'] = result
                 st.session_state['xn_ngay_xem'] = ngay_xem
                 st.session_state['xn_loai_viec'] = loai_viec
+                # V42.6d: Lưu custom việc (nếu có)
+                _custom_viec = st.session_state.get('xn_custom_viec_text')
+                if _custom_viec:
+                    st.session_state['xn_result']['loai_viec_custom'] = _custom_viec
+                    st.session_state['xn_result']['loai_viec'] = _custom_viec
                 st.session_state['xn_am_lich'] = f"{ngay_am}/{thang_am}/{nam_am}"
                 st.session_state['xn_can_chi'] = f"{can_ngay} {chi_ngay}"
 
