@@ -4911,12 +4911,93 @@ class FreeAIHelper:
                 f"⛔ QUAN TRỌNG: DÒNG ĐẦU TIÊN PHẢI LÀ '### 🏆 KẾT LUẬN CUỐI CÙNG' + CÂU TRẢ LỜI.\n"
                 f"CẤM TUYỆT ĐỐI: Bịa yếu tố, nói 'không thể xác định', nhại lại offline verdict.\n"
                 + (
-                    f"⚠️ ĐÂY LÀ CÂU HỎI '{question_type_label}' → PHẢI trả lời MÔ TẢ CỤ THỂ (VẬT GÌ/Ở ĐÂU/KHI NÀO), KHÔNG trả lời CÓ/KHÔNG!\n"
+                f"⚠️ ĐÂY LÀ CÂU HỎI '{question_type_label}' → PHẢI trả lời MÔ TẢ CỤ THỂ (VẬT GÌ/Ở ĐÂU/KHI NÀO), KHÔNG trả lời CÓ/KHÔNG!\n"
                     if question_type in ('WHAT', 'WHERE', 'WHEN') else
                     f"BẮT BUỘC: Phải KHẲNG ĐỊNH CÓ hoặc KHÔNG. KHÔNG được né tránh.\n"
                 ) +
-                f"</output_format_v42>\n"
+                f"</output_format_v42>\n\n"
             )
+            
+            # ═══ V42.8e: THÊM DỮ LIỆU TỬ VI + XEM NGÀY CHO AI ONLINE ═══
+            # Phát hiện dữ liệu Tử Vi / Xem Ngày trong câu hỏi → thêm rules tương ứng
+            _has_tv_data = 'DỮ LIỆU TỬ VI ĐẨU SỐ' in question
+            _has_xn_data = 'DỮ LIỆU XEM NGÀY ĐẸP' in question
+            
+            if _has_tv_data or _has_xn_data:
+                deep_prompt += "\n<tu_vi_xem_ngay_rules>\n"
+                deep_prompt += "═══ QUAN TRỌNG: CÂU HỎI CÓ DỮ LIỆU TỬ VI / XEM NGÀY ═══\n"
+                deep_prompt += "Bạn PHẢI đọc và phân tích TOÀN BỘ dữ liệu này CÙNG với 6 PP huyền học.\n\n"
+                
+                if _has_tv_data:
+                    deep_prompt += (
+                        "═══ PHƯƠNG PHÁP LUẬN GIẢI TỬ VI (7 BƯỚC BẮT BUỘC) ═══\n"
+                        "BƯỚC 1 — ĐỊNH CỤC DIỆN: Xét Âm Dương thuận/nghịch, Mệnh-Cục tương sinh/khắc.\n"
+                        "  → Cục sinh Mệnh = thuận; Mệnh khắc Cục = khó.\n"
+                        "BƯỚC 2 — MỆNH + THÂN: Chính tinh Miếu/Vượng/Đắc/Hãm + phụ tinh.\n"
+                        "  → 14 Chính Tinh: Tử Vi, Thiên Cơ, Thái Dương, Vũ Khúc, Thiên Đồng, Liêm Trinh,\n"
+                        "     Thiên Phủ, Thái Âm, Tham Lang, Cự Môn, Thiên Tướng, Thiên Lương, Thất Sát, Phá Quân.\n"
+                        "BƯỚC 3 — TAM GIÁC VÀNG: Mệnh + Tài Bạch + Quan Lộc → tổng thể thành công.\n"
+                        "BƯỚC 4 — TỨ HÓA: Lộc=tài lộc, Quyền=quyền lực, Khoa=danh tiếng, Kỵ=trở ngại.\n"
+                        "  → Hóa Kỵ vào cung nào = cung đó gặp trở ngại lớn nhất.\n"
+                        "  → Hóa Lộc+Quyền cùng cung = rất mạnh. Kỵ+Kình/Đà = tai họa.\n"
+                        "BƯỚC 5 — ĐẠI HẠN + LƯU NIÊN: ĐH=10 năm, LN=năm nay.\n"
+                        "  → ĐH tốt+LN xấu = bớt xấu; ĐH xấu+LN tốt = tạm vượt.\n"
+                        "  → Xem chính tinh tại cung ĐH/LN + Tứ Hóa bay vào cung nào.\n"
+                        "BƯỚC 6 — KẾT HỢP KỲ MÔN: Tử Vi (dài hạn) + Kỳ Môn (thời điểm) → phối hợp.\n"
+                        "BƯỚC 7 — KẾT LUẬN: Trả lời DỰA TRÊN cả Tử Vi + Kỳ Môn. Lời khuyên CỤ THỂ.\n\n"
+                        "LƯU Ý TỬ VI:\n"
+                        "• Sao sáng (Miếu/Vượng) tại Mệnh = thuận lợi, Hãm = khó khăn\n"
+                        "• Lộc Tồn + Hóa Lộc cùng cung = Song Lộc = rất giàu\n"
+                        "• Kình Dương + Đà La + Hỏa/Linh = Sát tinh = khó khăn, nhưng có thể tốt nếu gặp Tử Vi/Thiên Phủ\n"
+                        "• Tả Phụ + Hữu Bật + Thiên Khôi + Thiên Việt = quý nhân phù trợ\n"
+                        "• Cô Thần + Quả Tú = cô đơn tình cảm\n"
+                        "• Hồng Loan + Đào Hoa = tình duyên phong phú\n\n"
+                    )
+                
+                if _has_xn_data:
+                    deep_prompt += (
+                        "═══ PHƯƠNG PHÁP ĐÁNH GIÁ XEM NGÀY (10 BƯỚC BẮT BUỘC) ═══\n"
+                        "1. ĐIỂM NGÀY: ≥70=TỐT, 50-69=TRUNG BÌNH, <50=XẤU.\n"
+                        "2. NGUYỆT PHÁ: CÓ → CẢNH BÁO MẠNH, tuyệt đối tránh việc lớn.\n"
+                        "3. DƯƠNG CÔNG KỴ: CÓ → 13 ngày đại kỵ, tránh mọi việc quan trọng.\n"
+                        "4. TAM NƯƠNG: CÓ → không nên khởi sự việc mới.\n"
+                        "5. 12 TRỰC: Phân tích Trực có phù hợp loại việc không.\n"
+                        "   Trực CÁT: Kiến, Mãn, Bình, Định, Thành, Khai\n"
+                        "   Trực HUNG: Phá, Nguy, Thu, Bế\n"
+                        "   Trực BÌNH: Trừ, Chấp\n"
+                        "6. 28 TÚ: Sao CÁT=tốt, HUNG=cẩn thận.\n"
+                        "7. HOÀNG ĐẠO/HẮC ĐẠO: Hoàng Đạo=thuận, Hắc Đạo=bất lợi.\n"
+                        "   Sao Hoàng Đạo: Thanh Long, Minh Đường, Kim Quỹ, Kim Đường, Ngọc Đường, Tư Mệnh\n"
+                        "   Sao Hắc Đạo: Thiên Hình, Chu Tước, Bạch Hổ, Thiên Lao, Nguyên Vũ, Câu Trận\n"
+                        "8. THIÊN/NGUYỆT ĐỨC: CÓ → hóa giải hung, tăng cát.\n"
+                        "9. KẾT HỢP KỲ MÔN: Ngày tốt+Cửa tốt=TIẾN, Ngày xấu+Cửa xấu=TRÁNH.\n"
+                        "10. GỢI Ý: Ngày xấu → đề xuất ngày tốt gần. Ngày tốt → gợi ý giờ đẹp.\n\n"
+                    )
+                
+                deep_prompt += (
+                    "OUTPUT BỔ SUNG KHI CÓ TỬ VI / XEM NGÀY:\n"
+                    "Sau phần 🔮 AI ONLINE, thêm MỤC MỚI:\n\n"
+                )
+                if _has_tv_data:
+                    deep_prompt += (
+                        "### 🔯 LUẬN GIẢI TỬ VI\n"
+                        "• **Mệnh/Thân:** [phân tích chính tinh + trạng thái]\n"
+                        "• **Tam Giác Vàng:** [Mệnh + Tài + Quan]\n"
+                        "• **Tứ Hóa:** [Lộc/Quyền/Khoa/Kỵ → vào cung nào → ý nghĩa]\n"
+                        "• **Đại Hạn + Lưu Niên:** [xu hướng hiện tại]\n"
+                        "• **Kết hợp Kỳ Môn:** [vận mệnh + thời điểm → khuyên gì]\n\n"
+                    )
+                if _has_xn_data:
+                    deep_prompt += (
+                        "### 📅 ĐÁNH GIÁ NGÀY\n"
+                        "• **Điểm/Verdict:** [X/100 — tốt/xấu]\n"
+                        "• **Yếu tố TỐT:** [liệt kê lý do tốt]\n"
+                        "• **Yếu tố XẤU:** [liệt kê lý do xấu]\n"
+                        "• **Kết hợp Kỳ Môn:** [ngày + cửa + sao → tổng hợp]\n"
+                        "• **Gợi ý:** [giờ đẹp hoặc ngày thay thế]\n\n"
+                    )
+                
+                deep_prompt += "</tu_vi_xem_ngay_rules>\n"
 
 
             
