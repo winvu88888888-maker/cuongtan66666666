@@ -4148,8 +4148,10 @@ elif st.session_state.current_view == "xem_ngay":
 
     try:
         from xem_ngay_dep import (
-            danh_gia_ngay, tinh_trung_tang, VIEC_XEM_NGAY, CHI_12, CAN_10,
-            TRUC_TINH_CHAT, SAO_12
+            danh_gia_ngay, danh_gia_ngay_duong_lich, tinh_trung_tang,
+            solar2lunar, tinh_28_tu, kiem_tra_duong_cong_ky,
+            VIEC_XEM_NGAY, CHI_12, CAN_10,
+            TRUC_TINH_CHAT, SAO_12, NHI_THAP_BAT_TU
         )
         from qmdg_calc import calculate_qmdg_params
         import datetime
@@ -4168,18 +4170,31 @@ elif st.session_state.current_view == "xem_ngay":
                 viec_idx = st.selectbox("🎯 Chọn loại việc:", range(len(viec_labels)), format_func=lambda i: viec_labels[i], key="xn_viec")
                 loai_viec = viec_keys[viec_idx]
 
+            # Tính âm lịch bằng thuật toán Hồ Ngọc Đức (tự chứa, không cần thư viện)
+            ngay_am, thang_am, nam_am, nhuan = solar2lunar(ngay_xem.day, ngay_xem.month, ngay_xem.year)
+            nhuan_str = " (Nhuận)" if nhuan else ""
+
+            # Tính Can-Chi ngày từ qmdg_calc
             dt_xem = datetime.datetime(ngay_xem.year, ngay_xem.month, ngay_xem.day, 12, 0)
             try:
                 p = calculate_qmdg_params(dt_xem)
                 can_ngay = p.get('can_ngay', 'Giáp')
                 chi_ngay = p.get('chi_ngay', 'Tý')
-                thang_am = p.get('thang_am', 1)
-                ngay_am = p.get('ngay_am', 1)
             except Exception:
-                can_ngay, chi_ngay, thang_am, ngay_am = 'Giáp', 'Tý', 1, 1
+                can_ngay, chi_ngay = 'Giáp', 'Tý'
+
+            # Hiện thông tin âm lịch
+            st.markdown(f"""
+            <div style='background:linear-gradient(135deg,#1a1a2e,#16213e);padding:15px 20px;border-radius:12px;
+                border-left:4px solid #fbbf24;margin:10px 0;'>
+                <span style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>📅 Âm Lịch:</span>
+                <span style='color:white;font-size:1.1rem;'> Ngày {ngay_am} Tháng {thang_am}{nhuan_str} Năm {nam_am}</span>
+                <span style='color:#94a3b8;margin-left:15px;'>| {can_ngay} {chi_ngay}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
             if st.button("🔍 XEM NGÀY", type="primary", key="btn_xem_ngay", use_container_width=True):
-                result = danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec)
+                result = danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec, ngay_dl=(ngay_xem.day, ngay_xem.month, ngay_xem.year))
                 st.markdown(f"""
                 <div style='background:linear-gradient(135deg,#0f0c29,#302b63);padding:30px;border-radius:20px;
                     border:2px solid {result['verdict_color']};text-align:center;margin:20px 0;
@@ -4223,6 +4238,19 @@ elif st.session_state.current_view == "xem_ngay":
                     </div>
                     """, unsafe_allow_html=True)
 
+                    # 28 Tú (Ngọc Hạp Thông Thư)
+                    sao_28 = result.get('sao_28_tu')
+                    if sao_28:
+                        s28_bg = '#064e3b' if sao_28[3] == 'Cát' else '#7f1d1d'
+                        st.markdown(f"""
+                        <div style='background:{s28_bg};padding:15px;border-radius:14px;margin:8px 0;'>
+                            <div style='font-size:1.1rem;font-weight:800;color:white;'>
+                                ⭐ Sao {sao_28[0]} ({sao_28[1]}/{sao_28[2]}) — {sao_28[3]}
+                            </div>
+                            <div style='color:#d1d5db;font-size:0.85rem;'>{sao_28[5]}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
                 with col_d2:
                     if result['ly_do_tot']:
                         for r in result['ly_do_tot']:
@@ -4234,6 +4262,8 @@ elif st.session_state.current_view == "xem_ngay":
                         st.warning(f"⚠️ NGÀY TAM NƯƠNG (ngày {ngay_am} ÂL) — Kiêng việc lớn!")
                     if result['is_nguyet_pha']:
                         st.warning("⚠️ NGÀY NGUYỆT PHÁ — Xung tháng, đại kỵ!")
+                    if result.get('is_duong_cong_ky'):
+                        st.error("⛔ DƯƠNG CÔNG KỴ NHẬT — 13 ngày đại kỵ, tuyệt đối không làm việc lớn!")
 
         # ════════════════ TAB 2: TRA TRÙNG TANG ════════════════
         with tab_tt:

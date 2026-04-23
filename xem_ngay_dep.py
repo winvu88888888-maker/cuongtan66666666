@@ -7,6 +7,137 @@ XEM NGÀY ĐẸP — Module tổng hợp từ 5 sách chuẩn:
 5. Tam Giáo Chính Hội
 """
 import datetime
+import math
+
+# ══════════════════════════════════════════════════════════════
+# LỊCH ÂM — Thuật toán Hồ Ngọc Đức (chuẩn UTC+7 Việt Nam)
+# ══════════════════════════════════════════════════════════════
+
+def _jdn(dd, mm, yy):
+    a = int((14 - mm) / 12)
+    y = yy + 4800 - a
+    m = mm + 12 * a - 3
+    return dd + int((153*m+2)/5) + 365*y + int(y/4) - int(y/100) + int(y/400) - 32045
+
+def _new_moon(k):
+    T = k / 1236.85; T2 = T*T; T3 = T2*T; dr = math.pi/180
+    Jd1 = 2415020.75933 + 29.53058868*k + 0.0001178*T2 - 0.000000155*T3
+    Jd1 += 0.00033*math.sin((166.56+132.87*T-0.009173*T2)*dr)
+    M = 359.2242+29.10535608*k-0.0000333*T2-0.00000347*T3
+    Mpr = 306.0253+385.81691806*k+0.0107306*T2+0.00001236*T3
+    F = 21.2964+390.67050646*k-0.0016528*T2-0.00000239*T3
+    C1 = (0.1734-0.000393*T)*math.sin(M*dr)+0.0021*math.sin(2*dr*M)
+    C1 -= 0.4068*math.sin(Mpr*dr)+0.0161*math.sin(dr*2*Mpr)
+    C1 -= 0.0004*math.sin(dr*3*Mpr)+0.0104*math.sin(dr*2*F)
+    C1 -= 0.0051*math.sin(dr*(M+Mpr))-0.0074*math.sin(dr*(M-Mpr))
+    C1 += 0.0004*math.sin(dr*(2*F+M))-0.0004*math.sin(dr*(2*F-M))
+    C1 -= 0.0006*math.sin(dr*(2*F+Mpr))+0.001*math.sin(dr*(2*F-Mpr))
+    C1 += 0.0005*math.sin(dr*(2*Mpr+M))
+    return Jd1+C1 if T < -11 else Jd1+C1-0.000058868*k+0.0001178*T2
+
+def _sun_longitude(jdn_val):
+    T = (jdn_val-2451545.0)/36525; T2 = T*T; dr = math.pi/180
+    M = 357.5291+35999.0503*T-0.0001559*T2
+    L0 = 280.46645+36000.76983*T+0.0003032*T2
+    DL = (1.9146-0.004817*T-0.000014*T2)*math.sin(dr*M)
+    DL += (0.019993-0.000101*T)*math.sin(dr*2*M)+0.00029*math.sin(dr*3*M)
+    L = (L0+DL)*dr; L -= math.pi*2*int(L/(math.pi*2))
+    return int(L/math.pi*6)
+
+def _get_lunar_month_11(yy, tz=7):
+    off = _jdn(31,12,yy)-2415021; k = int(off/29.530588853)
+    nm = _new_moon(k)
+    if _sun_longitude(nm+tz/24.0) >= 9: nm = _new_moon(k-1)
+    return int(nm+0.5+tz/24.0)
+
+def _get_leap_month_offset(a11, tz=7):
+    k = int((a11-2415021.076998695)/29.530588853+0.5)
+    last = 0; i = 1; arc = _sun_longitude(_new_moon(k+i)+tz/24.0)
+    while True:
+        last = arc; i += 1; arc = _sun_longitude(_new_moon(k+i)+tz/24.0)
+        if arc != last or i >= 14: break
+    return i-1
+
+def solar2lunar(dd, mm, yy, tz=7):
+    """Chuyển dương lịch → âm lịch. Returns (ngày, tháng, năm, nhuận)."""
+    day_number = _jdn(dd, mm, yy)
+    k = int((day_number-2415021.076998695)/29.530588853)
+    month_start = int(_new_moon(k)+0.5+tz/24.0)
+    if month_start > day_number: month_start = int(_new_moon(k-1)+0.5+tz/24.0)
+    a11 = _get_lunar_month_11(yy, tz); b11 = a11
+    if a11 >= month_start:
+        lunar_year = yy; a11 = _get_lunar_month_11(yy-1, tz)
+    else:
+        lunar_year = yy+1; b11 = _get_lunar_month_11(yy+1, tz)
+    lunar_day = day_number-month_start+1
+    diff = int((month_start-a11)/29+0.5); lunar_leap = 0; lunar_month = diff+11
+    if b11-a11 > 365:
+        leap_offset = _get_leap_month_offset(a11, tz)
+        if diff >= leap_offset:
+            lunar_month = diff+10
+            if diff == leap_offset: lunar_leap = 1
+    if lunar_month > 12: lunar_month -= 12
+    if lunar_month >= 11 and diff < 4: lunar_year -= 1
+    return (lunar_day, lunar_month, lunar_year, lunar_leap)
+
+
+# ══════════════════════════════════════════════════════════════
+# NHỊ THẬP BÁT TÚ (28 sao — Ngọc Hạp Thông Thư)
+# ══════════════════════════════════════════════════════════════
+NHI_THAP_BAT_TU = [
+    ("Giác",  "Mộc", "Giao",  "Cát",  "🟢", "Tốt cho xây dựng, cưới hỏi, khai trương"),
+    ("Cang",  "Kim", "Long",  "Hung", "🔴", "Kỵ cưới hỏi, an táng, xuất hành"),
+    ("Đê",    "Thổ", "Mạc",   "Hung", "🔴", "Kỵ động thổ, cưới hỏi"),
+    ("Phòng", "Nhật","Thố",   "Cát",  "🟢", "Tốt cho cưới hỏi, khai trương, xuất hành"),
+    ("Tâm",   "Nguyệt","Hồ",  "Hung", "🔴", "Kỵ mọi việc lớn"),
+    ("Vĩ",    "Hỏa", "Hổ",   "Cát",  "🟢", "Tốt cho cưới hỏi, xây nhà, khai trương"),
+    ("Cơ",    "Thủy","Báo",   "Cát",  "🟢", "Tốt cho cầu tài, ký kết"),
+    ("Đẩu",   "Mộc", "Giải",  "Cát",  "🟢", "Tốt cho khai trương, cầu tài"),
+    ("Ngưu",  "Kim", "Ngưu",  "Hung", "🔴", "Kỵ cưới hỏi, xuất hành"),
+    ("Nữ",    "Thổ", "Bức",   "Hung", "🔴", "Kỵ mọi việc"),
+    ("Hư",    "Nhật","Thử",   "Hung", "🔴", "Kỵ mọi việc, đặc biệt cưới hỏi"),
+    ("Nguy",  "Nguyệt","Yến", "Hung", "🔴", "Kỵ mọi việc lớn"),
+    ("Thất",  "Hỏa", "Trư",  "Cát",  "🟢", "Tốt cho xây nhà, cưới hỏi"),
+    ("Bích",  "Thủy","Du",    "Cát",  "🟢", "Tốt cho mọi việc, đặc biệt xây nhà"),
+    ("Khuê",  "Mộc", "Lang",  "Hung", "🔴", "Kỵ mọi việc"),
+    ("Lâu",   "Kim", "Cẩu",   "Cát",  "🟢", "Tốt cho cưới hỏi, khai trương"),
+    ("Vị",    "Thổ", "Trĩ",   "Cát",  "🟢", "Tốt cho xây nhà, cưới hỏi, khai trương"),
+    ("Mão",   "Nhật","Kê",    "Hung", "🔴", "Kỵ mọi việc lớn"),
+    ("Tất",   "Nguyệt","Ô",   "Cát",  "🟢", "Tốt cho xây nhà, cưới hỏi, khai trương"),
+    ("Chủy",  "Hỏa", "Hầu",  "Hung", "🔴", "Kỵ mọi việc"),
+    ("Sâm",   "Thủy","Viên",  "Cát",  "🟢", "Tốt cho khai trương, cầu tài"),
+    ("Tỉnh",  "Mộc", "Ngan",  "Cát",  "🟢", "Tốt cho mọi việc"),
+    ("Quỷ",   "Kim", "Dương", "Hung", "🔴", "Kỵ mọi việc lớn"),
+    ("Liễu",  "Thổ", "Chương","Hung", "🔴", "Kỵ mọi việc"),
+    ("Tinh",  "Nhật","Mã",    "Hung", "🔴", "Kỵ an táng, cưới hỏi"),
+    ("Trương", "Nguyệt","Lộc","Cát",  "🟢", "Tốt cho cưới hỏi, khai trương"),
+    ("Dực",   "Hỏa", "Xà",   "Hung", "🔴", "Kỵ mọi việc"),
+    ("Chẩn",  "Thủy","Giun",  "Cát",  "🟢", "Tốt cho xuất hành, cầu tài"),
+]
+
+# Ngày gốc: 1/1/1900 = sao Hư (index 10)
+_28TU_GOC_JDN = _jdn(1, 1, 1900)
+_28TU_GOC_IDX = 10  # Sao Hư
+
+def tinh_28_tu(dd, mm, yy):
+    """Tính Nhị Thập Bát Tú theo ngày dương lịch."""
+    delta = _jdn(dd, mm, yy) - _28TU_GOC_JDN
+    idx = (_28TU_GOC_IDX + delta) % 28
+    return NHI_THAP_BAT_TU[idx]
+
+
+# ══════════════════════════════════════════════════════════════
+# DƯƠNG CÔNG KỴ NHẬT (13 ngày đại kỵ theo Ngọc Hạp Thông Thư)
+# ══════════════════════════════════════════════════════════════
+DUONG_CONG_KY = [
+    (1,13), (2,11), (3,9), (4,7), (5,5), (6,3), (7,1), (7,29),
+    (8,27), (9,25), (10,23), (11,21), (12,19)
+]
+
+def kiem_tra_duong_cong_ky(thang_am, ngay_am):
+    """Kiểm tra Dương Công Kỵ Nhật (13 ngày đại kỵ trong năm)."""
+    return (thang_am, ngay_am) in DUONG_CONG_KY
+
 
 # ══════════════════════════════════════════════════════════════
 # CONSTANTS
@@ -210,8 +341,9 @@ def tinh_trung_tang(tuoi_mat, gioi_tinh, nam_mat, thang_mat, ngay_mat, gio_mat):
     return ket_qua
 
 
-def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
+def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi", ngay_dl=None):
     """Đánh giá tổng hợp một ngày cho một loại việc cụ thể.
+    ngay_dl: (dd, mm, yy) dương lịch — dùng cho 28 Tú + Dương Công Kỵ
     Returns: dict với tất cả thông tin
     """
     truc = tinh_truc(thang_am, chi_ngay)
@@ -222,6 +354,12 @@ def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
     is_nguyet_pha = kiem_tra_nguyet_pha(thang_am, chi_ngay)
     has_thien_duc = kiem_tra_thien_duc(thang_am, can_ngay)
     has_nguyet_duc = kiem_tra_nguyet_duc(thang_am, can_ngay)
+    is_duong_cong_ky = kiem_tra_duong_cong_ky(thang_am, ngay_am)
+
+    # 28 Tú
+    sao_28 = None
+    if ngay_dl:
+        sao_28 = tinh_28_tu(ngay_dl[0], ngay_dl[1], ngay_dl[2])
 
     viec = VIEC_XEM_NGAY.get(loai_viec, VIEC_XEM_NGAY["cuoi_hoi"])
     truc_tot_cho_viec = truc in viec["truc_tot"]
@@ -248,6 +386,15 @@ def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
         diem -= 25
         ly_do_xau.append(f"❌ Trực {truc} — {truc_info.get('mo_ta', '')} — XẤU cho {viec['ten']}")
 
+    # 28 Tú
+    if sao_28:
+        if sao_28[3] == "Cát":
+            diem += 10
+            ly_do_tot.append(f"✅ Sao {sao_28[0]} ({sao_28[1]}/{sao_28[2]}) — {sao_28[5]}")
+        else:
+            diem -= 10
+            ly_do_xau.append(f"❌ Sao {sao_28[0]} ({sao_28[1]}/{sao_28[2]}) — {sao_28[5]}")
+
     # Tam Nương
     if is_tam_nuong:
         diem -= 20
@@ -257,6 +404,11 @@ def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
     if is_nguyet_pha:
         diem -= 30
         ly_do_xau.append("❌ Ngày NGUYỆT PHÁ — Xung tháng, mọi việc dễ đổ vỡ!")
+
+    # Dương Công Kỵ
+    if is_duong_cong_ky:
+        diem -= 25
+        ly_do_xau.append("❌ Ngày DƯƠNG CÔNG KỴ — 13 ngày đại kỵ trong năm!")
 
     # Thiên Đức / Nguyệt Đức
     if has_thien_duc:
@@ -296,6 +448,7 @@ def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
         "is_hoang_dao": is_hoang_dao,
         "is_tam_nuong": is_tam_nuong,
         "is_nguyet_pha": is_nguyet_pha,
+        "is_duong_cong_ky": is_duong_cong_ky,
         "has_thien_duc": has_thien_duc,
         "has_nguyet_duc": has_nguyet_duc,
         "truc_tot_cho_viec": truc_tot_cho_viec,
@@ -307,7 +460,14 @@ def danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
         "chi_ngay": chi_ngay,
         "thang_am": thang_am,
         "ngay_am": ngay_am,
+        "sao_28_tu": sao_28,
     }
+
+
+def danh_gia_ngay_duong_lich(dd, mm, yy, can_ngay, chi_ngay, loai_viec="cuoi_hoi"):
+    """Convenience: Nhận ngày dương lịch, tự chuyển âm lịch rồi đánh giá."""
+    ngay_am, thang_am, _, _ = solar2lunar(dd, mm, yy)
+    return danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec, ngay_dl=(dd, mm, yy))
 
 
 def tim_ngay_dep(thang_am, can_chi_list, loai_viec="cuoi_hoi", top_n=5):
@@ -321,3 +481,4 @@ def tim_ngay_dep(thang_am, can_chi_list, loai_viec="cuoi_hoi", top_n=5):
         results.append(r)
     results.sort(key=lambda x: x["diem"], reverse=True)
     return results[:top_n]
+
