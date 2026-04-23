@@ -3156,51 +3156,147 @@ PHÂN TÍCH LIÊN MẠCH:
             st.markdown("---")
             st.markdown("### ❓ HỎI AI — KHÔNG GIỚI HẠN CHỦ ĐỀ")
             
-            # ═══ V42.6: TOGGLE KẾT HỢP TỬ VI + XEM NGÀY ĐẸP ═══
+            # ═══ V42.7: INLINE INPUT — Tử Vi + Xem Ngày NGAY TẠI ĐÂY ═══
             _tv_la_so = st.session_state.get('tv_la_so')
             _xn_result = st.session_state.get('xn_result')
             
             col_toggle1, col_toggle2 = st.columns(2)
             with col_toggle1:
-                _tv_has_data = _tv_la_so is not None
-                _tv_status = "✅ Đã lập lá số" if _tv_has_data else "⚠️ Chưa có — vào 🔯 Tử Vi để lập"
                 use_tu_vi = st.toggle(
-                    f"🔯 Kết hợp TỬ VI",
+                    "🔯 Kết hợp TỬ VI",
                     value=st.session_state.get('qa_use_tu_vi', False),
                     key="qa_toggle_tuvi",
-                    help="Bật để AI biết chính xác vận mệnh người hỏi (Mệnh, Thân, Đại Hạn, Lưu Niên...)"
+                    help="Bật để nhập ngày sinh → tự lập lá số Tử Vi ngay tại đây"
                 )
                 st.session_state['qa_use_tu_vi'] = use_tu_vi
-                if use_tu_vi:
-                    if _tv_has_data:
-                        _tv_menh = _tv_la_so.get('menh_cung', '?')
-                        _tv_cuc = _tv_la_so.get('cuc', '?')
-                        _tv_nap_am = _tv_la_so.get('nap_am', '?')
-                        st.success(f"🔯 {_tv_status} | Mệnh: {_tv_menh} | Cục: {_tv_cuc} | Nạp Âm: {_tv_nap_am}")
-                    else:
-                        st.warning(f"🔯 {_tv_status}")
                         
             with col_toggle2:
-                _xn_has_data = _xn_result is not None
-                _xn_status = "✅ Đã đánh giá ngày" if _xn_has_data else "⚠️ Chưa có — vào 📅 Xem Ngày để chọn"
                 use_xem_ngay = st.toggle(
-                    f"📅 Kết hợp XEM NGÀY ĐẸP",
+                    "📅 Kết hợp XEM NGÀY ĐẸP",
                     value=st.session_state.get('qa_use_xem_ngay', False),
                     key="qa_toggle_xemngay",
-                    help="Bật để AI biết ngày hỏi tốt/xấu (12 Trực, Hoàng Đạo, 28 Tú, Trùng Tang...)"
+                    help="Bật để chọn ngày → tự đánh giá tốt/xấu ngay tại đây"
                 )
                 st.session_state['qa_use_xem_ngay'] = use_xem_ngay
-                if use_xem_ngay:
-                    if _xn_has_data:
-                        _xn_diem = _xn_result.get('diem', 0)
-                        _xn_verdict = _xn_result.get('verdict', '?')
-                        _xn_truc = _xn_result.get('truc', '?')
-                        st.success(f"📅 {_xn_status} | Điểm: {_xn_diem}/100 | {_xn_verdict} | Trực: {_xn_truc}")
-                    else:
-                        st.warning(f"📅 {_xn_status}")
+            
+            # ════════ INLINE TỬ VI ════════
+            if use_tu_vi:
+                st.markdown("""
+                <div style='background:linear-gradient(145deg,#1e1b4b,#312e81);padding:16px 20px;border-radius:14px;
+                    border:1px solid rgba(167,139,250,0.4);margin:8px 0;'>
+                    <span style='color:#c4b5fd;font-weight:800;font-size:1.1rem;'>🔯 NHẬP NGÀY SINH — Tự lập lá số Tử Vi</span>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                try:
+                    from tu_vi import lap_la_so, format_la_so_text, CAN, CHI
+                    from xem_ngay_dep import solar2lunar
+                    import datetime as _dt_tv
+                    
+                    _c_tv1, _c_tv2, _c_tv3 = st.columns([2, 1, 1])
+                    with _c_tv1:
+                        qa_tv_ngay = st.date_input("📆 Ngày sinh (DL):", value=_dt_tv.date(1990, 1, 15), key="qa_tv_ngay_sinh")
+                    with _c_tv2:
+                        _gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
+                        qa_tv_gio = st.selectbox("🕐 Giờ sinh:", range(12), format_func=lambda i: _gio_labels[i], key="qa_tv_gio")
+                    with _c_tv3:
+                        qa_tv_gt = st.radio("⚧ Giới tính:", ["Nam","Nữ"], key="qa_tv_gt", horizontal=True)
+                    
+                    # Auto-compute
+                    try:
+                        _d, _m, _y, _leap = solar2lunar(qa_tv_ngay.day, qa_tv_ngay.month, qa_tv_ngay.year)
+                        _gt = 'nam' if qa_tv_gt == 'Nam' else 'nu'
+                        _la_so = lap_la_so(qa_tv_ngay.year, _m, _d, qa_tv_gio, _gt)
+                        st.session_state['tv_la_so'] = _la_so
+                        _tv_la_so = _la_so
+                        
+                        _can_i = (qa_tv_ngay.year - 4) % 10
+                        _chi_i = (qa_tv_ngay.year - 4) % 12
+                        _leap_t = " (Nhuận)" if _leap else ""
+                        st.markdown(f"""
+                        <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:14px 20px;border-radius:12px;
+                            border:1px solid #7c3aed;margin:6px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;'>
+                            <span style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>
+                                📆 ÂL: {_d}/{_m}/{_y}{_leap_t} | Năm {CAN[_can_i]} {CHI[_chi_i]}
+                            </span>
+                            <span style='color:#6ee7b7;font-weight:700;font-size:1.05rem;'>
+                                ✅ Mệnh: {_la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc','?')} | {_la_so.get('nap_am','?')}
+                            </span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    except Exception as e:
+                        st.error(f"⚠️ Lỗi lập lá số: {e}")
+                except Exception as e:
+                    st.error(f"⚠️ Module tu_vi chưa sẵn sàng: {e}")
+            
+            # ════════ INLINE XEM NGÀY ════════
+            if use_xem_ngay:
+                st.markdown("""
+                <div style='background:linear-gradient(145deg,#1a1a2e,#16213e);padding:16px 20px;border-radius:14px;
+                    border:1px solid rgba(251,191,36,0.4);margin:8px 0;'>
+                    <span style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>📅 CHỌN NGÀY — Tự đánh giá tốt/xấu</span>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                try:
+                    from xem_ngay_dep import danh_gia_ngay, solar2lunar, VIEC_XEM_NGAY, CAN_10, CHI_12
+                    import datetime as _dt_xn
+                    
+                    _c_xn1, _c_xn2 = st.columns(2)
+                    with _c_xn1:
+                        qa_xn_ngay = st.date_input("📆 Chọn ngày:", value=_dt_xn.date.today(), key="qa_xn_ngay")
+                    with _c_xn2:
+                        _vk = list(VIEC_XEM_NGAY.keys())
+                        _vl = [VIEC_XEM_NGAY[k]["ten"] for k in _vk]
+                        _vi = st.selectbox("🎯 Loại việc:", range(len(_vl)), format_func=lambda i: _vl[i], key="qa_xn_viec")
+                        _loai_viec = _vk[_vi]
+                    
+                    # Ô nhập tự do
+                    qa_xn_custom = st.text_input("✍️ Hoặc tự nhập:", placeholder="VD: Ký hợp đồng / Nhận xe mới...", key="qa_xn_custom")
+                    
+                    # Auto-compute
+                    try:
+                        _d2, _m2, _y2, _ = solar2lunar(qa_xn_ngay.day, qa_xn_ngay.month, qa_xn_ngay.year)
+                        _cans = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
+                        _chis = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+                        _jdn = int(365.25 * (qa_xn_ngay.year + 4716)) + int(30.6001 * (qa_xn_ngay.month + 1)) + qa_xn_ngay.day - 1524
+                        _cn = _cans[(_jdn + 9) % 10]
+                        _chi_n = _chis[(_jdn + 1) % 12]
+                        
+                        _xn_res = danh_gia_ngay(_m2, _d2, _cn, _chi_n, _loai_viec,
+                                                ngay_dl=(qa_xn_ngay.day, qa_xn_ngay.month, qa_xn_ngay.year))
+                        
+                        if qa_xn_custom and qa_xn_custom.strip():
+                            _xn_res['loai_viec'] = qa_xn_custom.strip()
+                            _xn_res['loai_viec_custom'] = qa_xn_custom.strip()
+                        
+                        st.session_state['xn_result'] = _xn_res
+                        _xn_result = _xn_res
+                        
+                        _diem = _xn_res.get('diem', 0)
+                        _verd = _xn_res.get('verdict', '?')
+                        _truc = _xn_res.get('truc', '?')
+                        _color = '#6ee7b7' if _diem >= 60 else '#fbbf24' if _diem >= 40 else '#f87171'
+                        _icon = '✅' if _diem >= 60 else '⚠️' if _diem >= 40 else '❌'
+                        
+                        st.markdown(f"""
+                        <div style='background:linear-gradient(135deg,#1a1a2e,#16213e);padding:14px 20px;border-radius:12px;
+                            border:1px solid {_color};margin:6px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;'>
+                            <span style='color:{_color};font-weight:800;font-size:1.05rem;'>
+                                {_icon} Điểm: {_diem}/100 | {_verd} | Trực: {_truc}
+                            </span>
+                            <span style='color:#94a3b8;font-size:0.9rem;'>
+                                ÂL: {_d2}/{_m2} | {_cn} {_chi_n}
+                            </span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    except Exception as e:
+                        st.error(f"⚠️ Lỗi đánh giá ngày: {e}")
+                except Exception as e:
+                    st.error(f"⚠️ Module xem_ngay_dep chưa sẵn sàng: {e}")
             
             # Thông báo combo
-            if use_tu_vi and use_xem_ngay and _tv_has_data and _xn_has_data:
+            if use_tu_vi and use_xem_ngay and _tv_la_so and _xn_result:
                 st.markdown("""
                 <div style='background:linear-gradient(135deg,#064e3b,#065f46);padding:12px 20px;border-radius:12px;
                     border:1px solid #10b981;margin:10px 0;text-align:center;'>
