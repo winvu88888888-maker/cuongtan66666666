@@ -4417,20 +4417,37 @@ THÔNG TIN NGƯỜI HỎI (BẮT BUỘC phân tích theo tuổi cụ thể):
 
 CHI TIẾT ĐÁNH GIÁ:
 {ly_do_str}
+"""
+                    # Liên kết Tử Vi nếu có
+                    tv_ls = st.session_state.get('tv_la_so')
+                    if tv_ls:
+                        from tu_vi import format_la_so_text
+                        ai_prompt += f"""
 
+DỮ LIỆU TỬ VI ĐẨU SỐ CỦA NGƯỜI HỎI (BẮT BUỘC kết hợp phân tích):
+{format_la_so_text(tv_ls)}
+
+QUAN TRỌNG: Kết hợp Tử Vi + Xem Ngày để đưa ra kết luận CHÍNH XÁC:
+- Đại Hạn hiện tại của người này đang ở cung nào? Cung đó có sao tốt/xấu gì?
+- Ngày được chọn có PHÙ HỢP với vận hạn hiện tại không?
+- Nếu đang ở Đại Hạn xấu → cần thận trọng hơn khi chọn ngày
+- Nếu đang ở Đại Hạn tốt → ngày bình thường cũng có thể thuận lợi
+"""
+
+                    ai_prompt += f"""
 YÊU CẦU PHÂN TÍCH (BẮT BUỘC trả lời đầy đủ 5 phần):
 
-1. 📋 PHÁN ĐOÁN TỔNG QUAN: Ngày này {xn_viec.get('ten', '')} tốt hay xấu? Mức độ nào?
+1. 📋 PHÁN ĐOÁN TỔNG QUAN: Ngày này {xn_viec.get('ten', '')} tốt hay xấu? Mức độ nào? {"(Kết hợp phân tích Đại Hạn + Lưu Niên Tử Vi)" if tv_ls else ""}
 
-2. ⚠️ HẬU QUẢ NẾU CỐ TÌNH LÀM: Nếu vẫn tiến hành {xn_viec.get('ten', '')} vào ngày này, điều gì CÓ THỂ xảy ra? (Dựa trên Trực, Sao, Thần Sát — phân tích cụ thể, ví dụ: "Trực Phá + Hắc Đạo Bạch Hổ → nguy cơ tai nạn, đổ vỡ, bệnh tật")
+2. ⚠️ HẬU QUẢ NẾU CỐ TÌNH LÀM: Nếu vẫn tiến hành {xn_viec.get('ten', '')} vào ngày này, điều gì CÓ THỂ xảy ra? (Dựa trên Trực, Sao, Thần Sát {"+ vận hạn Tử Vi" if tv_ls else ""})
 
-3. 🛡️ GIẢI PHÁP HÓA GIẢI: Nếu BẮT BUỘC phải làm ngày này, có cách nào hóa giải không? (Giờ tốt trong ngày, hướng xuất hành, nghi thức cúng...)
+3. 🛡️ GIẢI PHÁP HÓA GIẢI: Giờ tốt, hướng xuất hành, nghi thức cúng...
 
-4. 📅 ĐỀ XUẤT NGÀY ĐẸP THAY THẾ: Gợi ý 3-5 ngày đẹp gần nhất (trong 30 ngày tới) cho {xn_viec.get('ten', '')}. Mỗi ngày ghi rõ: ngày DL, Can Chi, Trực, Hoàng Đạo, lý do tốt.
+4. 📅 ĐỀ XUẤT NGÀY ĐẸP THAY THẾ: 3-5 ngày đẹp gần nhất {"hợp với Tử Vi người hỏi" if tv_ls else ""} cho {xn_viec.get('ten', '')}
 
-5. ⏰ GIỜ ĐẸP: Nếu ngày này tốt, gợi ý 2-3 giờ đẹp nhất để tiến hành. Nếu ngày xấu, gợi ý giờ ít xấu nhất.
+5. ⏰ GIỜ ĐẸP: Giờ tốt nhất để tiến hành
 
-Trả lời bằng tiếng Việt, chi tiết, chuyên nghiệp như một thầy phong thủy cao cấp."""
+Trả lời bằng tiếng Việt, chi tiết, chuyên nghiệp."""
 
                     # Gọi AI Offline + Online
                     with st.spinner("🧠 AI đang phân tích chuyên sâu..."):
@@ -4696,15 +4713,32 @@ elif st.session_state.current_view == "tu_vi":
 {la_so_text}
 
 CÂU HỎI: {user_q}
+"""
+                # Liên kết Xem Ngày Đẹp nếu có
+                xn_r = st.session_state.get('xn_result')
+                if xn_r:
+                    xn_info = f"""
+DỮ LIỆU XEM NGÀY ĐẸP (đã phân tích trước đó):
+- Ngày: {st.session_state.get('xn_ngay_xem', '')} | Âm lịch: {st.session_state.get('xn_am_lich', '')}
+- Can Chi ngày: {st.session_state.get('xn_can_chi', '')}
+- Loại việc: {xn_r.get('loai_viec', '')}
+- Điểm: {xn_r.get('diem', 0)}/100 — {xn_r.get('verdict', '')}
+- Trực: {xn_r.get('truc', '')} | Hoàng Đạo: {xn_r.get('sao_hoang_dao', ('',''))[0]}
+- Tam Nương: {'CÓ' if xn_r.get('is_tam_nuong') else 'Không'} | Nguyệt Phá: {'CÓ' if xn_r.get('is_nguyet_pha') else 'Không'}
 
-YÊU CẦU:
-1. Phân tích chi tiết dựa trên Chính Tinh + Phụ Tinh + Tứ Hóa trong từng cung
-2. Nêu rõ giai đoạn TỐT (năm nào, tháng nào) và giai đoạn XẤU (năm nào cần tránh gì)
-3. Dự báo sự kiện cụ thể: năm kết hôn, năm phát tài, năm tật ách...
-4. GỢI Ý NGÀY TỐT: Kết hợp với nguyên tắc xem ngày (Hoàng Đạo, 12 Trực, 28 Tú) để đề xuất thời điểm hành động
-5. CẢNH BÁO: Giai đoạn nguy hiểm + cách hóa giải
+KẾT HỢP TỬ VI + XEM NGÀY: Phân tích ngày trên có phù hợp với vận hạn Tử Vi không?
+"""
+                    ai_prompt += xn_info
 
-Trả lời bằng tiếng Việt, chi tiết và chuyên nghiệp."""
+                ai_prompt += """
+YÊU CẦU (BẮT BUỘC):
+1. Phân tích Chính Tinh + Phụ Tinh + Tứ Hóa + Trường Sinh trong từng cung
+2. Nêu giai đoạn TỐT (năm nào, tháng nào phát tài/kết hôn) và XẤU (năm nào tật ách/tai họa)
+3. Dự báo sự kiện CỤ THỂ: năm kết hôn, phát tài, tai nạn, bệnh...
+4. GỢI Ý NGÀY TỐT kết hợp Hoàng Đạo + 12 Trực + 28 Tú + vận hạn Tử Vi
+5. CẢNH BÁO: Giai đoạn nguy hiểm + cách hóa giải + năm/tháng cần tránh
+
+Trả lời bằng tiếng Việt, chi tiết, chuyên nghiệp."""
 
                 with st.spinner("🧠 AI đang luận giải lá số..."):
                     try:
