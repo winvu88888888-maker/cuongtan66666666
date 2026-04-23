@@ -4268,28 +4268,56 @@ elif st.session_state.current_view == "xem_ngay":
 
         # ════════════════ TAB 1: XEM NGÀY ════════════════
         with tab_xn:
+            # V42.6c: CSS input TO + ĐẸP cho Xem Ngày
+            st.markdown("""
+            <style>
+                .xn-input-label {
+                    color: #fbbf24;
+                    font-size: 1rem;
+                    font-weight: 700;
+                    margin-bottom: 6px;
+                }
+                .xn-person-card {
+                    background: linear-gradient(145deg, #1a1a2e, #16213e);
+                    padding: 20px 24px;
+                    border-radius: 16px;
+                    border: 1px solid rgba(167, 139, 250, 0.3);
+                    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.12);
+                    margin: 12px 0;
+                }
+                .xn-person-card h4 {
+                    color: #c4b5fd;
+                    margin: 0 0 14px 0;
+                    font-size: 1.15rem;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+            
             col_input1, col_input2 = st.columns(2)
             with col_input1:
-                ngay_xem = st.date_input("📆 Chọn ngày dương lịch:", value=datetime.date.today(), key="xn_date")
+                st.markdown("<div class='xn-input-label'>📆 Chọn ngày dương lịch</div>", unsafe_allow_html=True)
+                ngay_xem = st.date_input("Chọn ngày:", value=datetime.date.today(), key="xn_date", label_visibility="collapsed")
             with col_input2:
+                st.markdown("<div class='xn-input-label'>🎯 Chọn loại việc</div>", unsafe_allow_html=True)
                 viec_keys = list(VIEC_XEM_NGAY.keys())
                 viec_labels = [VIEC_XEM_NGAY[k]["ten"] for k in viec_keys]
-                viec_idx = st.selectbox("🎯 Chọn loại việc:", range(len(viec_labels)), format_func=lambda i: viec_labels[i], key="xn_viec")
+                viec_idx = st.selectbox("Loại việc:", range(len(viec_labels)), format_func=lambda i: viec_labels[i], key="xn_viec", label_visibility="collapsed")
                 loai_viec = viec_keys[viec_idx]
 
             # ── THÔNG TIN NGƯỜI HỎI ──
             st.markdown("""
-            <div style='background:linear-gradient(135deg,#1a1a2e,#16213e);padding:12px 18px;border-radius:10px;
-                border-left:4px solid #a78bfa;margin:8px 0;'>
-                <span style='color:#c4b5fd;font-weight:700;'>👤 Thông tin người hỏi (để xem tuổi hợp/xung)</span>
+            <div class='xn-person-card'>
+                <h4>👤 Thông tin người hỏi (để xem tuổi hợp/xung)</h4>
             </div>
             """, unsafe_allow_html=True)
 
             col_p1, col_p2, col_p3 = st.columns(3)
             with col_p1:
-                nam_sinh = st.number_input("📅 Năm sinh (DL):", min_value=1920, max_value=2026, value=1990, key="xn_nam_sinh")
+                st.markdown("<div class='xn-input-label'>📅 Năm sinh (DL)</div>", unsafe_allow_html=True)
+                nam_sinh = st.number_input("Năm sinh:", min_value=1920, max_value=2026, value=1990, key="xn_nam_sinh", label_visibility="collapsed")
             with col_p2:
-                gioi_tinh_xn = st.radio("⚧ Giới tính:", ["Nam", "Nữ"], key="xn_gioi_tinh", horizontal=True)
+                st.markdown("<div class='xn-input-label'>⚧ Giới tính</div>", unsafe_allow_html=True)
+                gioi_tinh_xn = st.radio("Giới tính:", ["Nam", "Nữ"], key="xn_gioi_tinh", horizontal=True, label_visibility="collapsed")
             with col_p3:
                 # Tính Can Chi tuổi
                 can_tuoi_idx = (nam_sinh - 4) % 10
@@ -4298,9 +4326,11 @@ elif st.session_state.current_view == "xem_ngay":
                 chi_tuoi = CHI_12[chi_tuoi_idx]
                 tuoi_am = datetime.date.today().year - nam_sinh + 1
                 st.markdown(f"""
-                <div style='background:#312e81;padding:12px;border-radius:10px;margin-top:24px;text-align:center;'>
-                    <div style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>{can_tuoi} {chi_tuoi}</div>
-                    <div style='color:#94a3b8;font-size:0.85rem;'>Tuổi âm: {tuoi_am}</div>
+                <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:16px;border-radius:14px;
+                    margin-top:8px;text-align:center;border:1px solid #7c3aed;
+                    box-shadow:0 4px 16px rgba(124,58,237,0.2);'>
+                    <div style='color:#fbbf24;font-weight:900;font-size:1.3rem;'>{can_tuoi} {chi_tuoi}</div>
+                    <div style='color:#c4b5fd;font-size:0.95rem;margin-top:4px;'>Tuổi âm: {tuoi_am}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -4689,47 +4719,111 @@ elif st.session_state.current_view == "tu_vi":
         import datetime
 
         # ── NHẬP THÔNG TIN ──
+        # V42.6c: CSS tùy chỉnh cho input TO + ĐẸP
         st.markdown("""
-        <div style='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;
-            border-left:4px solid #a78bfa;margin:10px 0;'>
-            <h3 style='color:#c4b5fd;margin:0;'>👤 Nhập thông tin sinh</h3>
+        <style>
+            /* Làm to các input trong Tu Vi */
+            [data-testid="stNumberInput"] input,
+            [data-testid="stDateInput"] input {
+                font-size: 1.2rem !important;
+                padding: 12px 16px !important;
+                font-weight: 700 !important;
+            }
+            [data-testid="stSelectbox"] > div > div {
+                font-size: 1.1rem !important;
+                padding: 8px 12px !important;
+            }
+            /* Card wrapper cho input */
+            .tv-input-card {
+                background: linear-gradient(145deg, #1e1b4b, #312e81);
+                padding: 20px 24px;
+                border-radius: 16px;
+                border: 1px solid rgba(167, 139, 250, 0.3);
+                box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+                margin-bottom: 16px;
+            }
+            .tv-input-card h3 {
+                color: #c4b5fd;
+                margin: 0 0 16px 0;
+                font-size: 1.3rem;
+            }
+            .tv-input-label {
+                color: #a78bfa;
+                font-size: 0.95rem;
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+            .tv-lunar-result {
+                background: linear-gradient(135deg, #312e81, #4c1d95);
+                padding: 20px;
+                border-radius: 14px;
+                text-align: center;
+                border: 2px solid #7c3aed;
+                box-shadow: 0 4px 24px rgba(124, 58, 237, 0.25);
+                margin-top: 8px;
+            }
+            .tv-lunar-result .date {
+                color: #fbbf24;
+                font-weight: 900;
+                font-size: 1.4rem;
+            }
+            .tv-lunar-result .year {
+                color: #c4b5fd;
+                font-size: 1.1rem;
+                margin-top: 6px;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class='tv-input-card'>
+            <h3>👤 NHẬP THÔNG TIN NGÀY SINH</h3>
         </div>
         """, unsafe_allow_html=True)
 
-        c1, c2 = st.columns(2)
-        with c1:
+        # ── Chọn cách nhập + Giới tính ──
+        col_mode, col_gt = st.columns([3, 1])
+        with col_mode:
             tv_input_mode = st.radio(
                 "📅 Cách nhập ngày sinh:",
                 ["🌞 Dương lịch (tự đổi sang Âm)", "🌙 Âm lịch (nhập trực tiếp)"],
                 key="tv_input_mode", horizontal=True
             )
-        with c2:
-            tv_gt = st.radio("Giới tính:", ["Nam","Nữ"], key="tv_gt", horizontal=True)
+        with col_gt:
+            tv_gt = st.radio("⚧ Giới tính:", ["Nam","Nữ"], key="tv_gt", horizontal=True)
 
         if tv_input_mode.startswith("🌞"):
             # ═══ NHẬP DƯƠNG LỊCH → TỰ CONVERT SANG ÂM ═══
-            c_dl1, c_dl2, c_dl3 = st.columns(3)
+            c_dl1, c_dl2 = st.columns(2)
             with c_dl1:
-                tv_ngay_dl = st.date_input("📆 Ngày sinh dương lịch:", value=datetime.date(1990, 1, 15), key="tv_ngay_dl")
+                st.markdown("<div class='tv-input-label'>📆 Ngày sinh dương lịch</div>", unsafe_allow_html=True)
+                tv_ngay_dl = st.date_input("Ngày sinh dương lịch:", value=datetime.date(1990, 1, 15), key="tv_ngay_dl", label_visibility="collapsed")
             with c_dl2:
+                st.markdown("<div class='tv-input-label'>🕐 Giờ sinh (12 chi)</div>", unsafe_allow_html=True)
                 gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
-                tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio_dl")
-            with c_dl3:
-                # Convert dương → âm
-                try:
-                    d_al, m_al, y_al, is_leap = solar2lunar(tv_ngay_dl.day, tv_ngay_dl.month, tv_ngay_dl.year)
-                    _leap_text = " (Nhuận)" if is_leap else ""
-                    can_nam_idx = (tv_ngay_dl.year - 4) % 10
-                    chi_nam_idx = (tv_ngay_dl.year - 4) % 12
-                    st.markdown(f"""
-                    <div style='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:14px;border-radius:12px;margin-top:24px;text-align:center;'>
-                        <div style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>📆 Âm lịch: {d_al}/{m_al}/{y_al}{_leap_text}</div>
-                        <div style='color:#a78bfa;font-size:0.9rem;margin-top:4px;'>Năm {CAN[can_nam_idx]} {CHI[chi_nam_idx]}</div>
+                tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio_dl", label_visibility="collapsed")
+            
+            # Convert dương → âm + hiển thị đẹp
+            try:
+                d_al, m_al, y_al, is_leap = solar2lunar(tv_ngay_dl.day, tv_ngay_dl.month, tv_ngay_dl.year)
+                _leap_text = " (Nhuận)" if is_leap else ""
+                can_nam_idx = (tv_ngay_dl.year - 4) % 10
+                chi_nam_idx = (tv_ngay_dl.year - 4) % 12
+                _gio_chi = CHI[tv_gio]
+                
+                st.markdown(f"""
+                <div class='tv-lunar-result'>
+                    <div style='color:#94a3b8;font-size:0.85rem;margin-bottom:6px;'>🔄 Kết quả chuyển đổi Âm lịch</div>
+                    <div class='date'>📆 Ngày {d_al} Tháng {m_al} Năm {y_al}{_leap_text}</div>
+                    <div class='year'>🐉 Năm {CAN[can_nam_idx]} {CHI[chi_nam_idx]} — Giờ {_gio_chi}</div>
+                    <div style='color:#6ee7b7;font-size:0.9rem;margin-top:8px;'>
+                        ✅ Dương lịch: {tv_ngay_dl.strftime('%d/%m/%Y')} → Âm lịch: {d_al}/{m_al}/{y_al}
                     </div>
-                    """, unsafe_allow_html=True)
-                except Exception as e:
-                    st.error(f"Lỗi chuyển đổi: {e}")
-                    d_al, m_al, y_al = 15, 1, 1990
+                </div>
+                """, unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"⚠️ Lỗi chuyển đổi âm lịch: {e}")
+                d_al, m_al, y_al = 15, 1, 1990
             
             tv_nam = tv_ngay_dl.year
             tv_thang = m_al
@@ -4738,15 +4832,20 @@ elif st.session_state.current_view == "tu_vi":
             # ═══ NHẬP ÂM LỊCH TRỰC TIẾP ═══
             c_al1, c_al2, c_al3, c_al4 = st.columns(4)
             with c_al1:
-                tv_nam = st.number_input("Năm sinh (DL):", 1920, 2026, 1990, key="tv_nam")
+                st.markdown("<div class='tv-input-label'>📅 Năm sinh (DL)</div>", unsafe_allow_html=True)
+                tv_nam = st.number_input("Năm sinh:", 1920, 2026, 1990, key="tv_nam", label_visibility="collapsed")
             with c_al2:
-                tv_thang = st.number_input("Tháng ÂL:", 1, 12, 1, key="tv_thang")
+                st.markdown("<div class='tv-input-label'>🌙 Tháng ÂL</div>", unsafe_allow_html=True)
+                tv_thang = st.number_input("Tháng ÂL:", 1, 12, 1, key="tv_thang", label_visibility="collapsed")
             with c_al3:
-                tv_ngay = st.number_input("Ngày ÂL:", 1, 30, 15, key="tv_ngay")
+                st.markdown("<div class='tv-input-label'>🌙 Ngày ÂL</div>", unsafe_allow_html=True)
+                tv_ngay = st.number_input("Ngày ÂL:", 1, 30, 15, key="tv_ngay", label_visibility="collapsed")
             with c_al4:
+                st.markdown("<div class='tv-input-label'>🕐 Giờ sinh</div>", unsafe_allow_html=True)
                 gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
-                tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio")
+                tv_gio = st.selectbox("Giờ sinh:", range(12), format_func=lambda i: gio_labels[i], key="tv_gio", label_visibility="collapsed")
 
+        st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
         if st.button("🔯 LẬP LÁ SỐ TỬ VI", type="primary", key="btn_lap_tu_vi", use_container_width=True):
             gt = 'nam' if tv_gt == 'Nam' else 'nu'
             la_so = lap_la_so(tv_nam, tv_thang, tv_ngay, tv_gio, gt)
