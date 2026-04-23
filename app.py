@@ -4265,6 +4265,107 @@ elif st.session_state.current_view == "xem_ngay":
                     if result.get('is_duong_cong_ky'):
                         st.error("⛔ DƯƠNG CÔNG KỴ NHẬT — 13 ngày đại kỵ, tuyệt đối không làm việc lớn!")
 
+                # ── LƯU KẾT QUẢ ĐỂ AI TƯ VẤN ──
+                st.session_state['xn_result'] = result
+                st.session_state['xn_ngay_xem'] = ngay_xem
+                st.session_state['xn_loai_viec'] = loai_viec
+                st.session_state['xn_am_lich'] = f"{ngay_am}/{thang_am}/{nam_am}"
+                st.session_state['xn_can_chi'] = f"{can_ngay} {chi_ngay}"
+
+            # ── AI TƯ VẤN CHUYÊN SÂU ──
+            if st.session_state.get('xn_result'):
+                st.markdown("---")
+                st.markdown("""
+                <div style='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;
+                    border-left:4px solid #818cf8;margin:15px 0;'>
+                    <h3 style='color:#c7d2fe;margin:0 0 8px 0;'>🤖 AI Tư Vấn Chuyên Sâu</h3>
+                    <p style='color:#94a3b8;margin:0;font-size:0.85rem;'>AI sẽ phân tích hậu quả, đề xuất giải pháp, và tìm ngày đẹp thay thế</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                if st.button("🧠 AI PHÂN TÍCH & TƯ VẤN", type="primary", key="btn_ai_tu_van", use_container_width=True):
+                    xn_r = st.session_state['xn_result']
+                    xn_viec = VIEC_XEM_NGAY.get(st.session_state.get('xn_loai_viec', 'cuoi_hoi'), {})
+
+                    # Tạo prompt chuyên sâu cho AI
+                    ly_do_str = "\n".join(xn_r.get('ly_do_tot', []) + xn_r.get('ly_do_xau', []))
+                    sao_28_str = ""
+                    if xn_r.get('sao_28_tu'):
+                        s28 = xn_r['sao_28_tu']
+                        sao_28_str = f"Nhị Thập Bát Tú: Sao {s28[0]} ({s28[1]}/{s28[2]}) — {s28[3]}"
+
+                    ai_prompt = f"""Bạn là CHUYÊN GIA XEM NGÀY hàng đầu, tổng hợp từ Hiệp Kỷ Biện Phương Thư, Ngọc Hạp Thông Thư, Đổng Công Trạch Nhật.
+
+THÔNG TIN NGÀY CẦN PHÂN TÍCH:
+- Ngày dương lịch: {st.session_state.get('xn_ngay_xem', '')}
+- Âm lịch: {st.session_state.get('xn_am_lich', '')}
+- Can Chi ngày: {st.session_state.get('xn_can_chi', '')}
+- Loại việc: {xn_viec.get('ten', '')}
+- Điểm: {xn_r.get('diem', 0)}/100
+- Đánh giá: {xn_r.get('verdict', '')}
+- Trực: {xn_r.get('truc', '')} ({xn_r.get('truc_info', {}).get('cat_hung', '')})
+- Hoàng Đạo/Hắc Đạo: {xn_r.get('sao_hoang_dao', ('','','',''))[0]} — {xn_r.get('sao_hoang_dao', ('','','',''))[1]}
+- {sao_28_str}
+- Tam Nương: {'CÓ' if xn_r.get('is_tam_nuong') else 'Không'}
+- Nguyệt Phá: {'CÓ' if xn_r.get('is_nguyet_pha') else 'Không'}
+- Dương Công Kỵ: {'CÓ' if xn_r.get('is_duong_cong_ky') else 'Không'}
+- Thiên Đức: {'CÓ' if xn_r.get('has_thien_duc') else 'Không'}
+- Nguyệt Đức: {'CÓ' if xn_r.get('has_nguyet_duc') else 'Không'}
+
+CHI TIẾT ĐÁNH GIÁ:
+{ly_do_str}
+
+YÊU CẦU PHÂN TÍCH (BẮT BUỘC trả lời đầy đủ 5 phần):
+
+1. 📋 PHÁN ĐOÁN TỔNG QUAN: Ngày này {xn_viec.get('ten', '')} tốt hay xấu? Mức độ nào?
+
+2. ⚠️ HẬU QUẢ NẾU CỐ TÌNH LÀM: Nếu vẫn tiến hành {xn_viec.get('ten', '')} vào ngày này, điều gì CÓ THỂ xảy ra? (Dựa trên Trực, Sao, Thần Sát — phân tích cụ thể, ví dụ: "Trực Phá + Hắc Đạo Bạch Hổ → nguy cơ tai nạn, đổ vỡ, bệnh tật")
+
+3. 🛡️ GIẢI PHÁP HÓA GIẢI: Nếu BẮT BUỘC phải làm ngày này, có cách nào hóa giải không? (Giờ tốt trong ngày, hướng xuất hành, nghi thức cúng...)
+
+4. 📅 ĐỀ XUẤT NGÀY ĐẸP THAY THẾ: Gợi ý 3-5 ngày đẹp gần nhất (trong 30 ngày tới) cho {xn_viec.get('ten', '')}. Mỗi ngày ghi rõ: ngày DL, Can Chi, Trực, Hoàng Đạo, lý do tốt.
+
+5. ⏰ GIỜ ĐẸP: Nếu ngày này tốt, gợi ý 2-3 giờ đẹp nhất để tiến hành. Nếu ngày xấu, gợi ý giờ ít xấu nhất.
+
+Trả lời bằng tiếng Việt, chi tiết, chuyên nghiệp như một thầy phong thủy cao cấp."""
+
+                    # Gọi AI Offline + Online
+                    with st.spinner("🧠 AI đang phân tích chuyên sâu..."):
+                        try:
+                            from free_ai_helper import FreeAIHelper
+                            _api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
+                            ai_helper = FreeAIHelper(api_key=_api_key)
+
+                            chart_data = st.session_state.get('chart_data', {})
+
+                            ai_result = ai_helper.answer_question(
+                                ai_prompt,
+                                chart_data=chart_data,
+                                topic="phong_thuy"
+                            )
+
+                            st.session_state['xn_ai_result'] = ai_result
+                        except Exception as e:
+                            st.error(f"⚠️ Lỗi AI: {e}")
+                            st.session_state['xn_ai_result'] = None
+
+            # ── HIỂN THỊ KẾT QUẢ AI ──
+            if st.session_state.get('xn_ai_result'):
+                ai_text = st.session_state['xn_ai_result']
+                if isinstance(ai_text, dict):
+                    ai_text = ai_text.get('answer', '') or ai_text.get('offline_answer', '') or str(ai_text)
+
+                st.markdown(f"""
+                <div style='background:linear-gradient(135deg,#0f172a,#1e293b);padding:25px;border-radius:16px;
+                    border:1px solid #6366f1;margin:20px 0;box-shadow:0 8px 32px rgba(99,102,241,0.15);'>
+                    <div style='color:#c7d2fe;font-size:1.3rem;font-weight:900;margin-bottom:15px;'>
+                        🧠 PHÂN TÍCH AI CHUYÊN SÂU
+                    </div>
+                    <div style='color:#e2e8f0;font-size:0.95rem;line-height:1.8;white-space:pre-wrap;'>{ai_text}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+
         # ════════════════ TAB 2: TRA TRÙNG TANG ════════════════
         with tab_tt:
             st.markdown("""
