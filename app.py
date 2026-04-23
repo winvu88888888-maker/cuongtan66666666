@@ -3212,12 +3212,13 @@ PHÂN TÍCH LIÊN MẠCH:
                         try:
                             _d, _m, _y, _leap = solar2lunar(qa_tv_ngay.day, qa_tv_ngay.month, qa_tv_ngay.year)
                             _gt = 'nam' if qa_tv_gt == 'Nam' else 'nu'
-                            _la_so = lap_la_so(qa_tv_ngay.year, _m, _d, qa_tv_gio, _gt)
+                            # V42.8 FIX: Dùng năm ÂL (_y) cho lap_la_so + Can Chi
+                            _la_so = lap_la_so(_y, _m, _d, qa_tv_gio, _gt)
                             st.session_state['tv_la_so'] = _la_so
                             _tv_la_so = _la_so
                             
-                            _can_i = (qa_tv_ngay.year - 4) % 10
-                            _chi_i = (qa_tv_ngay.year - 4) % 12
+                            _can_i = (_y - 4) % 10
+                            _chi_i = (_y - 4) % 12
                             _leap_t = " (Nhuận)" if _leap else ""
                             st.markdown(f"""
                             <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:14px 20px;border-radius:12px;
@@ -3396,50 +3397,109 @@ PHÂN TÍCH LIÊN MẠCH:
             if st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", key="ai_ask_unified", type="primary", use_container_width=True):
                 if user_question:
                     try:
-                        # ═══ V42.6: NỐI DỮ LIỆU TỬ VI + XEM NGÀY VÀO CÂU HỎI ═══
+                        # ═══ V42.8: NỐI DỮ LIỆU TỬ VI + XEM NGÀY + HƯỚNG DẪN LUẬN GIẢI CHUYÊN SÂU ═══
                         enhanced_question = user_question
                         _extra_context = []
                         
-                        # Nối Tử Vi
+                        # ════ NỐI TỬ VI — ĐẦY ĐỦ DỮ LIỆU + PHƯƠNG PHÁP LUẬN GIẢI 7 BƯỚC ════
                         if use_tu_vi and _tv_la_so:
                             try:
-                                from tu_vi import format_la_so_text
+                                from tu_vi import format_la_so_text, CAN as _TV_CAN, CHI as _TV_CHI
                                 _tv_text = format_la_so_text(_tv_la_so)
+                                
+                                # Trích xuất dữ liệu chi tiết từ lá số
+                                _tv_can = _tv_la_so.get('can_nam', '?')
+                                _tv_chi = _tv_la_so.get('chi_nam', '?')
+                                _tv_menh = _tv_la_so.get('menh_cung', '?')
+                                _tv_than = _tv_la_so.get('than_cung', '?')
+                                _tv_cuc = _tv_la_so.get('cuc', '?')
+                                _tv_nap_am = _tv_la_so.get('nap_am', '?')
+                                _tv_tu_hoa = _tv_la_so.get('tu_hoa', {})
+                                _tv_12cung = _tv_la_so.get('cung', {})
+                                
+                                # Build chi tiết 12 cung
+                                _cung_detail = ""
+                                if _tv_12cung:
+                                    for _cn, _cv in _tv_12cung.items():
+                                        _stars = ', '.join(_cv.get('chinh_tinh', [])) if _cv.get('chinh_tinh') else 'Không'
+                                        _phu = ', '.join(_cv.get('phu_tinh', [])[:5]) if _cv.get('phu_tinh') else ''
+                                        _cung_detail += f"  {_cn}: Chính tinh=[{_stars}] {('| Phụ=['+_phu+']') if _phu else ''}\n"
+                                
                                 _extra_context.append(
-                                    f"\n\n=== DỮ LIỆU TỬ VI NGƯỜI HỎI (BẮT BUỘC phân tích theo vận mệnh cá nhân) ===\n"
-                                    f"Năm sinh: {_tv_la_so.get('nam_sinh', '?')} | Giới tính: {_tv_la_so.get('gioi_tinh', '?')}\n"
-                                    f"Mệnh Cung: {_tv_la_so.get('menh_cung', '?')} | Thân Cung: {_tv_la_so.get('than_cung', '?')}\n"
-                                    f"Cục: {_tv_la_so.get('cuc', '?')} | Nạp Âm: {_tv_la_so.get('nap_am', '?')}\n"
-                                    f"Đại Hạn hiện tại: {_tv_la_so.get('dai_han_hien_tai', '?')}\n"
-                                    f"Lưu Niên: {_tv_la_so.get('luu_nien', '?')}\n"
-                                    f"\nCHI TIẾT LÁ SỐ:\n{_tv_text}\n"
-                                    f"\n→ YÊU CẦU: Kết hợp Tử Vi + Kỳ Môn để phân tích. "
-                                    f"Đại Hạn tốt/xấu ảnh hưởng câu trả lời. "
-                                    f"Lưu Niên năm nay phù hợp việc gì.\n"
+                                    f"\n\n{'='*60}\n"
+                                    f"🔯 DỮ LIỆU TỬ VI ĐẨU SỐ — PHÂN TÍCH VẬN MỆNH CÁ NHÂN\n"
+                                    f"{'='*60}\n"
+                                    f"▶ Năm sinh ÂL: {_tv_can} {_tv_chi} | Giới tính: {_tv_la_so.get('gioi_tinh', '?')}\n"
+                                    f"▶ Nạp Âm: {_tv_nap_am}\n"
+                                    f"▶ Mệnh Cung: {_tv_menh} | Thân Cung: {_tv_than}\n"
+                                    f"▶ Cục: {_tv_cuc}\n"
+                                    f"▶ Tứ Hóa (Can {_tv_can}): Lộc={_tv_tu_hoa.get('Hóa Lộc','?')}, Quyền={_tv_tu_hoa.get('Hóa Quyền','?')}, Khoa={_tv_tu_hoa.get('Hóa Khoa','?')}, Kỵ={_tv_tu_hoa.get('Hóa Kỵ','?')}\n"
+                                    f"▶ Đại Hạn hiện tại: {_tv_la_so.get('dai_han_hien_tai', '?')}\n"
+                                    f"▶ Lưu Niên 2026: {_tv_la_so.get('luu_nien', '?')}\n"
+                                    f"\n--- 12 CUNG CHI TIẾT ---\n{_cung_detail}\n"
+                                    f"--- LÁ SỐ ĐẦY ĐỦ ---\n{_tv_text}\n"
+                                    f"\n{'='*60}\n"
+                                    f"📋 HƯỚNG DẪN LUẬN GIẢI TỬ VI (BẮT BUỘC TUÂN THEO):\n"
+                                    f"{'='*60}\n"
+                                    f"BƯỚC 1 — ĐỊNH CỤC DIỆN: Xét Âm Dương thuận/nghịch, Mệnh-Cục tương sinh hay tương khắc.\n"
+                                    f"  → Cục sinh Mệnh = đời thuận; Mệnh khắc Cục = khó thành.\n"
+                                    f"BƯỚC 2 — MỆNH + THÂN: Phân tích chính tinh tại Mệnh ({_tv_menh}), Thân ({_tv_than}).\n"
+                                    f"  → Xét trạng thái Miếu/Vượng/Đắc/Hãm + phụ tinh hỗ trợ.\n"
+                                    f"BƯỚC 3 — TAM GIÁC VÀNG: Mệnh + Tài Bạch + Quan Lộc → tổng thể thành công.\n"
+                                    f"BƯỚC 4 — TỨ HÓA: Lộc={_tv_tu_hoa.get('Hóa Lộc','?')} (tài lộc), Quyền={_tv_tu_hoa.get('Hóa Quyền','?')} (quyền lực), "
+                                    f"Khoa={_tv_tu_hoa.get('Hóa Khoa','?')} (danh tiếng), Kỵ={_tv_tu_hoa.get('Hóa Kỵ','?')} (trở ngại).\n"
+                                    f"  → Hóa Kỵ vào cung nào = cung đó gặp trở ngại lớn nhất.\n"
+                                    f"BƯỚC 5 — ĐẠI HẠN + LƯU NIÊN: Đại Hạn = xu hướng 10 năm, Lưu Niên = chi tiết năm nay.\n"
+                                    f"  → ĐH tốt + LN xấu = bớt xấu; ĐH xấu + LN tốt = tạm vượt qua.\n"
+                                    f"BƯỚC 6 — KẾT HỢP KỲ MÔN: Phối Tử Vi (vận mệnh dài hạn) + Kỳ Môn (thời điểm hiện tại).\n"
+                                    f"BƯỚC 7 — KẾT LUẬN: Trả lời câu hỏi DỰA TRÊN cả Tử Vi lẫn Kỳ Môn.\n"
+                                    f"  → Đưa lời khuyên CỤ THỂ, HÀNH ĐỘNG ĐƯỢC.\n"
                                 )
                             except Exception:
                                 pass
                         
-                        # Nối Xem Ngày
+                        # ════ NỐI XEM NGÀY ĐẸP — ĐẦY ĐỦ DỮ LIỆU + QUY TẮC ĐÁNH GIÁ ════
                         if use_xem_ngay and _xn_result:
-                            _xn_ly_do = "\n".join(_xn_result.get('ly_do_tot', []) + _xn_result.get('ly_do_xau', []))
+                            _xn_ly_do_tot = _xn_result.get('ly_do_tot', [])
+                            _xn_ly_do_xau = _xn_result.get('ly_do_xau', [])
                             _xn_sao28 = ""
+                            _xn_sao28_detail = ""
                             if _xn_result.get('sao_28_tu'):
                                 s28 = _xn_result['sao_28_tu']
-                                _xn_sao28 = f"28 Tú: {s28[0]} ({s28[3]})"
+                                _xn_sao28 = f"{s28[0]} ({s28[1]}/{s28[2]})"
+                                _xn_sao28_detail = f"Tính chất: {s28[3]} | Ý nghĩa: {s28[5] if len(s28) > 5 else ''}" 
+                            
+                            _xn_viec_list = _xn_result.get('viec_nen_lam', [])
+                            _xn_viec_tranh = _xn_result.get('viec_nen_tranh', [])
+                            
                             _extra_context.append(
-                                f"\n\n=== DỮ LIỆU XEM NGÀY ĐẸP (BẮT BUỘC đánh giá ngày hỏi) ===\n"
-                                f"Điểm ngày: {_xn_result.get('diem', 0)}/100 | Verdict: {_xn_result.get('verdict', '?')}\n"
-                                f"Trực: {_xn_result.get('truc', '?')} | Hoàng Đạo: {_xn_result.get('sao_hoang_dao', ['?','?'])[0]} ({_xn_result.get('sao_hoang_dao', ['?','?'])[1]})\n"
-                                f"{_xn_sao28}\n"
-                                f"Tam Nương: {'CÓ ⚠️' if _xn_result.get('is_tam_nuong') else 'Không'}\n"
-                                f"Nguyệt Phá: {'CÓ ⛔' if _xn_result.get('is_nguyet_pha') else 'Không'}\n"
-                                f"Thiên Đức: {'CÓ ✅' if _xn_result.get('has_thien_duc') else 'Không'}\n"
-                                f"Nguyệt Đức: {'CÓ ✅' if _xn_result.get('has_nguyet_duc') else 'Không'}\n"
-                                f"Lý do:\n{_xn_ly_do}\n"
-                                f"\n→ YÊU CẦU: Kết hợp đánh giá ngày + Kỳ Môn để trả lời. "
-                                f"Ngày xấu → cảnh báo + gợi ý ngày tốt. "
-                                f"Ngày tốt → khẳng định + gợi ý giờ đẹp.\n"
+                                f"\n\n{'='*60}\n"
+                                f"📅 DỮ LIỆU XEM NGÀY ĐẸP — ĐÁNH GIÁ NGÀY HIỆN TẠI\n"
+                                f"{'='*60}\n"
+                                f"▶ ĐIỂM NGÀY: {_xn_result.get('diem', 0)}/100 | ĐÁNH GIÁ: {_xn_result.get('verdict', '?')}\n"
+                                f"▶ 12 Trực: {_xn_result.get('truc', '?')} — {_xn_result.get('truc_tinh_chat', '?')}\n"
+                                f"▶ Hoàng Đạo: {_xn_result.get('sao_hoang_dao', ['?','?'])[0]} ({_xn_result.get('sao_hoang_dao', ['?','?'])[1]})\n"
+                                f"▶ 28 Tú: {_xn_sao28} — {_xn_sao28_detail}\n"
+                                f"▶ Ngày Hắc Đạo: {'CÓ ⚠️' if _xn_result.get('is_hac_dao') else 'Không'}\n"
+                                f"▶ Tam Nương: {'CÓ ⚠️ (ngày xấu, tránh việc lớn)' if _xn_result.get('is_tam_nuong') else 'Không'}\n"
+                                f"▶ Nguyệt Phá: {'CÓ ⛔ (NGÀY CỰC XẤU — tuyệt đối tránh)' if _xn_result.get('is_nguyet_pha') else 'Không'}\n"
+                                f"▶ Thiên Đức: {'CÓ ✅ (hóa giải hung)' if _xn_result.get('has_thien_duc') else 'Không'} | "
+                                f"Nguyệt Đức: {'CÓ ✅ (hóa giải hung)' if _xn_result.get('has_nguyet_duc') else 'Không'}\n"
+                                f"\n--- LÝ DO TỐT ---\n" + ('\n'.join(f'  ✅ {r}' for r in _xn_ly_do_tot) if _xn_ly_do_tot else '  (không có)') + "\n"
+                                f"--- LÝ DO XẤU ---\n" + ('\n'.join(f'  ❌ {r}' for r in _xn_ly_do_xau) if _xn_ly_do_xau else '  (không có)') + "\n"
+                                f"--- VIỆC NÊN LÀM ---\n" + ('\n'.join(f'  👍 {v}' for v in _xn_viec_list[:8]) if _xn_viec_list else '  (không có)') + "\n"
+                                f"--- VIỆC NÊN TRÁNH ---\n" + ('\n'.join(f'  👎 {v}' for v in _xn_viec_tranh[:8]) if _xn_viec_tranh else '  (không có)') + "\n"
+                                f"\n{'='*60}\n"
+                                f"📋 HƯỚNG DẪN LUẬN GIẢI XEM NGÀY (BẮT BUỘC TUÂN THEO):\n"
+                                f"{'='*60}\n"
+                                f"1. ĐÁNH GIÁ TỔNG QUAN: Điểm ≥70 = TỐT, 50-69 = TRUNG BÌNH, <50 = XẤU.\n"
+                                f"2. NGUYỆT PHÁ: Nếu CÓ → CẢNH BÁO MẠNH, tuyệt đối tránh việc lớn.\n"
+                                f"3. TAM NƯƠNG: Nếu CÓ → Cảnh báo, không nên khởi sự việc mới.\n"
+                                f"4. 12 TRỰC: Kiểm tra Trực có phù hợp với việc muốn làm không.\n"
+                                f"5. 28 TÚ: Sao nào CÁT thì tốt cho việc lớn, HUNG thì cần cẩn thận.\n"
+                                f"6. THIÊN/NGUYỆT ĐỨC: Nếu CÓ → hóa giải bớt hung, tăng cát.\n"
+                                f"7. KẾT HỢP KỲ MÔN: Ngày tốt + Cửa tốt = TIẾN, Ngày xấu + Cửa xấu = TUYỆT ĐỐI TRÁNH.\n"
+                                f"8. GỢI Ý: Nếu ngày xấu → đề xuất ngày tốt gần nhất. Nếu ngày tốt → gợi ý GIỜ ĐẸP nhất.\n"
                             )
                         
                         # Nối context vào câu hỏi
