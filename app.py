@@ -3155,10 +3155,115 @@ PHÂN TÍCH LIÊN MẠCH:
             # 4. AI Q&A SECTION — V8.2 UNIFIED (Offline + Online kết hợp)
             st.markdown("---")
             st.markdown("### ❓ HỎI AI — KHÔNG GIỚI HẠN CHỦ ĐỀ")
+            
+            # ═══ V42.6: TOGGLE KẾT HỢP TỬ VI + XEM NGÀY ĐẸP ═══
+            _tv_la_so = st.session_state.get('tv_la_so')
+            _xn_result = st.session_state.get('xn_result')
+            
+            col_toggle1, col_toggle2 = st.columns(2)
+            with col_toggle1:
+                _tv_has_data = _tv_la_so is not None
+                _tv_status = "✅ Đã lập lá số" if _tv_has_data else "⚠️ Chưa có — vào 🔯 Tử Vi để lập"
+                use_tu_vi = st.toggle(
+                    f"🔯 Kết hợp TỬ VI",
+                    value=st.session_state.get('qa_use_tu_vi', False),
+                    key="qa_toggle_tuvi",
+                    help="Bật để AI biết chính xác vận mệnh người hỏi (Mệnh, Thân, Đại Hạn, Lưu Niên...)"
+                )
+                st.session_state['qa_use_tu_vi'] = use_tu_vi
+                if use_tu_vi:
+                    if _tv_has_data:
+                        _tv_menh = _tv_la_so.get('menh_cung', '?')
+                        _tv_cuc = _tv_la_so.get('cuc', '?')
+                        _tv_nap_am = _tv_la_so.get('nap_am', '?')
+                        st.success(f"🔯 {_tv_status} | Mệnh: {_tv_menh} | Cục: {_tv_cuc} | Nạp Âm: {_tv_nap_am}")
+                    else:
+                        st.warning(f"🔯 {_tv_status}")
+                        
+            with col_toggle2:
+                _xn_has_data = _xn_result is not None
+                _xn_status = "✅ Đã đánh giá ngày" if _xn_has_data else "⚠️ Chưa có — vào 📅 Xem Ngày để chọn"
+                use_xem_ngay = st.toggle(
+                    f"📅 Kết hợp XEM NGÀY ĐẸP",
+                    value=st.session_state.get('qa_use_xem_ngay', False),
+                    key="qa_toggle_xemngay",
+                    help="Bật để AI biết ngày hỏi tốt/xấu (12 Trực, Hoàng Đạo, 28 Tú, Trùng Tang...)"
+                )
+                st.session_state['qa_use_xem_ngay'] = use_xem_ngay
+                if use_xem_ngay:
+                    if _xn_has_data:
+                        _xn_diem = _xn_result.get('diem', 0)
+                        _xn_verdict = _xn_result.get('verdict', '?')
+                        _xn_truc = _xn_result.get('truc', '?')
+                        st.success(f"📅 {_xn_status} | Điểm: {_xn_diem}/100 | {_xn_verdict} | Trực: {_xn_truc}")
+                    else:
+                        st.warning(f"📅 {_xn_status}")
+            
+            # Thông báo combo
+            if use_tu_vi and use_xem_ngay and _tv_has_data and _xn_has_data:
+                st.markdown("""
+                <div style='background:linear-gradient(135deg,#064e3b,#065f46);padding:12px 20px;border-radius:12px;
+                    border:1px solid #10b981;margin:10px 0;text-align:center;'>
+                    <span style='color:#6ee7b7;font-weight:900;font-size:1.1rem;'>
+                        🎯 COMBO ĐẦY ĐỦ: Tử Vi + Xem Ngày + Kỳ Môn → AI sẽ phân tích CHÍNH XÁC NHẤT
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+            
             user_question = st.text_area("💬 Đặt câu hỏi bất kỳ (tự do, không giới hạn chủ đề):", placeholder="Ví dụ: Năm nay có mua được nhà không? / Con mèo lạc tìm ở đâu? / Bao giờ tìm được việc?...", key="ai_q_input", height=80)
             if st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", key="ai_ask_unified", type="primary", use_container_width=True):
                 if user_question:
                     try:
+                        # ═══ V42.6: NỐI DỮ LIỆU TỬ VI + XEM NGÀY VÀO CÂU HỎI ═══
+                        enhanced_question = user_question
+                        _extra_context = []
+                        
+                        # Nối Tử Vi
+                        if use_tu_vi and _tv_la_so:
+                            try:
+                                from tu_vi import format_la_so_text
+                                _tv_text = format_la_so_text(_tv_la_so)
+                                _extra_context.append(
+                                    f"\n\n=== DỮ LIỆU TỬ VI NGƯỜI HỎI (BẮT BUỘC phân tích theo vận mệnh cá nhân) ===\n"
+                                    f"Năm sinh: {_tv_la_so.get('nam_sinh', '?')} | Giới tính: {_tv_la_so.get('gioi_tinh', '?')}\n"
+                                    f"Mệnh Cung: {_tv_la_so.get('menh_cung', '?')} | Thân Cung: {_tv_la_so.get('than_cung', '?')}\n"
+                                    f"Cục: {_tv_la_so.get('cuc', '?')} | Nạp Âm: {_tv_la_so.get('nap_am', '?')}\n"
+                                    f"Đại Hạn hiện tại: {_tv_la_so.get('dai_han_hien_tai', '?')}\n"
+                                    f"Lưu Niên: {_tv_la_so.get('luu_nien', '?')}\n"
+                                    f"\nCHI TIẾT LÁ SỐ:\n{_tv_text}\n"
+                                    f"\n→ YÊU CẦU: Kết hợp Tử Vi + Kỳ Môn để phân tích. "
+                                    f"Đại Hạn tốt/xấu ảnh hưởng câu trả lời. "
+                                    f"Lưu Niên năm nay phù hợp việc gì.\n"
+                                )
+                            except Exception:
+                                pass
+                        
+                        # Nối Xem Ngày
+                        if use_xem_ngay and _xn_result:
+                            _xn_ly_do = "\n".join(_xn_result.get('ly_do_tot', []) + _xn_result.get('ly_do_xau', []))
+                            _xn_sao28 = ""
+                            if _xn_result.get('sao_28_tu'):
+                                s28 = _xn_result['sao_28_tu']
+                                _xn_sao28 = f"28 Tú: {s28[0]} ({s28[3]})"
+                            _extra_context.append(
+                                f"\n\n=== DỮ LIỆU XEM NGÀY ĐẸP (BẮT BUỘC đánh giá ngày hỏi) ===\n"
+                                f"Điểm ngày: {_xn_result.get('diem', 0)}/100 | Verdict: {_xn_result.get('verdict', '?')}\n"
+                                f"Trực: {_xn_result.get('truc', '?')} | Hoàng Đạo: {_xn_result.get('sao_hoang_dao', ['?','?'])[0]} ({_xn_result.get('sao_hoang_dao', ['?','?'])[1]})\n"
+                                f"{_xn_sao28}\n"
+                                f"Tam Nương: {'CÓ ⚠️' if _xn_result.get('is_tam_nuong') else 'Không'}\n"
+                                f"Nguyệt Phá: {'CÓ ⛔' if _xn_result.get('is_nguyet_pha') else 'Không'}\n"
+                                f"Thiên Đức: {'CÓ ✅' if _xn_result.get('has_thien_duc') else 'Không'}\n"
+                                f"Nguyệt Đức: {'CÓ ✅' if _xn_result.get('has_nguyet_duc') else 'Không'}\n"
+                                f"Lý do:\n{_xn_ly_do}\n"
+                                f"\n→ YÊU CẦU: Kết hợp đánh giá ngày + Kỳ Môn để trả lời. "
+                                f"Ngày xấu → cảnh báo + gợi ý ngày tốt. "
+                                f"Ngày tốt → khẳng định + gợi ý giờ đẹp.\n"
+                            )
+                        
+                        # Nối context vào câu hỏi
+                        if _extra_context:
+                            enhanced_question = user_question + "\n".join(_extra_context)
+                        
                         # ====== BƯỚC 1: AI OFFLINE phân tích quẻ ======
                         with st.spinner("⚙️ Bước 1/2: AI Offline đang phân tích quẻ từ câu hỏi của bạn..."):
                             from free_ai_helper import FreeAIHelper
@@ -3199,9 +3304,9 @@ PHÂN TÍCH LIÊN MẠCH:
                                 except Exception:
                                     pass
                             
-                            # V8.2: topic=None → AI tự phân tích câu hỏi thay vì dùng dropdown
+                            # V42.6: Gửi enhanced_question (có/không có data Tử Vi + Xem Ngày)
                             offline_result = offline_ai.answer_question(
-                                user_question,
+                                enhanced_question,
                                 chart_data=st.session_state.get('chart_data'),
                                 topic=None,
                                 selected_subject=st.session_state.get('selected_doi_tuong', 'Bản thân'),
