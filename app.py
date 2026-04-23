@@ -3193,39 +3193,78 @@ PHÂN TÍCH LIÊN MẠCH:
                     from xem_ngay_dep import solar2lunar
                     import datetime as _dt_tv
                     
-                    _c_tv1, _c_tv2, _c_tv3 = st.columns([2, 1, 1])
-                    with _c_tv1:
-                        qa_tv_ngay = st.date_input("📆 Ngày sinh (DL):", value=_dt_tv.date(1990, 1, 15), key="qa_tv_ngay_sinh")
-                    with _c_tv2:
-                        _gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
-                        qa_tv_gio = st.selectbox("🕐 Giờ sinh:", range(12), format_func=lambda i: _gio_labels[i], key="qa_tv_gio")
-                    with _c_tv3:
-                        qa_tv_gt = st.radio("⚧ Giới tính:", ["Nam","Nữ"], key="qa_tv_gt", horizontal=True)
+                    _c_mode, _c_gt = st.columns([3, 1])
+                    with _c_mode:
+                        qa_tv_mode = st.radio("📅 Cách nhập:", ["🌞 Dương lịch", "🌙 Âm lịch"], key="qa_tv_mode", horizontal=True)
+                    with _c_gt:
+                        qa_tv_gt = st.radio("⚧:", ["Nam","Nữ"], key="qa_tv_gt", horizontal=True)
                     
-                    # Auto-compute
-                    try:
-                        _d, _m, _y, _leap = solar2lunar(qa_tv_ngay.day, qa_tv_ngay.month, qa_tv_ngay.year)
-                        _gt = 'nam' if qa_tv_gt == 'Nam' else 'nu'
-                        _la_so = lap_la_so(qa_tv_ngay.year, _m, _d, qa_tv_gio, _gt)
-                        st.session_state['tv_la_so'] = _la_so
-                        _tv_la_so = _la_so
+                    if qa_tv_mode.startswith("🌞"):
+                        _c_tv1, _c_tv2 = st.columns([2, 1])
+                        with _c_tv1:
+                            qa_tv_ngay = st.date_input("📆 Ngày sinh dương lịch:", value=_dt_tv.date(1990, 1, 15), key="qa_tv_ngay_sinh")
+                        with _c_tv2:
+                            _gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
+                            qa_tv_gio = st.selectbox("🕐 Giờ sinh:", range(12), format_func=lambda i: _gio_labels[i], key="qa_tv_gio")
                         
-                        _can_i = (qa_tv_ngay.year - 4) % 10
-                        _chi_i = (qa_tv_ngay.year - 4) % 12
-                        _leap_t = " (Nhuận)" if _leap else ""
-                        st.markdown(f"""
-                        <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:14px 20px;border-radius:12px;
-                            border:1px solid #7c3aed;margin:6px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;'>
-                            <span style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>
-                                📆 ÂL: {_d}/{_m}/{_y}{_leap_t} | Năm {CAN[_can_i]} {CHI[_chi_i]}
-                            </span>
-                            <span style='color:#6ee7b7;font-weight:700;font-size:1.05rem;'>
-                                ✅ Mệnh: {_la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc','?')} | {_la_so.get('nap_am','?')}
-                            </span>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    except Exception as e:
-                        st.error(f"⚠️ Lỗi lập lá số: {e}")
+                        # Auto-convert + compute
+                        try:
+                            _d, _m, _y, _leap = solar2lunar(qa_tv_ngay.day, qa_tv_ngay.month, qa_tv_ngay.year)
+                            _gt = 'nam' if qa_tv_gt == 'Nam' else 'nu'
+                            _la_so = lap_la_so(qa_tv_ngay.year, _m, _d, qa_tv_gio, _gt)
+                            st.session_state['tv_la_so'] = _la_so
+                            _tv_la_so = _la_so
+                            
+                            _can_i = (qa_tv_ngay.year - 4) % 10
+                            _chi_i = (qa_tv_ngay.year - 4) % 12
+                            _leap_t = " (Nhuận)" if _leap else ""
+                            st.markdown(f"""
+                            <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:14px 20px;border-radius:12px;
+                                border:1px solid #7c3aed;margin:6px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;'>
+                                <span style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>
+                                    📆 ÂL: {_d}/{_m}/{_y}{_leap_t} | Năm {CAN[_can_i]} {CHI[_chi_i]}
+                                </span>
+                                <span style='color:#6ee7b7;font-weight:700;font-size:1.05rem;'>
+                                    ✅ Mệnh: {_la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc','?')} | {_la_so.get('nap_am','?')}
+                                </span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        except Exception as e:
+                            st.error(f"⚠️ Lỗi lập lá số: {e}")
+                    else:
+                        # ═══ ÂM LỊCH ═══
+                        _c_al1, _c_al2, _c_al3, _c_al4 = st.columns(4)
+                        with _c_al1:
+                            qa_tv_nam = st.number_input("Năm sinh (DL):", 1920, 2026, 1990, key="qa_tv_nam_al")
+                        with _c_al2:
+                            qa_tv_thang = st.number_input("Tháng ÂL:", 1, 12, 1, key="qa_tv_thang_al")
+                        with _c_al3:
+                            qa_tv_ngay_al = st.number_input("Ngày ÂL:", 1, 30, 15, key="qa_tv_ngay_al")
+                        with _c_al4:
+                            _gio_labels = [f"{CHI[i]} ({i*2}h-{i*2+2}h)" for i in range(12)]
+                            qa_tv_gio = st.selectbox("🕐 Giờ sinh:", range(12), format_func=lambda i: _gio_labels[i], key="qa_tv_gio_al")
+                        
+                        try:
+                            _gt = 'nam' if qa_tv_gt == 'Nam' else 'nu'
+                            _la_so = lap_la_so(qa_tv_nam, qa_tv_thang, qa_tv_ngay_al, qa_tv_gio, _gt)
+                            st.session_state['tv_la_so'] = _la_so
+                            _tv_la_so = _la_so
+                            
+                            _can_i = (qa_tv_nam - 4) % 10
+                            _chi_i = (qa_tv_nam - 4) % 12
+                            st.markdown(f"""
+                            <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:14px 20px;border-radius:12px;
+                                border:1px solid #7c3aed;margin:6px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;'>
+                                <span style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>
+                                    📆 ÂL: {qa_tv_ngay_al}/{qa_tv_thang}/{qa_tv_nam} | Năm {CAN[_can_i]} {CHI[_chi_i]}
+                                </span>
+                                <span style='color:#6ee7b7;font-weight:700;font-size:1.05rem;'>
+                                    ✅ Mệnh: {_la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc','?')} | {_la_so.get('nap_am','?')}
+                                </span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        except Exception as e:
+                            st.error(f"⚠️ Lỗi lập lá số: {e}")
                 except Exception as e:
                     st.error(f"⚠️ Module tu_vi chưa sẵn sàng: {e}")
             
