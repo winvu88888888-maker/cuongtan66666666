@@ -4279,22 +4279,63 @@ elif st.session_state.current_view == "xem_ngay":
                 <div style='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;
                     border-left:4px solid #818cf8;margin:15px 0;'>
                     <h3 style='color:#c7d2fe;margin:0 0 8px 0;'>🤖 AI Tư Vấn Chuyên Sâu</h3>
-                    <p style='color:#94a3b8;margin:0;font-size:0.85rem;'>AI sẽ phân tích hậu quả, đề xuất giải pháp, và tìm ngày đẹp thay thế</p>
+                    <p style='color:#94a3b8;margin:0;font-size:0.85rem;'>Chọn câu hỏi mẫu hoặc tự nhập — AI sẽ phân tích hậu quả, giải pháp, và tìm ngày đẹp thay thế</p>
                 </div>
                 """, unsafe_allow_html=True)
+
+                # ── CÂU HỎI MẪU NHANH ──
+                xn_viec_ten = st.session_state.get('xn_result', {}).get('loai_viec', 'việc này')
+                xn_ngay_str = str(st.session_state.get('xn_ngay_xem', ''))
+
+                cau_hoi_mau = [
+                    ("💒", f"Tìm ngày cưới đẹp nhất trong 3 tháng tới"),
+                    ("🏠", f"Tìm ngày động thổ / làm nhà đẹp nhất tháng này"),
+                    ("🚀", f"Ngày nào tốt để xuất hành trong tuần tới?"),
+                    ("⚰️", f"Tìm ngày an táng / bốc mộ tốt nhất gần đây"),
+                    ("🏪", f"Tìm ngày khai trương đẹp nhất tháng tới"),
+                    ("📝", f"Ngày nào tốt để ký hợp đồng / giao dịch lớn?"),
+                    ("🪦", f"Tìm ngày tảo mộ đẹp gần Thanh Minh"),
+                    ("🔀", f"Tìm ngày nhập trạch / dọn nhà đẹp nhất"),
+                    ("💰", f"Ngày nào tốt để cầu tài / xin việc / đầu tư?"),
+                    ("⚕️", f"Tìm ngày tốt để phẫu thuật / chữa bệnh"),
+                    ("🙏", f"Ngày nào tốt để cúng tế / lễ bái?"),
+                    ("⚠️", f"Ngày {xn_ngay_str} làm {xn_viec_ten} — hậu quả gì? Cách hóa giải?"),
+                ]
+
+                # Hiển thị 4 cột x 3 hàng
+                for row in range(3):
+                    cols = st.columns(4)
+                    for col_idx in range(4):
+                        i = row * 4 + col_idx
+                        if i < len(cau_hoi_mau):
+                            icon, text = cau_hoi_mau[i]
+                            with cols[col_idx]:
+                                if st.button(f"{icon} {text[:35]}{'...' if len(text) > 35 else ''}", key=f"xn_q_{i}", use_container_width=True, help=text):
+                                    st.session_state['xn_custom_question'] = text
+
+                # Ô nhập câu hỏi tự do
+                custom_q = st.text_input("✍️ Hoặc nhập câu hỏi riêng:", value=st.session_state.get('xn_custom_question', ''), key="xn_custom_input", placeholder="Ví dụ: Tìm ngày cưới đẹp cho tuổi Canh Ngọ 1990...")
+
+                if custom_q:
+                    st.session_state['xn_custom_question'] = custom_q
 
                 if st.button("🧠 AI PHÂN TÍCH & TƯ VẤN", type="primary", key="btn_ai_tu_van", use_container_width=True):
                     xn_r = st.session_state['xn_result']
                     xn_viec = VIEC_XEM_NGAY.get(st.session_state.get('xn_loai_viec', 'cuoi_hoi'), {})
 
                     # Tạo prompt chuyên sâu cho AI
+                    user_question = st.session_state.get('xn_custom_question', '')
                     ly_do_str = "\n".join(xn_r.get('ly_do_tot', []) + xn_r.get('ly_do_xau', []))
                     sao_28_str = ""
                     if xn_r.get('sao_28_tu'):
                         s28 = xn_r['sao_28_tu']
                         sao_28_str = f"Nhị Thập Bát Tú: Sao {s28[0]} ({s28[1]}/{s28[2]}) — {s28[3]}"
 
-                    ai_prompt = f"""Bạn là CHUYÊN GIA XEM NGÀY hàng đầu, tổng hợp từ Hiệp Kỷ Biện Phương Thư, Ngọc Hạp Thông Thư, Đổng Công Trạch Nhật.
+                    user_q_section = ""
+                    if user_question:
+                        user_q_section = f"\n\nCÂU HỎI CỦA NGƯỜI DÙNG (ưu tiên trả lời):\n{user_question}\n"
+
+                    ai_prompt = f"""Bạn là CHUYÊN GIA XEM NGÀY hàng đầu, tổng hợp từ Hiệp Kỷ Biện Phương Thư, Ngọc Hạp Thông Thư, Đổng Công Trạch Nhật.{user_q_section}
 
 THÔNG TIN NGÀY CẦN PHÂN TÍCH:
 - Ngày dương lịch: {st.session_state.get('xn_ngay_xem', '')}
