@@ -3345,6 +3345,45 @@ PHÂN TÍCH LIÊN MẠCH:
                 </div>
                 """, unsafe_allow_html=True)
             
+            # ════════ CHỌN LỤC THÂN (Đối tượng) ════════
+            st.markdown("""
+            <div style='background:linear-gradient(145deg,#1a1a2e,#0f172a);padding:14px 20px;border-radius:14px;
+                border:1px solid rgba(251,191,36,0.3);margin:8px 0;'>
+                <span style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>🎯 XEM CHO AI? (Lục Thân → Dụng Thần)</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            _lt_options = [
+                "👤 Bản thân",
+                "👴👵 Bố mẹ (Phụ Mẫu)",
+                "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)",
+                "👶 Con cái (Tử Tôn)",
+                "👨‍👩‍👧 Anh chị em (Huynh Đệ)",
+                "🤝 Người lạ / Đối tác (Quan Quỷ)"
+            ]
+            _col_lt1, _col_lt2 = st.columns([2, 1])
+            with _col_lt1:
+                qa_luc_than = st.selectbox("Đang xem cho:", _lt_options, key="qa_luc_than", label_visibility="collapsed")
+            with _col_lt2:
+                # Map sang dụng thần
+                _LT_MAP = {
+                    "👤 Bản thân": "Bản Thân",
+                    "👴👵 Bố mẹ (Phụ Mẫu)": "Phụ Mẫu",
+                    "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)": "Thê Tài",
+                    "👶 Con cái (Tử Tôn)": "Tử Tôn",
+                    "👨‍👩‍👧 Anh chị em (Huynh Đệ)": "Huynh Đệ",
+                    "🤝 Người lạ / Đối tác (Quan Quỷ)": "Quan Quỷ"
+                }
+                _dt_name = _LT_MAP.get(qa_luc_than, "Bản Thân")
+                st.markdown(f"""
+                <div style='background:#312e81;padding:12px;border-radius:10px;margin-top:4px;text-align:center;'>
+                    <div style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>Dụng Thần: {_dt_name}</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Lưu vào session
+            st.session_state['selected_doi_tuong'] = qa_luc_than
+            
             user_question = st.text_area("💬 Đặt câu hỏi bất kỳ (tự do, không giới hạn chủ đề):", placeholder="Ví dụ: Năm nay có mua được nhà không? / Con mèo lạc tìm ở đâu? / Bao giờ tìm được việc?...", key="ai_q_input", height=80)
             if st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", key="ai_ask_unified", type="primary", use_container_width=True):
                 if user_question:
