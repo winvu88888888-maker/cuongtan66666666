@@ -3354,30 +3354,34 @@ PHÂN TÍCH LIÊN MẠCH:
             """, unsafe_allow_html=True)
             
             _lt_options = [
-                "👤 Bản thân",
+                "👤 Bản thân (Thế)",
                 "👴👵 Bố mẹ (Phụ Mẫu)",
                 "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)",
                 "👶 Con cái (Tử Tôn)",
                 "👨‍👩‍👧 Anh chị em (Huynh Đệ)",
-                "🤝 Người lạ / Đối tác (Quan Quỷ)"
+                "🤝 Người lạ / Đối tác (Ứng)"
             ]
             _col_lt1, _col_lt2 = st.columns([2, 1])
             with _col_lt1:
                 qa_luc_than = st.selectbox("Đang xem cho:", _lt_options, key="qa_luc_than", label_visibility="collapsed")
             with _col_lt2:
-                # Map sang dụng thần
+                # Map sang dụng thần + Thế/Ứng
                 _LT_MAP = {
-                    "👤 Bản thân": "Bản Thân",
-                    "👴👵 Bố mẹ (Phụ Mẫu)": "Phụ Mẫu",
-                    "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)": "Thê Tài",
-                    "👶 Con cái (Tử Tôn)": "Tử Tôn",
-                    "👨‍👩‍👧 Anh chị em (Huynh Đệ)": "Huynh Đệ",
-                    "🤝 Người lạ / Đối tác (Quan Quỷ)": "Quan Quỷ"
+                    "👤 Bản thân (Thế)": ("Bản Thân", "Thế"),
+                    "👴👵 Bố mẹ (Phụ Mẫu)": ("Phụ Mẫu", "Thế"),
+                    "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)": ("Thê Tài", "Thế"),
+                    "👶 Con cái (Tử Tôn)": ("Tử Tôn", "Thế"),
+                    "👨‍👩‍👧 Anh chị em (Huynh Đệ)": ("Huynh Đệ", "Thế"),
+                    "🤝 Người lạ / Đối tác (Ứng)": ("Quan Quỷ", "Ứng")
                 }
-                _dt_name = _LT_MAP.get(qa_luc_than, "Bản Thân")
+                _dt_info = _LT_MAP.get(qa_luc_than, ("Bản Thân", "Thế"))
+                _dt_name = _dt_info[0]
+                _the_ung = _dt_info[1]
+                _the_color = '#6ee7b7' if _the_ung == 'Thế' else '#f87171'
                 st.markdown(f"""
                 <div style='background:#312e81;padding:12px;border-radius:10px;margin-top:4px;text-align:center;'>
-                    <div style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>Dụng Thần: {_dt_name}</div>
+                    <div style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>DT: {_dt_name}</div>
+                    <div style='color:{_the_color};font-weight:700;font-size:0.9rem;margin-top:4px;'>Hào {_the_ung}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
