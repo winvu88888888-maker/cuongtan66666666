@@ -13,7 +13,8 @@ python-dotenv>=1.0.0
 pytz>=2023.3
 tzdata
 backports.zoneinfo;python_version<"3.9"
-# Safe Mode: No external lunar libs
+# V42.8: Accurate lunar calendar conversion
+lunardate>=0.2.0
 
 streamlit-autorefresh>=1.0.1
 extra-streamlit-components>=0.1.71

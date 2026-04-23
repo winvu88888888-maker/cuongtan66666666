@@ -41,7 +41,7 @@ def _sun_longitude(jdn_val):
     L0 = 280.46645+36000.76983*T+0.0003032*T2
     DL = (1.9146-0.004817*T-0.000014*T2)*math.sin(dr*M)
     DL += (0.019993-0.000101*T)*math.sin(dr*2*M)+0.00029*math.sin(dr*3*M)
-    L = (L0+DL)*dr; L -= math.pi*2*int(L/(math.pi*2))
+    L = (L0+DL)*dr; L -= math.pi*2*math.floor(L/(math.pi*2))
     return int(L/math.pi*6)
 
 def _get_lunar_month_11(yy, tz=7):
@@ -58,8 +58,8 @@ def _get_leap_month_offset(a11, tz=7):
         if arc != last or i >= 14: break
     return i-1
 
-def solar2lunar(dd, mm, yy, tz=7):
-    """Chuyển dương lịch → âm lịch. Returns (ngày, tháng, năm, nhuận)."""
+def _solar2lunar_hnd(dd, mm, yy, tz=7):
+    """Thuật toán Hồ Ngọc Đức (fallback)."""
     day_number = _jdn(dd, mm, yy)
     k = int((day_number-2415021.076998695)/29.530588853)
     month_start = int(_new_moon(k)+0.5+tz/24.0)
@@ -79,6 +79,25 @@ def solar2lunar(dd, mm, yy, tz=7):
     if lunar_month > 12: lunar_month -= 12
     if lunar_month >= 11 and diff < 4: lunar_year -= 1
     return (lunar_day, lunar_month, lunar_year, lunar_leap)
+
+# V42.8: Dùng thư viện lunardate (đã kiểm chứng chính xác) làm primary
+try:
+    from lunardate import LunarDate as _LD
+    _HAS_LD = True
+except ImportError:
+    _HAS_LD = False
+
+def solar2lunar(dd, mm, yy, tz=7):
+    """Chuyển dương lịch → âm lịch. Returns (ngày, tháng, năm, nhuận).
+    V42.8: Dùng lunardate library (chính xác) → fallback HND algorithm.
+    """
+    if _HAS_LD:
+        try:
+            ld = _LD.fromSolarDate(yy, mm, dd)
+            return (ld.day, ld.month, ld.year, 1 if ld.isLeapMonth else 0)
+        except Exception:
+            pass
+    return _solar2lunar_hnd(dd, mm, yy, tz)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -115,9 +134,9 @@ NHI_THAP_BAT_TU = [
     ("Chẩn",  "Thủy","Giun",  "Cát",  "🟢", "Tốt cho xuất hành, cầu tài"),
 ]
 
-# Ngày gốc: 1/1/1900 = sao Hư (index 10)
+# Ngày gốc: 1/1/1900 = sao Tâm (index 4) — V42.8 FIX: đã hiệu chỉnh
 _28TU_GOC_JDN = _jdn(1, 1, 1900)
-_28TU_GOC_IDX = 10  # Sao Hư
+_28TU_GOC_IDX = 4  # Sao Tâm (đã kiểm chứng: 23/04/2026 = Tỉnh Mộc Hãn ✓)
 
 def tinh_28_tu(dd, mm, yy):
     """Tính Nhị Thập Bát Tú theo ngày dương lịch."""

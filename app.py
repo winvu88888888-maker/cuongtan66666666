@@ -2055,8 +2055,9 @@ try:
     import qmdg_calc
     params = qmdg_calc.calculate_qmdg_params(selected_datetime)
     
-    # Calculate Lunar Date for display
-    lday, lmonth, lyear, is_leap = qmdg_calc.solar_to_lunar(selected_datetime)
+    # Calculate Lunar Date for display — V42.8 FIX: Use Hồ Ngọc Đức algorithm (accurate)
+    from xem_ngay_dep import solar2lunar as _s2l_sidebar
+    lday, lmonth, lyear, is_leap = _s2l_sidebar(selected_datetime.day, selected_datetime.month, selected_datetime.year)
     l_year_can, l_year_chi = qmdg_calc.get_can_chi_year(lyear)
     l_year_name = f"{l_year_can} {l_year_chi}"
     
@@ -5011,8 +5012,10 @@ elif st.session_state.current_view == "tu_vi":
             try:
                 d_al, m_al, y_al, is_leap = solar2lunar(tv_ngay_dl.day, tv_ngay_dl.month, tv_ngay_dl.year)
                 _leap_text = " (Nhuận)" if is_leap else ""
-                can_nam_idx = (tv_ngay_dl.year - 4) % 10
-                chi_nam_idx = (tv_ngay_dl.year - 4) % 12
+                # V42.8 FIX: Dùng năm ÂM LỊCH (y_al) để tính Can Chi, không dùng năm DL
+                # Ví dụ: 15/01/1990 DL = 19/12/Kỷ Tỵ (1989), KHÔNG PHẢI Canh Ngọ (1990)
+                can_nam_idx = (y_al - 4) % 10
+                chi_nam_idx = (y_al - 4) % 12
                 _gio_chi = CHI[tv_gio]
                 
                 st.markdown(f"""
@@ -5029,7 +5032,8 @@ elif st.session_state.current_view == "tu_vi":
                 st.error(f"⚠️ Lỗi chuyển đổi âm lịch: {e}")
                 d_al, m_al, y_al = 15, 1, 1990
             
-            tv_nam = tv_ngay_dl.year
+            # V42.8 FIX: Dùng năm ÂM LỊCH cho Tử Vi (quan trọng: ảnh hưởng toàn bộ lá số)
+            tv_nam = y_al
             tv_thang = m_al
             tv_ngay = d_al
         else:
