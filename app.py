@@ -3354,34 +3354,37 @@ PHÂN TÍCH LIÊN MẠCH:
             """, unsafe_allow_html=True)
             
             _lt_options = [
-                "👤 Bản thân (Thế)",
-                "👴👵 Bố mẹ (Phụ Mẫu)",
-                "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)",
-                "👶 Con cái (Tử Tôn)",
-                "👨‍👩‍👧 Anh chị em (Huynh Đệ)",
-                "🤝 Người lạ / Đối tác (Ứng)"
+                "👤 Bản thân",
+                "👴👵 Bố mẹ / Ông bà / Thầy cô",
+                "💍 Vợ (nữ) / Tiền bạc",
+                "👔 Chồng (nam) / Cấp trên / Quan chức",
+                "👶 Con cái / Cháu / Thuốc men",
+                "👨‍👩‍👧 Anh chị em / Bạn bè / Đồng nghiệp",
+                "🤝 Người lạ / Đối phương / Đối thủ"
             ]
             _col_lt1, _col_lt2 = st.columns([2, 1])
             with _col_lt1:
                 qa_luc_than = st.selectbox("Đang xem cho:", _lt_options, key="qa_luc_than", label_visibility="collapsed")
             with _col_lt2:
-                # Map sang dụng thần + Thế/Ứng
+                # Map chuẩn theo Lục Hào: (Dụng Thần, Hào vị trí, Giải thích)
                 _LT_MAP = {
-                    "👤 Bản thân (Thế)": ("Bản Thân", "Thế"),
-                    "👴👵 Bố mẹ (Phụ Mẫu)": ("Phụ Mẫu", "Thế"),
-                    "💑 Vợ/Chồng (Thê Tài/Quan Quỷ)": ("Thê Tài", "Thế"),
-                    "👶 Con cái (Tử Tôn)": ("Tử Tôn", "Thế"),
-                    "👨‍👩‍👧 Anh chị em (Huynh Đệ)": ("Huynh Đệ", "Thế"),
-                    "🤝 Người lạ / Đối tác (Ứng)": ("Quan Quỷ", "Ứng")
+                    "👤 Bản thân": ("Bản Thân", "Thế", "Hào Thế = chính mình"),
+                    "👴👵 Bố mẹ / Ông bà / Thầy cô": ("Phụ Mẫu", "Phụ Mẫu", "Hào Phụ Mẫu = bố mẹ, nhà cửa, giấy tờ"),
+                    "💍 Vợ (nữ) / Tiền bạc": ("Thê Tài", "Thê Tài", "Hào Thê Tài = vợ, tài lộc, tiền bạc"),
+                    "👔 Chồng (nam) / Cấp trên / Quan chức": ("Quan Quỷ", "Quan Quỷ", "Hào Quan Quỷ = chồng, sếp, bệnh tật"),
+                    "👶 Con cái / Cháu / Thuốc men": ("Tử Tôn", "Tử Tôn", "Hào Tử Tôn = con cái, thuốc, phúc đức"),
+                    "👨‍👩‍👧 Anh chị em / Bạn bè / Đồng nghiệp": ("Huynh Đệ", "Huynh Đệ", "Hào Huynh Đệ = anh em, bạn bè, cạnh tranh"),
+                    "🤝 Người lạ / Đối phương / Đối thủ": ("Quan Quỷ", "Ứng", "Hào Ứng = đối phương, người bên ngoài")
                 }
-                _dt_info = _LT_MAP.get(qa_luc_than, ("Bản Thân", "Thế"))
+                _dt_info = _LT_MAP.get(qa_luc_than, ("Bản Thân", "Thế", ""))
                 _dt_name = _dt_info[0]
-                _the_ung = _dt_info[1]
-                _the_color = '#6ee7b7' if _the_ung == 'Thế' else '#f87171'
+                _hao_vi = _dt_info[1]
+                _giai_thich = _dt_info[2]
+                _hao_color = '#6ee7b7' if _hao_vi == 'Thế' else '#f87171' if _hao_vi == 'Ứng' else '#fbbf24'
                 st.markdown(f"""
                 <div style='background:#312e81;padding:12px;border-radius:10px;margin-top:4px;text-align:center;'>
                     <div style='color:#fbbf24;font-weight:800;font-size:1.05rem;'>DT: {_dt_name}</div>
-                    <div style='color:{_the_color};font-weight:700;font-size:0.9rem;margin-top:4px;'>Hào {_the_ung}</div>
+                    <div style='color:{_hao_color};font-weight:700;font-size:0.85rem;margin-top:4px;'>{_giai_thich}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
