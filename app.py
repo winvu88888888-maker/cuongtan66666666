@@ -4449,25 +4449,20 @@ YÊU CẦU PHÂN TÍCH (BẮT BUỘC trả lời đầy đủ 5 phần):
 
 Trả lời bằng tiếng Việt, chi tiết, chuyên nghiệp."""
 
-                    # Gọi AI TRỰC TIẾP (không qua pipeline Kỳ Môn)
-                    with st.spinner("🧠 AI đang phân tích chuyên sâu..."):
+                    # ====== BƯỚC 1: AI OFFLINE phân tích ======
+                    with st.spinner("⚙️ Bước 1/2: AI Offline đang phân tích..."):
                         try:
-                            _api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
-                            if _api_key:
-                                # Gọi thẳng Gemini API
-                                from gemini_helper import GeminiQMDGHelper
-                                gem = GeminiQMDGHelper(_api_key)
-                                ai_raw = gem._call_ai_raw(ai_prompt)
-                                if ai_raw:
-                                    st.session_state['xn_ai_result'] = ai_raw
-                                else:
-                                    st.session_state['xn_ai_result'] = "⚠️ AI Online không phản hồi. Hãy kiểm tra API Key."
-                            else:
-                                # Không có key → dùng AI Offline
-                                from free_ai_helper import FreeAIHelper
-                                ai_helper = FreeAIHelper(api_key='')
-                                ai_result = ai_helper.answer_question(ai_prompt, chart_data=st.session_state.get('chart_data', {}), topic="phong_thuy")
-                                st.session_state['xn_ai_result'] = ai_result
+                            from free_ai_helper import FreeAIHelper
+                            _xn_api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
+                            xn_ai = FreeAIHelper(api_key=_xn_api_key)
+                            xn_offline_result = xn_ai.answer_question(
+                                ai_prompt,
+                                chart_data=st.session_state.get('chart_data', {}),
+                                topic="phong_thuy"
+                            )
+                            # V13.0: AI ONLINE đã tích hợp trong answer_question
+                            # Nếu có API key, answer_question tự gọi Gemini bên trong
+                            st.session_state['xn_ai_result'] = xn_offline_result
                         except Exception as e:
                             st.error(f"⚠️ Lỗi AI: {e}")
                             st.session_state['xn_ai_result'] = None
@@ -4743,22 +4738,20 @@ YÊU CẦU (BẮT BUỘC):
 
 Trả lời bằng tiếng Việt, chi tiết, chuyên nghiệp."""
 
-                with st.spinner("🧠 AI đang luận giải lá số..."):
+                # ====== BƯỚC 1: AI OFFLINE phân tích ======
+                with st.spinner("⚙️ Bước 1/2: AI Offline đang luận giải lá số..."):
                     try:
-                        _api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
-                        if _api_key:
-                            from gemini_helper import GeminiQMDGHelper
-                            gem = GeminiQMDGHelper(_api_key)
-                            ai_raw = gem._call_ai_raw(ai_prompt)
-                            if ai_raw:
-                                st.session_state['tv_ai_result'] = ai_raw
-                            else:
-                                st.session_state['tv_ai_result'] = "⚠️ AI Online không phản hồi."
-                        else:
-                            from free_ai_helper import FreeAIHelper
-                            ai = FreeAIHelper(api_key='')
-                            ai_result = ai.answer_question(ai_prompt, chart_data=st.session_state.get('chart_data', {}), topic='tu_vi')
-                            st.session_state['tv_ai_result'] = ai_result
+                        from free_ai_helper import FreeAIHelper
+                        _tv_api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
+                        tv_ai = FreeAIHelper(api_key=_tv_api_key)
+                        tv_offline_result = tv_ai.answer_question(
+                            ai_prompt,
+                            chart_data=st.session_state.get('chart_data', {}),
+                            topic='tu_vi'
+                        )
+                        # V13.0: AI ONLINE đã tích hợp trong answer_question
+                        # Nếu có API key, answer_question tự gọi Gemini bên trong
+                        st.session_state['tv_ai_result'] = tv_offline_result
                     except Exception as e:
                         st.error(f"⚠️ Lỗi AI: {e}")
 
