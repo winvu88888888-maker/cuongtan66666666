@@ -4170,11 +4170,44 @@ elif st.session_state.current_view == "xem_ngay":
                 viec_idx = st.selectbox("🎯 Chọn loại việc:", range(len(viec_labels)), format_func=lambda i: viec_labels[i], key="xn_viec")
                 loai_viec = viec_keys[viec_idx]
 
-            # Tính âm lịch bằng thuật toán Hồ Ngọc Đức (tự chứa, không cần thư viện)
+            # ── THÔNG TIN NGƯỜI HỎI ──
+            st.markdown("""
+            <div style='background:linear-gradient(135deg,#1a1a2e,#16213e);padding:12px 18px;border-radius:10px;
+                border-left:4px solid #a78bfa;margin:8px 0;'>
+                <span style='color:#c4b5fd;font-weight:700;'>👤 Thông tin người hỏi (để xem tuổi hợp/xung)</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            col_p1, col_p2, col_p3 = st.columns(3)
+            with col_p1:
+                nam_sinh = st.number_input("📅 Năm sinh (DL):", min_value=1920, max_value=2026, value=1990, key="xn_nam_sinh")
+            with col_p2:
+                gioi_tinh_xn = st.radio("⚧ Giới tính:", ["Nam", "Nữ"], key="xn_gioi_tinh", horizontal=True)
+            with col_p3:
+                # Tính Can Chi tuổi
+                can_tuoi_idx = (nam_sinh - 4) % 10
+                chi_tuoi_idx = (nam_sinh - 4) % 12
+                can_tuoi = CAN_10[can_tuoi_idx]
+                chi_tuoi = CHI_12[chi_tuoi_idx]
+                tuoi_am = datetime.date.today().year - nam_sinh + 1
+                st.markdown(f"""
+                <div style='background:#312e81;padding:12px;border-radius:10px;margin-top:24px;text-align:center;'>
+                    <div style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>{can_tuoi} {chi_tuoi}</div>
+                    <div style='color:#94a3b8;font-size:0.85rem;'>Tuổi âm: {tuoi_am}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # ── TÍNH KIM LÂU (cho cưới hỏi) ──
+            kim_lau = tuoi_am % 9
+            is_kim_lau = kim_lau in [1, 3, 6, 8]  # Kim Lâu: 1-Thân, 3-Thê, 6-Tử, 8-Mệnh
+            kim_lau_ten = {1: "Thân (bản thân)", 3: "Thê/Phu (vợ/chồng)", 6: "Tử (con cái)", 8: "Mệnh (sinh mệnh)"}
+
+            # ── KIỂM TRA TUỔI XUNG VỚI NGÀY ──
+            # Tính âm lịch
             ngay_am, thang_am, nam_am, nhuan = solar2lunar(ngay_xem.day, ngay_xem.month, ngay_xem.year)
             nhuan_str = " (Nhuận)" if nhuan else ""
 
-            # Tính Can-Chi ngày từ qmdg_calc
+            # Tính Can-Chi ngày
             dt_xem = datetime.datetime(ngay_xem.year, ngay_xem.month, ngay_xem.day, 12, 0)
             try:
                 p = calculate_qmdg_params(dt_xem)
@@ -4183,15 +4216,34 @@ elif st.session_state.current_view == "xem_ngay":
             except Exception:
                 can_ngay, chi_ngay = 'Giáp', 'Tý'
 
-            # Hiện thông tin âm lịch
+            # Chi ngày xung Chi tuổi? (cách 6 vị trí)
+            chi_ngay_idx = CHI_12.index(chi_ngay) if chi_ngay in CHI_12 else 0
+            is_xung_tuoi = (chi_ngay_idx - chi_tuoi_idx) % 12 == 6
+
+            # Hiện thông tin âm lịch + tuổi
             st.markdown(f"""
             <div style='background:linear-gradient(135deg,#1a1a2e,#16213e);padding:15px 20px;border-radius:12px;
                 border-left:4px solid #fbbf24;margin:10px 0;'>
                 <span style='color:#fbbf24;font-weight:800;font-size:1.1rem;'>📅 Âm Lịch:</span>
                 <span style='color:white;font-size:1.1rem;'> Ngày {ngay_am} Tháng {thang_am}{nhuan_str} Năm {nam_am}</span>
                 <span style='color:#94a3b8;margin-left:15px;'>| {can_ngay} {chi_ngay}</span>
+                <span style='color:#c4b5fd;margin-left:15px;'>| 👤 {can_tuoi} {chi_tuoi} ({tuoi_am} tuổi)</span>
             </div>
             """, unsafe_allow_html=True)
+
+            # Cảnh báo tuổi
+            if is_xung_tuoi:
+                st.error(f"⛔ CHI NGÀY ({chi_ngay}) XUNG CHI TUỔI ({chi_tuoi}) — Ngày này KHÔNG hợp tuổi bạn!")
+            if is_kim_lau and loai_viec == "cuoi_hoi":
+                st.warning(f"⚠️ Tuổi {tuoi_am} phạm KIM LÂU — {kim_lau_ten.get(kim_lau, '')} — Cần cân nhắc kỹ cho cưới hỏi!")
+
+            # Lưu thông tin tuổi
+            st.session_state['xn_tuoi_info'] = {
+                'nam_sinh': nam_sinh, 'gioi_tinh': gioi_tinh_xn,
+                'can_tuoi': can_tuoi, 'chi_tuoi': chi_tuoi, 'tuoi_am': tuoi_am,
+                'is_xung_tuoi': is_xung_tuoi, 'is_kim_lau': is_kim_lau,
+                'kim_lau_loai': kim_lau_ten.get(kim_lau, '')
+            }
 
             if st.button("🔍 XEM NGÀY", type="primary", key="btn_xem_ngay", use_container_width=True):
                 result = danh_gia_ngay(thang_am, ngay_am, can_ngay, chi_ngay, loai_viec, ngay_dl=(ngay_xem.day, ngay_xem.month, ngay_xem.year))
@@ -4352,6 +4404,14 @@ THÔNG TIN NGÀY CẦN PHÂN TÍCH:
 - Dương Công Kỵ: {'CÓ' if xn_r.get('is_duong_cong_ky') else 'Không'}
 - Thiên Đức: {'CÓ' if xn_r.get('has_thien_duc') else 'Không'}
 - Nguyệt Đức: {'CÓ' if xn_r.get('has_nguyet_duc') else 'Không'}
+
+THÔNG TIN NGƯỜI HỎI (BẮT BUỘC phân tích theo tuổi cụ thể):
+- Năm sinh: {st.session_state.get('xn_tuoi_info', {}).get('nam_sinh', '')}
+- Giới tính: {st.session_state.get('xn_tuoi_info', {}).get('gioi_tinh', '')}
+- Can Chi tuổi: {st.session_state.get('xn_tuoi_info', {}).get('can_tuoi', '')} {st.session_state.get('xn_tuoi_info', {}).get('chi_tuoi', '')}
+- Tuổi âm: {st.session_state.get('xn_tuoi_info', {}).get('tuoi_am', '')}
+- Tuổi XUNG ngày: {'CÓ — ĐẠI KỴ!' if st.session_state.get('xn_tuoi_info', {}).get('is_xung_tuoi') else 'Không xung'}
+- Kim Lâu: {'CÓ — ' + st.session_state.get('xn_tuoi_info', {}).get('kim_lau_loai', '') if st.session_state.get('xn_tuoi_info', {}).get('is_kim_lau') else 'Không phạm'}
 
 CHI TIẾT ĐÁNH GIÁ:
 {ly_do_str}
