@@ -3458,7 +3458,7 @@ PHÂN TÍCH LIÊN MẠCH:
                             except Exception:
                                 pass
                         
-                        # ════ NỐI XEM NGÀY ĐẸP — ĐẦY ĐỦ DỮ LIỆU + QUY TẮC ĐÁNH GIÁ ════
+                        # ════ V42.8c: NỐI XEM NGÀY ĐẸP — TOÀN BỘ DỮ LIỆU + QUY TẮC ════
                         if use_xem_ngay and _xn_result:
                             _xn_ly_do_tot = _xn_result.get('ly_do_tot', [])
                             _xn_ly_do_xau = _xn_result.get('ly_do_xau', [])
@@ -3469,37 +3469,50 @@ PHÂN TÍCH LIÊN MẠCH:
                                 _xn_sao28 = f"{s28[0]} ({s28[1]}/{s28[2]})"
                                 _xn_sao28_detail = f"Tính chất: {s28[3]} | Ý nghĩa: {s28[5] if len(s28) > 5 else ''}" 
                             
-                            _xn_viec_list = _xn_result.get('viec_nen_lam', [])
-                            _xn_viec_tranh = _xn_result.get('viec_nen_tranh', [])
+                            # V42.8c FIX: Lấy đúng key từ danh_gia_ngay() return
+                            _xn_truc_info = _xn_result.get('truc_info', {})
+                            _xn_viec_list = _xn_truc_info.get('nen', [])   # Việc nên làm theo Trực
+                            _xn_viec_tranh = _xn_truc_info.get('ky', [])   # Việc kiêng theo Trực
+                            _xn_truc_mota = _xn_truc_info.get('mo_ta', '')
+                            _xn_truc_cat_hung = _xn_truc_info.get('cat_hung', '?')
+                            _xn_is_hac_dao = not _xn_result.get('is_hoang_dao', True)
                             
                             _extra_context.append(
                                 f"\n\n{'='*60}\n"
-                                f"📅 DỮ LIỆU XEM NGÀY ĐẸP — ĐÁNH GIÁ NGÀY HIỆN TẠI\n"
+                                f"📅 DỮ LIỆU XEM NGÀY ĐẸP — ĐÁNH GIÁ TOÀN DIỆN\n"
                                 f"{'='*60}\n"
+                                f"▶ LOẠI VIỆC ĐANG XEM: {_xn_result.get('loai_viec', '?')}\n"
+                                f"▶ NGÀY ÂM LỊCH: {_xn_result.get('ngay_am', '?')}/{_xn_result.get('thang_am', '?')}\n"
+                                f"▶ CAN CHI NGÀY: {_xn_result.get('can_ngay', '?')} {_xn_result.get('chi_ngay', '?')}\n"
                                 f"▶ ĐIỂM NGÀY: {_xn_result.get('diem', 0)}/100 | ĐÁNH GIÁ: {_xn_result.get('verdict', '?')}\n"
-                                f"▶ 12 Trực: {_xn_result.get('truc', '?')} — {_xn_result.get('truc_tinh_chat', '?')}\n"
-                                f"▶ Hoàng Đạo: {_xn_result.get('sao_hoang_dao', ['?','?'])[0]} ({_xn_result.get('sao_hoang_dao', ['?','?'])[1]})\n"
+                                f"▶ 12 Trực: {_xn_result.get('truc', '?')} ({_xn_truc_cat_hung}) — {_xn_truc_mota}\n"
+                                f"   Trực TỐT cho việc này: {'CÓ ✅' if _xn_result.get('truc_tot_cho_viec') else 'KHÔNG ❌'}\n"
+                                f"   Trực XẤU cho việc này: {'CÓ ⚠️' if _xn_result.get('truc_xau_cho_viec') else 'Không'}\n"
+                                f"▶ Hoàng Đạo/Hắc Đạo: {_xn_result.get('sao_hoang_dao', ['?','?','',''])[0]} ({_xn_result.get('sao_hoang_dao', ['?','?','',''])[1]}) — {_xn_result.get('sao_hoang_dao', ['?','?','',''])[3] if len(_xn_result.get('sao_hoang_dao', [])) > 3 else ''}\n"
+                                f"▶ Ngày Hắc Đạo: {'CÓ ⚠️ (bất lợi)' if _xn_is_hac_dao else 'Không (Hoàng Đạo ✅)'}\n"
                                 f"▶ 28 Tú: {_xn_sao28} — {_xn_sao28_detail}\n"
-                                f"▶ Ngày Hắc Đạo: {'CÓ ⚠️' if _xn_result.get('is_hac_dao') else 'Không'}\n"
-                                f"▶ Tam Nương: {'CÓ ⚠️ (ngày xấu, tránh việc lớn)' if _xn_result.get('is_tam_nuong') else 'Không'}\n"
-                                f"▶ Nguyệt Phá: {'CÓ ⛔ (NGÀY CỰC XẤU — tuyệt đối tránh)' if _xn_result.get('is_nguyet_pha') else 'Không'}\n"
-                                f"▶ Thiên Đức: {'CÓ ✅ (hóa giải hung)' if _xn_result.get('has_thien_duc') else 'Không'} | "
-                                f"Nguyệt Đức: {'CÓ ✅ (hóa giải hung)' if _xn_result.get('has_nguyet_duc') else 'Không'}\n"
+                                f"▶ Tam Nương: {'CÓ ⚠️ (ngày {}, kiêng việc lớn)'.format(_xn_result.get('ngay_am','?')) if _xn_result.get('is_tam_nuong') else 'Không'}\n"
+                                f"▶ Nguyệt Phá: {'CÓ ⛔ (NGÀY CỰC XẤU — xung tháng, tuyệt đối tránh!)' if _xn_result.get('is_nguyet_pha') else 'Không'}\n"
+                                f"▶ Dương Công Kỵ: {'CÓ ⛔ (13 ngày ĐẠI KỴ trong năm!)' if _xn_result.get('is_duong_cong_ky') else 'Không'}\n"
+                                f"▶ Thiên Đức: {'CÓ ✅ (hóa giải hung, đại cát)' if _xn_result.get('has_thien_duc') else 'Không'}\n"
+                                f"▶ Nguyệt Đức: {'CÓ ✅ (may mắn, thuận lợi)' if _xn_result.get('has_nguyet_duc') else 'Không'}\n"
                                 f"\n--- LÝ DO TỐT ---\n" + ('\n'.join(f'  ✅ {r}' for r in _xn_ly_do_tot) if _xn_ly_do_tot else '  (không có)') + "\n"
                                 f"--- LÝ DO XẤU ---\n" + ('\n'.join(f'  ❌ {r}' for r in _xn_ly_do_xau) if _xn_ly_do_xau else '  (không có)') + "\n"
-                                f"--- VIỆC NÊN LÀM ---\n" + ('\n'.join(f'  👍 {v}' for v in _xn_viec_list[:8]) if _xn_viec_list else '  (không có)') + "\n"
-                                f"--- VIỆC NÊN TRÁNH ---\n" + ('\n'.join(f'  👎 {v}' for v in _xn_viec_tranh[:8]) if _xn_viec_tranh else '  (không có)') + "\n"
+                                f"--- VIỆC NÊN LÀM (theo Trực {_xn_result.get('truc','?')}) ---\n" + ('\n'.join(f'  👍 {v}' for v in _xn_viec_list) if _xn_viec_list else '  (không có)') + "\n"
+                                f"--- VIỆC NÊN TRÁNH (theo Trực {_xn_result.get('truc','?')}) ---\n" + ('\n'.join(f'  👎 {v}' for v in _xn_viec_tranh) if _xn_viec_tranh else '  (không có)') + "\n"
                                 f"\n{'='*60}\n"
                                 f"📋 HƯỚNG DẪN LUẬN GIẢI XEM NGÀY (BẮT BUỘC TUÂN THEO):\n"
                                 f"{'='*60}\n"
                                 f"1. ĐÁNH GIÁ TỔNG QUAN: Điểm ≥70 = TỐT, 50-69 = TRUNG BÌNH, <50 = XẤU.\n"
                                 f"2. NGUYỆT PHÁ: Nếu CÓ → CẢNH BÁO MẠNH, tuyệt đối tránh việc lớn.\n"
-                                f"3. TAM NƯƠNG: Nếu CÓ → Cảnh báo, không nên khởi sự việc mới.\n"
-                                f"4. 12 TRỰC: Kiểm tra Trực có phù hợp với việc muốn làm không.\n"
-                                f"5. 28 TÚ: Sao nào CÁT thì tốt cho việc lớn, HUNG thì cần cẩn thận.\n"
-                                f"6. THIÊN/NGUYỆT ĐỨC: Nếu CÓ → hóa giải bớt hung, tăng cát.\n"
-                                f"7. KẾT HỢP KỲ MÔN: Ngày tốt + Cửa tốt = TIẾN, Ngày xấu + Cửa xấu = TUYỆT ĐỐI TRÁNH.\n"
-                                f"8. GỢI Ý: Nếu ngày xấu → đề xuất ngày tốt gần nhất. Nếu ngày tốt → gợi ý GIỜ ĐẸP nhất.\n"
+                                f"3. DƯƠNG CÔNG KỴ: Nếu CÓ → 13 ngày đại kỵ, tránh mọi việc quan trọng.\n"
+                                f"4. TAM NƯƠNG: Nếu CÓ → Cảnh báo, không nên khởi sự việc mới.\n"
+                                f"5. 12 TRỰC: Phân tích Trực có phù hợp loại việc '{_xn_result.get('loai_viec', '?')}' không.\n"
+                                f"6. 28 TÚ: Sao CÁT = tốt cho việc lớn, HUNG = cần cẩn thận.\n"
+                                f"7. HOÀNG ĐẠO/HẮC ĐẠO: Hoàng Đạo = thuận lợi, Hắc Đạo = bất lợi.\n"
+                                f"8. THIÊN/NGUYỆT ĐỨC: Nếu CÓ → hóa giải bớt hung, tăng cát.\n"
+                                f"9. KẾT HỢP KỲ MÔN: Ngày tốt + Cửa tốt = TIẾN, Ngày xấu + Cửa xấu = TUYỆT ĐỐI TRÁNH.\n"
+                                f"10. GỢI Ý: Ngày xấu → đề xuất ngày tốt gần nhất. Ngày tốt → gợi ý GIỜ ĐẸP.\n"
                             )
                         
                         # Nối context vào câu hỏi
