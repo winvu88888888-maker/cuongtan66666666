@@ -12866,51 +12866,9 @@ class FreeAIHelper:
                 final_parts.append("\n</details>")
             final_parts.append("")
             
-            # V40.6: TAM THỜI đã bỏ — thông tin 12 Trường Sinh đã inject trực tiếp vào prompt
+            # V42.8f: TẤT CẢ chi tiết offline đã nằm trong collapse ở trên
+            # Không cần thêm các section trùng lặp (V31, V38, V41, V26)
             
-            # V31.0: Chú Giải — Sơ Đồ Tương Tác
-            if v31_question_diagram:
-                final_parts.append("\n<details>")
-                final_parts.append(f"<summary><b>📐 CHÚ GIẢI: {v31_question_info.get('diagram_name', 'Sơ Đồ')} (nhấn để mở)</b></summary>\n")
-                final_parts.append(f"```")
-                final_parts.append(v31_question_diagram)
-                final_parts.append(f"```")
-                final_parts.append(f"\n**📊 CÔNG THỨC:** {v31_question_info.get('formula', '?')}")
-                final_parts.append(f"\n**🎯 KẾT LUẬN CÔNG THỨC:** {v31_question_info.get('conclusion', '?')}")
-                final_parts.append("\n</details>")
-            
-            # V31.0: SĐ MASTER — DT → Vạn Vật
-            if v31_master_diagram:
-                final_parts.append("\n<details>")
-                final_parts.append(f"<summary><b>🏆 SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT (nhấn để mở)</b></summary>\n")
-                final_parts.append(f"```")
-                final_parts.append(v31_master_diagram)
-                final_parts.append(f"```")
-                final_parts.append(f"\n**📊 CÔNG THỨC:** {v31_master_info.get('formula_detail', '?')}")
-                final_parts.append(f"\n**🎯 KẾT LUẬN:** {v31_master_info.get('conclusion', '?')}")
-                final_parts.append("\n</details>")
-            
-            # V38.1: PROTOCOL 27 BƯỚC — HIỆN TRỰC TIẾP
-            if v38_protocol_text:
-                final_parts.append("\n---")
-                final_parts.append("\n## 📊 AI OFFLINE — PROTOCOL 27 BƯỚC (V38.1)")
-                final_parts.append(v38_protocol_text)
-            
-            # V41.0: THÁM TỬ KIỂM CHỨNG — HIỆN TRỰC TIẾP (Fix #5)
-            if v18_detective and len(str(v18_detective)) > 20:
-                final_parts.append("\n---")
-                final_parts.append("\n## 🔍 THÁM TỬ KIỂM CHỨNG (Cross-Reference)")
-                final_parts.append("*🕵️ Kiểm chứng chéo giữa các phương pháp — phát hiện mâu thuẫn/đồng thuận*\n")
-                final_parts.append(str(v18_detective))
-            
-            # Chi tiết AI Offline
-            final_parts.append("\n---")
-            final_parts.append("\n## 🖥️ AI OFFLINE — PHÂN TÍCH DETERMINISTIC (Python Engine V41.0)")
-            final_parts.append(f"*⚙️ Engine tính toán 100% xác định, không dùng AI — Điểm Tổng Hợp: {weighted_pct}%*")
-            final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích AI Offline (nhấn để mở)</b></summary>\n")
-            final_parts.append(offline_full_output)
-            final_parts.append("\n</details>")
             return "\n".join(final_parts)
         else:
             # AI Online không khả dụng → Hiện KếT LUẬN trực tiếp, offline chi tiết ẩn sau
@@ -13103,11 +13061,12 @@ class FreeAIHelper:
                 final_parts.append(f"- 🧑 **Người:** {vv_cu_the_kl.get('nguoi', '?')}")
                 final_parts.append(f"- 🏥 **Bệnh:** {vv_cu_the_kl.get('benh', '?')}")
             
-            # ═══════════════════════════════════════════════════════
-            # V31.0: HIỂN THỊ SƠ ĐỒ TƯƠNG TÁC TRỰC TIẾP (AI Offline)
-            # ═══════════════════════════════════════════════════════
+            # V42.8f: TẤT CẢ chi tiết phân tích gom vào 1 collapse duy nhất
+            # Gồm: V31 SĐ, V32.5, Thống kê, Vạn Vật, KẾT LUẬN TỔNG HỢP, V26.2
+            final_parts.append("\n<details>")
+            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích Chuyên Sâu (nhấn để mở)</b></summary>\n")
             
-            # SĐ MASTER — Luôn hiển thị trực tiếp (không ẩn)
+            # V31 Sơ đồ Master
             if v31_master_diagram:
                 final_parts.append(f"\n### 🏆 SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT")
                 final_parts.append(f"```")
@@ -13116,20 +13075,16 @@ class FreeAIHelper:
                 final_parts.append(f"**📊 CÔNG THỨC:** {v31_master_info.get('formula_detail', '?')}")
                 final_parts.append(f"**🎯 KẾT LUẬN MASTER:** {v31_master_info.get('conclusion', '?')}")
             
-            # Sơ đồ theo câu hỏi — trong Chú Giải
+            # V31 Sơ đồ câu hỏi
             if v31_question_diagram and v31_diagram_id != 'SD0':
-                final_parts.append(f"\n<details>")
-                final_parts.append(f"<summary><b>📐 CHÚ GIẢI: {v31_question_info.get('diagram_name', 'Sơ Đồ')} (nhấn để mở)</b></summary>\n")
+                final_parts.append(f"\n### 📐 CHÚ GIẢI: {v31_question_info.get('diagram_name', 'Sơ Đồ')}")
                 final_parts.append(f"```")
                 final_parts.append(v31_question_diagram)
                 final_parts.append(f"```")
-                final_parts.append(f"\n**📊 CÔNG THỨC:** {v31_question_info.get('formula', '?')}")
-                final_parts.append(f"\n**🎯 KẾT LUẬN:** {v31_question_info.get('conclusion', '?')}")
-                final_parts.append(f"\n</details>")
+                final_parts.append(f"**📊 CÔNG THỨC:** {v31_question_info.get('formula', '?')}")
+                final_parts.append(f"**🎯 KẾT LUẬN:** {v31_question_info.get('conclusion', '?')}")
             
-            # ═══════════════════════════════════════════════════════
-            # V32.5: SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT (77 yếu tố)
-            # ═══════════════════════════════════════════════════════
+            # V32.5: Sơ đồ tương tác 6PP
             try:
                 v325_interaction = self._build_factor_interaction_map(
                     chart_data=chart_data,
@@ -13145,27 +13100,13 @@ class FreeAIHelper:
                     ta_verdict=thai_at_verdict or 'BÌNH'
                 )
                 if v325_interaction:
-                    final_parts.append("\n<details>")
-                    final_parts.append("<summary><b>🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT (nhấn để mở)</b></summary>\n")
+                    final_parts.append("\n### 🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT")
                     final_parts.append(v325_interaction)
-                    final_parts.append("\n</details>")
             except Exception as e:
                 self.log_step("V32.5", "INTERACTION_ERR", str(e)[:100])
             
-            # V40.6: TOÀN BỘ logic trả lời câu hỏi đã nằm trong Thám Tử (direct_answer)
-            # → Không cần duplicate V21-V35 nữa
-            
-            
-
-            # V40.6: TAM THỜI đã bỏ — 12 Trường Sinh inject trực tiếp
-
-
-
-
-            # ═══════ GIẢI THÍCH TẠI SAO ═══════
+            # Giải thích TẠI SAO
             final_parts.append(f"\n### 📋 TẠI SAO KẾT LUẬN NHƯ VẬY?")
-            
-            # Xếp PP theo score mạnh→yếu
             pp_ranking = sorted(
                 [('Kỳ Môn', v16_km_raw, ky_mon_verdict), 
                  ('Lục Hào', v16_lh_raw, luc_hao_verdict),
@@ -13175,7 +13116,6 @@ class FreeAIHelper:
                  ('Thái Ất', v16_ta_raw, thai_at_verdict)],
                 key=lambda x: x[1], reverse=True
             )
-            
             for pp_name, pp_raw, pp_verdict in pp_ranking:
                 if pp_raw > 5:
                     final_parts.append(f"- ✅ **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Yếu tố THUẬN LỢI")
@@ -13184,7 +13124,7 @@ class FreeAIHelper:
                 else:
                     final_parts.append(f"- 🟡 **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Trung tính")
             
-            # V26.2: THỐNG KÊ TOÀN DIỆN CÁC YẾU TỐ (ĐA MÔN PHÁI)
+            # Thống kê yếu tố
             all_factors = v24_km_factors + v23_lh_factors + v24_mh_factors + v24_tb_factors + v24_ln_factors + v24_ta_factors
             if all_factors:
                 final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(all_factors)})")
@@ -13196,310 +13136,15 @@ class FreeAIHelper:
                     else:
                         final_parts.append(f"- ℹ️ **THÔNG TIN:** {f}")
             
-            # Trường Sinh context
-            if ts_stage:
-                ts_info = TRUONG_SINH_POWER.get(ts_stage, {})
-                final_parts.append(f"\n**12 Trường Sinh:** {ts_stage} ({ts_info.get('cap', '?')}, power={ts_info.get('power', 50)}%)")
-                final_parts.append(f"→ Con người: {ts_info.get('con_nguoi', '?')}")
-                final_parts.append(f"→ Vật: {ts_info.get('vat', '?')}")
-            
-            # V35.6: MAPPING VẠN VẬT CỤ THỂ theo HÀNH DT
-            _f_tang, _f_data, _f_vc = _get_van_vat_by_hanh(hanh_dt_v22, weighted_pct)
-            final_parts.append(f"\n### 🧬 VẠN VẬT CỤ THỂ ({dung_than} → {hanh_dt_v22} → {_f_tang})")
-            final_parts.append(f"🎯 **Đồ vật:** {_f_data.get('do_vat', '?')}")
-            final_parts.append(f"🏠 **Nhà cửa:** {_f_data.get('nha_cua', '?')}")
-            final_parts.append(f"👤 **Con người:** {_f_data.get('nguoi', '?')}")
-            final_parts.append(f"🏥 **Sức khỏe:** {_f_data.get('benh', '?')}")
-            final_parts.append(f"📐 **Hình dáng:** {_f_vc.get('hinh', '?')} | 🎨 **Màu sắc:** {_f_vc.get('mau', '?')}")
-            final_parts.append(f"🧪 **Chất liệu:** {_f_vc.get('chat_lieu', '?')} | 🧭 **Hướng:** {_f_vc.get('huong', '?')}")
-            
-            # ═══════════════════════════════════════════════════
-            # V31.3: VẠN VẬT SIÊU CHI TIẾT + THÁM TỬ LẮP GHÉP
-            # ═══════════════════════════════════════════════════
-            try:
-                v33_hanh = hanh_dt_v22 if hanh_dt_v22 else 'Thổ'
-                v33_ts = ts_stage if ts_stage else 'Lâm Quan'
-                
-                v33_detail = format_van_vat_for_ai(v33_hanh, v33_ts)
-                v33_tham_tu = get_tham_tu_mo_ta(v33_hanh, v33_ts, question)
-                
-                if v33_detail:
-                    final_parts.append(f"\n**🔬 Vạn Vật SIÊU CHI TIẾT: {v33_hanh} × {v33_ts}**\n")
-                    final_parts.append(v33_detail)
-                
-                if v33_tham_tu:
-                    final_parts.append(f"\n{v33_tham_tu}")
-            except Exception as e:
-                self.log_step("V31.3 VanVat", "ERROR", str(e)[:80])
-            
-            # ═══════════════════════════════════════════════════════
-            # V35.8: KẾT LUẬN TỔNG HỢP — THÔNG MINH THEO NGỮ CẢNH
-            # ═══════════════════════════════════════════════════════
-            final_parts.append(f'\n<div style="background:linear-gradient(135deg,#7c2d12,#9a3412);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #fb923c;"><span style="font-size:1.4em;font-weight:900;color:#fed7aa;">🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE V40.6)</span></div>')
-            
-            # --- V35.8: Câu trả lời ngữ cảnh theo category ---
-            _q = question.lower()
-            _cat = detected_category
-            _dt = dung_than
-            _hanh = hanh_dt_v22 or 'Thổ'
-            _ts = ts_stage or 'Trung bình'
-            _pct = weighted_pct
-            _good = _pct >= 55
-            _mid = 40 <= _pct < 55
-            _bad = _pct < 40
-            
-            # Verdict header
-            if _good:
-                _v_text = "THUẬN LỢI" if _pct < 70 else "RẤT THUẬN LỢI"
-                _v_icon = "✅"
-            elif _mid:
-                _v_text = "TRUNG BÌNH"
-                _v_icon = "🟡"
-            else:
-                _v_text = "KHÔNG THUẬN LỢI" if _pct >= 25 else "RẤT BẤT LỢI"
-                _v_icon = "❌"
-            
-            _vcolor = '#22c55e' if _good else '#ef4444' if _bad else '#eab308'
-            final_parts.append(f'<div style="text-align:center;padding:16px;margin:10px 0;"><span style="font-size:2em;font-weight:900;color:{_vcolor};text-shadow:0 2px 8px rgba(0,0,0,0.3);">{_v_icon} {_v_text}</span><br><span style="font-size:1.5em;font-weight:800;color:{_vcolor};">{_pct}%</span></div>')
-            final_parts.append("")
-            
-            # --- TRẢ LỜI CỤ THỀ THEO CATEGORY ---
-            final_parts.append(f"**🎯 Trả lời câu hỏi: \"{question}\"**")
-            final_parts.append("")
-            
-            if _cat == 'SỨC_KHỎE_GIA_ĐÌNH':
-                # Sức khỏe: DT = Bản Thân (bệnh mình), QQ = bệnh tinh, TT = thuốc
-                if _dt == 'Bản Thân':
-                    if _good:
-                        final_parts.append(f"→ Sức khỏe **ỔN ĐỊNH**. Hào Thế ({_hanh}) ở trạng thái **{_ts}** ({_pct}%), thể lực tốt.")
-                        final_parts.append(f"→ Quan Quỷ (bệnh tinh) không có lực → bệnh nhẹ hoặc mau khỏi.")
-                    elif _mid:
-                        final_parts.append(f"→ Sức khỏe **CẦN CHÚ Ý**. Hào Thế ({_hanh}) trung bình ({_pct}%), nên đi khám.")
-                        final_parts.append(f"→ Có thể có bệnh tiềm ẩn liên quan đến tạng {_hanh}.")
-                    else:
-                        final_parts.append(f"→ Sức khỏe **ĐÁNG LO**. Hào Thế ({_hanh}) suy yếu ({_pct}%), cần điều trị ngay.")
-                        final_parts.append(f"→ Bệnh liên quan đến tạng {_hanh}. Nghiêm túc theo dõi y tế.")
-                else:
-                    _person_name = _dt  # Phụ Mẫu, Thê Tài, Tử Tôn...
-                    if _good:
-                        final_parts.append(f"→ {_person_name} ({_hanh}) **KHẢ QUAN**. Ở trạng thái {_ts} ({_pct}%), có khả năng hồi phục.")
-                    elif _mid:
-                        final_parts.append(f"→ {_person_name} ({_hanh}) **CẦN THEO DÕI**. Trung bình ({_pct}%), bệnh kéo dài nhưng không nguy hiểm.")
-                    else:
-                        final_parts.append(f"→ {_person_name} ({_hanh}) **NGUY HIỂM**. Suy yếu ({_pct}%), cần can thiệp y tế khẩn cấp.")
-            
-            elif _cat == 'TÀI_CHÍNH':
-                if _good:
-                    final_parts.append(f"→ Tài chính **THUẬN LỢI**. Thê Tài ({_hanh}) vượng ở {_ts} ({_pct}%).")
-                    final_parts.append(f"→ Tiền bạc dồi dào, nên mạnh dạn đầu tư. Tử Tôn (nguồn tài) sinh trợ.")
-                    if 'đầu tư' in _q or 'cổ phiếu' in _q or 'bitcoin' in _q:
-                        final_parts.append(f"→ Thời điểm tốt để **VÀO LỆNH**. Hành {_hanh} hỗ trợ → lợi nhuận tốt.")
-                elif _mid:
-                    final_parts.append(f"→ Tài chính **BÌNH THƯỜNG**. Thê Tài ({_hanh}) trung bình ({_pct}%).")
-                    final_parts.append(f"→ Có thu nhập nhưng không đột biến. Giữ ổn định, không mạo hiểm.")
-                else:
-                    final_parts.append(f"→ Tài chính **KHÓ KHĂN**. Thê Tài ({_hanh}) suy ({_pct}%).")
-                    final_parts.append(f"→ Huynh Đệ (cướp tài) mạnh hơn → cẩn thận bị mất tiền hoặc lừa đảo.")
-                    if 'cho vay' in _q or 'nợ' in _q:
-                        final_parts.append(f"→ **KHÔNG NÊN** cho vay lúc này. Khó đòi lại được.")
-            
-            elif _cat == 'CÔNG_VIỆC':
-                if _good:
-                    final_parts.append(f"→ Công việc **THUẬN LỢI**. Quan Quỷ ({_hanh}) vượng ({_pct}%).")
-                    if 'thi' in _q or 'đỗ' in _q or 'phỏng vấn' in _q:
-                        final_parts.append(f"→ Khả năng **ĐỖ/ĐẬU** cao. Quan tinh vượng → danh vọng tốt.")
-                    elif 'thăng' in _q or 'chức' in _q:
-                        final_parts.append(f"→ Có cơ hội **THĂNG TIẾN**. Quý nhân phù trợ.")
-                    else:
-                        final_parts.append(f"→ Công việc ổn định, sếp tín nhiệm. Nên chủ động.")
-                elif _mid:
-                    final_parts.append(f"→ Công việc **BÌNH THƯỜNG** ({_pct}%). Giữ ổn định, tránh thay đổi lớn.")
-                else:
-                    final_parts.append(f"→ Công việc **KHÓ KHĂN** ({_pct}%). Quan Quỷ suy → áp lực từ cấp trên.")
-                    if 'sa thải' in _q or 'nghỉ' in _q:
-                        final_parts.append(f"→ Có nguy cơ biến động. Chuẩn bị phương án dự phòng.")
-            
-            elif _cat == 'TÌNH_CẢM':
-                if _good:
-                    final_parts.append(f"→ Tình cảm **TỐT ĐẸP**. {_dt} ({_hanh}) vượng ({_pct}%).")
-                    if 'cưới' in _q or 'kết hôn' in _q:
-                        final_parts.append(f"→ Thời điểm **TỐT** để tiến tới hôn nhân. Duyên số thuận lợi.")
-                    elif 'ngoại tình' in _q:
-                        final_parts.append(f"→ **KHÔNG** có dấu hiệu ngoại tình. Tình cảm chân thành.")
-                    else:
-                        final_parts.append(f"→ Hai người hòa hợp, tình cảm bền vững.")
-                elif _mid:
-                    final_parts.append(f"→ Tình cảm **CÒN MƠ HỒ** ({_pct}%). Cần thêm thời gian tìm hiểu.")
-                else:
-                    final_parts.append(f"→ Tình cảm **KHÔNG TỐT** ({_pct}%). {_dt} suy → tình yêu phai nhạt.")
-                    if 'chia tay' in _q or 'ly hôn' in _q:
-                        final_parts.append(f"→ Nhiều mâu thuẫn khó giải quyết. Nên suy nghĩ kỹ trước khi quyết định.")
-            
-            elif _cat == 'NHÀ_CỬA':
-                if _good:
-                    final_parts.append(f"→ Nhà cửa **THUẬN LỢI**. Phụ Mẫu ({_hanh}) vượng ({_pct}%).")
-                    if 'phong thủy' in _q or 'hướng' in _q:
-                        final_parts.append(f"→ Phong thủy **TỐT**. Hành {_hanh} hợp với cung nhà.")
-                    elif 'xây' in _q or 'sửa' in _q:
-                        final_parts.append(f"→ Thời điểm **TỐT** để xây dựng/sửa chữa.")
-                else:
-                    final_parts.append(f"→ Nhà cửa **CẦN CÂN NHẮC** ({_pct}%). Phụ Mẫu suy → chưa phải thời điểm tốt.")
-            
-            elif _cat == 'XUẤT_HÀNH':
-                if _good:
-                    final_parts.append(f"→ Xuất hành **AN TOÀN**. Hào Thế ({_hanh}) vượng ({_pct}%).")
-                    final_parts.append(f"→ Chuyến đi thuận lợi, an toàn. Nên đi hướng {NGU_HANH_VAT_CHAT.get(_hanh, {}).get('huong', '?')}.")
-                else:
-                    final_parts.append(f"→ Xuất hành **CẦN THẬN** ({_pct}%). Hào Thế suy, chú ý an toàn.")
-            
-            elif _cat == 'TÌM_ĐỒ':
-                _vat = NGU_HANH_VAT_CHAT.get(_hanh, {})
-                final_parts.append(f"→ Vật mất thuộc hành **{_hanh}**: hình {_vat.get('hinh', '?')}, chất {_vat.get('chat_lieu', '?')}, màu {_vat.get('mau', '?')}.")
-                final_parts.append(f"→ Hướng tìm: **{_vat.get('huong', '?')}**.")
-                if _good:
-                    final_parts.append(f"→ Khả năng tìm thấy **CAO** ({_pct}%). Nên tìm sớm.")
-                else:
-                    final_parts.append(f"→ Khả năng tìm thấy **THẤP** ({_pct}%). Có thể đã ra khỏi tầm.")
-            
-            else:
-                # CHUNG
-                if _good:
-                    final_parts.append(f"→ Vận khí **TỐT** ({_pct}%). Dụng Thần {_dt} ({_hanh}) vượng ở {_ts}.")
-                    final_parts.append(f"→ Thời kỳ thuận lợi, tận dụng cơ hội. Quý nhân phù trợ.")
-                elif _mid:
-                    final_parts.append(f"→ Vận khí **BÌNH THƯỜNG** ({_pct}%). Giữ ổn định, không mạo hiểm.")
-                else:
-                    final_parts.append(f"→ Vận khí **KÉM** ({_pct}%). Kiên nhẫn chờ, tránh quyết định lớn.")
-            
-            # --- Chuỗi lý luận ---
-            final_parts.append("")
-            final_parts.append(f"**📊 Bằng chứng:**")
-            final_parts.append(f"- DT **{_dt}** (hành {_hanh}) → Trạng thái: **{_ts}**")
-            final_parts.append(f"- 6 Phương Pháp: **{_cat_count} CÁT** / **{_hung_count} HUNG** → Điểm {_pct}%")
-            if ngu_khi_state_v22:
-                final_parts.append(f"- Ngũ Khí: **{ngu_khi_state_v22}** ({_hanh} @ {cung_bt_hanh_v22 or '?'})")
-
-            
-            # --- Lời khuyên cuối ---
-            final_parts.append(f"")
-            final_parts.append(f"### 💡 LỜI KHUYÊN HÀNH ĐỘNG")
-            if pct_short >= 65:
-                final_parts.append("- ✅ Hành động sớm, tận dụng thời cơ. Mọi điều kiện đang có lợi cho bạn.")
-            elif pct_short >= 50:
-                final_parts.append("- ⏸️ Quan sát thêm, thu thập thông tin rồi quyết định. Không vội vàng.")
-            elif pct_short >= 35:
-                final_parts.append("- ❌ Kiên nhẫn chờ đợi. Tìm quý nhân hỗ trợ, không nên ép buộc.")
-            else:
-                final_parts.append("- 🛑 Dừng lại, không hành động. Chờ chu kỳ mới, mọi thứ sẽ chuyển biến.")
-            
-            final_parts.append("")
-            
-            # ═══════════════════════════════════════════════════════
-            # V31.1: TRẢ LỜI TỪNG CÂU HỎI CON (COMPOUND)
-            # ═══════════════════════════════════════════════════════
-            if v31_parsed_questions and len(v31_parsed_questions) > 1:
-                final_parts.append(f"\n### 📝 TRẢ LỜI TỪNG CÂU HỎI ({len(v31_parsed_questions)} câu)")
-                
-                for pq in v31_parsed_questions:
-                    sub_q = pq['text']
-                    sub_person = pq.get('person', 'Bản thân') or 'Bản thân'
-                    sub_dt = pq.get('dung_than', dung_than)
-                    sub_topic = pq.get('topic', 'CHUNG')
-                    sub_qtype = pq.get('qtype', 'CHUNG')
-                    sub_diagram_id = pq.get('diagram_id', 'SD0')
-                    
-                    final_parts.append(f"\n---")
-                    final_parts.append(f"**Câu {pq['index']}:** {sub_q}")
-                    final_parts.append(f"*Hỏi cho: {sub_person} | DT: {sub_dt} | {pq.get('qtype_label', '?')} | {pq.get('topic_label', '?')}*")
-                    
-                    # Tạo câu trả lời dựa trên qtype
-                    if sub_qtype == 'CÓ/KHÔNG':
-                        if _cat_count >= 3:
-                            final_parts.append(f"→ ✅ **CÓ** — {sub_dt} vượng ({_cat_count}/5 CÁT)")
-                        elif _hung_count >= 3:
-                            final_parts.append(f"→ ❌ **KHÔNG** — {sub_dt} suy ({_hung_count}/5 HUNG)")
-                        else:
-                            final_parts.append(f"→ 🟡 **CÓ THỂ ĐƯỢC** — Thuận lợi ({_cat_count}/{_cat_count+_hung_count} CÁT), cần chuẩn bị kỹ")
-                    
-                    elif sub_qtype == 'KHI NÀO':
-                        if _cat_count >= 3:
-                            final_parts.append(f"→ ⏰ **NHANH** — 1-7 ngày tới ({sub_dt} vượng)")
-                        elif _cat_count >= 2:
-                            final_parts.append(f"→ ⏰ **TRUNG BÌNH** — 1-3 tháng ({sub_dt} trung bình)")
-                        else:
-                            final_parts.append(f"→ ⏰ **CHẬM** — 3-6 tháng+ ({sub_dt} suy)")
-                        if ts_stage:
-                            final_parts.append(f"→ 12 Trường Sinh: {ts_stage}")
-                    
-                    elif sub_qtype == 'Ở ĐÂU':
-                        if chart_data and isinstance(chart_data, dict):
-                            final_parts.append(f"→ 📍 Xem sơ đồ KM: Cung DT → Phương hướng")
-                        else:
-                            final_parts.append(f"→ 📍 Cần dữ liệu KM để xác định hướng")
-                    
-                    elif sub_qtype in ['SỨC KHỎE']:
-                        if _cat_count >= 3:
-                            final_parts.append(f"→ 🟢 {sub_person} sức khỏe **KHẢ QUAN** ({_cat_count}/5 CÁT)")
-                        elif _cat_count >= 2:
-                            final_parts.append(f"→ 🟡 {sub_person} cần **THEO DÕI SÁT** ({_cat_count}/5 CÁT)")
-                        else:
-                            final_parts.append(f"→ 🔴 {sub_person} tình trạng **NGHIÊM TRỌNG** ({_hung_count}/5 HUNG)")
-                    
-                    elif sub_qtype in ['TÀI LỘC']:
-                        if _cat_count >= 3:
-                            final_parts.append(f"→ 💰 Tài lộc **THUẬN LỢI** ({_cat_count}/5 CÁT)")
-                        else:
-                            final_parts.append(f"→ 💰 Tài lộc **KHÓ KHĂN** ({_hung_count}/5 HUNG)")
-                    
-                    else:
-                        # Default
-                        if _cat_count >= 3:
-                            final_parts.append(f"→ ✅ **THUẬN LỢI** ({_cat_count}/5 CÁT)")
-                        elif _hung_count >= 3:
-                            final_parts.append(f"→ ❌ **BẤT LỢI** ({_hung_count}/5 HUNG)")
-                        else:
-                            final_parts.append(f"→ 🟡 **BÌNH** ({_cat_count}/{_cat_count+_hung_count} CÁT)")
-                    
-                    # Hiển thị sơ đồ nhỏ cho từng sub-question
-                    if sub_diagram_id and sub_diagram_id != 'SD0':
-                        try:
-                            sub_d_filled, sub_d_info = self._fill_question_diagram(
-                                diagram_id=sub_diagram_id,
-                                question=sub_q,
-                                dung_than=sub_dt,
-                                hanh_dt=hanh_dt_v22,
-                                unified_v22=v31_v22_data,
-                                v23_lh_factors=v23_lh_factors,
-                                v24_km_factors=v24_km_factors,
-                                v24_mh_factors=v24_mh_factors,
-                                chart_data=chart_data,
-                                luc_hao_data=luc_hao_data,
-                                mai_hoa_data=mai_hoa_data,
-                                verdicts_dict=v31_verdicts,
-                            )
-                            if sub_d_filled:
-                                final_parts.append(f"\n<details>")
-                                final_parts.append(f"<summary>📐 Sơ đồ {sub_d_info.get('diagram_name', sub_diagram_id)} (nhấn mở)</summary>\n")
-                                final_parts.append(f"```")
-                                final_parts.append(sub_d_filled)
-                                final_parts.append(f"```")
-                                final_parts.append(f"</details>")
-                        except:
-                            pass
-                
+            # V26.2: Full offline output
+            if offline_full_output:
                 final_parts.append("\n---")
+                final_parts.append(offline_full_output)
             
-            # MỌI THỨ chi tiết ẩn sau 1 nút bấm duy nhất
-            final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích V26.2 (nhấn để mở)</b></summary>\n")
-            final_parts.append(offline_full_output)
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
             return "\n".join(final_parts)
 
-    # ===========================
-    # SUY LUẬN RIÊNG (khi không trùng chủ đề)
-    # ===========================
     def _custom_reasoning(self, question, dung_than, chart_data):
         """Suy luận riêng bằng Python khi câu hỏi không trùng 220+ chủ đề"""
         lines = []
