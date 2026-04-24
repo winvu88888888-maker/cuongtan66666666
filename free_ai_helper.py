@@ -10540,19 +10540,29 @@ class FreeAIHelper:
                 'Ngọ': 'T5 ÂL', 'Mùi': 'T6 ÂL', 'Thân': 'T7 ÂL', 'Dậu': 'T8 ÂL',
                 'Tuất': 'T9 ÂL', 'Hợi': 'T10 ÂL', 'Tý': 'T11 ÂL', 'Sửu': 'T12 ÂL',
             }
-            # Tìm ngày Chi gần nhất từ hôm nay
+            # Tìm ngày Chi gần nhất từ hôm nay — dùng JDN chuẩn
             def _next_chi_date(chi_name, from_date):
-                """Tìm ngày dương lịch gần nhất có Chi = chi_name"""
+                """Tìm ngày dương lịch gần nhất có Chi = chi_name, dùng JDN"""
+                from xem_ngay_dep import _jdn as _jdn_uk
                 chi_idx = CHI_ORDER.index(chi_name) if chi_name in CHI_ORDER else 0
-                # Tính Can Chi ngày hiện tại
-                # Dùng công thức: ngày 01/01/2024 = Giáp Tý (Giáp=0, Tý=0)
-                _base = _dt_uk.datetime(2024, 1, 1)  # Giáp Tý
-                _diff_days = (from_date - _base).days
-                _cur_chi_idx = _diff_days % 12
-                _delta = (chi_idx - _cur_chi_idx) % 12
-                if _delta == 0:
-                    _delta = 12  # Không lấy hôm nay, lấy chu kỳ tiếp
-                return from_date + _dt_uk.timedelta(days=_delta)
+                _CANS_UK = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
+                _CHIS_UK = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+                _THU_UK = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật']
+                
+                for offset in range(1, 400):
+                    d = from_date + _dt_uk.timedelta(days=offset)
+                    if hasattr(d, 'date'):
+                        d_date = d.date() if hasattr(d, 'date') else d
+                    else:
+                        d_date = d
+                    jdn = _jdn_uk(d_date.day, d_date.month, d_date.year)
+                    chi_day = (jdn + 1) % 12
+                    if chi_day == chi_idx:
+                        can_day = _CANS_UK[(jdn + 9) % 10]
+                        chi_day_name = _CHIS_UK[chi_day]
+                        thu = _THU_UK[d_date.weekday()]
+                        return d, f"{can_day} {chi_day_name}", thu, offset
+                return from_date + _dt_uk.timedelta(days=12), chi_name, "?", 12
             
             _SINH_MAP = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
             
@@ -10561,26 +10571,28 @@ class FreeAIHelper:
             _hanh_sinh = _SINH_MAP.get(_hanh_dt_kl, '')
             _chi_slow = _UNG_KY_CHI.get(_hanh_sinh, []) if _hanh_sinh else []
             
-            # Tìm ngày gần nhất cho từng Chi
+            # Tìm ngày gần nhất cho từng Chi (3 ngày đầu cho mỗi chi)
             _fast_dates = []
             for _c in _chi_fast:
-                _d = _next_chi_date(_c, _now_uk)
-                _fast_dates.append((_c, _d))
+                _d, _cc, _thu, _off = _next_chi_date(_c, _now_uk)
+                _d_date = _d.date() if hasattr(_d, 'date') else _d
+                _fast_dates.append((_c, _d_date, _cc, _thu, _off))
             _slow_dates = []
             for _c in _chi_slow:
-                _d = _next_chi_date(_c, _now_uk)
-                _slow_dates.append((_c, _d))
+                _d, _cc, _thu, _off = _next_chi_date(_c, _now_uk)
+                _d_date = _d.date() if hasattr(_d, 'date') else _d
+                _slow_dates.append((_c, _d_date, _cc, _thu, _off))
             
             if _fast_dates:
-                _earliest = min(_fast_dates, key=lambda x: x[1])
-                _timing_fast = f"Nhanh nhất: ngày {_earliest[0]} ({_earliest[1].strftime('%d/%m/%Y')}) — giờ {_CHI_GIO.get(_earliest[0], '?')} — tháng {_CHI_THANG.get(_earliest[0], '?')}"
-                for _c, _d in _fast_dates:
-                    _timing_detail.append(f"NHANH: Ngày {_c} = {_d.strftime('%d/%m/%Y')} (giờ {_CHI_GIO.get(_c, '?')})")
+                _earliest = min(_fast_dates, key=lambda x: x[4])
+                _timing_fast = f"Nhanh nhất: ngày {_earliest[2]} ({_earliest[1].strftime('%d/%m/%Y')}) ({_earliest[3]}) — giờ {_CHI_GIO.get(_earliest[0], '?')} — tháng {_CHI_THANG.get(_earliest[0], '?')} (còn {_earliest[4]} ngày)"
+                for _c, _d, _cc, _thu, _off in _fast_dates:
+                    _timing_detail.append(f"NHANH: Ngày {_cc} = {_d.strftime('%d/%m/%Y')} ({_thu}) (giờ {_CHI_GIO.get(_c, '?')}) — còn {_off} ngày")
             if _slow_dates:
-                _latest = max(_slow_dates, key=lambda x: x[1])
-                _timing_slow = f"Chậm nhất: ngày {_latest[0]} ({_latest[1].strftime('%d/%m/%Y')}) — giờ {_CHI_GIO.get(_latest[0], '?')} — tháng {_CHI_THANG.get(_latest[0], '?')}"
-                for _c, _d in _slow_dates:
-                    _timing_detail.append(f"CHẬM: Ngày {_c} = {_d.strftime('%d/%m/%Y')} (giờ {_CHI_GIO.get(_c, '?')})")
+                _latest = max(_slow_dates, key=lambda x: x[4])
+                _timing_slow = f"Chậm nhất: ngày {_latest[2]} ({_latest[1].strftime('%d/%m/%Y')}) ({_latest[3]}) — giờ {_CHI_GIO.get(_latest[0], '?')} — tháng {_CHI_THANG.get(_latest[0], '?')} (còn {_latest[4]} ngày)"
+                for _c, _d, _cc, _thu, _off in _slow_dates:
+                    _timing_detail.append(f"CHẬM: Ngày {_cc} = {_d.strftime('%d/%m/%Y')} ({_thu}) (giờ {_CHI_GIO.get(_c, '?')}) — còn {_off} ngày")
         
         # ═══ V42.3: PHÂN TÍCH THẾ VS ỨNG (cho câu hỏi THẮNG THUA) ═══
         _the_score = 0
