@@ -9056,10 +9056,12 @@ class FreeAIHelper:
             # Lấy hành DT để tính Ứng Kỳ
             hanh_dt = cd.get('hanh_dt', '')
             if not hanh_dt:
-                # Thử suy từ DT
-                from free_ai_helper import _get_dung_than
-                dt_name = _get_dung_than(question)
-                hanh_dt = cd.get('hanh_dt', 'Thổ')
+                # V42.8f FIX: Suy Hành từ Dụng Thần (Lục Thân → Ngũ Hành)
+                _LT_HANH_UK = {
+                    'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa',
+                    'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'
+                }
+                hanh_dt = _LT_HANH_UK.get(dung_than, 'Thổ')
             
             # Chi → Tháng Âm Lịch
             CHI_THANG = {
@@ -9101,26 +9103,94 @@ class FreeAIHelper:
             
             ung_ky_text = _get_ung_ky(hanh_dt, final_verdict) if hanh_dt else ''
             
-            # Build bảng Năm-Tháng-Ngày-Giờ
-            def _build_timing_table(chi_list):
-                """Sinh bảng ứng kỳ đầy đủ từ danh sách Chi"""
+            # V42.8f: Tính NGÀY CỤ THỂ (DL) cho mỗi Chi ứng kỳ
+            def _find_next_chi_day(target_chi_idx):
+                """Tìm ngày DL tiếp theo mang Chi cho trước.
+                Chi index: 0=Tý,1=Sửu,...11=Hợi
+                Dùng JDN: chi_ngay = (jdn + 1) % 12
+                """
+                import datetime
+                from xem_ngay_dep import _jdn as _jdn_calc
+                today = datetime.date.today()
+                CANS = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
+                CHIS = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+                THU = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật']
+                
+                results = []
+                for offset in range(1, 400):  # scan 400 ngày tới
+                    d = today + datetime.timedelta(days=offset)
+                    jdn = _jdn_calc(d.day, d.month, d.year)
+                    chi_idx = (jdn + 1) % 12
+                    if chi_idx == target_chi_idx:
+                        can_idx = (jdn + 9) % 10
+                        can_ngay = CANS[can_idx]
+                        chi_ngay = CHIS[chi_idx]
+                        thu = THU[d.weekday()]
+                        results.append({
+                            'date': d,
+                            'date_str': f"{d.day:02d}/{d.month:02d}/{d.year}",
+                            'thu': thu,
+                            'can_chi': f"{can_ngay} {chi_ngay}",
+                            'days_from_now': offset,
+                        })
+                        if len(results) >= 3:  # 3 ngày gần nhất
+                            break
+                return results
+            
+            def _find_next_chi_month(target_chi_idx):
+                """Tìm tháng ÂL tiếp theo mang Chi cho trước."""
+                import datetime
+                from xem_ngay_dep import solar2lunar
+                today = datetime.date.today()
+                d_al, m_al, y_al, _ = solar2lunar(today.day, today.month, today.year)
+                
+                # Chi tháng: T1=Dần(2), T2=Mão(3),...T11=Tý(0), T12=Sửu(1)
+                CHI_THANG_IDX = {2:1, 3:2, 4:3, 5:4, 6:5, 7:6, 8:7, 9:8, 10:9, 11:10, 0:11, 1:12}
+                # Reverse: từ thang_al → chi_idx
+                THANG_TO_CHI = {1:2, 2:3, 3:4, 4:5, 5:6, 6:7, 7:8, 8:9, 9:10, 10:11, 11:0, 12:1}
+                
+                # Tìm tháng ÂL tiếp theo có chi = target
+                for thang, chi in THANG_TO_CHI.items():
+                    if chi == target_chi_idx:
+                        target_month_al = thang
+                        break
+                else:
+                    return None
+                
+                # Nếu tháng target > tháng hiện tại → cùng năm, ngược lại → năm sau
+                if target_month_al > m_al:
+                    return f"Tháng {target_month_al} ÂL năm {y_al}"
+                elif target_month_al == m_al:
+                    return f"Tháng {target_month_al} ÂL năm {y_al} (THÁNG NÀY!)"
+                else:
+                    return f"Tháng {target_month_al} ÂL năm {y_al + 1}"
+            
+            # Build bảng Năm-Tháng-Ngày CỤ THỂ-Giờ
+            CHIS_LIST = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+            
+            timing_detailed = []
+            for chi in chi_dung:
+                chi_idx = CHIS_LIST.index(chi) if chi in CHIS_LIST else -1
+                gio = CHI_GIO.get(chi, '?')
+                nam_list = CHI_NAM.get(chi, [])
+                
                 import datetime
                 now_year = datetime.datetime.now().year
-                result = []
-                for chi in chi_list:
-                    thang = CHI_THANG.get(chi, '?')
-                    gio = CHI_GIO.get(chi, '?')
-                    nam_list = CHI_NAM.get(chi, [])
-                    # Lấy năm gần nhất >= năm hiện tại
-                    nam_gan = [n for n in nam_list if n >= now_year]
-                    nam_str = str(nam_gan[0]) if nam_gan else str(nam_list[0]) if nam_list else '?'
-                    result.append({
-                        'chi': chi, 'thang': thang, 'gio': gio, 'nam': nam_str
-                    })
-                return result
+                nam_gan = [n for n in nam_list if n >= now_year]
+                nam_str = str(nam_gan[0]) if nam_gan else str(nam_list[0]) if nam_list else '?'
+                
+                # Tìm ngày DL cụ thể
+                next_days = _find_next_chi_day(chi_idx) if chi_idx >= 0 else []
+                # Tìm tháng ÂL cụ thể
+                next_month = _find_next_chi_month(chi_idx) if chi_idx >= 0 else None
+                
+                timing_detailed.append({
+                    'chi': chi, 'gio': gio, 'nam': nam_str,
+                    'next_days': next_days,
+                    'next_month': next_month or CHI_THANG.get(chi, '?'),
+                })
             
-            timing = _build_timing_table(chi_dung)
-            
+            # === OUTPUT ===
             if final_verdict == 'CÁT' or pct >= 55:
                 lines.append(f"\n{icon} **CÂU TRẢ LỜI: SẮP TỚI — Thuận lợi ({pct}%)**")
             elif pct <= 40:
@@ -9128,14 +9198,41 @@ class FreeAIHelper:
             else:
                 lines.append(f"\n🟡 **CÂU TRẢ LỜI: TRONG 1-3 THÁNG TỚI ({pct}%)**")
             
-            if timing:
+            if timing_detailed:
                 lines.append(f"\n📅 **ỨNG KỲ CHI TIẾT (DT hành {hanh_dt} — {ly_do}):**")
-                lines.append(f"| Chi | Năm | Tháng | Giờ |")
-                lines.append(f"|:---:|:---:|:------|:---:|")
-                for t in timing:
-                    lines.append(f"| **{t['chi']}** | {t['nam']} | {t['thang']} | {t['gio']} |")
+                
+                for t in timing_detailed:
+                    lines.append(f"\n**🔮 Chi {t['chi']}:**")
+                    
+                    # Ngày CỤ THỂ
+                    if t['next_days']:
+                        lines.append(f"- 📆 **NGÀY GẦN NHẤT:**")
+                        for nd in t['next_days']:
+                            delta_txt = f"(còn {nd['days_from_now']} ngày)" if nd['days_from_now'] <= 30 else f"(còn {nd['days_from_now']} ngày)"
+                            lines.append(f"  → **{nd['date_str']}** ({nd['thu']}) — ngày {nd['can_chi']} {delta_txt}")
+                    
+                    # Giờ
+                    lines.append(f"- ⏰ **GIỜ:** {t['gio']} (giờ {t['chi']})")
+                    
+                    # Tháng  
+                    lines.append(f"- 🗓️ **THÁNG:** {t['next_month']}")
+                    
+                    # Năm
+                    lines.append(f"- 📅 **NĂM:** {t['nam']}")
+                
+                # Tóm tắt ngày gần nhất
+                all_first_days = []
+                for t in timing_detailed:
+                    if t['next_days']:
+                        all_first_days.append(t['next_days'][0])
+                
+                if all_first_days:
+                    nearest = min(all_first_days, key=lambda x: x['days_from_now'])
+                    lines.append(f"\n🎯 **DỰ ĐOÁN NGÀY SỚM NHẤT:** **{nearest['date_str']}** ({nearest['thu']}) — ngày {nearest['can_chi']} — lúc {timing_detailed[0]['gio']}")
+                    lines.append(f"   _(Còn {nearest['days_from_now']} ngày nữa)_")
+                
                 lines.append(f"\n- 📌 {ung_ky_text}")
-                lines.append(f"- 💡 Ưu tiên: **tháng** > ngày > giờ (tháng ảnh hưởng lớn nhất)")
+                lines.append(f"- 💡 Ưu tiên: **ngày** > giờ > tháng (ngày gần nhất ảnh hưởng trực tiếp)")
         
         # TUỔI
         elif any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
@@ -12687,7 +12784,41 @@ class FreeAIHelper:
                     _HANH_HUONG = {'Kim': 'HƯỚNG TÂY', 'Mộc': 'HƯỚNG ĐÔNG', 'Thủy': 'HƯỚNG BẮC', 'Hỏa': 'HƯỚNG NAM', 'Thổ': 'TRUNG TÂM'}
                     _off_answer = f"🧭 {_HANH_HUONG.get(_hanh_off2, '?')} (Hành {_hanh_off2}) — {weighted_pct}%"
                 elif _is_when_off:
-                    _off_answer = f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
+                    # V42.8f: Tính ngày cụ thể cho header
+                    try:
+                        from xem_ngay_dep import _jdn as _jdn_header
+                        import datetime as _dt_header
+                        _LT_HANH_WHEN = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                        _h_when = _LT_HANH_WHEN.get(dung_than, 'Thổ')
+                        _UKC = {'Kim': [8,9], 'Mộc': [2,3], 'Thủy': [0,11], 'Hỏa': [6,5], 'Thổ': [4,10,1,7]}
+                        _SINH_W = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
+                        if weighted_pct >= 55:
+                            _target_chis = _UKC.get(_h_when, [4])
+                        else:
+                            _h_sinh = _SINH_W.get(_h_when, 'Thổ')
+                            _target_chis = _UKC.get(_h_sinh, [4])
+                        
+                        _CHIS_W = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+                        _CANS_W = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
+                        _CHI_GIO_W = {'Tý':'23h-1h','Sửu':'1h-3h','Dần':'3h-5h','Mão':'5h-7h','Thìn':'7h-9h','Tị':'9h-11h',
+                                      'Ngọ':'11h-13h','Mùi':'13h-15h','Thân':'15h-17h','Dậu':'17h-19h','Tuất':'19h-21h','Hợi':'21h-23h'}
+                        _today = _dt_header.date.today()
+                        _nearest_date = None
+                        for _off2 in range(1, 200):
+                            _d2 = _today + _dt_header.timedelta(days=_off2)
+                            _j2 = _jdn_header(_d2.day, _d2.month, _d2.year)
+                            _chi2 = (_j2 + 1) % 12
+                            if _chi2 in _target_chis:
+                                _can2 = _CANS_W[(_j2 + 9) % 10]
+                                _chi2_name = _CHIS_W[_chi2]
+                                _THU_W = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật']
+                                _thu2 = _THU_W[_d2.weekday()]
+                                _gio_txt = _CHI_GIO_W.get(_chi2_name, '')
+                                _nearest_date = f"📆 {_d2.day:02d}/{_d2.month:02d}/{_d2.year} ({_thu2}) lúc {_gio_txt} — ngày {_can2} {_chi2_name} (còn {_off2} ngày)"
+                                break
+                        _off_answer = _nearest_date or f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
+                    except Exception:
+                        _off_answer = f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
                 elif _off_verdict == 'CÁT':
                     _off_answer = f"{_off_v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
                 elif _off_verdict == 'HUNG':
@@ -12846,7 +12977,36 @@ class FreeAIHelper:
                     _HANH_HUONG2 = {'Kim': 'HƯỚNG TÂY', 'Mộc': 'HƯỚNG ĐÔNG', 'Thủy': 'HƯỚNG BẮC', 'Hỏa': 'HƯỚNG NAM', 'Thổ': 'TRUNG TÂM'}
                     _offline_short_answer = f"🧭 {_HANH_HUONG2.get(_hanh_off4, '?')} (Hành {_hanh_off4}) — {weighted_pct}%"
                 elif _is_when_off2:
-                    _offline_short_answer = f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
+                    # V42.8f: Tính ngày cụ thể cho header (offline-only)
+                    try:
+                        from xem_ngay_dep import _jdn as _jdn_h2
+                        import datetime as _dt_h2
+                        _LT2 = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                        _h2 = _LT2.get(dung_than, 'Thổ')
+                        _UKC2 = {'Kim': [8,9], 'Mộc': [2,3], 'Thủy': [0,11], 'Hỏa': [6,5], 'Thổ': [4,10,1,7]}
+                        _SINH2 = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
+                        _tc2 = _UKC2.get(_h2, [4]) if weighted_pct >= 55 else _UKC2.get(_SINH2.get(_h2, 'Thổ'), [4])
+                        _CHIS2 = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+                        _CANS2 = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
+                        _CGW2 = {'Tý':'23h-1h','Sửu':'1h-3h','Dần':'3h-5h','Mão':'5h-7h','Thìn':'7h-9h','Tị':'9h-11h',
+                                 'Ngọ':'11h-13h','Mùi':'13h-15h','Thân':'15h-17h','Dậu':'17h-19h','Tuất':'19h-21h','Hợi':'21h-23h'}
+                        _td2 = _dt_h2.date.today()
+                        _nd2 = None
+                        for _o2 in range(1, 200):
+                            _dd2 = _td2 + _dt_h2.timedelta(days=_o2)
+                            _jj2 = _jdn_h2(_dd2.day, _dd2.month, _dd2.year)
+                            _cc2 = (_jj2 + 1) % 12
+                            if _cc2 in _tc2:
+                                _cn2 = _CANS2[(_jj2 + 9) % 10]
+                                _chn2 = _CHIS2[_cc2]
+                                _TW2 = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật']
+                                _tw2 = _TW2[_dd2.weekday()]
+                                _gt2 = _CGW2.get(_chn2, '')
+                                _nd2 = f"📆 {_dd2.day:02d}/{_dd2.month:02d}/{_dd2.year} ({_tw2}) lúc {_gt2} — ngày {_cn2} {_chn2} (còn {_o2} ngày)"
+                                break
+                        _offline_short_answer = _nd2 or f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
+                    except Exception:
+                        _offline_short_answer = f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
                 elif overall_short in ('CÁT', 'ĐẠI CÁT'):
                     _offline_short_answer = f"{v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
                 elif overall_short in ('HUNG', 'ĐẠI HUNG'):
