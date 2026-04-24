@@ -11053,10 +11053,18 @@ class FreeAIHelper:
                     # Tính Can Ngày từ thời gian
                     _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
                     _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
-                    # Công thức Can Ngày đơn giản
-                    _jdn = int(365.25 * (_y + 4716)) + int(30.6001 * (_m + 1)) + _d - 1524
-                    _can_ngay = _cans[(_jdn + 9) % 10]
-                    _chi_ngay = _chis[(_jdn + 1) % 12]
+                    # V42.8f FIX: Dùng _jdn chuẩn thay vì formula sai (lệch 11-13 ngày!)
+                    try:
+                        from xem_ngay_dep import _jdn as _jdn_func
+                        _jdn_val = _jdn_func(_d, _m, _y)
+                    except ImportError:
+                        # Fallback: accurate Gregorian JDN
+                        _a = (14 - _m) // 12
+                        _yy = _y + 4800 - _a
+                        _mm = _m + 12 * _a - 3
+                        _jdn_val = _d + (153 * _mm + 2) // 5 + 365 * _yy + _yy // 4 - _yy // 100 + _yy // 400 - 32045
+                    _can_ngay = _cans[(_jdn_val + 9) % 10]
+                    _chi_ngay = _chis[(_jdn_val + 1) % 12]
                 
                 luc_hao_data = lap_qua_luc_hao(
                     _y, _m, _d, _h,
@@ -11122,10 +11130,18 @@ class FreeAIHelper:
                 try:
                     _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
                     _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
-                    _jdn = int(365.25 * (_y + 4716)) + int(30.6001 * (_m + 1)) + _d - 1524
+                    # V42.8f FIX: Dùng _jdn chuẩn thay vì formula sai
+                    try:
+                        from xem_ngay_dep import _jdn as _jdn_func2
+                        _jdn_val2 = _jdn_func2(_d, _m, _y)
+                    except ImportError:
+                        _a2 = (14 - _m) // 12
+                        _yy2 = _y + 4800 - _a2
+                        _mm2 = _m + 12 * _a2 - 3
+                        _jdn_val2 = _d + (153 * _mm2 + 2) // 5 + 365 * _yy2 + _yy2 // 4 - _yy2 // 100 + _yy2 // 400 - 32045
                     chart_data = {
-                        'can_ngay': _cans[(_jdn + 9) % 10],
-                        'chi_ngay': _chis[(_jdn + 1) % 12],
+                        'can_ngay': _cans[(_jdn_val2 + 9) % 10],
+                        'chi_ngay': _chis[(_jdn_val2 + 1) % 12],
                         'chi_gio': _chis[(_h // 2) % 12],
                         'can_thien_ban': {},
                         '_auto_generated': True

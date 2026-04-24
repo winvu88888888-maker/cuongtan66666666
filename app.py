@@ -3227,7 +3227,7 @@ PHÂN TÍCH LIÊN MẠCH:
                                     📆 ÂL: {_d}/{_m}/{_y}{_leap_t} | Năm {CAN[_can_i]} {CHI[_chi_i]}
                                 </span>
                                 <span style='color:#6ee7b7;font-weight:700;font-size:1.05rem;'>
-                                    ✅ Mệnh: {_la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc','?')} | {_la_so.get('nap_am','?')}
+                                    ✅ Mệnh: {_la_so.get('menh_cung',{}).get('chi','?') if isinstance(_la_so.get('menh_cung'), dict) else _la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc_ten', _la_so.get('cuc','?'))} | {_la_so.get('nap_am','?')}
                                 </span>
                             </div>
                             """, unsafe_allow_html=True)
@@ -3237,7 +3237,7 @@ PHÂN TÍCH LIÊN MẠCH:
                         # ═══ ÂM LỊCH ═══
                         _c_al1, _c_al2, _c_al3, _c_al4 = st.columns(4)
                         with _c_al1:
-                            qa_tv_nam = st.number_input("Năm sinh (DL):", 1920, 2026, 1990, key="qa_tv_nam_al")
+                            qa_tv_nam = st.number_input("Năm ÂL:", 1920, 2026, 1990, key="qa_tv_nam_al")
                         with _c_al2:
                             qa_tv_thang = st.number_input("Tháng ÂL:", 1, 12, 1, key="qa_tv_thang_al")
                         with _c_al3:
@@ -3261,7 +3261,7 @@ PHÂN TÍCH LIÊN MẠCH:
                                     📆 ÂL: {qa_tv_ngay_al}/{qa_tv_thang}/{qa_tv_nam} | Năm {CAN[_can_i]} {CHI[_chi_i]}
                                 </span>
                                 <span style='color:#6ee7b7;font-weight:700;font-size:1.05rem;'>
-                                    ✅ Mệnh: {_la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc','?')} | {_la_so.get('nap_am','?')}
+                                    ✅ Mệnh: {_la_so.get('menh_cung',{}).get('chi','?') if isinstance(_la_so.get('menh_cung'), dict) else _la_so.get('menh_cung','?')} | Cục: {_la_so.get('cuc_ten', _la_so.get('cuc','?'))} | {_la_so.get('nap_am','?')}
                                 </span>
                             </div>
                             """, unsafe_allow_html=True)
@@ -3298,11 +3298,13 @@ PHÂN TÍCH LIÊN MẠCH:
                     # Auto-compute
                     try:
                         _d2, _m2, _y2, _ = solar2lunar(qa_xn_ngay.day, qa_xn_ngay.month, qa_xn_ngay.year)
+                        # V42.8f FIX: Dùng _jdn chuẩn từ xem_ngay_dep thay vì formula sai (lệch 11-13 ngày!)
+                        from xem_ngay_dep import _jdn as _jdn_accurate
                         _cans = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
                         _chis = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
-                        _jdn = int(365.25 * (qa_xn_ngay.year + 4716)) + int(30.6001 * (qa_xn_ngay.month + 1)) + qa_xn_ngay.day - 1524
-                        _cn = _cans[(_jdn + 9) % 10]
-                        _chi_n = _chis[(_jdn + 1) % 12]
+                        _jdn_val = _jdn_accurate(qa_xn_ngay.day, qa_xn_ngay.month, qa_xn_ngay.year)
+                        _cn = _cans[(_jdn_val + 9) % 10]
+                        _chi_n = _chis[(_jdn_val + 1) % 12]
                         
                         _xn_res = danh_gia_ngay(_m2, _d2, _cn, _chi_n, _loai_viec,
                                                 ngay_dl=(qa_xn_ngay.day, qa_xn_ngay.month, qa_xn_ngay.year))
