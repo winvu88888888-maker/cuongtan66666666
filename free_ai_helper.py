@@ -762,6 +762,12 @@ def _is_competition_question(question):
         r'đội\s+\w+\s+(vs|và|đấu|gặp|đá với)\s+đội\s+\w+',
         r'\w+\s+(vs|đấu với|gặp)\s+\w+.*(thắng|thua|hơn|kém)',
         r'(trận|cuộc)\s+\w+.*(thắng|thua|kết quả)',
+        # V42.8f: Thêm pattern "A vs B" standalone (không cần thắng/thua)
+        r'\w+\s+vs\.?\s+\w+',
+        # V42.8f: "A hay B thắng/thua/hơn"
+        r'\w+\s+hay\s+\w+\s+(thắng|thua|hơn|kém|mạnh|yếu)',
+        # V42.8f: "A thắng hay B thắng"
+        r'\w+\s+thắng\s+hay\s+\w+\s+thắng',
     ]
     if any(_re_comp.search(pat, q) for pat in _COMP_PATTERNS):
         return True
@@ -8832,8 +8838,51 @@ class FreeAIHelper:
         # BƯỚC 3: XÁC ĐỊNH DẠNG CÂU HỎI + TRẢ LỜI LINH HOẠT
         # ═══════════════════════════════════════════════
         
+        # V42.8f FIX: THẮNG THUA / COMPETITION phải check ĐẦU TIÊN
+        # (tránh "ai thắng" bị catch bởi pattern "ai " → hiển thị sai)
+        is_competition = _is_competition_question(question)
+        if is_competition:
+            _side_a_disp, _side_b_disp = _extract_two_sides(question)
+            # Verdict color
+            _comp_color = '#22c55e' if pct >= 55 else '#ef4444' if pct <= 40 else '#eab308'
+            # Determine which side wins based on the_ung scores from earlier
+            try:
+                _the_s = sum(1 for m, (v, _) in verdicts_map.items() if 'CÁT' in str(v).upper()) * 2 - \
+                         sum(1 for m, (v, _) in verdicts_map.items() if 'HUNG' in str(v).upper()) * 2
+                _ung_s = -_the_s  # simplified
+            except:
+                _the_s, _ung_s = 0, 0
+            
+            if _the_s > _ung_s:
+                _winner = _side_a_disp
+                _loser = _side_b_disp
+                _win_icon = '✅'
+            elif _ung_s > _the_s:
+                _winner = _side_b_disp
+                _loser = _side_a_disp
+                _win_icon = '✅'
+            else:
+                _winner = f'{_side_a_disp} ≈ {_side_b_disp}'
+                _loser = 'HÒA'
+                _win_icon = '⚖️'
+            
+            lines.append(
+                f'\n<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px;border-radius:16px;'
+                f'border:3px solid {_comp_color};margin:12px 0;box-shadow:0 4px 20px rgba(0,0,0,0.4);">'
+                f'<span style="font-size:1.4em;font-weight:900;color:#fbbf24;">⚔️ PHÂN TÍCH THẮNG THUA</span><br><br>'
+                f'<span style="font-size:1.5em;font-weight:900;color:#ffffff;">'
+                f'{_side_a_disp} <span style="color:#94a3b8;">vs</span> {_side_b_disp}</span><br><br>'
+                f'<span style="font-size:1.3em;font-weight:900;color:{_comp_color};">'
+                f'{_win_icon} {_winner} {"THẮNG" if _loser != "HÒA" else ""} — {pct}%</span>'
+                f'</div>'
+            )
+            lines.append(f"\n**📊 Phương pháp:** Thế (={_side_a_disp}) vs Ứng (={_side_b_disp})")
+            lines.append(f"- Lục Hào: Thế = {_side_a_disp}, Ứng = {_side_b_disp}")
+            lines.append(f"- Kỳ Môn: Nhật Can (Chủ = {_side_a_disp}), Thời Can (Khách = {_side_b_disp})")
+            lines.append(f"- Mai Hoa: Thể Quái = {_side_a_disp}, Dụng Quái = {_side_b_disp}")
+        
         # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
-        if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
+        elif any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
                                   'nghĩ gì', 'hành động', 'làm gì', 'xử lý', 'tính sao']):
             _color = '#16a34a' if pct >= 55 else '#dc2626' if pct <= 40 else '#ca8a04'
             lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid {_color};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_color};">{icon} VỀ "{_q_short}"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">{vv_data["cap"]} — {pct}%</span></div>')
