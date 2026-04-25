@@ -619,10 +619,10 @@ Thái Ất Cung → Bát Tướng → Cách Cục → Verdict
 | 4 | Thanh Long | Thê Tài | Dậu-Kim | Kim |  |  |
 | 5 | Chu Tước | Tử Tôn | Mùi-Thổ | Thổ |  |  |
 | 6 | Câu Trần | Huynh Đệ | Tị-Hỏa | Hỏa |  | 🔴 Động |
-  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
   - **Tử Tôn**: Con cái, may mắn, vui vẻ, giải trừ, khắc Quan Quỷ
   - **Thê Tài**: Tiền tài, vợ, tài sản, thu nhập, đầu tư
   - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
+  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
 
 - **🎯 Dụng Thần (Huynh Đệ):** Hào 6 — Huynh Đệ Tị-Hỏa (Hỏa)
 

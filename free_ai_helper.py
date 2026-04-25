@@ -13074,19 +13074,22 @@ class FreeAIHelper:
             _offline_short_answer = "<br>".join(_offline_short_answer_list) if _offline_short_answer_list else ""
             
             if not _offline_short_answer:
-                # V42.9: SMART HEADER — detect loại câu hỏi để trả lời đúng kiểu
+                # V42.9.2: MULTI-INTENT FALLBACK — detect ALL intent types INDEPENDENTLY
+                # Bug fix: Old code used if/elif → only first intent got answered
+                # New code: Each intent is independent → ALL get collected into _fb_parts[]
                 _q_lower_off2 = question.lower()
                 _is_competition_off = _is_competition_question(question)
-                _is_what_off2 = any(k in _q_lower_off2 for k in ['cái gì', 'loại gì', 'sản xuất gì', 'làm gì', 'sản phẩm gì',
-                    'buôn bán gì', 'kinh doanh gì', 'nghề gì', 'ngành gì', 'gì vậy', 'gì đây',
-                    'bán gì', 'trồng gì', 'nuôi gì', 'mua gì', 'bằng gì', 'sản xuất cái'])
-                _is_where_off2 = any(k in _q_lower_off2 for k in ['ở đâu', 'hướng nào', 'phương nào', 'chỗ nào', 'nơi nào'])
-                _is_when_off2 = any(k in _q_lower_off2 for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm'])
+                _fb_parts = []  # Collect ALL matching intent answers
+                
+                _LT_HANH_FB = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+                _hanh_fb = _LT_HANH_FB.get(dung_than, 'Thổ')
+                _HANH_SP_FB = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
+                             'Thủy': 'Nước/Chất lỏng/Hải sản/Hóa chất', 'Hỏa': 'Điện tử/Năng lượng/Thực phẩm', 
+                             'Thổ': 'Gạch/Gốm sứ/Vật liệu XD/Nông sản'}
                 
                 if _is_competition_off:
-                    # V42.9: COMPETITION — Extract kết quả thắng/thua
+                    # COMPETITION — Extract kết quả thắng/thua
                     _side_a, _side_b = _extract_two_sides(question)
-                    # Tính điểm Thế vs Ứng từ Lục Hào factors
                     _the_score = 0
                     _ung_score = 0
                     for _f in (v23_lh_factors or []):
@@ -13102,32 +13105,57 @@ class FreeAIHelper:
                                 _m2 = _re_comp2.search(r'-(\d+)', str(_f))
                                 if _m2: _ung_score += int(_m2.group(1))
                             except: _ung_score += 3
-                    
                     _net = _the_score - _ung_score
                     if _net > 3:
-                        _offline_short_answer = f"⚽ {_side_a} THẮNG ✅ (Chênh: +{_net})"
+                        _fb_parts.append(f"⚽ {_side_a} THẮNG ✅ (Chênh: +{_net})")
                     elif _net < -3:
-                        _offline_short_answer = f"⚽ {_side_b} THẮNG ✅ (Chênh: {_net})"
+                        _fb_parts.append(f"⚽ {_side_b} THẮNG ✅ (Chênh: {_net})")
                     else:
-                        _offline_short_answer = f"⚽ HÒA ⚖️ — {_side_a} ≈ {_side_b} (Chênh: {_net:+d})"
-                elif _is_what_off2:
-                    _LT_HANH_OFF3 = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                    _hanh_off3 = _LT_HANH_OFF3.get(dung_than, 'Thổ')
-                    _HANH_SP2 = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
-                                 'Thủy': 'Nước/Chất lỏng/Hải sản/Hóa chất', 'Hỏa': 'Điện tử/Năng lượng/Thực phẩm', 
-                                 'Thổ': 'Gạch/Gốm sứ/Vật liệu XD/Nông sản'}
-                    _offline_short_answer = f"🔮 Hành {_hanh_off3}: {_HANH_SP2.get(_hanh_off3, '?')} ({weighted_pct}%)"
-                elif _is_where_off2:
-                    _LT_HANH_OFF4 = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                    _hanh_off4 = _LT_HANH_OFF4.get(dung_than, 'Thổ')
-                    _HANH_HUONG2 = {'Kim': 'HƯỚNG TÂY', 'Mộc': 'HƯỚNG ĐÔNG', 'Thủy': 'HƯỚNG BẮC', 'Hỏa': 'HƯỚNG NAM', 'Thổ': 'TRUNG TÂM'}
-                    _offline_short_answer = f"🧭 {_HANH_HUONG2.get(_hanh_off4, '?')} (Hành {_hanh_off4}) — {weighted_pct}%"
-                elif _is_when_off2:
+                        _fb_parts.append(f"⚽ HÒA ⚖️ — {_side_a} ≈ {_side_b} (Chênh: {_net:+d})")
+                
+                # NGHỀ GÌ / CÁI GÌ — independent
+                if any(k in _q_lower_off2 for k in ['cái gì', 'loại gì', 'sản xuất gì', 'làm gì', 'sản phẩm gì',
+                    'buôn bán gì', 'kinh doanh gì', 'nghề gì', 'ngành gì', 'gì vậy', 'gì đây',
+                    'bán gì', 'trồng gì', 'nuôi gì', 'mua gì', 'bằng gì', 'sản xuất cái']):
+                    _fb_parts.append(f"🔮 Nghề/Ngành: Hành {_hanh_fb} → {_HANH_SP_FB.get(_hanh_fb, '?')}")
+                
+                # TUỔI — independent
+                if any(k in _q_lower_off2 for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
+                    # Tính tuổi từ age_numbers nếu có
+                    if age_numbers:
+                        _age_nums = [n for _, n in age_numbers]
+                        _age_avg = int(sum(_age_nums) / len(_age_nums)) if _age_nums else 0
+                        _fb_parts.append(f"🎂 Tuổi: Khoảng {_age_avg} tuổi")
+                    else:
+                        # Ước tính từ Ngũ Hành
+                        _HD_AGE = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                        _hd_age = _HD_AGE.get(_hanh_fb, (5, 10))
+                        _age_est = _hd_age[1] * 5 if weighted_pct >= 55 else _hd_age[0] * 5
+                        _fb_parts.append(f"🎂 Tuổi: Khoảng {_age_est} tuổi")
+                
+                # BAO NHIÊU / MẤY — independent
+                if any(k in _q_lower_off2 for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con', 'mấy']):
+                    if count_numbers:
+                        _cnt_nums = [n for _, n in count_numbers]
+                        _cnt_avg = int(round(sum(_cnt_nums) / len(_cnt_nums))) if _cnt_nums else 0
+                        _fb_parts.append(f"👥 Số lượng: {_cnt_avg} người")
+                    else:
+                        _HD_CNT = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                        _hd_cnt = _HD_CNT.get(_hanh_fb, (5, 10))
+                        _cnt_est = _hd_cnt[0] if weighted_pct < 60 else _hd_cnt[1]
+                        _fb_parts.append(f"👥 Số lượng: {_cnt_est} người")
+                
+                # Ở ĐÂU — independent
+                if any(k in _q_lower_off2 for k in ['ở đâu', 'hướng nào', 'phương nào', 'chỗ nào', 'nơi nào']):
+                    _HANH_HUONG_FB = {'Kim': 'HƯỚNG TÂY', 'Mộc': 'HƯỚNG ĐÔNG', 'Thủy': 'HƯỚNG BẮC', 'Hỏa': 'HƯỚNG NAM', 'Thổ': 'TRUNG TÂM'}
+                    _fb_parts.append(f"🧭 {_HANH_HUONG_FB.get(_hanh_fb, '?')} (Hành {_hanh_fb})")
+                
+                # KHI NÀO — independent
+                if any(k in _q_lower_off2 for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm']):
                     try:
                         from xem_ngay_dep import _jdn as _jdn_h2
                         import datetime as _dt_h2
-                        _LT2 = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
-                        _h2 = _LT2.get(dung_than, 'Thổ')
+                        _h2 = _hanh_fb
                         _UKC2 = {'Kim': [8,9], 'Mộc': [2,3], 'Thủy': [0,11], 'Hỏa': [6,5], 'Thổ': [4,10,1,7]}
                         _SINH2 = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
                         _tc2 = _UKC2.get(_h2, [4]) if weighted_pct >= 55 else _UKC2.get(_SINH2.get(_h2, 'Thổ'), [4])
@@ -13136,7 +13164,6 @@ class FreeAIHelper:
                         _CGW2 = {'Tý':'23h-1h','Sửu':'1h-3h','Dần':'3h-5h','Mão':'5h-7h','Thìn':'7h-9h','Tị':'9h-11h',
                                  'Ngọ':'11h-13h','Mùi':'13h-15h','Thân':'15h-17h','Dậu':'17h-19h','Tuất':'19h-21h','Hợi':'21h-23h'}
                         _td2 = _dt_h2.date.today()
-                        _nd2 = None
                         for _o2 in range(1, 200):
                             _dd2 = _td2 + _dt_h2.timedelta(days=_o2)
                             _jj2 = _jdn_h2(_dd2.day, _dd2.month, _dd2.year)
@@ -13147,11 +13174,14 @@ class FreeAIHelper:
                                 _TW2 = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật']
                                 _tw2 = _TW2[_dd2.weekday()]
                                 _gt2 = _CGW2.get(_chn2, '')
-                                _nd2 = f"📆 {_dd2.day:02d}/{_dd2.month:02d}/{_dd2.year} ({_tw2}) lúc {_gt2} — ngày {_cn2} {_chn2} (còn {_o2} ngày)"
+                                _fb_parts.append(f"📆 {_dd2.day:02d}/{_dd2.month:02d}/{_dd2.year} ({_tw2}) lúc {_gt2}")
                                 break
-                        _offline_short_answer = _nd2 or f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
                     except Exception:
-                        _offline_short_answer = f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
+                        _fb_parts.append(f"⏳ Xem Ứng Kỳ chi tiết bên dưới")
+                
+                # Build final answer from collected parts
+                if _fb_parts:
+                    _offline_short_answer = "<br>".join(_fb_parts)
                 elif overall_short in ('CÁT', 'ĐẠI CÁT'):
                     _offline_short_answer = f"{v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
                 elif overall_short in ('HUNG', 'ĐẠI HUNG'):
