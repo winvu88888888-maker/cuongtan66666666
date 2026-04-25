@@ -4380,7 +4380,7 @@ class FreeAIHelper:
         
         # 6) V18 Detective
         if od.get('v18_detective'):
-            lines.append(f"V18: {od['v18_detective']}")
+            lines.append(f"{od['v18_detective']}")
         
         # 7) V29.5: SMART FACTOR INJECTION — CHỈ inject PP GỐC theo câu hỏi
         q_lower = str(od.get('_question', '')).lower()
@@ -6447,10 +6447,10 @@ class FreeAIHelper:
                 if sm_result:
                     if 'Cat' in str(sm_result) or 'Cát' in str(sm_result):
                         score += 5
-                        factors.append(f"V27 KM Sao×Môn Cát +5: {sao_dt}×{mon_dt}")
+                        factors.append(f"KM Sao×Môn Cát +5: {sao_dt}×{mon_dt}")
                     else:
                         score -= 3
-                        factors.append(f"V27 KM Sao×Môn: {sm_result}")
+                        factors.append(f"KM Sao×Môn: {sm_result}")
             # Factor 2: Sinh khac BT<->DT
             if bt_cung is not None and dt_cung is not None:
                 hanh_bt_cung = CUNG_NGU_HANH.get(bt_cung, '')
@@ -6459,14 +6459,14 @@ class FreeAIHelper:
                     rel = DATANG_SINH_KHAC(hanh_bt_cung, hanh_dt_cung)
                     if 'Sinh' in str(rel) and 'Bi' not in str(rel):
                         score += 6
-                        factors.append(f"V27 KM Cung BT sinh DT +6 ({hanh_bt_cung}→{hanh_dt_cung})")
+                        factors.append(f"KM Cung BT sinh DT +6 ({hanh_bt_cung}→{hanh_dt_cung})")
                     elif 'Khac' in str(rel) or 'Khắc' in str(rel):
                         if 'Bi' in str(rel) or 'Bị' in str(rel):
                             score -= 6
-                            factors.append(f"V27 KM Cung BT bị khắc -6 ({hanh_bt_cung}←{hanh_dt_cung})")
+                            factors.append(f"KM Cung BT bị khắc -6 ({hanh_bt_cung}←{hanh_dt_cung})")
                         else:
                             score += 4
-                            factors.append(f"V27 KM Cung BT khắc DT +4")
+                            factors.append(f"KM Cung BT khắc DT +4")
             # Factor 3: Vuong Suy theo mua
             if dt_can:
                 can_hanh_km = CAN_NGU_HANH.get(dt_can, '')
@@ -6477,10 +6477,10 @@ class FreeAIHelper:
                         vs_str = str(vs)
                         if 'Vuong' in vs_str or 'Vượng' in vs_str:
                             score += 5
-                            factors.append(f"V27 KM DT Vượng mùa +5")
+                            factors.append(f"KM DT Vượng mùa +5")
                         elif 'Tu' in vs_str or 'Tử' in vs_str or 'Tù' in vs_str:
                             score -= 5
-                            factors.append(f"V27 KM DT Tử/Tù mùa -5")
+                            factors.append(f"KM DT Tử/Tù mùa -5")
             # Factor 5: Cách Cục
             if dt_cung and can_thien_ban:
                 thien_can_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
@@ -6504,17 +6504,17 @@ class FreeAIHelper:
                     key_cc = (str(thien_can_dt), str(dia_can_dt))
                     if key_cc in CAT_CACH:
                         score += 6
-                        factors.append(f"V28 KM Cách Cục: {CAT_CACH[key_cc]} +6 ({thien_can_dt}/{dia_can_dt})")
+                        factors.append(f"KM Cách Cục: {CAT_CACH[key_cc]} +6 ({thien_can_dt}/{dia_can_dt})")
                     elif key_cc in HUNG_CACH:
                         score -= 6
-                        factors.append(f"V28 KM Cách Cục: {HUNG_CACH[key_cc]} -6 ({thien_can_dt}/{dia_can_dt})")
+                        factors.append(f"KM Cách Cục: {HUNG_CACH[key_cc]} -6 ({thien_can_dt}/{dia_can_dt})")
             # Factor 6: Tam Kỳ nhập cung DT
             if dt_cung and can_thien_ban:
                 thien_can_at_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
                 if thien_can_at_dt in ('Ất', 'Bính', 'Đinh'):
                     score += 5
                     tam_ky_name = {'Ất': 'Nhật Kỳ', 'Bính': 'Nguyệt Kỳ', 'Đinh': 'Tinh Kỳ'}.get(thien_can_at_dt, '')
-                    factors.append(f"V28 KM Tam Kỳ: {tam_ky_name}({thien_can_at_dt}) nhập cung DT +5")
+                    factors.append(f"KM Tam Kỳ: {tam_ky_name}({thien_can_at_dt}) nhập cung DT +5")
             # Factor 7: Cung Sự Việc
             sv_cung = None
             can_gio = chart_data.get('can_gio', '')
@@ -6528,13 +6528,13 @@ class FreeAIHelper:
                 if bt_hanh and sv_hanh:
                     if KHAC.get(bt_hanh) == sv_hanh:
                         score += 5
-                        factors.append(f"V28 KM BT khắc Cung SV → chủ THẮNG +5")
+                        factors.append(f"KM BT khắc Cung SV → chủ THẮNG +5")
                     elif KHAC.get(sv_hanh) == bt_hanh:
                         score -= 5
-                        factors.append(f"V28 KM Cung SV khắc BT → bị THUA -5")
+                        factors.append(f"KM Cung SV khắc BT → bị THUA -5")
                     elif SINH.get(sv_hanh) == bt_hanh:
                         score += 3
-                        factors.append(f"V28 KM Cung SV sinh BT → được giúp +3")
+                        factors.append(f"KM Cung SV sinh BT → được giúp +3")
         except Exception:
             score, factors = _base_score, _base_factors
         
@@ -7152,7 +7152,7 @@ class FreeAIHelper:
                     ic_key = topic_map.get(cat_key, 'general')
                     ic_text = ic.get(ic_key, ic.get('general', ''))
                     if ic_text:
-                        factors.append(f"[V27 KINH DICH] Que {ic.get('name','?')}: {str(ic_text)[:200]}")
+                        factors.append(f"[KINH DỊCH] Que {ic.get('name','?')}: {str(ic_text)[:200]}")
                         if 'cat' in str(ic_text).lower() or 'hanh' in str(ic_text).lower():
                             score += 3
                         elif 'hung' in str(ic_text).lower() or 'nan' in str(ic_text).lower():
@@ -7496,19 +7496,19 @@ class FreeAIHelper:
             if trung_hanh and can_hanh:
                 if SINH.get(trung_hanh) == can_hanh:
                     score += 5
-                    factors.append(f"V27 LN Trung Truyen sinh Can +5")
+                    factors.append(f"LN Trung Truyen sinh Can +5")
                 elif KHAC.get(trung_hanh) == can_hanh:
                     score -= 5
-                    factors.append(f"V27 LN Trung Truyen khac Can -5")
+                    factors.append(f"LN Trung Truyen khac Can -5")
             
             # Mat Truyen (Tuong Lai) - trong so thap
             if mat_hanh and can_hanh:
                 if SINH.get(mat_hanh) == can_hanh:
                     score += 3
-                    factors.append(f"V27 LN Mat Truyen sinh Can +3 (tuong lai tot)")
+                    factors.append(f"LN Mat Truyen sinh Can +3 (tuong lai tot)")
                 elif KHAC.get(mat_hanh) == can_hanh:
                     score -= 3
-                    factors.append(f"V27 LN Mat Truyen khac Can -3 (tuong lai xau)")
+                    factors.append(f"LN Mat Truyen khac Can -3 (tuong lai xau)")
             
             # Thien Tuong
             thien_tuong = ln_data.get('thien_tuong', {})
@@ -7518,10 +7518,10 @@ class FreeAIHelper:
                         ch = str(tt_val['cat_hung'])
                         if 'Cat' in ch or 'Cát' in ch:
                             score += 2
-                            factors.append(f"V27 LN Thien Tuong {tt_name} Cat +2")
+                            factors.append(f"LN Thien Tuong {tt_name} Cat +2")
                         elif 'Hung' in ch:
                             score -= 2
-                            factors.append(f"V27 LN Thien Tuong {tt_name} Hung -2")
+                            factors.append(f"LN Thien Tuong {tt_name} Hung -2")
                         if len(factors) > 20:
                             break
         except Exception:
@@ -7544,7 +7544,7 @@ class FreeAIHelper:
                 if chi_ma_ln in (so_chi, trung_chi, mat_chi):
                     score += 4
                     truyen_name = 'Sơ' if chi_ma_ln == so_chi else ('Trung' if chi_ma_ln == trung_chi else 'Mạt')
-                    factors.append(f"V28 LN Dịch Mã nhập {truyen_name} Truyền → tốc độ NHANH +4")
+                    factors.append(f"LN Dịch Mã nhập {truyen_name} Truyền → tốc độ NHANH +4")
             
             # ⑦ LỘC THẦN trong Tam Truyền (+5) — chỉ tài lộc, phúc đức
             LOC_THAN_MAP = {
@@ -7560,24 +7560,24 @@ class FreeAIHelper:
                 if loc_chi in (so_chi, trung_chi, mat_chi):
                     score += 5
                     truyen_name = 'Sơ' if loc_chi == so_chi else ('Trung' if loc_chi == trung_chi else 'Mạt')
-                    factors.append(f"V28 LN Lộc Thần nhập {truyen_name} Truyền → TÀI LỘC +5")
+                    factors.append(f"LN Lộc Thần nhập {truyen_name} Truyền → TÀI LỘC +5")
             
             # ⑧ Mạt Truyền lâm Tuần Không (-8) — kết quả trống rỗng
             mat_chi = tam_truyen.get('mat_truyen', '')
             if mat_chi and mat_chi in tuan_khong:
                 score -= 8
-                factors.append(f"V28 LN Mạt Truyền Tuần Không → KQ trống rỗng -8")
+                factors.append(f"LN Mạt Truyền Tuần Không → KQ trống rỗng -8")
             
             # ⑨ Trung Truyền lâm Tuần Không (-4)
             trung_chi = tam_truyen.get('trung_truyen', '')
             if trung_chi and trung_chi in tuan_khong:
                 score -= 4
-                factors.append(f"V28 LN Trung Truyền Tuần Không → quá trình gián đoạn -4")
+                factors.append(f"LN Trung Truyền Tuần Không → quá trình gián đoạn -4")
             
             # ⑩ KHÓA THỂ — xác định dạng quẻ (thông tin ngữ cảnh)
             khoa_the = ln_data.get('khoa_the', '')
             if khoa_the:
-                factors.append(f"V28 LN Khóa Thể: {str(khoa_the)[:60]}")
+                factors.append(f"LN Khóa Thể: {str(khoa_the)[:60]}")
             
             # ⑪ Tam Truyền → VẠN VẬT LOẠI TƯỢNG (mapping chi → Bát Quái → đồ vật)
             CHI_BAT_QUAI = {
@@ -7590,11 +7590,11 @@ class FreeAIHelper:
             if so_chi:
                 quai_so = CHI_BAT_QUAI.get(so_chi, '')
                 if quai_so:
-                    factors.append(f"V28 LN Sơ Truyền({so_chi})={quai_so} → nguồn gốc/khởi đầu")
+                    factors.append(f"LN Sơ Truyền({so_chi})={quai_so} → nguồn gốc/khởi đầu")
             if mat_chi:
                 quai_mat = CHI_BAT_QUAI.get(mat_chi, '')
                 if quai_mat:
-                    factors.append(f"V28 LN Mạt Truyền({mat_chi})={quai_mat} → kết quả/đích đến")
+                    factors.append(f"LN Mạt Truyền({mat_chi})={quai_mat} → kết quả/đích đến")
         except Exception:
             pass
 
@@ -7695,13 +7695,13 @@ class FreeAIHelper:
             if hanh_cung_ta and can_h:
                 if SINH.get(hanh_cung_ta) == can_h:
                     score += 6
-                    factors.append(f"V27 TA Thai At sinh Can Ngay +6")
+                    factors.append(f"TA Thai At sinh Can Ngay +6")
                 elif KHAC.get(hanh_cung_ta) == can_h:
                     score -= 6
-                    factors.append(f"V27 TA Thai At khac Can Ngay -6")
+                    factors.append(f"TA Thai At khac Can Ngay -6")
                 elif hanh_cung_ta == can_h:
                     score += 3
-                    factors.append(f"V27 TA Thai At dong hanh Can +3")
+                    factors.append(f"TA Thai At dong hanh Can +3")
             
             # Bat Tuong diem
             if bat_tuong:
@@ -7716,10 +7716,10 @@ class FreeAIHelper:
                             hung_count += 1
                 if cat_count > hung_count:
                     score += 4
-                    factors.append(f"V27 TA Bat Tuong Cat nhieu +4 ({cat_count}C/{hung_count}H)")
+                    factors.append(f"TA Bat Tuong Cat nhieu +4 ({cat_count}C/{hung_count}H)")
                 elif hung_count > cat_count:
                     score -= 4
-                    factors.append(f"V27 TA Bat Tuong Hung nhieu -4 ({cat_count}C/{hung_count}H)")
+                    factors.append(f"TA Bat Tuong Hung nhieu -4 ({cat_count}C/{hung_count}H)")
         except Exception:
             pass
 
@@ -7733,20 +7733,20 @@ class FreeAIHelper:
                 if ta_hanh_thien and can_h:
                     if SINH.get(ta_hanh_thien) == can_h:
                         score += 6
-                        factors.append(f"V28 TA Thiên Ất sinh Can Ngày → ĐẠI CÁT +6")
+                        factors.append(f"TA Thiên Ất sinh Can Ngày → ĐẠI CÁT +6")
                     elif KHAC.get(ta_hanh_thien) == can_h:
                         score -= 6
-                        factors.append(f"V28 TA Thiên Ất khắc Can Ngày → ĐẠI HUNG -6")
+                        factors.append(f"TA Thiên Ất khắc Can Ngày → ĐẠI HUNG -6")
                     elif ta_hanh_thien == can_h:
                         score += 3
-                        factors.append(f"V28 TA Thiên Ất đồng hành Can → CÁT +3")
+                        factors.append(f"TA Thiên Ất đồng hành Can → CÁT +3")
                 ta_cat_hung = thien_at.get('cat_hung', '')
                 if 'Cát' in str(ta_cat_hung):
                     score += 4
-                    factors.append(f"V28 TA Thiên Ất CÁT +4")
+                    factors.append(f"TA Thiên Ất CÁT +4")
                 elif 'Hung' in str(ta_cat_hung):
                     score -= 4
-                    factors.append(f"V28 TA Thiên Ất HUNG -4")
+                    factors.append(f"TA Thiên Ất HUNG -4")
             
             # ⑥ THAM TƯỚNG Chủ/Khách — phụ tá cho Đại Tướng
             tham_chu = bat_tuong.get('Chủ Tham Tướng', bat_tuong.get('Tham Tướng Chủ', {}))
@@ -7757,20 +7757,20 @@ class FreeAIHelper:
                 if tc_hanh and chu_h:
                     if SINH.get(tc_hanh) == chu_h:
                         score += 4
-                        factors.append(f"V28 TA Tham Tướng sinh Chủ → hỗ trợ +4")
+                        factors.append(f"TA Tham Tướng sinh Chủ → hỗ trợ +4")
                     elif KHAC.get(tc_hanh) == chu_h:
                         score -= 4
-                        factors.append(f"V28 TA Tham Tướng khắc Chủ → nội bộ bất hòa -4")
+                        factors.append(f"TA Tham Tướng khắc Chủ → nội bộ bất hòa -4")
             
             # ⑦ DƯƠNG CỬU / BÁCH LỤC — hạn vận lớn
             duong_cuu = ta_data.get('duong_cuu', '')
             bach_luc = ta_data.get('bach_luc', '')
             if duong_cuu and 'hạn' in str(duong_cuu).lower():
                 score -= 8
-                factors.append(f"V28 TA Dương Cửu hạn kỳ → tai ách -8")
+                factors.append(f"TA Dương Cửu hạn kỳ → tai ách -8")
             if bach_luc and 'hạn' in str(bach_luc).lower():
                 score -= 8
-                factors.append(f"V28 TA Bách Lục hạn kỳ → tai họa -8")
+                factors.append(f"TA Bách Lục hạn kỳ → tai họa -8")
             
             # ⑧ VĂN XƯƠNG chi tiết — vị trí + cát hung
             if van_xuong and isinstance(van_xuong, dict):
@@ -7778,7 +7778,7 @@ class FreeAIHelper:
                 vx_ten = van_xuong.get('ten_cung', '')
                 vx_cat = van_xuong.get('cat_hung', '')
                 if vx_cung:
-                    factors.append(f"V28 TA Văn Xương tại cung {vx_cung}({vx_ten}) {'CÁT' if 'Cát' in str(vx_cat) else 'HUNG' if 'Hung' in str(vx_cat) else 'BÌNH'}")
+                    factors.append(f"TA Văn Xương tại cung {vx_cung}({vx_ten}) {'CÁT' if 'Cát' in str(vx_cat) else 'HUNG' if 'Hung' in str(vx_cat) else 'BÌNH'}")
                     if 'Cát' in str(vx_cat):
                         score += 3
                     elif 'Hung' in str(vx_cat):
@@ -7791,7 +7791,7 @@ class FreeAIHelper:
             khong_vong_ta = _get_khong_vong(can_ngay, chi_ngay) if can_ngay and chi_ngay else []
             if ta_chi_mapped and ta_chi_mapped in khong_vong_ta:
                 score -= 6
-                factors.append(f"V28 TA Thái Ất Cung lâm Không Vong → trì trệ -6")
+                factors.append(f"TA Thái Ất Cung lâm Không Vong → trì trệ -6")
         except Exception:
             pass
 

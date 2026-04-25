@@ -22,13 +22,13 @@ V31.0: Thêm SĐ_MASTER — SƠ ĐỒ QUAN TRỌNG NHẤT
 
 DIAGRAM_MASTER = {
     'id': 'SD_MASTER',
-    'name': 'SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT LOẠI TƯỢNG (V34.0 FULL)',
+    'name': 'SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT LOẠI TƯỢNG (V42.9)',
     'pp_goc': ['Lục Hào', 'Kỳ Môn', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất'],
     'keywords': [],  # Luôn hiển thị — không cần match
-    'description': 'Sơ đồ trung tâm V34.0: Tất cả yếu tố TOÀN BỘ 6 phương pháp tác động lên DT',
+    'description': 'Sơ đồ trung tâm V42.9: Tất cả yếu tố TOÀN BỘ 6 phương pháp tác động lên DT',
     'template': """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  📐 SĐ MASTER V34.0: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
+║  📐 SĐ MASTER V42.9: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                            ║
 ║  ① XÁC ĐỊNH DỤNG THẦN                                                     ║
@@ -591,7 +591,7 @@ def match_question_to_diagram(question):
     Returns: (diagram_id, diagram_info)
     Luôn kèm SĐ_MASTER.
     
-    V34.0: Question-type keywords (ai, tại sao, khi nào...) get 3x priority
+    V42.9: Question-type keywords (ai, tại sao, khi nào...) get 3x priority
     vì chúng xác định LOẠI câu hỏi, không phải chủ đề.
     """
     if not question:
@@ -601,7 +601,7 @@ def match_question_to_diagram(question):
     best_id = 'SD0'
     best_score = 0
     
-    # V34.0: Keywords xác định LOẠI câu hỏi → ưu tiên ×3
+    # V42.9: Keywords xác định LOẠI câu hỏi → ưu tiên ×3
     _QTYPE_PRIORITY = {
         'ai ', 'là ai', 'người nào',                         # SD13
         'tại sao', 'vì sao', 'nguyên nhân', 'do đâu',       # SD14
