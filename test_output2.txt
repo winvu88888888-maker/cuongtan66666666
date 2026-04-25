@@ -594,10 +594,10 @@ Thái Ất Cung → Bát Tướng → Cách Cục → Verdict
 | 4 | Câu Trần | Phụ Mẫu | Thân-Kim | Kim |  | 🔴 Động |
 | 5 | Đằng Xà | Quan Quỷ | Tuất-Thổ | Thổ |  |  |
 | 6 | Bạch Hổ | Huynh Đệ | Tý-Thủy | Thủy |  |  |
-  - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
   - **Quan Quỷ**: Công việc, sếp, bệnh tật, kiện tụng, áp lực
-  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
   - **Tử Tôn**: Con cái, may mắn, vui vẻ, giải trừ, khắc Quan Quỷ
+  - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
+  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
 
 - ⚠️ **PHỤC THẦN:** Dụng Thần (Thê Tài) KHÔNG xuất hiện trong quẻ!
   → Dụng Thần ẩn (Phục Thần), sự việc chưa lộ diện.
@@ -1429,10 +1429,10 @@ Thái Ất Cung → Bát Tướng → Cách Cục → Verdict
 | 4 | Câu Trần | Phụ Mẫu | Thân-Kim | Kim |  | 🔴 Động |
 | 5 | Đằng Xà | Quan Quỷ | Tuất-Thổ | Thổ |  |  |
 | 6 | Bạch Hổ | Huynh Đệ | Tý-Thủy | Thủy |  |  |
-  - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
   - **Quan Quỷ**: Công việc, sếp, bệnh tật, kiện tụng, áp lực
-  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
   - **Tử Tôn**: Con cái, may mắn, vui vẻ, giải trừ, khắc Quan Quỷ
+  - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
+  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
 
 - ⚠️ **PHỤC THẦN:** Dụng Thần (Thê Tài) KHÔNG xuất hiện trong quẻ!
   → Dụng Thần ẩn (Phục Thần), sự việc chưa lộ diện.

@@ -1,0 +1,178 @@
+{
+  "ban": {
+    "name": "Thủy Lôi Truân",
+    "lines": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "details": [
+      {
+        "hao": 1,
+        "line": 1,
+        "is_moving": false,
+        "luc_than": "Huynh Đệ",
+        "can_chi": "Tý-Thủy",
+        "ngu_hanh": "Thủy",
+        "luc_thu": "Huyền Vũ",
+        "strength": "Hưu",
+        "marker": "(Mộ)"
+      },
+      {
+        "hao": 2,
+        "line": 0,
+        "is_moving": false,
+        "luc_than": "Tử Tôn",
+        "can_chi": "Dần-Mộc",
+        "ngu_hanh": "Mộc",
+        "luc_thu": "Thanh Long",
+        "strength": "Vượng",
+        "marker": "(Thế) (🐎)"
+      },
+      {
+        "hao": 3,
+        "line": 0,
+        "is_moving": false,
+        "luc_than": "Quan Quỷ",
+        "can_chi": "Thìn-Thổ",
+        "ngu_hanh": "Thổ",
+        "luc_thu": "Chu Tước",
+        "strength": "Tù",
+        "marker": "(Mộ)"
+      },
+      {
+        "hao": 4,
+        "line": 0,
+        "is_moving": true,
+        "luc_than": "Phụ Mẫu",
+        "can_chi": "Thân-Kim",
+        "ngu_hanh": "Kim",
+        "luc_thu": "Câu Trần",
+        "strength": "Tử",
+        "marker": "(Nguyệt Phá)"
+      },
+      {
+        "hao": 5,
+        "line": 1,
+        "is_moving": false,
+        "luc_than": "Quan Quỷ",
+        "can_chi": "Tuất-Thổ",
+        "ngu_hanh": "Thổ",
+        "luc_thu": "Đằng Xà",
+        "strength": "Tù",
+        "marker": "(Ứng) (Nhật Phá)"
+      },
+      {
+        "hao": 6,
+        "line": 0,
+        "is_moving": false,
+        "luc_than": "Huynh Đệ",
+        "can_chi": "Tý-Thủy",
+        "ngu_hanh": "Thủy",
+        "luc_thu": "Bạch Hổ",
+        "strength": "Hưu",
+        "marker": "(Mộ)"
+      }
+    ],
+    "palace": "Khảm"
+  },
+  "bien": {
+    "name": "Trạch Lôi Tùy",
+    "lines": [
+      1,
+      0,
+      0,
+      1,
+      1,
+      0
+    ],
+    "details": [
+      {
+        "hao": 1,
+        "line": 1,
+        "is_moving": false,
+        "luc_than": "Huynh Đệ",
+        "can_chi": "Tý-Thủy",
+        "ngu_hanh": "Thủy",
+        "luc_thu": "Huyền Vũ",
+        "strength": "Hưu",
+        "marker": ""
+      },
+      {
+        "hao": 2,
+        "line": 0,
+        "is_moving": false,
+        "luc_than": "Tử Tôn",
+        "can_chi": "Dần-Mộc",
+        "ngu_hanh": "Mộc",
+        "luc_thu": "Thanh Long",
+        "strength": "Vượng",
+        "marker": "(🐎)"
+      },
+      {
+        "hao": 3,
+        "line": 0,
+        "is_moving": false,
+        "luc_than": "Quan Quỷ",
+        "can_chi": "Thìn-Thổ",
+        "ngu_hanh": "Thổ",
+        "luc_thu": "Chu Tước",
+        "strength": "Tù",
+        "marker": ""
+      },
+      {
+        "hao": 4,
+        "line": 1,
+        "is_moving": false,
+        "luc_than": "Huynh Đệ",
+        "can_chi": "Hợi-Thủy",
+        "ngu_hanh": "Thủy",
+        "luc_thu": "Câu Trần",
+        "strength": "Hưu",
+        "marker": ""
+      },
+      {
+        "hao": 5,
+        "line": 1,
+        "is_moving": false,
+        "luc_than": "Phụ Mẫu",
+        "can_chi": "Dậu-Kim",
+        "ngu_hanh": "Kim",
+        "luc_thu": "Đằng Xà",
+        "strength": "Tử",
+        "marker": ""
+      },
+      {
+        "hao": 6,
+        "line": 0,
+        "is_moving": false,
+        "luc_than": "Quan Quỷ",
+        "can_chi": "Mùi-Thổ",
+        "ngu_hanh": "Thổ",
+        "luc_thu": "Bạch Hổ",
+        "strength": "Tù",
+        "marker": "(○)"
+      }
+    ]
+  },
+  "dong_hao": [
+    4
+  ],
+  "phuc_than": [
+    {
+      "luc_than": "Thê Tài",
+      "can_chi": "Ngọ-Hỏa",
+      "element": "Hỏa",
+      "hao_pos": 3,
+      "phi_than_luc_than": "Quan Quỷ",
+      "phi_than_can_chi": "Thìn-Thổ",
+      "strength": "Tướng",
+      "bat_thuan": "Khảm Vi Thủy"
+    }
+  ],
+  "conclusion": "Quẻ Thủy Lôi Truân biến Trạch Lôi Tùy. Tình duyên có biến tại hào 4.",
+  "the_ung": "Thế hào 2, Ứng hào 5"
+}
