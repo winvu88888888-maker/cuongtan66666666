@@ -1,5 +1,5 @@
 """
-Free AI Helper V42.2 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 3378+ + 12 Trường Sinh)
+Free AI Helper V42.9 — THIÊN CƠ ĐẠI SƯ (Siêu Premium UI + Answer-First + Vạn Vật 3378+ + 12 Trường Sinh)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V42.2: +7 thiếu sót chuyên gia (Ứng Kỳ chuyên sâu, Hóa Hồi Đầu, Hào Từ, Phản/Phục Ngâm,
@@ -2074,7 +2074,7 @@ def _build_thien_dia_nhan_than(thien_ban, nhan_ban, than_ban, chu_cung, sv_cung,
     if not thien_ban or not nhan_ban or not than_ban:
         return ''
     
-    lines.append(f"\n**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN (V42.1):**")
+    lines.append(f"\n**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN:**")
     lines.append(f"*Kỳ Môn Độn Giáp phân tích theo 4 trụ chiến lược*")
     
     # Lấy data từ cung Bản Thân
@@ -2156,7 +2156,7 @@ def _analyze_kv_dich_ma_deep(khong_vong_list, dich_ma_chi, dung_than_chi, dung_t
         # 1. Check DT lâm Không Vong
         dt_in_kv = dung_than_chi and dung_than_chi in khong_vong_list
         if dt_in_kv:
-            lines.append(f"\n**🕳️ PHÂN TÍCH KHÔNG VONG CHUYÊN SÂU (V42.1):**")
+            lines.append(f"\n**🕳️ PHÂN TÍCH KHÔNG VONG CHUYÊN SÂU:**")
             lines.append(f"  Dụng Thần **{dung_than_name}** ({dung_than_chi}) lâm Tuần Không [{', '.join(khong_vong_list)}]")
             
             # Chân Không vs Giả Không
@@ -2187,7 +2187,7 @@ def _analyze_kv_dich_ma_deep(khong_vong_list, dich_ma_chi, dung_than_chi, dung_t
                     kv_haos.append((i+1, h_lt, h_chi))
             if kv_haos:
                 if not dt_in_kv:
-                    lines.append(f"\n**🕳️ KHÔNG VONG CÁC HÀO (V42.1):**")
+                    lines.append(f"\n**🕳️ KHÔNG VONG CÁC HÀO:**")
                 for h_idx, h_lt, h_chi in kv_haos:
                     impact = ''
                     if h_lt == 'Quan Quỷ':
@@ -2204,7 +2204,7 @@ def _analyze_kv_dich_ma_deep(khong_vong_list, dich_ma_chi, dung_than_chi, dung_t
     
     # ====== PHÂN TÍCH DỊCH MÃ SÂU ======
     if dich_ma_chi:
-        lines.append(f"\n**🐎 PHÂN TÍCH DỊCH MÃ CHUYÊN SÂU (V42.1):**")
+        lines.append(f"\n**🐎 PHÂN TÍCH DỊCH MÃ CHUYÊN SÂU:**")
         lines.append(f"  Dịch Mã tại Chi **{dich_ma_chi}**")
         
         # 1. Dịch Mã gặp Xung → di chuyển RẤT NHANH
@@ -2279,7 +2279,7 @@ def _build_nguyet_pha_warning(dung_than_chi, chi_thang, dung_than_name='Dụng T
                 nguyet_pha_haos.append((i+1, h_lt, h_chi))
         
         if nguyet_pha_haos:
-            lines.append(f"\n**💥 CÁC HÀO BỊ NGUYỆT PHÁ (V42.1):**")
+            lines.append(f"\n**💥 CÁC HÀO BỊ NGUYỆT PHÁ:**")
             for h_idx, h_lt, h_chi in nguyet_pha_haos:
                 impact = ''
                 if h_lt == 'Kỵ Thần' or h_lt == 'Quan Quỷ':
@@ -5757,7 +5757,7 @@ class FreeAIHelper:
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         # BƯỚC 0: CÂU HỎI → DỤNG THẦN (Khởi đầu chuỗi logic)
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        lines.append("## 🔮 PROTOCOL 27 BƯỚC — LUẬN GIẢI THỐNG NHẤT V38.2")
+        lines.append("## 🔮 PROTOCOL 27 BƯỚC — LUẬN GIẢI THỐNG NHẤT V42.9")
         lines.append("")
         lines.append("### BƯỚC 0: CÂU HỎI → DỤNG THẦN")
         lines.append(f"- **Câu hỏi:** {question}")
@@ -11671,7 +11671,7 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
         sections = []
-        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V31.1 Phân Tích Thống Nhất\n")
+        sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V42.9 Phân Tích Thống Nhất\n")
         sections.append(f"**Câu hỏi:** {question}\n")
         
         # ═══════════════════════════════════════════════════
@@ -12135,7 +12135,7 @@ class FreeAIHelper:
         # Bảng vạn vật từ weighted_pct (5 PP) — giữ lại như cũ
         vv_key, vv_data = _get_van_vat_from_pct(weighted_pct)
         
-        sections.append(f"\n### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V26.2 LỰC LƯỢNG THỐNG NHẤT)")
+        sections.append(f"\n### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V42.9 LỰC LƯỢNG THỐNG NHẤT)")
         
         # A. Bảng 3 tầng Unified
         sections.append(f"\n**A. 3 TẦNG ĐO LỰC LƯỢNG DT:**")
@@ -12166,7 +12166,7 @@ class FreeAIHelper:
             tong_diem_tot = sum(1 for f in v23_lh_factors if '+' in f)
             tong_diem_xau = sum(1 for f in v23_lh_factors if '-' in f and '+' not in f)
             
-            sections.append(f"\n**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V26.2) — {len(v23_lh_factors)} yếu tố:**")
+            sections.append(f"\n**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V42.9) — {len(v23_lh_factors)} yếu tố:**")
             sections.append(f"*✅ Thuận lợi: {tong_diem_tot} | ⚠️ Bất lợi: {tong_diem_xau} | Tổng: {v16_lh_raw:+d}*")
             
             if noi_tai:
@@ -12366,7 +12366,7 @@ class FreeAIHelper:
         )
         sections.append(unified_narrative)
         
-        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V26.2 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP={weighted_pct}%, Tổng Hợp 3 Tầng={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
+        sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V42.9 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP={weighted_pct}%, Tổng Hợp 3 Tầng={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
         
         # ========================================
         # V11.1: AI ONLINE LÀ PHÂN TÍCH CHÍNH
@@ -12744,7 +12744,7 @@ class FreeAIHelper:
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V40.9)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9)</div>'
                 f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
                 + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
@@ -12855,7 +12855,7 @@ class FreeAIHelper:
             
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.9</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div>'
                 f'<div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">{_off_answer}</div>'
                 f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                 + _off_ev_html
@@ -13446,7 +13446,7 @@ class FreeAIHelper:
         
         # V42.2: BẢNG NHÂN BÀN (BÁT MÔN) RÕ RÀNG
         if nhan_ban:
-            lines.append(f"**🚪 NHÂN BÀN (Bát Môn) — V42.2:**")
+            lines.append(f"**🚪 NHÂN BÀN (Bát Môn):**")
             nb_row = []
             for cn_i in range(1, 10):
                 if cn_i == 5:
@@ -13459,7 +13459,7 @@ class FreeAIHelper:
         
         # V42.2: BẢNG THẦN BÀN (BÁT THẦN) RÕ RÀNG
         if than_ban:
-            lines.append(f"**👁️ THẦN BÀN (Bát Thần) — V42.2:**")
+            lines.append(f"**👁️ THẦN BÀN (Bát Thần):**")
             tb_row = []
             for cn_i in range(1, 10):
                 if cn_i == 5:
@@ -13725,7 +13725,7 @@ class FreeAIHelper:
                     tuan_khong_results['Tháng'] = kv_thang
             
             if tuan_khong_results:
-                lines.append(f"\n  **🕳️ TUẦN KHÔNG TỨ TRỤ (V15.0):**")
+                lines.append(f"\n  **🕳️ TUẦN KHÔNG TỨ TRỤ:**")
                 lines.append(f"  ⚡ *Chi lâm Tuần Không = KHÔNG CÓ THẬT, sự việc trống rỗng!*")
                 for tru_name, kv_list in tuan_khong_results.items():
                     lines.append(f"  - Tuần Không Trụ {tru_name}: **{', '.join(kv_list)}**")
@@ -13772,7 +13772,7 @@ class FreeAIHelper:
                     dich_ma_results[tru_name] = (chi_val, ma)
             
             if dich_ma_results:
-                lines.append(f"\n  **🐎 DỊCH MÃ TỨ TRỤ (V15.0):**")
+                lines.append(f"\n  **🐎 DỊCH MÃ TỨ TRỤ:**")
                 lines.append(f"  ⚡ *Dịch Mã = DI CHUYỂN, biến động, thay đổi nhanh chóng*")
                 for tru_name, (chi_val, ma_chi) in dich_ma_results.items():
                     lines.append(f"  - Trụ {tru_name} ({chi_val}) → Dịch Mã tại **{ma_chi}**")
@@ -13803,7 +13803,7 @@ class FreeAIHelper:
             
             has_tru_data = can_nam_display != '?' or can_thang_display != '?'
             if has_tru_data:
-                lines.append(f"\n  **📜 TỨ TRỤ Ý NGHĨA (V15.0):**")
+                lines.append(f"\n  **📜 TỨ TRỤ Ý NGHĨA:**")
                 
                 # Trụ Năm
                 hanh_can_nam = CAN_NGU_HANH.get(can_nam_display, '?')
@@ -14026,7 +14026,7 @@ class FreeAIHelper:
         huynh_de_count = 0  # Đếm Huynh Đệ cho is_count
         
         if haos:
-            lines.append(f"\n**☯️ Bảng 6 Hào (V42.2 — Lục Thần + Lục Thân đầy đủ):**")
+            lines.append(f"\n**☯️ Bảng 6 Hào (Lục Thần + Lục Thân):**")
             lines.append(f"| Hào | Lục Thần | Lục Thân | Can Chi | Ngũ Hành | Thế/Ứng | Động |")
             lines.append(f"|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
             for i, hao in enumerate(haos):
@@ -14266,7 +14266,7 @@ class FreeAIHelper:
             if khong_vong_list and dung_than_hao:
                 dt_chi = dung_than_hao.get('chi', '')
                 if dt_chi in khong_vong_list:
-                    lines.append(f"\n**🕳️ KHÔNG VONG (V9.0):** Dụng Thần ({dt_chi}) lâm Tuần Không [{', '.join(khong_vong_list)}]")
+                    lines.append(f"\n**🕳️ KHÔNG VONG:** Dụng Thần ({dt_chi}) lâm Tuần Không [{', '.join(khong_vong_list)}]")
                     lines.append(f"  → Sự việc HƯ, TRỐNG RỖNG — Chờ đến khi Xuất Không (gặp Chi {dt_chi}) mới ứng nghiệm!")
                     reasons_list.append("Dụng Thần Không Vong")
                     if verdict == "CÁT":
@@ -14275,7 +14275,7 @@ class FreeAIHelper:
             # ====== V42.0: ÁM ĐỘNG (Nhật xung hào tĩnh) ======
             am_dong_results = _detect_am_dong(haos, dong_hao, chi_ngay_lh)
             if am_dong_results:
-                lines.append(f"\n**👁️ ÁM ĐỘNG (V42.0) — Lực lượng ẩn:**")
+                lines.append(f"\n**👁️ ÁM ĐỘNG — Lực lượng ẩn:**")
                 for ad in am_dong_results:
                     ad_lt = ad['luc_than']
                     lines.append(f"  - Hào {ad['hao_idx']} **{ad_lt}** {ad['can_chi']} ({ad['ngu_hanh']}) — Nhật ({ad['xung_chi']}) xung {ad['chi']}")
@@ -14316,7 +14316,7 @@ class FreeAIHelper:
                     haos=haos, method='LỤC HÀO'
                 )
                 if dt_chi and LUC_XUNG_CHI.get(chi_thang_lh) == dt_chi:
-                    lines.append(f"\n**💥 NGUYỆT PHÁ (V42.1):** Chi tháng {chi_thang_lh} xung Dụng Thần ({dt_chi})")
+                    lines.append(f"\n**💥 NGUYỆT PHÁ:** Chi tháng {chi_thang_lh} xung Dụng Thần ({dt_chi})")
                     lines.append(f"  → Dụng Thần bị NGUYỆT PHÁ = Sức mạnh TAN VỠ, sự việc KHÓ THÀNH! ⚠️")
                     reasons_list.append("Dụng Thần Nguyệt Phá")
                     verdict = "HUNG"
@@ -14329,7 +14329,7 @@ class FreeAIHelper:
                 for tam_hop_set, (thc_hanh, thc_desc) in TAM_HOP_CUC.items():
                     matching = [c for c in all_chi if c in tam_hop_set]
                     if len(matching) >= 3:
-                        lines.append(f"\n**🔗 TAM HỢP CỤC (V9.0):** {thc_desc}")
+                        lines.append(f"\n**🔗 TAM HỢP CỤC:** {thc_desc}")
                         if hanh:
                             thc_rel = _ngu_hanh_relation(thc_hanh, hanh)
                             if 'SINH' in thc_rel and 'BỊ' not in thc_rel:
@@ -14346,11 +14346,11 @@ class FreeAIHelper:
                 ung_chi = ung_hao.get('chi', '')
                 if the_chi and ung_chi:
                     if LUC_XUNG_CHI.get(the_chi) == ung_chi:
-                        lines.append(f"\n**⚡ LỤC XUNG THẾ-ỨNG (V9.0):** {the_chi} xung {ung_chi}")
+                        lines.append(f"\n**⚡ LỤC XUNG THẾ-ỨNG:** {the_chi} xung {ung_chi}")
                         lines.append(f"  → Người hỏi và đối phương/sự việc XUNG ĐỘT, khó hòa hợp!")
                         reasons_list.append("Thế Ứng Lục Xung")
                     elif LUC_HOP_CHI.get(the_chi) == ung_chi:
-                        lines.append(f"\n**🤝 LỤC HỢP THẾ-ỨNG (V9.0):** {the_chi} hợp {ung_chi}")
+                        lines.append(f"\n**🤝 LỤC HỢP THẾ-ỨNG:** {the_chi} hợp {ung_chi}")
                         lines.append(f"  → Người hỏi và đối phương HÒA HỢP, sự việc THUẬN LỢI! ✅")
                         reasons_list.append("Thế Ứng Lục Hợp")
             
@@ -14511,7 +14511,7 @@ class FreeAIHelper:
             if hanh and verdict:
                 # Basic ứng kỳ
                 ung_ky_text = _get_ung_ky(hanh, verdict)
-                lines.append(f"\n**⏰ ỨNG KỲ CHUYÊN SÂU (V42.0):**")
+                lines.append(f"\n**⏰ ỨNG KỲ CHUYÊN SÂU:**")
                 lines.append(f"  {ung_ky_text}")
                 # Advanced ứng kỳ
                 dt_chi_uk = dung_than_hao.get('chi', '') if dung_than_hao else ''
@@ -14710,13 +14710,13 @@ class FreeAIHelper:
         lenh_hanh, lenh_mua = _get_lenh_thang_hanh()
         if the_el and the_el != '?':
             if the_el == lenh_hanh:
-                lines.append(f"\n**🌿 LỆNH THÁNG (V9.0):** {lenh_mua} — {lenh_hanh} vượng")
+                lines.append(f"\n**🌿 LỆNH THÁNG:** {lenh_mua} — {lenh_hanh} vượng")
                 lines.append(f"  → Thể quái ({the_el}) ĐANG VƯỢNG theo mùa = Sức mạnh TĂNG GẤP ĐÔI! ✅")
                 if verdict == "HUNG":
                     verdict = "BÌNH"
                     reason += " + Thể vượng lệnh"
             elif KHAC.get(lenh_hanh) == the_el:
-                lines.append(f"\n**🍂 LỆNH THÁNG (V9.0):** {lenh_mua} — {lenh_hanh} vượng")
+                lines.append(f"\n**🍂 LỆNH THÁNG:** {lenh_mua} — {lenh_hanh} vượng")
                 lines.append(f"  → Thể quái ({the_el}) BỊ KHẮC bởi Lệnh Tháng ({lenh_hanh}) = SUY YẾU ⚠️")
                 if verdict == "CÁT":
                     verdict = "BÌNH"
@@ -14730,10 +14730,10 @@ class FreeAIHelper:
             ho_el = ho_yn_check.get('hanh', '')
         if ho_el and the_el and the_el != '?':
             if SINH.get(ho_el) == the_el:
-                lines.append(f"\n**🤝 HỖ QUÁI SINH THỂ (V9.0):** Hỗ ({ho_el}) sinh Thể ({the_el})")
+                lines.append(f"\n**🤝 HỖ QUÁI SINH THỂ:** Hỗ ({ho_el}) sinh Thể ({the_el})")
                 lines.append(f"  → Có QUÝ NHÂN ẨN giúp đỡ, sự việc có nền tảng bên trong! ✅")
             elif KHAC.get(ho_el) == the_el:
-                lines.append(f"\n**⚠️ HỖ QUÁI KHẮC THỂ (V9.0):** Hỗ ({ho_el}) khắc Thể ({the_el})")
+                lines.append(f"\n**⚠️ HỖ QUÁI KHẮC THỂ:** Hỗ ({ho_el}) khắc Thể ({the_el})")
                 lines.append(f"  → Có TRỞ NGẠI ẨN chưa thấy, bên trong có vấn đề ngầm!")
         
         # ====== V9.0: BIẾN QUÁI SINH KHẮC THỂ ======
@@ -14747,17 +14747,17 @@ class FreeAIHelper:
                     bien_el = bien_yn.get('hanh', '')
                     if bien_el and the_el and the_el != '?':
                         if SINH.get(bien_el) == the_el:
-                            lines.append(f"\n**🔮 BIẾN QUÁI SINH THỂ (V9.0):** Biến ({bien_el}) sinh Thể ({the_el})")
+                            lines.append(f"\n**🔮 BIẾN QUÁI SINH THỂ:** Biến ({bien_el}) sinh Thể ({the_el})")
                             lines.append(f"  → Kết cục TỐT HƠN dự kiến, có chuyển biến tích cực! ✅")
                         elif KHAC.get(bien_el) == the_el:
-                            lines.append(f"\n**🔮 BIẾN QUÁI KHẮC THỂ (V9.0):** Biến ({bien_el}) khắc Thể ({the_el})")
+                            lines.append(f"\n**🔮 BIẾN QUÁI KHẮC THỂ:** Biến ({bien_el}) khắc Thể ({the_el})")
                             lines.append(f"  → Kết cục XẤU HƠN, hậu quả lâu dài, cần đề phòng! ⚠️")
                     break
         
         # ====== V9.0: ỨNG KỲ MAI HOA ======
         if the_el and the_el != '?':
             ung_ky_text = _get_ung_ky(the_el, verdict)
-            lines.append(f"\n**⏰ ỨNG KỲ (V9.0):** {ung_ky_text}")
+            lines.append(f"\n**⏰ ỨNG KỲ:** {ung_ky_text}")
         
         lines.append(f"\n  → **MAI HOA: {verdict}** ({reason})")
         
@@ -14846,7 +14846,7 @@ class FreeAIHelper:
             if hanh_can and chi_ngay:
                 ts_stage, ts_explain = _get_truong_sinh(hanh_can, chi_ngay)
                 if ts_stage:
-                    lines.append(f"\n  **🔄 Trường Sinh Nạp Âm (V9.0):** {hanh_can} tại {chi_ngay} = **{ts_stage}**")
+                    lines.append(f"\n  **🔄 Trường Sinh Nạp Âm:** {hanh_can} tại {chi_ngay} = **{ts_stage}**")
                     lines.append(f"  → {ts_explain}")
         
         # ====== V9.0: THẦN SÁT ANALYSIS ======
@@ -14868,7 +14868,7 @@ class FreeAIHelper:
                 than_sat_results.append(('HUNG', dn_data['giai_thich']))
             
             if than_sat_results:
-                lines.append(f"\n**🌟 THẦN SÁT (V9.0):**")
+                lines.append(f"\n**🌟 THẦN SÁT:**")
                 for sat_type, sat_desc in than_sat_results:
                     lines.append(f"  - {sat_desc}")
         
@@ -14912,7 +14912,7 @@ class FreeAIHelper:
                 if hex_palace:
                     thoan_info = QUE_THOAN_DAI_TUONG.get(hex_palace, {})
                     if thoan_info:
-                        lines.append(f"\n  **📜 THOÁN TỪ (V9.0):** {thoan_info.get('thoan', '')}")
+                        lines.append(f"\n  **📜 THOÁN TỪ:** {thoan_info.get('thoan', '')}")
                         lines.append(f"  **🏔️ ĐẠI TƯỢNG:** {thoan_info.get('dai_tuong', '')}")
                         lines.append(f"  **💡 Lời khuyên:** {thoan_info.get('lk', '')}")
                 
@@ -14949,7 +14949,7 @@ class FreeAIHelper:
                         
                         chinh_text = "CHÍNH VỊ ✅" if is_chinh else "BẤT CHÍNH ⚠️"
                         trung_text = " + TRUNG (cân bằng hoàn hảo) 🌟" if is_trung else ""
-                        lines.append(f"\n  **📐 HÀO VỊ (V9.0):** Hào Thế ({the_pos}) = **{chinh_text}**{trung_text}")
+                        lines.append(f"\n  **📐 HÀO VỊ:** Hào Thế ({the_pos}) = **{chinh_text}**{trung_text}")
                         if is_chinh and is_trung:
                             lines.append(f"  → Chính + Trung = Vị trí HOÀN HẢO — Sự việc THUẬN LỢI nhất!")
                         elif not is_chinh:
@@ -14969,7 +14969,7 @@ class FreeAIHelper:
                     # V9.0: Thoán Từ cho Mai Hoa
                     thoan_info = QUE_THOAN_DAI_TUONG.get(hex_palace, {})
                     if thoan_info:
-                        lines.append(f"\n  **📜 THOÁN TỪ (V9.0):** {thoan_info.get('thoan', '')}")
+                        lines.append(f"\n  **📜 THOÁN TỪ:** {thoan_info.get('thoan', '')}")
                         lines.append(f"  **💡 Lời khuyên:** {thoan_info.get('lk', '')}")
         else:
             lines.append("- Chưa có dữ liệu Kinh Dịch (cần Lục Hào hoặc Mai Hoa).")
