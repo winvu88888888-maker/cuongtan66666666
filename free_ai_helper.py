@@ -9037,7 +9037,7 @@ class FreeAIHelper:
             lines.append(f"- Mai Hoa: Thể Quái = {_side_a_disp}, Dụng Quái = {_side_b_disp}")
         
         # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
-        elif any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
+        if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
                                   'nghĩ gì', 'hành động', 'làm gì', 'xử lý', 'tính sao']):
             _color = '#16a34a' if pct >= 55 else '#dc2626' if pct <= 40 else '#ca8a04'
             lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid {_color};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_color};">{icon} VỀ "{_q_short}"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">{vv_data["cap"]} — {pct}%</span></div>')
@@ -9058,7 +9058,7 @@ class FreeAIHelper:
                 lines.append(f"\n→ Tình hình **TRUNG BÌNH** ({pct}%). Ổn nhưng cần nỗ lực thêm.")
         
         # AI / NGƯỜI NÀO — dùng Lục Thân để xác định
-        elif any(k in q for k in ['ai ', 'người nào', 'ai đó', 'người gì', 'người như thế nào']):
+        if any(k in q for k in ['ai ', 'người nào', 'ai đó', 'người gì', 'người như thế nào']):
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: Đặc điểm người được hỏi ({dung_than})**")
             lines.append(f"\n📋 **Mô tả (Vạn Vật Loại Tượng — {vv_key}):**")
             lines.append(f"- 👤 {vv_data.get('con_nguoi', '?')}")
@@ -9078,7 +9078,7 @@ class FreeAIHelper:
                 lines.append(f"- 🤝 Mối quan hệ: Anh em, bạn bè, đồng nghiệp, đối thủ")
         
         # CÁI GÌ / VẬT GÌ / SẢN PHẨM GÌ / ĐỒ GÌ — V42.0: Vạn Vật Loại Tượng chuyên sâu
-        elif any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì',
+        if any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì',
                                    'chuyện gì', 'việc gì', 'vật gì', 'sản phẩm', 'hàng gì',
                                    'đồ gì', 'loại gì', 'mặt hàng', 'sản xuất gì', 'bán gì',
                                    'kinh doanh gì', 'buôn gì', 'mua gì', 'đầu tư gì', 'ngành gì',
@@ -9131,7 +9131,7 @@ class FreeAIHelper:
             lines.append(
                 f'\n<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:22px;border-radius:14px;'
                 f'border-left:6px solid {_qcolor};margin:12px 0;">'
-                f'<span style="font-size:1.3em;font-weight:900;color:#c4b5fd;">🔮 CÂU TRẢ LỜI: "{_q_short}"</span><br><br>'
+                f'<span style="font-size:1.3em;font-weight:900;color:#c4b5fd;">🔮 PHÂN TÍCH VẠN VẬT: "{_q_short}"</span><br><br>'
                 f'<span style="font-size:1.15em;font-weight:800;color:{_qcolor};">📦 Hành {hanh_dt} → {_sp}</span><br><br>'
                 f'<span style="color:#e2e8f0;font-size:1.05em;">'
                 f'- <b>Lĩnh vực (DT {dung_than}):</b> {_noidung}<br>'
@@ -9394,7 +9394,7 @@ class FreeAIHelper:
                 lines.append(f"- 💡 Ưu tiên: **ngày** > giờ > tháng (ngày gần nhất ảnh hưởng trực tiếp)")
         
         # TUỔI
-        elif any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
+        if any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
             if age_numbers:
                 all_nums = [n for _, n in age_numbers]
                 avg = int(sum(all_nums) / len(all_nums)) if all_nums else 0
@@ -9405,7 +9405,7 @@ class FreeAIHelper:
                 lines.append(f"\n📊 **CÂU TRẢ LỜI:** Không đủ dữ liệu tuổi từ quẻ.")
         
         # BAO NHIÊU / MẤY — V41.0: Luôn trả số cụ thể
-        elif any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con']):
+        if any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con', 'mấy']):
             # V41.0: Nếu chưa có count_numbers → tự tính từ Ngũ Hành
             if not count_numbers and hanh_dt:
                 _HD = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
@@ -12986,40 +12986,47 @@ class FreeAIHelper:
             
             final_parts = []
             
-            # V40.9: Extract short verdict from direct_answer for header
-            _offline_short_answer = ""
+            # V42.9.1: Extract MULTIPLE short verdicts from direct_answer for header
+            _offline_short_answer_list = []
             _offline_evidence = []
             if direct_answer:
                 for _line in direct_answer.split('\n'):
                     _s = _line.strip()
-                    # Tìm dòng verdict chính (có icon 🟢🔴🟡 hoặc "CÂU TRẢ LỜI")
-                    if not _offline_short_answer:
-                        if 'PHÁN QUYẾT:' in _s:
-                            import re as _re_html
-                            _m = _re_html.search(r'(?:✅|⚖️|↗️)?\s*PHÁN QUYẾT:.*?(?=</span>|</div>|<br)', _s)
-                            if _m:
-                                _offline_short_answer = _m.group(0).replace('**', '').replace('#', '').strip()
-                                if not _offline_short_answer.startswith(('✅', '⚖️', '↗️')):
-                                    _offline_short_answer = "✅ " + _offline_short_answer
-                            else:
-                                _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
-                                _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
-                        elif any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
-                            import re as _re_html
-                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
-                            _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
-                        elif 'CÂU TRẢ LỜI' in _s.upper():
-                            import re as _re_html
-                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
-                            _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
-                        elif _s.startswith(('🟢', '🔴', '🟡', '✅', '⚖️', '↗️')) and len(_s) > 5:
-                            import re as _re_html
-                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
-                            _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
+                    _s_spaced = _s.replace('<br>', ' ').replace('</div>', ' ')
+                    # Tìm dòng verdict chính (có icon 🟢🔴🟡 hoặc "CÂU TRẢ LỜI" hoặc "PHÁN QUYẾT" hoặc "📦 Hành")
+                    if 'PHÁN QUYẾT:' in _s:
+                        import re as _re_html
+                        _m = _re_html.search(r'(?:✅|⚖️|↗️)?\s*PHÁN QUYẾT:.*?(?=</span>|</div>|<br)', _s)
+                        if _m:
+                            _ans = _m.group(0).replace('**', '').replace('#', '').strip()
+                            if not _ans.startswith(('✅', '⚖️', '↗️')): _ans = "✅ " + _ans
+                            if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                        else:
+                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                            _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                            if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    elif any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
+                        import re as _re_html
+                        _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                        _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                        if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    elif 'CÂU TRẢ LỜI' in _s.upper() or '📦 Hành' in _s:
+                        import re as _re_html
+                        _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                        _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                        if 'CÂU TRẢ LỜI:' in _ans: _ans = _ans.replace('CÂU TRẢ LỜI:', '').strip()
+                        if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    elif _s.startswith(('🟢', '🔴', '🟡', '✅', '⚖️', '↗️')) and len(_s) > 5:
+                        import re as _re_html
+                        _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                        _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                        if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
                     # Tìm evidence lines (top 3)
                     elif len(_offline_evidence) < 3:
                         if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
                             _offline_evidence.append(_s)
+
+            _offline_short_answer = "<br>".join(_offline_short_answer_list) if _offline_short_answer_list else ""
             
             if not _offline_short_answer:
                 # V42.9: SMART HEADER — detect loại câu hỏi để trả lời đúng kiểu
