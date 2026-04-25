@@ -8658,16 +8658,107 @@ class FreeAIHelper:
                                                      lh_factors=kwargs.get('lh_factors'),
                                                      km_factors=kwargs.get('km_factors'),
                                                      mh_factors=kwargs.get('mh_factors'),
-                                                     luc_hao_data=luc_hao_data)
+                                                     luc_hao_data=luc_hao_data,
+                                                     mai_hoa_data=kwargs.get('mai_hoa_data'))
         
         return impact_text, direct_answer, evidence
     
+    def _calc_competition_scores(self, chart_data, luc_hao_data, mai_hoa_data):
+        _the_score = 0
+        _ung_score = 0
+        _the_ung_detail = []
+        
+        # --- LỤC HÀO: Thế vs Ứng ---
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            _lh_ban = luc_hao_data.get('ban', {})
+            _lh_haos = _lh_ban.get('haos') or _lh_ban.get('details', [])
+            _the_h = None
+            _ung_h = None
+            for _h in _lh_haos:
+                _tu = str(_h.get('the_ung', '') or _h.get('marker', ''))
+                if 'Thế' in _tu:
+                    _the_h = _h
+                elif 'Ứng' in _tu:
+                    _ung_h = _h
+            if _the_h and _ung_h:
+                _the_hanh = _the_h.get('ngu_hanh', '')
+                _ung_hanh = _ung_h.get('ngu_hanh', '')
+                _the_vs = str(_the_h.get('vuong_suy', '') or _the_h.get('strength', ''))
+                _ung_vs = str(_ung_h.get('vuong_suy', '') or _ung_h.get('strength', ''))
+                # Điểm Vượng/Suy
+                _VS_SCORE = {'Đế Vượng': 10, 'Lâm Quan': 8, 'Trường Sinh': 6, 'Mộc Dục': 4,
+                             'Quan Đới': 3, 'Dưỡng': 2, 'Thai': 1, 'Suy': -4, 'Bệnh': -6,
+                             'Tử': -8, 'Mộ': -5, 'Tuyệt': -10}
+                for _stage, _sc in _VS_SCORE.items():
+                    if _stage in _the_vs:
+                        _the_score += _sc
+                        break
+                for _stage, _sc in _VS_SCORE.items():
+                    if _stage in _ung_vs:
+                        _ung_score += _sc
+                        break
+                # Sinh/Khắc
+                if SINH.get(_the_hanh) == _ung_hanh:
+                    _the_score -= 3  # Thế sinh Ứng = Thế hao tổn
+                    _ung_score += 3
+                elif KHAC.get(_the_hanh) == _ung_hanh:
+                    _the_score += 5  # Thế khắc Ứng = Thế thắng
+                    _ung_score -= 5
+                elif SINH.get(_ung_hanh) == _the_hanh:
+                    _the_score += 3  # Ứng sinh Thế = Thế được lợi
+                    _ung_score -= 3
+                elif KHAC.get(_ung_hanh) == _the_hanh:
+                    _the_score -= 5  # Ứng khắc Thế = Thế thua
+                    _ung_score += 5
+                _the_ung_detail.append(f"LH: Thế({_the_hanh}/{_the_vs}) {_the_score:+d} vs Ứng({_ung_hanh}/{_ung_vs}) {_ung_score:+d}")
+        
+        # --- KỲ MÔN: Chủ (Nhật Can) vs Khách (Thời Can) ---
+        if chart_data and isinstance(chart_data, dict):
+            _can_ngay_km = chart_data.get('can_ngay', '')
+            _can_gio_km = chart_data.get('can_gio', '')
+            _hanh_chu = CAN_NGU_HANH.get(_can_ngay_km, '')
+            _hanh_khach = CAN_NGU_HANH.get(_can_gio_km, '')
+            if _hanh_chu and _hanh_khach:
+                if KHAC.get(_hanh_chu) == _hanh_khach:
+                    _the_score += 4
+                elif SINH.get(_hanh_chu) == _hanh_khach:
+                    _the_score -= 2
+                elif KHAC.get(_hanh_khach) == _hanh_chu:
+                    _ung_score += 4
+                elif SINH.get(_hanh_khach) == _hanh_chu:
+                    _ung_score -= 2
+                _the_ung_detail.append(f"KM: Chủ({_can_ngay_km}/{_hanh_chu}) vs Khách({_can_gio_km}/{_hanh_khach})")
+        
+        # --- MAI HOA: Thể vs Dụng ---
+        if mai_hoa_data and isinstance(mai_hoa_data, dict):
+            _mh_hanh_thuong = mai_hoa_data.get('hanh_thuong', '')
+            _mh_hanh_ha = mai_hoa_data.get('hanh_ha', '')
+            _mh_dong = mai_hoa_data.get('dong_hao', 0)
+            if _mh_dong and int(_mh_dong) <= 3:
+                _the_hanh_mh = _mh_hanh_thuong
+                _dung_hanh_mh = _mh_hanh_ha
+            else:
+                _the_hanh_mh = _mh_hanh_ha
+                _dung_hanh_mh = _mh_hanh_thuong
+            if _the_hanh_mh and _dung_hanh_mh:
+                if KHAC.get(_the_hanh_mh) == _dung_hanh_mh:
+                    _the_score += 3
+                elif SINH.get(_dung_hanh_mh) == _the_hanh_mh:
+                    _the_score += 2
+                elif KHAC.get(_dung_hanh_mh) == _the_hanh_mh:
+                    _ung_score += 3
+                elif SINH.get(_the_hanh_mh) == _dung_hanh_mh:
+                    _ung_score += 2
+                _the_ung_detail.append(f"MH: Thể({_the_hanh_mh}) vs Dụng({_dung_hanh_mh})")
+
+        return _the_score, _ung_score, _the_ung_detail
+
     def _generate_direct_answer(self, question, dung_than, final_verdict, pct,
                                  cat_count, hung_count, evidence, impacts,
                                  ky_mon_reason, luc_hao_reason, mai_hoa_reason,
                                  age_numbers=None, count_numbers=None, chart_data=None,
                                  lh_factors=None, km_factors=None, mh_factors=None,
-                                 luc_hao_data=None):
+                                 luc_hao_data=None, mai_hoa_data=None):
         """
         V34.4: Sinh câu trả lời TRỰC TIẾP + THÁM TỬ KIỂM CHỨNG.
         - Bước 1: THÁM TỬ kiểm tra % có đúng ko
@@ -8893,38 +8984,54 @@ class FreeAIHelper:
             _side_a_disp, _side_b_disp = _extract_two_sides(question)
             # Verdict color
             _comp_color = '#22c55e' if pct >= 55 else '#ef4444' if pct <= 40 else '#eab308'
-            # Determine which side wins based on the_ung scores from earlier
-            try:
-                _the_s = sum(1 for m, (v, _) in verdicts_map.items() if 'CÁT' in str(v).upper()) * 2 - \
-                         sum(1 for m, (v, _) in verdicts_map.items() if 'HUNG' in str(v).upper()) * 2
-                _ung_s = -_the_s  # simplified
-            except:
-                _the_s, _ung_s = 0, 0
             
-            if _the_s > _ung_s:
+            # --- V42.9: TÍNH ĐIỂM CHỦ VS KHÁCH THỰC SỰ ---
+            _the_s, _ung_s, _the_ung_detail = self._calc_competition_scores(chart_data, luc_hao_data, mai_hoa_data)
+            _diff = _the_s - _ung_s
+            
+            if _diff >= 5:
                 _winner = _side_a_disp
                 _loser = _side_b_disp
                 _win_icon = '✅'
-            elif _ung_s > _the_s:
-                _winner = _side_b_disp
-                _loser = _side_a_disp
-                _win_icon = '✅'
-            else:
+                _win_text = f"THẮNG ĐẬM (Điểm: +{_diff})"
+            elif _diff >= 2:
+                _winner = _side_a_disp
+                _loser = _side_b_disp
+                _win_icon = '↗️'
+                _win_text = f"HƠI TRỘI HƠN (Điểm: +{_diff})"
+            elif _diff >= -1:
                 _winner = f'{_side_a_disp} ≈ {_side_b_disp}'
                 _loser = 'HÒA'
                 _win_icon = '⚖️'
+                _win_text = f"HÒA / CÂN TÀI (Chênh: {_diff:+d})"
+            elif _diff >= -4:
+                _winner = _side_b_disp
+                _loser = _side_a_disp
+                _win_icon = '↗️'
+                _win_text = f"HƠI TRỘI HƠN (Điểm: {abs(_diff)})"
+            else:
+                _winner = _side_b_disp
+                _loser = _side_a_disp
+                _win_icon = '✅'
+                _win_text = f"THẮNG ĐẬM (Điểm: {abs(_diff)})"
             
             lines.append(
                 f'\n<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px;border-radius:16px;'
                 f'border:3px solid {_comp_color};margin:12px 0;box-shadow:0 4px 20px rgba(0,0,0,0.4);">'
-                f'<span style="font-size:1.4em;font-weight:900;color:#fbbf24;">⚔️ PHÂN TÍCH THẮNG THUA</span><br><br>'
+                f'<span style="font-size:1.4em;font-weight:900;color:#fbbf24;">⚔️ PHÂN TÍCH THẮNG THUA (CHỦ VS KHÁCH)</span><br><br>'
                 f'<span style="font-size:1.5em;font-weight:900;color:#ffffff;">'
                 f'{_side_a_disp} <span style="color:#94a3b8;">vs</span> {_side_b_disp}</span><br><br>'
                 f'<span style="font-size:1.3em;font-weight:900;color:{_comp_color};">'
-                f'{_win_icon} {_winner} {"THẮNG" if _loser != "HÒA" else ""} — {pct}%</span>'
+                f'{_win_icon} PHÁN QUYẾT: {_winner} {_win_text}</span>'
                 f'</div>'
             )
-            lines.append(f"\n**📊 Phương pháp:** Thế (={_side_a_disp}) vs Ứng (={_side_b_disp})")
+            
+            # Liệt kê chi tiết điểm số Ngũ Hành
+            lines.append(f"\n**📊 CHI TIẾT ĐIỂM SỐ NGŨ HÀNH (Chủ: {_the_s} vs Khách: {_ung_s})**")
+            for _detail in _the_ung_detail:
+                lines.append(f"- {_detail}")
+            
+            lines.append(f"\n**🔍 Nguồn phân bổ lực lượng:**")
             lines.append(f"- Lục Hào: Thế = {_side_a_disp}, Ứng = {_side_b_disp}")
             lines.append(f"- Kỳ Môn: Nhật Can (Chủ = {_side_a_disp}), Thời Can (Khách = {_side_b_disp})")
             lines.append(f"- Mai Hoa: Thể Quái = {_side_a_disp}, Dụng Quái = {_side_b_disp}")
@@ -10651,89 +10758,7 @@ class FreeAIHelper:
         _ung_score = 0
         _the_ung_detail = []
         if is_competition_kl:
-            # --- LỤC HÀO: Thế vs Ứng ---
-            if luc_hao_data and isinstance(luc_hao_data, dict):
-                _lh_ban = luc_hao_data.get('ban', {})
-                _lh_haos = _lh_ban.get('haos') or _lh_ban.get('details', [])
-                _the_h = None
-                _ung_h = None
-                for _h in _lh_haos:
-                    _tu = str(_h.get('the_ung', '') or _h.get('marker', ''))
-                    if 'Thế' in _tu:
-                        _the_h = _h
-                    elif 'Ứng' in _tu:
-                        _ung_h = _h
-                if _the_h and _ung_h:
-                    _the_hanh = _the_h.get('ngu_hanh', '')
-                    _ung_hanh = _ung_h.get('ngu_hanh', '')
-                    _the_vs = str(_the_h.get('vuong_suy', '') or _the_h.get('strength', ''))
-                    _ung_vs = str(_ung_h.get('vuong_suy', '') or _ung_h.get('strength', ''))
-                    # Điểm Vượng/Suy
-                    _VS_SCORE = {'Đế Vượng': 10, 'Lâm Quan': 8, 'Trường Sinh': 6, 'Mộc Dục': 4,
-                                 'Quan Đới': 3, 'Dưỡng': 2, 'Thai': 1, 'Suy': -4, 'Bệnh': -6,
-                                 'Tử': -8, 'Mộ': -5, 'Tuyệt': -10}
-                    for _stage, _sc in _VS_SCORE.items():
-                        if _stage in _the_vs:
-                            _the_score += _sc
-                            break
-                    for _stage, _sc in _VS_SCORE.items():
-                        if _stage in _ung_vs:
-                            _ung_score += _sc
-                            break
-                    # Sinh/Khắc
-                    if SINH.get(_the_hanh) == _ung_hanh:
-                        _the_score -= 3  # Thế sinh Ứng = Thế hao tổn
-                        _ung_score += 3
-                    elif KHAC.get(_the_hanh) == _ung_hanh:
-                        _the_score += 5  # Thế khắc Ứng = Thế thắng
-                        _ung_score -= 5
-                    elif SINH.get(_ung_hanh) == _the_hanh:
-                        _the_score += 3  # Ứng sinh Thế = Thế được lợi
-                        _ung_score -= 3
-                    elif KHAC.get(_ung_hanh) == _the_hanh:
-                        _the_score -= 5  # Ứng khắc Thế = Thế thua
-                        _ung_score += 5
-                    _the_ung_detail.append(f"LH: Thế({_the_hanh}/{_the_vs}) {_the_score:+d} vs Ứng({_ung_hanh}/{_ung_vs}) {_ung_score:+d}")
-            
-            # --- KỲ MÔN: Chủ (Nhật Can) vs Khách (Thời Can) ---
-            if chart_data and isinstance(chart_data, dict):
-                _can_ngay_km = chart_data.get('can_ngay', '')
-                _can_gio_km = chart_data.get('can_gio', '')
-                _hanh_chu = CAN_NGU_HANH.get(_can_ngay_km, '')
-                _hanh_khach = CAN_NGU_HANH.get(_can_gio_km, '')
-                if _hanh_chu and _hanh_khach:
-                    if KHAC.get(_hanh_chu) == _hanh_khach:
-                        _the_score += 4  # Chủ khắc Khách → Chủ thắng
-                    elif SINH.get(_hanh_chu) == _hanh_khach:
-                        _the_score -= 2  # Chủ sinh Khách → Chủ hao
-                    elif KHAC.get(_hanh_khach) == _hanh_chu:
-                        _ung_score += 4  # Khách khắc Chủ → Khách thắng
-                    elif SINH.get(_hanh_khach) == _hanh_chu:
-                        _ung_score -= 2  # Khách sinh Chủ → Khách hao
-                    _the_ung_detail.append(f"KM: Chủ({_can_ngay_km}/{_hanh_chu}) vs Khách({_can_gio_km}/{_hanh_khach})")
-            
-            # --- MAI HOA: Thể vs Dụng ---
-            if mai_hoa_data and isinstance(mai_hoa_data, dict):
-                _mh_hanh_thuong = mai_hoa_data.get('hanh_thuong', '')
-                _mh_hanh_ha = mai_hoa_data.get('hanh_ha', '')
-                _mh_dong = mai_hoa_data.get('dong_hao', 0)
-                # Thể = quái không động, Dụng = quái động
-                if _mh_dong and int(_mh_dong) <= 3:
-                    _the_hanh_mh = _mh_hanh_thuong  # Thượng quái = Thể
-                    _dung_hanh_mh = _mh_hanh_ha     # Hạ quái = Dụng
-                else:
-                    _the_hanh_mh = _mh_hanh_ha      # Hạ quái = Thể
-                    _dung_hanh_mh = _mh_hanh_thuong  # Thượng quái = Dụng
-                if _the_hanh_mh and _dung_hanh_mh:
-                    if KHAC.get(_the_hanh_mh) == _dung_hanh_mh:
-                        _the_score += 3  # Thể khắc Dụng → Thể thắng
-                    elif SINH.get(_dung_hanh_mh) == _the_hanh_mh:
-                        _the_score += 2  # Dụng sinh Thể → Thể được lợi
-                    elif KHAC.get(_dung_hanh_mh) == _the_hanh_mh:
-                        _ung_score += 3  # Dụng khắc Thể → Dụng thắng
-                    elif SINH.get(_the_hanh_mh) == _dung_hanh_mh:
-                        _ung_score += 2  # Thể sinh Dụng → Thể hao
-                    _the_ung_detail.append(f"MH: Thể({_the_hanh_mh}) vs Dụng({_dung_hanh_mh})")
+            _the_score, _ung_score, _the_ung_detail = self._calc_competition_scores(chart_data, luc_hao_data, mai_hoa_data)
         
         # ═══ TẠO PHÁN QUYẾT KHẲNG ĐỊNH ═══
         if is_competition_kl:
