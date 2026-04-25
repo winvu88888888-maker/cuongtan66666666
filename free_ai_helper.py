@@ -12994,12 +12994,28 @@ class FreeAIHelper:
                     _s = _line.strip()
                     # Tìm dòng verdict chính (có icon 🟢🔴🟡 hoặc "CÂU TRẢ LỜI")
                     if not _offline_short_answer:
-                        if any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
-                            _offline_short_answer = _s.replace('**', '').replace('#', '').strip()
+                        if 'PHÁN QUYẾT:' in _s:
+                            import re as _re_html
+                            _m = _re_html.search(r'(?:✅|⚖️|↗️)?\s*PHÁN QUYẾT:.*?(?=</span>|</div>|<br)', _s)
+                            if _m:
+                                _offline_short_answer = _m.group(0).replace('**', '').replace('#', '').strip()
+                                if not _offline_short_answer.startswith(('✅', '⚖️', '↗️')):
+                                    _offline_short_answer = "✅ " + _offline_short_answer
+                            else:
+                                _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
+                                _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
+                        elif any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
+                            import re as _re_html
+                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
+                            _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
                         elif 'CÂU TRẢ LỜI' in _s.upper():
-                            _offline_short_answer = _s.replace('**', '').replace('#', '').strip()
-                        elif _s.startswith(('🟢', '🔴', '🟡')) and len(_s) > 5:
-                            _offline_short_answer = _s.replace('**', '').replace('#', '').strip()
+                            import re as _re_html
+                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
+                            _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
+                        elif _s.startswith(('🟢', '🔴', '🟡', '✅', '⚖️', '↗️')) and len(_s) > 5:
+                            import re as _re_html
+                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s)
+                            _offline_short_answer = _clean_s.replace('**', '').replace('#', '').strip()
                     # Tìm evidence lines (top 3)
                     elif len(_offline_evidence) < 3:
                         if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
