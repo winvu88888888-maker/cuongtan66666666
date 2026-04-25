@@ -4811,16 +4811,22 @@ class FreeAIHelper:
             # AI Online luận giải ĐỘC LẬP → so sánh Offline → KẾT LUẬN CHÍNH
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V41.2 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
                 f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ V41.2: TỰ ĐỌC DỮ LIỆU THÔ + VẠN VẬT LOẠI TƯỢNG VÀ LUẬN GIẢI ĐỘC LẬP.\n"
+                f"NHIỆM VỤ: TỰ ĐỌC DỮ LIỆU THÔ + VẠN VẬT LOẠI TƯỢNG VÀ LUẬN GIẢI ĐỘC LẬP.\n"
                 f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n\n"
-                f"QUY TẮC TUYỆT ĐỐI V41.2:\n"
+                f"QUY TẮC PHÂN TÍCH:\n"
                 f"① VẠN VẬT LOẠI TƯỢNG là NGUỒN CHÍNH để trả lời mọi câu hỏi cụ thể.\n"
                 f"② Câu hỏi SỐ LƯỢNG (bao nhiêu/mấy) → PHẢI tra Hà Đồ Số + Trường Sinh Số → trả SỐ CỤ THỂ.\n"
                 f"③ Câu hỏi VẬT GÌ (cái gì/loại gì/sản xuất gì) → PHẢI tra đồ vật theo Hành + Trường Sinh.\n"
-                f"④ Câu hỏi Ở ĐÂU → PHẢI tra hướng theo Ngũ Hành (Kim=Tây, Mộc=Đông, Thủy=Bắc, Hỏa=Nam, Thổ=Trung Tâm).\n"  
-                f"⑤ TUYỆT ĐỐI KHÔNG được nói 'không thể xác định' hoặc 'không biết' — PHẢI cho câu trả lời cụ thể từ VẠN VẬT.\n"
+                f"④ Câu hỏi Ở ĐÂU → PHẢI tra hướng theo Ngũ Hành.\n"
+                f"⑤ Ưu tiên câu trả lời cụ thể từ VẠN VẬT. Nếu data không rõ → nói 'theo xu hướng quẻ...' thay vì BỊA.\n\n"
+                f"⛔ CHỐNG BỊA ĐẶT — 5 QUY TẮC BẮT BUỘC:\n"
+                f"❶ CHỈ NÓI những gì DATA HỖ TRỢ. Mỗi nhận định PHẢI trích dẫn yếu tố quẻ cụ thể.\n"
+                f"❷ 12 TRƯỜNG SINH (Trường Sinh/Suy/Tuyệt...) mô tả TRẠNG THÁI DỤNG THẦN trong quẻ, KHÔNG phải mô tả đời thực người hỏi. VD: Tuyệt = DT rất yếu → KHÔNG nói 'bạn ở giai đoạn cuối đời'.\n"
+                f"❸ KHÔNG mô tả chi tiết đời sống cá nhân (giàu/nghèo, bệnh tật, nhà cửa, con cái) nếu câu hỏi KHÔNG hỏi về điều đó. Hỏi 'nghề gì' → chỉ trả lời nghề.\n"
+                f"❹ Dữ liệu VẠN VẬT mô tả ĐẶC TÍNH SỰ VẬT (hình dạng, chất liệu), KHÔNG phải mô tả CUỘC SỐNG người hỏi.\n"
+                f"❺ TRẢ LỜI ĐÚNG CÂU HỎI: Hỏi gì trả lời đó, không lan man sang chủ đề không liên quan.\n"
                 f"</system_role>\n\n"
                 
                 f"<question>\n"
@@ -4939,7 +4945,7 @@ class FreeAIHelper:
                 f"**🔧 GIẢI PHÁP:** [Hành động cụ thể: nên làm gì, đợi khi nào, bổ sung hành gì]\n\n"
                 f"GIỚI HẠN: Tối đa 800 chữ. Mỗi yếu tố phải TRÍCH DẪN từ data.\n"
                 f"⛔ QUAN TRỌNG: DÒNG ĐẦU TIÊN PHẢI LÀ '### 🏆 KẾT LUẬN CUỐI CÙNG' + CÂU TRẢ LỜI.\n"
-                f"CẤM TUYỆT ĐỐI: Bịa yếu tố, nói 'không thể xác định', nhại lại offline verdict.\n"
+                f"CẤM TUYỆT ĐỐI: Bịa chi tiết đời sống (giàu/nghèo/bệnh/nhà), áp nghĩa đen 12 Trường Sinh vào người thực, nhại lại offline verdict.\n"
                 + (
                 f"⚠️ ĐÂY LÀ CÂU HỎI '{question_type_label}' → PHẢI trả lời MÔ TẢ CỤ THỂ (VẬT GÌ/Ở ĐÂU/KHI NÀO), KHÔNG trả lời CÓ/KHÔNG!\n"
                     if question_type in ('WHAT', 'WHERE', 'WHEN') else
