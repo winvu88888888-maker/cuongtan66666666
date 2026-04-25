@@ -12862,20 +12862,21 @@ class FreeAIHelper:
                 + f'</div>'
             )
             
-            # Chi tiết Offline → collapse
-            if v38_protocol_text or direct_answer:
-                final_parts.append("\n<details>")
-                final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
-                if v38_protocol_text:
-                    final_parts.append(v38_protocol_text)
-                if direct_answer:
-                    final_parts.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
-                    final_parts.append(direct_answer)
-                final_parts.append("\n</details>")
+            # V42.9: Chi tiết Offline → 1 collapse DUY NHẤT (LUÔN có offline_full_output)
+            final_parts.append("\n<details>")
+            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
+            if v38_protocol_text:
+                final_parts.append(v38_protocol_text)
+            if direct_answer:
+                final_parts.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
+                final_parts.append(direct_answer)
+            # V42.9 FIX: LUÔN include offline_full_output — chứa Ứng Kỳ Chuyên Sâu,
+            # Ám Động, Thần Sát, Không Vong, Tam Hợp, Lục Xung/Hợp, Dịch Mã, Thoán Từ...
+            if offline_full_output:
+                final_parts.append("\n---")
+                final_parts.append(offline_full_output)
+            final_parts.append("\n</details>")
             final_parts.append("")
-            
-            # V42.8f: TẤT CẢ chi tiết offline đã nằm trong collapse ở trên
-            # Không cần thêm các section trùng lặp (V31, V38, V41, V26)
             
             return "\n".join(final_parts)
         else:
