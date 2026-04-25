@@ -805,37 +805,57 @@ def _is_competition_question(question):
 
 
 def _extract_two_sides(question):
-    """V42.3: Trích xuất TÊN 2 BÊN từ câu hỏi thắng thua.
+    """V42.9.3: Trích xuất TÊN 2 BÊN từ câu hỏi thắng thua.
     
     Ví dụ:
+    - "U17 Việt Nam và U17 Malaysia đội nào vô địch" → ("U17 Việt Nam", "U17 Malaysia")
     - "Đội MU đấu với đội Liverpool" → ("MU", "Liverpool")
-    - "Việt Nam gặp Thái Lan" → ("Việt Nam", "Thái Lan")
     - "A vs B ai thắng" → ("A", "B")
     
-    Returns: (side_a, side_b) hoặc ("Bên được hỏi đầu", "Đối phương") nếu không tìm thấy.
+    Returns: (side_a, side_b) hoặc ("Bên A", "Bên B") nếu không tìm thấy.
     """
     import re as _re_sides
     q = question.strip()
     
+    # V42.9.3: CLEANUP — Remove trailing question parts like ", và với tỷ số là bao nhiêu"
+    # This prevents those parts from being mistakenly captured as team names
+    _cleanup_patterns = [
+        r',?\s*(?:và )?(?:với )?tỷ số.*$',
+        r',?\s*(?:và )?(?:với )?kết quả.*$',
+        r',?\s*(?:và )?(?:bao nhiêu|score).*$',
+    ]
+    _q_clean = q
+    for _cp in _cleanup_patterns:
+        _q_clean = _re_sides.sub(_cp, '', _q_clean, flags=_re_sides.IGNORECASE).strip()
+    if len(_q_clean) > 10:  # Only use cleaned version if it's still meaningful
+        q = _q_clean
+    
+    # Pattern 0: "U17/U23/U20 X và/vs U17/U23/U20 Y" (team with age prefix)
+    m = _re_sides.search(r'((?:u|U)\d+\s+[\w\s]+?)\s+(?:và|va|vs\.?|đấu với|gặp|đấu|đá với)\s+((?:u|U)\d+\s+[\w\s]+?)(?:\s+đội|\s+doi|\s+ai|\s+bên|\s+thắng|\s+thua|\s+vô địch|\s+vo dich|\?|$)', q, _re_sides.IGNORECASE)
+    if m:
+        a = m.group(1).strip().rstrip(',. ')
+        b = m.group(2).strip().rstrip('?,. ')
+        if len(a) > 1 and len(b) > 1:
+            return (a, b)
+    
     # Pattern 1: "đội X đấu/gặp/vs đội Y" (có dấu + không dấu)
-    m = _re_sides.search(r'[Đđ](?:ội|oi)\s+(.+?)\s+(?:đấu với|dau voi|đấu|dau|gặp|gap|đá với|da voi|vs\.?|và|va)\s+[Đđ]?(?:ội|oi)?\s*(.+?)(?:\s+đội|\s+doi|\s+ai|\s+bên|\s+ben|\s+thắng|\s+thang|\s+thua|\?|$)', q, _re_sides.IGNORECASE)
+    m = _re_sides.search(r'[Đđ](?:ội|oi)\s+(.+?)\s+(?:đấu với|dau voi|đấu|dau|gặp|gap|đá với|da voi|vs\.?|và|va)\s+[Đđ]?(?:ội|oi)?\s*(.+?)(?:\s+đội|\s+doi|\s+ai|\s+bên|\s+ben|\s+thắng|\s+thang|\s+thua|\s+vô địch|\s+vo dich|\?|$)', q, _re_sides.IGNORECASE)
     if m:
         return (m.group(1).strip().rstrip(',. '), m.group(2).strip().rstrip('?,. '))
     
     # Pattern 2: "X đấu/gặp/vs Y" (không có chữ "đội")
-    m = _re_sides.search(r'(?:trận\s+|tran\s+)?(.+?)\s+(?:đấu với|dau voi|đấu|dau|gặp|gap|vs\.?|đá với|da voi)\s+(.+?)(?:\s+ai|\s+đội nào|\s+doi nao|\s+bên nào|\s+ben nao|\s+thắng|\s+thang|\s+thua|\s+kết quả|\s+ket qua|\?|$)', q, _re_sides.IGNORECASE)
+    m = _re_sides.search(r'(?:trận\s+|tran\s+)?(.+?)\s+(?:đấu với|dau voi|đấu|dau|gặp|gap|vs\.?|đá với|da voi)\s+(.+?)(?:\s+ai|\s+đội nào|\s+doi nao|\s+bên nào|\s+ben nao|\s+thắng|\s+thang|\s+thua|\s+kết quả|\s+ket qua|\s+vô địch|\?|$)', q, _re_sides.IGNORECASE)
     if m:
         a = m.group(1).strip().rstrip(',. ')
         b = m.group(2).strip().rstrip('?,. ')
-        # Bỏ prefix thừa
         for prefix in ['trận ', 'tran ', 'cuộc ', 'cuoc ', 'kết quả ', 'ket qua ', 'chung kết ', 'chung ket ']:
             if a.lower().startswith(prefix):
                 a = a[len(prefix):]
         if len(a) > 1 and len(b) > 1:
             return (a, b)
     
-    # Pattern 3: "X và/va Y đội nào/doi nao thắng/thang"
-    m = _re_sides.search(r'(.+?)\s+(?:và|va)\s+(.+?)\s+(?:đội nào|doi nao|ai|bên nào|ben nao|thắng|thang|thua)', q, _re_sides.IGNORECASE)
+    # Pattern 3: "X và/va Y đội nào/doi nao thắng/thang/vô địch"
+    m = _re_sides.search(r'(.+?)\s+(?:và|va)\s+(.+?)\s+(?:đội nào|doi nao|ai|bên nào|ben nao|thắng|thang|thua|vô địch|vo dich)', q, _re_sides.IGNORECASE)
     if m:
         a = m.group(1).strip().rstrip(',. ')
         b = m.group(2).strip().rstrip('?,. ')
@@ -855,7 +875,7 @@ def _extract_two_sides(question):
         if len(a) > 0 and len(b) > 0:
             return (a, b)
     
-    return ("Bên được hỏi đầu", "Đối phương")
+    return ("Bên A", "Bên B")
 
 def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pct,
                      ky_mon_verdict='', ky_mon_reason='', luc_hao_verdict='', luc_hao_reason='',
@@ -8991,56 +9011,86 @@ class FreeAIHelper:
             # Verdict color
             _comp_color = '#22c55e' if pct >= 55 else '#ef4444' if pct <= 40 else '#eab308'
             
-            # --- V42.9: TÍNH ĐIỂM CHỦ VS KHÁCH THỰC SỰ ---
+            # --- V42.9.3: TÍNH ĐIỂM CHỦ VS KHÁCH THỰC SỰ + DỰ ĐOÁN TỶ SỐ ---
             _the_s, _ung_s, _the_ung_detail = self._calc_competition_scores(chart_data, luc_hao_data, mai_hoa_data)
             _diff = _the_s - _ung_s
+            
+            # V42.9.3: TÍNH TỶ SỐ DỰ ĐOÁN từ Hà Đồ Số + chênh lệch
+            _LT_HANH_COMP = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+            _hanh_comp = _LT_HANH_COMP.get(dung_than, 'Thổ')
+            _HD_BASE = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+            _base = _HD_BASE.get(_hanh_comp, (2, 5))
+            # Score winner = base sinh số (nhỏ hơn), loser = base - diff_factor
+            if abs(_diff) >= 8:
+                _score_w, _score_l = max(_base[0], 3), max(0, _base[0] - 2)
+            elif abs(_diff) >= 5:
+                _score_w, _score_l = _base[0], max(0, _base[0] - 1) 
+            elif abs(_diff) >= 2:
+                _score_w, _score_l = _base[0], max(0, _base[0] - 1)
+            else:
+                _score_w, _score_l = _base[0], _base[0]  # HÒA
+            # Ensure reasonable football scores
+            _score_w = min(_score_w, 5)
+            _score_l = min(_score_l, _score_w - 1) if _score_w > _score_l else _score_l
             
             if _diff >= 5:
                 _winner = _side_a_disp
                 _loser = _side_b_disp
                 _win_icon = '✅'
-                _win_text = f"THẮNG ĐẬM (Điểm: +{_diff})"
+                _predicted_score = f"{_score_w}-{_score_l}"
+                _win_text = f"THẮNG {_predicted_score}"
             elif _diff >= 2:
                 _winner = _side_a_disp
                 _loser = _side_b_disp
                 _win_icon = '↗️'
-                _win_text = f"HƠI TRỘI HƠN (Điểm: +{_diff})"
+                _predicted_score = f"{max(_score_w, 2)}-{max(_score_l, 1)}"
+                _win_text = f"THẮNG SÁT NÚT {_predicted_score}"
             elif _diff >= -1:
-                _winner = f'{_side_a_disp} ≈ {_side_b_disp}'
-                _loser = 'HÒA'
+                _winner = ''
+                _loser = ''
                 _win_icon = '⚖️'
-                _win_text = f"HÒA / CÂN TÀI (Chênh: {_diff:+d})"
+                _predicted_score = f"{_score_w}-{_score_w}"
+                _win_text = f"HÒA {_predicted_score}"
             elif _diff >= -4:
                 _winner = _side_b_disp
                 _loser = _side_a_disp
                 _win_icon = '↗️'
-                _win_text = f"HƠI TRỘI HƠN (Điểm: {abs(_diff)})"
+                _predicted_score = f"{max(_score_w, 2)}-{max(_score_l, 1)}"
+                _win_text = f"THẮNG SÁT NÚT {_predicted_score}"
             else:
                 _winner = _side_b_disp
                 _loser = _side_a_disp
                 _win_icon = '✅'
-                _win_text = f"THẮNG ĐẬM (Điểm: {abs(_diff)})"
+                _predicted_score = f"{_score_w}-{_score_l}"
+                _win_text = f"THẮNG {_predicted_score}"
+            
+            # V42.9.3: Build clear verdict text
+            if _winner:
+                _verdict_line = f"{_win_icon} ⚽ {_winner} {_win_text} (Chênh: {abs(_diff)} điểm)"
+            else:
+                _verdict_line = f"{_win_icon} ⚽ {_side_a_disp} HÒA {_side_b_disp} {_predicted_score}"
             
             lines.append(
                 f'\n<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px;border-radius:16px;'
                 f'border:3px solid {_comp_color};margin:12px 0;box-shadow:0 4px 20px rgba(0,0,0,0.4);">'
-                f'<span style="font-size:1.4em;font-weight:900;color:#fbbf24;">⚔️ PHÂN TÍCH THẮNG THUA (CHỦ VS KHÁCH)</span><br><br>'
+                f'<span style="font-size:1.4em;font-weight:900;color:#fbbf24;">⚔️ PHÂN TÍCH THẮNG THUA</span><br><br>'
                 f'<span style="font-size:1.5em;font-weight:900;color:#ffffff;">'
                 f'{_side_a_disp} <span style="color:#94a3b8;">vs</span> {_side_b_disp}</span><br><br>'
                 f'<span style="font-size:1.3em;font-weight:900;color:{_comp_color};">'
-                f'{_win_icon} PHÁN QUYẾT: {_winner} {_win_text}</span>'
+                f'{_verdict_line}</span>'
                 f'</div>'
             )
             
             # Liệt kê chi tiết điểm số Ngũ Hành
-            lines.append(f"\n**📊 CHI TIẾT ĐIỂM SỐ NGŨ HÀNH (Chủ: {_the_s} vs Khách: {_ung_s})**")
+            lines.append(f"\n**📊 CHI TIẾT ĐIỂM SỐ (Chủ: {_the_s} vs Khách: {_ung_s}, Chênh: {_diff:+d})**")
             for _detail in _the_ung_detail:
                 lines.append(f"- {_detail}")
             
-            lines.append(f"\n**🔍 Nguồn phân bổ lực lượng:**")
+            lines.append(f"\n**🔍 Phương pháp phân tích:**")
             lines.append(f"- Lục Hào: Thế = {_side_a_disp}, Ứng = {_side_b_disp}")
             lines.append(f"- Kỳ Môn: Nhật Can (Chủ = {_side_a_disp}), Thời Can (Khách = {_side_b_disp})")
             lines.append(f"- Mai Hoa: Thể Quái = {_side_a_disp}, Dụng Quái = {_side_b_disp}")
+            lines.append(f"- Tỷ số dự đoán: **{_predicted_score}** (tính từ Hà Đồ Số hành {_hanh_comp})")
         
         # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
         if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
