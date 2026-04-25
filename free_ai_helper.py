@@ -12332,16 +12332,14 @@ class FreeAIHelper:
             mh_factors=v24_mh_factors if 'v24_mh_factors' in dir() else [],
         )
         
-        # V34.7: HIỂN THỊ direct_answer (Thám Tử + Câu trả lời linh hoạt)
+        # V42.9: direct_answer GIỮ trong sections[] → offline_full_output chứa THÁM TỬ/PHÁN QUYẾT
+        # Collapse output SẼ KHÔNG append direct_answer RIÊNG → chỉ có 1 bản duy nhất
         if direct_answer:
             sections.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
             sections.append(direct_answer)
         
-        # ========================================
-        # KẾT LUẬN THỐNG NHẤT (V11.0)
-        # ========================================
-        sections.append(f"\n### 🏆 KẾT LUẬN THỐNG NHẤT")
-        
+        # V42.9: KẾT LUẬN THỐNG NHẤT đã được tính trong v38_protocol_text
+        # (phần V. KẾT LUẬN CHÍNH THỨC) → không cần duplicate ở đây
         unified_narrative = self._build_unified_narrative(
             question=question,
             dung_than=dung_than,
@@ -12364,7 +12362,8 @@ class FreeAIHelper:
             km_factors=v24_km_factors,
             mh_factors=v24_mh_factors
         )
-        sections.append(unified_narrative)
+        # unified_narrative vẫn tính nhưng KHÔNG append vào sections
+        # → Dùng cho offline_analysis_data gửi AI Online
         
         sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V42.9 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP={weighted_pct}%, Tổng Hợp 3 Tầng={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
         
@@ -12867,9 +12866,7 @@ class FreeAIHelper:
             final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
             if v38_protocol_text:
                 final_parts.append(v38_protocol_text)
-            if direct_answer:
-                final_parts.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
-                final_parts.append(direct_answer)
+            # V42.9: THÁM TỬ đã nằm trong offline_full_output → không append riêng
             # V42.9 FIX: LUÔN include offline_full_output — chứa Ứng Kỳ Chuyên Sâu,
             # Ám Động, Thần Sát, Không Vong, Tam Hợp, Lục Xung/Hợp, Dịch Mã, Thoán Từ...
             if offline_full_output:
@@ -13098,10 +13095,8 @@ class FreeAIHelper:
             else:
                 final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
             
-            # 2. Thám tử kiểm chứng + Câu trả lời
-            if direct_answer:
-                final_parts.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
-                final_parts.append(direct_answer)
+            # V42.9: THÁM TỬ đã nằm trong offline_full_output
+            # KHÔNG append direct_answer riêng → tránh trùng lặp
             
             # 3. VẠN VẬT CỤ THỂ (CHỈ cho câu hỏi KHÔNG PHẢI competition)
             if not _is_comp_final:
