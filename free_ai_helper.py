@@ -12837,81 +12837,107 @@ class FreeAIHelper:
             _off_v_icon = '🟢' if weighted_pct >= 65 else '🟡' if weighted_pct >= 45 else '🔴'
             _off_verdict = 'CÁT' if weighted_pct >= 65 else 'BÌNH' if weighted_pct >= 45 else 'HUNG'
             
-            # Extract câu trả lời từ direct_answer
-            _off_answer = ""
+            # V42.9.3: Extract câu trả lời từ direct_answer — MULTI-INTENT AWARE
+            # SAME logic as offline-only path (12989-13074) to ensure consistency
+            import re as _re_on_extract
+            _off_answer_list = []
             _off_evidence = []
             if direct_answer:
                 for _line in direct_answer.split('\n'):
                     _s = _line.strip()
-                    if not _off_answer:
-                        if any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN',
-                                                  '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU', '✅ CÂU TRẢ LỜI', '✅ CÓ', '🔴 KHÔNG']):
-                            _off_answer = _s.replace('**', '').replace('#', '').strip()
-                        elif 'CÂU TRẢ LỜI' in _s.upper():
-                            _off_answer = _s.replace('**', '').replace('#', '').strip()
-                        elif _s.startswith(('🟢', '🔴', '🟡')) and len(_s) > 5:
-                            _off_answer = _s.replace('**', '').replace('#', '').strip()
+                    if not _s:
+                        continue
+                    _s_spaced = _s.replace('<br>', ' ').replace('</div>', ' ')
+                    
+                    # CASE 1: PHÁN QUYẾT
+                    if 'PHÁN QUYẾT:' in _s:
+                        _m = _re_on_extract.search(r'(?:✅|⚖️|↗️)?\s*PHÁN QUYẾT:.*?(?=</span>|</div>|<br)', _s)
+                        if _m:
+                            _ans = _m.group(0).replace('**', '').replace('#', '').strip()
+                            if _ans not in _off_answer_list: _off_answer_list.append(_ans)
+                        else:
+                            _clean = _re_on_extract.sub(r'<[^>]+>', '', _s_spaced).replace('**', '').strip()
+                            if _clean and _clean not in _off_answer_list: _off_answer_list.append(_clean)
+                    # CASE 2: YES/NO icons
+                    elif any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
+                        _clean = _re_on_extract.sub(r'<[^>]+>', '', _s_spaced).replace('**', '').strip()
+                        if _clean and _clean not in _off_answer_list: _off_answer_list.append(_clean)
+                    # CASE 3: VẠN VẬT HTML block → short summary
+                    elif 'PHÂN TÍCH VẠN VẬT' in _s and '📦 Hành' in _s:
+                        _m_h = _re_on_extract.search(r'📦 Hành (\S+) → ([^<]+)', _s)
+                        if _m_h:
+                            _sp = [p.strip() for p in _m_h.group(2).split(',')]
+                            _short = ', '.join(_sp[:3]) + ('...' if len(_sp) > 3 else '')
+                            _ans = f"🔮 Nghề/Ngành: Hành {_m_h.group(1)} → {_short}"
+                            if _ans not in _off_answer_list: _off_answer_list.append(_ans)
+                    # CASE 4: TUỔI
+                    elif '🎂' in _s and 'TUỔI' in _s.upper():
+                        _clean = _re_on_extract.sub(r'<[^>]+>', '', _s_spaced).replace('**', '').strip()
+                        if _clean and _clean not in _off_answer_list: _off_answer_list.append(_clean)
+                    # CASE 5: SỐ LƯỢNG
+                    elif '👥' in _s and 'SỐ LƯỢNG' in _s.upper():
+                        _clean = _re_on_extract.sub(r'<[^>]+>', '', _s_spaced).replace('**', '').strip()
+                        if _clean and _clean not in _off_answer_list: _off_answer_list.append(_clean)
+                    # CASE 6: Legacy CÂU TRẢ LỜI
+                    elif 'CÂU TRẢ LỜI' in _s.upper() or '📦 Hành' in _s:
+                        _clean = _re_on_extract.sub(r'<[^>]+>', '', _s_spaced).replace('**', '').strip()
+                        _clean = _re_on_extract.sub(r'CÂU TRẢ LỜI\s*:?\s*', '', _clean).strip()
+                        if _clean and len(_clean) > 2 and _clean not in _off_answer_list: _off_answer_list.append(_clean)
+                    # CASE 7: Generic verdict icons (short only)
+                    elif _s.startswith(('🟢', '🔴', '🟡', '✅', '⚖️', '↗️')) and 5 < len(_s) < 200:
+                        if not any(skip in _s for skip in ['Thuận lợi (', 'Bất lợi (', 'Thần Trực', '→ Huynh', '→ Quan', '→ Thê', '→ Phụ', '→ Tử']):
+                            _clean = _re_on_extract.sub(r'<[^>]+>', '', _s_spaced).replace('**', '').strip()
+                            if _clean and len(_clean) < 100 and _clean not in _off_answer_list: _off_answer_list.append(_clean)
+                    # Evidence lines
                     elif len(_off_evidence) < 3:
-                        if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 🏭', '- 🧭', '- ⛔', '- 🏥', '- ⏱️')):
+                        if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
                             _off_evidence.append(_s)
             
+            _off_answer = "<br>".join(_off_answer_list) if _off_answer_list else ""
+            
             if not _off_answer:
-                # V42.0: Detect câu hỏi WHAT/WHERE/WHEN → trả lời đúng kiểu
+                # V42.9.3: MULTI-INTENT FALLBACK — same as offline-only path
                 _q_lower_off = question.lower()
-                _is_what_off = any(k in _q_lower_off for k in ['cái gì', 'loại gì', 'sản xuất gì', 'làm gì', 'sản phẩm gì',
-                    'buôn bán gì', 'kinh doanh gì', 'nghề gì', 'ngành gì', 'gì vậy', 'gì đây',
-                    'bán gì', 'trồng gì', 'nuôi gì', 'mua gì', 'bằng gì', 'sản xuất cái'])
-                _is_where_off = any(k in _q_lower_off for k in ['ở đâu', 'hướng nào', 'phương nào', 'chỗ nào', 'nơi nào'])
-                _is_when_off = any(k in _q_lower_off for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm'])
+                _fb_on = []
+                _LT_HANH_ON = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+                _hanh_on = _LT_HANH_ON.get(dung_than, 'Thổ')
+                _HANH_SP_ON = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
+                             'Thủy': 'Nước/Chất lỏng/Hải sản/Hóa chất', 'Hỏa': 'Điện tử/Năng lượng/Thực phẩm', 
+                             'Thổ': 'Gạch/Gốm sứ/Vật liệu XD/Nông sản'}
                 
-                if _is_what_off:
-                    _LT_HANH_OFF = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                    _hanh_off = _LT_HANH_OFF.get(dung_than, 'Thổ')
-                    _HANH_SP = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
-                                'Thủy': 'Nước/Chất lỏng/Hải sản/Hóa chất', 'Hỏa': 'Điện tử/Năng lượng/Thực phẩm chế biến', 
-                                'Thổ': 'Gạch/Gốm sứ/Vật liệu XD/Nông sản'}
-                    _off_answer = f"🔮 Hành {_hanh_off}: {_HANH_SP.get(_hanh_off, '?')} ({weighted_pct}%)"
-                elif _is_where_off:
-                    _LT_HANH_OFF2 = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                    _hanh_off2 = _LT_HANH_OFF2.get(dung_than, 'Thổ')
-                    _HANH_HUONG = {'Kim': 'HƯỚNG TÂY', 'Mộc': 'HƯỚNG ĐÔNG', 'Thủy': 'HƯỚNG BẮC', 'Hỏa': 'HƯỚNG NAM', 'Thổ': 'TRUNG TÂM'}
-                    _off_answer = f"🧭 {_HANH_HUONG.get(_hanh_off2, '?')} (Hành {_hanh_off2}) — {weighted_pct}%"
-                elif _is_when_off:
-                    # V42.8f: Tính ngày cụ thể cho header
-                    try:
-                        from xem_ngay_dep import _jdn as _jdn_header
-                        import datetime as _dt_header
-                        _LT_HANH_WHEN = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
-                        _h_when = _LT_HANH_WHEN.get(dung_than, 'Thổ')
-                        _UKC = {'Kim': [8,9], 'Mộc': [2,3], 'Thủy': [0,11], 'Hỏa': [6,5], 'Thổ': [4,10,1,7]}
-                        _SINH_W = {'Kim': 'Thổ', 'Mộc': 'Thủy', 'Thủy': 'Kim', 'Hỏa': 'Mộc', 'Thổ': 'Hỏa'}
-                        if weighted_pct >= 55:
-                            _target_chis = _UKC.get(_h_when, [4])
-                        else:
-                            _h_sinh = _SINH_W.get(_h_when, 'Thổ')
-                            _target_chis = _UKC.get(_h_sinh, [4])
-                        
-                        _CHIS_W = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
-                        _CANS_W = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
-                        _CHI_GIO_W = {'Tý':'23h-1h','Sửu':'1h-3h','Dần':'3h-5h','Mão':'5h-7h','Thìn':'7h-9h','Tị':'9h-11h',
-                                      'Ngọ':'11h-13h','Mùi':'13h-15h','Thân':'15h-17h','Dậu':'17h-19h','Tuất':'19h-21h','Hợi':'21h-23h'}
-                        _today = _dt_header.date.today()
-                        _nearest_date = None
-                        for _off2 in range(1, 200):
-                            _d2 = _today + _dt_header.timedelta(days=_off2)
-                            _j2 = _jdn_header(_d2.day, _d2.month, _d2.year)
-                            _chi2 = (_j2 + 1) % 12
-                            if _chi2 in _target_chis:
-                                _can2 = _CANS_W[(_j2 + 9) % 10]
-                                _chi2_name = _CHIS_W[_chi2]
-                                _THU_W = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật']
-                                _thu2 = _THU_W[_d2.weekday()]
-                                _gio_txt = _CHI_GIO_W.get(_chi2_name, '')
-                                _nearest_date = f"📆 {_d2.day:02d}/{_d2.month:02d}/{_d2.year} ({_thu2}) lúc {_gio_txt} — ngày {_can2} {_chi2_name} (còn {_off2} ngày)"
-                                break
-                        _off_answer = _nearest_date or f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
-                    except Exception:
-                        _off_answer = f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)"
+                # NGHỀ GÌ
+                if any(k in _q_lower_off for k in ['cái gì', 'loại gì', 'làm gì', 'sản phẩm gì', 'nghề gì', 'ngành gì',
+                    'buôn bán gì', 'kinh doanh gì', 'bán gì', 'trồng gì', 'nuôi gì', 'mua gì']):
+                    _fb_on.append(f"🔮 Nghề/Ngành: Hành {_hanh_on} → {_HANH_SP_ON.get(_hanh_on, '?')}")
+                # TUỔI
+                if any(k in _q_lower_off for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
+                    if age_numbers:
+                        _age_n = [n for _, n in age_numbers]
+                        _age_a = int(sum(_age_n) / len(_age_n)) if _age_n else 0
+                        _fb_on.append(f"🎂 Tuổi: Khoảng {_age_a} tuổi")
+                    else:
+                        _HD_A = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                        _hda = _HD_A.get(_hanh_on, (5, 10))
+                        _fb_on.append(f"🎂 Tuổi: Khoảng {_hda[1] * 5 if weighted_pct >= 55 else _hda[0] * 5} tuổi")
+                # BAO NHIÊU / MẤY
+                if any(k in _q_lower_off for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'mấy']):
+                    if count_numbers:
+                        _cn = [n for _, n in count_numbers]
+                        _fb_on.append(f"👥 Số lượng: {int(round(sum(_cn) / len(_cn)))} người")
+                    else:
+                        _HD_C = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                        _hdc = _HD_C.get(_hanh_on, (5, 10))
+                        _fb_on.append(f"👥 Số lượng: {_hdc[0] if weighted_pct < 60 else _hdc[1]} người")
+                # Ở ĐÂU
+                if any(k in _q_lower_off for k in ['ở đâu', 'hướng nào', 'phương nào', 'chỗ nào']):
+                    _HH = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
+                    _fb_on.append(f"🧭 HƯỚNG {_HH.get(_hanh_on, '?')} (Hành {_hanh_on})")
+                # KHI NÀO
+                if any(k in _q_lower_off for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm']):
+                    _fb_on.append(f"⏳ Xem Ứng Kỳ chi tiết bên dưới ({weighted_pct}%)")
+                
+                if _fb_on:
+                    _off_answer = "<br>".join(_fb_on)
                 elif _off_verdict == 'CÁT':
                     _off_answer = f"{_off_v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
                 elif _off_verdict == 'HUNG':
