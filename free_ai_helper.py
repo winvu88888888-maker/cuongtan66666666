@@ -801,33 +801,41 @@ def _extract_two_sides(question):
     import re as _re_sides
     q = question.strip()
     
-    # Pattern 1: "đội X đấu/gặp/vs đội Y"
-    m = _re_sides.search(r'[Đđ]ội\s+(.+?)\s+(?:đấu với|đấu|gặp|đá với|vs|và)\s+[Đđ]ội\s+(.+?)(?:\s+đội|\s+ai|\s+bên|\s+thắng|\s+thua|\?|$)', q, _re_sides.IGNORECASE)
+    # Pattern 1: "đội X đấu/gặp/vs đội Y" (có dấu + không dấu)
+    m = _re_sides.search(r'[Đđ](?:ội|oi)\s+(.+?)\s+(?:đấu với|dau voi|đấu|dau|gặp|gap|đá với|da voi|vs\.?|và|va)\s+[Đđ]?(?:ội|oi)?\s*(.+?)(?:\s+đội|\s+doi|\s+ai|\s+bên|\s+ben|\s+thắng|\s+thang|\s+thua|\?|$)', q, _re_sides.IGNORECASE)
     if m:
         return (m.group(1).strip().rstrip(',. '), m.group(2).strip().rstrip('?,. '))
     
     # Pattern 2: "X đấu/gặp/vs Y" (không có chữ "đội")
-    m = _re_sides.search(r'(?:trận\s+)?(.+?)\s+(?:đấu với|đấu|gặp|vs|đá với)\s+(.+?)(?:\s+ai|\s+đội nào|\s+bên nào|\s+thắng|\s+thua|\s+kết quả|\?|$)', q, _re_sides.IGNORECASE)
+    m = _re_sides.search(r'(?:trận\s+|tran\s+)?(.+?)\s+(?:đấu với|dau voi|đấu|dau|gặp|gap|vs\.?|đá với|da voi)\s+(.+?)(?:\s+ai|\s+đội nào|\s+doi nao|\s+bên nào|\s+ben nao|\s+thắng|\s+thang|\s+thua|\s+kết quả|\s+ket qua|\?|$)', q, _re_sides.IGNORECASE)
     if m:
         a = m.group(1).strip().rstrip(',. ')
         b = m.group(2).strip().rstrip('?,. ')
         # Bỏ prefix thừa
-        for prefix in ['trận ', 'cuộc ', 'kết quả ', 'chung kết ']:
+        for prefix in ['trận ', 'tran ', 'cuộc ', 'cuoc ', 'kết quả ', 'ket qua ', 'chung kết ', 'chung ket ']:
             if a.lower().startswith(prefix):
                 a = a[len(prefix):]
         if len(a) > 1 and len(b) > 1:
             return (a, b)
     
-    # Pattern 3: "X và Y đội nào thắng"
-    m = _re_sides.search(r'(.+?)\s+và\s+(.+?)\s+(?:đội nào|ai|bên nào)', q, _re_sides.IGNORECASE)
+    # Pattern 3: "X và/va Y đội nào/doi nao thắng/thang"
+    m = _re_sides.search(r'(.+?)\s+(?:và|va)\s+(.+?)\s+(?:đội nào|doi nao|ai|bên nào|ben nao|thắng|thang|thua)', q, _re_sides.IGNORECASE)
     if m:
         a = m.group(1).strip().rstrip(',. ')
         b = m.group(2).strip().rstrip('?,. ')
-        for prefix in ['đội ', 'Đội ']:
-            if a.startswith(prefix):
+        for prefix in ['đội ', 'Đội ', 'doi ']:
+            if a.lower().startswith(prefix.lower()):
                 a = a[len(prefix):]
-            if b.startswith(prefix):
+            if b.lower().startswith(prefix.lower()):
                 b = b[len(prefix):]
+        if len(a) > 0 and len(b) > 0:
+            return (a, b)
+    
+    # Pattern 4: "X hay Y thắng/thang" 
+    m = _re_sides.search(r'(.+?)\s+hay\s+(.+?)\s+(?:thắng|thang|thua|hơn|hon|mạnh|manh)', q, _re_sides.IGNORECASE)
+    if m:
+        a = m.group(1).strip().rstrip(',. ')
+        b = m.group(2).strip().rstrip('?,. ')
         if len(a) > 0 and len(b) > 0:
             return (a, b)
     
@@ -12926,15 +12934,43 @@ class FreeAIHelper:
                             _offline_evidence.append(_s)
             
             if not _offline_short_answer:
-                # V42.0: Detect câu hỏi WHAT/WHERE/WHEN → trả lời đúng kiểu
+                # V42.9: SMART HEADER — detect loại câu hỏi để trả lời đúng kiểu
                 _q_lower_off2 = question.lower()
+                _is_competition_off = _is_competition_question(question)
                 _is_what_off2 = any(k in _q_lower_off2 for k in ['cái gì', 'loại gì', 'sản xuất gì', 'làm gì', 'sản phẩm gì',
                     'buôn bán gì', 'kinh doanh gì', 'nghề gì', 'ngành gì', 'gì vậy', 'gì đây',
                     'bán gì', 'trồng gì', 'nuôi gì', 'mua gì', 'bằng gì', 'sản xuất cái'])
                 _is_where_off2 = any(k in _q_lower_off2 for k in ['ở đâu', 'hướng nào', 'phương nào', 'chỗ nào', 'nơi nào'])
                 _is_when_off2 = any(k in _q_lower_off2 for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm'])
                 
-                if _is_what_off2:
+                if _is_competition_off:
+                    # V42.9: COMPETITION — Extract kết quả thắng/thua
+                    _side_a, _side_b = _extract_two_sides(question)
+                    # Tính điểm Thế vs Ứng từ Lục Hào factors
+                    _the_score = 0
+                    _ung_score = 0
+                    for _f in (v23_lh_factors or []):
+                        if '+' in str(_f):
+                            try:
+                                import re as _re_comp
+                                _m = _re_comp.search(r'\+(\d+)', str(_f))
+                                if _m: _the_score += int(_m.group(1))
+                            except: _the_score += 3
+                        elif '-' in str(_f):
+                            try:
+                                import re as _re_comp2
+                                _m2 = _re_comp2.search(r'-(\d+)', str(_f))
+                                if _m2: _ung_score += int(_m2.group(1))
+                            except: _ung_score += 3
+                    
+                    _net = _the_score - _ung_score
+                    if _net > 3:
+                        _offline_short_answer = f"⚽ {_side_a} THẮNG ✅ (Chênh: +{_net})"
+                    elif _net < -3:
+                        _offline_short_answer = f"⚽ {_side_b} THẮNG ✅ (Chênh: {_net})"
+                    else:
+                        _offline_short_answer = f"⚽ HÒA ⚖️ — {_side_a} ≈ {_side_b} (Chênh: {_net:+d})"
+                elif _is_what_off2:
                     _LT_HANH_OFF3 = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
                     _hanh_off3 = _LT_HANH_OFF3.get(dung_than, 'Thổ')
                     _HANH_SP2 = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
@@ -12947,7 +12983,6 @@ class FreeAIHelper:
                     _HANH_HUONG2 = {'Kim': 'HƯỚNG TÂY', 'Mộc': 'HƯỚNG ĐÔNG', 'Thủy': 'HƯỚNG BẮC', 'Hỏa': 'HƯỚNG NAM', 'Thổ': 'TRUNG TÂM'}
                     _offline_short_answer = f"🧭 {_HANH_HUONG2.get(_hanh_off4, '?')} (Hành {_hanh_off4}) — {weighted_pct}%"
                 elif _is_when_off2:
-                    # V42.8f: Tính ngày cụ thể cho header (offline-only)
                     try:
                         from xem_ngay_dep import _jdn as _jdn_h2
                         import datetime as _dt_h2
@@ -12984,7 +13019,7 @@ class FreeAIHelper:
                 else:
                     _offline_short_answer = f"{v_icon} CẦN CÂN NHẮC — {overall_short} ({weighted_pct}%)"
             
-            # === V42.0: CẢNH BÁO PHẢN/PHỤC NGÂM — Hiển thị TRƯỚC kết luận ===
+            # === V42.0: CẢNH BÁO PHẢN/PHỤC NGÂM ===
             try:
                 _ppn_warning = _build_phan_phuc_ngam_warning(chart_data, luc_hao_data)
                 if _ppn_warning:
@@ -12992,7 +13027,7 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === V42.1: CẢNH BÁO NGUYỆT PHÁ — Hiển thị TRƯỚC kết luận ===
+            # === V42.1: CẢNH BÁO NGUYỆT PHÁ ===
             try:
                 _lh_dt_chi_np2 = ''
                 _lh_chi_thang_np2 = ''
@@ -13014,7 +13049,9 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === Ô XANH LÁ TO — KẾT LUẬN AI OFFLINE ===
+            # ═══════════════════════════════════════════════════════════
+            # V42.9: Ô XANH LÁ — KẾT LUẬN AI OFFLINE (DUY NHẤT)
+            # ═══════════════════════════════════════════════════════════
             _evidence_html = ""
             if _offline_evidence:
                 _evidence_html = '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);">'
@@ -13022,51 +13059,60 @@ class FreeAIHelper:
                     _evidence_html += f'<div style="font-size:1em;color:#d1fae5;margin:4px 0;">{_ev}</div>'
                 _evidence_html += '</div>'
             
+            # V42.9: Competition → thêm chi tiết 2 đội vào header
+            _comp_detail_html = ""
+            _is_comp_final = _is_competition_question(question)
+            if _is_comp_final:
+                _sa, _sb = _extract_two_sides(question)
+                _comp_detail_html = (
+                    f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;">'
+                    f'<div style="font-size:1.15em;color:#6ee7b7;font-weight:700;margin-bottom:8px;">📊 Phương pháp: Thế vs Ứng</div>'
+                    f'<div style="color:#d1fae5;font-size:1.05em;">• Lục Hào: Thế = {_sa}, Ứng = {_sb}</div>'
+                    f'<div style="color:#d1fae5;font-size:1.05em;">• Kỳ Môn: Nhật Can (Chủ = {_sa}), Thời Can (Khách = {_sb})</div>'
+                    f'<div style="color:#d1fae5;font-size:1.05em;">• Mai Hoa: Thể Quái = {_sa}, Dụng Quái = {_sb}</div>'
+                    f'</div>'
+                )
+            
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.9</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div>'
                 f'<div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">{_offline_short_answer}</div>'
                 f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                + _comp_detail_html
                 + _evidence_html
                 + f'</div>'
             )
             final_parts.append("")
             
-            # Chi tiết phân tích → collapse
+            # ═══════════════════════════════════════════════════════════
+            # V42.9: 1 COLLAPSE DUY NHẤT — TẤT CẢ chi tiết
+            # KHÔNG có section nào hiển thị bên ngoài collapse
+            # ═══════════════════════════════════════════════════════════
             final_parts.append("\n<details>")
             final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
             
-            # V38.1: PROTOCOL 27 BƯỚC
+            # 1. Protocol 27 bước (NẾU CÓ)
             if v38_protocol_text:
                 final_parts.append(v38_protocol_text)
             else:
                 final_parts.append(f"## {v_icon} KẾT LUẬN: {overall_short} (Điểm Tổng Hợp: {weighted_pct}%)")
             
-            final_parts.append(f"**Dụng Thần:** {dung_than} | **KM:** {ky_mon_verdict} | **LH:** {luc_hao_verdict} | **MH:** {mai_hoa_verdict} | **LN:** {luc_nham_verdict} | **TA:** {thai_at_verdict}")
-            final_parts.append(f"\n**📊 Trạng thái DT:** {unified_v22['tier_data']['cap'] if unified_v22 else '?'} | **Ngũ Khí:** {ngu_khi_state_v22} | **12 Trường Sinh:** {ts_stage or 'N/A'}")
-            final_parts.append("\n</details>")
-            
-            # V34.8: INJECT THÁM TỬ KIỂM CHỨNG khi chỉ có Offline
+            # 2. Thám tử kiểm chứng + Câu trả lời
             if direct_answer:
-                final_parts.append(f'\n<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;margin:14px 0;border:2px solid #818cf8;"><span style="font-size:1.3em;font-weight:900;color:#a5b4fc;">🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI</span></div>')
+                final_parts.append(f"\n### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI")
                 final_parts.append(direct_answer)
-                final_parts.append("")
             
-            # V26.2: VẠN VẬT CỤ THỂ trong KẾT LUẬN
-            vv_cu_the_kl = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH') if unified_v22 else 'TRUNG_BÌNH')
-            if vv_cu_the_kl and hanh_dt_v22:
-                final_parts.append(f"\n### 🎯 VẠN VẬT CỤ THỂ ({hanh_dt_v22} × {unified_v22['tier_data']['cap'] if unified_v22 else '?'})")
-                final_parts.append(f"- 🔮 **Đồ vật:** {vv_cu_the_kl.get('do_vat', '?')}")
-                final_parts.append(f"- 🏠 **Nhà cửa:** {vv_cu_the_kl.get('nha_cua', '?')}")
-                final_parts.append(f"- 🧑 **Người:** {vv_cu_the_kl.get('nguoi', '?')}")
-                final_parts.append(f"- 🏥 **Bệnh:** {vv_cu_the_kl.get('benh', '?')}")
+            # 3. VẠN VẬT CỤ THỂ (CHỈ cho câu hỏi KHÔNG PHẢI competition)
+            if not _is_comp_final:
+                vv_cu_the_kl = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH') if unified_v22 else 'TRUNG_BÌNH')
+                if vv_cu_the_kl and hanh_dt_v22:
+                    final_parts.append(f"\n### 🎯 VẠN VẬT CỤ THỂ ({hanh_dt_v22} × {unified_v22['tier_data']['cap'] if unified_v22 else '?'})")
+                    final_parts.append(f"- 🔮 **Đồ vật:** {vv_cu_the_kl.get('do_vat', '?')}")
+                    final_parts.append(f"- 🏠 **Nhà cửa:** {vv_cu_the_kl.get('nha_cua', '?')}")
+                    final_parts.append(f"- 🧑 **Người:** {vv_cu_the_kl.get('nguoi', '?')}")
+                    final_parts.append(f"- 🏥 **Bệnh:** {vv_cu_the_kl.get('benh', '?')}")
             
-            # V42.8f: TẤT CẢ chi tiết phân tích gom vào 1 collapse duy nhất
-            # Gồm: V31 SĐ, V32.5, Thống kê, Vạn Vật, KẾT LUẬN TỔNG HỢP, V26.2
-            final_parts.append("\n<details>")
-            final_parts.append("<summary><b>📦 Xem Chi Tiết Phân Tích Chuyên Sâu (nhấn để mở)</b></summary>\n")
-            
-            # V31 Sơ đồ Master
+            # 4. V31 Sơ đồ Master
             if v31_master_diagram:
                 final_parts.append(f"\n### 🏆 SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT")
                 final_parts.append(f"```")
@@ -13075,7 +13121,7 @@ class FreeAIHelper:
                 final_parts.append(f"**📊 CÔNG THỨC:** {v31_master_info.get('formula_detail', '?')}")
                 final_parts.append(f"**🎯 KẾT LUẬN MASTER:** {v31_master_info.get('conclusion', '?')}")
             
-            # V31 Sơ đồ câu hỏi
+            # 5. V31 Sơ đồ câu hỏi
             if v31_question_diagram and v31_diagram_id != 'SD0':
                 final_parts.append(f"\n### 📐 CHÚ GIẢI: {v31_question_info.get('diagram_name', 'Sơ Đồ')}")
                 final_parts.append(f"```")
@@ -13084,7 +13130,7 @@ class FreeAIHelper:
                 final_parts.append(f"**📊 CÔNG THỨC:** {v31_question_info.get('formula', '?')}")
                 final_parts.append(f"**🎯 KẾT LUẬN:** {v31_question_info.get('conclusion', '?')}")
             
-            # V32.5: Sơ đồ tương tác 6PP
+            # 6. V32.5: Sơ đồ tương tác 6PP
             try:
                 v325_interaction = self._build_factor_interaction_map(
                     chart_data=chart_data,
@@ -13105,26 +13151,7 @@ class FreeAIHelper:
             except Exception as e:
                 self.log_step("V32.5", "INTERACTION_ERR", str(e)[:100])
             
-            # Giải thích TẠI SAO
-            final_parts.append(f"\n### 📋 TẠI SAO KẾT LUẬN NHƯ VẬY?")
-            pp_ranking = sorted(
-                [('Kỳ Môn', v16_km_raw, ky_mon_verdict), 
-                 ('Lục Hào', v16_lh_raw, luc_hao_verdict),
-                 ('Mai Hoa', v16_mh_raw, mai_hoa_verdict),
-                 ('Thiết Bản', v16_tb_raw, 'BÌNH'),
-                 ('Đại Lục Nhâm', v16_ln_raw, luc_nham_verdict),
-                 ('Thái Ất', v16_ta_raw, thai_at_verdict)],
-                key=lambda x: x[1], reverse=True
-            )
-            for pp_name, pp_raw, pp_verdict in pp_ranking:
-                if pp_raw > 5:
-                    final_parts.append(f"- ✅ **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Yếu tố THUẬN LỢI")
-                elif pp_raw < -5:
-                    final_parts.append(f"- 🔴 **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Yếu tố BẤT LỢI")
-                else:
-                    final_parts.append(f"- 🟡 **{pp_name}**: {pp_verdict} (score {pp_raw:+d}) → Trung tính")
-            
-            # Thống kê yếu tố
+            # 7. Thống kê yếu tố
             all_factors = v24_km_factors + v23_lh_factors + v24_mh_factors + v24_tb_factors + v24_ln_factors + v24_ta_factors
             if all_factors:
                 final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(all_factors)})")
@@ -13136,7 +13163,7 @@ class FreeAIHelper:
                     else:
                         final_parts.append(f"- ℹ️ **THÔNG TIN:** {f}")
             
-            # V26.2: Full offline output
+            # 8. V26.2: Full offline output (gốc)
             if offline_full_output:
                 final_parts.append("\n---")
                 final_parts.append(offline_full_output)
@@ -13144,6 +13171,7 @@ class FreeAIHelper:
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
             return "\n".join(final_parts)
+
 
     def _custom_reasoning(self, question, dung_than, chart_data):
         """Suy luận riêng bằng Python khi câu hỏi không trùng 220+ chủ đề"""
