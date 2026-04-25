@@ -9399,10 +9399,10 @@ class FreeAIHelper:
                 all_nums = [n for _, n in age_numbers]
                 avg = int(sum(all_nums) / len(all_nums)) if all_nums else 0
                 detail = ', '.join(f'{pp}={n}' for pp, n in age_numbers)
-                lines.append(f"\n📊 **CÂU TRẢ LỜI: Khoảng {avg} TUỔI**")
+                lines.append(f"\n🎂 **TUỔI: Khoảng {avg} tuổi**")
                 lines.append(f"- Dựa trên {len(age_numbers)} phương pháp: {detail}")
             else:
-                lines.append(f"\n📊 **CÂU TRẢ LỜI:** Không đủ dữ liệu tuổi từ quẻ.")
+                lines.append(f"\n🎂 **TUỔI:** Không đủ dữ liệu tuổi từ quẻ.")
         
         # BAO NHIÊU / MẤY — V41.0: Luôn trả số cụ thể
         if any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con', 'mấy']):
@@ -9422,10 +9422,10 @@ class FreeAIHelper:
                 all_nums = [n for _, n in count_numbers]
                 avg = int(round(sum(all_nums) / len(all_nums))) if all_nums else 0
                 detail = ', '.join(f'{pp}={n}' for pp, n in count_numbers)
-                lines.append(f"\n📊 **CÂU TRẢ LỜI: SỐ LƯỢNG = {avg}** (Hành DT: {hanh_dt})")
+                lines.append(f"\n👥 **SỐ LƯỢNG: {avg} người** (Hành DT: {hanh_dt})")
                 lines.append(f"- Nguồn: {detail}")
             else:
-                lines.append(f"\n📊 **CÂU TRẢ LỜI: SỐ LƯỢNG = 5** (mặc định Thổ — không xác định hành)")
+                lines.append(f"\n👥 **SỐ LƯỢNG: 5** (mặc định Thổ — không xác định hành)")
 
         
         # Ở ĐÂU / CHỖ NÀO / NƠI NÀO / TÌM ĐÂU
@@ -12986,42 +12986,87 @@ class FreeAIHelper:
             
             final_parts = []
             
-            # V42.9.1: Extract MULTIPLE short verdicts from direct_answer for header
+            # V42.9.2: SMART Extract — short verdicts from direct_answer for green box header
+            # Key change: For VẠN VẬT HTML blocks → extract ONLY the short summary line
+            #             For TUỔI/SỐ LƯỢNG → extract the clean one-liner
+            import re as _re_extract
             _offline_short_answer_list = []
             _offline_evidence = []
             if direct_answer:
                 for _line in direct_answer.split('\n'):
                     _s = _line.strip()
+                    if not _s:
+                        continue
                     _s_spaced = _s.replace('<br>', ' ').replace('</div>', ' ')
-                    # Tìm dòng verdict chính (có icon 🟢🔴🟡 hoặc "CÂU TRẢ LỜI" hoặc "PHÁN QUYẾT" hoặc "📦 Hành")
+                    
+                    # --- CASE 1: PHÁN QUYẾT (competition/yes-no verdict) ---
                     if 'PHÁN QUYẾT:' in _s:
-                        import re as _re_html
-                        _m = _re_html.search(r'(?:✅|⚖️|↗️)?\s*PHÁN QUYẾT:.*?(?=</span>|</div>|<br)', _s)
+                        _m = _re_extract.search(r'(?:✅|⚖️|↗️)?\s*PHÁN QUYẾT:.*?(?=</span>|</div>|<br)', _s)
                         if _m:
                             _ans = _m.group(0).replace('**', '').replace('#', '').strip()
                             if not _ans.startswith(('✅', '⚖️', '↗️')): _ans = "✅ " + _ans
                             if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
                         else:
-                            _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                            _clean_s = _re_extract.sub(r'<[^>]+>', '', _s_spaced)
                             _ans = _clean_s.replace('**', '').replace('#', '').strip()
-                            if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                            if _ans and _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    
+                    # --- CASE 2: YES/NO quick icons ---
                     elif any(x in _s for x in ['📢', '🟢 CÓ', '🔴 KHÔNG', '🟡 CẦN', '🟢 NÊN', '🔴 KHÔNG NÊN', '🟢 ĐƯỢC', '🟢 TỐT', '🔴 XẤU']):
-                        import re as _re_html
-                        _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                        _clean_s = _re_extract.sub(r'<[^>]+>', '', _s_spaced)
                         _ans = _clean_s.replace('**', '').replace('#', '').strip()
-                        if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                        if _ans and _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    
+                    # --- CASE 3: VẠN VẬT HTML block (LONG) → extract SHORT summary ---
+                    elif 'PHÂN TÍCH VẠN VẬT' in _s and '📦 Hành' in _s:
+                        # This is the big HTML div — extract only the key info
+                        _m_hanh = _re_extract.search(r'📦 Hành (\S+) → ([^<]+)', _s)
+                        if _m_hanh:
+                            _hanh_name = _m_hanh.group(1)
+                            _hanh_sp = _m_hanh.group(2).strip()
+                            # Truncate product list to first 3 items
+                            _sp_parts = [p.strip() for p in _hanh_sp.split(',')]
+                            _sp_short = ', '.join(_sp_parts[:3])
+                            if len(_sp_parts) > 3:
+                                _sp_short += '...'
+                            _ans = f"🔮 Nghề/Ngành: Hành {_hanh_name} → {_sp_short}"
+                            if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                        else:
+                            _ans = "🔮 Xem chi tiết Vạn Vật bên dưới"
+                            if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    
+                    # --- CASE 4: TUỔI line (🎂 **TUỔI: Khoảng X tuổi**) ---
+                    elif '🎂' in _s and 'TUỔI' in _s.upper():
+                        _clean_s = _re_extract.sub(r'<[^>]+>', '', _s_spaced)
+                        _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                        if _ans and _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    
+                    # --- CASE 5: SỐ LƯỢNG line (👥 **SỐ LƯỢNG: X người**) ---
+                    elif '👥' in _s and 'SỐ LƯỢNG' in _s.upper():
+                        _clean_s = _re_extract.sub(r'<[^>]+>', '', _s_spaced)
+                        _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                        if _ans and _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    
+                    # --- CASE 6: Legacy CÂU TRẢ LỜI / 📦 Hành (standalone lines) ---
                     elif 'CÂU TRẢ LỜI' in _s.upper() or '📦 Hành' in _s:
-                        import re as _re_html
-                        _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
+                        _clean_s = _re_extract.sub(r'<[^>]+>', '', _s_spaced)
                         _ans = _clean_s.replace('**', '').replace('#', '').strip()
-                        if 'CÂU TRẢ LỜI:' in _ans: _ans = _ans.replace('CÂU TRẢ LỜI:', '').strip()
-                        if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
-                    elif _s.startswith(('🟢', '🔴', '🟡', '✅', '⚖️', '↗️')) and len(_s) > 5:
-                        import re as _re_html
-                        _clean_s = _re_html.sub(r'<[^>]+>', '', _s_spaced)
-                        _ans = _clean_s.replace('**', '').replace('#', '').strip()
-                        if _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
-                    # Tìm evidence lines (top 3)
+                        # Remove "CÂU TRẢ LỜI:" prefix
+                        _ans = _re_extract.sub(r'CÂU TRẢ LỜI\s*:?\s*', '', _ans).strip()
+                        if _ans and len(_ans) > 2 and _ans not in _offline_short_answer_list:
+                            _offline_short_answer_list.append(_ans)
+                    
+                    # --- CASE 7: Generic verdict icons (short lines only, skip evidence) ---
+                    elif _s.startswith(('🟢', '🔴', '🟡', '✅', '⚖️', '↗️')) and 5 < len(_s) < 200:
+                        # Skip evidence/detail lines
+                        if any(skip in _s for skip in ['Thuận lợi (', 'Bất lợi (', 'Thần ', 'Thần Trực', '→ Huynh', '→ Quan', '→ Thê', '→ Phụ', '→ Tử']):
+                            pass
+                        else:
+                            _clean_s = _re_extract.sub(r'<[^>]+>', '', _s_spaced)
+                            _ans = _clean_s.replace('**', '').replace('#', '').strip()
+                            if _ans and len(_ans) < 100 and _ans not in _offline_short_answer_list: _offline_short_answer_list.append(_ans)
+                    
+                    # --- Evidence lines (top 3) ---
                     elif len(_offline_evidence) < 3:
                         if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
                             _offline_evidence.append(_s)
