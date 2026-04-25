@@ -2956,11 +2956,15 @@ if st.session_state.current_view == "ky_mon":
                                     _chart = st.session_state.get('chart_data', {})
                                     can_ngay_val = _chart.get('can_ngay', 'Giáp') if _chart else 'Giáp'
                                     chi_ngay_val = _chart.get('chi_ngay', 'Tý') if _chart else 'Tý'
+                                    can_thang_val = _chart.get('can_thang', 'Giáp') if _chart else 'Giáp'
+                                    chi_thang_val = _chart.get('chi_thang', 'Tý') if _chart else 'Tý'
                                     luc_hao_for_offline = lap_qua_luc_hao(
                                         dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                         topic=selected_topic,
                                         can_ngay=can_ngay_val,
-                                        chi_ngay=chi_ngay_val
+                                        chi_ngay=chi_ngay_val,
+                                        can_thang=can_thang_val,
+                                        chi_thang=chi_thang_val
                                     )
                                     st.session_state.luc_hao_result = luc_hao_for_offline
                                 except Exception:
@@ -3580,9 +3584,12 @@ PHÂN TÍCH LIÊN MẠCH:
                                     _chart_q = st.session_state.get('chart_data', {})
                                     can_ngay_val = _chart_q.get('can_ngay', 'Giáp') if _chart_q else 'Giáp'
                                     chi_ngay_val = _chart_q.get('chi_ngay', 'Tý') if _chart_q else 'Tý'
+                                    can_thang_val = _chart_q.get('can_thang', 'Giáp') if _chart_q else 'Giáp'
+                                    chi_thang_val = _chart_q.get('chi_thang', 'Tý') if _chart_q else 'Tý'
                                     luc_hao_for_q = lap_qua_luc_hao(
                                         dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
-                                        topic=selected_topic, can_ngay=can_ngay_val, chi_ngay=chi_ngay_val
+                                        topic=selected_topic, can_ngay=can_ngay_val, chi_ngay=chi_ngay_val,
+                                        can_thang=can_thang_val, chi_thang=chi_thang_val
                                     )
                                     st.session_state.luc_hao_result = luc_hao_for_q
                                 except Exception:
@@ -3756,7 +3763,9 @@ elif st.session_state.current_view == "luc_hao":
             dt.year, dt.month, dt.day, dt.hour,
             topic=selected_topic,
             can_ngay=can_ngay,
-            chi_ngay=chi_ngay
+            chi_ngay=chi_ngay,
+            can_thang=can_thang,
+            chi_thang=chi_thang
         )
     except Exception as e:
         st.error(f"Lỗi lập quẻ Lục Hào: {e}")

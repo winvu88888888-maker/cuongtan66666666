@@ -1,279 +1,254 @@
-<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);"><div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V40.9</div><div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">🟡 CẦN CÂN NHẮC — CÓ THỂ ĐƯỢC — CẦN THẬN TRỌNG (52%)</div><div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>52%</b> | DT: <b>Thê Tài</b> | KM: ĐẠI CÁT | LH: BÌNH | MH: BÌNH</div></div>
+=== LOG KIỂM THỬ FREE_AI_HELPER V42.9 ===
+<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);"><div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div><div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">🔴 KHÔNG — BẤT LỢI (44%)</div><div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>44%</b> | DT: <b>Thê Tài</b> | KM: ĐẠI CÁT | LH: BÌNH | MH: BÌNH</div></div>
 
 
 <details>
 <summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>
 
-## 🔮 PROTOCOL 27 BƯỚC — LUẬN GIẢI THỐNG NHẤT V38.2
+## 🔮 PROTOCOL 27 BƯỚC — LUẬN GIẢI THỐNG NHẤT V42.9
 
 ### BƯỚC 0: CÂU HỎI → DỤNG THẦN
-- **Câu hỏi:** Hỏi tiền bạc tài sản
-- **Dụng Thần (DT):** Thê Tài — Hành: **Kim**
-- **Thời gian:** Can Ngày=Bính, Chi Ngày=Dần, Chi Tháng=Thìn
-- **→ Mọi phân tích dưới đây XEM XÉT Thê Tài(Kim) là trung tâm**
+- **Câu hỏi:** Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?
+- **Dụng Thần (DT):** Thê Tài — Hành: **Hỏa**
+- **Thời gian:** Can Ngày=Kỷ, Chi Ngày=Tị, Chi Tháng=Thìn
+- **→ Mọi phân tích dưới đây XEM XÉT Thê Tài(Hỏa) là trung tâm**
 
 ### 📐 SƠ ĐỒ: DỮ LIỆU THÔ → DỤNG THẦN LÀ TRUNG TÂM
 ```
-┌─────────────────── CÂU HỎI: Hỏi tiền bạc tài sản
+┌─────────────────── CÂU HỎI: Mối quan hệ tình cảm sắp tới của tôi sẽ ...
 │
-├─→ DỤNG THẦN: Thê Tài (Kim)
+├─→ DỤNG THẦN: Thê Tài (Hỏa)
 │
 ├─── KỲ MÔN ─────────────────────────────────────
-│    BT: Cung 4 | Sao=Thiên Xung | Cửa=Cảnh Môn | Thần=Đằng Xà
-│    SV: Cung 4 | Sao=Thiên Xung | Cửa=Cảnh Môn
+│    BT: Cung 9 | Sao=Thiên Xung | Cửa=Sinh Môn | Thần=Huyền Vũ
+│    SV: Cung 8 | Sao=Thiên Tâm | Cửa=Kinh Môn
 │
 ├─── LỤC HÀO ────────────────────────────────────
-│    DT tại Hào Tam | Chi=Mão | Hành=Mộc
-│    Trạng thái: Hưu
-│    Nguyệt Lệnh: Thìn | Nhật Thần: Bính
+│    DT tại Hào ? | Chi=? | Hành=?
+│    Trạng thái: ?
+│    Nguyệt Lệnh: Thìn | Nhật Thần: Kỷ
 │
 ├─── MAI HOA ─────────────────────────────────────
-│    Quẻ: Cấn Khôn | Thượng=Cấn(Thổ) | Hạ=Khôn(Thổ)
+│    Quẻ: Hỏa Lôi Phệ Hạp | Thượng=Ly(Hỏa) | Hạ=Chấn(Mộc)
 │
-└─── Ngũ Hành: Kim ← Sinh/Khắc ← Mọi yếu tố
+└─── Ngũ Hành: Hỏa ← Sinh/Khắc ← Mọi yếu tố
 ```
 
 ---
 ### 📜 I. LỤC HÀO — 12 BƯỚC LUẬN GIẢI
+
+**LH-B1. DT Vượng/Suy** 🟡 (+0)
+  → ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+  → DT Tướng +10
+  *Tích lũy sau LH-B1: +0*
 
 **LH-B2. Nguyệt Lệnh → DT** 🟡 (+0)
   → Nguyệt(Thìn/Thổ) không tác động DT +0
   *Tích lũy sau LH-B2: +0*
 
 **LH-B3. Nhật Thần → DT** 🟡 (+0)
-  → Nhật(Bính/Hỏa) không tác động DT +0
+  → Nhật(Kỷ/Thổ) không tác động DT +0
   *Tích lũy sau LH-B3: +0*
 
-**LH-B4. Nguyên Thần (sinh DT)** 🔴 (-3)
-  → NT(Thủy) Nguyên Thần suy -3
-  *Tích lũy sau LH-B4: -3*
+**LH-B4. Nguyên Thần (sinh DT)** ✅ (+6)
+  → NT(Mộc) Nguyên Thần vượng +6
+  *Tích lũy sau LH-B4: +6*
 
-**LH-B5. Kỵ Thần (khắc DT)** 🟡 (+0)
-  → KT(ẩn) Kỵ Thần ẩn +0
-  *Tích lũy sau LH-B5: -3*
+**LH-B5. Kỵ Thần (khắc DT)** 🔴 (-1)
+  → KT(Thủy) Kỵ Thần bình -1
+  *Tích lũy sau LH-B5: +5*
 
-**LH-B7. DT Động/Tĩnh + Tiến/Thối** 🔴 (-5)
-  → Hóa Hồi khắc -8
-  → DT ĐỘNG (phát động) +3
-  *Tích lũy sau LH-B7: -8*
+**LH-B7. DT Động/Tĩnh + Tiến/Thối** 🔴 (-2)
+  → DT TĨNH (chờ đợi) -2
+  *Tích lũy sau LH-B7: +3*
 
-**LH-B11. Tam Hợp/Lục Xung/Hào Động khác** ✅ (+2)
-  → DT ở hào 6 (cao, xa, khó) +2
-  *Tích lũy sau LH-B11: -6*
-
-**LH-B12. ⚖️ TỔNG KẾT LỤC HÀO: 🔴 HUNG (Σ=-6, 7 yếu tố)**
+**LH-B12. ⚖️ TỔNG KẾT LỤC HÀO: 🟡 BÌNH (Σ=+3, 7 yếu tố)**
 
 ---
 ### ⚔️ II. KỲ MÔN ĐỘN GIÁP — 9 BƯỚC LUẬN GIẢI
 
-**KM-B1. Sinh Khắc Cung BT↔DT** ✅ (+5)
-  → V28 KM Tam Kỳ: Nguyệt Kỳ(Bính) nhập cung DT +5
-  *Tích lũy sau KM-B1: +5*
+**KM-B1. Sinh Khắc Cung BT↔DT** 🔴 (-4)
+  → KM Cung BT sinh DT (hao) -4
+  → KM Cung BT sinh DT +6 (Hỏa→Thổ)
+  *Tích lũy sau KM-B1: -4*
 
-**KM-B4. Thần tại Cung DT** 🔴 (-4)
-  → KM Thần Đằng Xà Hung -4
-  *Tích lũy sau KM-B4: +1*
+**KM-B3. Cửa tại Cung DT** 🔴 (-4)
+  → KM Cửa Kinh Môn Hung -4
+  *Tích lũy sau KM-B3: -8*
 
-**KM-B5. Can DT Vượng/Suy tại Cung** ✅ (+2)
-  → KM Can DT Tướng tại Cung +2
-  *Tích lũy sau KM-B5: +3*
+**KM-B4. Thần tại Cung DT** ✅ (+4)
+  → KM Thần Thái Âm Cát +4
+  *Tích lũy sau KM-B4: -4*
 
-**KM-B9. ⚖️ TỔNG KẾT KỲ MÔN: ✅ CÁT (Σ=+3, 3 yếu tố)**
+**KM-B5. Can DT Vượng/Suy tại Cung** 🔴 (-4)
+  → KM Can DT Tử tại Cung -4
+  *Tích lũy sau KM-B5: -8*
+
+**KM-B9. ⚖️ TỔNG KẾT KỲ MÔN: 🟡 BÌNH (Σ=-2, 5 yếu tố)**
 
 ---
 ### 🌸 III. MAI HOA DỊCH SỐ — 6 BƯỚC LUẬN GIẢI
 
-**MH-B1. Thể↔Dụng sinh khắc** ✅ (+2)
-  → MH Tỷ Hòa +2
-  *Tích lũy sau MH-B1: +2*
+**MH-B1. Thể↔Dụng sinh khắc** 🔴 (-5)
+  → MH Thể sinh Dụng (hao mòn) -5
+  *Tích lũy sau MH-B1: -5*
 
-**MH-B4. Nguyệt Lệnh + Nhật Thần** 🔴 (-11)
-  → MH Thể bị Tháng khắc (Thất lệnh) -5
-  → MH Ngày khắc Thể -6
-  *Tích lũy sau MH-B4: -9*
+**MH-B4. Nguyệt Lệnh + Nhật Thần** ✅ (+5)
+  → MH Thể đắc lệnh (Tháng) +5
+  *Tích lũy sau MH-B4: +0*
 
-**MH-B6. ⚖️ TỔNG KẾT MAI HOA: 🔴 HUNG (Σ=-9, 3 yếu tố)**
+**MH-B6. ⚖️ TỔNG KẾT MAI HOA: 🟡 BÌNH (Σ=+0, 2 yếu tố)**
 
 ---
 ### 🏆 IV. TỔNG HỢP + CHUỖI BẰNG CHỨNG
 
 | PP | Verdict | Σ Điểm | Yếu tố |
 |:---|:--------|-------:|-------:|
-| 📜 Lục Hào | **HUNG** | -6 | 7 |
-| ⚔️ Kỳ Môn | **CÁT** | +3 | 3 |
-| 🌸 Mai Hoa | **HUNG** | -9 | 3 |
-| 📕 Thiết Bản | **CÁT** | +19 | 7 |
-| 🔯 Lục Nhâm | **CÁT** | +8 | 5 |
-| ⭐ Thái Ất | **HUNG** | -4 | 6 |
-| **TỔNG** | **52%** | | **31** |
+| 📜 Lục Hào | **BÌNH** | +3 | 7 |
+| ⚔️ Kỳ Môn | **BÌNH** | -2 | 5 |
+| 🌸 Mai Hoa | **BÌNH** | +0 | 2 |
+| 📕 Thiết Bản | **BÌNH** | +0 | 7 |
+| 🔯 Lục Nhâm | **BÌNH** | +2 | 1 |
+| ⭐ Thái Ất | **BÌNH** | -1 | 7 |
+| **TỔNG** | **44%** | | **29** |
 
 **🔗 CHUỖI BẰNG CHỨNG (các bước tác động mạnh):**
-  🔴 LH-B7 (DT Động/Tĩnh + Tiến/Thối): -5 — Hóa Hồi khắc -8
-  🔴 LH-B12 (TỔNG KẾT LH): -6 — HUNG
-  ✅ KM-B1 (Sinh Khắc Cung BT↔DT): +5 — V28 KM Tam Kỳ: Nguyệt Kỳ(Bính) nhập cung DT +5
-  🔴 MH-B4 (Nguyệt Lệnh + Nhật Thần): -11 — MH Thể bị Tháng khắc (Thất lệnh) -5
-  🔴 MH-B6 (TỔNG KẾT MH): -9 — HUNG
+  ✅ LH-B4 (Nguyên Thần (sinh DT)): +6 — NT(Mộc) Nguyên Thần vượng +6
+  🔴 MH-B1 (Thể↔Dụng sinh khắc): -5 — MH Thể sinh Dụng (hao mòn) -5
+  ✅ MH-B4 (Nguyệt Lệnh + Nhật Thần): +5 — MH Thể đắc lệnh (Tháng) +5
 
 ---
-### 🟡 V. KẾT LUẬN CHÍNH THỨC (từ 27 bước + 31 yếu tố)
+### 🔴 V. KẾT LUẬN CHÍNH THỨC (từ 27 bước + 29 yếu tố)
 
-**🟡 VERDICT: BÌNH — CÓ THỂ (52%)**
-**Đồng thuận 6PP:** 3 CÁT — 3 HUNG — 0 BÌNH
+**🔴 VERDICT: HUNG — KHÓ KHĂN (44%)**
+**Đồng thuận 6PP:** 0 CÁT — 0 HUNG — 6 BÌNH
 
 **📝 LUẬN GIẢI:**
-- Thuận lợi từ: LH-B11(+2), KM-B1(+5), KM-B5(+2), MH-B1(+2)
-- Bất lợi từ: LH-B4(-3), LH-B7(-5), KM-B4(-4), MH-B4(-11)
-- **Net Score:** -12 → Xu hướng NGHỊCH
+- Thuận lợi từ: LH-B4(+6), KM-B4(+4), MH-B4(+5)
+- Bất lợi từ: LH-B5(-1), LH-B7(-2), KM-B1(-4), KM-B3(-4)
+- **Net Score:** -5 → Xu hướng NGHỊCH
 
-> 📢 **KẾT LUẬN: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG (52%)**
+> 📢 **KẾT LUẬN: KHÔNG THUẬN — nên hoãn hoặc đổi hướng (44%)**
 
 **📋 VÌ SAO:**
-  ✅ LH-B11 (Tam Hợp/Lục Xung/Hào Động khác): DT ở hào 6 (cao, xa, khó) +2 (+2)
-  ✅ KM-B1 (Sinh Khắc Cung BT↔DT): V28 KM Tam Kỳ: Nguyệt Kỳ(Bính) nhập cung DT +5 (+5)
-  ✅ KM-B5 (Can DT Vượng/Suy tại Cung): KM Can DT Tướng tại Cung +2 (+2)
-  🔴 LH-B4 (Nguyên Thần (sinh DT)): NT(Thủy) Nguyên Thần suy -3 (-3)
-  🔴 LH-B7 (DT Động/Tĩnh + Tiến/Thối): Hóa Hồi khắc -8 (-5)
-  🔴 KM-B4 (Thần tại Cung DT): KM Thần Đằng Xà Hung -4 (-4)
+  ✅ LH-B4 (Nguyên Thần (sinh DT)): NT(Mộc) Nguyên Thần vượng +6 (+6)
+  ✅ KM-B4 (Thần tại Cung DT): KM Thần Thái Âm Cát +4 (+4)
+  ✅ MH-B4 (Nguyệt Lệnh + Nhật Thần): MH Thể đắc lệnh (Tháng) +5 (+5)
+  🔴 LH-B5 (Kỵ Thần (khắc DT)): KT(Thủy) Kỵ Thần bình -1 (-1)
+  🔴 LH-B7 (DT Động/Tĩnh + Tiến/Thối): DT TĨNH (chờ đợi) -2 (-2)
+  🔴 KM-B1 (Sinh Khắc Cung BT↔DT): KM Cung BT sinh DT (hao) -4 (-4)
 
-**⏳ ỨNG KỲ:** tháng 7-8 ÂL (Thân/Dậu), ngày Canh/Tân | Hướng: Tây
+**⏳ ỨNG KỲ:** tháng 4-5 ÂL (Tỵ/Ngọ), ngày Bính/Đinh | Hướng: Nam
 
-**🔧 GIẢI PHÁP:** Có thể tiến hành nhưng cần bổ sung hành Thổ (sinh Kim) để tăng lực.
+**🔧 GIẢI PHÁP:** Hoãn lại. Đợi tháng hành Mộc vượng hoặc tìm hướng đi mới.
 
 ---
 ### 🎴 VẠN VẬT LOẠI TƯỢNG
 
-**Hành Dụng Thần:** Kim
-- 🎨 **Tượng vật:** ⚔️ Kim loại, dao kéo, trang sức
-- 🧭 **Hướng:** Tây | **Màu sắc:** Trắng, bạc
-- 👤 **Người liên quan:** Người cương nghị, sắc sảo, quyết đoán
-- 🏠 **Nhà cửa/Vị trí:** Nhà kiên cố, tường gạch, gần đường lớn
+**Hành Dụng Thần:** Hỏa
+- 🎨 **Tượng vật:** 🔥 Đèn, lửa, điện tử, đồ nóng
+- 🧭 **Hướng:** Nam | **Màu sắc:** Đỏ, tím
+- 👤 **Người liên quan:** Người sôi nổi, nóng tính, hồng hào
+- 🏠 **Nhà cửa/Vị trí:** Nhà hướng Nam, nhiều ánh sáng
 
 **Quái Tượng:**
-- Thượng Quái (Cấn): Núi ☶ — Tĩnh, dừng lại, con trai út, ổn định
-- Hạ Quái (Khôn): Đất ☷ — Nhu thuận, bao dung, mẹ, nuôi dưỡng
-
-**Dụng Thần:** Thê Tài | **KM:** ĐẠI CÁT | **LH:** BÌNH | **MH:** BÌNH | **LN:** CÁT | **TA:** BÌNH
-
-**📊 Trạng thái DT:** 🟠 SUY | **Ngũ Khí:** Tù | **12 Trường Sinh:** Trường Sinh
-
-</details>
-
-<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px;border-radius:14px;margin:14px 0;border:2px solid #818cf8;"><span style="font-size:1.3em;font-weight:900;color:#a5b4fc;">🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI</span></div>
-
-<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:16px 20px;border-radius:12px;margin:10px 0;border-left:5px solid #f59e0b;"><span style="color:#fbbf24;font-size:1.1em;font-weight:800;">❓ CÂU HỎI:</span> <span style="color:#f1f5f9;font-size:1.05em;font-weight:600;">Hỏi tiền bạc tài sản</span></div>
-
-<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#eab308;">🟡 VỀ "Hỏi tiền bạc tài sản"</span><br><span style="color:#f1f5f9;font-size:1.15em;font-weight:700;">TRUNG BÌNH — 52%</span></div>
-
-<div style="background:#1e1b4b;padding:14px 18px;border-radius:10px;border-left:5px solid #818cf8;margin:12px 0;"><b style="color:#a5b4fc;font-size:1.05em;">📋 VÌ SAO — BẰNG CHỨNG TỪ QUẺ</b></div>
-- 📿 LH: Nguyệt(Thìn/Thổ) không tác động DT +0
-- 📿 LH: Nhật(Bính/Hỏa) không tác động DT +0
-- 📿 LH: NT(Thủy) Nguyên Thần suy -3
-- 🏯 KM: KM Thần Đằng Xà Hung -4
-- 🏯 KM: KM Can DT Tướng tại Cung +2
-- 🌸 MH: MH Tỷ Hòa +2
-
-<div style="background:#172554;padding:14px 18px;border-radius:10px;border-left:5px solid #60a5fa;margin:8px 0;"><b style="color:#93c5fd;font-size:1.05em;">⏳ ỨNG KỲ:</b> <span style="color:#dbeafe;font-weight:600;">Thìn/Tuất/Sửu/Mùi (tháng 3/6/9/12 ÂL)</span> | Ngày <span style="color:#dbeafe;font-weight:600;">Mậu/Kỷ</span> | Hướng <span style="color:#fbbf24;font-weight:700;">Trung Tâm</span></div>
-
-<div style="background:#14532d;padding:14px 18px;border-radius:10px;border-left:5px solid #4ade80;margin:12px 0;"><b style="color:#86efac;font-size:1.05em;">🔧 GIẢI PHÁP CHO "Hỏi tiền bạc tài sản"</b></div>
-- ⏸️ Chuẩn bị kỹ, chờ thời điểm hành vượng mới hành động.
-- 💡 Tìm quý nhân hành Hỏa (sinh Thổ). Hướng Trung Tâm. Màu vàng/nâu.
-
-✅ **Thuận lợi (1):** ✅ Sao **Thiên Xung** (Mộc) SINH chủ thể (Hỏa) → Thê Tài được NĂNG LƯỢNG hỗ trợ
+- Thượng Quái (Ly): Lửa ☲ — Sáng, đẹp, văn minh, con gái giữa
+- Hạ Quái (Chấn): Sấm ☳ — Động, khởi đầu, con trai trưởng, chấn động
 
 
-### 🎯 VẠN VẬT CỤ THỂ (Kim × 🟠 SUY)
-- 🔮 **Đồ vật:** Dao kéo cùn, đồng hồ chạy sai, xe cũ hay hỏng, nồi móp méo, điện thoại cũ
-- 🏠 **Nhà cửa:** Mái tôn dột, cổng sắt rỉ, cửa kính nứt
-- 🧑 **Người:** Người mất quyền lực, nghỉ hưu, bị giáng chức
-- 🏥 **Bệnh:** Viêm phổi nhẹ, ho kéo dài, da khô nứt
+### 🎯 VẠN VẬT CỤ THỂ (Hỏa × 🟠 SUY)
+- 🔮 **Đồ vật:** Bóng đèn mờ nhấp nháy, bếp gas cũ hay tắt, nến gần cháy hết, pin yếu
+- 🏠 **Nhà cửa:** Nhà tối tăm, bếp hỏng, quạt cũ kêu
+- 🧑 **Người:** Người mất danh tiếng, hay lo lắng bất an
+- 🏥 **Bệnh:** Tim đập nhanh, huyết áp cao nhẹ, mất ngủ
 
 ### 🏆 SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT
 ```
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  📐 SĐ MASTER V34.0: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
+║  📐 SĐ MASTER V42.9: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                            ║
 ║  ① XÁC ĐỊNH DỤNG THẦN                                                     ║
 ║  ┌───────────────────────────────────────────────────┐                     ║
-║  │ Câu hỏi: Hỏi tiền bạc tài sản                        │                     ║
-║  │ Nhóm: 💰 Tài Chính / Tiền Bạc                            │                     ║
+║  │ Câu hỏi: Mối quan hệ tình cảm sắp tới của tôi sẽ ...                        │                     ║
+║  │ Nhóm: ❤️ Tình Cảm / Hôn Nhân                            │                     ║
 ║  │ ➜ DỤNG THẦN: Thê Tài                          │                     ║
-║  │   Hành DT: Kim                              │                     ║
+║  │   Hành DT: Hỏa                              │                     ║
 ║  └───────────────────────────────────────────────────┘                     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
 ║  ② LỤC HÀO — 16 YẾU TỐ TÁC ĐỘNG                                          ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
 ║  │ ⊕ Nguyệt Lệnh(Thìn/Thổ) không tác động DT              │     ║
-║  │ ⊕ Nhật Thần(Bính/Hỏa) không tác động DT                     │     ║
-║  │ ⊕ NT(Thủy) Suy — Nguyên Thần sinh DT            │     ║
-║  │ ⊖ KT(ẩn) Ẩn — Kỵ Thần khắc DT                   │     ║
+║  │ ⊕ Nhật Thần(Kỷ/Thổ) không tác động DT                     │     ║
+║  │ ⊕ NT(Mộc) Vượng — Nguyên Thần sinh DT            │     ║
+║  │ ⊖ KT(Thủy) Bình — Kỵ Thần khắc DT                   │     ║
 ║  │ ⊕ CừuT(N/A) N/A — Cừu Thần khắc KT              │     ║
 ║  │ ⭕ Tuần Không: Không                                      │     ║
 ║  │ 💥 Nguyệt Phá: Không                                     │     ║
 ║  │ ⚡ TSVK: Không                                   │     ║
 ║  │ 🔄 Phản/Phục Ngâm: Không                             │     ║
-║  │ 🔄 Thế(?/Thủy) ↔ Ứng(?/Hỏa)                          │     ║
+║  │ 🔄 Thế(?/Mộc) ↔ Ứng(?/Thổ)                          │     ║
 ║  │                                                                   │     ║
-║  │ 🔥 BIẾN HÀO: Hào 6 ĐỘNG → Biến Khôn Vi Địa                                         │     ║
-║  │   Hào động: Hào 6                                      │     ║
-║  │   Biến quẻ: Khôn Vi Địa                                           │     ║
-║  │   Hào biến DT: Hóa Hồi khắc -8Hào 6 biến Huynh Đệ (Dậu-Kim)                                     │     ║
+║  │ 🔥 BIẾN HÀO: Hào 4 ĐỘNG → Biến Trạch Lôi Tùy                                         │     ║
+║  │   Hào động: Hào 4                                      │     ║
+║  │   Biến quẻ: Trạch Lôi Tùy                                           │     ║
+║  │   Hào biến DT: Hào 4 biến Huynh Đệ (Hợi-Thủy)                                     │     ║
 ║  │                                                                   │     ║
 ║  │ ☯ Lục Hợp/Xung: Không phát hiện                                  │     ║
 ║  │ △ Tam Hợp Cục: Không phát hiện                                    │     ║
 ║  │ ↗ Tiến/Thoái Thần: N/A                                 │     ║
-║  │ 👻 Phục Thần: Huynh Đệ (Thân-Kim) ẩn dưới hào 5                                   │     ║
+║  │ 👻 Phục Thần: Thê Tài (Ngọ-Hỏa) ẩn dưới hào 3                                   │     ║
 ║  │                                                                   │     ║
-║  │ ═══ LH Thô = -6 → 42%                      │     ║
+║  │ ═══ LH Thô = +3 → 53%                      │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
 ║  ③ KỲ MÔN ĐỘN GIÁP — 14 YẾU TỐ                                           ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
-║  │ 🏛 Cung DT: Cung 4 (Mộc)                     │     ║
-║  │ ⭐ Sao DT: Thiên Xung                                              │     ║
-║  │ 🚪 Cửa DT: Cảnh Môn                                              │     ║
-║  │ 🐉 Thần DT: Đằng Xà                                            │     ║
+║  │ 🏛 Cung DT: Cung 8 (Thổ)                     │     ║
+║  │ ⭐ Sao DT: Thiên Tâm                                              │     ║
+║  │ 🚪 Cửa DT: Kinh Môn                                              │     ║
+║  │ 🐉 Thần DT: Thái Âm                                            │     ║
 ║  │                                                                   │     ║
-║  │ 📍 Trực Phù: Thiên Nhậm (Sứ Tinh — sao trực)                   │     ║
-║  │ 📍 Trực Sử: Sinh Môn (Sứ Môn — cửa trực)                      │     ║
+║  │ 📍 Trực Phù: Thiên Nhuế (Sứ Tinh — sao trực)                   │     ║
+║  │ 📍 Trực Sử: Tử Môn (Sứ Môn — cửa trực)                      │     ║
 ║  │ ⭕ Không Vong KM: ?                                │     ║
 ║  │ 🐎 Mã Tinh: Cung ?                                      │     ║
-║  │ ✨ Tam Kỳ: Bính (Tam Kỳ)                                              │     ║
+║  │ ✨ Tam Kỳ: Không có                                              │     ║
 ║  │                                                                   │     ║
-║  │ 🔢 Cục: 5 | Dương Độn                               │     ║
-║  │ 📅 4 Trụ: Năm: BínhNgọ | Tháng: NhâmThìn | Ngày: BínhDần | Giờ: BínhThân                                               │     ║
-║  │ 🏛 BT(Cung4) → Tỷ Hòa SV(Cung4)             │     ║
-║  │ 📍 Địa Bàn DT: Can Tân (Địa Bàn Cung 4)                                     │     ║
+║  │ 🔢 Cục: 2 | Dương Độn                               │     ║
+║  │ 📅 4 Trụ: Năm: BínhNgọ | Tháng: NhâmThìn | Ngày: KỷTị | Giờ: NhâmThân                                               │     ║
+║  │ 🏛 BT(Cung9) → BT sinh DT (CÁT) SV(Cung8)             │     ║
+║  │ 📍 Địa Bàn DT: Can Ất (Địa Bàn Cung 8)                                     │     ║
 ║  │ 🔄 Phản/Phục Ngâm cung: Không có                          │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
 ║  ④ MAI HOA DỊCH SỐ — 10 YẾU TỐ                                            ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
-║  │ ☰ Thể Quái: ☶ Cấn (Thổ) — VƯỢNG (đương lệnh)      │     ║
-║  │ ☰ Dụng Quái: ☷ Khôn (Thổ) — VƯỢNG  │     ║
-║  │ ☰ Hỗ Quái: Khôn Vi Địa                                            │     ║
-║  │ ☰ Biến Quái: Khôn Vi Địa                                     │     ║
+║  │ ☰ Thể Quái: ☲ Ly (Hỏa) — HƯU (tiết khí)      │     ║
+║  │ ☰ Dụng Quái: ☳ Chấn (Mộc) — TÙ  │     ║
+║  │ ☰ Hỗ Quái: Khảm Cấn                                            │     ║
+║  │ ☰ Biến Quái: Quẻ Biến                                     │     ║
 ║  │                                                                   │     ║
-║  │ ⚡ Thể tỷ hòa Dụng → Thể Dụng đồng hành → hòa hợp, bình thường                  │     ║
-║  │ ⚡ Hỗ → Thể: tỷ hòa → Hỗ đồng hành Thể                    │     ║
-║  │ ⚡ Hỗ → Dụng: tỷ hòa → Hỗ đồng hành Dụng                 │     ║
-║  │ 🔥 Động Hào MH: hào 6                               │     ║
-║  │ 📝 Quẻ Giải: Quẻ báo Chung: Tượng quẻ lành mạnh.                                 │     ║
+║  │ ⚡ Thể được sinh Dụng → Dụng sinh Thể → CÁT, thuận lợi                  │     ║
+║  │ ⚡ Hỗ → Thể: khắc → Hỗ khắc Thể → nội bộ trở ngại                    │     ║
+║  │ ⚡ Hỗ → Dụng: sinh → Hỗ sinh Dụng → ẩn ý tăng cường                 │     ║
+║  │ 🔥 Động Hào MH: hào 4                               │     ║
+║  │ 📝 Quẻ Giải: Quẻ báo Chung: Cắn kết, thực hiện hình pháp.                                 │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
 ║  ⑤ ĐẠI LỤC NHÂM — 7 YẾU TỐ                                               ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
 ║  │ 📊 Tam Truyền:                                                   │     ║
-║  │   [Sơ: Mão (Mộc)] → [Trung: Dần (Mộc)] → [Mạt: Sửu (Thổ)] │ ║
+║  │   [Sơ: Tị (?)] → [Trung: Tị (?)] → [Mạt: Tị (?)] │ ║
 ║  │    (quá khứ)          (hiện tại)                (tương lai)      │     ║
-║  │ 🎖 Thiên Tướng: Thiên Không (天空)                                    │     ║
-║  │ 🔑 Tứ Khóa: K1: Thìn/Tỵ | K2: Mão/Thìn | K3: Sửu/Dần | K4: Tý/Sửu                                           │     ║
-║  │ 📍 Can Chi lạc cung: Can Bính ký tại Tỵ                          │     ║
+║  │ 🎖 Thiên Tướng: ?                                    │     ║
+║  │ 🔑 Tứ Khóa: K1: Tỵ/Ngọ | K2: Thìn/Tỵ | K3: Tị/Tị | K4: Tị/Tị                                           │     ║
+║  │ 📍 Can Chi lạc cung: Can Kỷ ký tại Ngọ                          │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
@@ -288,38 +263,38 @@
 ║       ▼                                                                    ║
 ║  ⑦ ĐÁNH GIÁ TỔNG HỢP (3 Tầng)                                             ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
-║  │ Tầng 1: LH Điểm = 42%                                    │     ║
-║  │ Tầng 2: 12 Trường Sinh: Kim tại Dần = Trường Sinh │  ║
-║  │   🟢 MẠNH Power = 70% | 🌱 Khởi đầu, được nuôi dưỡng → Sự việc MỚI BẮT ĐẦU, tiềm năng tốt                     │     ║
-║  │ Tầng 3: Ngũ Khí: Kim tại Cung Mộc = Tù    │     ║
-║  │   Power = 25%                                            │     ║
+║  │ Tầng 1: LH Điểm = 53%                                    │     ║
+║  │ Tầng 2: 12 Trường Sinh: Hỏa tại Tị = Tuyệt │  ║
+║  │   🔴 TUYỆT Power = 5% | ❌ Tuyệt diệt → HOÀN TOÀN KẾT THÚC                     │     ║
+║  │ Tầng 3: Ngũ Khí: Hỏa tại Cung Hỏa = Vượng    │     ║
+║  │   Power = 100%                                            │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
 ║  ╔══════════════════════════════════════════════╗                          ║
-║  ║ TỔNG HỢP: 47% — 🟠 SUY        ║                          ║
-║  ║ = LH(42%)×50% + TS(70%)×30%   ║                          ║
-║  ║   + NK(25%)×20%                      ║                          ║
+║  ║ TỔNG HỢP: 48% — 🟠 SUY        ║                          ║
+║  ║ = LH(53%)×50% + TS(5%)×30%   ║                          ║
+║  ║   + NK(100%)×20%                      ║                          ║
 ║  ╚══════════════════════════════════════════════╝                          ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
-║  ⑧ VẠN VẬT LOẠI TƯỢNG (Hành Kim × 🟠 SUY)                       ║
+║  ⑧ VẠN VẬT LOẠI TƯỢNG (Hành Hỏa × 🟠 SUY)                       ║
 ║  ┌───────────────────────────────────────────────────────────────────┐     ║
-║  │ 📐 Hình dáng   : Tròn, cầu                                    │     ║
-║  │ 🔧 Chất liệu   : Kim loại, thép, vàng, bạc                                    │     ║
-║  │ 🎨 Màu sắc     : Trắng, xám bạc                                      │     ║
-║  │ 🧭 Hướng       : Tây                                        │     ║
+║  │ 📐 Hình dáng   : Nhọn, tam giác                                    │     ║
+║  │ 🔧 Chất liệu   : Điện, lửa, nhựa                                    │     ║
+║  │ 🎨 Màu sắc     : Đỏ, hồng                                      │     ║
+║  │ 🧭 Hướng       : Nam                                        │     ║
 ║  │ 📏 Kích thước  : Nhỏ, hẹp, thấp                                    │     ║
 ║  │ 🆕 Tình trạng  : Cũ, hao mòn, xuống cấp                                   │     ║
 ║  │ 🔢 Số lượng    : Ít, thiếu, không đủ                                      │     ║
 ║  │ 💎 Chất lượng  : Kém, giảm giá trị                                    │     ║
 ║  │ 🧑 Con người   : Người bắt đầu suy giảm (56-65 tuổi)                                     │     ║
-║  │ 🏥 Sức khỏe    : Phổi, hô hấp, da                                     │     ║
+║  │ 🏥 Sức khỏe    : Tim, huyết mạch, lưỡi                                     │     ║
 ║  ├───────────────────────────────────────────────────────────────────┤     ║
-║  │ 🔮 Đồ vật cụ thể: Dao kéo cùn, đồng hồ chạy sai, xe cũ hay hỏng, nồi móp méo, điện thoại cũ                                      │     ║
-║  │ 🏠 Nhà cửa      : Mái tôn dột, cổng sắt rỉ, cửa kính nứt                                     │     ║
-║  │ 🧑 Người liên quan: Người mất quyền lực, nghỉ hưu, bị giáng chức                            │     ║
-║  │ 🏥 Bệnh tật     : Viêm phổi nhẹ, ho kéo dài, da khô nứt                                    │     ║
+║  │ 🔮 Đồ vật cụ thể: Bóng đèn mờ nhấp nháy, bếp gas cũ hay tắt, nến gần cháy hết, pin yếu                                      │     ║
+║  │ 🏠 Nhà cửa      : Nhà tối tăm, bếp hỏng, quạt cũ kêu                                     │     ║
+║  │ 🧑 Người liên quan: Người mất danh tiếng, hay lo lắng bất an                            │     ║
+║  │ 🏥 Bệnh tật     : Tim đập nhanh, huyết áp cao nhẹ, mất ngủ                                    │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║                                                                            ║
 ║  CÔNG THỨC: Tổng Hợp% = LH×50% + TS×30% + NK×20%                           ║
@@ -327,81 +302,71 @@
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 ```
-**📊 CÔNG THỨC:** LH(42%)×50% + TS(70%)×30% + NK(25%)×20% = 47%
+**📊 CÔNG THỨC:** LH(53%)×50% + TS(5%)×30% + NK(100%)×20% = 48%
 **🎯 KẾT LUẬN MASTER:** 🟠 SUY — BẤT LỢI, nên chờ hoặc đổi phương án
 
-<details>
-<summary><b>📐 CHÚ GIẢI: SĐ6: TÀI LỘC/TIỀN BẠC (nhấn để mở)</b></summary>
-
+### 📐 CHÚ GIẢI: SĐ15: THẾ NÀO/TRẠNG THÁI
 ```
 
-┌─── SĐ6: TÀI LỘC ────────────────────────────────┐
-│  DT = Thê Tài (Kim)                     │
-│  ThêTài: /Mộc Tĩnh                          │
-│  HuynhĐệ: N/A (cướp tài)           │
-│  TửTôn: /Thủy Tĩnh (sinh tài)                │
-│  QuanQuỷ: /Hỏa Tĩnh (thuế/kiện)           │
+┌─── SĐ15: THẾ NÀO ───────────────────────────────┐
+│  DT: Thê Tài — trạng thái: 🟠 SUY        │
+│  Nguyệt sinh/khắc: N/A             │
+│  Hào Động/Tĩnh: Phụ Mẫu                  │
 │                                                   │
-│  KM: Cửa=Cảnh Môn | Sinh Môn=N/A          │
-│  Điểm = Auto từ 5PP                           │
+│  MH: Thể(Chấn) Mộc SINH Hỏa  Dụng(Ly) │
+│  KM: Cửa Kinh Môn + Sao Thiên Tâm → Kiện tụng, tranh cãi, sợ hãi, báo động   │
 ├───────────────────────────────────────────────────┤
-│ = +0 → CÓ — THUẬN LỢI ✅ (2 cát vs 0 hung)                 │
+│ KẾT LUẬN: CÓ — THUẬN LỢI ✅ (1 cát vs 0 hung)                            │
 └───────────────────────────────────────────────────┘
 
 ```
+**📊 CÔNG THỨC:** DT_trạng thái + Xu hướng + Cửa/Sao → CÁCH THỨC/TÌNH TRẠNG
+**🎯 KẾT LUẬN:** CÓ — THUẬN LỢI ✅ (1 cát vs 0 hung)
 
-**📊 CÔNG THỨC:** ThêTài_vượng(+10) + TửTôn_động(+6) − HuynhĐệ_động(-8) − QuanQuỷ_động(-6) + Cửa(±6)
-
-**🎯 KẾT LUẬN:** CÓ — THUẬN LỢI ✅ (2 cát vs 0 hung)
-
-</details>
-
-<details>
-<summary><b>🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT (nhấn để mở)</b></summary>
-
+### 🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT
 ### 🔮 SƠ ĐỒ TƯƠNG TÁC 6 PHƯƠNG PHÁP
 
 #### ⚔️ KỲ MÔN ĐỘN GIÁP — 9 Cung
-Can Ngày=**Bính** (BT) | Can Giờ=**Bính** (SV) | Tiết Khí=Cốc Vũ | Cục=5
+Can Ngày=**Kỷ** (BT) | Can Giờ=**Nhâm** (SV) | Tiết Khí=Cốc Vũ | Cục=2
 
 | Cung | Sao | Cửa | Thần | Can Thiên | Can Địa | Vai trò |
 |:----:|:----|:----|:-----|:---------|:--------|:--------|
-| 1 | Thiên Tâm | Sinh Môn | Cửu Địa | Kỷ | Quý |  |
-| 2 | Thiên Anh | Kinh Môn | Lục Hợp | Nhâm | Đinh |  |
-| 3 | Thiên Nhậm | Đỗ Môn | Trực Phù | Tân | Bính |  |
-| 4 | Thiên Xung | Cảnh Môn | Đằng Xà | Bính | Ất | ⭐ **BẢN THÂN** |
-| 5 | *(Trung Cung)* | — | — | — | Mậu |  |
-| 6 | Thiên Trụ | Hưu Môn | Huyền Vũ | Canh | Kỷ |  |
-| 7 | Thiên Nhuế/Cầm | Khai Môn | Bạch Hổ | Đinh | Canh |  |
-| 8 | Thiên Bồng | Thương Môn | Cửu Thiên | Quý | Tân |  |
-| 9 | Thiên Phụ | Tử Môn | Thái Âm | Ất | Nhâm |  |
+| 1 | Thiên Trụ | Tử Môn | Đằng Xà | Quý | Ất |  |
+| 2 | Thiên Phụ | Thương Môn | Cửu Địa | Canh | Mậu |  |
+| 3 | Thiên Bồng | Khai Môn | Lục Hợp | Ất | Kỷ |  |
+| 4 | Thiên Nhậm | Hưu Môn | Bạch Hổ | Đinh | Canh |  |
+| 5 | *(Trung Cung)* | — | — | — | Tân |  |
+| 6 | Thiên Nhuế/Cầm | Cảnh Môn | Trực Phù | Mậu | Nhâm |  |
+| 7 | Thiên Anh | Đỗ Môn | Cửu Thiên | Bính | Quý |  |
+| 8 | Thiên Tâm | Kinh Môn | Thái Âm | Nhâm | Đinh | 🎯 **SỰ VIỆC** |
+| 9 | Thiên Xung | Sinh Môn | Huyền Vũ | Kỷ | Bính | ⭐ **BẢN THÂN** |
 
 **📊 Chuỗi tác động BẢN THÂN:**
 ```
-Can Bính(Hỏa) ──→ Cung 4(Mộc) = Mộc sinh Hỏa → ĐƯỢC SINH (tốt)
+Can Kỷ(Thổ) ──→ Cung 9(Hỏa) = Hỏa sinh Thổ → ĐƯỢC SINH (tốt)
   ├── Sao: Thiên Xung → CÁT ✅
-  ├── Cửa: Cảnh Môn → BÌNH 🟡
-  └── Thần: Đằng Xà
+  ├── Cửa: Sinh Môn → CÁT ✅
+  └── Thần: Huyền Vũ
+  BT(Cung9) ──Hỏa SINH Thổ (hao tổn)──→ SV(Cung8)
 ```
-**⚡ Đặc biệt:** ✨ Tam Kỳ (Bính)
 **→ KỲ MÔN: ĐẠI CÁT**
 
 #### 📜 LỤC HÀO KINH DỊCH — 6 Hào
-Nguyệt Lệnh=**Thìn** | Nhật Thần=**Bính**
+Nguyệt Lệnh=**Thìn** | Nhật Thần=**Kỷ**
 
 | Hào | Lục Thân | Chi | Hành | Động | Vai trò |
 |:---:|:---------|:----|:-----|:----:|:--------|
-| Sơ | Phụ Mẫu | Mùi | Thổ | — |  |
-| Nhị | Quan Quỷ | Tị | Hỏa | — |  🎯Ứng |
-| Tam | Thê Tài | Mão | Mộc | — | ⭐ DT |
-| Tứ | Phụ Mẫu | Tuất | Thổ | — |  |
-| Ngũ | Tử Tôn | Tý | Thủy | — |  👤Thế |
-| Thượng | Thê Tài | Dần | Mộc | 🔄 | ⭐ DT |
+| Sơ | Huynh Đệ | Tý | Thủy | — |  |
+| Nhị | Tử Tôn | Dần | Mộc | — |  👤Thế |
+| Tam | Quan Quỷ | Thìn | Thổ | — |  |
+| Tứ | Phụ Mẫu | Thân | Kim | 🔄 |  |
+| Ngũ | Quan Quỷ | Tuất | Thổ | — |  🎯Ứng |
+| Thượng | Huynh Đệ | Tý | Thủy | — |  |
 
 **📊 Chuỗi tác động LỤC HÀO:**
 ```
 Nguyệt(Thìn) ──sinh/khắc──→ Dụng Thần(Thê Tài)
-Nhật(Bính)   ──sinh/khắc──→ Dụng Thần(Thê Tài)
+Nhật(Kỷ)   ──sinh/khắc──→ Dụng Thần(Thê Tài)
 Nguyên Thần ──SINH──→ DT (giúp đỡ)
 Kỵ Thần    ──KHẮC──→ DT (phá hoại)
 Cừu Thần   ──KHẮC──→ Kỵ Thần (giải cứu)
@@ -409,18 +374,18 @@ Cừu Thần   ──KHẮC──→ Kỵ Thần (giải cứu)
 **→ LỤC HÀO: BÌNH**
 
 #### 🌸 MAI HOA DỊCH SỐ
-Quẻ: **Cấn Khôn** | Hào Động: 6 | Tượng: Đang phân tích
+Quẻ: **Hỏa Lôi Phệ Hạp** | Hào Động: 4 | Tượng: Lôi điện thệ
 ```
-Thượng Quái: Cấn (Thổ) = Ngoại/Môi trường
+Thượng Quái: Ly (Hỏa) = Ngoại/Môi trường
   │
-Hạ Quái:    Khôn (Thổ) = Nội/Bản thân
+Hạ Quái:    Chấn (Mộc) = Nội/Bản thân
   │
-  ├── Biến Quái: Khôn Vi Địa (Tương lai)
-  └── Hỗ Quái:  Khôn Vi Địa (Ẩn bên trong)
+  ├── Biến Quái: Quẻ Biến (Tương lai)
+  └── Hỗ Quái:  Khảm Cấn (Ẩn bên trong)
 
-Thể(Thổ) ←sinh/khắc→ Dụng(Thổ) = KẾT QUẢ
+Thể(Mộc) ←sinh/khắc→ Dụng(Hỏa) = KẾT QUẢ
 ```
-📖 *Quẻ báo Chung: Tượng quẻ lành mạnh.*
+📖 *Quẻ báo Chung: Cắn kết, thực hiện hình pháp.*
 **→ MAI HOA: BÌNH**
 
 #### 🔯 ĐẠI LỤC NHÂM
@@ -428,7 +393,7 @@ Thể(Thổ) ←sinh/khắc→ Dụng(Thổ) = KẾT QUẢ
 [Sơ Truyền]  →  [Trung Truyền]  →  [Mạt Truyền]
  (Nguyên nhân)    (Diễn biến)       (Kết quả)
 ```
-**→ ĐẠI LỤC NHÂM: CÁT**
+**→ ĐẠI LỤC NHÂM: BÌNH**
 
 #### ⭐ THÁI ẤT THẦN SỐ
 ```
@@ -444,180 +409,55 @@ Thái Ất Cung → Bát Tướng → Cách Cục → Verdict
 ├─────────┼─────────┼─────────┤
 │ THIẾT   │ LỤC     │ THÁI    │
 │ BẢN     │ NHÂM    │ ẤT      │
-│  BÌNH   │   CÁT   │  BÌNH   │
+│  BÌNH   │  BÌNH   │  BÌNH   │
 └─────────┴─────────┴─────────┘
          ↓ TỔNG HỢP ↓
-    CÁT: 2/5 | HUNG: 0/5
+    CÁT: 1/5 | HUNG: 0/5
 ```
 
-</details>
-
-### 📋 TẠI SAO KẾT LUẬN NHƯ VẬY?
-- ✅ **Thiết Bản**: BÌNH (score +19) → Yếu tố THUẬN LỢI
-- ✅ **Đại Lục Nhâm**: CÁT (score +8) → Yếu tố THUẬN LỢI
-- 🟡 **Kỳ Môn**: ĐẠI CÁT (score +3) → Trung tính
-- 🟡 **Thái Ất**: BÌNH (score -4) → Trung tính
-- 🔴 **Lục Hào**: BÌNH (score -6) → Yếu tố BẤT LỢI
-- 🔴 **Mai Hoa**: BÌNH (score -9) → Yếu tố BẤT LỢI
-
-### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ (31)
-- ⚠️ **BẤT LỢI:** KM Thần Đằng Xà Hung -4
-- ✅ **THUẬN LỢI:** KM Can DT Tướng tại Cung +2
-- ✅ **THUẬN LỢI:** V28 KM Tam Kỳ: Nguyệt Kỳ(Bính) nhập cung DT +5
+### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ (29)
+- ⚠️ **BẤT LỢI:** KM Cung BT sinh DT (hao) -4
+- ⚠️ **BẤT LỢI:** KM Cửa Kinh Môn Hung -4
+- ✅ **THUẬN LỢI:** KM Thần Thái Âm Cát +4
+- ⚠️ **BẤT LỢI:** KM Can DT Tử tại Cung -4
+- ✅ **THUẬN LỢI:** KM Cung BT sinh DT +6 (Hỏa→Thổ)
+- ⚠️ **BẤT LỢI:** ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+- ✅ **THUẬN LỢI:** DT Tướng +10
 - ✅ **THUẬN LỢI:** Nguyệt(Thìn/Thổ) không tác động DT +0
-- ✅ **THUẬN LỢI:** Nhật(Bính/Hỏa) không tác động DT +0
-- ⚠️ **BẤT LỢI:** NT(Thủy) Nguyên Thần suy -3
-- ✅ **THUẬN LỢI:** KT(ẩn) Kỵ Thần ẩn +0
-- ⚠️ **BẤT LỢI:** Hóa Hồi khắc -8
-- ✅ **THUẬN LỢI:** DT ĐỘNG (phát động) +3
-- ✅ **THUẬN LỢI:** DT ở hào 6 (cao, xa, khó) +2
-- ✅ **THUẬN LỢI:** MH Tỷ Hòa +2
-- ⚠️ **BẤT LỢI:** MH Thể bị Tháng khắc (Thất lệnh) -5
-- ⚠️ **BẤT LỢI:** MH Ngày khắc Thể -6
-- ✅ **THUẬN LỢI:** TB-1 Nạp Âm [Lô Trung Hỏa] BÌNH (Lửa trong lò → Năng lượng BỊ KIỀM CHẾ, cần môi trường phù hợp) +0
-- ✅ **THUẬN LỢI:** TB-2 Nạp Âm Tỷ Hòa Mệnh +2
-- ✅ **THUẬN LỢI:** TB-3 Địa Chi(Dần/Mộc) SINH Thiên Can(Bính/Hỏa) +4
-- ✅ **THUẬN LỢI:** TB-4 Mệnh đắc Thái Tuế +3
-- ✅ **THUẬN LỢI:** TB-5 12TrSinh Mệnh ở [Trường Sinh] CỰC VƯỢNG +8
-- ✅ **THUẬN LỢI:** TB-6 Quẻ [Sơn Địa Bác] Bình +0
-- ✅ **THUẬN LỢI:** TB-7 Mệnh(Hỏa) được Mùa Xuân(Mộc) sinh +2
-- ✅ **THUẬN LỢI:** LN Sơ Truyền sinh Can +8
-- ⚠️ **BẤT LỢI:** LN Thiên Tướng của Sơ Truyền Hung -5
-- ✅ **THUẬN LỢI:** V27 LN Trung Truyen sinh Can +5
-- ℹ️ **THÔNG TIN:** V28 LN Sơ Truyền(Mão)=Chấn → nguồn gốc/khởi đầu
-- ℹ️ **THÔNG TIN:** V28 LN Mạt Truyền(Sửu)=Cấn → kết quả/đích đến
+- ✅ **THUẬN LỢI:** Nhật(Kỷ/Thổ) không tác động DT +0
+- ✅ **THUẬN LỢI:** NT(Mộc) Nguyên Thần vượng +6
+- ⚠️ **BẤT LỢI:** KT(Thủy) Kỵ Thần bình -1
+- ⚠️ **BẤT LỢI:** DT TĨNH (chờ đợi) -2
+- ⚠️ **BẤT LỢI:** MH Thể sinh Dụng (hao mòn) -5
+- ✅ **THUẬN LỢI:** MH Thể đắc lệnh (Tháng) +5
+- ✅ **THUẬN LỢI:** TB-1 Nạp Âm [Đại Lâm Mộc] MẠNH (Gỗ rừng lớn → Sức mạnh TO LỚN, phát triển bền vững) +5
+- ⚠️ **BẤT LỢI:** TB-2 Nạp Âm(Mộc) KHẮC Mệnh(Thổ) -4
+- ✅ **THUẬN LỢI:** TB-3 Địa Chi(Tị/Hỏa) SINH Thiên Can(Kỷ/Thổ) +4
+- ✅ **THUẬN LỢI:** TB-4 Thái Tuế(Ngọ/Hỏa) SINH Mệnh +6
+- ⚠️ **BẤT LỢI:** TB-5 12TrSinh Mệnh ở [Tuyệt] CỰC SUY -8
+- ✅ **THUẬN LỢI:** TB-6 Quẻ [Thủy Lôi Truân] Bình +0
+- ⚠️ **BẤT LỢI:** TB-7 Mệnh(Thổ) bị Mùa Xuân(Mộc) khắc -3
+- ✅ **THUẬN LỢI:** LN Tam Truyền đồng khí +2
 - ⚠️ **BẤT LỢI:** TA Chủ sinh Khách -5
 - ⚠️ **BẤT LỢI:** TA Văn Xương khắc Thái Ất -6
 - ⚠️ **BẤT LỢI:** TA Cách cục cản trở (CÁCH (格): ...) -3
 - ✅ **THUẬN LỢI:** TA Bát Tướng đa Cát +3
-- ✅ **THUẬN LỢI:** V28 TA Tham Tướng sinh Chủ → hỗ trợ +4
-- ℹ️ **THÔNG TIN:** V28 TA Văn Xương tại cung 9(Tốn) CÁT
+- ✅ **THUẬN LỢI:** TA Thai At dong hanh Can +3
+- ✅ **THUẬN LỢI:** TA Tham Tướng sinh Chủ → hỗ trợ +4
+- ℹ️ **THÔNG TIN:** TA Văn Xương tại cung 9(Tốn) CÁT
 
-**12 Trường Sinh:** Trường Sinh (🟢 MẠNH, power=70%)
-→ Con người: Trẻ sơ sinh khỏe mạnh (0-5 tuổi)
-→ Vật: MỚI, SẠCH, BẮT ĐẦU
+---
+## 🔮 THIÊN CƠ ĐẠI SƯ — V42.9 Phân Tích Thống Nhất
 
-### 🧬 VẠN VẬT CỤ THỂ (Thê Tài → Kim → TRUNG_BÌNH)
-🎯 **Đồ vật:** Xe đạp cũ còn dùng được, đồng hồ bình thường, dao còn bén, nồi niêu dùng được
-🏠 **Nhà cửa:** Nhà mái tôn bình thường, cổng sắt xuống cấp nhẹ
-👤 **Con người:** Nhân viên văn phòng, công chức bình thường
-🏥 **Sức khỏe:** Phổi bình thường, dễ viêm họng nhẹ
-📐 **Hình dáng:** Tròn, cầu | 🎨 **Màu sắc:** Trắng, xám bạc
-🧪 **Chất liệu:** Kim loại, thép, vàng, bạc | 🧭 **Hướng:** Tây
+**Câu hỏi:** Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?
 
-**🔬 Vạn Vật SIÊU CHI TIẾT: Kim × Trường Sinh**
-
-=== VẠN VẬT: Kim × Trường Sinh (🟢 Mới sinh) ===
-Tính chất: Cứng, sắc bén, sáng bóng, lạnh, trong trẻo
-Hình dáng: Tròn, cong, lõm, vòng cung, hình cầu | Kích thước: Nhỏ, mới hình thành
-Màu: Trắng, bạc, vàng kim, xám bạc, ánh kim | Chất liệu: Kim loại (sắt, thép, đồng, nhôm, vàng, bạc, inox)
-Tình trạng: MỚI TINH, vừa xuất hiện, chưa dùng | Tuổi: Mới ra lò, vừa sản xuất, còn nguyên seal
-Chất lượng: Tốt nhưng chưa ổn định, cần phát triển thêm
-Trọng lượng: Nhẹ, gọn | Nhiệt: Ấm nhẹ (khí mới sinh)
-👁️ Nhìn: Trắng sáng, bạc lấp lánh, vàng ánh kim, chrome | Bóng loáng, nhẵn mịn, hoặc có cạnh sắc | Phản chiếu mạnh, lấp lánh, có ánh kim
-👂 Nghe: Leng keng, lanh canh, tiếng kim loại va chạm | Giọng: Trong trẻo, vang, dứt khoát, gọn gàng
-👃 Ngửi: Không mùi hoặc mùi kim loại tanh nhẹ, mùi sắt | Mùi đồng xu, mùi chìa khóa, mùi thép
-👅 Vị: Cay nồng, hăng (hành tỏi, gừng, ớt) | Thực phẩm: Hành, tỏi, gừng, ớt, rau thơm mùi mạnh
-✋ Sờ: Lạnh, cứng, trơn, sắc cạnh | Nhẵn bóng hoặc có gờ sắc
-🔮 Đồ vật: Đinh nhỏ mới, Kim châm cứu, Dây thép mới, Chiếc nhẫn nhỏ, Ghim cài áo, Cúc áo kim loại, Khuy đồng
-🧑 Người: Da trắng sáng, mặt vuông/tròn, mũi cao, mắt sáng, tóc thưa hoặc đen bóng | Cao gầy hoặc cân đối, xương to, vai rộng
-   Tính cách: Cương quyết, dứt khoát, nghiêm túc, kỷ luật, ít nói | Giọng: Trong trẻo, gọn gàng, dứt khoát, ngắn gọn
-   Nghề: Quân đội, công an, bác sĩ phẫu thuật, thợ cơ khí, thợ vàng, IT, tài chính, ngân hàng
-   Tầng Trường Sinh: Da trắng sáng, mặt vuông/tròn, mũi cao, mắt sáng, tóc thưa hoặc đen bóng
-🏠 Nhà: Nhà có nhiều kim loại, cửa sắt, lan can inox, mái tôn
-🏥 Bệnh: Bệnh PHỔI, đường hô hấp, DA, xương, răng | Chi tiết: Viêm phổi, Hen suyễn, Viêm phế quản, Viêm da, Dị ứng da
-🐾 Thú: Hổ, báo, ngựa, gà, khỉ, chim ưng, đại bàng | 🌿 Cây: Cây có gai, cây cứng, lá nhọn, cây bonsai, cây xương rồng
-🧭 Hướng: Tây | Mùa: Thu | Giờ: 
-🔢 Số lượng: 1-2 | Con số: 1
-📈 Xu hướng: Đang lớn lên, sẽ mạnh dần
-🚗 **Phương tiện:** Xe hơi, Xe máy, Xe đạp, Tàu hỏa, Máy bay
-👔 **Trang phục:** Áo giáp, Dây chuyền bạc, Đồng hồ kim loại, Kính gọng kim loại, Thắt lưng khóa
-🍜 **Thực phẩm:** Hành tây, Tỏi, Gừng, Ớt, Tiêu, Quế
-🥤 **Đồ uống:** Rượu trắng, Sake, Vodka, Soju, Nước suối
-💎 **Khoáng sản:** Vàng, Bạc, Bạch kim, Đồng, Sắt
-📱 **Công nghệ:** iPhone, MacBook, iPad, Apple Watch, AirPods
-🎵 **Nhạc cụ:** Chuông đồng, Phong linh, Kèn đồng (trumpet), Kèn trombone, Cymbal
-🏭 **Công nghiệp:** Cần cẩu, Máy tiện, Máy phay, Máy ép, Máy cắt laser
-⚔️ **Vũ khí:** Kiếm, Dao, Rìu, Búa chiến, Giáo
-⚽ **Thể thao:** Tạ, Barbell, Dumbbell, Xe đạp racing, Kiếm fencing
-🌤️ **Thời tiết:** Sương giá, Băng tuyết, Gió lạnh, Mưa đá
-🎭 **Cảm xúc:** Buồn, Đau đớn, Nghiêm khắc, Cô đơn, Kiên cường
-🌍 **Quốc gia:** Phương Tây, Châu Âu, Mỹ, Anh, Đức
-🛋️ **Nội thất:** Kệ inox, Giá treo quần áo kim loại, Gương khung bạc, Đèn chùm pha lê, Bàn kính khung sắt
-💉 **Y tế:** Dao mổ, Kim tiêm, Kéo phẫu thuật, Kẹp y tế, Nẹp xương
-⛪ **Tôn giáo:** Chuông chùa/nhà thờ, Thánh giá bạc/vàng, Lư hương đồng, Kiếm phát ấn, Chén thánh
-🗻 **Địa lý:** Mỏ vàng, Mỏ bạc, Mỏ sắt, Núi đá vôi, Sa mạc (cát kim loại)
-🦴 **Cơ thể:** Phổi, Ruột già, Da, Xương, Răng, Mũi
-🌾 **Nông nghiệp:** Liềm, Cuốc sắt, Xẻng sắt, Dao phát cỏ, Cày sắt
-🏢 **Văn phòng:** Ghim, Kẹp giấy, Dao rọc giấy, Kéo văn phòng, Máy dập ghim
-🏡 **Gia dụng:** Nồi, Chảo, Dao bếp, Thìa, Dĩa
-🎨 **Nghệ thuật:** Tranh đồng đúc, Tượng inox, Sculpture kim loại, Jewelry art, Chạm khắc bạc
-💻 **Kỹ thuật số:** Bitcoin, Cryptocurrency, Blockchain, Fintech, NFT vàng
-
-🕵️ **THÁM TỬ LẮP GHÉP — Kim × Trường Sinh**
-👁️ **Nhìn thấy:** Một vật có hình dáng Tròn, cong, lõm, vòng cung, hình cầu, kích thước Nhỏ, mới hình thành. Màu sắc Trắng sáng, bạc lấp lánh, vàng ánh kim, chrome. Bề mặt Bóng loáng, nhẵn mịn, hoặc có cạnh sắc. Tình trạng: MỚI TINH, vừa xuất hiện, chưa dùng.
-👂 **Nghe thấy:** Leng keng, lanh canh, tiếng kim loại va chạm.
-👃 **Ngửi thấy:** Không mùi hoặc mùi kim loại tanh nhẹ, mùi sắt.
-👅 **Vị:** Liên quan đến vị Cay nồng, hăng (hành tỏi, gừng, ớt).
-✋ **Sờ thấy:** Lạnh, cứng, trơn, sắc cạnh. Nhiệt độ: Ấm nhẹ (khí mới sinh). Trọng lượng: Nhẹ, gọn.
-🔮 **Đồ vật khả năng cao:** Đinh nhỏ mới, Kim châm cứu, Dây thép mới, Chiếc nhẫn nhỏ, Ghim cài áo, Cúc áo kim loại
-🧑 **Người liên quan:** Da trắng sáng, mặt vuông/tròn, mũi cao, mắt sáng, tóc thưa hoặc đen bóng
-🚗 **Phương tiện:** Xe hơi, Xe máy, Xe đạp, Tàu hỏa, Máy bay
-👔 **Trang phục:** Áo giáp, Dây chuyền bạc, Đồng hồ kim loại, Kính gọng kim loại, Thắt lưng khóa
-🍜 **Thực phẩm:** Hành tây, Tỏi, Gừng, Ớt, Tiêu, Quế
-🥤 **Đồ uống:** Rượu trắng, Sake, Vodka, Soju, Nước suối
-💎 **Khoáng sản/Đá quý:** Vàng, Bạc, Bạch kim, Đồng, Sắt
-⚽ **Thể thao:** Tạ, Barbell, Dumbbell, Xe đạp racing, Kiếm fencing
-🎭 **Cảm xúc:** Buồn, Đau đớn, Nghiêm khắc, Cô đơn, Kiên cường
-🌤️ **Thời tiết:** Sương giá, Băng tuyết, Gió lạnh, Mưa đá
-🛋️ **Nội thất:** Kệ inox, Giá treo quần áo kim loại, Gương khung bạc, Đèn chùm pha lê, Bàn kính khung sắt
-🏥 **Y tế:** Dao mổ, Kim tiêm, Kéo phẫu thuật, Kẹp y tế, Nẹp xương
-⛪ **Tôn giáo:** Chuông chùa/nhà thờ, Thánh giá bạc/vàng, Lư hương đồng, Kiếm phát ấn, Chén thánh
-🗻 **Địa lý:** Mỏ vàng, Mỏ bạc, Mỏ sắt, Núi đá vôi, Sa mạc (cát kim loại)
-🦴 **Bộ phận cơ thể:** Phổi, Ruột già, Da, Xương, Răng, Mũi
-🏡 **Gia dụng:** Nồi, Chảo, Dao bếp, Thìa, Dĩa
-📱 **Công nghệ:** iPhone, MacBook, iPad, Apple Watch, AirPods
-🎵 **Nhạc cụ:** Chuông đồng, Phong linh, Kèn đồng (trumpet), Kèn trombone, Cymbal
-🏭 **Công nghiệp:** Cần cẩu, Máy tiện, Máy phay, Máy ép, Máy cắt laser
-⚔️ **Vũ khí:** Kiếm, Dao, Rìu, Búa chiến, Giáo
-🌍 **Quốc gia/Vùng:** Phương Tây, Châu Âu, Mỹ, Anh, Đức
-🌾 **Nông nghiệp:** Liềm, Cuốc sắt, Xẻng sắt, Dao phát cỏ, Cày sắt
-🏢 **Văn phòng:** Ghim, Kẹp giấy, Dao rọc giấy, Kéo văn phòng, Máy dập ghim
-🎨 **Nghệ thuật:** Tranh đồng đúc, Tượng inox, Sculpture kim loại, Jewelry art, Chạm khắc bạc
-💻 **Kỹ thuật số:** Bitcoin, Cryptocurrency, Blockchain, Fintech, NFT vàng
-📈 **Xu hướng:** Đang lớn lên, sẽ mạnh dần
-
-<div style="background:linear-gradient(135deg,#7c2d12,#9a3412);padding:20px;border-radius:16px;margin:16px 0;border:2px solid #fb923c;"><span style="font-size:1.4em;font-weight:900;color:#fed7aa;">🏆 KẾT LUẬN TỔNG HỢP (AI OFFLINE V40.6)</span></div>
-<div style="text-align:center;padding:16px;margin:10px 0;"><span style="font-size:2em;font-weight:900;color:#eab308;text-shadow:0 2px 8px rgba(0,0,0,0.3);">🟡 TRUNG BÌNH</span><br><span style="font-size:1.5em;font-weight:800;color:#eab308;">52%</span></div>
-
-**🎯 Trả lời câu hỏi: "Hỏi tiền bạc tài sản"**
-
-→ Tài chính **BÌNH THƯỜNG**. Thê Tài (Kim) trung bình (52%).
-→ Có thu nhập nhưng không đột biến. Giữ ổn định, không mạo hiểm.
-
-**📊 Bằng chứng:**
-- DT **Thê Tài** (hành Kim) → Trạng thái: **Trường Sinh**
-- 6 Phương Pháp: **2 CÁT** / **0 HUNG** → Điểm 52%
-- Ngũ Khí: **Tù** (Kim @ Mộc)
-
-### 💡 LỜI KHUYÊN HÀNH ĐỘNG
-- ⏸️ Quan sát thêm, thu thập thông tin rồi quyết định. Không vội vàng.
-
-
-<details>
-<summary><b>📦 Xem Chi Tiết Phân Tích V26.2 (nhấn để mở)</b></summary>
-
-## 🔮 THIÊN CƠ ĐẠI SƯ — V31.1 Phân Tích Thống Nhất
-
-**Câu hỏi:** Hỏi tiền bạc tài sản
-
-📋 **Phân loại:** 💰 TÀI LỘC — 💰 Tài Chính | Hỏi CHO: **tài sản** — DT: Thê Tài — SĐ: SD6
-└─ *Hỏi về VẬT: tài sản → DT = Thê Tài*
+📋 **Phân loại:** 📊 THẾ NÀO — ❤️ Tình Cảm | Hỏi VỀ: **quan** — DT: Quan Quỷ — SĐ: SD15
+└─ *Hỏi về VẬT: quan → DT = Quan Quỷ*
 
 ### BƯỚC 1 — DỤNG THẦN & CHỦ ĐỀ
-- 🧠 **Nhóm câu hỏi:** 💰 Tài Chính / Tiền Bạc
+- 🧠 **Nhóm câu hỏi:** ❤️ Tình Cảm / Hôn Nhân
 - 🎯 **Dụng Thần:** Thê Tài
-- 💡 **Hướng phân tích:** Phân tích tài chính. Thê Tài = tiền bạc. Sinh Môn/Mậu = cầu tài.
+- 💡 **Hướng phân tích:** Phân tích tình cảm. Thê Tài = vợ/bạn gái. Quan Quỷ = chồng/bạn trai. Ứng hào = đối phương.
 - **Dụng Thần (Ngũ Hành):** Thê Tài
 
 
@@ -626,21 +466,21 @@ Trọng lượng: Nhẹ, gọn | Nhiệt: Ấm nhẹ (khí mới sinh)
 
 ### BƯỚC 2 — KỲ MÔN ĐỘN GIÁP
 **📊 TỔNG QUAN 9 CUNG:**
-  Cung 1: Sao Thiên Tâm | Cửa Sinh Môn | Thần Cửu Địa | Can Kỷ
-  Cung 2: Sao Thiên Anh | Cửa Kinh Môn | Thần Lục Hợp | Can Nhâm
-  Cung 3: Sao Thiên Nhậm | Cửa Đỗ Môn | Thần Trực Phù | Can Tân
-  Cung 4: Sao Thiên Xung | Cửa Cảnh Môn | Thần Đằng Xà | Can Bính ← **BẢN THÂN**
+  Cung 1: Sao Thiên Trụ | Cửa Tử Môn | Thần Đằng Xà | Can Quý
+  Cung 2: Sao Thiên Phụ | Cửa Thương Môn | Thần Cửu Địa | Can Canh
+  Cung 3: Sao Thiên Bồng | Cửa Khai Môn | Thần Lục Hợp | Can Ất
+  Cung 4: Sao Thiên Nhậm | Cửa Hưu Môn | Thần Bạch Hổ | Can Đinh
   Cung 5: *(Trung Cung)* — không xếp Sao/Cửa/Thần
-  Cung 6: Sao Thiên Trụ | Cửa Hưu Môn | Thần Huyền Vũ | Can Canh
-  Cung 7: Sao Thiên Nhuế/Cầm | Cửa Khai Môn | Thần Bạch Hổ | Can Đinh
-  Cung 8: Sao Thiên Bồng | Cửa Thương Môn | Thần Cửu Thiên | Can Quý
-  Cung 9: Sao Thiên Phụ | Cửa Tử Môn | Thần Thái Âm | Can Ất
+  Cung 6: Sao Thiên Nhuế/Cầm | Cửa Cảnh Môn | Thần Trực Phù | Can Mậu
+  Cung 7: Sao Thiên Anh | Cửa Đỗ Môn | Thần Cửu Thiên | Can Bính
+  Cung 8: Sao Thiên Tâm | Cửa Kinh Môn | Thần Thái Âm | Can Nhâm ← **SỰ VIỆC**
+  Cung 9: Sao Thiên Xung | Cửa Sinh Môn | Thần Huyền Vũ | Can Kỷ ← **BẢN THÂN**
 
-**🚪 NHÂN BÀN (Bát Môn) — V42.2:**
-  1:Sinh Môn | 2:Kinh Môn | 3:Đỗ Môn | 4:Cảnh Môn | 5: — | 6:Hưu Môn | 7:Khai Môn | 8:Thương Môn | 9:Tử Môn
+**🚪 NHÂN BÀN (Bát Môn):**
+  1:Tử Môn | 2:Thương Môn | 3:Khai Môn | 4:Hưu Môn | 5: — | 6:Cảnh Môn | 7:Đỗ Môn | 8:Kinh Môn | 9:Sinh Môn
 
-**👁️ THẦN BÀN (Bát Thần) — V42.2:**
-  1:Cửu Địa | 2:Lục Hợp | 3:Trực Phù | 4:Đằng Xà | 5: — | 6:Huyền Vũ | 7:Bạch Hổ | 8:Cửu Thiên | 9:Thái Âm
+**👁️ THẦN BÀN (Bát Thần):**
+  1:Đằng Xà | 2:Cửu Địa | 3:Lục Hợp | 4:Bạch Hổ | 5: — | 6:Trực Phù | 7:Cửu Thiên | 8:Thái Âm | 9:Huyền Vũ
 
 
 **📊 BẢNG VƯỢNG/SUY THEO MÙA (Lệnh Tháng: Mộc):**
@@ -669,188 +509,188 @@ Trọng lượng: Nhẹ, gọn | Nhiệt: Ấm nhẹ (khí mới sinh)
 | Kinh Môn | Kim | 🟠 TÙ |
 
 
-**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN (V42.1):**
+**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN:**
 *Kỳ Môn Độn Giáp phân tích theo 4 trụ chiến lược*
 
 | Trụ | Yếu tố | Cung BT | Cung SV | Đánh giá |
 |:---|:---|:---:|:---:|:---:|
-| 🌤️ **THIÊN THỜI** | Cửu Tinh (thời cơ) | Thiên Xung 🟢 VƯỢNG | Thiên Xung | ✅ THUẬN |
-| 🌍 **ĐỊA LỢI** | Cung + Quái (môi trường) | Cung 4 (Mộc) | Cung 4 (Mộc) | ✅ THUẬN |
-| 👥 **NHÂN HÒA** | Bát Môn (hành động) | Cảnh Môn | Cảnh Môn | 🟡 BÌNH |
-| 🙏 **THẦN TRỢ** | Bát Thần (siêu nhiên) | Đằng Xà | Đằng Xà | ⚠️ HUNG |
+| 🌤️ **THIÊN THỜI** | Cửu Tinh (thời cơ) | Thiên Xung 🟢 VƯỢNG | Thiên Tâm | ✅ THUẬN |
+| 🌍 **ĐỊA LỢI** | Cung + Quái (môi trường) | Cung 9 (Hỏa) | Cung 8 (Thổ) | 🟡 BÌNH |
+| 👥 **NHÂN HÒA** | Bát Môn (hành động) | Sinh Môn | Kinh Môn | ✅ THUẬN |
+| 🙏 **THẦN TRỢ** | Bát Thần (siêu nhiên) | Huyền Vũ | Thái Âm | ⚠️ HUNG |
 
 → **✅ TỔNG KẾT CHIẾN LƯỢC: 2/4 trụ THUẬN** — Đa số thuận, có thể hành động nhưng cần lưu ý trụ yếu.
 
-- **Bản thân** (Can Ngày **Bính**) tại **Cung 4 (Tốn)**
-  - Hành Can: Hỏa | Hành Cung: Mộc → Mộc sinh Hỏa → ĐƯỢC SINH (tốt)
-  - Sao: **Thiên Xung** | Cửa: **Cảnh Môn** | Thần: **Đằng Xà**
+- **Bản thân** (Can Ngày **Kỷ**) tại **Cung 9 (Ly)**
+  - Hành Can: Thổ | Hành Cung: Hỏa → Hỏa sinh Thổ → ĐƯỢC SINH (tốt)
+  - Sao: **Thiên Xung** | Cửa: **Sinh Môn** | Thần: **Huyền Vũ**
   - 📖 **Ý nghĩa Sao Thiên Xung:** Cát tinh — Quân sự, động lực, cạnh tranh, di chuyển → Hành động mạnh mẽ, thích hợp khởi sự, di chuyển
   - 📚 **[KB] Sao Thiên Xung:** Hành Mộc | CÁT HUNG NỬA — Xung đột, hành động, quyết đoán. Can đảm nhưng manh động
-  - 📖 **Ý nghĩa Cửa Cảnh Môn:** Bình — Văn thư, thi cử, yến tiệc, thông tin
-  - 📚 **[KB] Cửa Cảnh Môn:** Hành Hỏa | BÌNH — Phong cảnh, văn thư, thi cử. Lợi cho học hành, bất lợi cho kiện
-  - 📖 **Ý nghĩa Thần Đằng Xà:** Dây dưa, thần quỷ, biến hóa → Cẩn thận lừa gạt, ảo giác, sự rối rắm
-  - 📚 **[KB] Thần Đằng Xà:** Hành Hỏa | HUNG — Lo lắng, ác mộng, quái dị. Sợ hãi, bất an, lừa dối
+  - 📖 **Ý nghĩa Cửa Sinh Môn:** Đại Cát — Tài lộc, sinh sôi, kinh doanh, phát triển
+  - 📚 **[KB] Cửa Sinh Môn:** Hành Thổ | ĐẠI CÁT — Sinh sôi, phát tài, lợi nhuận. Lợi cho kinh doanh, đầu tư
+  - 📖 **Ý nghĩa Thần Huyền Vũ:** Trộm cắp, lừa dối, ám muội → Phòng bị mất mát, gian lận
+  - 📚 **[KB] Thần Huyền Vũ:** Hành Thủy | HUNG — Trộm cắp, mất mát, mờ ám. Bất minh, nghi ngờ
 
-  **⚡ Cách Cục: Hỏa Mộc Tương Sinh (Cát)**
-  - Được quý nhân giúp đỡ, có người cầu hôn.
+  **⚡ Cách Cục: Địa Hỏa Mộc Sinh (Cát)**
+  - Tài lộc dồi dào, công việc phát triển.
+  - 📚 **[KB Cách Cục] Thiên Mã Lâm Môn:** CÁT — Di chuyển nhanh, cơ hội đến bất ngờ
+    Ứng dụng: Xuất hành, thay đổi, di chuyển nhanh
 
-  **📖 [Sách] Khắc Ứng: Nhật Nguyệt Tinh Hành (CÁT)**
-  - Dù việc công hay tư đều cát lợi
-  - 📖 **[Sách] 12 Thần Ứng Nghiệm (Đằng Xà):** Nửa đường quay lại. Quái lạ hoảng kinh. Gió mưa rập rình. Nghe kêu chim khách. Có người đuổi nhanh
+  **📖 [Sách] Khắc Ứng: Hỏa Bội Địa Hộ (HUNG)**
+  - Nam giới tương hại oan uổng. Người phụ nữ phát sinh việc dâm loạn
+  - 📖 **[Sách] Tượng Ý Hôn Nhân (Kỷ):** Kỷ = nền tảng, đất, phần mộ
+  - 📖 **[Sách] 12 Thần Ứng Nghiệm (Huyền Vũ):** Không là sư sãi thì trộm cắp, rơi lăn. Hoặc kẻ xin ăn
 
-  **🕳️ TUẦN KHÔNG TỨ TRỤ (V15.0):**
+  **🕳️ TUẦN KHÔNG TỨ TRỤ:**
   ⚡ *Chi lâm Tuần Không = KHÔNG CÓ THẬT, sự việc trống rỗng!*
   - Tuần Không Trụ Ngày: **Tuất, Hợi**
   - Tuần Không Trụ Năm: **Dần, Mão**
   - Tuần Không Trụ Tháng: **Ngọ, Mùi**
-  - ⚠️ Chi Ngày (Dần) lâm Tuần Không → Bản thân YẾU ĐI, thiếu nội lực
+  - ⚠️ Cung SV (8) có Can Nhâm đồng hành Tuần Không → Sự việc bấp bênh
 
-  **🐎 DỊCH MÃ TỨ TRỤ (V15.0):**
+  **🐎 DỊCH MÃ TỨ TRỤ:**
   ⚡ *Dịch Mã = DI CHUYỂN, biến động, thay đổi nhanh chóng*
   - Trụ Năm (Ngọ) → Dịch Mã tại **Thân**
   - Trụ Tháng (Thìn) → Dịch Mã tại **Dần**
-  - Trụ Ngày (Dần) → Dịch Mã tại **Thân**
+  - Trụ Ngày (Tị) → Dịch Mã tại **Hợi**
   - Trụ Giờ (Thân) → Dịch Mã tại **Dần**
-  - ✅ Chi Giờ (Thân) = Dịch Mã Ngày → Sự việc BIẾN ĐỘNG NHANH + CÁT = Đi xa CÁT LỢI
-  - 🔄 Chi Ngày (Dần) = Dịch Mã Giờ → Bản thân cũng đang di chuyển, thay đổi
 
-  **📜 TỨ TRỤ Ý NGHĨA (V15.0):**
+  **📜 TỨ TRỤ Ý NGHĨA:**
   - 🌳 **Trụ Năm** (Bính Ngọ): Hành Hỏa/Hỏa
     → GỐC RỄ (ông bà, xã hội, nền tảng, nguồn gốc sự việc)
   - 🚪 **Trụ Tháng** (Nhâm Thìn): Hành Thủy/Thổ
     → CỬA CHÍNH (cha mẹ, sự nghiệp, lệnh tháng chi phối)
-  - 🧑 **Trụ Ngày** (Bính Dần): Hành Hỏa/Mộc
+  - 🧑 **Trụ Ngày** (Kỷ Tị): Hành Thổ/Hỏa
     → BẢN THÂN (chính mình, tâm tính, nội lực)
-  - 🔮 **Trụ Giờ** (Bính Thân): Hành Hỏa/Kim
+  - 🔮 **Trụ Giờ** (Nhâm Thân): Hành Thủy/Kim
     → TƯƠNG LAI (con cái, kết quả, hậu vận, diễn biến cuối)
+  - 📊 Ngày (Thổ) khắc Giờ (Thủy): Mình KIỂM SOÁT kết quả
 
   **🌟 THIÊN ĐỊA NHÂN TAM TÀI TƯƠNG HỢP:**
-  → Sao (Mộc) + Cửa (Hỏa) đều thuận Cung (Mộc) — ĐẠI CÁT!
+  → Sao (Mộc) + Cửa (Thổ) đều thuận Cung (Hỏa) — ĐẠI CÁT!
 
-  **📊 Vạn Vật Loại Tượng (Tốn):**
-  Tượng: Gió ☴ — Thuận, giao thương, con gái trưởng, thâm nhập
-  🎨 Sắc: Xanh lá nhạt, trắng xanh | Vật: Gà, côn trùng
+  **📊 Vạn Vật Loại Tượng (Ly):**
+  Tượng: Lửa ☲ — Sáng, đẹp, văn minh, con gái giữa
+  🎨 Sắc: Đỏ, cam, hồng | Vật: Chim trĩ, phượng
 
-  → **KỲ MÔN: ĐẠI CÁT** (📖 Khắc Ứng CÁT + Ngũ Hành thuận + Sao Thiên Xung Cát + ⚠️ Chi Ngày (Dần) lâm Tuần Không + 🐎 Dịch Mã kích hoạt (Giờ=Thân=Mã Ngày) + Tam Tài hợp)
+  → **KỲ MÔN: ĐẠI CÁT** (📖 Khắc Ứng HUNG + Ngũ Hành thuận + Sao Thiên Xung Cát + Cửa Sinh Môn Cát + Tam Tài hợp)
+
+- **Sự việc** (Can Giờ Nhâm) tại **Cung 8 (Cấn)**
+  - Sao: Thiên Tâm | Cửa: Kinh Môn | Hành: Thổ
+  - **Bản thân vs Sự việc:** Cung 9 (Hỏa) → Cung 8 (Thổ): Hỏa SINH Thổ (hao tổn)
+  - 📝 BT sinh SV → Mình phải bỏ công sức ra, hao tổn
 
 ### BƯỚC 3 — LỤC HÀO KINH DỊCH
-- **Quẻ Chủ:** Sơn Địa Bác (Càn)
-- **Quẻ Biến:** Khôn Vi Địa
-- **Hào Động:** 6
+- **Quẻ Chủ:** Thủy Lôi Truân (Khảm)
+- **Quẻ Biến:** Trạch Lôi Tùy
+- **Hào Động:** 4
 
-**☯️ Bảng 6 Hào (V42.2 — Lục Thần + Lục Thân đầy đủ):**
+**☯️ Bảng 6 Hào (Lục Thần + Lục Thân):**
 | Hào | Lục Thần | Lục Thân | Can Chi | Ngũ Hành | Thế/Ứng | Động |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1 | Thanh Long | Phụ Mẫu | Mùi-Thổ | Thổ |  |  |
-| 2 | Chu Tước | Quan Quỷ | Tị-Hỏa | Hỏa |  |  |
-| 3 | Câu Trần | Thê Tài | Mão-Mộc | Mộc |  |  |
-| 4 | Đằng Xà | Phụ Mẫu | Tuất-Thổ | Thổ |  |  |
-| 5 | Bạch Hổ | Tử Tôn | Tý-Thủy | Thủy |  |  |
-| 6 | Huyền Vũ | Thê Tài | Dần-Mộc | Mộc |  | 🔴 Động |
-  - **Tử Tôn**: Con cái, may mắn, vui vẻ, giải trừ, khắc Quan Quỷ
-  - **Thê Tài**: Tiền tài, vợ, tài sản, thu nhập, đầu tư
-  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
+| 1 | Huyền Vũ | Huynh Đệ | Tý-Thủy | Thủy |  |  |
+| 2 | Thanh Long | Tử Tôn | Dần-Mộc | Mộc |  |  |
+| 3 | Chu Tước | Quan Quỷ | Thìn-Thổ | Thổ |  |  |
+| 4 | Câu Trần | Phụ Mẫu | Thân-Kim | Kim |  | 🔴 Động |
+| 5 | Đằng Xà | Quan Quỷ | Tuất-Thổ | Thổ |  |  |
+| 6 | Bạch Hổ | Huynh Đệ | Tý-Thủy | Thủy |  |  |
+  - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
   - **Quan Quỷ**: Công việc, sếp, bệnh tật, kiện tụng, áp lực
+  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
+  - **Tử Tôn**: Con cái, may mắn, vui vẻ, giải trừ, khắc Quan Quỷ
 
-- **🎯 Dụng Thần (Thê Tài):** Hào 6 — Thê Tài Dần-Mộc (Mộc)
+- ⚠️ **PHỤC THẦN:** Dụng Thần (Thê Tài) KHÔNG xuất hiện trong quẻ!
+  → Dụng Thần ẩn (Phục Thần), sự việc chưa lộ diện.
+  - 📚 **phuc_than_vuong:** Phục Thần được Nhật/Nguyệt sinh hoặc được hào động sinh → CÁT — Phục Thần sắp xuất hiện, sự việc sẽ thành nhưng chậm
+  - 📚 **phuc_than_suy:** Phục Thần bị khắc, hưu tù, không được trợ giúp → HUNG — Sự việc khó thành, Dụng Thần ẩn quá sâu
+  - 📚 **phi_than_sinh_phuc:** Phi Thần (hào che Phục Thần) sinh Phục Thần → CÁT — Người chèn ép lại giúp đỡ, chuyện xấu hóa tốt
+  - 📚 **phi_than_khac_phuc:** Phi Thần khắc Phục Thần → HUNG — Bị kẻ trên đè nén, sự việc bị chôn vùi
+  - 📚 **phi_than_khong_vong:** Phi Thần lâm Không Vong hoặc bị Nguyệt Phá → CÁT — Lớp che bị phá, Phục Thần tự xuất hiện
 
 - 📚 **[KB] Độc Phát (1 hào động):** Hào động là trọng tâm — Xem hào đó sinh/khắc Dụng Thần để luận
-- 📚 **[KB] Nguyên Thần** (sinh Dụng Thần): hành **Thủy** → Tìm hào Thủy vượng = CÁT
-- 📚 **[KB] Kỵ Thần** (khắc Dụng Thần): hành **Kim** → Nếu vượng + động = HUNG
-- 📚 **[KB] Cừu Thần** (sinh Kỵ Thần): hành **Thổ** → Tăng sức Kỵ Thần
-- Dụng Thần ở trạng thái: 
-  - 🟢 **Nguyên Thần** (sinh Dụng Thần): Hào 5 Tử Tôn Tý-Thủy (Thủy) → Hỗ trợ
+- Không tìm thấy Dụng Thần trong quẻ.
 
-**🔴 Phân tích Hào Động:**
-- Hào 6 ĐỘNG: **Thê Tài** Dần-Mộc (Mộc)
-  → Ý nghĩa: Thê Tài = Tiền tài, vợ, tài sản, thu nhập, đầu tư
-  → 🎭 **Huyền Vũ (SUY):** Trộm cắp, lừa đảo, bí mật bại lộ, tình ái lén lút
-  → 🔗 **Huyền Vũ + Thê Tài:** ⚠️ Mất tiền do trộm/lừa, tài sản bị chiếm đoạt
-  → 💰 Tiền tài BIẾN ĐỘNG — Có thay đổi về tài chính
-
-**⏰ ỨNG KỲ CHUYÊN SÂU (V42.0):**
-  Chưa xác định rõ thời điểm ứng nghiệm
-  📅 **Trị thời:** ngày/tháng Chi Dần/Mão (hành Mộc vượng)
-
-  → **LỤC HÀO: BÌNH** (Dụng Thần )
+  → **LỤC HÀO: BÌNH** (Thiếu Dụng Thần)
 
 ### BƯỚC 4 — MAI HOA DỊCH SỐ
-- **🌟 Thể Quẻ (Hạ quái):** Khôn | Hành Thổ
-- **⚡ Dụng Quẻ (Thượng quái):** Cấn | Hành Thổ
-- **Quẻ Chủ:** Cấn Khôn
-- **Quẻ Biến:** Khôn Vi Địa
-- **Hào Động:** 6
-- **🔍 Hỗ Quẻ (Quẻ ẩn):** Khôn Vi Địa
-- 🖼️ **Tượng Quẻ:** Đang phân tích
-- 📖 **Ý nghĩa:** Tượng quẻ lành mạnh.
-- 💡 **Luận giải phần mềm:** Quẻ báo Chung: Tượng quẻ lành mạnh.
+- **🌟 Thể Quẻ (Hạ quái):** Chấn | Hành Mộc
+- **⚡ Dụng Quẻ (Thượng quái):** Ly | Hành Hỏa
+- **Quẻ Chủ:** Hỏa Lôi Phệ Hạp
+- **Quẻ Biến:** Quẻ Biến
+- **Hào Động:** 4
+- **🔍 Hỗ Quẻ (Quẻ ẩn):** Khảm Cấn
+- 🖼️ **Tượng Quẻ:** Lôi điện thệ
+- 📖 **Ý nghĩa:** Cắn kết, thực hiện hình pháp.
+- 💡 **Luận giải phần mềm:** Quẻ báo Chung: Cắn kết, thực hiện hình pháp.
 
-  📖 **Thể (Khôn):** Đất ☷ — Nhu thuận, bao dung, mẹ, nuôi dưỡng
-  📖 **Dụng (Cấn):** Núi ☶ — Tĩnh, dừng lại, con trai út, ổn định
+  📖 **Thể (Chấn):** Sấm ☳ — Động, khởi đầu, con trai trưởng, chấn động
+  📖 **Dụng (Ly):** Lửa ☲ — Sáng, đẹp, văn minh, con gái giữa
 
-  **🔍 Hỗ Quái:** Khôn Vi Địa
-- Thể-Dụng Tỷ Hòa → **BÌNH**
+  **🔍 Hỗ Quái:** Khảm Cấn
+- Thể SINH Dụng → **BÌNH** (hao tổn)
 
-  **📊 [KB] Thể Dụng Chi Tiết:** Tỷ Hòa → **BÌNH**
-  → Thể Dụng cùng hành, ngang nhau
-  ⏰ Ứng Kỳ: Ngang nhau → ứng vào ngày/tháng hành tương sinh với Thể (tốc độ: bình)
+  **📊 [KB] Thể Dụng Chi Tiết:** Thể sinh Dụng → **HUNG**
+  → Mộc sinh Hỏa, ta hao tổn sức lực cho người
+  ⏰ Ứng Kỳ: Ta hao → suy yếu dần, ứng khi hành Thể được sinh trở lại (tốc độ: chậm)
 
-**🍂 LỆNH THÁNG (V9.0):** Mùa Xuân — Mộc vượng
-  → Thể quái (Thổ) BỊ KHẮC bởi Lệnh Tháng (Mộc) = SUY YẾU ⚠️
+**🌿 LỆNH THÁNG:** Mùa Xuân — Mộc vượng
+  → Thể quái (Mộc) ĐANG VƯỢNG theo mùa = Sức mạnh TĂNG GẤP ĐÔI! ✅
 
-**⏰ ỨNG KỲ (V9.0):** Chưa xác định rõ thời điểm ứng nghiệm
+**⏰ ỨNG KỲ:** Chưa xác định rõ thời điểm ứng nghiệm
 
-  → **MAI HOA: BÌNH** (Tỷ Hòa)
+  → **MAI HOA: BÌNH** (Thể (Mộc) SINH Dụng (Hỏa) = hao tổn)
 
 ### BƯỚC 5 — THIẾT BẢN + KINH DỊCH + VẠN VẬT
 **📜 A. Thiết Bản Thần Toán:**
-- Trụ Ngày: **Bính Dần**
-  → Nạp Âm: **Lô Trung Hỏa** (Hỏa) — Lửa trong lò — Năng lượng bị kiềm chế, cần môi trường phù hợp
+- Trụ Ngày: **Kỷ Tị**
+  → Nạp Âm: **Đại Lâm Mộc** (Mộc) — Gỗ rừng lớn — Sức mạnh to lớn, phát triển bền vững
 
-  **🔄 Trường Sinh Nạp Âm (V9.0):** Hỏa tại Dần = **Trường Sinh**
-  → 🌱 Khởi đầu, được nuôi dưỡng → Sự việc MỚI BẮT ĐẦU, tiềm năng tốt
+  **🔄 Trường Sinh Nạp Âm:** Thổ tại Tị = **Tuyệt**
+  → ❌ Tuyệt diệt → HOÀN TOÀN KẾT THÚC
 
 **☯️ B. Kinh Dịch — Quẻ Tượng:**
-- Quẻ Chủ: **Sơn Địa Bác**
-- Thuộc Cung: **Càn**
-  - 📚 **[KB Bản Cung]** Sơn Địa Bác → Cung **Càn** (Hành **Kim**)
-- Hào Thế: **5** | Hào Ứng: **2**
+- Quẻ Chủ: **Thủy Lôi Truân**
+- Thuộc Cung: **Khảm**
+  - 📚 **[KB Bản Cung]** Thủy Lôi Truân → Cung **Khảm** (Hành **Thủy**)
+- Hào Thế: **2** | Hào Ứng: **5**
 
-  **📜 THOÁN TỪ (V9.0):** Nguyên hanh lợi trinh — Đạo Trời vận hành mạnh mẽ không ngừng
-  **🏔️ ĐẠI TƯỢNG:** Trời đi mạnh, quân tử tự cường không nghỉ
-  **💡 Lời khuyên:** Hành động mạnh mẽ, kiên trì
+  **📜 THOÁN TỪ:** Tập Khảm, có phu, duy tâm hanh — Nước chảy liên tục không ngừng
+  **🏔️ ĐẠI TƯỢNG:** Nước chảy mãi, quân tử đạo đức hằng thường
+  **💡 Lời khuyên:** Kiên trì vượt khó, giữ tâm chính
 
-  **📚 [KB 64 QUẺ] Sơn Địa Bác:**
-  - 📜 Thoán Từ: Bất lợi hữu du vãng — Bóc lột, sụp đổ, tan rã
-  - 🏔️ Đại Tượng: Núi trên đất mỏng, quân tử dày người dưới an nhà
-  - 💡 Ý nghĩa: Sụp đổ, tan rã, hao mòn, tiểu nhân thắng thế
-  - 🎯 Lời khuyên: Kiên nhẫn chịu đựng, không hành động, chờ vận mới
-  - ⚠️ Cát/Hung: **HUNG**
+  **📚 [KB 64 QUẺ] Thủy Lôi Truân:**
+  - 📜 Thoán Từ: Nguyên Hanh Lợi Trinh, chớ vội dùng — Khó khăn ban đầu
+  - 🏔️ Đại Tượng: Mây sấm giao nhau, quân tử kinh luân sắp đặt
+  - 💡 Ý nghĩa: Khó khăn khởi đầu, cần kiên nhẫn vượt qua gian nan
+  - 🎯 Lời khuyên: Kiên nhẫn chờ đợi, chuẩn bị kỹ, đừng vội vàng
+  - ⚠️ Cát/Hung: **BÌNH**
 
-  **📐 HÀO VỊ (V9.0):** Hào Thế (5) = **BẤT CHÍNH ⚠️** + TRUNG (cân bằng hoàn hảo) 🌟
-  → Bất Chính = Sai vị trí — Cần ĐIỀU CHỈNH phương pháp tiếp cận
-- Quẻ Biến: **Khôn Vi Địa**
+  **📚 [KB] Quẻ Biến Trạch Lôi Tùy:** Thuận theo, thích ứng, đi theo xu hướng → **CÁT**
+
+  **📐 HÀO VỊ:** Hào Thế (2) = **CHÍNH VỊ ✅** + TRUNG (cân bằng hoàn hảo) 🌟
+  → Chính + Trung = Vị trí HOÀN HẢO — Sự việc THUẬN LỢI nhất!
+- Quẻ Biến: **Trạch Lôi Tùy**
 
 **🏔️ C. Vạn Vật Loại Tượng:**
 - Chưa xác định được Quái liên quan từ dữ liệu.
 
 ### BƯỚC 5.5 — ĐẠI LỤC NHÂM (大六壬)
-- **Sơ Truyền (Quá khứ):** Mão (Mộc)
-- **Trung Truyền (Hiện tại):** Dần (Mộc)
-- **Mạt Truyền (Tương lai):** Sửu (Thổ)
+- **Sơ Truyền (Quá khứ):** Tị (?)
+- **Trung Truyền (Hiện tại):** Tị (?)
+- **Mạt Truyền (Tương lai):** Tị (?)
 - === ĐẠI LỤC NHÂM — PHÂN TÍCH CHUYÊN SÂU ===
 - Dụng Thần: Quan Quỷ — Câu hỏi tổng quát → xem Sơ Truyền + Quý Nhân
-- Tuần Không: Tuất, Hợi
-- ✅ Dụng Thần tại Khóa: Khóa 4 (Nhật Chi Âm) — Tý/Sửu
+- Tuần Không: Tỵ, Ngọ
+- ❌ Dụng Thần KHÔNG HIỆN trong Tứ Khóa → khó thành
 - 
 ── QUÁ KHỨ / NGUYÊN NHÂN ──
--   Chi: Mão (Mộc) | Lục Thân: Phụ Mẫu
--   Thiên Tướng: Thiên Không (天空) (Hung)
--   Ngũ Hành: Mộc sinh Hỏa → ĐƯỢC HỖ TRỢ
-- ✅ Dụng Thần HIỆN trong Tứ Khóa
-- Tuần Không: Tuất, Hợi
+-   Chi: Tị (?) | Lục Thân: ?
+-   Thiên Tướng: ? (?)
+-   Ngũ Hành: ?
+- ❌ Dụng Thần KHÔNG hiện trong Tứ Khóa → sự việc khó thành
+- Tuần Không: Tỵ, Ngọ
 
-→ **ĐẠI LỤC NHÂM: CÁT** (Mạt Truyền Sửu (Thổ))
+→ **ĐẠI LỤC NHÂM: BÌNH** (Mạt Truyền Tị (?))
 ### BƯỚC 5.6 — THÁI ẤT THẦN SỐ (太乙神数)
 - **Thái Ất:** Cung 7 (Khôn) — Thổ — Lý Nhân
 - **Tích Niên:** 4722
@@ -877,173 +717,954 @@ Trọng lượng: Nhẹ, gọn | Nhiệt: Ấm nhẹ (khí mới sinh)
 ### ĐỐI CHIẾU MỌI PHƯƠNG PHÁP
 | Phương pháp | Kết luận | Điểm | % | Trọng số |
 |---|---|---|---|---|
-| Kỳ Môn | **ĐẠI CÁT** | +3 | 53% | 50% |
-| Lục Hào | **BÌNH** | -6 | 42% | 100% |
-| Mai Hoa | **BÌNH** | -9 | 38% | 60% |
-| Thiết Bản | **CÁT** | +19 | 73% | 30% |
-| Đại Lục Nhâm | **BÌNH** | +8 | 60% | 50% |
-| Thái Ất | **BÌNH** | -4 | 45% | 20% |
+| Kỳ Môn | **ĐẠI CÁT** | -2 | 47% | 45% |
+| Lục Hào | **BÌNH** | +3 | 53% | 100% |
+| Mai Hoa | **BÌNH** | +0 | 50% | 70% |
+| Thiết Bản | **BÌNH** | +0 | 50% | 30% |
+| Đại Lục Nhâm | **BÌNH** | +2 | 52% | 60% |
+| Thái Ất | **BÌNH** | -1 | 48% | 20% |
 
-**📊 ĐIỂM TỔNG HỢP: 52%** (có tính 12 Trường Sinh: +3%)
+**📊 ĐIỂM TỔNG HỢP: 44%** (có tính 12 Trường Sinh: -6%)
 
-### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V26.2 LỰC LƯỢNG THỐNG NHẤT)
+### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V42.9 LỰC LƯỢNG THỐNG NHẤT)
 
 **A. 3 TẦNG ĐO LỰC LƯỢNG DT:**
 | Tầng | Nguồn | Điểm | Trọng số |
 |---|---|---|---|
-| ① Lục Hào thô | Điểm=-6 → chuẩn hóa | 42% | 50% |
-| ② 12 Trường Sinh | Trường Sinh (🟢 MẠNH) | 70% | 30% |
-| ③ Ngũ Khí | Tù (Kim @ Mộc) | 25% | 20% |
-| **TỔNG HỢP** | **3 tầng tổng hợp** | **47%** | 🟠 SUY |
-| **TỔNG HỢP 5PP** | **KM+LH+MH+LN+TA** | **52%** | 🟡 TRUNG BÌNH |
+| ① Lục Hào thô | Điểm=+3 → chuẩn hóa | 53% | 50% |
+| ② 12 Trường Sinh | Tuyệt (🔴 TUYỆT) | 5% | 30% |
+| ③ Ngũ Khí | Vượng (Hỏa @ Hỏa) | 100% | 20% |
+| **TỔNG HỢP** | **3 tầng tổng hợp** | **48%** | 🟠 SUY |
+| **TỔNG HỢP 5PP** | **KM+LH+MH+LN+TA** | **44%** | 🟠 SUY |
 
-**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V26.2) — 7 yếu tố:**
-*✅ Thuận lợi: 5 | ⚠️ Bất lợi: 2 | Tổng: -6*
+**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V42.9) — 7 yếu tố:**
+*✅ Thuận lợi: 4 | ⚠️ Bất lợi: 3 | Tổng: +3*
 
-**🔵 NỘI TẠI (DT bản thân):** (4 yếu tố)
+**🔵 NỘI TẠI (DT bản thân):** (5 yếu tố)
+- ⚠️ ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+- ✅ DT Tướng +10
 - ✅ Nguyệt(Thìn/Thổ) không tác động DT +0
-- ✅ Nhật(Bính/Hỏa) không tác động DT +0
-- ✅ DT ĐỘNG (phát động) +3
-- ✅ DT ở hào 6 (cao, xa, khó) +2
+- ✅ Nhật(Kỷ/Thổ) không tác động DT +0
+- ⚠️ DT TĨNH (chờ đợi) -2
 
-**🟢 BÊN NGOÀI (Nhật/Nguyệt/Hào khác):** (2 yếu tố)
-- ⚠️ NT(Thủy) Nguyên Thần suy -3
-- ⚠️ Hóa Hồi khắc -8
+**🟢 BÊN NGOÀI (Nhật/Nguyệt/Hào khác):** (1 yếu tố)
+- ✅ NT(Mộc) Nguyên Thần vượng +6
 
 **🔴 ĐỐI NGHỊCH (Kỵ/Cừu/Phản Ngâm/Hóa Tuyệt):** (1 yếu tố)
-- ⚠️ KT(ẩn) Kỵ Thần ẩn +0
+- ⚠️ KT(Thủy) Kỵ Thần bình -1
 
-**B. NGŨ HÀNH VẬT CHẤT (Kim):**
+**B. NGŨ HÀNH VẬT CHẤT (Hỏa):**
 | Thuộc tính | Giá trị |
 |---|---|
-| 📐 Hình dáng | Tròn, cầu |
-| 🔧 Chất liệu | Kim loại, thép, vàng, bạc |
-| 🎨 Màu sắc | Trắng, xám bạc |
-| 🧭 Hướng | Tây |
-| 👅 Vị | Cay |
-| 🏥 Cơ thể | Phổi, hô hấp, da |
+| 📐 Hình dáng | Nhọn, tam giác |
+| 🔧 Chất liệu | Điện, lửa, nhựa |
+| 🎨 Màu sắc | Đỏ, hồng |
+| 🧭 Hướng | Nam |
+| 👅 Vị | Đắng |
+| 🏥 Cơ thể | Tim, huyết mạch, lưỡi |
 
-**C. MAPPING VẠN VẬT (🟡 TRUNG BÌNH):**
+**C. MAPPING VẠN VẬT (🟠 SUY):**
 | Tiêu chí | Giá trị |
 |---|---|
-| 🎯 % Lực lượng (5PP) | **52%** — 🟡 TRUNG BÌNH |
-| 🎯 % Lực lượng (3 tầng) | **47%** — 🟠 SUY |
-| 🧑 Vòng đời con người | Thiếu niên hoặc người trung niên (13-18 / 46-55 tuổi) |
-| 📐 Kích thước | Trung bình, vừa phải |
-| 🆕 Tình trạng | Bình thường, dùng được |
-| 🔢 Số lượng | Vừa phải, đủ |
-| 💎 Chất lượng | Trung bình, tạm |
-| 🎨 Màu sắc | Bình thường |
-| ⏱️ Tốc độ | Trung bình, chờ đợi |
-| 🔢 Con số | 5-6 |
+| 🎯 % Lực lượng (5PP) | **44%** — 🟠 SUY |
+| 🎯 % Lực lượng (3 tầng) | **48%** — 🟠 SUY |
+| 🧑 Vòng đời con người | Người bắt đầu suy giảm (56-65 tuổi) |
+| 📐 Kích thước | Nhỏ, hẹp, thấp |
+| 🆕 Tình trạng | Cũ, hao mòn, xuống cấp |
+| 🔢 Số lượng | Ít, thiếu, không đủ |
+| 💎 Chất lượng | Kém, giảm giá trị |
+| 🎨 Màu sắc | Nhạt, phai, xỉn |
+| ⏱️ Tốc độ | Chậm, trì trệ |
+| 🔢 Con số | 3-4 |
 
-**D. 12 TRƯỜNG SINH:** Trường Sinh (🟢 MẠNH) — Power=70%
-→ Con người: Trẻ sơ sinh khỏe mạnh (0-5 tuổi) | Vật: MỚI, SẠCH, BẮT ĐẦU
+**D. 12 TRƯỜNG SINH:** Tuyệt (🔴 TUYỆT) — Power=5%
+→ Con người: Tuyệt diệt, không còn (86-100 tuổi) | Vật: KHÔNG CÒN, ĐÃ MẤT, MÒN NÁT
 
-**E. 🎯 VẠN VẬT CỤ THỂ (Kim × 🟠 SUY):**
+**E. 🎯 VẠN VẬT CỤ THỂ (Hỏa × 🟠 SUY):**
 | Loại | Mô tả cụ thể |
 |---|---|
-| 🔮 Đồ vật | Dao kéo cùn, đồng hồ chạy sai, xe cũ hay hỏng, nồi móp méo, điện thoại cũ |
-| 🏠 Nhà cửa | Mái tôn dột, cổng sắt rỉ, cửa kính nứt |
-| 🧑 Người | Người mất quyền lực, nghỉ hưu, bị giáng chức |
-| 🏥 Bệnh | Viêm phổi nhẹ, ho kéo dài, da khô nứt |
+| 🔮 Đồ vật | Bóng đèn mờ nhấp nháy, bếp gas cũ hay tắt, nến gần cháy hết, pin yếu |
+| 🏠 Nhà cửa | Nhà tối tăm, bếp hỏng, quạt cũ kêu |
+| 🧑 Người | Người mất danh tiếng, hay lo lắng bất an |
+| 🏥 Bệnh | Tim đập nhanh, huyết áp cao nhẹ, mất ngủ |
 
 ### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI
 
-<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:16px 20px;border-radius:12px;margin:10px 0;border-left:5px solid #f59e0b;"><span style="color:#fbbf24;font-size:1.1em;font-weight:800;">❓ CÂU HỎI:</span> <span style="color:#f1f5f9;font-size:1.05em;font-weight:600;">Hỏi tiền bạc tài sản</span></div>
+<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:16px 20px;border-radius:12px;margin:10px 0;border-left:5px solid #f59e0b;"><span style="color:#fbbf24;font-size:1.1em;font-weight:800;">❓ CÂU HỎI:</span> <span style="color:#f1f5f9;font-size:1.05em;font-weight:600;">Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?</span></div>
 
-<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#eab308;">🟡 VỀ "Hỏi tiền bạc tài sản"</span><br><span style="color:#f1f5f9;font-size:1.15em;font-weight:700;">TRUNG BÌNH — 52%</span></div>
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid #ca8a04;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#ca8a04;">🔴 VỀ "Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">🟠 SUY — 44%</span></div>
+
+<b style="color:#94a3b8;font-size:0.95em;">📋 Mô tả chi tiết (Vạn Vật Loại Tượng Hỏa × Quan Đới):</b>
+  === VẠN VẬT: Hỏa × Quan Đới (🟢 Trưởng thành) ===
+  Tính chất: Nóng, sáng, bùng cháy, lan tỏa, mạnh mẽ, biến đổi nhanh
+  Hình dáng: Nhọn, tam giác, hình ngọn lửa, hình nón, tháp | Kích thước: Vừa phải, cân đối
+  Màu: Đỏ, cam, tím, hồng, đỏ rực, đỏ tươi, đỏ son | Chất liệu: Đèn, nến, nhựa (cháy), sợi tổng hợp, điện tử, pin, acquy
+  Tình trạng: CHUẨN BỊ DÙNG, mới mặc/đeo, sẵn sàng | Tuổi: Mới mua, đang học cách sử dụng
+  Chất lượng: Tốt, đang trong giai đoạn tốt nhất
+  Trọng lượng: Trung bình, vừa tay | Nhiệt: Mát mẻ, dễ chịu
+  🧑 Người: Da đỏ/hồng, mặt nhọn/tam giác, mắt sáng, tóc xoăn/đỏ nâu | Trung bình, nhanh nhẹn, linh hoạt, hay vung tay
+  🔢 Số lượng: 2-3 | Con số: 3
+  🎭 **Cảm xúc:** Vui vẻ, Hạnh phúc, Nhiệt huyết, Đam mê, Giận dữ
+  📈 Xu hướng: Sắp đạt đỉnh, chuẩn bị tỏa sáng
+
+→ Tình hình **TRUNG BÌNH** (44%). Ổn nhưng cần nỗ lực thêm.
 
 <div style="background:#1e1b4b;padding:14px 18px;border-radius:10px;border-left:5px solid #818cf8;margin:12px 0;"><b style="color:#a5b4fc;font-size:1.05em;">📋 VÌ SAO — BẰNG CHỨNG TỪ QUẺ</b></div>
+- 📿 LH: ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+- 📿 LH: DT Tướng +10
 - 📿 LH: Nguyệt(Thìn/Thổ) không tác động DT +0
-- 📿 LH: Nhật(Bính/Hỏa) không tác động DT +0
-- 📿 LH: NT(Thủy) Nguyên Thần suy -3
-- 🏯 KM: KM Thần Đằng Xà Hung -4
-- 🏯 KM: KM Can DT Tướng tại Cung +2
-- 🌸 MH: MH Tỷ Hòa +2
+- 🏯 KM: KM Cung BT sinh DT (hao) -4
+- 🏯 KM: KM Cửa Kinh Môn Hung -4
+- 🌸 MH: MH Thể sinh Dụng (hao mòn) -5
 
-<div style="background:#172554;padding:14px 18px;border-radius:10px;border-left:5px solid #60a5fa;margin:8px 0;"><b style="color:#93c5fd;font-size:1.05em;">⏳ ỨNG KỲ:</b> <span style="color:#dbeafe;font-weight:600;">Thìn/Tuất/Sửu/Mùi (tháng 3/6/9/12 ÂL)</span> | Ngày <span style="color:#dbeafe;font-weight:600;">Mậu/Kỷ</span> | Hướng <span style="color:#fbbf24;font-weight:700;">Trung Tâm</span></div>
+<div style="background:#172554;padding:14px 18px;border-radius:10px;border-left:5px solid #60a5fa;margin:8px 0;"><b style="color:#93c5fd;font-size:1.05em;">⏳ ỨNG KỲ:</b> <span style="color:#dbeafe;font-weight:600;">Tị/Ngọ (tháng 4-5 ÂL)</span> | Ngày <span style="color:#dbeafe;font-weight:600;">Bính/Đinh</span> | Hướng <span style="color:#fbbf24;font-weight:700;">Nam</span></div>
 
-<div style="background:#14532d;padding:14px 18px;border-radius:10px;border-left:5px solid #4ade80;margin:12px 0;"><b style="color:#86efac;font-size:1.05em;">🔧 GIẢI PHÁP CHO "Hỏi tiền bạc tài sản"</b></div>
-- ⏸️ Chuẩn bị kỹ, chờ thời điểm hành vượng mới hành động.
-- 💡 Tìm quý nhân hành Hỏa (sinh Thổ). Hướng Trung Tâm. Màu vàng/nâu.
+<div style="background:#14532d;padding:14px 18px;border-radius:10px;border-left:5px solid #4ade80;margin:12px 0;"><b style="color:#86efac;font-size:1.05em;">🔧 GIẢI PHÁP CHO "Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?"</b></div>
+- ❌ Kiên nhẫn chờ đợi, tìm quý nhân hỗ trợ.
+- 💡 Tìm quý nhân hành Mộc (sinh Hỏa). Hướng Nam. Màu đỏ/cam.
 
-✅ **Thuận lợi (1):** ✅ Sao **Thiên Xung** (Mộc) SINH chủ thể (Hỏa) → Thê Tài được NĂNG LƯỢNG hỗ trợ
-
-### 🏆 KẾT LUẬN THỐNG NHẤT
-
-
-**👥 BẢNG QUAN HỆ LỤC THÂN VỚI DỤNG THẦN:**
-*Dụng Thần = **Thê Tài** (hành **Hỏa**) | Bản Thân hành **Hỏa***
-
-| Thành viên | Lục Thân | Hành | Quan hệ với DT | Tác động | Chi tiết |
-|:---|:---|:---:|:---|:---:|:---|
-| 🧑 Bản Thân | Huynh Đệ | Hỏa | Tỷ Hòa (ngang nhau) | 🟡 BÌNH | Bản Thân (Hỏa) tỷ hòa Thê Tài (Hỏa) → cân bằng (Can: Bính) |
-| 👨‍👩 Bố/Mẹ | Phụ Mẫu | Mộc | Mộc SINH Hỏa (hao tổn) | ✅ GIÚP | Bố/Mẹ (Mộc) sinh Thê Tài (Hỏa) → hỗ trợ sự việc (Can: Bính) |
-| 👫 Anh Chị Em | Huynh Đệ | Hỏa | Tỷ Hòa (ngang nhau) | 🟡 BÌNH | Anh Chị Em (Hỏa) tỷ hòa Thê Tài (Hỏa) → cân bằng (Can: Nhâm) |
-| 💑 Vợ/Chồng | Thê Tài | Kim | Hỏa khắc Kim → BỊ KHẮC (xấu) | ✅ THUẬN | Thê Tài (Hỏa) khắc chế Vợ/Chồng (Kim) → DT mạnh hơn (Can: Bính) |
-| 👶 Con Cái | Tử Tôn | Thổ | Hỏa sinh Thổ → ĐƯỢC SINH (tốt) | ✅ GIÚP | Con Cái (Thổ) sinh Thê Tài (Hỏa) → hỗ trợ sự việc (Can: Bính) |
-| 👔 Sếp/Quan | Quan Quỷ | Thủy | Thủy KHẮC Hỏa (mình thắng) | 🔴 HẠI | Sếp/Quan (Thủy) khắc Thê Tài (Hỏa) → gây cản trở (Can: Bính) |
-| 🤝 Người Lạ | Ứng | Hỏa | Tỷ Hòa (ngang nhau) | 🟡 BÌNH | Người Lạ (Hỏa) tỷ hòa Thê Tài (Hỏa) → cân bằng (Can: Bính) |
-
-✅ **Giúp sức DT:** Bố/Mẹ, Vợ/Chồng, Con Cái
-🔴 **Hại DT:** Sếp/Quan
-🟡 **Trung tính/Hao:** Bản Thân, Anh Chị Em, Người Lạ
-
-**🔎 DỤNG THẦN QUA 5 PHƯƠNG PHÁP:**
-- **Kỳ Môn:** DT (Bính) tại Cung 4 — Sao: Thiên Xung ✅ | Cửa: Cảnh Môn 🟡 | Thần: Đằng Xà
-- **Lục Hào:** DT hào 3 (Mão-Mộc) — Mộc — Hưu 🟡
-- **Thiết Bản:** Nạp Âm: Lô Trung Hỏa (Hỏa) — Lửa trong lò — Năng lượng bị kiềm chế, cần môi trường phù hợp
-- **Vạn Tượng:** Quái BT: Tốn (Mộc) — Gió ☴
-
-**🔗 CHUỖI LẬP LUẬN:**
-• Người hỏi (Cung 4): Sao Thiên Xung, Cửa Cảnh Môn → BÌNH
-→ Lục Hào: Thê Tài (Dần-Mộc) 
-→ Mai Hoa: Quẻ báo Chung: Tượng quẻ lành mạnh.
-
-📢 **PHÁN QUYẾT: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG (52%)**
-
-**📋 VÌ SAO KẾT LUẬN NHƯ VẬY:**
-  1. 🟡 **Lục Hào (BÌNH):** Hóa Hồi khắc -8; NT(Thủy) Nguyên Thần suy -3; DT ĐỘNG (phát động) +3
-  2. ✅ **Kỳ Môn (ĐẠI CÁT):** V28 KM Tam Kỳ: Nguyệt Kỳ(Bính) nhập cung DT +5; KM Thần Đằng Xà Hung -4; KM Can DT Tướng tại Cung +2
-  3. 🟡 **Mai Hoa (BÌNH):** MH Ngày khắc Thể -6; MH Thể bị Tháng khắc (Thất lệnh) -5
-  4. ✅ **Đại Lục Nhâm (CÁT):** Mạt Truyền Sửu (Thổ)
-
-→ **Tổng kết: 2/5 PP cho CÁT, 0/5 PP cho HUNG, 3/5 PP BÌNH** → Điểm: 52%
-
-**⏳ ỨNG KỲ (Thời gian sự việc ứng nghiệm):**
-  • Thuận lợi nhất: **tháng Tỵ/Ngọ (tháng 4-5 ÂL)**, ngày Bính/Đinh
-  • Hướng tốt: **Nam** (theo hành Hỏa của DT)
-
-**📖 PHÂN TÍCH 5 PHƯƠNG PHÁP:**
-✅ **Kỳ Môn (ĐẠI CÁT):** Thê Tài cùng cung BT (Cung 4)
-   → 📖 Khắc Ứng CÁT + Ngũ Hành thuận + Sao Thiên Xung Cát + ⚠️ Chi Ngày (Dần) lâm Tuần Không + 🐎 Dịch Mã kích hoạt (Giờ=Thân=Mã Ngày) + Tam Tài hợp
-🟡 **Lục Hào (BÌNH):** Thê Tài hào 6 (Dần-Mộc) 
-   → Dụng Thần 
-🟡 **Mai Hoa (BÌNH):** Tỷ Hòa
-✅ **Đại Lục Nhâm (CÁT):** Mạt Truyền Sửu (Thổ)
-🟡 **Thái Ất (BÌNH):** Cung 7 (Khôn), Thổ
-
-**⚖️ TỔNG HỢP YẾU TỐ:**
-**✅ THUẬN (3):**
-• Kỳ Môn: ĐẠI CÁT — 📖 Khắc Ứng CÁT + Ngũ Hành thuận + Sao Thiên Xung Cát + ⚠️ Chi Ngày (Dần) lâm Tuần Không + 🐎 Dịch Mã kích hoạt (Giờ=Thân=
-• Đại Lục Nhâm: CÁT — Mạt Truyền Sửu (Thổ)
-• Mai Hoa: Quẻ báo Chung: Tượng quẻ lành mạnh.
-
-**🔗 PHÂN TÍCH CHÉO:**
-🌟 TẤT CẢ PP cho CÁT → Cực kỳ rõ ràng, không mâu thuẫn.
-
-**✅ KẾT LUẬN KHẲNG ĐỊNH (Điểm: 52%):**
-**👉 KHẲNG ĐỊNH: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG (52%).**
-• 3 thuận vs 0 nghịch — hơi nghiêng tốt.
-• Thuận: Kỳ Môn: ĐẠI CÁT — 📖 Khắc Ứng CÁT + Ngũ Hành thuận + Sao Thiê.
-
-🔧 **GIẢI PHÁP:** Giữ vững. Tránh mạo hiểm. Bổ sung hành Thổ để tăng lực.
-💡 **LỜI KHUYÊN:** Tình hình OK nhưng KHÔNG phải lúc liều. Ổn định là ưu tiên.
+✅ **Thuận lợi (1):** ✅ Cửa **Sinh Môn** (Đại Cát) → Tài lộc, sinh sôi, kinh doanh, phát triển
+⚠️ **Trở ngại (2):** ⚠️ Sao **Thiên Xung** (Mộc) KHẮC chủ thể (Thổ) → Thê Tài chịu ÁP LỰC từ hoàn cản
 
 ---
-*🤖 Thiên Cơ Đại Sư V26.2 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP=52%, Tổng Hợp 3 Tầng=47%, Ngũ Khí=Tù.*
+*🤖 Thiên Cơ Đại Sư V42.9 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP=44%, Tổng Hợp 3 Tầng=48%, Ngũ Khí=Vượng.*
 
 </details>
 
 💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).
+
+=== ONLINE PROMPT (WHAT GEMINI SEES) ===
+<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);"><div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div><div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">🔴 KHÔNG — BẤT LỢI (44%)</div><div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>44%</b> | DT: <b>Thê Tài</b> | KM: ĐẠI CÁT | LH: BÌNH | MH: BÌNH</div></div>
+
+
+<details>
+<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>
+
+## 🔮 PROTOCOL 27 BƯỚC — LUẬN GIẢI THỐNG NHẤT V42.9
+
+### BƯỚC 0: CÂU HỎI → DỤNG THẦN
+- **Câu hỏi:** Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?
+- **Dụng Thần (DT):** Thê Tài — Hành: **Hỏa**
+- **Thời gian:** Can Ngày=Kỷ, Chi Ngày=Tị, Chi Tháng=Thìn
+- **→ Mọi phân tích dưới đây XEM XÉT Thê Tài(Hỏa) là trung tâm**
+
+### 📐 SƠ ĐỒ: DỮ LIỆU THÔ → DỤNG THẦN LÀ TRUNG TÂM
+```
+┌─────────────────── CÂU HỎI: Mối quan hệ tình cảm sắp tới của tôi sẽ ...
+│
+├─→ DỤNG THẦN: Thê Tài (Hỏa)
+│
+├─── KỲ MÔN ─────────────────────────────────────
+│    BT: Cung 9 | Sao=Thiên Xung | Cửa=Sinh Môn | Thần=Huyền Vũ
+│    SV: Cung 8 | Sao=Thiên Tâm | Cửa=Kinh Môn
+│
+├─── LỤC HÀO ────────────────────────────────────
+│    DT tại Hào ? | Chi=? | Hành=?
+│    Trạng thái: ?
+│    Nguyệt Lệnh: Thìn | Nhật Thần: Kỷ
+│
+├─── MAI HOA ─────────────────────────────────────
+│    Quẻ: Hỏa Lôi Phệ Hạp | Thượng=Ly(Hỏa) | Hạ=Chấn(Mộc)
+│
+└─── Ngũ Hành: Hỏa ← Sinh/Khắc ← Mọi yếu tố
+```
+
+---
+### 📜 I. LỤC HÀO — 12 BƯỚC LUẬN GIẢI
+
+**LH-B1. DT Vượng/Suy** 🟡 (+0)
+  → ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+  → DT Tướng +10
+  *Tích lũy sau LH-B1: +0*
+
+**LH-B2. Nguyệt Lệnh → DT** 🟡 (+0)
+  → Nguyệt(Thìn/Thổ) không tác động DT +0
+  *Tích lũy sau LH-B2: +0*
+
+**LH-B3. Nhật Thần → DT** 🟡 (+0)
+  → Nhật(Kỷ/Thổ) không tác động DT +0
+  *Tích lũy sau LH-B3: +0*
+
+**LH-B4. Nguyên Thần (sinh DT)** ✅ (+6)
+  → NT(Mộc) Nguyên Thần vượng +6
+  *Tích lũy sau LH-B4: +6*
+
+**LH-B5. Kỵ Thần (khắc DT)** 🔴 (-1)
+  → KT(Thủy) Kỵ Thần bình -1
+  *Tích lũy sau LH-B5: +5*
+
+**LH-B7. DT Động/Tĩnh + Tiến/Thối** 🔴 (-2)
+  → DT TĨNH (chờ đợi) -2
+  *Tích lũy sau LH-B7: +3*
+
+**LH-B12. ⚖️ TỔNG KẾT LỤC HÀO: 🟡 BÌNH (Σ=+3, 7 yếu tố)**
+
+---
+### ⚔️ II. KỲ MÔN ĐỘN GIÁP — 9 BƯỚC LUẬN GIẢI
+
+**KM-B1. Sinh Khắc Cung BT↔DT** 🔴 (-4)
+  → KM Cung BT sinh DT (hao) -4
+  → KM Cung BT sinh DT +6 (Hỏa→Thổ)
+  *Tích lũy sau KM-B1: -4*
+
+**KM-B3. Cửa tại Cung DT** 🔴 (-4)
+  → KM Cửa Kinh Môn Hung -4
+  *Tích lũy sau KM-B3: -8*
+
+**KM-B4. Thần tại Cung DT** ✅ (+4)
+  → KM Thần Thái Âm Cát +4
+  *Tích lũy sau KM-B4: -4*
+
+**KM-B5. Can DT Vượng/Suy tại Cung** 🔴 (-4)
+  → KM Can DT Tử tại Cung -4
+  *Tích lũy sau KM-B5: -8*
+
+**KM-B9. ⚖️ TỔNG KẾT KỲ MÔN: 🟡 BÌNH (Σ=-2, 5 yếu tố)**
+
+---
+### 🌸 III. MAI HOA DỊCH SỐ — 6 BƯỚC LUẬN GIẢI
+
+**MH-B1. Thể↔Dụng sinh khắc** 🔴 (-5)
+  → MH Thể sinh Dụng (hao mòn) -5
+  *Tích lũy sau MH-B1: -5*
+
+**MH-B4. Nguyệt Lệnh + Nhật Thần** ✅ (+5)
+  → MH Thể đắc lệnh (Tháng) +5
+  *Tích lũy sau MH-B4: +0*
+
+**MH-B6. ⚖️ TỔNG KẾT MAI HOA: 🟡 BÌNH (Σ=+0, 2 yếu tố)**
+
+---
+### 🏆 IV. TỔNG HỢP + CHUỖI BẰNG CHỨNG
+
+| PP | Verdict | Σ Điểm | Yếu tố |
+|:---|:--------|-------:|-------:|
+| 📜 Lục Hào | **BÌNH** | +3 | 7 |
+| ⚔️ Kỳ Môn | **BÌNH** | -2 | 5 |
+| 🌸 Mai Hoa | **BÌNH** | +0 | 2 |
+| 📕 Thiết Bản | **BÌNH** | +0 | 7 |
+| 🔯 Lục Nhâm | **BÌNH** | +2 | 1 |
+| ⭐ Thái Ất | **BÌNH** | -1 | 7 |
+| **TỔNG** | **44%** | | **29** |
+
+**🔗 CHUỖI BẰNG CHỨNG (các bước tác động mạnh):**
+  ✅ LH-B4 (Nguyên Thần (sinh DT)): +6 — NT(Mộc) Nguyên Thần vượng +6
+  🔴 MH-B1 (Thể↔Dụng sinh khắc): -5 — MH Thể sinh Dụng (hao mòn) -5
+  ✅ MH-B4 (Nguyệt Lệnh + Nhật Thần): +5 — MH Thể đắc lệnh (Tháng) +5
+
+---
+### 🔴 V. KẾT LUẬN CHÍNH THỨC (từ 27 bước + 29 yếu tố)
+
+**🔴 VERDICT: HUNG — KHÓ KHĂN (44%)**
+**Đồng thuận 6PP:** 0 CÁT — 0 HUNG — 6 BÌNH
+
+**📝 LUẬN GIẢI:**
+- Thuận lợi từ: LH-B4(+6), KM-B4(+4), MH-B4(+5)
+- Bất lợi từ: LH-B5(-1), LH-B7(-2), KM-B1(-4), KM-B3(-4)
+- **Net Score:** -5 → Xu hướng NGHỊCH
+
+> 📢 **KẾT LUẬN: KHÔNG THUẬN — nên hoãn hoặc đổi hướng (44%)**
+
+**📋 VÌ SAO:**
+  ✅ LH-B4 (Nguyên Thần (sinh DT)): NT(Mộc) Nguyên Thần vượng +6 (+6)
+  ✅ KM-B4 (Thần tại Cung DT): KM Thần Thái Âm Cát +4 (+4)
+  ✅ MH-B4 (Nguyệt Lệnh + Nhật Thần): MH Thể đắc lệnh (Tháng) +5 (+5)
+  🔴 LH-B5 (Kỵ Thần (khắc DT)): KT(Thủy) Kỵ Thần bình -1 (-1)
+  🔴 LH-B7 (DT Động/Tĩnh + Tiến/Thối): DT TĨNH (chờ đợi) -2 (-2)
+  🔴 KM-B1 (Sinh Khắc Cung BT↔DT): KM Cung BT sinh DT (hao) -4 (-4)
+
+**⏳ ỨNG KỲ:** tháng 4-5 ÂL (Tỵ/Ngọ), ngày Bính/Đinh | Hướng: Nam
+
+**🔧 GIẢI PHÁP:** Hoãn lại. Đợi tháng hành Mộc vượng hoặc tìm hướng đi mới.
+
+---
+### 🎴 VẠN VẬT LOẠI TƯỢNG
+
+**Hành Dụng Thần:** Hỏa
+- 🎨 **Tượng vật:** 🔥 Đèn, lửa, điện tử, đồ nóng
+- 🧭 **Hướng:** Nam | **Màu sắc:** Đỏ, tím
+- 👤 **Người liên quan:** Người sôi nổi, nóng tính, hồng hào
+- 🏠 **Nhà cửa/Vị trí:** Nhà hướng Nam, nhiều ánh sáng
+
+**Quái Tượng:**
+- Thượng Quái (Ly): Lửa ☲ — Sáng, đẹp, văn minh, con gái giữa
+- Hạ Quái (Chấn): Sấm ☳ — Động, khởi đầu, con trai trưởng, chấn động
+
+
+### 🎯 VẠN VẬT CỤ THỂ (Hỏa × 🟠 SUY)
+- 🔮 **Đồ vật:** Bóng đèn mờ nhấp nháy, bếp gas cũ hay tắt, nến gần cháy hết, pin yếu
+- 🏠 **Nhà cửa:** Nhà tối tăm, bếp hỏng, quạt cũ kêu
+- 🧑 **Người:** Người mất danh tiếng, hay lo lắng bất an
+- 🏥 **Bệnh:** Tim đập nhanh, huyết áp cao nhẹ, mất ngủ
+
+### 🏆 SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT
+```
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  📐 SĐ MASTER V42.9: DỤNG THẦN → TẤT CẢ YẾU TỐ → VẠN VẬT LOẠI TƯỢNG    ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  ① XÁC ĐỊNH DỤNG THẦN                                                     ║
+║  ┌───────────────────────────────────────────────────┐                     ║
+║  │ Câu hỏi: Mối quan hệ tình cảm sắp tới của tôi sẽ ...                        │                     ║
+║  │ Nhóm: ❤️ Tình Cảm / Hôn Nhân                            │                     ║
+║  │ ➜ DỤNG THẦN: Thê Tài                          │                     ║
+║  │   Hành DT: Hỏa                              │                     ║
+║  └───────────────────────────────────────────────────┘                     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ② LỤC HÀO — 16 YẾU TỐ TÁC ĐỘNG                                          ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ ⊕ Nguyệt Lệnh(Thìn/Thổ) không tác động DT              │     ║
+║  │ ⊕ Nhật Thần(Kỷ/Thổ) không tác động DT                     │     ║
+║  │ ⊕ NT(Mộc) Vượng — Nguyên Thần sinh DT            │     ║
+║  │ ⊖ KT(Thủy) Bình — Kỵ Thần khắc DT                   │     ║
+║  │ ⊕ CừuT(N/A) N/A — Cừu Thần khắc KT              │     ║
+║  │ ⭕ Tuần Không: Không                                      │     ║
+║  │ 💥 Nguyệt Phá: Không                                     │     ║
+║  │ ⚡ TSVK: Không                                   │     ║
+║  │ 🔄 Phản/Phục Ngâm: Không                             │     ║
+║  │ 🔄 Thế(?/Mộc) ↔ Ứng(?/Thổ)                          │     ║
+║  │                                                                   │     ║
+║  │ 🔥 BIẾN HÀO: Hào 4 ĐỘNG → Biến Trạch Lôi Tùy                                         │     ║
+║  │   Hào động: Hào 4                                      │     ║
+║  │   Biến quẻ: Trạch Lôi Tùy                                           │     ║
+║  │   Hào biến DT: Hào 4 biến Huynh Đệ (Hợi-Thủy)                                     │     ║
+║  │                                                                   │     ║
+║  │ ☯ Lục Hợp/Xung: Không phát hiện                                  │     ║
+║  │ △ Tam Hợp Cục: Không phát hiện                                    │     ║
+║  │ ↗ Tiến/Thoái Thần: N/A                                 │     ║
+║  │ 👻 Phục Thần: Thê Tài (Ngọ-Hỏa) ẩn dưới hào 3                                   │     ║
+║  │                                                                   │     ║
+║  │ ═══ LH Thô = +3 → 53%                      │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ③ KỲ MÔN ĐỘN GIÁP — 14 YẾU TỐ                                           ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ 🏛 Cung DT: Cung 8 (Thổ)                     │     ║
+║  │ ⭐ Sao DT: Thiên Tâm                                              │     ║
+║  │ 🚪 Cửa DT: Kinh Môn                                              │     ║
+║  │ 🐉 Thần DT: Thái Âm                                            │     ║
+║  │                                                                   │     ║
+║  │ 📍 Trực Phù: Thiên Nhuế (Sứ Tinh — sao trực)                   │     ║
+║  │ 📍 Trực Sử: Tử Môn (Sứ Môn — cửa trực)                      │     ║
+║  │ ⭕ Không Vong KM: ?                                │     ║
+║  │ 🐎 Mã Tinh: Cung ?                                      │     ║
+║  │ ✨ Tam Kỳ: Không có                                              │     ║
+║  │                                                                   │     ║
+║  │ 🔢 Cục: 2 | Dương Độn                               │     ║
+║  │ 📅 4 Trụ: Năm: BínhNgọ | Tháng: NhâmThìn | Ngày: KỷTị | Giờ: NhâmThân                                               │     ║
+║  │ 🏛 BT(Cung9) → BT sinh DT (CÁT) SV(Cung8)             │     ║
+║  │ 📍 Địa Bàn DT: Can Ất (Địa Bàn Cung 8)                                     │     ║
+║  │ 🔄 Phản/Phục Ngâm cung: Không có                          │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ④ MAI HOA DỊCH SỐ — 10 YẾU TỐ                                            ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ ☰ Thể Quái: ☲ Ly (Hỏa) — HƯU (tiết khí)      │     ║
+║  │ ☰ Dụng Quái: ☳ Chấn (Mộc) — TÙ  │     ║
+║  │ ☰ Hỗ Quái: Khảm Cấn                                            │     ║
+║  │ ☰ Biến Quái: Quẻ Biến                                     │     ║
+║  │                                                                   │     ║
+║  │ ⚡ Thể được sinh Dụng → Dụng sinh Thể → CÁT, thuận lợi                  │     ║
+║  │ ⚡ Hỗ → Thể: khắc → Hỗ khắc Thể → nội bộ trở ngại                    │     ║
+║  │ ⚡ Hỗ → Dụng: sinh → Hỗ sinh Dụng → ẩn ý tăng cường                 │     ║
+║  │ 🔥 Động Hào MH: hào 4                               │     ║
+║  │ 📝 Quẻ Giải: Quẻ báo Chung: Cắn kết, thực hiện hình pháp.                                 │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ⑤ ĐẠI LỤC NHÂM — 7 YẾU TỐ                                               ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ 📊 Tam Truyền:                                                   │     ║
+║  │   [Sơ: Tị (?)] → [Trung: Tị (?)] → [Mạt: Tị (?)] │ ║
+║  │    (quá khứ)          (hiện tại)                (tương lai)      │     ║
+║  │ 🎖 Thiên Tướng: ?                                    │     ║
+║  │ 🔑 Tứ Khóa: K1: Tỵ/Ngọ | K2: Thìn/Tỵ | K3: Tị/Tị | K4: Tị/Tị                                           │     ║
+║  │ 📍 Can Chi lạc cung: Can Kỷ ký tại Ngọ                          │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ⑥ THIẾT BẢN + THÁI ẤT — 5 YẾU TỐ                                         ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ 📜 Nạp Âm: ? (?)                         │     ║
+║  │ 📜 Nạp Âm giải thích: ?                       │     ║
+║  │ 🏛 Thái Ất Chủ↔Khách: Chủ(Hỏa) vs Khách(Thổ) → Chủ SINH Khách → HUNG                               │     ║
+║  │ 🏛 Thái Ất Cục: CÁCH (格): Văn Xương (Mộc) khắc | ĐỐI (对): Chủ Đại Tướng (Cung 2 | ĐỐI (对): Khách Đại Tướng (Cung                                        │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ⑦ ĐÁNH GIÁ TỔNG HỢP (3 Tầng)                                             ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ Tầng 1: LH Điểm = 53%                                    │     ║
+║  │ Tầng 2: 12 Trường Sinh: Hỏa tại Tị = Tuyệt │  ║
+║  │   🔴 TUYỆT Power = 5% | ❌ Tuyệt diệt → HOÀN TOÀN KẾT THÚC                     │     ║
+║  │ Tầng 3: Ngũ Khí: Hỏa tại Cung Hỏa = Vượng    │     ║
+║  │   Power = 100%                                            │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ╔══════════════════════════════════════════════╗                          ║
+║  ║ TỔNG HỢP: 48% — 🟠 SUY        ║                          ║
+║  ║ = LH(53%)×50% + TS(5%)×30%   ║                          ║
+║  ║   + NK(100%)×20%                      ║                          ║
+║  ╚══════════════════════════════════════════════╝                          ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ⑧ VẠN VẬT LOẠI TƯỢNG (Hành Hỏa × 🟠 SUY)                       ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ 📐 Hình dáng   : Nhọn, tam giác                                    │     ║
+║  │ 🔧 Chất liệu   : Điện, lửa, nhựa                                    │     ║
+║  │ 🎨 Màu sắc     : Đỏ, hồng                                      │     ║
+║  │ 🧭 Hướng       : Nam                                        │     ║
+║  │ 📏 Kích thước  : Nhỏ, hẹp, thấp                                    │     ║
+║  │ 🆕 Tình trạng  : Cũ, hao mòn, xuống cấp                                   │     ║
+║  │ 🔢 Số lượng    : Ít, thiếu, không đủ                                      │     ║
+║  │ 💎 Chất lượng  : Kém, giảm giá trị                                    │     ║
+║  │ 🧑 Con người   : Người bắt đầu suy giảm (56-65 tuổi)                                     │     ║
+║  │ 🏥 Sức khỏe    : Tim, huyết mạch, lưỡi                                     │     ║
+║  ├───────────────────────────────────────────────────────────────────┤     ║
+║  │ 🔮 Đồ vật cụ thể: Bóng đèn mờ nhấp nháy, bếp gas cũ hay tắt, nến gần cháy hết, pin yếu                                      │     ║
+║  │ 🏠 Nhà cửa      : Nhà tối tăm, bếp hỏng, quạt cũ kêu                                     │     ║
+║  │ 🧑 Người liên quan: Người mất danh tiếng, hay lo lắng bất an                            │     ║
+║  │ 🏥 Bệnh tật     : Tim đập nhanh, huyết áp cao nhẹ, mất ngủ                                    │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║                                                                            ║
+║  CÔNG THỨC: Tổng Hợp% = LH×50% + TS×30% + NK×20%                           ║
+║  → Tổng Hợp ≥70% = VƯỢNG (CÁT) | 50-69% = TRUNG BÌNH | <50% = SUY         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+```
+**📊 CÔNG THỨC:** LH(53%)×50% + TS(5%)×30% + NK(100%)×20% = 48%
+**🎯 KẾT LUẬN MASTER:** 🟠 SUY — BẤT LỢI, nên chờ hoặc đổi phương án
+
+### 📐 CHÚ GIẢI: SĐ15: THẾ NÀO/TRẠNG THÁI
+```
+
+┌─── SĐ15: THẾ NÀO ───────────────────────────────┐
+│  DT: Thê Tài — trạng thái: 🟠 SUY        │
+│  Nguyệt sinh/khắc: N/A             │
+│  Hào Động/Tĩnh: Phụ Mẫu                  │
+│                                                   │
+│  MH: Thể(Chấn) Mộc SINH Hỏa  Dụng(Ly) │
+│  KM: Cửa Kinh Môn + Sao Thiên Tâm → Kiện tụng, tranh cãi, sợ hãi, báo động   │
+├───────────────────────────────────────────────────┤
+│ KẾT LUẬN: CÓ — THUẬN LỢI ✅ (1 cát vs 0 hung)                            │
+└───────────────────────────────────────────────────┘
+
+```
+**📊 CÔNG THỨC:** DT_trạng thái + Xu hướng + Cửa/Sao → CÁCH THỨC/TÌNH TRẠNG
+**🎯 KẾT LUẬN:** CÓ — THUẬN LỢI ✅ (1 cát vs 0 hung)
+
+### 🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT
+### 🔮 SƠ ĐỒ TƯƠNG TÁC 6 PHƯƠNG PHÁP
+
+#### ⚔️ KỲ MÔN ĐỘN GIÁP — 9 Cung
+Can Ngày=**Kỷ** (BT) | Can Giờ=**Nhâm** (SV) | Tiết Khí=Cốc Vũ | Cục=2
+
+| Cung | Sao | Cửa | Thần | Can Thiên | Can Địa | Vai trò |
+|:----:|:----|:----|:-----|:---------|:--------|:--------|
+| 1 | Thiên Trụ | Tử Môn | Đằng Xà | Quý | Ất |  |
+| 2 | Thiên Phụ | Thương Môn | Cửu Địa | Canh | Mậu |  |
+| 3 | Thiên Bồng | Khai Môn | Lục Hợp | Ất | Kỷ |  |
+| 4 | Thiên Nhậm | Hưu Môn | Bạch Hổ | Đinh | Canh |  |
+| 5 | *(Trung Cung)* | — | — | — | Tân |  |
+| 6 | Thiên Nhuế/Cầm | Cảnh Môn | Trực Phù | Mậu | Nhâm |  |
+| 7 | Thiên Anh | Đỗ Môn | Cửu Thiên | Bính | Quý |  |
+| 8 | Thiên Tâm | Kinh Môn | Thái Âm | Nhâm | Đinh | 🎯 **SỰ VIỆC** |
+| 9 | Thiên Xung | Sinh Môn | Huyền Vũ | Kỷ | Bính | ⭐ **BẢN THÂN** |
+
+**📊 Chuỗi tác động BẢN THÂN:**
+```
+Can Kỷ(Thổ) ──→ Cung 9(Hỏa) = Hỏa sinh Thổ → ĐƯỢC SINH (tốt)
+  ├── Sao: Thiên Xung → CÁT ✅
+  ├── Cửa: Sinh Môn → CÁT ✅
+  └── Thần: Huyền Vũ
+  BT(Cung9) ──Hỏa SINH Thổ (hao tổn)──→ SV(Cung8)
+```
+**→ KỲ MÔN: ĐẠI CÁT**
+
+#### 📜 LỤC HÀO KINH DỊCH — 6 Hào
+Nguyệt Lệnh=**Thìn** | Nhật Thần=**Kỷ**
+
+| Hào | Lục Thân | Chi | Hành | Động | Vai trò |
+|:---:|:---------|:----|:-----|:----:|:--------|
+| Sơ | Huynh Đệ | Tý | Thủy | — |  |
+| Nhị | Tử Tôn | Dần | Mộc | — |  👤Thế |
+| Tam | Quan Quỷ | Thìn | Thổ | — |  |
+| Tứ | Phụ Mẫu | Thân | Kim | 🔄 |  |
+| Ngũ | Quan Quỷ | Tuất | Thổ | — |  🎯Ứng |
+| Thượng | Huynh Đệ | Tý | Thủy | — |  |
+
+**📊 Chuỗi tác động LỤC HÀO:**
+```
+Nguyệt(Thìn) ──sinh/khắc──→ Dụng Thần(Thê Tài)
+Nhật(Kỷ)   ──sinh/khắc──→ Dụng Thần(Thê Tài)
+Nguyên Thần ──SINH──→ DT (giúp đỡ)
+Kỵ Thần    ──KHẮC──→ DT (phá hoại)
+Cừu Thần   ──KHẮC──→ Kỵ Thần (giải cứu)
+```
+**→ LỤC HÀO: BÌNH**
+
+#### 🌸 MAI HOA DỊCH SỐ
+Quẻ: **Hỏa Lôi Phệ Hạp** | Hào Động: 4 | Tượng: Lôi điện thệ
+```
+Thượng Quái: Ly (Hỏa) = Ngoại/Môi trường
+  │
+Hạ Quái:    Chấn (Mộc) = Nội/Bản thân
+  │
+  ├── Biến Quái: Quẻ Biến (Tương lai)
+  └── Hỗ Quái:  Khảm Cấn (Ẩn bên trong)
+
+Thể(Mộc) ←sinh/khắc→ Dụng(Hỏa) = KẾT QUẢ
+```
+📖 *Quẻ báo Chung: Cắn kết, thực hiện hình pháp.*
+**→ MAI HOA: BÌNH**
+
+#### 🔯 ĐẠI LỤC NHÂM
+```
+[Sơ Truyền]  →  [Trung Truyền]  →  [Mạt Truyền]
+ (Nguyên nhân)    (Diễn biến)       (Kết quả)
+```
+**→ ĐẠI LỤC NHÂM: BÌNH**
+
+#### ⭐ THÁI ẤT THẦN SỐ
+```
+Thái Ất Cung → Bát Tướng → Cách Cục → Verdict
+```
+**→ THÁI ẤT: BÌNH**
+
+#### 🏆 TỔNG HỢP 6 PHƯƠNG PHÁP
+```
+┌─────────┬─────────┬─────────┐
+│ KỲ MÔN  │ LỤC HÀO │ MAI HOA │
+│ ĐẠI CÁT │  BÌNH   │  BÌNH   │
+├─────────┼─────────┼─────────┤
+│ THIẾT   │ LỤC     │ THÁI    │
+│ BẢN     │ NHÂM    │ ẤT      │
+│  BÌNH   │  BÌNH   │  BÌNH   │
+└─────────┴─────────┴─────────┘
+         ↓ TỔNG HỢP ↓
+    CÁT: 1/5 | HUNG: 0/5
+```
+
+### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ (29)
+- ⚠️ **BẤT LỢI:** KM Cung BT sinh DT (hao) -4
+- ⚠️ **BẤT LỢI:** KM Cửa Kinh Môn Hung -4
+- ✅ **THUẬN LỢI:** KM Thần Thái Âm Cát +4
+- ⚠️ **BẤT LỢI:** KM Can DT Tử tại Cung -4
+- ✅ **THUẬN LỢI:** KM Cung BT sinh DT +6 (Hỏa→Thổ)
+- ⚠️ **BẤT LỢI:** ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+- ✅ **THUẬN LỢI:** DT Tướng +10
+- ✅ **THUẬN LỢI:** Nguyệt(Thìn/Thổ) không tác động DT +0
+- ✅ **THUẬN LỢI:** Nhật(Kỷ/Thổ) không tác động DT +0
+- ✅ **THUẬN LỢI:** NT(Mộc) Nguyên Thần vượng +6
+- ⚠️ **BẤT LỢI:** KT(Thủy) Kỵ Thần bình -1
+- ⚠️ **BẤT LỢI:** DT TĨNH (chờ đợi) -2
+- ⚠️ **BẤT LỢI:** MH Thể sinh Dụng (hao mòn) -5
+- ✅ **THUẬN LỢI:** MH Thể đắc lệnh (Tháng) +5
+- ✅ **THUẬN LỢI:** TB-1 Nạp Âm [Đại Lâm Mộc] MẠNH (Gỗ rừng lớn → Sức mạnh TO LỚN, phát triển bền vững) +5
+- ⚠️ **BẤT LỢI:** TB-2 Nạp Âm(Mộc) KHẮC Mệnh(Thổ) -4
+- ✅ **THUẬN LỢI:** TB-3 Địa Chi(Tị/Hỏa) SINH Thiên Can(Kỷ/Thổ) +4
+- ✅ **THUẬN LỢI:** TB-4 Thái Tuế(Ngọ/Hỏa) SINH Mệnh +6
+- ⚠️ **BẤT LỢI:** TB-5 12TrSinh Mệnh ở [Tuyệt] CỰC SUY -8
+- ✅ **THUẬN LỢI:** TB-6 Quẻ [Thủy Lôi Truân] Bình +0
+- ⚠️ **BẤT LỢI:** TB-7 Mệnh(Thổ) bị Mùa Xuân(Mộc) khắc -3
+- ✅ **THUẬN LỢI:** LN Tam Truyền đồng khí +2
+- ⚠️ **BẤT LỢI:** TA Chủ sinh Khách -5
+- ⚠️ **BẤT LỢI:** TA Văn Xương khắc Thái Ất -6
+- ⚠️ **BẤT LỢI:** TA Cách cục cản trở (CÁCH (格): ...) -3
+- ✅ **THUẬN LỢI:** TA Bát Tướng đa Cát +3
+- ✅ **THUẬN LỢI:** TA Thai At dong hanh Can +3
+- ✅ **THUẬN LỢI:** TA Tham Tướng sinh Chủ → hỗ trợ +4
+- ℹ️ **THÔNG TIN:** TA Văn Xương tại cung 9(Tốn) CÁT
+
+---
+## 🔮 THIÊN CƠ ĐẠI SƯ — V42.9 Phân Tích Thống Nhất
+
+**Câu hỏi:** Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?
+
+📋 **Phân loại:** 📊 THẾ NÀO — ❤️ Tình Cảm | Hỏi VỀ: **quan** — DT: Quan Quỷ — SĐ: SD15
+└─ *Hỏi về VẬT: quan → DT = Quan Quỷ*
+
+### BƯỚC 1 — DỤNG THẦN & CHỦ ĐỀ
+- 🧠 **Nhóm câu hỏi:** ❤️ Tình Cảm / Hôn Nhân
+- 🎯 **Dụng Thần:** Thê Tài
+- 💡 **Hướng phân tích:** Phân tích tình cảm. Thê Tài = vợ/bạn gái. Quan Quỷ = chồng/bạn trai. Ứng hào = đối phương.
+- **Dụng Thần (Ngũ Hành):** Thê Tài
+
+
+<details>
+<summary><b>🔍 XEM CHI TIẾT PHÂN TÍCH 5 PHƯƠNG PHÁP (nhấn để mở)</b></summary>
+
+### BƯỚC 2 — KỲ MÔN ĐỘN GIÁP
+**📊 TỔNG QUAN 9 CUNG:**
+  Cung 1: Sao Thiên Trụ | Cửa Tử Môn | Thần Đằng Xà | Can Quý
+  Cung 2: Sao Thiên Phụ | Cửa Thương Môn | Thần Cửu Địa | Can Canh
+  Cung 3: Sao Thiên Bồng | Cửa Khai Môn | Thần Lục Hợp | Can Ất
+  Cung 4: Sao Thiên Nhậm | Cửa Hưu Môn | Thần Bạch Hổ | Can Đinh
+  Cung 5: *(Trung Cung)* — không xếp Sao/Cửa/Thần
+  Cung 6: Sao Thiên Nhuế/Cầm | Cửa Cảnh Môn | Thần Trực Phù | Can Mậu
+  Cung 7: Sao Thiên Anh | Cửa Đỗ Môn | Thần Cửu Thiên | Can Bính
+  Cung 8: Sao Thiên Tâm | Cửa Kinh Môn | Thần Thái Âm | Can Nhâm ← **SỰ VIỆC**
+  Cung 9: Sao Thiên Xung | Cửa Sinh Môn | Thần Huyền Vũ | Can Kỷ ← **BẢN THÂN**
+
+**🚪 NHÂN BÀN (Bát Môn):**
+  1:Tử Môn | 2:Thương Môn | 3:Khai Môn | 4:Hưu Môn | 5: — | 6:Cảnh Môn | 7:Đỗ Môn | 8:Kinh Môn | 9:Sinh Môn
+
+**👁️ THẦN BÀN (Bát Thần):**
+  1:Đằng Xà | 2:Cửu Địa | 3:Lục Hợp | 4:Bạch Hổ | 5: — | 6:Trực Phù | 7:Cửu Thiên | 8:Thái Âm | 9:Huyền Vũ
+
+
+**📊 BẢNG VƯỢNG/SUY THEO MÙA (Lệnh Tháng: Mộc):**
+
+| Cửu Tinh | Ngũ Hành | Trạng Thái |
+|:---|:---:|:---:|
+| Thiên Bồng | Thủy | 🟡 HƯU |
+| Thiên Nhuế | Thổ | 🔴 TỬ |
+| Thiên Xung | Mộc | 🟢 VƯỢNG |
+| Thiên Phụ | Mộc | 🟢 VƯỢNG |
+| Thiên Cầm | Thổ | 🔴 TỬ |
+| Thiên Tâm | Kim | 🟠 TÙ |
+| Thiên Trụ | Kim | 🟠 TÙ |
+| Thiên Nhậm | Thổ | 🔴 TỬ |
+| Thiên Anh | Hỏa | 🔵 TƯỚNG |
+
+| Bát Môn | Ngũ Hành | Trạng Thái |
+|:---|:---:|:---:|
+| Khai Môn | Mộc | 🟢 VƯỢNG |
+| Hưu Môn | Thủy | 🟡 HƯU |
+| Sinh Môn | Thổ | 🔴 TỬ |
+| Thương Môn | Mộc | 🟢 VƯỢNG |
+| Đỗ Môn | Mộc | 🟢 VƯỢNG |
+| Cảnh Môn | Hỏa | 🔵 TƯỚNG |
+| Tử Môn | Thổ | 🔴 TỬ |
+| Kinh Môn | Kim | 🟠 TÙ |
+
+
+**🏛️ GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN:**
+*Kỳ Môn Độn Giáp phân tích theo 4 trụ chiến lược*
+
+| Trụ | Yếu tố | Cung BT | Cung SV | Đánh giá |
+|:---|:---|:---:|:---:|:---:|
+| 🌤️ **THIÊN THỜI** | Cửu Tinh (thời cơ) | Thiên Xung 🟢 VƯỢNG | Thiên Tâm | ✅ THUẬN |
+| 🌍 **ĐỊA LỢI** | Cung + Quái (môi trường) | Cung 9 (Hỏa) | Cung 8 (Thổ) | 🟡 BÌNH |
+| 👥 **NHÂN HÒA** | Bát Môn (hành động) | Sinh Môn | Kinh Môn | ✅ THUẬN |
+| 🙏 **THẦN TRỢ** | Bát Thần (siêu nhiên) | Huyền Vũ | Thái Âm | ⚠️ HUNG |
+
+→ **✅ TỔNG KẾT CHIẾN LƯỢC: 2/4 trụ THUẬN** — Đa số thuận, có thể hành động nhưng cần lưu ý trụ yếu.
+
+- **Bản thân** (Can Ngày **Kỷ**) tại **Cung 9 (Ly)**
+  - Hành Can: Thổ | Hành Cung: Hỏa → Hỏa sinh Thổ → ĐƯỢC SINH (tốt)
+  - Sao: **Thiên Xung** | Cửa: **Sinh Môn** | Thần: **Huyền Vũ**
+  - 📖 **Ý nghĩa Sao Thiên Xung:** Cát tinh — Quân sự, động lực, cạnh tranh, di chuyển → Hành động mạnh mẽ, thích hợp khởi sự, di chuyển
+  - 📚 **[KB] Sao Thiên Xung:** Hành Mộc | CÁT HUNG NỬA — Xung đột, hành động, quyết đoán. Can đảm nhưng manh động
+  - 📖 **Ý nghĩa Cửa Sinh Môn:** Đại Cát — Tài lộc, sinh sôi, kinh doanh, phát triển
+  - 📚 **[KB] Cửa Sinh Môn:** Hành Thổ | ĐẠI CÁT — Sinh sôi, phát tài, lợi nhuận. Lợi cho kinh doanh, đầu tư
+  - 📖 **Ý nghĩa Thần Huyền Vũ:** Trộm cắp, lừa dối, ám muội → Phòng bị mất mát, gian lận
+  - 📚 **[KB] Thần Huyền Vũ:** Hành Thủy | HUNG — Trộm cắp, mất mát, mờ ám. Bất minh, nghi ngờ
+
+  **⚡ Cách Cục: Địa Hỏa Mộc Sinh (Cát)**
+  - Tài lộc dồi dào, công việc phát triển.
+  - 📚 **[KB Cách Cục] Thiên Mã Lâm Môn:** CÁT — Di chuyển nhanh, cơ hội đến bất ngờ
+    Ứng dụng: Xuất hành, thay đổi, di chuyển nhanh
+
+  **📖 [Sách] Khắc Ứng: Hỏa Bội Địa Hộ (HUNG)**
+  - Nam giới tương hại oan uổng. Người phụ nữ phát sinh việc dâm loạn
+  - 📖 **[Sách] Tượng Ý Hôn Nhân (Kỷ):** Kỷ = nền tảng, đất, phần mộ
+  - 📖 **[Sách] 12 Thần Ứng Nghiệm (Huyền Vũ):** Không là sư sãi thì trộm cắp, rơi lăn. Hoặc kẻ xin ăn
+
+  **🕳️ TUẦN KHÔNG TỨ TRỤ:**
+  ⚡ *Chi lâm Tuần Không = KHÔNG CÓ THẬT, sự việc trống rỗng!*
+  - Tuần Không Trụ Ngày: **Tuất, Hợi**
+  - Tuần Không Trụ Năm: **Dần, Mão**
+  - Tuần Không Trụ Tháng: **Ngọ, Mùi**
+  - ⚠️ Cung SV (8) có Can Nhâm đồng hành Tuần Không → Sự việc bấp bênh
+
+  **🐎 DỊCH MÃ TỨ TRỤ:**
+  ⚡ *Dịch Mã = DI CHUYỂN, biến động, thay đổi nhanh chóng*
+  - Trụ Năm (Ngọ) → Dịch Mã tại **Thân**
+  - Trụ Tháng (Thìn) → Dịch Mã tại **Dần**
+  - Trụ Ngày (Tị) → Dịch Mã tại **Hợi**
+  - Trụ Giờ (Thân) → Dịch Mã tại **Dần**
+
+  **📜 TỨ TRỤ Ý NGHĨA:**
+  - 🌳 **Trụ Năm** (Bính Ngọ): Hành Hỏa/Hỏa
+    → GỐC RỄ (ông bà, xã hội, nền tảng, nguồn gốc sự việc)
+  - 🚪 **Trụ Tháng** (Nhâm Thìn): Hành Thủy/Thổ
+    → CỬA CHÍNH (cha mẹ, sự nghiệp, lệnh tháng chi phối)
+  - 🧑 **Trụ Ngày** (Kỷ Tị): Hành Thổ/Hỏa
+    → BẢN THÂN (chính mình, tâm tính, nội lực)
+  - 🔮 **Trụ Giờ** (Nhâm Thân): Hành Thủy/Kim
+    → TƯƠNG LAI (con cái, kết quả, hậu vận, diễn biến cuối)
+  - 📊 Ngày (Thổ) khắc Giờ (Thủy): Mình KIỂM SOÁT kết quả
+
+  **🌟 THIÊN ĐỊA NHÂN TAM TÀI TƯƠNG HỢP:**
+  → Sao (Mộc) + Cửa (Thổ) đều thuận Cung (Hỏa) — ĐẠI CÁT!
+
+  **📊 Vạn Vật Loại Tượng (Ly):**
+  Tượng: Lửa ☲ — Sáng, đẹp, văn minh, con gái giữa
+  🎨 Sắc: Đỏ, cam, hồng | Vật: Chim trĩ, phượng
+
+  → **KỲ MÔN: ĐẠI CÁT** (📖 Khắc Ứng HUNG + Ngũ Hành thuận + Sao Thiên Xung Cát + Cửa Sinh Môn Cát + Tam Tài hợp)
+
+- **Sự việc** (Can Giờ Nhâm) tại **Cung 8 (Cấn)**
+  - Sao: Thiên Tâm | Cửa: Kinh Môn | Hành: Thổ
+  - **Bản thân vs Sự việc:** Cung 9 (Hỏa) → Cung 8 (Thổ): Hỏa SINH Thổ (hao tổn)
+  - 📝 BT sinh SV → Mình phải bỏ công sức ra, hao tổn
+
+### BƯỚC 3 — LỤC HÀO KINH DỊCH
+- **Quẻ Chủ:** Thủy Lôi Truân (Khảm)
+- **Quẻ Biến:** Trạch Lôi Tùy
+- **Hào Động:** 4
+
+**☯️ Bảng 6 Hào (Lục Thần + Lục Thân):**
+| Hào | Lục Thần | Lục Thân | Can Chi | Ngũ Hành | Thế/Ứng | Động |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | Huyền Vũ | Huynh Đệ | Tý-Thủy | Thủy |  |  |
+| 2 | Thanh Long | Tử Tôn | Dần-Mộc | Mộc |  |  |
+| 3 | Chu Tước | Quan Quỷ | Thìn-Thổ | Thổ |  |  |
+| 4 | Câu Trần | Phụ Mẫu | Thân-Kim | Kim |  | 🔴 Động |
+| 5 | Đằng Xà | Quan Quỷ | Tuất-Thổ | Thổ |  |  |
+| 6 | Bạch Hổ | Huynh Đệ | Tý-Thủy | Thủy |  |  |
+  - **Huynh Đệ**: Anh em, bạn bè, đối thủ, cạnh tranh, hao tiền
+  - **Quan Quỷ**: Công việc, sếp, bệnh tật, kiện tụng, áp lực
+  - **Phụ Mẫu**: Cha mẹ, nhà cửa, giấy tờ, hợp đồng, che chở
+  - **Tử Tôn**: Con cái, may mắn, vui vẻ, giải trừ, khắc Quan Quỷ
+
+- ⚠️ **PHỤC THẦN:** Dụng Thần (Thê Tài) KHÔNG xuất hiện trong quẻ!
+  → Dụng Thần ẩn (Phục Thần), sự việc chưa lộ diện.
+  - 📚 **phuc_than_vuong:** Phục Thần được Nhật/Nguyệt sinh hoặc được hào động sinh → CÁT — Phục Thần sắp xuất hiện, sự việc sẽ thành nhưng chậm
+  - 📚 **phuc_than_suy:** Phục Thần bị khắc, hưu tù, không được trợ giúp → HUNG — Sự việc khó thành, Dụng Thần ẩn quá sâu
+  - 📚 **phi_than_sinh_phuc:** Phi Thần (hào che Phục Thần) sinh Phục Thần → CÁT — Người chèn ép lại giúp đỡ, chuyện xấu hóa tốt
+  - 📚 **phi_than_khac_phuc:** Phi Thần khắc Phục Thần → HUNG — Bị kẻ trên đè nén, sự việc bị chôn vùi
+  - 📚 **phi_than_khong_vong:** Phi Thần lâm Không Vong hoặc bị Nguyệt Phá → CÁT — Lớp che bị phá, Phục Thần tự xuất hiện
+
+- 📚 **[KB] Độc Phát (1 hào động):** Hào động là trọng tâm — Xem hào đó sinh/khắc Dụng Thần để luận
+- Không tìm thấy Dụng Thần trong quẻ.
+
+  → **LỤC HÀO: BÌNH** (Thiếu Dụng Thần)
+
+### BƯỚC 4 — MAI HOA DỊCH SỐ
+- **🌟 Thể Quẻ (Hạ quái):** Chấn | Hành Mộc
+- **⚡ Dụng Quẻ (Thượng quái):** Ly | Hành Hỏa
+- **Quẻ Chủ:** Hỏa Lôi Phệ Hạp
+- **Quẻ Biến:** Quẻ Biến
+- **Hào Động:** 4
+- **🔍 Hỗ Quẻ (Quẻ ẩn):** Khảm Cấn
+- 🖼️ **Tượng Quẻ:** Lôi điện thệ
+- 📖 **Ý nghĩa:** Cắn kết, thực hiện hình pháp.
+- 💡 **Luận giải phần mềm:** Quẻ báo Chung: Cắn kết, thực hiện hình pháp.
+
+  📖 **Thể (Chấn):** Sấm ☳ — Động, khởi đầu, con trai trưởng, chấn động
+  📖 **Dụng (Ly):** Lửa ☲ — Sáng, đẹp, văn minh, con gái giữa
+
+  **🔍 Hỗ Quái:** Khảm Cấn
+- Thể SINH Dụng → **BÌNH** (hao tổn)
+
+  **📊 [KB] Thể Dụng Chi Tiết:** Thể sinh Dụng → **HUNG**
+  → Mộc sinh Hỏa, ta hao tổn sức lực cho người
+  ⏰ Ứng Kỳ: Ta hao → suy yếu dần, ứng khi hành Thể được sinh trở lại (tốc độ: chậm)
+
+**🌿 LỆNH THÁNG:** Mùa Xuân — Mộc vượng
+  → Thể quái (Mộc) ĐANG VƯỢNG theo mùa = Sức mạnh TĂNG GẤP ĐÔI! ✅
+
+**⏰ ỨNG KỲ:** Chưa xác định rõ thời điểm ứng nghiệm
+
+  → **MAI HOA: BÌNH** (Thể (Mộc) SINH Dụng (Hỏa) = hao tổn)
+
+### BƯỚC 5 — THIẾT BẢN + KINH DỊCH + VẠN VẬT
+**📜 A. Thiết Bản Thần Toán:**
+- Trụ Ngày: **Kỷ Tị**
+  → Nạp Âm: **Đại Lâm Mộc** (Mộc) — Gỗ rừng lớn — Sức mạnh to lớn, phát triển bền vững
+
+  **🔄 Trường Sinh Nạp Âm:** Thổ tại Tị = **Tuyệt**
+  → ❌ Tuyệt diệt → HOÀN TOÀN KẾT THÚC
+
+**☯️ B. Kinh Dịch — Quẻ Tượng:**
+- Quẻ Chủ: **Thủy Lôi Truân**
+- Thuộc Cung: **Khảm**
+  - 📚 **[KB Bản Cung]** Thủy Lôi Truân → Cung **Khảm** (Hành **Thủy**)
+- Hào Thế: **2** | Hào Ứng: **5**
+
+  **📜 THOÁN TỪ:** Tập Khảm, có phu, duy tâm hanh — Nước chảy liên tục không ngừng
+  **🏔️ ĐẠI TƯỢNG:** Nước chảy mãi, quân tử đạo đức hằng thường
+  **💡 Lời khuyên:** Kiên trì vượt khó, giữ tâm chính
+
+  **📚 [KB 64 QUẺ] Thủy Lôi Truân:**
+  - 📜 Thoán Từ: Nguyên Hanh Lợi Trinh, chớ vội dùng — Khó khăn ban đầu
+  - 🏔️ Đại Tượng: Mây sấm giao nhau, quân tử kinh luân sắp đặt
+  - 💡 Ý nghĩa: Khó khăn khởi đầu, cần kiên nhẫn vượt qua gian nan
+  - 🎯 Lời khuyên: Kiên nhẫn chờ đợi, chuẩn bị kỹ, đừng vội vàng
+  - ⚠️ Cát/Hung: **BÌNH**
+
+  **📚 [KB] Quẻ Biến Trạch Lôi Tùy:** Thuận theo, thích ứng, đi theo xu hướng → **CÁT**
+
+  **📐 HÀO VỊ:** Hào Thế (2) = **CHÍNH VỊ ✅** + TRUNG (cân bằng hoàn hảo) 🌟
+  → Chính + Trung = Vị trí HOÀN HẢO — Sự việc THUẬN LỢI nhất!
+- Quẻ Biến: **Trạch Lôi Tùy**
+
+**🏔️ C. Vạn Vật Loại Tượng:**
+- Chưa xác định được Quái liên quan từ dữ liệu.
+
+### BƯỚC 5.5 — ĐẠI LỤC NHÂM (大六壬)
+- **Sơ Truyền (Quá khứ):** Tị (?)
+- **Trung Truyền (Hiện tại):** Tị (?)
+- **Mạt Truyền (Tương lai):** Tị (?)
+- === ĐẠI LỤC NHÂM — PHÂN TÍCH CHUYÊN SÂU ===
+- Dụng Thần: Quan Quỷ — Câu hỏi tổng quát → xem Sơ Truyền + Quý Nhân
+- Tuần Không: Tỵ, Ngọ
+- ❌ Dụng Thần KHÔNG HIỆN trong Tứ Khóa → khó thành
+- 
+── QUÁ KHỨ / NGUYÊN NHÂN ──
+-   Chi: Tị (?) | Lục Thân: ?
+-   Thiên Tướng: ? (?)
+-   Ngũ Hành: ?
+- ❌ Dụng Thần KHÔNG hiện trong Tứ Khóa → sự việc khó thành
+- Tuần Không: Tỵ, Ngọ
+
+→ **ĐẠI LỤC NHÂM: BÌNH** (Mạt Truyền Tị (?))
+### BƯỚC 5.6 — THÁI ẤT THẦN SỐ (太乙神数)
+- **Thái Ất:** Cung 7 (Khôn) — Thổ — Lý Nhân
+- **Tích Niên:** 4722
+- **Bát Tướng:**
+  - Văn Xương: Cung 9 (Tốn) — Đại Cát
+  - Thủy Kích: Cung 1 (Càn) — Hung
+  - Chủ Đại Tướng: Cung 2 (Ly) — Trung
+  - Khách Đại Tướng: Cung 3 (Cấn) — Trung
+- Thái Ất ở Cung 7 (Khôn) — Lý Nhân
+- Ngũ Hành: Thổ — Vị trí: Tây Nam
+- ❌ Văn Xương KHẮC Thái Ất → VĂN VẬN BẤT LỢI, HUNG
+- ⚠️ Chủ SINH Khách → Bỏ sức cho đối phương = BÌNH HUNG
+- 
+── CÁCH CỤC ──
+-   CÁCH (格): Văn Xương (Mộc) khắc Thái Ất (Thổ) → chống đối, trở ngại
+- CÁCH (格): Văn Xương (Mộc) khắc Thái Ất (Thổ) → chống đối, trở ngại
+- ĐỐI (对): Chủ Đại Tướng (Cung 2) đối xung Thái Ất (Cung 7)
+- ĐỐI (对): Khách Đại Tướng (Cung 3) đối xung Thái Ất (Cung 7)
+
+→ **THÁI ẤT THẦN SỐ: BÌNH** (Cung 7 (Khôn), Thổ)
+
+</details>
+
+### ĐỐI CHIẾU MỌI PHƯƠNG PHÁP
+| Phương pháp | Kết luận | Điểm | % | Trọng số |
+|---|---|---|---|---|
+| Kỳ Môn | **ĐẠI CÁT** | -2 | 47% | 45% |
+| Lục Hào | **BÌNH** | +3 | 53% | 100% |
+| Mai Hoa | **BÌNH** | +0 | 50% | 70% |
+| Thiết Bản | **BÌNH** | +0 | 50% | 30% |
+| Đại Lục Nhâm | **BÌNH** | +2 | 52% | 60% |
+| Thái Ất | **BÌNH** | -1 | 48% | 20% |
+
+**📊 ĐIỂM TỔNG HỢP: 44%** (có tính 12 Trường Sinh: -6%)
+
+### 🧬 BƯỚC 5.7: LƯỢNG HÓA LỰC LƯỢNG (V42.9 LỰC LƯỢNG THỐNG NHẤT)
+
+**A. 3 TẦNG ĐO LỰC LƯỢNG DT:**
+| Tầng | Nguồn | Điểm | Trọng số |
+|---|---|---|---|
+| ① Lục Hào thô | Điểm=+3 → chuẩn hóa | 53% | 50% |
+| ② 12 Trường Sinh | Tuyệt (🔴 TUYỆT) | 5% | 30% |
+| ③ Ngũ Khí | Vượng (Hỏa @ Hỏa) | 100% | 20% |
+| **TỔNG HỢP** | **3 tầng tổng hợp** | **48%** | 🟠 SUY |
+| **TỔNG HỢP 5PP** | **KM+LH+MH+LN+TA** | **44%** | 🟠 SUY |
+
+**A2. 📋 THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT (V42.9) — 7 yếu tố:**
+*✅ Thuận lợi: 4 | ⚠️ Bất lợi: 3 | Tổng: +3*
+
+**🔵 NỘI TẠI (DT bản thân):** (5 yếu tố)
+- ⚠️ ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+- ✅ DT Tướng +10
+- ✅ Nguyệt(Thìn/Thổ) không tác động DT +0
+- ✅ Nhật(Kỷ/Thổ) không tác động DT +0
+- ⚠️ DT TĨNH (chờ đợi) -2
+
+**🟢 BÊN NGOÀI (Nhật/Nguyệt/Hào khác):** (1 yếu tố)
+- ✅ NT(Mộc) Nguyên Thần vượng +6
+
+**🔴 ĐỐI NGHỊCH (Kỵ/Cừu/Phản Ngâm/Hóa Tuyệt):** (1 yếu tố)
+- ⚠️ KT(Thủy) Kỵ Thần bình -1
+
+**B. NGŨ HÀNH VẬT CHẤT (Hỏa):**
+| Thuộc tính | Giá trị |
+|---|---|
+| 📐 Hình dáng | Nhọn, tam giác |
+| 🔧 Chất liệu | Điện, lửa, nhựa |
+| 🎨 Màu sắc | Đỏ, hồng |
+| 🧭 Hướng | Nam |
+| 👅 Vị | Đắng |
+| 🏥 Cơ thể | Tim, huyết mạch, lưỡi |
+
+**C. MAPPING VẠN VẬT (🟠 SUY):**
+| Tiêu chí | Giá trị |
+|---|---|
+| 🎯 % Lực lượng (5PP) | **44%** — 🟠 SUY |
+| 🎯 % Lực lượng (3 tầng) | **48%** — 🟠 SUY |
+| 🧑 Vòng đời con người | Người bắt đầu suy giảm (56-65 tuổi) |
+| 📐 Kích thước | Nhỏ, hẹp, thấp |
+| 🆕 Tình trạng | Cũ, hao mòn, xuống cấp |
+| 🔢 Số lượng | Ít, thiếu, không đủ |
+| 💎 Chất lượng | Kém, giảm giá trị |
+| 🎨 Màu sắc | Nhạt, phai, xỉn |
+| ⏱️ Tốc độ | Chậm, trì trệ |
+| 🔢 Con số | 3-4 |
+
+**D. 12 TRƯỜNG SINH:** Tuyệt (🔴 TUYỆT) — Power=5%
+→ Con người: Tuyệt diệt, không còn (86-100 tuổi) | Vật: KHÔNG CÒN, ĐÃ MẤT, MÒN NÁT
+
+**E. 🎯 VẠN VẬT CỤ THỂ (Hỏa × 🟠 SUY):**
+| Loại | Mô tả cụ thể |
+|---|---|
+| 🔮 Đồ vật | Bóng đèn mờ nhấp nháy, bếp gas cũ hay tắt, nến gần cháy hết, pin yếu |
+| 🏠 Nhà cửa | Nhà tối tăm, bếp hỏng, quạt cũ kêu |
+| 🧑 Người | Người mất danh tiếng, hay lo lắng bất an |
+| 🏥 Bệnh | Tim đập nhanh, huyết áp cao nhẹ, mất ngủ |
+
+### 🔍 THÁM TỬ KIỂM CHỨNG + CÂU TRẢ LỜI
+
+<div style="background:linear-gradient(135deg,#1e293b,#334155);padding:16px 20px;border-radius:12px;margin:10px 0;border-left:5px solid #f59e0b;"><span style="color:#fbbf24;font-size:1.1em;font-weight:800;">❓ CÂU HỎI:</span> <span style="color:#f1f5f9;font-size:1.05em;font-weight:600;">Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?</span></div>
+
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid #ca8a04;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#ca8a04;">🔴 VỀ "Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">🟠 SUY — 44%</span></div>
+
+<b style="color:#94a3b8;font-size:0.95em;">📋 Mô tả chi tiết (Vạn Vật Loại Tượng Hỏa × Quan Đới):</b>
+  === VẠN VẬT: Hỏa × Quan Đới (🟢 Trưởng thành) ===
+  Tính chất: Nóng, sáng, bùng cháy, lan tỏa, mạnh mẽ, biến đổi nhanh
+  Hình dáng: Nhọn, tam giác, hình ngọn lửa, hình nón, tháp | Kích thước: Vừa phải, cân đối
+  Màu: Đỏ, cam, tím, hồng, đỏ rực, đỏ tươi, đỏ son | Chất liệu: Đèn, nến, nhựa (cháy), sợi tổng hợp, điện tử, pin, acquy
+  Tình trạng: CHUẨN BỊ DÙNG, mới mặc/đeo, sẵn sàng | Tuổi: Mới mua, đang học cách sử dụng
+  Chất lượng: Tốt, đang trong giai đoạn tốt nhất
+  Trọng lượng: Trung bình, vừa tay | Nhiệt: Mát mẻ, dễ chịu
+  🧑 Người: Da đỏ/hồng, mặt nhọn/tam giác, mắt sáng, tóc xoăn/đỏ nâu | Trung bình, nhanh nhẹn, linh hoạt, hay vung tay
+  🔢 Số lượng: 2-3 | Con số: 3
+  🎭 **Cảm xúc:** Vui vẻ, Hạnh phúc, Nhiệt huyết, Đam mê, Giận dữ
+  📈 Xu hướng: Sắp đạt đỉnh, chuẩn bị tỏa sáng
+
+→ Tình hình **TRUNG BÌNH** (44%). Ổn nhưng cần nỗ lực thêm.
+
+<div style="background:#1e1b4b;padding:14px 18px;border-radius:10px;border-left:5px solid #818cf8;margin:12px 0;"><b style="color:#a5b4fc;font-size:1.05em;">📋 VÌ SAO — BẰNG CHỨNG TỪ QUẺ</b></div>
+- 📿 LH: ⚠️ PHỤC THẦN: DT (Thê Tài) ẩn, chưa lộ diện -10
+- 📿 LH: DT Tướng +10
+- 📿 LH: Nguyệt(Thìn/Thổ) không tác động DT +0
+- 🏯 KM: KM Cung BT sinh DT (hao) -4
+- 🏯 KM: KM Cửa Kinh Môn Hung -4
+- 🌸 MH: MH Thể sinh Dụng (hao mòn) -5
+
+<div style="background:#172554;padding:14px 18px;border-radius:10px;border-left:5px solid #60a5fa;margin:8px 0;"><b style="color:#93c5fd;font-size:1.05em;">⏳ ỨNG KỲ:</b> <span style="color:#dbeafe;font-weight:600;">Tị/Ngọ (tháng 4-5 ÂL)</span> | Ngày <span style="color:#dbeafe;font-weight:600;">Bính/Đinh</span> | Hướng <span style="color:#fbbf24;font-weight:700;">Nam</span></div>
+
+<div style="background:#14532d;padding:14px 18px;border-radius:10px;border-left:5px solid #4ade80;margin:12px 0;"><b style="color:#86efac;font-size:1.05em;">🔧 GIẢI PHÁP CHO "Mối quan hệ tình cảm sắp tới của tôi sẽ ra sao?"</b></div>
+- ❌ Kiên nhẫn chờ đợi, tìm quý nhân hỗ trợ.
+- 💡 Tìm quý nhân hành Mộc (sinh Hỏa). Hướng Nam. Màu đỏ/cam.
+
+✅ **Thuận lợi (1):** ✅ Cửa **Sinh Môn** (Đại Cát) → Tài lộc, sinh sôi, kinh doanh, phát triển
+⚠️ **Trở ngại (2):** ⚠️ Sao **Thiên Xung** (Mộc) KHẮC chủ thể (Thổ) → Thê Tài chịu ÁP LỰC từ hoàn cản
+
+---
+*🤖 Thiên Cơ Đại Sư V42.9 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP=44%, Tổng Hợp 3 Tầng=48%, Ngũ Khí=Vượng.*
+
+</details>
+
+💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).
+

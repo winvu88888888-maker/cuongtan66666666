@@ -299,6 +299,22 @@ LUC_THAN_NGU_HANH_MAP = {
     'Quan Quỷ': 'khắc_bt',    # Nó khắc BT
 }
 
+def _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than):
+    """Lấy Ngũ Hành CHUẨN của Dụng Thần từ dữ liệu Lục Hào (theo Cung Quẻ)"""
+    if not luc_hao_data or not isinstance(luc_hao_data, dict):
+        return None
+    ban = luc_hao_data.get('ban', {})
+    haos = ban.get('haos', []) or ban.get('details', [])
+    for hao in haos:
+        if dung_than in hao.get('luc_than', ''):
+            return hao.get('ngu_hanh')
+    phuc_than = luc_hao_data.get('phuc_than')
+    if phuc_than and isinstance(phuc_than, list):
+        for pt in phuc_than:
+            if dung_than in pt.get('luc_than', ''):
+                return pt.get('element') or pt.get('ngu_hanh')
+    return None
+
 def _get_luc_than_hanh(bt_hanh, luc_than_name):
     """V12.0: Tính Ngũ Hành của Lục Thân dựa trên hành Bản Thân"""
     if not bt_hanh or bt_hanh == '?':
@@ -6570,10 +6586,25 @@ class FreeAIHelper:
             if 'Thế' in str(tu):
                 the_hao = hao
         
+        is_phuc_than = False
         if not dt_hao:
-            if the_hao:
+            # FIX V42.9: Nếu Dụng Thần không xuất hiện, tìm trong Phục Thần
+            phuc_than_list = luc_hao_data.get('phuc_than', [])
+            if isinstance(phuc_than_list, list):
+                for pt in phuc_than_list:
+                    if pt.get('luc_than') == dung_than:
+                        dt_hao = pt
+                        dt_hao['ngu_hanh'] = pt.get('element') or pt.get('ngu_hanh', '')
+                        dt_hao['marker'] = '(Phục Thần)'
+                        is_phuc_than = True
+                        break
+            
+            # Chỉ fallback vào Hào Thế nếu đang hỏi "Bản Thân"
+            if not dt_hao and dung_than == 'Bản Thân' and the_hao:
                 dt_hao = the_hao
-            else:
+            
+            # Nếu vẫn không thấy
+            if not dt_hao:
                 return -10, "DT hào ẩn (Phục Thần) → -10", ["DT ẩn (Phục Thần) -10"]
         
         # V32.5: Unified key mapping — support both old (vuong_suy/chi) and new (strength/can_chi) format
@@ -6594,6 +6625,11 @@ class FreeAIHelper:
         dt_hanh = dt_hao.get('ngu_hanh', '')
         dt_vuong = _get_vuong(dt_hao)
         dt_chi = _get_chi(dt_hao)
+        
+        # FIX V42.9: Phạt điểm ngay lập tức nếu là Phục Thần
+        if is_phuc_than:
+            score -= 10
+            factors.append(f"⚠️ PHỤC THẦN: DT ({dung_than}) ẩn, chưa lộ diện -10")
         
         # ① DT Vượng/Suy (±10)
         if 'Vượng' in dt_vuong or 'Tướng' in dt_vuong or 'Đế Vượng' in dt_vuong:
@@ -8621,7 +8657,8 @@ class FreeAIHelper:
                                                      chart_data=chart_data,
                                                      lh_factors=kwargs.get('lh_factors'),
                                                      km_factors=kwargs.get('km_factors'),
-                                                     mh_factors=kwargs.get('mh_factors'))
+                                                     mh_factors=kwargs.get('mh_factors'),
+                                                     luc_hao_data=luc_hao_data)
         
         return impact_text, direct_answer, evidence
     
@@ -8629,7 +8666,8 @@ class FreeAIHelper:
                                  cat_count, hung_count, evidence, impacts,
                                  ky_mon_reason, luc_hao_reason, mai_hoa_reason,
                                  age_numbers=None, count_numbers=None, chart_data=None,
-                                 lh_factors=None, km_factors=None, mh_factors=None):
+                                 lh_factors=None, km_factors=None, mh_factors=None,
+                                 luc_hao_data=None):
         """
         V34.4: Sinh câu trả lời TRỰC TIẾP + THÁM TỬ KIỂM CHỨNG.
         - Bước 1: THÁM TỬ kiểm tra % có đúng ko
@@ -8747,8 +8785,10 @@ class FreeAIHelper:
                 q = q.replace(_nd, _cd)
         lines = []
         # V40.3: Derive hanh_dt
-        _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-        hanh_dt = _LT_HANH.get(dung_than, '')
+        hanh_dt = _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than)
+        if not hanh_dt:
+            _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+            hanh_dt = _LT_HANH.get(dung_than, '')
         if not lh_factors: lh_factors = []
         if not km_factors: km_factors = []
         if not mh_factors: mh_factors = []
@@ -8945,6 +8985,12 @@ class FreeAIHelper:
                 'Kim': '⚔️ KIM LOẠI, máy móc, ô tô, xe máy, thiết bị cơ khí, trang sức, vàng bạc, công nghiệp nặng, linh kiện',
                 'Thủy': '💧 NƯỚC UỐNG, đồ uống, thủy sản, vận tải biển, du lịch, logistics, hóa chất lỏng, dầu mỡ, nhà hàng hải sản',
             }
+            # FIX V42.9
+            hanh_dt = _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than)
+            if not hanh_dt:
+                _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
+                hanh_dt = _LT_HANH.get(dung_than, 'Thổ')
+
             HANH_HUONG = {'Mộc': 'Đông', 'Hỏa': 'Nam', 'Thổ': 'Trung Tâm', 'Kim': 'Tây', 'Thủy': 'Bắc'}
             HANH_MAU = {'Mộc': 'Xanh lá', 'Hỏa': 'Đỏ, cam', 'Thổ': 'Vàng, nâu', 'Kim': 'Trắng, bạc', 'Thủy': 'Đen, xanh dương'}
             HANH_CHAT = {'Mộc': 'Gỗ, sợi, organic', 'Hỏa': 'Nhựa, điện tử', 'Thổ': 'Đất, gốm, xi măng', 'Kim': 'Kim loại, inox', 'Thủy': 'Lỏng, dầu, nước'}
@@ -9061,10 +9107,8 @@ class FreeAIHelper:
         # KHI NÀO / THÁNG NÀO / BAO GIỜ — trả lời CỤ THỂ tháng/chi
         elif any(k in q for k in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'khi nao',
                                    'tháng nào', 'tháng mấy', 'năm nào', 'ngày nào', 'mùa nào']):
-            # Lấy hành DT để tính Ứng Kỳ
-            hanh_dt = cd.get('hanh_dt', '')
+            # Lấy hành DT để tính Ứng Kỳ (V42.9: đã tính ở trên, tái sử dụng)
             if not hanh_dt:
-                # V42.8f FIX: Suy Hành từ Dụng Thần (Lục Thân → Ngũ Hành)
                 _LT_HANH_UK = {
                     'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa',
                     'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'
@@ -9670,8 +9714,8 @@ class FreeAIHelper:
             
             if _is_what:
                 # V42.0: Câu hỏi "CÁI GÌ?" → Dùng Vạn Vật Loại Tượng chuyên sâu
-                _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                _hanh = _LT_HANH.get(dung_than, 'Thổ')
+                # FIX V42.9
+                _hanh = hanh_dt or 'Thổ'
                 _vv = NGU_HANH_VAT_CHAT.get(_hanh, {})
                 _vv_do_vat = _vv.get('do_vat', '') or _vv.get('vat', '')
                 _vv_chat = _vv.get('chat_lieu', '') or _vv.get('chat', '')
@@ -9739,8 +9783,8 @@ class FreeAIHelper:
                 
             elif _is_who:
                 # Câu hỏi AI/NGƯỜI NÀO → dùng Vạn Vật mô tả người
-                _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                _hanh = _LT_HANH.get(dung_than, '')
+                # FIX V42.9
+                _hanh = hanh_dt or 'Thổ'
                 _vv = NGU_HANH_VAT_CHAT.get(_hanh, {})
                 _HANH_NGUOI = {
                     'Kim': 'Người da trắng, gầy, cao, gương mặt vuông/dài, tính cách quyết đoán, nghiêm khắc, làm ngành kỹ thuật/ngân hàng/quân đội',
@@ -9762,8 +9806,8 @@ class FreeAIHelper:
                 
             elif _is_how:
                 # Câu hỏi MÔ TẢ → dùng Vạn Vật
-                _LT_HANH = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                _hanh = _LT_HANH.get(dung_than, '')
+                # FIX V42.9
+                _hanh = hanh_dt or 'Thổ'
                 _vv = NGU_HANH_VAT_CHAT.get(_hanh, {})
                 if pct >= 55:
                     _mota = f"Tích cực, chủ động, có thiện ý. Tính chất {_hanh}: {_vv.get('hinh', '')}."
@@ -12101,8 +12145,13 @@ class FreeAIHelper:
             }
             
             # Map dung_than → hành
-            _dt_map = _DT_HANH.get(_hanh_ban_than, {})
-            hanh_dt_v22 = _dt_map.get(dung_than, _hanh_ban_than)
+            # FIX V42.9: Sử dụng hành DT từ Lục Hào trước tiên
+            _hanh_dt_lh = _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than)
+            if _hanh_dt_lh:
+                hanh_dt_v22 = _hanh_dt_lh
+            else:
+                _dt_map = _DT_HANH.get(_hanh_ban_than, {})
+                hanh_dt_v22 = _dt_map.get(dung_than, _hanh_ban_than)
             
             self.log_step("V35.8 HanhDT", "MAP", 
                           f"Can={chart_data.get('can_ngay','')} → BT={_hanh_ban_than} | DT={dung_than} → Hành={hanh_dt_v22}")

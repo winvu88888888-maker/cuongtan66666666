@@ -206,7 +206,7 @@ def get_luc_than(h_element, p_element):
 
 from qmdg_calc import solar_to_lunar
 
-def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi_ngay="Tý", **kwargs):
+def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi_ngay="Tý", can_thang="Giáp", chi_thang="Tý", **kwargs):
     # Convert to Lunar Date
     dt = datetime(year, month, day, hour)
     lday, lmonth, lyear, is_leap = solar_to_lunar(dt)
@@ -279,6 +279,25 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
     # Advanced markers
     void_branches = get_tuan_khong(can_ngay, chi_ngay)
     ma_branch = get_dich_ma(chi_ngay)
+    
+    # Nhật phá & Nguyệt phá (Xung)
+    def is_xung(chi1, chi2):
+        xung_map = {"Tý":"Ngọ", "Sửu":"Mùi", "Dần":"Thân", "Mão":"Dậu", "Thìn":"Tuất", "Tị":"Hợi",
+                    "Ngọ":"Tý", "Mùi":"Sửu", "Thân":"Dần", "Dậu":"Mão", "Tuất":"Thìn", "Hợi":"Tị"}
+        return xung_map.get(chi1) == chi2
+        
+    def is_hop(chi1, chi2):
+        hop_map = {"Tý":"Sửu", "Sửu":"Tý", "Dần":"Hợi", "Hợi":"Dần", "Mão":"Tuất", "Tuất":"Mão",
+                   "Thìn":"Dậu", "Dậu":"Thìn", "Tị":"Thân", "Thân":"Tị", "Ngọ":"Mùi", "Mùi":"Ngọ"}
+        return hop_map.get(chi1) == chi2
+
+    def is_mo(h_chi, n_chi):
+        mo_map = {
+            "Thân": "Sửu", "Dậu": "Sửu", "Tị": "Tuất", "Ngọ": "Tuất",
+            "Dần": "Mùi", "Mão": "Mùi", "Hợi": "Thìn", "Tý": "Thìn",
+            "Thìn": "Thìn", "Tuất": "Tuất", "Sửu": "Sửu", "Mùi": "Mùi"
+        }
+        return mo_map.get(h_chi) == n_chi
 
     # Build main hexagram details
     details_ban = []
@@ -294,7 +313,20 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         if (i+1) == ung_pos: markers.append("(Ứng)")
         if c_branch in void_branches: markers.append("(○)")
         if c_branch == ma_branch: markers.append("(🐎)")
+        if is_xung(c_branch, chi_thang): markers.append("(Nguyệt Phá)")
+        if is_xung(c_branch, chi_ngay): markers.append("(Nhật Phá)")
+        if is_mo(c_branch, chi_thang) or is_mo(c_branch, chi_ngay): markers.append("(Mộ)")
         
+        # Tiến Thoái thần for moving lines
+        if (i+1) == moving_idx:
+            # Need to compare with Biến line
+            cc_bien = nap_giap_bien[i]
+            bien_branch = cc_bien.split("-")[0]
+            if (c_branch, bien_branch) in [("Thân","Dậu"), ("Hợi","Tý"), ("Dần","Mão"), ("Tị","Ngọ"), ("Sửu","Thìn"), ("Thìn","Mùi"), ("Mùi","Tuất"), ("Tuất","Sửu")]:
+                markers.append("(Tiến)")
+            elif (c_branch, bien_branch) in [("Dậu","Thân"), ("Tý","Hợi"), ("Mão","Dần"), ("Ngọ","Tị"), ("Thìn","Sửu"), ("Mùi","Thìn"), ("Tuất","Mùi"), ("Sửu","Tuất")]:
+                markers.append("(Thoái)")
+
         details_ban.append({
             'hao': i+1, 'line': ban_lines[i], 'is_moving': (i+1) == moving_idx,
             'luc_than': lt, 'can_chi': cc, 'ngu_hanh': c_element,
