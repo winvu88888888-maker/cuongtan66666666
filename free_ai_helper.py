@@ -4555,63 +4555,91 @@ class FreeAIHelper:
             else:
                 _qtype = 'YESNO'
             
-            # V42.9.3: DATA RELEVANCE MAP — section nào cần FULL detail cho từng loại câu hỏi
-            # True = full detail, False = 1-line summary only
-            _NEED_LH_DETAIL = _qtype in ('COMPETITION', 'YESNO')  # Thế/Ứng, Nguyên Thần
-            _NEED_KM_DETAIL = _qtype in ('COMPETITION', 'WHERE', 'WHEN', 'YESNO')  # 9 cung, hướng
-            _NEED_VV_DETAIL = _qtype in ('WHAT', 'WHERE', 'AGE')  # Vạn Vật Loại Tượng
-            _NEED_COUNT_DETAIL = _qtype in ('COUNT', 'AGE')  # Hà Đồ Số, Trường Sinh
+            # ═══════════════════════════════════════════════════════════════
+            # V42.9.4: CẤU TRÚC CÂY PHÂN TẦNG — ĐỌC HẾT 40K, KHÔNG CẮT
+            # Tầng 0: MỤC LỤC (500 chars) — Gemini đọc TRƯỚC
+            # Tầng 1: Sections lớn (6 PP) — sắp xếp theo ĐỘ LIÊN QUAN
+            # Tầng 2: Sub-sections chi tiết trong mỗi PP
+            # ═══════════════════════════════════════════════════════════════
             
-            self.log_step("Online AI", "FILTER", f"Q-Type={_qtype} | LH={_NEED_LH_DETAIL} KM={_NEED_KM_DETAIL} VV={_NEED_VV_DETAIL}")
+            # Xác định THỨ TỰ ƯU TIÊN PP theo loại câu hỏi
+            _PP_PRIORITY = {
+                'COMPETITION': ['LH', 'KM', 'MH', 'LN', 'TA', 'TB'],  # Thế/Ứng quan trọng nhất
+                'WHAT':        ['MH', 'VV', 'TB', 'LH', 'KM', 'LN', 'TA'],  # Vạn Vật + Mai Hoa
+                'WHERE':       ['KM', 'LH', 'MH', 'LN', 'TA', 'TB'],  # Kỳ Môn hướng/cung
+                'WHEN':        ['LN', 'KM', 'LH', 'MH', 'TA', 'TB'],  # Đại Lục Nhâm thời gian
+                'AGE':         ['VV', 'TB', 'LH', 'MH', 'KM', 'LN', 'TA'],  # Trường Sinh + Vạn Vật
+                'COUNT':       ['VV', 'TB', 'MH', 'LH', 'KM', 'LN', 'TA'],  # Hà Đồ Số
+                'YESNO':       ['LH', 'KM', 'MH', 'LN', 'TA', 'TB'],  # Lục Hào chủ lực
+            }
+            _priority_order = _PP_PRIORITY.get(_qtype, ['LH', 'KM', 'MH', 'LN', 'TA', 'TB'])
+            _primary_pp = _priority_order[:2]  # 2 PP chính
             
-            # ═══ PHẦN 1: RAW DATA — Gemini TỰ ĐỌC QUẺ ═══
+            # ALWAYS show full detail — NO cutting
+            _NEED_LH_DETAIL = True
+            _NEED_KM_DETAIL = True
+            _NEED_VV_DETAIL = True
+            _NEED_COUNT_DETAIL = True
+            
+            self.log_step("Online AI", "TREE", f"Q-Type={_qtype} | Priority={_priority_order[:3]} | Full=ALL")
+            
+            # ═══ PHẦN 1: RAW DATA — CẤU TRÚC CÂY ═══
             raw_data_section = ""
-            
-            # --- 1A: THÔNG TIN CHUNG ---
             dung_than_ak = od.get('dung_than', '?')
             hanh_dt = v22.get('hanh_dt', '?')
             category_label = od.get('category_label', '?')
             
+            # ────────────────────────────────────────
+            # TẦNG 0: MỤC LỤC TỔNG HỢP (luôn ở đầu)
+            # ────────────────────────────────────────
             raw_data_section += (
-                f"═══ THÔNG TIN CHUNG ═══\n"
+                f"╔══════════════════════════════════════╗\n"
+                f"║  📋 MỤC LỤC — ĐỌC ĐÂY TRƯỚC       ║\n"
+                f"╚══════════════════════════════════════╝\n"
                 f"Câu hỏi: {question}\n"
-                f"Dụng Thần CHÍNH: {dung_than_ak} | Hành DT: {hanh_dt}\n"
-                f"Chủ đề: {category_label}\n"
-                f"Loại câu hỏi: {_qtype}\n"
+                f"Loại: {_qtype} | DT: {dung_than_ak} | Hành: {hanh_dt} | Chủ đề: {category_label}\n"
             )
-            # V41.0: Multi-DT cho câu hỏi phức hợp
             all_dts = _get_all_dung_than(question)
             if len(all_dts) > 1:
-                raw_data_section += f"⚠️ CÂU HỎI PHỨC HỢP — Có {len(all_dts)} Dụng Thần: {' + '.join(all_dts)}\n"
-                raw_data_section += f"   → Phân tích primary DT ({all_dts[0]}) trước, rồi bổ sung secondary DT ({', '.join(all_dts[1:])})\n"
-            raw_data_section += "\n"
+                raw_data_section += f"⚠️ PHỨC HỢP — {len(all_dts)} DT: {' + '.join(all_dts)}\n"
+            raw_data_section += (
+                f"\n📊 VERDICT 6 PHƯƠNG PHÁP:\n"
+                f"  ⭐[1] LỤC HÀO:     {od.get('luc_hao_verdict','?'):8s} — {od.get('luc_hao_reason','')[:60]}\n"
+                f"  ⭐[2] KỲ MÔN:      {od.get('ky_mon_verdict','?'):8s} — {od.get('ky_mon_reason','')[:60]}\n"
+                f"  ⭐[3] MAI HOA:      {od.get('mai_hoa_verdict','?'):8s} — {od.get('mai_hoa_reason','')[:60]}\n"
+                f"    [4] ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?'):8s} — {od.get('luc_nham_reason','')[:60]}\n"
+                f"    [5] THÁI ẤT:      {od.get('thai_at_verdict','?'):8s} — {od.get('thai_at_reason','')[:60]}\n"
+                f"    [6] THIẾT BẢN:    BÌNH\n"
+                f"  Tổng: {v22.get('unified_pct','?')}% | Tier: {v22.get('tier_cap','?')} | TS: {v22.get('ts_stage','?')}\n"
+                f"\n🎯 PP ƯU TIÊN cho câu hỏi [{_qtype}]: {', '.join(_priority_order[:3])}\n"
+                f"   → Đọc section [{_priority_order[0]}] và [{_priority_order[1]}] KỸ NHẤT\n\n"
+            )
             
-            # --- 1B: RAW LỤC HÀO (chi tiết) --- V42.9.3: chỉ full khi cần
+            # ────────────────────────────────────────
+            # TẦNG 1+2: CHI TIẾT TỪNG PP — theo thứ tự ưu tiên
+            # ────────────────────────────────────────
+            # Build từng section riêng, rồi sắp xếp theo priority
+            _sections = {}  # key=PP_code, value=text
+            
+            # --- LỤC HÀO ---
+            _lh_text = ""
             if od.get('v23_lh_factors'):
-                if _NEED_LH_DETAIL:
-                    raw_data_section += f"═══ [1] LỤC HÀO — DỮ LIỆU THÔ ═══\n"
-                    for f_item in od['v23_lh_factors']:
-                        raw_data_section += f"• {f_item}\n"
-                    raw_data_section += "\n"
-                else:
-                    # Summary only
-                    raw_data_section += f"═══ [1] LỤC HÀO — TÓM TẮT ═══\n"
-                    raw_data_section += f"• Verdict: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:80]}\n\n"
+                _lh_text += f"═══ [LH] LỤC HÀO — DỮ LIỆU THÔ ═══\n"
+                for f_item in od['v23_lh_factors']:
+                    _lh_text += f"• {f_item}\n"
+                _lh_text += "\n"
+            raw_data_section += _lh_text
             
-            # --- 1C: RAW KỲ MÔN --- V42.9.3: chỉ full khi cần
+            # --- KỲ MÔN ---
             if od.get('v24_km_factors'):
-                if _NEED_KM_DETAIL:
-                    raw_data_section += f"═══ [2] KỲ MÔN ĐỘN GIÁP — DỮ LIỆU THÔ ═══\n"
-                    for f_item in od['v24_km_factors']:
-                        raw_data_section += f"• {f_item}\n"
-                    raw_data_section += "\n"
-                else:
-                    raw_data_section += f"═══ [2] KỲ MÔN — TÓM TẮT ═══\n"
-                    raw_data_section += f"• Verdict: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:80]}\n\n"
+                raw_data_section += f"═══ [KM] KỲ MÔN ĐỘN GIÁP — DỮ LIỆU THÔ ═══\n"
+                for f_item in od['v24_km_factors']:
+                    raw_data_section += f"• {f_item}\n"
+                raw_data_section += "\n"
             
-            # --- 1D: RAW MAI HOA ---
+            # --- MAI HOA ---
             if od.get('v24_mh_factors'):
-                raw_data_section += f"═══ [3] MAI HOA DỊCH SỐ — DỮ LIỆU THÔ ═══\n"
+                raw_data_section += f"═══ [MH] MAI HOA DỊCH SỐ — DỮ LIỆU THÔ ═══\n"
                 mh_items = od['v24_mh_factors'] if isinstance(od['v24_mh_factors'], list) else [od['v24_mh_factors']]
                 for f_item in mh_items:
                     raw_data_section += f"• {f_item}\n"
@@ -4624,12 +4652,12 @@ class FreeAIHelper:
                 if chart_data and isinstance(chart_data, dict) and 'can_ngay' in chart_data:
                     ln_data = tinh_dai_luc_nham(chart_data.get('can_ngay','Giáp'), chart_data.get('chi_ngay','Tý'), chart_data.get('chi_gio','Ngọ'), chart_data.get('tiet_khi','Đông Chí'))
                     ln_deep = phan_tich_chuyen_sau(ln_data, question, topic or 'chung')
-                    luc_nham_ctx = f"═══ [4] ĐẠI LỤC NHÂM — DỮ LIỆU THÔ ═══\n"
+                    luc_nham_ctx = f"═══ [LN] ĐẠI LỤC NHÂM — DỮ LIỆU THÔ ═══\n"
                     for d in ln_deep.get('details', []): luc_nham_ctx += f"• {d}\n"
                     luc_nham_ctx += f"• Sơ-Trung-Mạt Truyền verdict: {ln_deep.get('verdict', '?')}\n\n"
             except Exception: pass
             if od.get('v24_ln_factors'):
-                luc_nham_ctx += f"═══ [4b] ĐẠI LỤC NHÂM — FACTORS BỔ SUNG ═══\n"
+                luc_nham_ctx += f"═══ [LNb] ĐẠI LỤC NHÂM — FACTORS BỔ SUNG ═══\n"
                 ln_items = od['v24_ln_factors'] if isinstance(od['v24_ln_factors'], list) else [od['v24_ln_factors']]
                 for f_item in ln_items:
                     luc_nham_ctx += f"• {f_item}\n"
@@ -4638,7 +4666,7 @@ class FreeAIHelper:
             
             # --- 1F: RAW THIẾT BẢN + THÁI ẤT ---
             if od.get('v24_tb_factors'):
-                raw_data_section += f"═══ [5] THIẾT BẢN THẦN SỐ — DỮ LIỆU THÔ ═══\n"
+                raw_data_section += f"═══ [TB] THIẾT BẢN THẦN SỐ — DỮ LIỆU THÔ ═══\n"
                 tb_items = od['v24_tb_factors'] if isinstance(od['v24_tb_factors'], list) else [od['v24_tb_factors']]
                 for f_item in tb_items:
                     raw_data_section += f"• {f_item}\n"
@@ -4652,14 +4680,14 @@ class FreeAIHelper:
                 ta_can = chart_data.get('can_ngay','Giáp') if chart_data and isinstance(chart_data, dict) else 'Giáp'
                 ta_chi = chart_data.get('chi_ngay','Tý') if chart_data and isinstance(chart_data, dict) else 'Tý'
                 ta_data = tinh_thai_at_than_so(now.year, now.month, ta_can, ta_chi)
-                thai_at_ctx = f"═══ [6] THÁI ẤT THẦN SỐ — DỮ LIỆU THÔ ═══\n"
+                thai_at_ctx = f"═══ [TA] THÁI ẤT THẦN SỐ — DỮ LIỆU THÔ ═══\n"
                 ta_cung = ta_data.get('thai_at_cung', {})
                 thai_at_ctx += f"• Cung {ta_cung.get('cung','?')} ({ta_cung.get('ten_cung','?')}) {ta_cung.get('hanh_cung','?')}\n"
                 for d in ta_data.get('luan_giai', {}).get('details', []): thai_at_ctx += f"• {d}\n"
                 thai_at_ctx += "\n"
             except Exception: pass
             if od.get('v24_ta_factors'):
-                thai_at_ctx += f"═══ [6b] THÁI ẤT — FACTORS BỔ SUNG ═══\n"
+                thai_at_ctx += f"═══ [TAb] THÁI ẤT — FACTORS BỔ SUNG ═══\n"
                 ta_items = od['v24_ta_factors'] if isinstance(od['v24_ta_factors'], list) else [od['v24_ta_factors']]
                 for f_item in ta_items:
                     thai_at_ctx += f"• {f_item}\n"
@@ -4693,7 +4721,7 @@ class FreeAIHelper:
             _mh_nghia = od.get('mai_hoa_nghia', '')
             _mh_interp = od.get('mai_hoa_interpretation', '')
             if _mh_ho or _mh_bien or _mh_nghia:
-                raw_data_section += f"═══ [3b] MAI HOA — HỖ QUÁI + BIẾN QUÁI ═══\n"
+                raw_data_section += f"═══ [MHb] MAI HOA — HỖ QUÁI + BIẾN QUÁI ═══\n"
                 if _mh_ho: raw_data_section += f"• Hỗ Quái: {_mh_ho}\n"
                 if _mh_bien: raw_data_section += f"• Biến Quái: {_mh_bien}\n"
                 if _mh_nghia: raw_data_section += f"• Quẻ Nghĩa: {_mh_nghia}\n"
@@ -4704,7 +4732,7 @@ class FreeAIHelper:
             _lh_ten = od.get('luc_hao_ten_que', '')
             _lh_cung = od.get('luc_hao_cung', '')
             if _lh_ten or _lh_cung:
-                raw_data_section += f"═══ [1b] LỤC HÀO — TÊN QUẺ + CUNG ═══\n"
+                raw_data_section += f"═══ [LHb] LỤC HÀO — TÊN QUẺ + CUNG ═══\n"
                 if _lh_ten: raw_data_section += f"• Tên quẻ: {_lh_ten}\n"
                 if _lh_cung: raw_data_section += f"• Cung: {_lh_cung}\n"
                 raw_data_section += "\n"
@@ -4713,7 +4741,7 @@ class FreeAIHelper:
             if _NEED_LH_DETAIL and luc_hao_data and isinstance(luc_hao_data, dict):
                 _lh_ban = luc_hao_data.get('ban', {})
                 if _lh_ban and isinstance(_lh_ban, dict):
-                    raw_data_section += f"═══ [1c] LỤC HÀO — BẢNG 6 HÀO CHI TIẾT ═══\n"
+                    raw_data_section += f"═══ [LHc] LỤC HÀO — BẢNG 6 HÀO CHI TIẾT ═══\n"
                     _dong_hao = luc_hao_data.get('dong_hao', [])
                     for _h_num in range(1, 7):
                         _h = _lh_ban.get(_h_num, _lh_ban.get(str(_h_num), {}))
@@ -4743,7 +4771,7 @@ class FreeAIHelper:
                 _sb = chart_data.get('than_ban', {})
                 _ctb = chart_data.get('can_thien_ban', {})
                 if _tb and isinstance(_tb, dict) and len(_tb) >= 8:
-                    raw_data_section += f"═══ [2b] KỲ MÔN — BÀN 9 CUNG CHI TIẾT ═══\n"
+                    raw_data_section += f"═══ [KMb] KỲ MÔN — BÀN 9 CUNG CHI TIẾT ═══\n"
                     raw_data_section += f"• Cục: {chart_data.get('cuc', '?')} | Tiết Khí: {chart_data.get('tiet_khi', '?')}\n"
                     raw_data_section += f"• Can Ngày: {chart_data.get('can_ngay', '?')}{chart_data.get('chi_ngay', '?')} | Can Giờ: {chart_data.get('can_gio', '?')}{chart_data.get('chi_gio', '?')}\n"
                     for _cung in range(1, 10):
@@ -4827,9 +4855,73 @@ class FreeAIHelper:
                     raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
                 raw_data_section += "\n"
             
-            # V42.9.3: Giới hạn RAW data section → 15K chars (giảm từ 40K → focus hơn)
-            if len(raw_data_section) > 15000:
-                raw_data_section = raw_data_section[:7000] + "\n\n[...DỮ LIỆU CẮT NGẮN — CHỈ GIỮ YẾU TỐ QUAN TRỌNG...]\n\n" + raw_data_section[-7000:]
+            # ═══ V42.9.4: REORDER SECTIONS — sắp xếp theo priority ═══
+            # Tách raw_data_section thành các section dựa trên header ═══
+            import re as _re_reorder
+            _section_pattern = _re_reorder.compile(r'(═══\s*\[\w+\]\s*.*?═══)')
+            _parts = _section_pattern.split(raw_data_section)
+            
+            # Map section header → PP code
+            _header_to_pp = {}
+            _pp_sections = {}  # PP_code → list of (header, content)
+            _toc_part = ""  # Phần MỤC LỤC (trước section đầu tiên)
+            _other_parts = []  # Sections không match PP nào
+            
+            i = 0
+            while i < len(_parts):
+                part = _parts[i]
+                if _section_pattern.match(part):
+                    # Đây là header
+                    header = part
+                    content = _parts[i+1] if i+1 < len(_parts) else ""
+                    # Detect PP code từ header
+                    _h_upper = header.upper()
+                    if '[LH' in _h_upper or 'LỤC HÀO' in _h_upper:
+                        _pp_sections.setdefault('LH', []).append(header + content)
+                    elif '[KM' in _h_upper or 'KỲ MÔN' in _h_upper:
+                        _pp_sections.setdefault('KM', []).append(header + content)
+                    elif '[MH' in _h_upper or 'MAI HOA' in _h_upper:
+                        _pp_sections.setdefault('MH', []).append(header + content)
+                    elif '[LN' in _h_upper or 'LỤC NHÂM' in _h_upper:
+                        _pp_sections.setdefault('LN', []).append(header + content)
+                    elif '[TB' in _h_upper or 'THIẾT BẢN' in _h_upper:
+                        _pp_sections.setdefault('TB', []).append(header + content)
+                    elif '[TA' in _h_upper or 'THÁI ẤT' in _h_upper:
+                        _pp_sections.setdefault('TA', []).append(header + content)
+                    else:
+                        _pp_sections.setdefault('VV', []).append(header + content)
+                    i += 2
+                else:
+                    # Không phải header — kiểm tra có phải TOC không
+                    if not _toc_part and ('MỤC LỤC' in part or '╔' in part):
+                        _toc_part = part
+                    elif _toc_part and not _pp_sections:
+                        _toc_part += part  # Vẫn trong vùng TOC
+                    else:
+                        _other_parts.append(part)
+                    i += 1
+            
+            # Reassemble theo priority order
+            _reordered = _toc_part  # TOC luôn đứng đầu
+            for _pp_code in _priority_order:
+                if _pp_code in _pp_sections:
+                    _star = "⭐ " if _pp_code in _primary_pp else ""
+                    _reordered += f"\n{'─'*40}\n{_star}PP ƯU TIÊN: [{_pp_code}]\n{'─'*40}\n"
+                    for _sec in _pp_sections[_pp_code]:
+                        _reordered += _sec
+                    del _pp_sections[_pp_code]
+            # Append các section không match priority (VV, SCORING, etc.)
+            for _remaining_pp, _remaining_secs in _pp_sections.items():
+                for _sec in _remaining_secs:
+                    _reordered += _sec
+            for _op in _other_parts:
+                if _op.strip():
+                    _reordered += _op
+            
+            raw_data_section = _reordered
+            
+            # V42.9.4: KHÔNG CẮT — giữ full data, cấu trúc cây giúp Gemini đọc hiệu quả
+            self.log_step("Online AI", "DATA_SIZE", f"raw_data={len(raw_data_section)} chars — FULL, NO TRUNCATION")
             
             # ═══ PHẦN 2: OFFLINE VERDICT (chỉ 1 block ngắn để so sánh) ═══
             offline_verdict_block = (
