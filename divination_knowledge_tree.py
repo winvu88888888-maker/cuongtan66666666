@@ -257,6 +257,16 @@ LH_TREE = {
         },
     },
 
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Xem Nguyệt Nhật', 'desc': 'Đánh giá sức mạnh tổng quan của các hào trong tháng/ngày'},
+        'step_2': {'name': 'Tìm Dụng Thần', 'desc': 'Xác định hào đại diện cho sự việc (Dụng Thần) và hào bản thân (Thế)'},
+        'step_3': {'name': 'Xét Vượng Suy', 'desc': 'Kiểm tra Dụng Thần vượng hay suy, có bị Tuần Không, Nguyệt Phá không'},
+        'step_4': {'name': 'Phân tích Động Hào', 'desc': 'Xem hào động sinh hay khắc Dụng Thần, Hóa Hào tốt hay xấu'},
+        'step_5': {'name': 'Xét Xung/Hợp', 'desc': 'Đánh giá tác động của Lục Xung, Lục Hợp, Tam Hợp cục'},
+        'step_6': {'name': 'Định Cát Hung', 'desc': 'Kết luận cuối cùng dựa trên tương quan sinh khắc và trạng thái của Dụng Thần'},
+    },
+
     # --- Quy tắc verdict ---
     'verdict_rules': {
         'CAT': [
@@ -365,6 +375,16 @@ KM_TREE = {
         'than_ban': {'name': 'Thần Bàn', 'desc': 'Bàn thần linh → yếu tố tâm linh'},  # ← MỚI
     },
 
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Xác định Dụng Thần', 'desc': 'Tìm Can đại diện cho người/việc (Can ngày, Can giờ, Can năm)'},
+        'step_2': {'name': 'Xem Trực Phù, Trực Sử', 'desc': 'Xác định xu hướng lớn và sự kiện chính đang chi phối'},
+        'step_3': {'name': 'Phân tích Cung Dụng Thần', 'desc': 'Đánh giá Bát Môn (nhân sự), Cửu Tinh (thiên thời), Bát Thần (tâm linh)'},
+        'step_4': {'name': 'Xét Thiên Can, Địa Bàn', 'desc': 'Xem tương tác giữa Can thiên bàn và Can địa bàn'},
+        'step_5': {'name': 'Luận Cách Cục', 'desc': 'Xem có rơi vào Cát Cách hay Hung Cách đặc biệt không'},
+        'step_6': {'name': 'Định Cát Hung', 'desc': 'Kết luận tổng thể dựa trên cung Dụng Thần sinh khắc với cung Thế/Can ngày'},
+    },
+
     'verdict_rules': {
         'CAT': ['Cửa Cát + Sao Cát + Cung Vượng', 'Tam Kỳ nhập cung', 'Cát Cách'],
         'HUNG': ['Cửa Hung + Sao Hung', 'Hung Cách', 'Tam Kỳ nhập Mộ/Không'],
@@ -430,6 +450,16 @@ MH_TREE = {
         'Khôn': {'hanh': 'Thổ','so': 8, 'huong': 'Tây Nam',   'tuong': 'Đất/Mẹ'},
     },
 
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Xác định Thể/Dụng', 'desc': 'Quẻ không có hào động là Thể (ta), quẻ có hào động là Dụng (sự việc)'},
+        'step_2': {'name': 'Phân tích Ngũ Hành Sinh Khắc', 'desc': 'Xét quan hệ Thể và Dụng (Dụng sinh Thể, Thể khắc Dụng...)'},
+        'step_3': {'name': 'Đánh giá Thể Vượng/Suy', 'desc': 'Xem hành của Thể Quái có vượng theo mùa/tháng không'},
+        'step_4': {'name': 'Xét Hỗ Quái', 'desc': 'Phân tích diễn biến trung gian của sự việc'},
+        'step_5': {'name': 'Xét Biến Quái', 'desc': 'Xem kết quả cuối cùng sự việc qua sự sinh khắc của Biến Quái với Thể Quái'},
+        'step_6': {'name': 'Định Cát Hung', 'desc': 'Đưa ra kết luận tổng quan từ cả Dụng Quái, Hỗ Quái và Biến Quái'},
+    },
+
     'verdict_rules': {
         'CAT': ['Dụng Sinh Thể', 'Thể Khắc Dụng', 'Thể vượng + Dụng suy'],
         'HUNG': ['Thể Sinh Dụng', 'Dụng Khắc Thể', 'Thể suy + Dụng vượng'],
@@ -475,6 +505,15 @@ LN_TREE = {
         'thien_ban': {'name': 'Thiên Bàn', 'desc': '12 chi xoay trên'},
         'dia_ban':   {'name': 'Địa Bàn', 'desc': '12 chi cố định dưới'},
     },
+
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Xem Thiên Địa Bàn', 'desc': 'Đánh giá tổng quan sự việc qua sự dịch chuyển của 12 chi'},
+        'step_2': {'name': 'Phân tích Tứ Khóa', 'desc': 'Xét âm dương, khách chủ, động tĩnh qua 4 khóa'},
+        'step_3': {'name': 'Luận Tam Truyền', 'desc': 'Phân tích Sơ truyền (bắt đầu), Trung truyền (diễn biến), Mạt truyền (kết thúc)'},
+        'step_4': {'name': 'Xét Thiên Tướng', 'desc': 'Đánh giá sự trợ giúp hay phá hoại của 12 thiên tướng (Quý Nhân, Bạch Hổ...)'},
+        'step_5': {'name': 'Định Cát Hung', 'desc': 'Kết hợp toàn bộ yếu tố để đưa ra dự đoán chi tiết'},
+    },
 }
 
 # ═══════════════════════════════════════════════════════════
@@ -500,6 +539,15 @@ TA_TREE = {
         'cung_menh':   {'name': 'Cung Mệnh', 'desc': 'Cung an mệnh → số mệnh'},
     },
 
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Xác định vị trí Thái Ất', 'desc': 'Xem sao Thái Ất nằm ở cung nào, có lâm hung cung không'},
+        'step_2': {'name': 'Tính Toán', 'desc': 'Đo lường Chủ Toán (đại diện bên ta) và Khách Toán (đối phương)'},
+        'step_3': {'name': 'Xét Ngũ Phúc', 'desc': 'Kiểm tra vị trí và tác động của sao Ngũ Phúc (hỗ trợ/ban phước)'},
+        'step_4': {'name': 'Xem Thiên Mục/Địa Mục', 'desc': 'Đánh giá sự giám sát và các biến động từ trên và dưới'},
+        'step_5': {'name': 'Định Cát Hung', 'desc': 'So sánh Chủ Toán - Khách Toán và vị trí các tinh tú để kết luận thắng bại/cát hung'},
+    },
+
     'verdict_rules': {
         'CAT': ['Chủ Toán > Khách Toán', 'Ngũ Phúc lâm cát cung'],
         'HUNG': ['Khách Toán > Chủ Toán', 'Thái Ất lâm hung cung'],
@@ -519,6 +567,15 @@ TB_TREE = {
         'ha_do':     {'name': 'Hà Đồ', 'desc': 'Số gốc Ngũ Hành (Tiên Thiên)'},
         'cuu_cung':  {'name': 'Cửu Cung', 'desc': '9 cung Lạc Thư'},
         'bat_quai':  {'name': 'Bát Quái', 'desc': '8 quẻ cơ bản'},
+    },
+
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Lập Bát Tự', 'desc': 'Lấy ngày giờ tháng năm sinh chính xác để quy đổi'},
+        'step_2': {'name': 'Tính Quẻ', 'desc': 'Chuyển Bát Tự thành các quẻ dựa trên Tiên Thiên và Hậu Thiên'},
+        'step_3': {'name': 'Tính Thần Số', 'desc': 'Tìm ra con số Thần Số vận mệnh'},
+        'step_4': {'name': 'Tra Thiết Bản', 'desc': 'Dùng Thần Số để tra các câu văn trong sách Thiết Bản'},
+        'step_5': {'name': 'Giải Đoán', 'desc': 'Luận giải vận mệnh cả đời qua các câu văn'},
     },
 }
 
@@ -572,6 +629,15 @@ TV_TREE = {
     'dai_han':  {'desc': '10 năm 1 hạn — vận hạn dài'},
     'tieu_han': {'desc': '1 năm 1 hạn — vận hạn ngắn'},  # ← MỚI
     'luu_nien': {'desc': 'Năm hiện tại — vận trong năm'},
+
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Xem Mệnh/Thân', 'desc': 'Đánh giá cung Mệnh (tiềm năng) và cung Thân (hành động sau 30 tuổi)'},
+        'step_2': {'name': 'Khảo sát Chính Tinh', 'desc': 'Xem các sao chính chiếu Mệnh và các cung tam phương tứ chính'},
+        'step_3': {'name': 'Xét Phụ Tinh, Sát Tinh', 'desc': 'Kiểm tra Lục Cát (tốt) và Lục Sát (xấu) tác động thế nào'},
+        'step_4': {'name': 'Phân tích Tứ Hóa', 'desc': 'Xem Lộc, Quyền, Khoa, Kỵ làm biến đổi ý nghĩa các sao ra sao'},
+        'step_5': {'name': 'Xem Vận Hạn', 'desc': 'Đánh giá Đại Hạn (10 năm) và Lưu Niên (1 năm) để dự báo sự kiện'},
+    },
 }
 
 # ═══════════════════════════════════════════════════════════
@@ -627,6 +693,15 @@ XND_TREE = {
     'sao_tot': {
         'Thiên Đức':  {'desc': 'Ngày có Thiên Đức hợp → mọi việc hanh thông'},
         'Nguyệt Đức': {'desc': 'Ngày có Nguyệt Đức hợp → giải được xấu'},
+    },
+
+    # --- Quy trình luận giải chuẩn ---
+    'interpretation_steps': {
+        'step_1': {'name': 'Loại Ngày Kỵ', 'desc': 'Tránh Tam Nương, Nguyệt Kỵ, Dương Công, Sát Chủ'},
+        'step_2': {'name': 'Xét Hoàng Đạo/Hắc Đạo', 'desc': 'Ưu tiên ngày có các sao Hoàng Đạo (Thanh Long, Kim Quỹ...)'},
+        'step_3': {'name': 'Xem Trực 12', 'desc': 'Chọn Trực phù hợp với việc cần làm (Khai, Thành, Mãn...)'},
+        'step_4': {'name': 'Xét Ngũ Hành Sinh Khắc', 'desc': 'Ngày phải tương sinh hoặc không xung khắc với tuổi người dùng'},
+        'step_5': {'name': 'Định Cát Hung', 'desc': 'Chốt ngày giờ tốt nhất cho sự kiện cụ thể'},
     },
 }
 
