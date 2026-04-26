@@ -12431,14 +12431,44 @@ class FreeAIHelper:
             _conflict_penalty += 12
             _km_v = verdicts[0] if len(verdicts) > 0 else '?'
             _lh_v = verdicts[1] if len(verdicts) > 1 else '?'
-            _conflict_warnings.append(f"⚠️ XUNG ĐỘT CHÍNH: Kỳ Môn ({_km_v}) ↔ Lục Hào ({_lh_v}) — 2 PP mạnh nhất TRÁI NGƯỢC")
+            _cw_text = f"⚠️ XUNG ĐỘT CHÍNH: Kỳ Môn ({_km_v}) ↔ Lục Hào ({_lh_v}) — 2 PP mạnh nhất TRÁI NGƯỢC."
+            
+            # --- V42.9.4 DKT CROSS-CHECK ---
+            try:
+                _lh_dt_suy = False
+                _lh_dt_vuong = False
+                if 'v23_lh_factors' in locals() and v23_lh_factors:
+                    _lh_f_str = str(v23_lh_factors)
+                    _lh_dt_suy = any(kw in _lh_f_str for kw in ['Tuyệt', 'Tử', 'Mộ', 'Không', 'Phá', 'Khắc'])
+                    _lh_dt_vuong = any(kw in _lh_f_str for kw in ['Trường Sinh', 'Đế Vượng', 'Lâm Quan', 'Sinh'])
+                
+                if 'LH' in _v_cat and _lh_dt_suy:
+                    _cw_text += " [DKT Tòa Án: Lục Hào báo CÁT nhưng Dụng Thần dính yếu tố Suy/Tuyệt/Phá → Kỳ Môn đáng tin hơn]"
+                    _conflict_penalty += 3
+                elif 'LH' in _v_hung and _lh_dt_vuong:
+                    _cw_text += " [DKT Tòa Án: Lục Hào báo HUNG nhưng Dụng Thần đang Vượng → Xung đột rất mạnh]"
+                    _conflict_penalty += 3
+            except Exception: pass
+            
+            _conflict_warnings.append(_cw_text)
         
         # Rule 2: MH vs LH trái ngược → penalty vừa
         if ('MH' in _v_cat and 'LH' in _v_hung) or ('MH' in _v_hung and 'LH' in _v_cat):
             _conflict_penalty += 8
             _mh_v = verdicts[2] if len(verdicts) > 2 else '?'
             _lh_v = verdicts[1] if len(verdicts) > 1 else '?'
-            _conflict_warnings.append(f"⚠️ XUNG ĐỘT: Mai Hoa ({_mh_v}) ↔ Lục Hào ({_lh_v})")
+            _cw_text = f"⚠️ XUNG ĐỘT: Mai Hoa ({_mh_v}) ↔ Lục Hào ({_lh_v})"
+            
+            # --- V42.9.4 DKT CROSS-CHECK ---
+            try:
+                if 'MH' in _v_cat and mai_hoa_data and isinstance(mai_hoa_data, dict):
+                    _the = mai_hoa_data.get('hanh_the', '')
+                    _dung = mai_hoa_data.get('hanh_dung', '')
+                    if _the and _dung and _the == _dung:
+                        _cw_text += " [DKT Tòa Án: Mai Hoa báo CÁT do Tỷ Hòa (bình ổn), Lục Hào HUNG là do biến động cục bộ → Lục Hào đáng tin hơn]"
+            except Exception: pass
+            
+            _conflict_warnings.append(_cw_text)
         
         # Rule 3: Đa số HUNG (≥4/6) nhưng pct > 50 → force giảm
         if len(_v_hung) >= 4 and weighted_pct > 50:
