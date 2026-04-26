@@ -281,6 +281,18 @@ st.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ═══ V42.9.5: TOGGLE ON/OFF cho Tử Vi + Xem Ngày ═══
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🔌 Module Bổ Sung")
+_tv_on = st.sidebar.toggle("🔮 Tử Vi Đẩu Số", value=st.session_state.get('tv_module_on', False), key="tv_toggle")
+_xn_on = st.sidebar.toggle("📅 Xem Ngày Đẹp", value=st.session_state.get('xn_module_on', False), key="xn_toggle")
+st.session_state['tv_module_on'] = _tv_on
+st.session_state['xn_module_on'] = _xn_on
+if _tv_on:
+    st.sidebar.caption("✅ Tử Vi → inject vào Pipeline 7 tầng")
+if _xn_on:
+    st.sidebar.caption("✅ Xem Ngày → inject vào Pipeline 7 tầng")
+
 # Add project root and dist directory to Python path
 root_path = os.path.dirname(os.path.abspath(__file__))
 dist_path = os.path.join(root_path, 'dist')
@@ -1687,9 +1699,9 @@ class PhoenixOrchestrator:
     def render_logs(self):
         pass
 
-    def run_pipeline(self, user_question, current_topic="Chung", chart_data=None, mai_hoa_data=None, luc_hao_data=None, tb_context=""):
+    def run_pipeline(self, user_question, current_topic="Chung", chart_data=None, mai_hoa_data=None, luc_hao_data=None, tb_context="", **kwargs):
         enhanced_question = user_question + tb_context if tb_context else user_question
-        return self.gemini.answer_question(enhanced_question, chart_data=chart_data, topic=current_topic, mai_hoa_data=mai_hoa_data, luc_hao_data=luc_hao_data)
+        return self.gemini.answer_question(enhanced_question, chart_data=chart_data, topic=current_topic, mai_hoa_data=mai_hoa_data, luc_hao_data=luc_hao_data, **kwargs)
 
 # Auto-Init logic — GUARD: Only init if not already in session_state
 if 'gemini_helper' not in st.session_state:
@@ -4318,13 +4330,21 @@ elif st.session_state.current_view == "gemini_ai":
                         # CALL PHOENIX MASTER (FULL PIPELINE)
                         orc = PhoenixOrchestrator(st.session_state.gemini_helper)
                         
+                        # V42.9.5: Inject Tử Vi + Xem Ngày khi toggle ON
+                        _extra_kwargs = {}
+                        if st.session_state.get('tv_module_on') and st.session_state.get('tv_la_so'):
+                            _extra_kwargs['tu_vi_data'] = st.session_state['tv_la_so']
+                        if st.session_state.get('xn_module_on') and st.session_state.get('xn_result'):
+                            _extra_kwargs['xem_ngay_data'] = st.session_state['xn_result']
+                        
                         raw_response = orc.run_pipeline(
                             user_question, 
                             current_topic=safe_topic,
                             chart_data=temp_chart_data,
                             mai_hoa_data=temp_mai_hoa,
                             luc_hao_data=temp_luc_hao,
-                            tb_context=tb_context
+                            tb_context=tb_context,
+                            **_extra_kwargs
                         )
                     
                     # PROCESS & DISPLAY
