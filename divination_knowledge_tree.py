@@ -630,6 +630,178 @@ XND_TREE = {
     },
 }
 
+# ═══════════════════════════════════════════════════════════
+# [VV] VẠN VẬT TỔNG HỢP — Sơ đồ hình cây theo Ngũ Hành
+# 2226+ items, phân cấp: Hành → Danh mục → Items
+# Cross-ref: Trường Sinh + Suy Vượng
+# ═══════════════════════════════════════════════════════════
+
+# Import data thực từ van_vat_tong_hop.py
+try:
+    from van_vat_tong_hop import (
+        NGU_HANH_VAN_VAT, VAN_VAT_MO_RONG, VAN_VAT_BO_SUNG,
+        TRUONG_SINH_TRANG_THAI,
+    )
+    _VV_IMPORTED = True
+except ImportError:
+    NGU_HANH_VAN_VAT = {}
+    VAN_VAT_MO_RONG = {}
+    VAN_VAT_BO_SUNG = {}
+    TRUONG_SINH_TRANG_THAI = {}
+    _VV_IMPORTED = False
+
+VV_TREE = {
+    'name': 'Vạn Vật Loại Tượng Tổng Hợp',
+    'total_items': '2226+',
+
+    # ═══ TẦNG 1: NGŨ HÀNH → DANH MỤC ═══
+    # Mỗi hành có 20 danh mục cơ bản + 15 mở rộng + 10 bổ sung
+    'ngu_hanh': {
+        'Kim': {
+            'tinh_chat': 'Cứng, sắc bén, thu gom, sát phạt',
+            'mau_sac': 'Trắng, bạc, vàng kim',
+            'huong': 'Tây',
+            'mua': 'Thu',
+            'categories': list(NGU_HANH_VAN_VAT.get('Kim', {}).keys()) if NGU_HANH_VAN_VAT else [],
+            'mo_rong': list(VAN_VAT_MO_RONG.get('Kim', {}).keys()) if VAN_VAT_MO_RONG else [],
+            'bo_sung': list(VAN_VAT_BO_SUNG.get('Kim', {}).keys()) if VAN_VAT_BO_SUNG else [],
+        },
+        'Mộc': {
+            'tinh_chat': 'Mềm dẻo, sinh trưởng, phát triển',
+            'mau_sac': 'Xanh lá, xanh lục',
+            'huong': 'Đông',
+            'mua': 'Xuân',
+            'categories': list(NGU_HANH_VAN_VAT.get('Mộc', {}).keys()) if NGU_HANH_VAN_VAT else [],
+            'mo_rong': list(VAN_VAT_MO_RONG.get('Mộc', {}).keys()) if VAN_VAT_MO_RONG else [],
+            'bo_sung': list(VAN_VAT_BO_SUNG.get('Mộc', {}).keys()) if VAN_VAT_BO_SUNG else [],
+        },
+        'Thủy': {
+            'tinh_chat': 'Lỏng, chảy, thấm, trí tuệ',
+            'mau_sac': 'Đen, xanh đậm',
+            'huong': 'Bắc',
+            'mua': 'Đông',
+            'categories': list(NGU_HANH_VAN_VAT.get('Thủy', {}).keys()) if NGU_HANH_VAN_VAT else [],
+            'mo_rong': list(VAN_VAT_MO_RONG.get('Thủy', {}).keys()) if VAN_VAT_MO_RONG else [],
+            'bo_sung': list(VAN_VAT_BO_SUNG.get('Thủy', {}).keys()) if VAN_VAT_BO_SUNG else [],
+        },
+        'Hỏa': {
+            'tinh_chat': 'Nóng, bốc lên, sáng, phô trương',
+            'mau_sac': 'Đỏ, cam, hồng',
+            'huong': 'Nam',
+            'mua': 'Hạ',
+            'categories': list(NGU_HANH_VAN_VAT.get('Hỏa', {}).keys()) if NGU_HANH_VAN_VAT else [],
+            'mo_rong': list(VAN_VAT_MO_RONG.get('Hỏa', {}).keys()) if VAN_VAT_MO_RONG else [],
+            'bo_sung': list(VAN_VAT_BO_SUNG.get('Hỏa', {}).keys()) if VAN_VAT_BO_SUNG else [],
+        },
+        'Thổ': {
+            'tinh_chat': 'Dày, ổn định, chứa đựng, trung tâm',
+            'mau_sac': 'Vàng, nâu',
+            'huong': 'Trung tâm',
+            'mua': 'Tứ quý (cuối mỗi mùa)',
+            'categories': list(NGU_HANH_VAN_VAT.get('Thổ', {}).keys()) if NGU_HANH_VAN_VAT else [],
+            'mo_rong': list(VAN_VAT_MO_RONG.get('Thổ', {}).keys()) if VAN_VAT_MO_RONG else [],
+            'bo_sung': list(VAN_VAT_BO_SUNG.get('Thổ', {}).keys()) if VAN_VAT_BO_SUNG else [],
+        },
+    },
+
+    # ═══ TẦNG 2: TRƯỜNG SINH → TRẠNG THÁI VẬT CHẤT ═══
+    'truong_sinh': {
+        'Trường Sinh': {'power': 85, 'chat_luong': 'Mới tinh, vừa xuất hiện',    'so': [1]},
+        'Mộc Dục':     {'power': 40, 'chat_luong': 'Đang sửa chữa, không ổn định','so': [2]},
+        'Quan Đới':    {'power': 70, 'chat_luong': 'Đã hoàn thiện, sẵn sàng dùng','so': [3]},
+        'Lâm Quan':    {'power': 90, 'chat_luong': 'Chất lượng cao, đang phát triển','so': [4,5]},
+        'Đế Vượng':    {'power': 100,'chat_luong': 'CỰC TỐT, đỉnh cao chất lượng','so': [5,6]},
+        'Suy':         {'power': 45, 'chat_luong': 'Bắt đầu xuống cấp, cũ dần',   'so': [6,7]},
+        'Bệnh':        {'power': 30, 'chat_luong': 'Hỏng hóc, lỗi, cần sửa',      'so': [7,8]},
+        'Tử':          {'power': 15, 'chat_luong': 'Hư nặng, gần hỏng hoàn toàn',  'so': [8,9]},
+        'Mộ':          {'power': 20, 'chat_luong': 'Cất kho, không dùng, phong ấn', 'so': [9]},
+        'Tuyệt':       {'power': 5,  'chat_luong': 'Mất hoàn toàn, tiêu hủy',      'so': [0]},
+        'Thai':         {'power': 50, 'chat_luong': 'Chưa ra đời, đang thai nghén', 'so': [10]},
+        'Dưỡng':       {'power': 60, 'chat_luong': 'Đang nuôi dưỡng, chuẩn bị ra', 'so': [11,12]},
+    },
+
+    # ═══ TẦNG 3: SUY VƯỢNG → ĐỘ MẠNH YẾU ═══
+    'suy_vuong': {
+        'Vượng':  {'power': 100, 'desc': 'Cực mạnh — đúng mùa, được sinh'},
+        'Tướng':  {'power': 80,  'desc': 'Mạnh — sắp đến mùa, có lực'},
+        'Hưu':    {'power': 50,  'desc': 'Trung bình — qua mùa, nghỉ ngơi'},
+        'Tù':     {'power': 30,  'desc': 'Yếu — bị khắc, mất lực'},
+        'Tuyệt':  {'power': 10,  'desc': 'Cực yếu — hoàn toàn bất lực'},
+    },
+
+    # ═══ BẢNG TRA NHANH: HÀNH → THÁNG → VƯỢNG/SUY ═══
+    'hanh_thang_map': {
+        # Hành: {tháng_chi: trạng_thái}
+        'Kim': {'Thân': 'Vượng', 'Dậu': 'Vượng', 'Mùi': 'Tướng', 'Tuất': 'Tướng',
+                'Hợi': 'Hưu', 'Tý': 'Hưu', 'Dần': 'Tù', 'Mão': 'Tù',
+                'Tị': 'Tuyệt', 'Ngọ': 'Tuyệt', 'Thìn': 'Hưu', 'Sửu': 'Tướng'},
+        'Mộc': {'Dần': 'Vượng', 'Mão': 'Vượng', 'Hợi': 'Tướng', 'Tý': 'Tướng',
+                'Tị': 'Hưu', 'Ngọ': 'Hưu', 'Thân': 'Tù', 'Dậu': 'Tù',
+                'Sửu': 'Tuyệt', 'Mùi': 'Tuyệt', 'Thìn': 'Hưu', 'Tuất': 'Hưu'},
+        'Thủy': {'Hợi': 'Vượng', 'Tý': 'Vượng', 'Thân': 'Tướng', 'Dậu': 'Tướng',
+                 'Dần': 'Hưu', 'Mão': 'Hưu', 'Tị': 'Tù', 'Ngọ': 'Tù',
+                 'Thìn': 'Tuyệt', 'Tuất': 'Tuyệt', 'Sửu': 'Hưu', 'Mùi': 'Hưu'},
+        'Hỏa': {'Tị': 'Vượng', 'Ngọ': 'Vượng', 'Dần': 'Tướng', 'Mão': 'Tướng',
+                 'Thân': 'Hưu', 'Dậu': 'Hưu', 'Hợi': 'Tù', 'Tý': 'Tù',
+                 'Mùi': 'Tuyệt', 'Sửu': 'Tuyệt', 'Thìn': 'Hưu', 'Tuất': 'Hưu'},
+        'Thổ': {'Thìn': 'Vượng', 'Tuất': 'Vượng', 'Sửu': 'Vượng', 'Mùi': 'Vượng',
+                'Tị': 'Tướng', 'Ngọ': 'Tướng', 'Thân': 'Hưu', 'Dậu': 'Hưu',
+                'Hợi': 'Tù', 'Tý': 'Tù', 'Dần': 'Tuyệt', 'Mão': 'Tuyệt'},
+    },
+
+    # ═══ REFERENCES — trỏ về data thực ═══
+    'data_source': {
+        'ngu_hanh_van_vat': 'van_vat_tong_hop.NGU_HANH_VAN_VAT',
+        'van_vat_mo_rong': 'van_vat_tong_hop.VAN_VAT_MO_RONG',
+        'van_vat_bo_sung': 'van_vat_tong_hop.VAN_VAT_BO_SUNG',
+        'truong_sinh_trang_thai': 'van_vat_tong_hop.TRUONG_SINH_TRANG_THAI',
+    },
+}
+
+
+def lookup_van_vat(hanh, category=None):
+    """Tra cứu nhanh Vạn Vật theo hành và danh mục
+    
+    Usage:
+        lookup_van_vat('Kim')           → tất cả categories của Kim
+        lookup_van_vat('Kim', 'do_vat') → đồ vật thuộc Kim
+    """
+    result = {}
+    if hanh in NGU_HANH_VAN_VAT:
+        data = NGU_HANH_VAN_VAT[hanh]
+        if category:
+            return data.get(category, f"Không tìm thấy '{category}' trong hành {hanh}")
+        result['co_ban'] = list(data.keys())
+    if hanh in VAN_VAT_MO_RONG:
+        if category:
+            return VAN_VAT_MO_RONG[hanh].get(category, '')
+        result['mo_rong'] = list(VAN_VAT_MO_RONG[hanh].keys())
+    if hanh in VAN_VAT_BO_SUNG:
+        if category:
+            return VAN_VAT_BO_SUNG[hanh].get(category, '')
+        result['bo_sung'] = list(VAN_VAT_BO_SUNG[hanh].keys())
+    return result
+
+
+def get_truong_sinh_state(stage):
+    """Lấy trạng thái vật chất theo giai đoạn Trường Sinh
+    
+    Usage:
+        get_truong_sinh_state('Đế Vượng') → {'power': 100, 'chat_luong': 'CỰC TỐT...'}
+    """
+    return VV_TREE['truong_sinh'].get(stage, {})
+
+
+def get_suy_vuong(hanh, chi_thang):
+    """Tra Vượng/Suy của 1 hành trong 1 tháng
+    
+    Usage:
+        get_suy_vuong('Kim', 'Thân') → 'Vượng'
+        get_suy_vuong('Mộc', 'Dậu') → 'Tù'
+    """
+    return VV_TREE['hanh_thang_map'].get(hanh, {}).get(chi_thang, 'Hưu')
+
+
 # ═══ MASTER TREE — Entry Point ═══
 TREE = {
     'LH': LH_TREE,
@@ -640,18 +812,36 @@ TREE = {
     'TB': TB_TREE,
     'TV': TV_TREE,
     'XND': XND_TREE,
+    'VV': VV_TREE,  # Vạn Vật
 }
 
 
 def audit_tree():
     """Tự kiểm tra độ phủ của Knowledge Tree"""
     print("═══ AUDIT KNOWLEDGE TREE ═══")
+    total_items = 0
     for code, tree in TREE.items():
         name = tree.get('name', '?')
-        coverage = tree.get('coverage', '?')
+        coverage = tree.get('coverage', tree.get('total_items', '?'))
         factors = len(tree.get('factors', {}))
-        print(f"  [{code}] {name}: {coverage} | {factors} factors")
+        # Count VV items
+        if code == 'VV':
+            _vv_count = 0
+            for h, hdata in tree.get('ngu_hanh', {}).items():
+                _vv_count += len(hdata.get('categories', []))
+                _vv_count += len(hdata.get('mo_rong', []))
+                _vv_count += len(hdata.get('bo_sung', []))
+            factors = _vv_count
+        total_items += factors
+        print(f"  [{code}] {name}: {coverage} | {factors} items")
+    print(f"\n  TOTAL: {total_items} items in tree")
+    print(f"  VV imported: {_VV_IMPORTED}")
 
 
 if __name__ == '__main__':
     audit_tree()
+    print("\n═══ TEST LOOKUP ═══")
+    print(f"  Kim categories: {lookup_van_vat('Kim')}")
+    print(f"  Đế Vượng state: {get_truong_sinh_state('Đế Vượng')}")
+    print(f"  Kim tháng Thân: {get_suy_vuong('Kim', 'Thân')}")
+    print(f"  Mộc tháng Dậu: {get_suy_vuong('Mộc', 'Dậu')}")
