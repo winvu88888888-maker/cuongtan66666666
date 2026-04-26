@@ -11139,6 +11139,73 @@ class FreeAIHelper:
         lines.append(verdict_line)
         lines.append("")
         
+        # V42.9.5: MULTI-INTENT → Tạo PHÁN QUYẾT RIÊNG cho từng sub-question
+        try:
+            _all_dts_verdict = _get_all_dung_than(question)
+            _parsed_qs = v32_parse_question(question)
+            if len(_parsed_qs) > 1 or len(_all_dts_verdict) > 1:
+                # Có nhiều câu hỏi → tạo verdict riêng cho mỗi câu
+                _DT_ROLE_V = {
+                    'Quan Quỷ': 'Công việc/Sếp', 'Thê Tài': 'Tiền/Vợ/Tình',
+                    'Tử Tôn': 'Con cái/Phúc', 'Phụ Mẫu': 'Bố mẹ/Nhà/Giấy tờ',
+                    'Huynh Đệ': 'Anh em/Bạn', 'Bản Thân': 'Bản thân',
+                }
+                _sub_verdicts = []
+                
+                # Sub-question 1 = primary (đã có verdict_line ở trên)
+                _pq1_text = _parsed_qs[0].get('text', question.split(' và ')[0] if ' và ' in question else question)[:60]
+                _sub_verdicts.append(f"📋 **Câu 1** ({_pq1_text}...): {verdict_line.replace('📢 **', '').replace('**', '')}")
+                
+                # Sub-questions 2+: ước tính verdict từ DT phụ
+                for _sq_idx, _sq in enumerate(_parsed_qs[1:], start=2):
+                    _sq_dt = _sq.get('dung_than', _all_dts_verdict[min(_sq_idx-1, len(_all_dts_verdict)-1)] if _sq_idx-1 < len(_all_dts_verdict) else 'Bản Thân')
+                    _sq_text = _sq.get('text', '')[:60]
+                    _sq_role = _DT_ROLE_V.get(_sq_dt, '?')
+                    
+                    # Ước tính pct cho DT phụ dựa trên sinh khắc nguyệt lệnh
+                    _LT_H = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 
+                             'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                    _sq_hanh = _LT_H.get(_sq_dt, 'Thổ')
+                    # Lấy nguyệt lệnh hành
+                    _nguyet_hanh = ''
+                    if chart_data and isinstance(chart_data, dict):
+                        _nguyet_hanh = CHI_NGU_HANH.get(chart_data.get('chi_thang', ''), '')
+                    
+                    # Tính sinh khắc đơn giản
+                    _SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
+                    _sq_pct = 50  # Mặc định BÌNH
+                    if _nguyet_hanh:
+                        if _SINH.get(_nguyet_hanh) == _sq_hanh:  # Nguyệt sinh DT
+                            _sq_pct = 62
+                        elif _sq_hanh == _nguyet_hanh:  # Tỷ hòa
+                            _sq_pct = 55
+                        elif _SINH.get(_sq_hanh) == _nguyet_hanh:  # DT sinh Nguyệt (tiết khí)
+                            _sq_pct = 42
+                        else:  # Khắc
+                            _sq_pct = 35
+                    
+                    if _sq_pct >= 55:
+                        _sq_verdict = f"CÓ — THUẬN LỢI ({_sq_pct}%)"
+                        _sq_icon = "✅"
+                    elif _sq_pct >= 45:
+                        _sq_verdict = f"CẦN CÂN NHẮC ({_sq_pct}%)"
+                        _sq_icon = "🟡"
+                    else:
+                        _sq_verdict = f"KHÓ KHĂN ({_sq_pct}%)"
+                        _sq_icon = "🔴"
+                    
+                    _sub_verdicts.append(f"📋 **Câu {_sq_idx}** ({_sq_text}...): {_sq_icon} PHÁN QUYẾT: {_sq_verdict} — DT: {_sq_dt} ({_sq_role})")
+                
+                # Hiển thị tất cả sub-verdicts
+                lines.append(f'<div style="background:linear-gradient(135deg,#312e81,#1e1b4b);padding:18px;border-radius:14px;border:2px solid #8b5cf6;margin:10px 0;">')
+                lines.append(f'<div style="font-size:1.15em;font-weight:900;color:#c4b5fd;margin-bottom:10px;">🔄 PHÂN TÍCH {len(_sub_verdicts)} CÂU HỎI RIÊNG BIỆT</div>')
+                for _sv in _sub_verdicts:
+                    lines.append(f'<div style="color:#e2e8f0;font-size:1.05em;margin:8px 0;padding:10px;background:rgba(139,92,246,0.15);border-radius:8px;border-left:4px solid #8b5cf6;">{_sv}</div>')
+                lines.append(f'</div>')
+                lines.append("")
+        except Exception:
+            pass
+        
         # ══════════════════════════════════════════════════════════
         # ★★★ PHẦN 0B: VÌ SAO — BẰNG CHỨNG THẬT TỪ DATA QUẺ ★★★
         # ══════════════════════════════════════════════════════════
