@@ -2981,14 +2981,58 @@ if st.session_state.current_view == "ky_mon":
                                     st.session_state.luc_hao_result = luc_hao_for_offline
                                 except Exception:
                                     pass
+                            # V42.9.5: Tự động lập Tử Vi + Xem Ngày khi toggle ON
+                            _extra_kw = {}
+                            
+                            if st.session_state.get('tv_module_on'):
+                                try:
+                                    from tu_vi import lap_la_so
+                                    from xem_ngay_dep import solar2lunar as _s2l_auto
+                                    _dt_auto = dt_module.datetime.now()
+                                    # Lấy ngày sinh từ session nếu có, không thì dùng thời gian hiện tại
+                                    _tv_ns = st.session_state.get('tv_la_so')
+                                    if not _tv_ns:
+                                        # Tự lập lá số theo giờ gieo quẻ (Y/M/D/H hiện tại, âm lịch)
+                                        _al_auto = _s2l_auto(_dt_auto.day, _dt_auto.month, _dt_auto.year)
+                                        _tv_ns = lap_la_so(_al_auto[2], _al_auto[1], _al_auto[0], _dt_auto.hour, 'nam')
+                                        st.session_state['tv_la_so'] = _tv_ns
+                                    _extra_kw['tu_vi_data'] = _tv_ns
+                                    st.toast("🔮 Tử Vi: Đã tự động lập lá số", icon="✅")
+                                except Exception as _tv_err:
+                                    st.toast(f"⚠️ Tử Vi auto-calc lỗi: {str(_tv_err)[:50]}", icon="⚠️")
+                            
+                            if st.session_state.get('xn_module_on'):
+                                try:
+                                    from xem_ngay_dep import danh_gia_ngay as _dg_auto, solar2lunar as _s2l_auto2
+                                    _dt_auto2 = dt_module.datetime.now()
+                                    _al_auto2 = _s2l_auto2(_dt_auto2.day, _dt_auto2.month, _dt_auto2.year)
+                                    _xn_ns = st.session_state.get('xn_result')
+                                    if not _xn_ns:
+                                        # Tính can chi ngày hiện tại
+                                        _cans_auto = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
+                                        _chis_auto = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi']
+                                        _a_j = (14 - _dt_auto2.month) // 12
+                                        _yy_j = _dt_auto2.year + 4800 - _a_j
+                                        _mm_j = _dt_auto2.month + 12 * _a_j - 3
+                                        _jdn_auto = _dt_auto2.day + (153 * _mm_j + 2) // 5 + 365 * _yy_j + _yy_j // 4 - _yy_j // 100 + _yy_j // 400 - 32045
+                                        _cn_auto = _cans_auto[(_jdn_auto + 9) % 10]
+                                        _chi_n_auto = _chis_auto[(_jdn_auto + 1) % 12]
+                                        _xn_ns = _dg_auto(_al_auto2[1], _al_auto2[0], _cn_auto, _chi_n_auto, 'chung',
+                                                          ngay_dl=(_dt_auto2.day, _dt_auto2.month, _dt_auto2.year))
+                                        st.session_state['xn_result'] = _xn_ns
+                                    _extra_kw['xem_ngay_data'] = _xn_ns
+                                    st.toast("📅 Xem Ngày: Đã tự động đánh giá ngày hôm nay", icon="✅")
+                                except Exception as _xn_err:
+                                    st.toast(f"⚠️ Xem Ngày auto-calc lỗi: {str(_xn_err)[:50]}", icon="⚠️")
                             
                             offline_result = offline_ai.answer_question(
                                 actual_question,
                                 chart_data=st.session_state.chart_data,
-                                topic=selected_topic,  # V28.0: PHẢI truyền topic để match đúng DT
+                                topic=selected_topic,
                                 selected_subject=rel_type,
                                 mai_hoa_data=mai_hoa_for_offline,
-                                luc_hao_data=luc_hao_for_offline
+                                luc_hao_data=luc_hao_for_offline,
+                                **_extra_kw
                             )
                         
                         # ====== V13.0: AI ONLINE đã tích hợp trong answer_question ======
