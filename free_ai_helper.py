@@ -16,6 +16,11 @@ import re
 import json
 import os
 import datetime
+# V42.9.4: Master Knowledge Tree — 158 yếu tố, 8 PP
+try:
+    from divination_knowledge_tree import TREE as DKT
+except ImportError:
+    DKT = {}
 try:
     from qmdg_data import KY_MON_DATA, QUAI_TUONG, CUNG_NGU_HANH, BAT_MON_CO_DINH_DISPLAY
     TOPIC_INTERPRETATIONS = KY_MON_DATA.get("TOPIC_INTERPRETATIONS", {})
@@ -4612,8 +4617,21 @@ class FreeAIHelper:
                 f"    [6] THIẾT BẢN:    BÌNH\n"
                 f"  Tổng: {v22.get('unified_pct','?')}% | Tier: {v22.get('tier_cap','?')} | TS: {v22.get('ts_stage','?')}\n"
                 f"\n🎯 PP ƯU TIÊN cho câu hỏi [{_qtype}]: {', '.join(_priority_order[:3])}\n"
-                f"   → Đọc section [{_priority_order[0]}] và [{_priority_order[1]}] KỸ NHẤT\n\n"
+                f"   → Đọc section [{_priority_order[0]}] và [{_priority_order[1]}] KỸ NHẤT\n"
             )
+            # V42.9.4: Thêm DKT validation vào TOC
+            _hub_ref = od.get('hub', {})
+            _dkt_val = _hub_ref.get('synthesis', {}).get('dkt_validation', [])
+            if _dkt_val:
+                raw_data_section += f"🔬 DKT CROSS-CHECK ({len(_dkt_val)} điểm):\n"
+                for _dv in _dkt_val[:5]:
+                    raw_data_section += f"  • {_dv}\n"
+            _cons = _hub_ref.get('synthesis', {}).get('consensus', '')
+            if _cons:
+                _cat_c = _hub_ref.get('synthesis', {}).get('cat_count', 0)
+                _hung_c = _hub_ref.get('synthesis', {}).get('hung_count', 0)
+                raw_data_section += f"📊 CONSENSUS: {_cons} (CÁT={_cat_c} HUNG={_hung_c})\n"
+            raw_data_section += "\n"
             
             # ────────────────────────────────────────
             # TẦNG 1+2: CHI TIẾT TỪNG PP — theo thứ tự ưu tiên
@@ -13012,6 +13030,73 @@ class FreeAIHelper:
         
         self.log_step("V42.9.4", "HUB", 
             f"Consensus={_consensus} | CÁT={_cat_methods}/HUNG={_hung_methods} | Evidence={len(_key_evidence)}")
+        
+        # ═══ V42.9.4: DKT VALIDATE — Dùng Knowledge Tree kiểm tra verdict ═══
+        try:
+            if DKT:
+                _dkt_fixes = []
+                
+                # 1. Mai Hoa: Kiểm tra Thể/Dụng Sinh Khắc
+                _mh_tree = DKT.get('MH', {}).get('sinh_khac', {})
+                if mai_hoa_data and isinstance(mai_hoa_data, dict) and _mh_tree:
+                    _the_hanh = mai_hoa_data.get('the_hanh', mai_hoa_data.get('hanh_the', ''))
+                    _dung_hanh = mai_hoa_data.get('dung_hanh', mai_hoa_data.get('hanh_dung', ''))
+                    if _the_hanh and _dung_hanh:
+                        _ngu_hanh_sinh = {'Kim':'Thủy','Thủy':'Mộc','Mộc':'Hỏa','Hỏa':'Thổ','Thổ':'Kim'}
+                        _ngu_hanh_khac = {'Kim':'Mộc','Mộc':'Thổ','Thổ':'Thủy','Thủy':'Hỏa','Hỏa':'Kim'}
+                        
+                        _mh_verdict_dkt = 'BÌNH'
+                        if _ngu_hanh_sinh.get(_dung_hanh) == _the_hanh:
+                            _mh_verdict_dkt = 'CÁT'  # Dụng Sinh Thể
+                            _dkt_fixes.append(f"MH: {_dung_hanh}→{_the_hanh} = Dụng Sinh Thể → CÁT")
+                        elif _ngu_hanh_khac.get(_the_hanh) == _dung_hanh:
+                            _mh_verdict_dkt = 'CÁT'  # Thể Khắc Dụng
+                            _dkt_fixes.append(f"MH: {_the_hanh}⊳{_dung_hanh} = Thể Khắc Dụng → CÁT")
+                        elif _ngu_hanh_sinh.get(_the_hanh) == _dung_hanh:
+                            _mh_verdict_dkt = 'HUNG'  # Thể Sinh Dụng
+                            _dkt_fixes.append(f"MH: {_the_hanh}→{_dung_hanh} = Thể Sinh Dụng → HUNG")
+                        elif _ngu_hanh_khac.get(_dung_hanh) == _the_hanh:
+                            _mh_verdict_dkt = 'HUNG'  # Dụng Khắc Thể
+                            _dkt_fixes.append(f"MH: {_dung_hanh}⊳{_the_hanh} = Dụng Khắc Thể → HUNG")
+                        elif _the_hanh == _dung_hanh:
+                            _mh_verdict_dkt = 'BÌNH'  # Tỷ Hòa
+                            _dkt_fixes.append(f"MH: {_the_hanh}={_dung_hanh} = Tỷ Hòa → BÌNH")
+                        
+                        # Update MH verdict trong hub
+                        if 'MH' in _hub['methods']:
+                            _hub['methods']['MH']['verdict'] = _mh_verdict_dkt
+                            _hub['methods']['MH']['reason'] = '; '.join(_dkt_fixes[-1:])
+                
+                # 2. Kỳ Môn: Kiểm tra Bát Môn cát/hung
+                _km_mon_tree = DKT.get('KM', {}).get('bat_mon', {})
+                if chart_data and isinstance(chart_data, dict) and _km_mon_tree:
+                    _nhan_ban = chart_data.get('nhan_ban', {})
+                    if _nhan_ban:
+                        for _cung_val in _nhan_ban.values():
+                            _mon_name = _cung_val if isinstance(_cung_val, str) else str(_cung_val.get('mon', '')) if isinstance(_cung_val, dict) else ''
+                            if _mon_name in _km_mon_tree:
+                                _mon_info = _km_mon_tree[_mon_name]
+                                _dkt_fixes.append(f"KM: {_mon_name} → {_mon_info['cat_hung']}")
+                
+                # 3. Lục Hào: Kiểm tra Hồi Đầu Sinh/Khắc (từ DKT)
+                _lh_factors_tree = DKT.get('LH', {}).get('factors', {})
+                if _lh_factors_tree and luc_hao_data and isinstance(luc_hao_data, dict):
+                    _dong_hao = luc_hao_data.get('dong_hao', [])
+                    _ban = luc_hao_data.get('ban', {})
+                    if _dong_hao and _ban:
+                        for _dh in _dong_hao:
+                            _h = _ban.get(_dh, _ban.get(str(_dh), {}))
+                            if isinstance(_h, dict):
+                                _chi = _h.get('chi', '')
+                                _hoa = _h.get('hoa', _h.get('bien', ''))
+                                if _chi and _hoa:
+                                    _dkt_fixes.append(f"LH: Hào {_dh} {_chi}→{_hoa} (Động Hào)")
+                
+                if _dkt_fixes:
+                    _hub['synthesis']['dkt_validation'] = _dkt_fixes
+                    self.log_step("V42.9.4", "DKT_VALIDATE", f"{len(_dkt_fixes)} checks: {_dkt_fixes[:3]}")
+        except Exception as _dkt_err:
+            self.log_step("V42.9.4", "DKT_ERR", str(_dkt_err)[:80])
         
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
