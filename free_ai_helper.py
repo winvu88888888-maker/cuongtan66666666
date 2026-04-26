@@ -5107,29 +5107,17 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc TỔNG QUÁT'
             
-            # ═══ PHẦN 4: V38.2 AI ONLINE ĐỘC LẬP — LUẬN GIẢI TỰ DO ═══
-            # V38.2: AI Online KHÔNG dùng 27 bước (chỉ dành cho Offline)
-            # AI Online luận giải ĐỘC LẬP → so sánh Offline → KẾT LUẬN CHÍNH
+            # ═══ PHẦN 4: V42.9.9 GEMINI PROMPT — TINH GỌN ═══
+            # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
-                f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ: DIỄN GIẢI KẾT QUẢ TỪ OFFLINE ENGINE BẰNG VĂN PHONG CHUYÊN GIA.\n"
-                f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính toán CHÍNH XÁC bởi Python Engine (78+ yếu tố). BẠN KHÔNG ĐƯỢC thay đổi.\n"
-                f"Việc của bạn: ĐỌC dữ liệu thô → GIẢI THÍCH TẠI SAO verdict của Offline Engine đúng, trích dẫn bằng chứng cụ thể.\n"
-                f"Nếu bạn thấy CÓ yếu tố mâu thuẫn → vẫn TUÂN THỦ verdict Offline → ghi chú 'có yếu tố ngược chiều' nhưng KHÔNG ĐỔI verdict.\n\n"
-                f"QUY TẮC PHÂN TÍCH:\n"
-                f"① VẠN VẬT LOẠI TƯỢNG là NGUỒN CHÍNH để trả lời mọi câu hỏi cụ thể.\n"
-                f"② Câu hỏi SỐ LƯỢNG (bao nhiêu/mấy) → PHẢI tra Hà Đồ Số + Trường Sinh Số → trả SỐ CỤ THỂ.\n"
-                f"③ Câu hỏi VẬT GÌ (cái gì/loại gì/sản xuất gì) → PHẢI tra đồ vật theo Hành + Trường Sinh.\n"
-                f"④ Câu hỏi Ở ĐÂU → PHẢI tra hướng theo Ngũ Hành.\n"
-                f"⑤ Ưu tiên câu trả lời cụ thể từ VẠN VẬT. Nếu data không rõ → nói 'theo xu hướng quẻ...' thay vì BỊA.\n\n"
-                f"⛔ CHỐNG BỊA ĐẶT — 5 QUY TẮC BẮT BUỘC:\n"
-                f"❶ CHỈ NÓI những gì DATA HỖ TRỢ. Mỗi nhận định PHẢI trích dẫn yếu tố quẻ cụ thể.\n"
-                f"❷ 12 TRƯỜNG SINH (Trường Sinh/Suy/Tuyệt...) mô tả TRẠNG THÁI DỤNG THẦN trong quẻ, KHÔNG phải mô tả đời thực người hỏi. VD: Tuyệt = DT rất yếu → KHÔNG nói 'bạn ở giai đoạn cuối đời'.\n"
-                f"❸ KHÔNG mô tả chi tiết đời sống cá nhân (giàu/nghèo, bệnh tật, nhà cửa, con cái) nếu câu hỏi KHÔNG hỏi về điều đó. Hỏi 'nghề gì' → chỉ trả lời nghề.\n"
-                f"❹ Dữ liệu VẠN VẬT mô tả ĐẶC TÍNH SỰ VẬT (hình dạng, chất liệu), KHÔNG phải mô tả CUỘC SỐNG người hỏi.\n"
-                f"❺ TRẢ LỜI ĐÚNG CÂU HỎI: Hỏi gì trả lời đó, không lan man sang chủ đề không liên quan.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.9 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
+                f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n"
+                f"BẠN KHÔNG ĐƯỢC thay đổi verdict. Việc của bạn: GIẢI THÍCH TẠI SAO verdict đúng, trích dẫn bằng chứng.\n"
+                f"QUY TẮC: ① Mỗi nhận định PHẢI trích dẫn yếu tố quẻ. ② Hỏi gì trả lời đó. ③ KHÔNG bịa đặt.\n"
+                f"VẠN VẬT: Kim=kim loại | Mộc=gỗ,vải | Thủy=nước,lỏng | Hỏa=điện,lửa | Thổ=đất,gốm\n"
+                f"SỐ: Hà Đồ Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
+                f"HƯỚNG: Kim=TÂY | Mộc=ĐÔNG | Thủy=BẮC | Hỏa=NAM | Thổ=TRUNG TÂM\n"
                 f"</system_role>\n\n"
                 
                 f"<question>\n"
@@ -5138,124 +5126,29 @@ class FreeAIHelper:
                 f"</question>\n\n"
                 
                 f"<raw_chart_data>\n"
-                f"DƯới đây là DỮ LIỆU THÔ từ 6 phương pháp. BẠN PHẢI ĐỌC KỸ TỪNG YẾU TỐ và TỰ LUẬN GIẢI.\n\n"
                 f"{raw_data_section}"
                 f"</raw_chart_data>\n\n"
                 
-                f"<offline_verdict_reference>\n"
-                f"═══ VERDICT CHÍNH THỨC (BẮT BUỘC TUÂN THỦ) ═══\n"
-                f"Đây là kết quả CHÍNH XÁC từ ENGINE toán học Python (78+ yếu tố, 6 PP, 12 Trường Sinh).\n"
-                f"BẠN PHẢI dùng ĐÚNG verdict và % này. CHỈ ĐƯỢC giải thích TẠI SAO kết quả này đúng.\n\n"
+                f"<verdict_block>\n"
                 f"{offline_verdict_block}"
-                f"</offline_verdict_reference>\n\n"
+                f"</verdict_block>\n\n"
                 
-                f"<ngu_hanh_rules>\n"
-                f"SINH: Mộc→Hỏa→Thổ→Kim→Thủy→Mộc | KHẮC: Mộc→Thổ→Thủy→Hỏa→Kim→Mộc\n"
-                f"DT: tiền=Thê Tài | sếp/bệnh=Quan Quỷ | con/phúc=Tử Tôn | nhà/cha mẹ=Phụ Mẫu | bạn=Huynh Đệ\n"
-                f"VƯỢNG: Nguyệt lệnh sinh/tỷ → VƯỢNG | khắc/tiết → SUY\n"
-                f"12 Trường Sinh: Trường Sinh→Đế Vượng=MẠNH | Suy→Tuyệt=YẾU | Thai/Dưỡng=mầm mống\n"
-                f"</ngu_hanh_rules>\n\n"
-                
-                f"<count_number_rules>\n"
-                f"KHI CÂU HỎI VỀ SỐ LƯỢNG (bao nhiêu, mấy, số lượng):\n"
-                f"PHẢI TRA BẢNG HÀ ĐỒ: Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
-                f"BẢNG LẠC THƯ: Thủy=1 | Mộc=3 | Thổ=5 | Kim=7 | Hỏa=9\n"
-                f"BẢNG QUÁI SỐ: Càn=1 | Đoài=2 | Ly=3 | Chấn=4 | Tốn=5 | Khảm=6 | Cấn=7 | Khôn=8\n"
-                f"QUY TẮC: DT VƯỢNG → lấy THÀNH SỐ (lớn) | DT BÌNH → lấy SINH SỐ (nhỏ) | DT SUY → giảm 1\n"
-                f"VÍ DỤ: Hỏi 'mấy đứa con', DT=Tử Tôn(Thổ), Vượng → Số = 10 | Bình → Số = 5 | Suy → Số = 4\n"
-                f"PHẢI KHẲNG ĐỊNH SỐ CỤ THỂ, KHÔNG ĐƯỢC nói 'không thể xác định'!\n"
-                f"</count_number_rules>\n\n"
-                
-                f"<method_expertise>\n"
-                f"THẾ MẠNH TỪNG PP (dùng đúng sở trường):\n"
-                f"① LỤC HÀO: MẠNH NHẤT cho DỤNG THẦN vượng/suy, CÓ/KHÔNG, tình trạng.\n"
-                f"   Key: Nguyệt lệnh ±8 | Nhật thần ±6 | Nguyên Thần sinh ±6 | Kỵ Thần khắc -8\n"
-                f"   Tuần Không = chưa thành | Nguyệt Phá = phá | Phục Thần = ẩn giấu\n"
-                f"   Hào động = đang thay đổi | Tiến Thần/Thoái Thần | Phản/Phục Ngâm\n\n"
-                f"② KỲ MÔN: MẠNH NHẤT cho PHƯƠNG HƯỚNG + CHIẾN LƯỢC + TIMING.\n"
-                f"   Key: BT(Can ngày) vs SV(Can giờ) | Cửu Tinh(Sao) | Bát Môn(Cửa) | Bát Thần\n"
-                f"   Cửa CÁT: Khai+Hưu+Sinh | Cửa HUNG: Tử+Kinh+Thương\n"
-                f"   Sao CÁT: Tâm+Nhậm+Phụ+Xung | Sao HUNG: Bồng+Nhuế+Trụ+Cầm\n"
-                f"   Cách Cục: 81 cách đặc biệt → ảnh hưởng cực mạnh\n\n"
-                f"③ MAI HOA: MẠNH NHẤT cho QUAN HỆ 2 BÊN, kết quả cuối.\n"
-                f"   Key: Thể(mình) vs Dụng(đối phương) → Sinh/Khắc/Tỷ\n"
-                f"   Dụng sinh Thể=ĐẠI CÁT | Thể sinh Dụng=MẤT | Dụng khắc Thể=HUNG\n"
-                f"   Hỗ Quái=diễn biến giữa | Biến Quái=kết quả cuối\n\n"
-                f"④ ĐẠI LỤC NHÂM: MẠNH cho DIỄN BIẾN THỜI GIAN.\n"
-                f"   Key: Sơ Truyền=QUÁ KHỨ | Trung Truyền=HIỆN TẠI | Mạt Truyền=TƯƠNG LAI\n\n"
-                f"⑤ THIẾT BẢN: MẠNH cho VẬT THỂ + SỐ LƯỢNG.\n"
-                f"⑥ THÁI ẤT: MẠNH cho BỨC TRANH LỚN, xu hướng.\n"
-                f"</method_expertise>\n\n"
-                
-                f"<reasoning_protocol_v38>\n"
-                f"BẠN PHẢI THỰC HIỆN 4 BƯỚC SAU (THEO THỨ TỰ):\n\n"
-                f"BƯỚC 1 — ĐỌC QUẺ ĐỘC LẬP:\n"
-                f"  Đọc <raw_chart_data>, trích xuất TỪNG yếu tố quan trọng từ MỖI phương pháp.\n"
-                f"  Phân tích: yếu tố đó CÁT hay HUNG? TẠI SAO? Dựa trên quy tắc nào?\n"
-                f"  PHẢI trích dẫn DỮ LIỆU CỤ THỂ (VD: 'Nguyệt Lệnh sinh DT (+8) → vượng')\n\n"
-                f"BƯỚC 2 — LUẬN GIẢI TỔNG HỢP:\n"
-                f"  Kết hợp các yếu tố từ 6 PP → đưa ra VERDICT ĐỘC LẬP của BẠN.\n"
-                f"  Phải giải thích LOGIC: Tại sao CÁT? Tại sao HUNG? Yếu tố nào quyết định?\n"
-                f"  Chỉ ra: Yếu tố THUẬN (hỗ trợ) vs Yếu tố NGHỊCH (cản trở)\n\n"
-                f"BƯỚC 3 — SO SÁNH VỚI OFFLINE:\n"
-                f"  Đọc <offline_verdict_reference> → so sánh với phân tích CỦA BẠN.\n"
-                f"  Ở đâu ĐỒNG Ý? Ở đâu KHÁC? Nếu khác → giải thích TẠI SAO bạn nghĩ khác.\n\n"
-                f"BƯỚC 4 — KẾT LUẬN CUỐI CÙNG:\n"
-                f"  Tổng hợp cả 2 góc nhìn (Online + Offline) → đưa ra KẾT LUẬN CUỐI.\n"
-                f"  Phải TRẢ LỜI TRỰC TIẾP câu hỏi — KHÔNG né tránh.\n"
-                f"</reasoning_protocol_v38>\n\n"
-                
-                f"<output_format_v42>\n"
-                f"FORMAT BẮT BUỘC — DÒNG ĐẦU TIÊN LÀ VERDICT:\n\n"
-                f"### 🏆 KẾT LUẬN CUỐI CÙNG\n"
+                f"<output_format>\n"
+                f"FORMAT BẮT BUỘC — Trả lời NGẮN GỌN, DỨT KHOÁT:\n\n"
+                f"### 🏆 KẾT LUẬN\n"
                 + (
-                    # WHAT questions → trả lời VẬT GÌ, KHÔNG phải CÓ/KHÔNG
-                    f"**📢 CÂU TRẢ LỜI: [Mô tả CỤ THỂ vật/sản phẩm/nghề/loại hình dựa trên Vạn Vật Loại Tượng của hành Dụng Thần]**\n"
-                    f"**📦 HÀNH DT → VẬT:** [Kim=kim loại,máy móc | Mộc=gỗ,giấy,vải | Thủy=nước,chất lỏng | Hỏa=điện,lửa | Thổ=đất,gạch,gốm]\n"
-                    f"**📋 MÔ TẢ:** [Chất liệu + Hình dạng + Màu sắc + Kích thước từ Ngũ Hành + 12 Trường Sinh]\n"
-                    if question_type == 'WHAT' else
-                    # WHERE questions → trả lời HƯỚNG/VỊ TRÍ
-                    f"**📢 CÂU TRẢ LỜI: [Hướng/Vị trí CỤ THỂ dựa trên Ngũ Hành: Kim=TÂY, Mộc=ĐÔNG, Thủy=BẮC, Hỏa=NAM, Thổ=TRUNG TÂM]**\n"
-                    f"**🧭 HƯỚNG:** [Phương hướng + khoảng cách + đặc điểm địa hình]\n"
-                    if question_type == 'WHERE' else
-                    # WHEN questions → trả lời THỜI GIAN
-                    f"**📢 CÂU TRẢ LỜI: [Thời gian CỤ THỂ dựa trên Ứng Kỳ: ngày/tháng/năm Chi nào]**\n"
-                    f"**⏳ ỨNG KỲ:** [Ngày/tháng/giờ Chi cụ thể + lý do]\n"
-                    if question_type == 'WHEN' else
-                    # Default (YESNO/AGE/COUNT) → CÓ/KHÔNG
-                    f"**📢 VERDICT: [CÁT/HUNG/BÌNH] — [CÓ/KHÔNG/NÊN/KHÔNG NÊN] ([XX]%)**\n"
-                    f"**📋 1 CÂU TÓM TẮT:** [Trả lời trực tiếp câu hỏi trong 1 câu ngắn gọn, dứt khoát]\n"
-                ) +
-                f"\n---\n\n"
-                f"### 🔮 AI ONLINE — LUẬN GIẢI ĐỘC LẬP\n\n"
-                f"**📖 ĐỌC QUẺ (Bước 1):**\n"
-                f"• **Lục Hào:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data LH]\n"
-                f"• **Kỳ Môn:** [phân tích 3-5 yếu tố quan trọng nhất từ raw data KM]\n"
-                f"• **Mai Hoa:** [phân tích Thể/Dụng/Hỗ/Biến + sinh khắc]\n"
-                f"• **Đại Lục Nhâm / Thái Ất:** [tóm tắt ngắn]\n\n"
-                f"**⚖️ TỔNG HỢP (Bước 2):**\n"
-                f"• Yếu tố THUẬN: [liệt kê]\n"
-                f"• Yếu tố NGHỊCH: [liệt kê]\n\n"
-                f"**📊 SO SÁNH (Bước 3):**\n"
-                f"• Đồng ý/Khác biệt với Offline Engine\n\n"
-                f"**📢 CÂU TRẢ LỜI:** "
-                + (
-                    f"[MÔ TẢ CỤ THỂ vật/sản phẩm/người/loại dựa trên Vạn Vật — KHÔNG trả lời CÓ/KHÔNG]\n"
+                    f"**📢 CÂU TRẢ LỜI:** [Mô tả CỤ THỂ vật/sản phẩm/nghề dựa trên Vạn Vật Loại Tượng]\n"
                     if question_type in ('WHAT', 'WHERE', 'WHEN') else
-                    f"[KHẲNG ĐỊNH CÓ/KHÔNG — DỨT KHOÁT]\n"
+                    f"**📢 VERDICT:** [Dùng ĐÚNG verdict từ verdict_block] ([XX]%)\n"
+                    f"**📋 TÓM TẮT:** [1 câu trả lời trực tiếp, dứt khoát]\n"
                 ) +
-                f"**📋 VÌ SAO:** [TOP 3 bằng chứng CỤ THỂ trích từ data thô, có số điểm]\n"
-                f"**⏳ ỨNG KỲ:** [Tháng/ngày/hướng cụ thể dựa trên Hành của DT — BẮT BUỘC]\n"
-                f"**🔧 GIẢI PHÁP:** [Hành động cụ thể: nên làm gì, đợi khi nào, bổ sung hành gì]\n\n"
-                f"GIỚI HẠN: Tối đa 800 chữ. Mỗi yếu tố phải TRÍCH DẪN từ data.\n"
-                f"⛔ QUAN TRỌNG: DÒNG ĐẦU TIÊN PHẢI LÀ '### 🏆 KẾT LUẬN CUỐI CÙNG' + CÂU TRẢ LỜI.\n"
-                f"CẤM TUYỆT ĐỐI: Bịa chi tiết đời sống (giàu/nghèo/bệnh/nhà), áp nghĩa đen 12 Trường Sinh vào người thực, nhại lại offline verdict.\n"
-                + (
-                f"⚠️ ĐÂY LÀ CÂU HỎI '{question_type_label}' → PHẢI trả lời MÔ TẢ CỤ THỂ (VẬT GÌ/Ở ĐÂU/KHI NÀO), KHÔNG trả lời CÓ/KHÔNG!\n"
-                    if question_type in ('WHAT', 'WHERE', 'WHEN') else
-                    f"BẮT BUỘC: Phải KHẲNG ĐỊNH CÓ hoặc KHÔNG. KHÔNG được né tránh.\n"
-                ) +
-                f"</output_format_v42>\n\n"
+                f"\n### 🔮 PHÂN TÍCH\n"
+                f"**TOP 3 BẰNG CHỨNG:** [Trích 3 yếu tố MẠNH NHẤT từ raw data, có điểm số]\n"
+                f"**CROSS-CHECK:** [Các PP đồng thuận hay mâu thuẫn? 1-2 câu]\n"
+                f"**⏳ ỨNG KỲ:** [Thời gian + Hướng cụ thể]\n"
+                f"**🔧 LỜI KHUYÊN:** [1-2 câu hành động cụ thể]\n\n"
+                f"GIỚI HẠN: Tối đa 500 chữ. ⛔ CẤM bịa, thay verdict, lan man.\n"
+                f"</output_format>\n\n"
             )
             
             # ═══ V42.8e: THÊM DỮ LIỆU TỬ VI + XEM NGÀY CHO AI ONLINE ═══
@@ -11072,8 +10965,10 @@ class FreeAIHelper:
             lines.append(f"{connector} {ev}")
         
         # ════════════════════════════════════════════
-        # PHASE D: KẾT LUẬN THỐNG NHẤT V39.0 — ANSWER-FIRST + VÌ SAO + GIẢI PHÁP
-        # Mọi suy luận → 1 KẾT LUẬN KHẲNG ĐỊNH + LÝ DO + LỜI KHUYÊN
+        # PHASE D: V42.9.9 SIÊU KẾT LUẬN — 3 TẦNG VERDICT ENGINE
+        # TẦNG 1: Consensus Voting (5 PP)
+        # TẦNG 2: Weighted Severity (theo loại câu hỏi)
+        # TẦNG 3: Critical Factor Override
         # ════════════════════════════════════════════
         
         # Tổng hợp verdicts
@@ -11110,16 +11005,161 @@ class FreeAIHelper:
         cat_count = len(thuan_factors)
         hung_count = len(nghich_factors)
         
-        # V39.0: KHÔNG override pct — weighted_pct đã tính chính xác từ 6PP + 12TS
-        # Chỉ xác định overall label từ pct gốc
-        if pct >= 55:
-            overall = 'THUẬN LỢI'
-        elif pct < 45:
-            overall = 'BẤT LỢI'
-        elif pct >= 50:
-            overall = 'CÓ — cần nỗ lực thêm'
+        # ═══════════════════════════════════════════════════════════
+        # TẦNG 1: CONSENSUS VOTING — Đếm verdict từ 5 PP
+        # ═══════════════════════════════════════════════════════════
+        cat_pp = sum(1 for _, (v, _) in verdicts_map.items() if 'CÁT' in str(v).upper())
+        hung_pp = sum(1 for _, (v, _) in verdicts_map.items() if 'HUNG' in str(v).upper())
+        binh_pp = 5 - cat_pp - hung_pp
+        
+        if cat_pp >= 4 and hung_pp == 0:
+            consensus = 'ĐẠI CÁT'
+            consensus_confidence = 95
+        elif cat_pp >= 3 and hung_pp == 0:
+            consensus = 'CÁT'
+            consensus_confidence = 80
+        elif cat_pp >= 3 and hung_pp >= 1:
+            consensus = 'THIÊN CÁT'
+            consensus_confidence = 65
+        elif cat_pp >= 2 and hung_pp <= 1:
+            consensus = 'BÌNH — THIÊN CÁT'
+            consensus_confidence = 55
+        elif hung_pp >= 4:
+            consensus = 'ĐẠI HUNG'
+            consensus_confidence = 95
+        elif hung_pp >= 3:
+            consensus = 'HUNG'
+            consensus_confidence = 80
+        elif hung_pp >= 2 and cat_pp <= 1:
+            consensus = 'BÌNH — THIÊN HUNG'
+            consensus_confidence = 55
         else:
-            overall = 'KHÓ THÀNH — cần đổi hướng hoặc đợi'
+            consensus = 'BÌNH'
+            consensus_confidence = 50
+        
+        # ═══════════════════════════════════════════════════════════
+        # TẦNG 2: WEIGHTED SEVERITY — Trọng số theo loại câu hỏi
+        # ═══════════════════════════════════════════════════════════
+        q_lower_weight = question.lower()
+        
+        # Xác định loại câu hỏi
+        _is_yesno_w = any(kw in q_lower_weight for kw in ['có không', 'được không', 'có được', 'thắng', 'thua', 'đỗ', 'trượt', 'có nên', 'nên không'])
+        _is_what_w = any(kw in q_lower_weight for kw in ['cái gì', 'loại gì', 'nghề gì', 'ngành gì', 'sản phẩm', 'mặt hàng', 'là gì', 'ai vậy', 'người nào'])
+        _is_when_w = any(kw in q_lower_weight for kw in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'ứng kỳ'])
+        _is_compete_w = _is_competition_question(question) if '_is_competition_question' in dir() else False
+        
+        # Trọng số: {method: weight}
+        if _is_compete_w:
+            weights = {'Lục Hào': 0.50, 'Kỳ Môn': 0.30, 'Mai Hoa': 0.15, 'Đại Lục Nhâm': 0.03, 'Thái Ất': 0.02}
+        elif _is_when_w:
+            weights = {'Kỳ Môn': 0.40, 'Đại Lục Nhâm': 0.25, 'Lục Hào': 0.20, 'Mai Hoa': 0.10, 'Thái Ất': 0.05}
+        elif _is_what_w:
+            weights = {'Mai Hoa': 0.35, 'Kỳ Môn': 0.30, 'Lục Hào': 0.25, 'Đại Lục Nhâm': 0.05, 'Thái Ất': 0.05}
+        else:
+            weights = {'Lục Hào': 0.40, 'Kỳ Môn': 0.30, 'Mai Hoa': 0.20, 'Đại Lục Nhâm': 0.05, 'Thái Ất': 0.05}
+        
+        # Tính weighted score: CÁT = +1, BÌNH = 0, HUNG = -1
+        weighted_score = 0
+        for method, (verdict, _) in verdicts_map.items():
+            v_upper = str(verdict).upper() if verdict else ''
+            w = weights.get(method, 0.1)
+            if 'ĐẠI CÁT' in v_upper:
+                weighted_score += w * 1.5
+            elif 'CÁT' in v_upper:
+                weighted_score += w * 1.0
+            elif 'ĐẠI HUNG' in v_upper:
+                weighted_score -= w * 1.5
+            elif 'HUNG' in v_upper:
+                weighted_score -= w * 1.0
+            # BÌNH = 0
+        
+        # ═══════════════════════════════════════════════════════════
+        # TẦNG 3: CRITICAL FACTOR OVERRIDE — Yếu tố phá hủy/cứu nguy
+        # ═══════════════════════════════════════════════════════════
+        critical_overrides = []
+        
+        # Scan LH factors cho critical patterns
+        _all_factors_str = ' '.join([str(f) for f in (lh_factors or [])] + [str(f) for f in (km_factors or [])])
+        _all_factors_upper = _all_factors_str.upper()
+        
+        # Override HUNG: Tuần Không + DT Suy
+        _has_tuan_khong = 'TUẦN KHÔNG' in _all_factors_upper
+        _has_dt_suy = any(kw in _all_factors_upper for kw in ['DT SUY', 'DT TỬ', 'DT TUYỆT', 'DT BỆNH', 'DT MỘ'])
+        if _has_tuan_khong and _has_dt_suy:
+            critical_overrides.append(('FORCE_HUNG', 'DT Tuần Không + Suy = sự việc không thành'))
+            consensus = 'HUNG'
+            consensus_confidence = min(consensus_confidence, 85)
+        
+        # Override HUNG: Phản Ngâm + Triệt Lộ 
+        _has_phan_ngam = 'PHẢN NGÂM' in _all_factors_upper
+        _has_triet_lo = 'TRIỆT LỘ' in _all_factors_upper
+        if _has_phan_ngam and _has_triet_lo:
+            critical_overrides.append(('FORCE_HUNG', 'Phản Ngâm + Triệt Lộ = đảo ngược hoàn toàn'))
+            if 'CÁT' in consensus:
+                consensus = 'BÌNH — THIÊN HUNG'
+                consensus_confidence = max(consensus_confidence - 20, 40)
+        
+        # Override CÁT: Tham Sinh Vong Khắc → nâng 1 bậc
+        if 'THAM SINH VONG KHẮC' in _all_factors_upper:
+            critical_overrides.append(('BOOST_CAT', 'Tham Sinh Vong Khắc = Kỵ Thần quên khắc → HÓA CÁT'))
+            if 'HUNG' in consensus and 'ĐẠI' not in consensus:
+                consensus = 'BÌNH — CÓ THỂ'
+                consensus_confidence = max(consensus_confidence - 10, 45)
+        
+        # Override HUNG nghiêm trọng: Nguyệt Phá + Nhật Phá
+        _has_nguyet_pha = 'NGUYỆT PHÁ' in _all_factors_upper
+        _has_nhat_pha = 'NHẬT PHÁ' in _all_factors_upper
+        if _has_nguyet_pha and _has_nhat_pha:
+            critical_overrides.append(('FORCE_HUNG', 'Nguyệt Phá + Nhật Phá = phá hủy kép'))
+            if 'CÁT' in consensus:
+                consensus = 'BÌNH — THIÊN HUNG'
+                consensus_confidence = max(consensus_confidence - 25, 35)
+        
+        # Override LOCK: Tất cả PP cùng chiều → LOCK verdict
+        if cat_pp >= 4 and hung_pp == 0 and not critical_overrides:
+            consensus = 'ĐẠI CÁT'
+            consensus_confidence = 95
+            critical_overrides.append(('LOCK_CAT', 'Đa số PP đồng thuận CÁT → KHẲNG ĐỊNH'))
+        elif hung_pp >= 4 and cat_pp == 0:
+            consensus = 'ĐẠI HUNG'
+            consensus_confidence = 95
+            critical_overrides.append(('LOCK_HUNG', 'Đa số PP đồng thuận HUNG → KHẲNG ĐỊNH'))
+        
+        # ═══════════════════════════════════════════════════════════
+        # TỔNG HỢP: weighted_pct + consensus → overall verdict CUỐI CÙNG
+        # ═══════════════════════════════════════════════════════════
+        # Kết hợp pct (từ scoring engine) với consensus (từ voting)
+        # Consensus override pct khi confidence cao
+        if consensus_confidence >= 80:
+            # Consensus mạnh → dùng consensus
+            if 'ĐẠI CÁT' in consensus:
+                overall = 'CÁT — RẤT TỐT, CHẮC CHẮN THUẬN LỢI'
+                pct = max(pct, 75)
+            elif 'CÁT' in consensus and 'HUNG' not in consensus:
+                overall = 'CÁT — THUẬN LỢI'
+                pct = max(pct, 60)
+            elif 'ĐẠI HUNG' in consensus:
+                overall = 'HUNG — RẤT XẤU, PHẢI DỪNG/ĐỔI HƯỚNG'
+                pct = min(pct, 25)
+            elif 'HUNG' in consensus and 'CÁT' not in consensus:
+                overall = 'HUNG — BẤT LỢI'
+                pct = min(pct, 40)
+            else:
+                overall = f'{consensus}'
+        else:
+            # Consensus yếu → dùng pct + weighted_score
+            if pct >= 60 and weighted_score > 0.3:
+                overall = 'CÁT — THUẬN LỢI (nhưng có yếu tố nghịch)'
+            elif pct >= 55:
+                overall = 'THIÊN CÁT — CÓ THỂ ĐƯỢC, cần nỗ lực'
+            elif pct >= 50:
+                overall = 'BÌNH — 50/50, tùy thuộc nỗ lực cá nhân'
+            elif pct >= 45:
+                overall = 'THIÊN HUNG — KHÓ, cần đổi cách tiếp cận'
+            elif pct >= 35:
+                overall = 'HUNG — BẤT LỢI, nên đợi hoặc đổi hướng'
+            else:
+                overall = 'ĐẠI HUNG — RẤT XẤU, PHẢI DỪNG NGAY'
         
         # ══════════════════════════════════════════════════════════
         # ★★★ PHẦN 0: PHÁN QUYẾT — ĐẶT ĐẦU TIÊN (ANSWER-FIRST) ★★★
