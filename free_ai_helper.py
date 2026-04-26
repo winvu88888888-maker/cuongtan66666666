@@ -11162,63 +11162,104 @@ class FreeAIHelper:
                 _HD = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
                 
                 def _detect_qtype_sub(text):
-                    """Phát hiện loại câu hỏi cho sub-question"""
+                    """Phát hiện loại câu hỏi cho sub-question — V42.9.7: 20 loại (SĐ0-SĐ16+)"""
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
                     if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu']): return 'WHEN'
                     if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
                     if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','bán gì','kinh doanh gì','sản phẩm']): return 'WHAT'
-                    if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi']): return 'AGE'
+                    if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi','năm sinh']): return 'AGE'
                     if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy']): return 'COUNT'
+                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai']): return 'WHO'
+                    if any(k in t for k in ['tại sao','vì sao','nguyên nhân','lý do','do đâu','sao lại']): return 'WHY'
+                    if any(k in t for k in ['cái nào','nào tốt','chọn','lựa chọn','nào hơn','nào nên','hay là']): return 'CHOOSE'
+                    if any(k in t for k in ['như thế nào','thế nào','ra sao','tình trạng','diễn biến','tiến triển']): return 'HOW'
+                    if any(k in t for k in ['kiện','kiện tụng','tòa','tranh chấp','pháp lý']): return 'LAWSUIT'
+                    if any(k in t for k in ['mất đồ','thất lạc','trộm','mất cắp','để đâu','cất đâu']): return 'LOST_ITEM'
+                    if any(k in t for k in ['đi','xuất hành','du lịch','di chuyển','chuyến đi','về quê','đi xa']): return 'TRAVEL'
+                    if any(k in t for k in ['yêu','tình','duyên','hôn nhân','cưới','ly hôn','chia tay','người yêu']): return 'LOVE'
+                    if any(k in t for k in ['tiền','tài','lộc','giàu','nghèo','lương','đầu tư','kinh doanh','vốn']): return 'FINANCE'
+                    if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật']): return 'HEALTH'
+                    if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi','đỗ','trượt']): return 'CAREER'
                     if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
-                    if any(k in t for k in ['sống','chết','qua khỏi','mất']): return 'LIFE_DEATH'
-                    return 'YESNO'
+                    if any(k in t for k in ['sống','chết','qua khỏi','mất','tử vong','hấp hối']): return 'LIFE_DEATH'
+                    if any(k in t for k in ['có không','được không','có được','liệu có']): return 'YESNO'
+                    return 'GENERAL'
                 
                 def _gen_verdict_by_qtype(qtype, sq_pct, sq_hanh, sq_dt, sq_text):
-                    """Tạo verdict phù hợp với loại câu hỏi"""
+                    """Tạo verdict phù hợp với loại câu hỏi — V42.9.7: 20 loại"""
                     _hd = _HD.get(sq_hanh, (5, 10))
                     
                     if qtype == 'WHEN':
                         thang = _THANG.get(sq_hanh, '?')
-                        if sq_pct >= 55:
-                            return f"⏳ SẮP TỚI — ứng vào {thang} ({sq_pct}%)", "⏳"
-                        elif sq_pct >= 45:
-                            return f"⏳ TRUNG BÌNH — có thể {thang} ({sq_pct}%)", "🟡"
-                        else:
-                            return f"⏳ CHẬM / CHƯA TỚI — đợi qua {thang} ({sq_pct}%)", "🔴"
-                    
+                        if sq_pct >= 55: return f"⏳ SẮP TỚI — ứng vào {thang} ({sq_pct}%)", "⏳"
+                        elif sq_pct >= 45: return f"⏳ TRUNG BÌNH — có thể {thang} ({sq_pct}%)", "🟡"
+                        else: return f"⏳ CHẬM / CHƯA TỚI — đợi qua {thang} ({sq_pct}%)", "🔴"
                     elif qtype == 'WHERE':
                         huong = _HUONG.get(sq_hanh, '?')
                         return f"🧭 HƯỚNG {huong} (Hành {sq_hanh}) ({sq_pct}%)", "🧭"
-                    
                     elif qtype == 'WHAT':
                         nghe = _NGHE.get(sq_hanh, '?')
                         return f"🔮 Hành {sq_hanh} → {nghe} ({sq_pct}%)", "🔮"
-                    
                     elif qtype == 'AGE':
                         age = _hd[1] * 5 if sq_pct >= 55 else _hd[0] * 5
                         return f"🎂 Khoảng {age} tuổi (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "🎂"
-                    
                     elif qtype == 'COUNT':
                         so = _hd[1] if sq_pct >= 55 else _hd[0]
                         return f"👥 Số lượng: {so} (Hà Đồ Số {sq_hanh}: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "👥"
-                    
                     elif qtype == 'SHOULD':
                         if sq_pct >= 55: return f"NÊN — THUẬN LỢI ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CÓ THỂ — nhưng THẬN TRỌNG ({sq_pct}%)", "🟡"
                         else: return f"KHÔNG NÊN — BẤT LỢI ({sq_pct}%)", "🔴"
-                    
                     elif qtype == 'LIFE_DEATH':
                         if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
                         elif sq_pct >= 40: return f"NGUY KỊCH — cần cứu chữa gấp ({sq_pct}%)", "🟡"
                         else: return f"NGUY HIỂM — rất khó ({sq_pct}%)", "🔴"
-                    
                     elif qtype == 'COMPETITION':
                         if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"HÒA / CÂN BẰNG ({sq_pct}%)", "🟡"
                         else: return f"THUA — YẾU THẾ ({sq_pct}%)", "🔴"
-                    
-                    else:  # YESNO
+                    elif qtype == 'FINANCE':
+                        if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"💰 THẤT TÀI ({sq_pct}%)", "🔴"
+                    elif qtype == 'LOVE':
+                        if sq_pct >= 55: return f"❤️ TÌNH DUYÊN TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"❤️ TÌNH DUYÊN BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"❤️ TÌNH DUYÊN KHÓ ({sq_pct}%)", "🔴"
+                    elif qtype == 'HEALTH':
+                        if sq_pct >= 55: return f"🏥 BỆNH NHẸ — mau khỏi ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🏥 BỆNH VỪA — cần kiên nhẫn ({sq_pct}%)", "🟡"
+                        else: return f"🏥 BỆNH NẶNG — khó chữa ({sq_pct}%)", "🔴"
+                    elif qtype == 'CAREER':
+                        if sq_pct >= 55: return f"💼 CÔNG VIỆC THUẬN ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"💼 CÔNG VIỆC KHÓ ({sq_pct}%)", "🔴"
+                    elif qtype == 'LAWSUIT':
+                        if sq_pct >= 55: return f"⚖️ THẮNG KIỆN ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"⚖️ HÒA GIẢI ({sq_pct}%)", "🟡"
+                        else: return f"⚖️ THUA KIỆN ({sq_pct}%)", "🔴"
+                    elif qtype == 'LOST_ITEM':
+                        huong = _HUONG.get(sq_hanh, '?')
+                        if sq_pct >= 55: return f"🔍 TÌM ĐƯỢC — hướng {huong} ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong} ({sq_pct}%)", "🟡"
+                        else: return f"🔍 MẤT HẲN ({sq_pct}%)", "🔴"
+                    elif qtype == 'TRAVEL':
+                        if sq_pct >= 55: return f"✈️ NÊN ĐI — thuận lợi ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC — cẩn thận ({sq_pct}%)", "🟡"
+                        else: return f"✈️ KHÔNG NÊN ĐI ({sq_pct}%)", "🔴"
+                    elif qtype == 'WHO':
+                        nghe = _NGHE.get(sq_hanh, '?')
+                        return f"👤 Người hành {sq_hanh} — {nghe} ({sq_pct}%)", "👤"
+                    elif qtype == 'WHY':
+                        return f"🔎 Nguyên nhân hành {sq_hanh} ({sq_pct}%)", "🔎"
+                    elif qtype == 'HOW':
+                        if sq_pct >= 55: return f"📊 TÌNH TRẠNG TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"📊 TÌNH TRẠNG BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"📊 TÌNH TRẠNG XẤU ({sq_pct}%)", "🔴"
+                    elif qtype == 'CHOOSE':
+                        return f"🎯 Chọn hướng {_HUONG.get(sq_hanh, '?')} — hành {sq_hanh} ({sq_pct}%)", "🎯"
+                    else:  # GENERAL / YESNO
                         if sq_pct >= 55: return f"CÓ — THÀNH CÔNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 50: return f"CÓ — nhưng NỖ LỰC ({sq_pct}%)", "🟡"
                         elif sq_pct >= 45: return f"KHÓ THÀNH — cần đổi hướng ({sq_pct}%)", "🟡"
@@ -11275,6 +11316,10 @@ class FreeAIHelper:
                     'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
                     'WHAT': '🔮 Loại gì', 'AGE': '🎂 Tuổi', 'COUNT': '👥 Số lượng',
                     'SHOULD': '⚖️ Nên/Không', 'LIFE_DEATH': '💀 Sống/Chết', 'COMPETITION': '⚔️ Thắng/Thua',
+                    'FINANCE': '💰 Tài Lộc', 'LOVE': '❤️ Tình Duyên', 'HEALTH': '🏥 Sức Khỏe',
+                    'CAREER': '💼 Công Việc', 'LAWSUIT': '⚖️ Kiện Tụng', 'LOST_ITEM': '🔍 Mất Đồ',
+                    'TRAVEL': '✈️ Xuất Hành', 'WHO': '👤 Người Nào', 'WHY': '🔎 Nguyên Nhân',
+                    'HOW': '📊 Thế Nào', 'CHOOSE': '🎯 Chọn Lọc', 'GENERAL': '🔮 Tổng Quát',
                 }
                 lines.append(f'<div style="background:linear-gradient(135deg,#312e81,#1e1b4b);padding:18px;border-radius:14px;border:2px solid #8b5cf6;margin:10px 0;">')
                 lines.append(f'<div style="font-size:1.15em;font-weight:900;color:#c4b5fd;margin-bottom:10px;">🔄 PHÂN TÍCH {len(_sub_verdicts)} CÂU HỎI RIÊNG BIỆT</div>')
@@ -13023,14 +13068,44 @@ class FreeAIHelper:
                 def _mi_detect_qtype(text):
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
-                    if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm']): return 'WHEN'
-                    if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào']): return 'WHERE'
-                    if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì']): return 'WHAT'
-                    if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi']): return 'AGE'
-                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','số lượng']): return 'COUNT'
+                    # SĐ5: Khi Nào
+                    if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu']): return 'WHEN'
+                    # SĐ4: Ở Đâu / Hướng Nào
+                    if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
+                    # SĐ3: Cái Gì / Loại Gì
+                    if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','sản phẩm gì','bán gì','kinh doanh gì']): return 'WHAT'
+                    # SĐ2: Tuổi
+                    if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi','năm sinh']): return 'AGE'
+                    # SĐ2: Số lượng
+                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy']): return 'COUNT'
+                    # SĐ13: Ai / Người Nào
+                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai']): return 'WHO'
+                    # SĐ14: Tại Sao / Nguyên Nhân
+                    if any(k in t for k in ['tại sao','vì sao','nguyên nhân','lý do','do đâu','sao lại']): return 'WHY'
+                    # SĐ16: Cái Nào / Chọn Lọc
+                    if any(k in t for k in ['cái nào','nào tốt','chọn','lựa chọn','nào hơn','nào nên','hay là']): return 'CHOOSE'
+                    # SĐ15: Thế Nào / Trạng Thái
+                    if any(k in t for k in ['như thế nào','thế nào','ra sao','tình trạng','diễn biến','tiến triển']): return 'HOW'
+                    # SĐ10: Kiện Tụng
+                    if any(k in t for k in ['kiện','kiện tụng','tòa','tranh chấp','pháp lý','thắng kiện','thua kiện']): return 'LAWSUIT'
+                    # SĐ11: Mất Đồ / Tìm Kiếm
+                    if any(k in t for k in ['mất đồ','mất','thất lạc','trộm','mất cắp','tìm','để đâu','cất đâu']): return 'LOST_ITEM'
+                    # SĐ12: Xuất Hành / Di Chuyển
+                    if any(k in t for k in ['đi','xuất hành','du lịch','di chuyển','chuyến đi','về quê','đi xa','đi công tác']): return 'TRAVEL'
+                    # SĐ7: Tình Duyên
+                    if any(k in t for k in ['yêu','tình','duyên','hôn nhân','cưới','ly hôn','chia tay','người yêu','bạn trai','bạn gái','hẹn hò','ngoại tình']): return 'LOVE'
+                    # SĐ6: Tài Lộc
+                    if any(k in t for k in ['tiền','tài','lộc','giàu','nghèo','lương','đầu tư','kinh doanh','vốn','lãi','lỗ','nợ','cổ phiếu','crypto','mua bán']): return 'FINANCE'
+                    # SĐ8: Sức Khỏe
+                    if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật','ung thư','tai nạn']): return 'HEALTH'
+                    # SĐ9: Công Việc
+                    if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi','đỗ','trượt','sự nghiệp','khởi nghiệp']): return 'CAREER'
+                    # SĐ1: Có/Không & Nên/Không
                     if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
-                    if any(k in t for k in ['sống','chết','qua khỏi','mất']): return 'LIFE_DEATH'
-                    return 'YESNO'
+                    if any(k in t for k in ['sống','chết','qua khỏi','tử vong','hấp hối']): return 'LIFE_DEATH'
+                    if any(k in t for k in ['có không','được không','có được','liệu có']): return 'YESNO'
+                    # SĐ0: Tổng Quát (fallback)
+                    return 'GENERAL'
                 
                 def _mi_gen_verdict(qtype, sq_pct, sq_hanh, sq_dt, sq_text):
                     _hd = _MI_HD.get(sq_hanh, (5, 10))
@@ -13063,7 +13138,47 @@ class FreeAIHelper:
                         if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
                         else: return f"THUA ({sq_pct}%)", "🔴"
-                    else:
+                    elif qtype == 'FINANCE':
+                        if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG — có tài ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH — cầu tài được nhưng không nhiều ({sq_pct}%)", "🟡"
+                        else: return f"💰 THẤT TÀI — không nên mạo hiểm ({sq_pct}%)", "🔴"
+                    elif qtype == 'LOVE':
+                        if sq_pct >= 55: return f"❤️ TÌNH DUYÊN TỐT — có duyên, hợp ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"❤️ TÌNH DUYÊN BÌNH — có nhưng cần nỗ lực ({sq_pct}%)", "🟡"
+                        else: return f"❤️ TÌNH DUYÊN KHÓ — bất hòa, trắc trở ({sq_pct}%)", "🔴"
+                    elif qtype == 'HEALTH':
+                        if sq_pct >= 55: return f"🏥 BỆNH NHẸ — chữa được, mau khỏi ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🏥 BỆNH VỪA — cần chữa trị, kiên nhẫn ({sq_pct}%)", "🟡"
+                        else: return f"🏥 BỆNH NẶNG — khó chữa, cần bác sĩ giỏi ({sq_pct}%)", "🔴"
+                    elif qtype == 'CAREER':
+                        if sq_pct >= 55: return f"💼 CÔNG VIỆC THUẬN — thăng tiến, đỗ đạt ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH — ổn định nhưng chậm ({sq_pct}%)", "🟡"
+                        else: return f"💼 CÔNG VIỆC KHÓ — trở ngại, cạnh tranh ({sq_pct}%)", "🔴"
+                    elif qtype == 'LAWSUIT':
+                        if sq_pct >= 55: return f"⚖️ THẮNG KIỆN — có lý, được hỗ trợ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"⚖️ HÒA GIẢI — nên thương lượng ({sq_pct}%)", "🟡"
+                        else: return f"⚖️ THUA KIỆN — bất lợi, nên rút ({sq_pct}%)", "🔴"
+                    elif qtype == 'LOST_ITEM':
+                        huong = _MI_HUONG.get(sq_hanh, '?')
+                        if sq_pct >= 55: return f"🔍 TÌM ĐƯỢC — hướng {huong}, còn nguyên ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong}, có thể hỏng ({sq_pct}%)", "🟡"
+                        else: return f"🔍 MẤT HẲN — không tìm được ({sq_pct}%)", "🔴"
+                    elif qtype == 'TRAVEL':
+                        if sq_pct >= 55: return f"✈️ NÊN ĐI — thuận lợi, bình an ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC — nhưng cẩn thận ({sq_pct}%)", "🟡"
+                        else: return f"✈️ KHÔNG NÊN ĐI — trở ngại, nguy hiểm ({sq_pct}%)", "🔴"
+                    elif qtype == 'WHO':
+                        nghe = _MI_NGHE.get(sq_hanh, '?')
+                        return f"👤 Người hành {sq_hanh} — {nghe} ({sq_pct}%)", "👤"
+                    elif qtype == 'WHY':
+                        return f"🔎 Nguyên nhân thuộc hành {sq_hanh} — xem yếu tố xung khắc ({sq_pct}%)", "🔎"
+                    elif qtype == 'HOW':
+                        if sq_pct >= 55: return f"📊 TÌNH TRẠNG TỐT — đang thuận lợi ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"📊 TÌNH TRẠNG BÌNH — không tốt không xấu ({sq_pct}%)", "🟡"
+                        else: return f"📊 TÌNH TRẠNG XẤU — đang bất lợi ({sq_pct}%)", "🔴"
+                    elif qtype == 'CHOOSE':
+                        return f"🎯 Chọn hướng {_MI_HUONG.get(sq_hanh, '?')} — hành {sq_hanh} hợp ({sq_pct}%)", "🎯"
+                    else:  # GENERAL / YESNO
                         if sq_pct >= 55: return f"CÓ — THÀNH CÔNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 50: return f"CÓ — NỖ LỰC ({sq_pct}%)", "🟡"
                         elif sq_pct >= 45: return f"KHÓ THÀNH ({sq_pct}%)", "🟡"
@@ -13073,6 +13188,10 @@ class FreeAIHelper:
                     'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
                     'WHAT': '🔮 Loại gì', 'AGE': '🎂 Tuổi', 'COUNT': '👥 Số lượng',
                     'SHOULD': '⚖️ Nên/Không', 'LIFE_DEATH': '💀 Sống/Chết', 'COMPETITION': '⚔️ Thắng/Thua',
+                    'FINANCE': '💰 Tài Lộc', 'LOVE': '❤️ Tình Duyên', 'HEALTH': '🏥 Sức Khỏe',
+                    'CAREER': '💼 Công Việc', 'LAWSUIT': '⚖️ Kiện Tụng', 'LOST_ITEM': '🔍 Mất Đồ',
+                    'TRAVEL': '✈️ Xuất Hành', 'WHO': '👤 Người Nào', 'WHY': '🔎 Nguyên Nhân',
+                    'HOW': '📊 Thế Nào', 'CHOOSE': '🎯 Chọn Lọc', 'GENERAL': '🔮 Tổng Quát',
                 }
                 
                 _mi_cards = []
