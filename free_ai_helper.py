@@ -10159,6 +10159,43 @@ class FreeAIHelper:
         for item in _vi_sao_items[:6]:
             lines.append(f"- {item}")
         
+        # --- V42.9.4: CONSENSUS — Mức đồng thuận 6 PP ---
+        _cons_color = '#22c55e' if cat_count >= 4 else '#ef4444' if hung_count >= 4 else '#eab308'
+        _cons_icon = '🟢' if cat_count >= 4 else '🔴' if hung_count >= 4 else '🟡'
+        _cons_text = f"MẠNH ({cat_count}/6 CÁT)" if cat_count >= 5 else \
+                     f"MẠNH ({hung_count}/6 HUNG)" if hung_count >= 5 else \
+                     f"KHÁ ({cat_count} CÁT vs {hung_count} HUNG)" if cat_count >= 4 or hung_count >= 4 else \
+                     f"HỖN HỢP ({cat_count} CÁT vs {hung_count} HUNG)"
+        
+        lines.append(
+            f'\n<div style="background:rgba(30,27,75,0.6);padding:12px 16px;border-radius:10px;'
+            f'border-left:4px solid {_cons_color};margin:8px 0;">'
+            f'<span style="color:{_cons_color};font-weight:800;">{_cons_icon} ĐỒNG THUẬN 6 PP: {_cons_text}</span><br>'
+            f'<span style="color:#94a3b8;font-size:0.9em;">'
+        )
+        # Hiện verdict từng PP trên 1 dòng
+        _pp_names = {'📿': ('LH', luc_hao_reason), '🏯': ('KM', ky_mon_reason), '🌸': ('MH', mai_hoa_reason)}
+        _vrd_map_display = {
+            'luc_hao': ('📿 LH', luc_hao_reason),
+            'ky_mon': ('🏯 KM', ky_mon_reason),
+            'mai_hoa': ('🌸 MH', mai_hoa_reason),
+        }
+        # Build compact verdict line
+        _vrd_parts = []
+        for _vkey, (_vname, _vreason) in [
+            ('lh', ('📿LH', luc_hao_reason)),
+            ('km', ('🏯KM', ky_mon_reason)),
+            ('mh', ('🌸MH', mai_hoa_reason)),
+        ]:
+            _v = {'lh': final_verdict, 'km': final_verdict, 'mh': final_verdict}.get(_vkey, 'BÌNH')
+            # Use actual verdicts from params
+            if _vkey == 'lh':
+                _v = 'CÁT' if any(kw in (luc_hao_reason or '') for kw in ['vượng', 'sinh', 'thuận']) else \
+                     'HUNG' if any(kw in (luc_hao_reason or '') for kw in ['suy', 'khắc', 'tuyệt']) else 'BÌNH'
+            _vrd_parts.append(f"{_vname}:{_v}")
+        lines.append(' | '.join(_vrd_parts))
+        lines.append('</span></div>')
+        
         # --- V40.3: ỨNG KỲ — thời gian cụ thể ---
         _UK_TIMING = {
             'Kim': {'thang': 'Thân/Dậu (tháng 7-8 ÂL)', 'ngay': 'Canh/Tân', 'huong': 'Tây'},
@@ -12888,8 +12925,98 @@ class FreeAIHelper:
         except Exception:
             pass
         
+        # ═══════════════════════════════════════════════════════════════
+        # V42.9.4: OFFLINE ANALYSIS HUB — CẤU TRÚC CÂY PHÂN TẦNG
+        # Thu thập tất cả dữ liệu 6 PP → 1 hub có cấu trúc khoa học
+        # Engine Python đọc hub để ra kết quả ĐỘC LẬP, KHÔNG CẦN API
+        # ═══════════════════════════════════════════════════════════════
+        _qtype_hub = 'YESNO'
+        _q_lower_hub = question.lower()
+        if _is_competition_question(question): _qtype_hub = 'COMPETITION'
+        elif any(kw in _q_lower_hub for kw in ['cái gì','loại gì','sản phẩm','nghề gì','là gì']): _qtype_hub = 'WHAT'
+        elif any(kw in _q_lower_hub for kw in ['ở đâu','hướng nào','tìm đâu']): _qtype_hub = 'WHERE'
+        elif any(kw in _q_lower_hub for kw in ['khi nào','bao giờ','lúc nào']): _qtype_hub = 'WHEN'
+        elif any(kw in _q_lower_hub for kw in ['tuổi','mấy tuổi']): _qtype_hub = 'AGE'
+        elif any(kw in _q_lower_hub for kw in ['bao nhiêu','mấy','số lượng']): _qtype_hub = 'COUNT'
+        
+        # Chuẩn hóa 6 PP thành format thống nhất
+        _hub_methods = {}
+        _PP_DATA = [
+            ('LH', 'Lục Hào', luc_hao_verdict, luc_hao_reason, v16_lh_score, v23_lh_factors, 0.35),
+            ('KM', 'Kỳ Môn', ky_mon_verdict, ky_mon_reason, 0, v24_km_factors, 0.25),
+            ('MH', 'Mai Hoa', mai_hoa_verdict, mai_hoa_reason, v16_mh_score, v24_mh_factors, 0.15),
+            ('LN', 'Đại Lục Nhâm', luc_nham_verdict, luc_nham_reason, v16_ln_score, v24_ln_factors, 0.10),
+            ('TA', 'Thái Ất', thai_at_verdict, thai_at_reason, v16_ta_score, v24_ta_factors, 0.08),
+            ('TB', 'Thiết Bản', 'BÌNH', '', v16_tb_score, v24_tb_factors, 0.07),
+        ]
+        for _pp_code, _pp_name, _pp_vrd, _pp_rsn, _pp_score, _pp_factors, _pp_weight in _PP_DATA:
+            _hub_methods[_pp_code] = {
+                'name': _pp_name,
+                'verdict': _pp_vrd or 'BÌNH',
+                'reason': (_pp_rsn or '')[:200],
+                'score': _pp_score if isinstance(_pp_score, (int, float)) else 50,
+                'factors': _pp_factors if isinstance(_pp_factors, list) else [],
+                'weight': _pp_weight,
+            }
+        
+        # Tính CONSENSUS — mức đồng thuận giữa các PP
+        _cat_methods = sum(1 for m in _hub_methods.values() if m['verdict'] == 'CÁT')
+        _hung_methods = sum(1 for m in _hub_methods.values() if m['verdict'] == 'HUNG')
+        _total_methods = len(_hub_methods)
+        if _cat_methods >= 5 or _hung_methods >= 5:
+            _consensus = 'STRONG'
+        elif _cat_methods >= 4 or _hung_methods >= 4:
+            _consensus = 'MODERATE'
+        elif abs(_cat_methods - _hung_methods) <= 1:
+            _consensus = 'MIXED'
+        else:
+            _consensus = 'WEAK'
+        
+        # Thu thập KEY EVIDENCE — top yếu tố quan trọng nhất
+        _key_evidence = []
+        for _pp_code, _pp_data in _hub_methods.items():
+            if _pp_data['factors']:
+                for _f in _pp_data['factors'][:2]:
+                    _f_str = str(_f)[:120] if _f else ''
+                    if _f_str:
+                        _impact = 'CÁT' if any(kw in _f_str for kw in ['sinh', 'vượng', 'Sinh', 'Vượng', '✅']) else \
+                                  'HUNG' if any(kw in _f_str for kw in ['khắc', 'suy', 'Khắc', 'Tuyệt', '🔴']) else 'BÌNH'
+                        _key_evidence.append({'pp': _pp_code, 'text': _f_str, 'impact': _impact})
+        _key_evidence = _key_evidence[:10]  # Top 10
+        
+        # Build Hub
+        _hub = {
+            'meta': {
+                'question': question,
+                'dung_than': dung_than,
+                'hanh_dt': hanh_dt_v22 if hanh_dt_v22 else '',
+                'category': cat_data.get('label', ''),
+                'qtype': _qtype_hub,
+                'all_dts': _get_all_dung_than(question),
+            },
+            'methods': _hub_methods,
+            'synthesis': {
+                'weighted_pct': unified_v22['unified_pct'] if unified_v22 else 50,
+                'verdict': final_verdict,
+                'tier': unified_v22['tier_data']['cap'] if unified_v22 else '?',
+                'ts_stage': ts_stage or '',
+                'ngu_khi': ngu_khi_state_v22 or '',
+                'consensus': _consensus,
+                'cat_count': _cat_methods,
+                'hung_count': _hung_methods,
+                'conflicts': [],  # Sẽ được fill bởi conflict detection
+                'conflict_penalty': 0,
+                'key_evidence': _key_evidence,
+            },
+        }
+        
+        self.log_step("V42.9.4", "HUB", 
+            f"Consensus={_consensus} | CÁT={_cat_methods}/HUNG={_hung_methods} | Evidence={len(_key_evidence)}")
+        
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
+            # V42.9.4: Inject hub
+            'hub': _hub,
             'dung_than': dung_than,
             'category_label': cat_data['label'],
             'ky_mon_verdict': ky_mon_verdict,
