@@ -4941,9 +4941,8 @@ class FreeAIHelper:
             # V42.9.4: KHÔNG CẮT — giữ full data, cấu trúc cây giúp Gemini đọc hiệu quả
             self.log_step("Online AI", "DATA_SIZE", f"raw_data={len(raw_data_section)} chars — FULL, NO TRUNCATION")
             
-            # ═══ PHẦN 2: OFFLINE VERDICT (chỉ 1 block ngắn để so sánh) ═══
             offline_verdict_block = (
-                f"═══ VERDICT OFFLINE (Python Engine — tham khảo) ═══\n"
+                f"═══ VERDICT CHÍNH THỨC (BẮT BUỘC TUÂN THỦ) ═══\n"
                 f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:100]}\n"
                 f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:100]}\n"
                 f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:100]}\n"
@@ -4951,6 +4950,16 @@ class FreeAIHelper:
                 f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:100]}\n"
                 f"TỔNG: Điểm = {v22.get('unified_pct', '?')}% | Mức = {v22.get('tier_cap', '?')}\n"
             )
+            # V42.9.5 PATCH: Inject Ứng Kỳ + Bất Thường vào prompt cho Gemini
+            _hub_synth = od.get('hub', {}).get('synthesis', {})
+            _ung_ky_for_gemini = _hub_synth.get('ung_ky', '')
+            _bt_for_gemini = _hub_synth.get('bt_detected', [])
+            if _ung_ky_for_gemini:
+                offline_verdict_block += f"\n⏱ ỨNG KỲ (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
+                offline_verdict_block += f"→ BẠN PHẢI dùng CHÍNH XÁC thời gian này khi trả lời. KHÔNG ĐƯỢC tự bịa thời gian khác.\n"
+            if _bt_for_gemini:
+                offline_verdict_block += f"\n🚨 BẤT THƯỜNG NGHIÊM TRỌNG: {', '.join(_bt_for_gemini)}\n"
+                offline_verdict_block += f"→ Yếu tố này ĐÃ BỊ TRỪ ĐIỂM. BẠN PHẢI đề cập trong phần phân tích.\n"
             # V42.9.3 P0-B: Thêm conflict warnings cho AI Online
             _od_conflicts = od.get('conflict_warnings', [])
             if _od_conflicts:
@@ -4987,8 +4996,10 @@ class FreeAIHelper:
                 f"<system_role>\n"
                 f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9 — BẬC THẦY HUYỀN HỌC ĐẲNG CẤP CAO NHẤT.\n"
                 f"Kết hợp 6 PP: Kỳ Môn Độn Giáp + Lục Hào + Mai Hoa Dịch Số + Thiết Bản + Đại Lục Nhâm + Thái Ất.\n\n"
-                f"NHIỆM VỤ: TỰ ĐỌC DỮ LIỆU THÔ + VẠN VẬT LOẠI TƯỢNG VÀ LUẬN GIẢI ĐỘC LẬP.\n"
-                f"KHÔNG nhại lại verdict offline. PHẢI phân tích từng yếu tố, tìm mối liên hệ, và đưa ra nhận định RIÊNG.\n\n"
+                f"NHIỆM VỤ: DIỄN GIẢI KẾT QUẢ TỪ OFFLINE ENGINE BẰNG VĂN PHONG CHUYÊN GIA.\n"
+                f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính toán CHÍNH XÁC bởi Python Engine (78+ yếu tố). BẠN KHÔNG ĐƯỢC thay đổi.\n"
+                f"Việc của bạn: ĐỌC dữ liệu thô → GIẢI THÍCH TẠI SAO verdict của Offline Engine đúng, trích dẫn bằng chứng cụ thể.\n"
+                f"Nếu bạn thấy CÓ yếu tố mâu thuẫn → vẫn TUÂN THỦ verdict Offline → ghi chú 'có yếu tố ngược chiều' nhưng KHÔNG ĐỔI verdict.\n\n"
                 f"QUY TẮC PHÂN TÍCH:\n"
                 f"① VẠN VẬT LOẠI TƯỢNG là NGUỒN CHÍNH để trả lời mọi câu hỏi cụ thể.\n"
                 f"② Câu hỏi SỐ LƯỢNG (bao nhiêu/mấy) → PHẢI tra Hà Đồ Số + Trường Sinh Số → trả SỐ CỤ THỂ.\n"
@@ -5014,8 +5025,9 @@ class FreeAIHelper:
                 f"</raw_chart_data>\n\n"
                 
                 f"<offline_verdict_reference>\n"
-                f"Dưới đây là kết luận của ENGINE OFFLINE (Python tính toán). Chỉ dùng để SO SÁNH SAU KHI bạn đã luận giải xong.\n"
-                f"KHÔNG ĐƯỢC copy verdict này. Phải TỰ phân tích trước.\n\n"
+                f"═══ VERDICT CHÍNH THỨC (BẮT BUỘC TUÂN THỦ) ═══\n"
+                f"Đây là kết quả CHÍNH XÁC từ ENGINE toán học Python (78+ yếu tố, 6 PP, 12 Trường Sinh).\n"
+                f"BẠN PHẢI dùng ĐÚNG verdict và % này. CHỈ ĐƯỢC giải thích TẠI SAO kết quả này đúng.\n\n"
                 f"{offline_verdict_block}"
                 f"</offline_verdict_reference>\n\n"
                 
@@ -12428,7 +12440,7 @@ class FreeAIHelper:
         
         # Rule 1: KM vs LH trái ngược → penalty lớn (2 PP chủ lực)
         if ('KM' in _v_cat and 'LH' in _v_hung) or ('KM' in _v_hung and 'LH' in _v_cat):
-            _conflict_penalty += 12
+            _conflict_penalty += 20  # V42.9.5 PATCH: Tăng mạnh khi 2 PP chủ lực mâu thuẫn
             _km_v = verdicts[0] if len(verdicts) > 0 else '?'
             _lh_v = verdicts[1] if len(verdicts) > 1 else '?'
             _cw_text = f"⚠️ XUNG ĐỘT CHÍNH: Kỳ Môn ({_km_v}) ↔ Lục Hào ({_lh_v}) — 2 PP mạnh nhất TRÁI NGƯỢC."
@@ -13155,6 +13167,13 @@ class FreeAIHelper:
                                 if 'Phục Ngâm' in _lh_str: _bt.append('Phục Ngâm')
                                 if 'Phản Ngâm' in _lh_str: _bt.append('Phản Ngâm')
                                 _step_res = f"Phát hiện: {', '.join(_bt)}" if _bt else "Không có dấu hiệu Tuần Không/Phục Ngâm/Phản Ngâm."
+                                # V42.9.5 PATCH: BẤT THƯỜNG PHẢI GIẢM ĐIỂM THỰC SỰ
+                                if _bt:
+                                    _bt_penalty = len(_bt) * 8  # Mỗi bất thường trừ 8%
+                                    weighted_pct = max(15, weighted_pct - _bt_penalty)
+                                    _hub['synthesis']['bt_penalty'] = _bt_penalty
+                                    _hub['synthesis']['bt_detected'] = _bt
+                                    self.log_step("V42.9.5", "BT_PENALTY", f"Trừ {_bt_penalty}% do {_bt} → pct={weighted_pct}%")
                             elif 'Cát Hung' in _v['name']: _step_res = f"Kết luận: {_hub['methods']['LH']['verdict']}."
                         elif _pm_code == 'MH' and mai_hoa_data:
                             if 'Thể/Dụng' in _v['name']:
