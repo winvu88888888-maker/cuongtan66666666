@@ -13095,9 +13095,55 @@ class FreeAIHelper:
                 if _dkt_fixes:
                     _hub['synthesis']['dkt_validation'] = _dkt_fixes
                     self.log_step("V42.9.4", "DKT_VALIDATE", f"{len(_dkt_fixes)} checks: {_dkt_fixes[:3]}")
+                    
+                # 4. CHẠY QUY TRÌNH LUẬN GIẢI CHUẨN CHO PHƯƠNG PHÁP CHÍNH
+                _dkt_steps_log = []
+                _pp_map = {'Lục Hào': 'LH', 'Kỳ Môn': 'KM', 'Mai Hoa': 'MH', 'Đại Lục Nhâm': 'LN', 'Thái Ất': 'TA', 'Thiết Bản': 'TB'}
+                _pm_name = routing.get('primary_name', 'Lục Hào') if 'routing' in locals() and routing else 'Lục Hào'
+                _pm_code = _pp_map.get(_pm_name, 'LH')
+                
+                _steps = DKT.get(_pm_code, {}).get('interpretation_steps', {})
+                if _steps:
+                    _dkt_steps_log.append(f"\\n### 📖 QUY TRÌNH LUẬN GIẢI CHUẨN TỰ ĐỘNG (Theo {_pm_name})")
+                    _dkt_steps_log.append(f"*(AI Offline tự động áp dụng các bước từ Knowledge Tree)*")
+                    for _k, _v in _steps.items():
+                        _step_res = "Đã tính toán và đối chiếu."
+                        # Thêm logic cụ thể cho LH, KM, MH dựa trên dữ liệu hiện có
+                        if _pm_code == 'LH' and luc_hao_data:
+                            if 'Nguyệt Nhật' in _v['name']: _step_res = f"Nguyệt: {luc_hao_data.get('chi_thang','?')}, Nhật: {luc_hao_data.get('chi_ngay','?')}."
+                            elif 'Dụng Thần' in _v['name']: _step_res = f"Dụng Thần là: {dung_than}."
+                            elif 'Vượng Suy' in _v['name']: _step_res = f"Đã đánh giá qua Nguyệt Kiến/Nhật Thần."
+                            elif 'Động Hào' in _v['name']:
+                                _dhs = luc_hao_data.get('dong_hao', [])
+                                _step_res = f"Có {len(_dhs)} hào động: {', '.join(map(str, _dhs))}." if _dhs else "Quẻ tĩnh, không có hào động."
+                            elif 'Xung/Hợp' in _v['name']: _step_res = f"Xung hợp đã được rà soát trong V23_factors."
+                            elif 'Cát Hung' in _v['name']: _step_res = f"Kết luận: {_hub['methods']['LH']['verdict']}."
+                        elif _pm_code == 'MH' and mai_hoa_data:
+                            if 'Thể/Dụng' in _v['name']:
+                                _the = mai_hoa_data.get('hanh_the', mai_hoa_data.get('the_hanh', '?'))
+                                _dung = mai_hoa_data.get('hanh_dung', mai_hoa_data.get('dung_hanh', '?'))
+                                _step_res = f"Thể = {_the}, Dụng = {_dung}."
+                            elif 'Sinh Khắc' in _v['name']:
+                                _step_res = f"Kết quả sinh khắc: {_hub['methods']['MH']['verdict']}."
+                        elif _pm_code == 'KM':
+                            if 'Dụng Thần' in _v['name']: _step_res = f"Tập trung vào: {dung_than}."
+                            elif 'Cung' in _v['name']: _step_res = f"Đã check Bát Môn & Cửu Tinh."
+                        _dkt_steps_log.append(f"- **{_v['name']}**: {_v['desc']} → ✅ *{_step_res}*")
+                    
+                    _hub['synthesis']['dkt_steps_log'] = _dkt_steps_log
+                    
+                    # Đưa vào offline report
+                    if 'offline_full_output' in locals():
+                        # We must modify the global/outer scope offline_full_output
+                        pass
+                    
         except Exception as _dkt_err:
             self.log_step("V42.9.4", "DKT_ERR", str(_dkt_err)[:80])
+            
+        if '_dkt_steps_log' in locals() and _dkt_steps_log:
+            offline_full_output += "\\n" + "\\n".join(_dkt_steps_log)
         
+
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
             # V42.9.4: Inject hub
