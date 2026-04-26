@@ -10129,6 +10129,56 @@ class FreeAIHelper:
                              f'Kết quả {pct}% cần THẬN TRỌNG.</span></div>')
         
         
+        # V42.9.3 P2: MULTI-INTENT → MULTI-DT — Phân tích BỔ SUNG cho DT phụ
+        all_dts = _get_all_dung_than(question)
+        if len(all_dts) > 1:
+            lines.append(f'\n<div style="background:linear-gradient(135deg,#312e81,#1e1b4b);padding:16px 20px;border-radius:12px;'
+                         f'border:2px solid #8b5cf6;margin:14px 0;">'
+                         f'<span style="font-size:1.15em;font-weight:900;color:#c4b5fd;">🔄 CÂU HỎI PHỨC HỢP — {len(all_dts)} DỤNG THẦN</span><br>'
+                         f'<span style="color:#a5b4fc;font-size:0.9em;">Câu hỏi đề cập nhiều đối tượng, phân tích riêng từng DT:</span></div>')
+            
+            # Primary DT đã trả lời ở trên → chỉ bổ sung secondary DTs
+            for _dt_idx, _sec_dt in enumerate(all_dts[1:], start=2):
+                _LT_HANH_SEC = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 
+                               'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                _hanh_sec = _LT_HANH_SEC.get(_sec_dt, 'Thổ')
+                _HD_SEC = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                _hd_sec = _HD_SEC.get(_hanh_sec, (5, 10))
+                
+                # Mô tả Vạn Vật theo hành của DT phụ
+                _HANH_NGUOI_SEC = {
+                    'Kim': 'Người da trắng, gầy, quyết đoán — ngành kỹ thuật/quân đội/ngân hàng',
+                    'Mộc': 'Người cao gầy, thanh tú, tốt bụng — ngành giáo dục/y tế/nông nghiệp', 
+                    'Thủy': 'Người thông minh, linh hoạt — ngành thương mại/vận tải/truyền thông',
+                    'Hỏa': 'Người nóng tính, hoạt bát — ngành CNTT/quảng cáo/nghệ thuật/ẩm thực',
+                    'Thổ': 'Người chắc khỏe, trung thực — ngành xây dựng/bất động sản/nông nghiệp',
+                }
+                _DT_ROLE = {
+                    'Quan Quỷ': '🏢 Công việc/Sếp/Bệnh', 'Thê Tài': '💰 Tiền/Vợ/Tình cảm',
+                    'Tử Tôn': '👶 Con cái/Giải trí/Phúc', 'Phụ Mẫu': '👨‍👩‍👧 Bố mẹ/Nhà/Giấy tờ',
+                    'Huynh Đệ': '🤝 Anh em/Bạn bè/Đối thủ', 'Bản Thân': '🧑 Bản thân',
+                }
+                
+                # Ước tính số lượng cho DT phụ
+                if pct >= 60:
+                    _so_sec = _hd_sec[1]  # Thành số
+                elif pct >= 40:
+                    _so_sec = _hd_sec[0]  # Sinh số
+                else:
+                    _so_sec = max(1, _hd_sec[0] - 1)
+                
+                _sec_color = '#a78bfa'
+                lines.append(
+                    f'\n<div style="background:rgba(139,92,246,0.1);padding:12px 16px;border-radius:10px;'
+                    f'border-left:4px solid {_sec_color};margin:6px 0;">'
+                    f'<span style="color:{_sec_color};font-weight:800;">DT#{_dt_idx}: {_sec_dt} ({_DT_ROLE.get(_sec_dt, "")})</span><br>'
+                    f'<span style="color:#e2e8f0;font-size:0.95em;">'
+                    f'Hành: {_hanh_sec} | Hà Đồ Số: {_hd_sec[0]},{_hd_sec[1]} | '
+                    f'Số ước tính: <b>{_so_sec}</b><br>'
+                    f'Vạn Vật: {_HANH_NGUOI_SEC.get(_hanh_sec, "?")}'
+                    f'</span></div>'
+                )
+        
         return "\n".join(lines)
 
     # ===========================
