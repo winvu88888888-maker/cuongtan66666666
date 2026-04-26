@@ -4537,6 +4537,33 @@ class FreeAIHelper:
             od = offline_analysis_data or {}
             v22 = od.get('v22_unified_strength', {})
             
+            # ═══ V42.9.3: DETECT QUESTION TYPE TRƯỚC → FILTER DATA SECTIONS ═══
+            q_lower_online = question.lower()
+            _is_comp_online = _is_competition_question(question)
+            if _is_comp_online:
+                _qtype = 'COMPETITION'
+            elif any(kw in q_lower_online for kw in ['cái gì','loại gì','sản xuất gì','làm gì','mặt hàng','sản phẩm gì','buôn bán gì','kinh doanh gì','nghề gì','ngành gì','là gì','thuộc loại','hình dạng','màu gì','chất liệu','tên gì','ai vậy','người nào']):
+                _qtype = 'WHAT'
+            elif any(kw in q_lower_online for kw in ['ở đâu','hướng nào','phương nào','tìm đâu','chỗ nào','nơi nào']):
+                _qtype = 'WHERE'
+            elif any(kw in q_lower_online for kw in ['khi nào','bao giờ','lúc nào','thời điểm']):
+                _qtype = 'WHEN'
+            elif any(kw in q_lower_online for kw in ['tuổi','bao nhiêu tuổi','mấy tuổi']):
+                _qtype = 'AGE'
+            elif any(kw in q_lower_online for kw in ['bao nhiêu','mấy','số lượng']):
+                _qtype = 'COUNT'
+            else:
+                _qtype = 'YESNO'
+            
+            # V42.9.3: DATA RELEVANCE MAP — section nào cần FULL detail cho từng loại câu hỏi
+            # True = full detail, False = 1-line summary only
+            _NEED_LH_DETAIL = _qtype in ('COMPETITION', 'YESNO')  # Thế/Ứng, Nguyên Thần
+            _NEED_KM_DETAIL = _qtype in ('COMPETITION', 'WHERE', 'WHEN', 'YESNO')  # 9 cung, hướng
+            _NEED_VV_DETAIL = _qtype in ('WHAT', 'WHERE', 'AGE')  # Vạn Vật Loại Tượng
+            _NEED_COUNT_DETAIL = _qtype in ('COUNT', 'AGE')  # Hà Đồ Số, Trường Sinh
+            
+            self.log_step("Online AI", "FILTER", f"Q-Type={_qtype} | LH={_NEED_LH_DETAIL} KM={_NEED_KM_DETAIL} VV={_NEED_VV_DETAIL}")
+            
             # ═══ PHẦN 1: RAW DATA — Gemini TỰ ĐỌC QUẺ ═══
             raw_data_section = ""
             
@@ -4550,6 +4577,7 @@ class FreeAIHelper:
                 f"Câu hỏi: {question}\n"
                 f"Dụng Thần CHÍNH: {dung_than_ak} | Hành DT: {hanh_dt}\n"
                 f"Chủ đề: {category_label}\n"
+                f"Loại câu hỏi: {_qtype}\n"
             )
             # V41.0: Multi-DT cho câu hỏi phức hợp
             all_dts = _get_all_dung_than(question)
@@ -4558,19 +4586,28 @@ class FreeAIHelper:
                 raw_data_section += f"   → Phân tích primary DT ({all_dts[0]}) trước, rồi bổ sung secondary DT ({', '.join(all_dts[1:])})\n"
             raw_data_section += "\n"
             
-            # --- 1B: RAW LỤC HÀO (chi tiết nhất) ---
+            # --- 1B: RAW LỤC HÀO (chi tiết) --- V42.9.3: chỉ full khi cần
             if od.get('v23_lh_factors'):
-                raw_data_section += f"═══ [1] LỤC HÀO — DỮ LIỆU THÔ ═══\n"
-                for f_item in od['v23_lh_factors']:
-                    raw_data_section += f"• {f_item}\n"
-                raw_data_section += "\n"
+                if _NEED_LH_DETAIL:
+                    raw_data_section += f"═══ [1] LỤC HÀO — DỮ LIỆU THÔ ═══\n"
+                    for f_item in od['v23_lh_factors']:
+                        raw_data_section += f"• {f_item}\n"
+                    raw_data_section += "\n"
+                else:
+                    # Summary only
+                    raw_data_section += f"═══ [1] LỤC HÀO — TÓM TẮT ═══\n"
+                    raw_data_section += f"• Verdict: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:80]}\n\n"
             
-            # --- 1C: RAW KỲ MÔN ---
+            # --- 1C: RAW KỲ MÔN --- V42.9.3: chỉ full khi cần
             if od.get('v24_km_factors'):
-                raw_data_section += f"═══ [2] KỲ MÔN ĐỘN GIÁP — DỮ LIỆU THÔ ═══\n"
-                for f_item in od['v24_km_factors']:
-                    raw_data_section += f"• {f_item}\n"
-                raw_data_section += "\n"
+                if _NEED_KM_DETAIL:
+                    raw_data_section += f"═══ [2] KỲ MÔN ĐỘN GIÁP — DỮ LIỆU THÔ ═══\n"
+                    for f_item in od['v24_km_factors']:
+                        raw_data_section += f"• {f_item}\n"
+                    raw_data_section += "\n"
+                else:
+                    raw_data_section += f"═══ [2] KỲ MÔN — TÓM TẮT ═══\n"
+                    raw_data_section += f"• Verdict: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:80]}\n\n"
             
             # --- 1D: RAW MAI HOA ---
             if od.get('v24_mh_factors'):
@@ -4672,8 +4709,8 @@ class FreeAIHelper:
                 if _lh_cung: raw_data_section += f"• Cung: {_lh_cung}\n"
                 raw_data_section += "\n"
             
-            # --- V40.5: LỤC HÀO — BẢNG 6 HÀO RAW (chi tiết từng hào) ---
-            if luc_hao_data and isinstance(luc_hao_data, dict):
+            # --- V40.5: LỤC HÀO — BẢNG 6 HÀO RAW --- V42.9.3: chỉ full khi NEED_LH_DETAIL
+            if _NEED_LH_DETAIL and luc_hao_data and isinstance(luc_hao_data, dict):
                 _lh_ban = luc_hao_data.get('ban', {})
                 if _lh_ban and isinstance(_lh_ban, dict):
                     raw_data_section += f"═══ [1c] LỤC HÀO — BẢNG 6 HÀO CHI TIẾT ═══\n"
@@ -4699,8 +4736,8 @@ class FreeAIHelper:
                         raw_data_section += f"• Nguyệt Kiến: {_ct} | Nhật Thần: {_cn}\n"
                     raw_data_section += "\n"
             
-            # --- V40.5: KỲ MÔN — BÀN 9 CUNG RAW (layout đầy đủ) ---
-            if chart_data and isinstance(chart_data, dict):
+            # --- V40.5: KỲ MÔN — BÀN 9 CUNG RAW --- V42.9.3: chỉ full khi NEED_KM_DETAIL
+            if _NEED_KM_DETAIL and chart_data and isinstance(chart_data, dict):
                 _tb = chart_data.get('thien_ban', {})
                 _nb = chart_data.get('nhan_ban', {})
                 _sb = chart_data.get('than_ban', {})
@@ -4721,10 +4758,10 @@ class FreeAIHelper:
                             raw_data_section += f"• Cung {_cung}: Sao={_sao_str} | Cửa={_cua_str} | Thần={_than_str} | Can={_can}\n"
                     raw_data_section += "\n"
             
-            # --- V40.5: VẠN VẬT LOẠI TƯỢNG — TRỰC TIẾP TỪ FILE TỔNG HỢP (2226+ items) ---
+            # --- V40.5: VẠN VẬT LOẠI TƯỢNG --- V42.9.3: chỉ full khi NEED_VV_DETAIL
             _vv_hanh = v22.get('hanh_dt', '')
             _ts_stage = v22.get('ts_stage', '')
-            if _vv_hanh:
+            if _vv_hanh and _NEED_VV_DETAIL:
                 try:
                     from van_vat_tong_hop import smart_van_vat_for_question, get_tham_tu_mo_ta, TRUONG_SINH_TRANG_THAI
                     # V40.9: Smart filter — chỉ lấy categories LIÊN QUAN câu hỏi
@@ -4790,9 +4827,9 @@ class FreeAIHelper:
                     raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
                 raw_data_section += "\n"
             
-            # V40.5: Giới hạn RAW data section → 40K chars max (đủ cho bảng hào + 9 cung)
-            if len(raw_data_section) > 40000:
-                raw_data_section = raw_data_section[:18000] + "\n\n[...DỮ LIỆU CẮT NGẮN...]\n\n" + raw_data_section[-18000:]
+            # V42.9.3: Giới hạn RAW data section → 15K chars (giảm từ 40K → focus hơn)
+            if len(raw_data_section) > 15000:
+                raw_data_section = raw_data_section[:7000] + "\n\n[...DỮ LIỆU CẮT NGẮN — CHỈ GIỮ YẾU TỐ QUAN TRỌNG...]\n\n" + raw_data_section[-7000:]
             
             # ═══ PHẦN 2: OFFLINE VERDICT (chỉ 1 block ngắn để so sánh) ═══
             offline_verdict_block = (
@@ -4804,6 +4841,13 @@ class FreeAIHelper:
                 f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:100]}\n"
                 f"TỔNG: Điểm = {v22.get('unified_pct', '?')}% | Mức = {v22.get('tier_cap', '?')}\n"
             )
+            # V42.9.3 P0-B: Thêm conflict warnings cho AI Online
+            _od_conflicts = od.get('conflict_warnings', [])
+            if _od_conflicts:
+                offline_verdict_block += "\n⚠️ CẢNH BÁO XUNG ĐỘT:\n"
+                for _cw in _od_conflicts:
+                    offline_verdict_block += f"  {_cw}\n"
+                offline_verdict_block += "→ PHẢI phân tích kỹ sự khác biệt giữa các PP khi XUNG ĐỘT.\n"
             
             # ═══ PHẦN 3: PHÂN LOẠI CÂU HỎI ═══
             q_lower_online = question.lower()
@@ -12158,6 +12202,61 @@ class FreeAIHelper:
                     ts_bonus = int((ts_power - 50) * 0.15)  # ±7.5 max
         weighted_pct = max(5, min(95, weighted_pct + ts_bonus))
         
+        # ═══ V42.9.3 P0-B: CONFLICT DETECTION — phát hiện xung đột giữa các PP ═══
+        _conflict_warnings = []
+        _conflict_penalty = 0
+        
+        # Phân loại verdict thành CÁT/HUNG groups
+        _v_cat = set()  # PP nào nói CÁT/ĐẠI CÁT
+        _v_hung = set() # PP nào nói HUNG/ĐẠI HUNG
+        _pp_labels = ['KM', 'LH', 'MH', 'TB', 'LN', 'TA']
+        _pp_fullnames = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất']
+        for _vi, _verdict in enumerate(verdicts):
+            _vstr = str(_verdict).upper()
+            if _vi < len(_pp_labels):
+                if 'CÁT' in _vstr or 'CAT' in _vstr:
+                    _v_cat.add(_pp_labels[_vi])
+                elif 'HUNG' in _vstr:
+                    _v_hung.add(_pp_labels[_vi])
+        
+        # Rule 1: KM vs LH trái ngược → penalty lớn (2 PP chủ lực)
+        if ('KM' in _v_cat and 'LH' in _v_hung) or ('KM' in _v_hung and 'LH' in _v_cat):
+            _conflict_penalty += 12
+            _km_v = verdicts[0] if len(verdicts) > 0 else '?'
+            _lh_v = verdicts[1] if len(verdicts) > 1 else '?'
+            _conflict_warnings.append(f"⚠️ XUNG ĐỘT CHÍNH: Kỳ Môn ({_km_v}) ↔ Lục Hào ({_lh_v}) — 2 PP mạnh nhất TRÁI NGƯỢC")
+        
+        # Rule 2: MH vs LH trái ngược → penalty vừa
+        if ('MH' in _v_cat and 'LH' in _v_hung) or ('MH' in _v_hung and 'LH' in _v_cat):
+            _conflict_penalty += 8
+            _mh_v = verdicts[2] if len(verdicts) > 2 else '?'
+            _lh_v = verdicts[1] if len(verdicts) > 1 else '?'
+            _conflict_warnings.append(f"⚠️ XUNG ĐỘT: Mai Hoa ({_mh_v}) ↔ Lục Hào ({_lh_v})")
+        
+        # Rule 3: Đa số HUNG (≥4/6) nhưng pct > 50 → force giảm
+        if len(_v_hung) >= 4 and weighted_pct > 50:
+            _conflict_penalty += 10
+            _conflict_warnings.append(f"⚠️ ĐA SỐ HUNG ({len(_v_hung)}/6) nhưng điểm {weighted_pct}% — bất hợp lý → giảm")
+        
+        # Rule 4: Đa số CÁT (≥4/6) nhưng pct < 45 → force tăng
+        if len(_v_cat) >= 4 and weighted_pct < 45:
+            _conflict_penalty -= 8  # Negative = bonus
+            _conflict_warnings.append(f"⚡ ĐA SỐ CÁT ({len(_v_cat)}/6) nhưng điểm {weighted_pct}% — tăng bù")
+        
+        # Apply conflict penalty/bonus
+        if _conflict_penalty != 0:
+            _old_pct = weighted_pct
+            # Penalty: kéo về 50% (trung tính), không đảo chiều
+            if _conflict_penalty > 0:
+                weighted_pct = max(30, weighted_pct - _conflict_penalty)
+            else:
+                weighted_pct = min(75, weighted_pct - _conflict_penalty)  # bonus
+            weighted_pct = max(5, min(95, weighted_pct))
+            sections.append(f"\n**⚠️ PHÁT HIỆN XUNG ĐỘT GIỮA CÁC PHƯƠNG PHÁP:**")
+            for _cw in _conflict_warnings:
+                sections.append(f"  {_cw}")
+            sections.append(f"  → Điều chỉnh: {_old_pct}% → **{weighted_pct}%** (penalty/bonus: {-_conflict_penalty:+d})")
+        
         sections.append(f"| Phương pháp | Kết luận | Điểm | % | Trọng số |")
         sections.append(f"|---|---|---|---|---|")
         pp_names = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất']
@@ -12703,6 +12802,9 @@ class FreeAIHelper:
             # V40.2: Lục Hào — Tên quẻ
             'luc_hao_ten_que': luc_hao_data.get('ban', {}).get('name', '') if luc_hao_data and isinstance(luc_hao_data, dict) else '',
             'luc_hao_cung': luc_hao_data.get('ban', {}).get('palace', '') if luc_hao_data and isinstance(luc_hao_data, dict) else '',
+            # V42.9.3 P0-B: Conflict Detection data
+            'conflict_warnings': _conflict_warnings,
+            'conflict_penalty': _conflict_penalty,
         }
         
         # ═══════════════════════════════════════════════════════════
