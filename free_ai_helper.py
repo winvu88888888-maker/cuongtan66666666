@@ -10118,6 +10118,16 @@ class FreeAIHelper:
         if bad_impacts and len(bad_impacts) > 0:
             lines.append(f"⚠️ **Trở ngại ({len(bad_impacts)}):** {bad_impacts[0][:80]}")
         
+        # V42.9.3 P0-B: Hiện CONFLICT WARNING nếu THUẬN vs NGHỊCH chênh lệch quá lớn
+        if total_impacts >= 4:
+            _ratio = len(good_impacts) / max(1, total_impacts)
+            if 0.35 <= _ratio <= 0.65 and abs(pct - 50) > 15:
+                lines.append(f'\n<div style="background:rgba(234,179,8,0.15);padding:10px 14px;border-radius:8px;border-left:4px solid #eab308;margin:8px 0;">'
+                             f'<span style="color:#fbbf24;font-weight:700;">⚠️ LƯU Ý:</span> '
+                             f'<span style="color:#fef3c7;">Các phương pháp có XU HƯỚNG TRÁI CHIỀU '
+                             f'({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). '
+                             f'Kết quả {pct}% cần THẬN TRỌNG.</span></div>')
+        
         
         return "\n".join(lines)
 
