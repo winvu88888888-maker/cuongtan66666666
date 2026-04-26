@@ -85,6 +85,9 @@ DIAGRAM_MASTER = {
 ║  │ 🏛 BT(Cung{cung_bt}) {bt_sv_rel} SV(Cung{cung_sv})             │     ║
 ║  │ 📍 Địa Bàn DT: {dia_ban_dt}                                     │     ║
 ║  │ 🔄 Phản/Phục Ngâm cung: {km_phan_phuc}                          │     ║
+║  │                                                                   │     ║
+║  │ 🚪 Bát Môn Cát/Hung: {bat_mon_cat_hung}                         │     ║
+║  │ ⭐ Cửu Tinh Cát/Hung: {cuu_tinh_cat_hung}                       │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
@@ -120,6 +123,22 @@ DIAGRAM_MASTER = {
 ║  │ 📜 Nạp Âm giải thích: {nap_am_giai_thich}                       │     ║
 ║  │ 🏛 Thái Ất Chủ↔Khách: {chu_khach}                               │     ║
 ║  │ 🏛 Thái Ất Cục: {ta_cuc}                                        │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ⑥b TỬ VI ĐẨU SỐ (tham chiếu)                                             ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ ⭐ Chính Tinh tham chiếu: {tv_chinh_tinh}                        │     ║
+║  │ 🔮 Hành DT ↔ Chính Tinh: {tv_hanh_mapping}                      │     ║
+║  │ 📊 Đại Hạn/Lưu Niên: {tv_dai_han}                               │     ║
+║  └───────────────────────────────────────────────────────────────────┘     ║
+║       │                                                                    ║
+║       ▼                                                                    ║
+║  ⑥c XEM NGÀY ĐẸP (tham chiếu)                                              ║
+║  ┌───────────────────────────────────────────────────────────────────┐     ║
+║  │ 📅 Ngày hiện tại: {xnd_ngay}                                     │     ║
+║  │ ☀️ Hoàng Đạo/Hắc Đạo: {xnd_hoang_hac}                           │     ║
+║  │ 📜 12 Trực: {xnd_truc}                                           │     ║
 ║  └───────────────────────────────────────────────────────────────────┘     ║
 ║       │                                                                    ║
 ║       ▼                                                                    ║
@@ -580,6 +599,72 @@ KY_THAN_NGUYEN_NHAN = {
     'Huynh Đệ': 'Bạn bè/anh em/cạnh tranh/bị lừa',
     'Phụ Mẫu': 'Gia đình/giấy tờ/hợp đồng/nhà cửa',
     'Tử Tôn': 'Con cái/phúc đức/niềm vui mất',
+}
+
+# ═══════════════════════════════════════════════════════════════
+# V42.9.8: REFERENCE TABLES — KỲ MÔN / TỬ VI / XEM NGÀY
+# Tích hợp từ DKT để diagrams bao phủ 8/8 phương pháp
+# ═══════════════════════════════════════════════════════════════
+
+# --- KỲ MÔN: Bát Môn + Cửu Tinh Reference ---
+KM_BAT_MON_REF = {
+    'Khai Môn':  {'hanh': 'Kim', 'cat_hung': 'ĐẠI CÁT', 'y_nghia': 'Mở cửa, khởi đầu, khai trương, thuận cho mọi việc'},
+    'Hưu Môn':   {'hanh': 'Thủy','cat_hung': 'CÁT',     'y_nghia': 'Nghỉ ngơi, hưởng lộc, gặp quý nhân'},
+    'Sinh Môn':  {'hanh': 'Thổ', 'cat_hung': 'ĐẠI CÁT', 'y_nghia': 'Sinh sôi, phát triển, đầu tư, tài lộc'},
+    'Thương Môn': {'hanh': 'Mộc','cat_hung': 'TIỂU CÁT','y_nghia': 'Kinh doanh, buôn bán, đi xa (có cẩn thận)'},
+    'Đỗ Môn':   {'hanh': 'Mộc', 'cat_hung': 'BÌNH',     'y_nghia': 'Bế tắc, ẩn nấp, che giấu bí mật'},
+    'Cảnh Môn':  {'hanh': 'Hỏa','cat_hung': 'BÌNH',     'y_nghia': 'Phô trương, khoe khoang, kiện tụng, thi cử'},
+    'Tử Môn':   {'hanh': 'Thổ', 'cat_hung': 'ĐẠI HUNG','y_nghia': 'Chết chóc, tang tóc, tai họa nặng'},
+    'Kinh Môn':  {'hanh': 'Kim', 'cat_hung': 'HUNG',     'y_nghia': 'Kinh sợ, lo lắng, tranh chấp pháp lý'},
+}
+
+KM_CUU_TINH_REF = {
+    'Thiên Bồng': {'hanh': 'Thủy','cat_hung': 'HUNG',  'y_nghia': 'Trộm cắp, mưu mô, ẩn giấu'},
+    'Thiên Nhậm': {'hanh': 'Thổ', 'cat_hung': 'CÁT',   'y_nghia': 'Hiền lành, nhân từ, y học'},
+    'Thiên Xung': {'hanh': 'Mộc', 'cat_hung': 'CÁT',   'y_nghia': 'Dũng mãnh, xung phong, hành động'},
+    'Thiên Phụ':  {'hanh': 'Mộc', 'cat_hung': 'CÁT',   'y_nghia': 'Phù trợ, quý nhân giúp đỡ'},
+    'Thiên Anh': {'hanh': 'Hỏa', 'cat_hung': 'BÌNH',   'y_nghia': 'Văn chương, kiện tụng, phô trương'},
+    'Thiên Nhuế': {'hanh': 'Thổ','cat_hung': 'HUNG',    'y_nghia': 'Ngu muội, trì trệ, bệnh kéo dài'},
+    'Thiên Cầm': {'hanh': 'Thổ', 'cat_hung': 'CÁT',    'y_nghia': 'Trung tâm, ổn định, chủ tọa'},
+    'Thiên Trụ': {'hanh': 'Kim', 'cat_hung': 'HUNG',    'y_nghia': 'Phá hoại, phản bội, gian dối'},
+    'Thiên Tâm': {'hanh': 'Kim', 'cat_hung': 'CÁT',    'y_nghia': 'Chữa bệnh, quân sư, mưu lược'},
+}
+
+# --- TỬ VI: Chính Tinh Reference (để diagrams reference khi cần) ---
+TV_CHINH_TINH_REF = {
+    'Tử Vi':     {'hanh': 'Thổ', 'role': 'Đế tinh — vua, quyền lực tối cao'},
+    'Thiên Cơ':  {'hanh': 'Mộc', 'role': 'Mưu sĩ — trí tuệ, linh hoạt'},
+    'Thái Dương': {'hanh': 'Hỏa','role': 'Nam giới, cha, quý nhân'},
+    'Vũ Khúc':   {'hanh': 'Kim', 'role': 'Tài tinh — tiền bạc, quyết đoán'},
+    'Thiên Đồng': {'hanh': 'Thủy','role':'Phúc tinh — hưởng thụ'},
+    'Liêm Trinh': {'hanh': 'Hỏa','role': 'Đào hoa — sắc đẹp, thị phi'},
+    'Thiên Phủ': {'hanh': 'Thổ', 'role': 'Kho tàng — giàu có, ổn định'},
+    'Thái Âm':   {'hanh': 'Thủy','role': 'Nữ giới, mẹ, bí mật'},
+    'Tham Lang':  {'hanh': 'Mộc','role': 'Đào hoa — ham muốn, đa tài'},
+    'Cự Môn':    {'hanh': 'Thủy','role': 'Ám tinh — thị phi, tranh cãi'},
+    'Thiên Tướng': {'hanh':'Thủy','role':'Ấn tinh — bảo hộ'},
+    'Thiên Lương': {'hanh':'Mộc','role': 'Thọ tinh — nhân từ, trường thọ'},
+    'Thất Sát':  {'hanh': 'Kim', 'role': 'Sát tinh — quyền lực, sát khí'},
+    'Phá Quân':  {'hanh': 'Thủy','role': 'Phá hoại — đổi mới, cách mạng'},
+}
+
+# --- XEM NGÀY: Hoàng Đạo / Hắc Đạo Reference ---
+XND_HOANG_DAO_REF = {
+    'Thanh Long':  {'cat_hung': 'CÁT', 'y_nghia': 'Vui mừng, tài lộc, khai trương'},
+    'Minh Đường':  {'cat_hung': 'CÁT', 'y_nghia': 'Quý nhân, sang trọng, thuận lợi'},
+    'Kim Quỹ':    {'cat_hung': 'CÁT', 'y_nghia': 'Tài lộc, kho tàng, đám cưới'},
+    'Thiên Đức':  {'cat_hung': 'CÁT', 'y_nghia': 'Phúc đức trời, an lành'},
+    'Ngọc Đường':  {'cat_hung': 'CÁT', 'y_nghia': 'Vinh hiển, thi cử, quan lộc'},
+    'Tư Mệnh':   {'cat_hung': 'CÁT', 'y_nghia': 'Bảo hộ mệnh, an khang'},
+}
+
+XND_HAC_DAO_REF = {
+    'Thiên Hình':  {'cat_hung': 'HUNG', 'y_nghia': 'Hình phạt, kiện tụng'},
+    'Chu Tước':   {'cat_hung': 'HUNG', 'y_nghia': 'Thị phi, cãi vã'},
+    'Bạch Hổ':   {'cat_hung': 'HUNG', 'y_nghia': 'Tang tóc, tai nạn'},
+    'Thiên Lao':  {'cat_hung': 'HUNG', 'y_nghia': 'Giam giữ, trì trệ'},
+    'Huyền Vũ':  {'cat_hung': 'HUNG', 'y_nghia': 'Trộm cắp, lừa đảo'},
+    'Câu Trận':  {'cat_hung': 'HUNG', 'y_nghia': 'Tranh chấp, kiện tụng'},
 }
 
 

@@ -1531,11 +1531,33 @@ LUC_THAN_GIAI_THICH = {
 }
 
 
-# === V9.0: LỤC HỢP / LỤC XUNG CHI ===
-LUC_HOP_CHI = {'Tý': 'Sửu', 'Sửu': 'Tý', 'Dần': 'Hợi', 'Hợi': 'Dần', 'Mão': 'Tuất', 'Tuất': 'Mão',
-               'Thìn': 'Dậu', 'Dậu': 'Thìn', 'Tị': 'Thân', 'Thân': 'Tị', 'Ngọ': 'Mùi', 'Mùi': 'Ngọ'}
-LUC_XUNG_CHI = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu', 'Dần': 'Thân', 'Thân': 'Dần',
-                'Mão': 'Dậu', 'Dậu': 'Mão', 'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
+# === V42.9.8: LỤC HỢP / LỤC XUNG CHI — Đọc từ DKT (Knowledge Tree) ===
+# Source of truth: divination_knowledge_tree.py → LH_TREE['luc_hop'] & LH_TREE['luc_xung']
+try:
+    from divination_knowledge_tree import TREE as _DKT
+    # Build LUC_HOP_CHI từ DKT pairs (ví dụ: 'Tý-Sửu' → {'Tý':'Sửu', 'Sửu':'Tý'})
+    LUC_HOP_CHI = {}
+    for pair_key in _DKT.get('LH', {}).get('luc_hop', {}):
+        parts = pair_key.split('-')
+        if len(parts) == 2:
+            LUC_HOP_CHI[parts[0]] = parts[1]
+            LUC_HOP_CHI[parts[1]] = parts[0]
+    # Build LUC_XUNG_CHI từ DKT pairs
+    LUC_XUNG_CHI = {}
+    for pair_key in _DKT.get('LH', {}).get('luc_xung', {}):
+        parts = pair_key.split('-')
+        if len(parts) == 2:
+            LUC_XUNG_CHI[parts[0]] = parts[1]
+            LUC_XUNG_CHI[parts[1]] = parts[0]
+    # Fallback nếu DKT trống
+    if not LUC_HOP_CHI:
+        raise ValueError("DKT luc_hop trống")
+except Exception:
+    # Fallback hardcode nếu import thất bại
+    LUC_HOP_CHI = {'Tý': 'Sửu', 'Sửu': 'Tý', 'Dần': 'Hợi', 'Hợi': 'Dần', 'Mão': 'Tuất', 'Tuất': 'Mão',
+                   'Thìn': 'Dậu', 'Dậu': 'Thìn', 'Tị': 'Thân', 'Thân': 'Tị', 'Ngọ': 'Mùi', 'Mùi': 'Ngọ'}
+    LUC_XUNG_CHI = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu', 'Dần': 'Thân', 'Thân': 'Dần',
+                    'Mão': 'Dậu', 'Dậu': 'Mão', 'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
 
 # === V41.0: TAM HÌNH (Triple Punishment) — Cổ thư Tam Hình quy tắc ===
 TAM_HINH = {
@@ -1573,13 +1595,26 @@ def _check_tam_hinh(chi1, chi2):
     pair = TAM_HINH_PAIRS.get((chi1, chi2)) or TAM_HINH_PAIRS.get((chi2, chi1))
     return pair
 
-# === V9.0: TAM HỢP CỤC ===
-TAM_HOP_CUC = {
-    frozenset(['Thân', 'Tý', 'Thìn']): ('Thủy', 'Tam Hợp Thủy Cục — Tụ họp, lưu thông, trí tuệ'),
-    frozenset(['Hợi', 'Mão', 'Mùi']): ('Mộc', 'Tam Hợp Mộc Cục — Phát triển, sinh sôi, nhân từ'),
-    frozenset(['Dần', 'Ngọ', 'Tuất']): ('Hỏa', 'Tam Hợp Hỏa Cục — Rực rỡ, danh tiếng, nóng vội'),
-    frozenset(['Tị', 'Dậu', 'Sửu']): ('Kim', 'Tam Hợp Kim Cục — Quyền lực, sắc bén, cứng rắn'),
-}
+# === V42.9.8: TAM HỢP CỤC — Đọc từ DKT (Knowledge Tree) ===
+try:
+    _tam_hop_dkt = _DKT.get('LH', {}).get('tam_hop', {})
+    if _tam_hop_dkt:
+        TAM_HOP_CUC = {}
+        for trio_key, info in _tam_hop_dkt.items():
+            chi_list = trio_key.split('-')
+            if len(chi_list) == 3:
+                TAM_HOP_CUC[frozenset(chi_list)] = (info.get('hanh', '?'), info.get('desc', f'Tam Hợp {info.get("hanh","?")} Cục'))
+        if not TAM_HOP_CUC:
+            raise ValueError("DKT tam_hop trống")
+    else:
+        raise ValueError("DKT tam_hop không có")
+except Exception:
+    TAM_HOP_CUC = {
+        frozenset(['Thân', 'Tý', 'Thìn']): ('Thủy', 'Tam Hợp Thủy Cục — Tụ họp, lưu thông, trí tuệ'),
+        frozenset(['Hợi', 'Mão', 'Mùi']): ('Mộc', 'Tam Hợp Mộc Cục — Phát triển, sinh sôi, nhân từ'),
+        frozenset(['Dần', 'Ngọ', 'Tuất']): ('Hỏa', 'Tam Hợp Hỏa Cục — Rực rỡ, danh tiếng, nóng vội'),
+        frozenset(['Tị', 'Dậu', 'Sửu']): ('Kim', 'Tam Hợp Kim Cục — Quyền lực, sắc bén, cứng rắn'),
+    }
 
 # === V9.0: THIÊN CAN HỢP ===
 THIEN_CAN_HOP = {'Giáp': 'Kỷ', 'Kỷ': 'Giáp', 'Ất': 'Canh', 'Canh': 'Ất',
