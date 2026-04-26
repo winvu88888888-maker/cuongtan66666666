@@ -542,7 +542,7 @@ TA_TREE = {
     # --- Quy trình luận giải chuẩn ---
     'interpretation_steps': {
         'step_1': {'name': 'Xác định vị trí Thái Ất', 'desc': 'Xem sao Thái Ất nằm ở cung nào, có lâm hung cung không'},
-        'step_2': {'name': 'Tính Toán', 'desc': 'Đo lường Chủ Toán (đại diện bên ta) và Khách Toán (đối phương)'},
+        'step_2': {'name': 'Đọc Toán Số', 'desc': 'Đọc thông số Chủ Toán (đại diện bên ta) và Khách Toán (đối phương) từ dữ liệu hệ thống'},
         'step_3': {'name': 'Xét Ngũ Phúc', 'desc': 'Kiểm tra vị trí và tác động của sao Ngũ Phúc (hỗ trợ/ban phước)'},
         'step_4': {'name': 'Xem Thiên Mục/Địa Mục', 'desc': 'Đánh giá sự giám sát và các biến động từ trên và dưới'},
         'step_5': {'name': 'Định Cát Hung', 'desc': 'So sánh Chủ Toán - Khách Toán và vị trí các tinh tú để kết luận thắng bại/cát hung'},
@@ -571,9 +571,9 @@ TB_TREE = {
 
     # --- Quy trình luận giải chuẩn ---
     'interpretation_steps': {
-        'step_1': {'name': 'Lập Bát Tự', 'desc': 'Lấy ngày giờ tháng năm sinh chính xác để quy đổi'},
-        'step_2': {'name': 'Tính Quẻ', 'desc': 'Chuyển Bát Tự thành các quẻ dựa trên Tiên Thiên và Hậu Thiên'},
-        'step_3': {'name': 'Tính Thần Số', 'desc': 'Tìm ra con số Thần Số vận mệnh'},
+        'step_1': {'name': 'Đọc Bát Tự', 'desc': 'Đọc thông tin ngày giờ tháng năm sinh từ dữ liệu đã lập'},
+        'step_2': {'name': 'Phân tích Quẻ', 'desc': 'Phân tích các quẻ Tiên Thiên và Hậu Thiên đã được hệ thống tính toán'},
+        'step_3': {'name': 'Đọc Thần Số', 'desc': 'Tra cứu con số Thần Số vận mệnh từ dữ liệu hệ thống'},
         'step_4': {'name': 'Tra Thiết Bản', 'desc': 'Dùng Thần Số để tra các câu văn trong sách Thiết Bản'},
         'step_5': {'name': 'Giải Đoán', 'desc': 'Luận giải vận mệnh cả đời qua các câu văn'},
     },
