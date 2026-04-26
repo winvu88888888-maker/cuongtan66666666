@@ -11139,68 +11139,155 @@ class FreeAIHelper:
         lines.append(verdict_line)
         lines.append("")
         
-        # V42.9.5: MULTI-INTENT → Tạo PHÁN QUYẾT RIÊNG cho từng sub-question
+        # V42.9.5: MULTI-INTENT → PHÁN QUYẾT LINH HOẠT theo LOẠI CÂU HỎI
         try:
             _all_dts_verdict = _get_all_dung_than(question)
             _parsed_qs = v32_parse_question(question)
             if len(_parsed_qs) > 1 or len(_all_dts_verdict) > 1:
-                # Có nhiều câu hỏi → tạo verdict riêng cho mỗi câu
                 _DT_ROLE_V = {
                     'Quan Quỷ': 'Công việc/Sếp', 'Thê Tài': 'Tiền/Vợ/Tình',
                     'Tử Tôn': 'Con cái/Phúc', 'Phụ Mẫu': 'Bố mẹ/Nhà/Giấy tờ',
                     'Huynh Đệ': 'Anh em/Bạn', 'Bản Thân': 'Bản thân',
                 }
+                _LT_H = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 
+                         'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                _SINH_V = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
+                _HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
+                _NGHE = {'Kim': 'Kỹ thuật/Ngân hàng/Quân đội', 'Mộc': 'Giáo dục/Y tế/Nông nghiệp',
+                         'Thủy': 'Thương mại/Vận tải/Truyền thông', 'Hỏa': 'CNTT/Quảng cáo/Ẩm thực',
+                         'Thổ': 'Xây dựng/BĐS/Nông nghiệp'}
+                _THANG = {'Kim': 'tháng Thân/Dậu (7-8 ÂL)', 'Mộc': 'tháng Dần/Mão (1-2 ÂL)',
+                          'Thủy': 'tháng Hợi/Tý (10-11 ÂL)', 'Hỏa': 'tháng Tỵ/Ngọ (4-5 ÂL)',
+                          'Thổ': 'tháng Thìn/Tuất/Sửu/Mùi (3/6/9/12 ÂL)'}
+                _HD = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                
+                def _detect_qtype_sub(text):
+                    """Phát hiện loại câu hỏi cho sub-question"""
+                    t = text.lower()
+                    if _is_competition_question(text): return 'COMPETITION'
+                    if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu']): return 'WHEN'
+                    if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
+                    if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','bán gì','kinh doanh gì','sản phẩm']): return 'WHAT'
+                    if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi']): return 'AGE'
+                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy']): return 'COUNT'
+                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
+                    if any(k in t for k in ['sống','chết','qua khỏi','mất']): return 'LIFE_DEATH'
+                    return 'YESNO'
+                
+                def _gen_verdict_by_qtype(qtype, sq_pct, sq_hanh, sq_dt, sq_text):
+                    """Tạo verdict phù hợp với loại câu hỏi"""
+                    _hd = _HD.get(sq_hanh, (5, 10))
+                    
+                    if qtype == 'WHEN':
+                        thang = _THANG.get(sq_hanh, '?')
+                        if sq_pct >= 55:
+                            return f"⏳ SẮP TỚI — ứng vào {thang} ({sq_pct}%)", "⏳"
+                        elif sq_pct >= 45:
+                            return f"⏳ TRUNG BÌNH — có thể {thang} ({sq_pct}%)", "🟡"
+                        else:
+                            return f"⏳ CHẬM / CHƯA TỚI — đợi qua {thang} ({sq_pct}%)", "🔴"
+                    
+                    elif qtype == 'WHERE':
+                        huong = _HUONG.get(sq_hanh, '?')
+                        return f"🧭 HƯỚNG {huong} (Hành {sq_hanh}) ({sq_pct}%)", "🧭"
+                    
+                    elif qtype == 'WHAT':
+                        nghe = _NGHE.get(sq_hanh, '?')
+                        return f"🔮 Hành {sq_hanh} → {nghe} ({sq_pct}%)", "🔮"
+                    
+                    elif qtype == 'AGE':
+                        age = _hd[1] * 5 if sq_pct >= 55 else _hd[0] * 5
+                        return f"🎂 Khoảng {age} tuổi (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "🎂"
+                    
+                    elif qtype == 'COUNT':
+                        so = _hd[1] if sq_pct >= 55 else _hd[0]
+                        return f"👥 Số lượng: {so} (Hà Đồ Số {sq_hanh}: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "👥"
+                    
+                    elif qtype == 'SHOULD':
+                        if sq_pct >= 55: return f"NÊN — THUẬN LỢI ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"CÓ THỂ — nhưng THẬN TRỌNG ({sq_pct}%)", "🟡"
+                        else: return f"KHÔNG NÊN — BẤT LỢI ({sq_pct}%)", "🔴"
+                    
+                    elif qtype == 'LIFE_DEATH':
+                        if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
+                        elif sq_pct >= 40: return f"NGUY KỊCH — cần cứu chữa gấp ({sq_pct}%)", "🟡"
+                        else: return f"NGUY HIỂM — rất khó ({sq_pct}%)", "🔴"
+                    
+                    elif qtype == 'COMPETITION':
+                        if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"HÒA / CÂN BẰNG ({sq_pct}%)", "🟡"
+                        else: return f"THUA — YẾU THẾ ({sq_pct}%)", "🔴"
+                    
+                    else:  # YESNO
+                        if sq_pct >= 55: return f"CÓ — THÀNH CÔNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 50: return f"CÓ — nhưng NỖ LỰC ({sq_pct}%)", "🟡"
+                        elif sq_pct >= 45: return f"KHÓ THÀNH — cần đổi hướng ({sq_pct}%)", "🟡"
+                        else: return f"KHÔNG — BẤT LỢI ({sq_pct}%)", "🔴"
+                
                 _sub_verdicts = []
                 
-                # Sub-question 1 = primary (đã có verdict_line ở trên)
+                # Sub-question 1 = primary (dùng verdict_line đã tính ở trên)
                 _pq1_text = _parsed_qs[0].get('text', question.split(' và ')[0] if ' và ' in question else question)[:60]
-                _sub_verdicts.append(f"📋 **Câu 1** ({_pq1_text}...): {verdict_line.replace('📢 **', '').replace('**', '')}")
+                _pq1_qtype = _detect_qtype_sub(_pq1_text)
+                _sub_verdicts.append({
+                    'text': _pq1_text,
+                    'verdict': verdict_line.replace('📢 **', '').replace('**', ''),
+                    'icon': '✅' if pct >= 55 else ('🟡' if pct >= 45 else '🔴'),
+                    'dt': dung_than,
+                    'role': _DT_ROLE_V.get(dung_than, '?'),
+                    'pct': pct,
+                    'qtype': _pq1_qtype,
+                })
                 
-                # Sub-questions 2+: ước tính verdict từ DT phụ
+                # Sub-questions 2+: tính verdict riêng theo LOẠI CÂU HỎI
                 for _sq_idx, _sq in enumerate(_parsed_qs[1:], start=2):
                     _sq_dt = _sq.get('dung_than', _all_dts_verdict[min(_sq_idx-1, len(_all_dts_verdict)-1)] if _sq_idx-1 < len(_all_dts_verdict) else 'Bản Thân')
                     _sq_text = _sq.get('text', '')[:60]
-                    _sq_role = _DT_ROLE_V.get(_sq_dt, '?')
-                    
-                    # Ước tính pct cho DT phụ dựa trên sinh khắc nguyệt lệnh
-                    _LT_H = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 
-                             'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
                     _sq_hanh = _LT_H.get(_sq_dt, 'Thổ')
-                    # Lấy nguyệt lệnh hành
+                    
+                    # Tính pct riêng cho DT phụ
                     _nguyet_hanh = ''
                     if chart_data and isinstance(chart_data, dict):
                         _nguyet_hanh = CHI_NGU_HANH.get(chart_data.get('chi_thang', ''), '')
-                    
-                    # Tính sinh khắc đơn giản
-                    _SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
-                    _sq_pct = 50  # Mặc định BÌNH
+                    _sq_pct = 50
                     if _nguyet_hanh:
-                        if _SINH.get(_nguyet_hanh) == _sq_hanh:  # Nguyệt sinh DT
-                            _sq_pct = 62
-                        elif _sq_hanh == _nguyet_hanh:  # Tỷ hòa
-                            _sq_pct = 55
-                        elif _SINH.get(_sq_hanh) == _nguyet_hanh:  # DT sinh Nguyệt (tiết khí)
-                            _sq_pct = 42
-                        else:  # Khắc
-                            _sq_pct = 35
+                        if _SINH_V.get(_nguyet_hanh) == _sq_hanh: _sq_pct = 62
+                        elif _sq_hanh == _nguyet_hanh: _sq_pct = 55
+                        elif _SINH_V.get(_sq_hanh) == _nguyet_hanh: _sq_pct = 42
+                        else: _sq_pct = 35
                     
-                    if _sq_pct >= 55:
-                        _sq_verdict = f"CÓ — THUẬN LỢI ({_sq_pct}%)"
-                        _sq_icon = "✅"
-                    elif _sq_pct >= 45:
-                        _sq_verdict = f"CẦN CÂN NHẮC ({_sq_pct}%)"
-                        _sq_icon = "🟡"
-                    else:
-                        _sq_verdict = f"KHÓ KHĂN ({_sq_pct}%)"
-                        _sq_icon = "🔴"
+                    # Detect loại câu hỏi → tạo verdict tương ứng
+                    _sq_qtype = _detect_qtype_sub(_sq_text)
+                    _sq_verdict_text, _sq_icon = _gen_verdict_by_qtype(_sq_qtype, _sq_pct, _sq_hanh, _sq_dt, _sq_text)
                     
-                    _sub_verdicts.append(f"📋 **Câu {_sq_idx}** ({_sq_text}...): {_sq_icon} PHÁN QUYẾT: {_sq_verdict} — DT: {_sq_dt} ({_sq_role})")
+                    _sub_verdicts.append({
+                        'text': _sq_text,
+                        'verdict': f"PHÁN QUYẾT: {_sq_verdict_text}",
+                        'icon': _sq_icon,
+                        'dt': _sq_dt,
+                        'role': _DT_ROLE_V.get(_sq_dt, '?'),
+                        'pct': _sq_pct,
+                        'qtype': _sq_qtype,
+                    })
                 
-                # Hiển thị tất cả sub-verdicts
+                # Render tất cả sub-verdicts
+                _QTYPE_LABEL = {
+                    'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
+                    'WHAT': '🔮 Loại gì', 'AGE': '🎂 Tuổi', 'COUNT': '👥 Số lượng',
+                    'SHOULD': '⚖️ Nên/Không', 'LIFE_DEATH': '💀 Sống/Chết', 'COMPETITION': '⚔️ Thắng/Thua',
+                }
                 lines.append(f'<div style="background:linear-gradient(135deg,#312e81,#1e1b4b);padding:18px;border-radius:14px;border:2px solid #8b5cf6;margin:10px 0;">')
                 lines.append(f'<div style="font-size:1.15em;font-weight:900;color:#c4b5fd;margin-bottom:10px;">🔄 PHÂN TÍCH {len(_sub_verdicts)} CÂU HỎI RIÊNG BIỆT</div>')
-                for _sv in _sub_verdicts:
-                    lines.append(f'<div style="color:#e2e8f0;font-size:1.05em;margin:8px 0;padding:10px;background:rgba(139,92,246,0.15);border-radius:8px;border-left:4px solid #8b5cf6;">{_sv}</div>')
+                for _si, _sv in enumerate(_sub_verdicts):
+                    _qt_label = _QTYPE_LABEL.get(_sv['qtype'], '❓')
+                    _pct_color = '#6ee7b7' if _sv['pct'] >= 55 else ('#fde68a' if _sv['pct'] >= 45 else '#fca5a5')
+                    lines.append(
+                        f'<div style="color:#e2e8f0;font-size:1.05em;margin:8px 0;padding:12px;background:rgba(139,92,246,0.15);border-radius:10px;border-left:4px solid #8b5cf6;">'
+                        f'<div style="font-size:0.85em;color:#a5b4fc;margin-bottom:4px;">{_qt_label} | DT: {_sv["dt"]} ({_sv["role"]})</div>'
+                        f'<div style="font-weight:800;font-size:1.1em;">📋 Câu {_si+1}: {_sv["text"]}...</div>'
+                        f'<div style="font-size:1.2em;font-weight:900;color:{_pct_color};margin-top:4px;">{_sv["icon"]} {_sv["verdict"]}</div>'
+                        f'</div>'
+                    )
                 lines.append(f'</div>')
                 lines.append("")
         except Exception:
