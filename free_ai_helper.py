@@ -13045,7 +13045,7 @@ class FreeAIHelper:
             'methods': _hub_methods,
             'synthesis': {
                 'weighted_pct': unified_v22['unified_pct'] if unified_v22 else 50,
-                'verdict': final_verdict,
+                'verdict': unified_v22['tier_data']['cap'] if unified_v22 else 'BÌNH',
                 'tier': unified_v22['tier_data']['cap'] if unified_v22 else '?',
                 'ts_stage': ts_stage or '',
                 'ngu_khi': ngu_khi_state_v22 or '',
@@ -13216,7 +13216,34 @@ class FreeAIHelper:
             self.log_step("V42.9.4", "DKT_ERR", str(_dkt_err)[:80])
             
         if '_dkt_steps_log' in locals() and _dkt_steps_log:
-            offline_full_output += "\\n" + "\\n".join(_dkt_steps_log)
+            offline_full_output += "\n" + "\n".join(_dkt_steps_log)
+            
+        # ═══════════════════════════════════════════════════════════════
+        # V42.9.5: ĐỘNG CƠ TÍNH TOÁN ỨNG KỲ TUYỆT ĐỐI (DETERMINISTIC TIMING)
+        # ═══════════════════════════════════════════════════════════════
+        _ung_ky_chot = "Chưa rõ"
+        try:
+            if 'dung_than_hao' in locals() and dung_than_hao and isinstance(dung_than_hao, dict):
+                _dt_chi = dung_than_hao.get('chi', '')
+                _is_khong = 'Tuần Không' in str(v23_lh_factors)
+                _is_dong = dung_than_idx in (luc_hao_data.get('dong_hao') or []) if 'luc_hao_data' in locals() and luc_hao_data else False
+                _is_mo = ts_stage == 'Mộ' if 'ts_stage' in locals() else False
+                
+                if _dt_chi:
+                    if _is_khong:
+                        _ung_ky_chot = f"Tháng/Ngày {_dt_chi} (Điền Thực) hoặc {LUC_XUNG_CHI.get(_dt_chi, '?')} (Xung Không)"
+                    elif _is_mo:
+                        _ung_ky_chot = f"Tháng/Ngày {LUC_XUNG_CHI.get(_dt_chi, '?')} (Mở Mộ)"
+                    elif _is_dong:
+                        _ung_ky_chot = f"Tháng/Ngày {LUC_HOP_CHI.get(_dt_chi, '?')} (Hợp giữ lại)"
+                    else:
+                        _ung_ky_chot = f"Tháng/Ngày {LUC_XUNG_CHI.get(_dt_chi, '?')} (Xung cho Động)"
+                    
+                    _hub['synthesis']['ung_ky'] = _ung_ky_chot
+                    offline_full_output += f"\n\n### ⏱ ĐỘNG CƠ ỨNG KỲ TỰ ĐỘNG (V42.9.5)\n- **Trạng thái Dụng Thần ({_dt_chi}):** {'Tuần Không' if _is_khong else 'Ngập Mộ' if _is_mo else 'Động' if _is_dong else 'Tĩnh'}\n- **Dự Báo Cố Định:** ⏳ `{_ung_ky_chot}`\n*(Gemini bắt buộc phải dùng thời gian này)*"
+        except Exception as _uk_err:
+            self.log_step("V42.9.5", "UNG_KY_ERR", str(_uk_err)[:80])
+
         
 
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
