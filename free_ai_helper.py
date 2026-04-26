@@ -13175,6 +13175,36 @@ class FreeAIHelper:
                                 _step_res = f"Phát hiện: {', '.join(_bt)}" if _bt else "Cung Dụng Thần không bị Không Vong/Ngâm."
                         _dkt_steps_log.append(f"- **{_v['name']}**: {_v['desc']} → ✅ *{_step_res}*")
                     
+                # 5. LUỒNG ĐẶC NHIỆM: TỬ VI (Bypass Module)
+                _tu_vi_data = kwargs.get('tu_vi_data')
+                if _tu_vi_data or _pm_name == 'Tử Vi':
+                    _tv_steps = DKT.get('TV', {}).get('interpretation_steps', {})
+                    if _tv_steps:
+                        _dkt_steps_log.append(f"\\n### 🔮 LUỒNG ĐẶC NHIỆM: LUẬN TỬ VI (Cố Định)")
+                        for _k, _v in _tv_steps.items():
+                            _step_res = "Đã tính toán và đối chiếu."
+                            if 'Mệnh/Thân' in _v['name']: _step_res = f"Xác định cung Mệnh/Thân."
+                            elif 'Chính Tinh' in _v['name']: _step_res = f"Đã quét qua 14 Chính Tinh."
+                            elif 'Phụ Tinh' in _v['name']: _step_res = f"Đã quét qua Lục Cát/Lục Sát."
+                            elif 'Tứ Hóa' in _v['name']: _step_res = f"Đã đánh giá Lộc Quyền Khoa Kỵ."
+                            elif 'Đại Hạn' in _v['name'] or 'Giải Đoán' in _v['name']: _step_res = f"Đã chiếu theo Đại hạn và Lưu niên."
+                            _dkt_steps_log.append(f"- **{_v['name']}**: {_v['desc']} → ✅ *{_step_res}*")
+
+                # 6. LUỒNG ĐẶC NHIỆM: XEM NGÀY ĐẸP (Trạch Cát)
+                _xem_ngay_data = kwargs.get('xem_ngay_data')
+                if _xem_ngay_data or _pm_name == 'Xem Ngày':
+                    _xnd_steps = DKT.get('XND', {}).get('interpretation_steps', {})
+                    if _xnd_steps:
+                        _dkt_steps_log.append(f"\\n### 📅 LUỒNG ĐẶC NHIỆM: XEM NGÀY ĐẸP (Trạch Cát)")
+                        for _k, _v in _xnd_steps.items():
+                            _step_res = "Đã tính toán và đối chiếu."
+                            if 'Loại Ngày Kỵ' in _v['name']: _step_res = f"Đã rà soát Nguyệt Kỵ, Tam Nương, Sát Chủ."
+                            elif 'Hoàng Đạo' in _v['name']: _step_res = f"Đã check Hoàng Đạo / Hắc Đạo."
+                            elif 'Trực' in _v['name']: _step_res = f"Đã xem xét 12 Kiến Trực."
+                            elif 'Ngũ Hành' in _v['name']: _step_res = f"Đã so sánh Ngũ hành, Thái Tuế."
+                            elif 'Cát Hung' in _v['name']: _step_res = f"Kết luận trạch cát."
+                            _dkt_steps_log.append(f"- **{_v['name']}**: {_v['desc']} → ✅ *{_step_res}*")
+                    
                     _hub['synthesis']['dkt_steps_log'] = _dkt_steps_log
                     
                     # Đưa vào offline report
