@@ -3087,6 +3087,16 @@ class FreeAIHelper:
                         _db_str = str(_db).upper()
                         if 'PHẢN NGÂM' in _db_str: km_phan_phuc_str = '🔄 Phản Ngâm (Thiên Bàn xung Địa Bàn)'
                         elif 'PHỤC NGÂM' in _db_str: km_phan_phuc_str = '🔄 Phục Ngâm (Thiên Bàn = Địa Bàn)'
+                
+                # V42.9.8: ÁM CAN — Can ẩn dưới Cung DT
+                if _dt_cung_num:
+                    _DIA_BAN_CAN_AM = {1: 'Mậu', 2: 'Kỷ', 3: 'Canh', 4: 'Tân', 5: 'Mậu', 6: 'Nhâm', 7: 'Quý', 8: 'Ất', 9: 'Bính'}
+                    _am_can_dt = _DIA_BAN_CAN_AM.get(_dt_cung_num, '?')
+                    _thien_can_dt = can_thien_ban.get(_dt_cung_num, can_thien_ban.get(str(_dt_cung_num), '?'))
+                    if _am_can_dt != '?' and _thien_can_dt != '?':
+                        km_am_can_str = f"Thiên Can {_thien_can_dt} / Ám Can {_am_can_dt}"
+                    else:
+                        km_am_can_str = 'N/A'
         
         # Fallback: parse v24_km_factors text nếu direct extract failed
         if (not cung_dt_str or cung_dt_str == '?') and v24_km_factors:
@@ -3416,6 +3426,68 @@ class FreeAIHelper:
         if not vv_mapping or all(vv_mapping.get(k) in ('?', None, '') for k in ['kich_thuoc', 'tinh_trang']):
             vv_mapping = _VV_TIER_MAPPING.get(_tier_key, {})
         
+        # === V42.9.8: Extract Bát Môn/Cửu Tinh Cát/Hung cho diagram ===
+        bat_mon_cat_hung_str = 'N/A'
+        cuu_tinh_cat_hung_str = 'N/A'
+        try:
+            from interaction_diagrams import KM_BAT_MON_REF, KM_CUU_TINH_REF
+            # Bát Môn: lấy Cửa DT → tra cat_hung
+            _cua_name = cua_dt_str.strip()
+            if _cua_name and _cua_name != '?':
+                _cua_key = _cua_name if 'Môn' in _cua_name else _cua_name + ' Môn'
+                _bm_info = KM_BAT_MON_REF.get(_cua_key) or KM_BAT_MON_REF.get(_cua_name)
+                if _bm_info:
+                    bat_mon_cat_hung_str = f"{_cua_key} → {_bm_info['cat_hung']} ({_bm_info['hanh']}) — {_bm_info['y_nghia'][:40]}"
+            # Cửu Tinh: lấy Sao DT → tra cat_hung
+            _sao_name = sao_dt_str.strip()
+            if _sao_name and _sao_name != '?':
+                _ct_info = KM_CUU_TINH_REF.get(_sao_name)
+                if _ct_info:
+                    cuu_tinh_cat_hung_str = f"{_sao_name} → {_ct_info['cat_hung']} ({_ct_info['hanh']}) — {_ct_info['y_nghia'][:40]}"
+        except Exception:
+            pass
+        
+        # === V42.9.8: Extract Tử Vi + Xem Ngày cho diagram ===
+        tv_chinh_tinh_str = 'N/A'
+        tv_hanh_mapping_str = 'N/A'
+        tv_dai_han_str = 'N/A'
+        xnd_ngay_str = 'N/A'
+        xnd_hoang_hac_str = 'N/A'
+        xnd_truc_str = 'N/A'
+        
+        try:
+            from interaction_diagrams import TV_CHINH_TINH_REF, XND_HOANG_DAO_REF, XND_HAC_DAO_REF
+            # Tử Vi: map DT hành → chính tinh tương ứng
+            _tv_matched = []
+            for _tv_name, _tv_info in TV_CHINH_TINH_REF.items():
+                if _tv_info.get('hanh') == hanh_dt:
+                    _tv_matched.append(f"{_tv_name}({_tv_info['hanh']})")
+            if _tv_matched:
+                tv_chinh_tinh_str = ', '.join(_tv_matched[:3])
+                tv_hanh_mapping_str = f"DT({hanh_dt}) ↔ {tv_chinh_tinh_str}"
+            # Xem Ngày: lấy từ chart_data nếu có
+            if chart_data:
+                _chi_ngay_xnd = chart_data.get('chi_ngay', '')
+                _can_ngay_xnd = chart_data.get('can_ngay', '')
+                xnd_ngay_str = f"{_can_ngay_xnd}{_chi_ngay_xnd}" if _can_ngay_xnd else '?'
+                # Hoàng Đạo / Hắc Đạo: tra theo Lục Thú (nếu có)
+                _luc_thu_chart = chart_data.get('luc_thu', '') or chart_data.get('luc_than_ngay', '')
+                if _luc_thu_chart:
+                    if XND_HOANG_DAO_REF.get(_luc_thu_chart):
+                        xnd_hoang_hac_str = f"☀️ HOÀNG ĐẠO ({_luc_thu_chart}) — {XND_HOANG_DAO_REF[_luc_thu_chart]['y_nghia']}"
+                    elif XND_HAC_DAO_REF.get(_luc_thu_chart):
+                        xnd_hoang_hac_str = f"🌑 HẮC ĐẠO ({_luc_thu_chart}) — {XND_HAC_DAO_REF[_luc_thu_chart]['y_nghia']}"
+                # 12 Trực
+                _truc = chart_data.get('truc', '') or chart_data.get('thap_nhi_truc', '')
+                if _truc:
+                    xnd_truc_str = str(_truc)
+        except Exception:
+            pass
+        
+        # === V42.9.8: Ám Can variable (đã extract ở trên) ===
+        if 'km_am_can_str' not in dir():
+            km_am_can_str = 'N/A'
+        
         # === Fill template ===
         slots = {
             'question_short': q_short,
@@ -3450,7 +3522,7 @@ class FreeAIHelper:
             'dac_biet': dac_biet_str,
             'lh_raw_score': lh_raw_score,
             'lh_pct': lh_raw,
-            # KỲ MÔN — 14 yếu tố
+            # KỲ MÔN — 14+ yếu tố
             'cung_dt': cung_dt_str or '?',
             'cung_dt_hanh': cung_dt_hanh_str or '?',
             'sao_dt': sao_dt_str or '?',
@@ -3469,6 +3541,9 @@ class FreeAIHelper:
             'bt_sv_rel': bt_sv_rel_str or '?',
             'dia_ban_dt': dia_ban_dt_str or '?',
             'km_phan_phuc': km_phan_phuc_str,
+            # V42.9.8: Bát Môn/Cửu Tinh Cát Hung + Ám Can
+            'bat_mon_cat_hung': bat_mon_cat_hung_str,
+            'cuu_tinh_cat_hung': cuu_tinh_cat_hung_str,
             # MAI HOA — 10 yếu tố
             'the_quai': the_quai_str or '?',
             'the_quai_hanh': the_quai_hanh_str or '?',
@@ -3499,6 +3574,14 @@ class FreeAIHelper:
             'nap_am_giai_thich': nap_am_giai_thich or '?',
             'chu_khach': chu_khach,
             'ta_cuc': ta_cuc,
+            # V42.9.8: TỬ VI — 3 yếu tố
+            'tv_chinh_tinh': tv_chinh_tinh_str,
+            'tv_hanh_mapping': tv_hanh_mapping_str,
+            'tv_dai_han': tv_dai_han_str,
+            # V42.9.8: XEM NGÀY — 3 yếu tố
+            'xnd_ngay': xnd_ngay_str,
+            'xnd_hoang_hac': xnd_hoang_hac_str,
+            'xnd_truc': xnd_truc_str,
             # ĐÁNH GIÁ TỔNG HỢP
             'chi_reference': chi_ref or '?',
             'ts_stage': ts_stage or 'N/A',
@@ -7169,6 +7252,68 @@ class FreeAIHelper:
                 if hinh_ngay:
                     score -= 3
                     factors.append(f"TAM HÌNH: DT({dt_chi})↔Nhật({chi_ngay}) = {hinh_ngay} -3")
+        
+        # ⑰c V42.9.8: BÁN HỢP — 2/3 Tam Hợp (partial combination)
+        BAN_HOP_MAP = {
+            frozenset(['Thân', 'Tý']): 'Thủy', frozenset(['Tý', 'Thìn']): 'Thủy',
+            frozenset(['Dần', 'Ngọ']): 'Hỏa', frozenset(['Ngọ', 'Tuất']): 'Hỏa',
+            frozenset(['Hợi', 'Mão']): 'Mộc', frozenset(['Mão', 'Mùi']): 'Mộc',
+            frozenset(['Tị', 'Dậu']): 'Kim', frozenset(['Dậu', 'Sửu']): 'Kim',
+        }
+        if dt_chi:
+            all_chi_bh = [h.get('chi', '') for h in haos if h.get('chi')]
+            for pair, bh_hanh in BAN_HOP_MAP.items():
+                if dt_chi in pair:
+                    other = list(pair - {dt_chi})[0]
+                    if other in all_chi_bh:
+                        if SINH.get(bh_hanh) == dt_hanh or bh_hanh == dt_hanh:
+                            score += 3
+                            factors.append(f"BÁN HỢP: DT({dt_chi})+({other}) → {bh_hanh} sinh/tỷ DT +3")
+                        elif KHAC.get(bh_hanh) == dt_hanh:
+                            score -= 3
+                            factors.append(f"BÁN HỢP: DT({dt_chi})+({other}) → {bh_hanh} khắc DT -3")
+                        break
+        
+        # ⑰d V42.9.8: TRIỆT LỘ — DT bị Triệt (Can Ngày chia cắt khí)
+        # Triệt Lộ: Giáp→Thân Dậu, Ất→Ngọ Mùi, Bính→Thìn Tị, Đinh→Dần Mão, Mậu→Tý Sửu, Kỷ→Tuất Hợi
+        # Canh→Thân Dậu, Tân→Ngọ Mùi, Nhâm→Thìn Tị, Quý→Dần Mão
+        TRIET_LO_MAP = {
+            'Giáp': ['Thân', 'Dậu'], 'Ất': ['Ngọ', 'Mùi'], 'Bính': ['Thìn', 'Tị'],
+            'Đinh': ['Dần', 'Mão'], 'Mậu': ['Tý', 'Sửu'], 'Kỷ': ['Tuất', 'Hợi'],
+            'Canh': ['Thân', 'Dậu'], 'Tân': ['Ngọ', 'Mùi'], 'Nhâm': ['Thìn', 'Tị'],
+            'Quý': ['Dần', 'Mão'],
+        }
+        if can_ngay and dt_chi:
+            triet_chis = TRIET_LO_MAP.get(can_ngay, [])
+            if dt_chi in triet_chis:
+                score -= 8
+                factors.append(f"TRIỆT LỘ: DT({dt_chi}) bị Triệt (Can {can_ngay}) → khí bị cắt đứt -8")
+        
+        # ⑰e V42.9.8: TUẾ PHÁ — Thái Tuế (Chi Năm) xung DT
+        chi_nam = ''
+        if luc_hao_data:
+            chi_nam = luc_hao_data.get('chi_nam', '')
+            if not chi_nam:
+                _ban_cn = luc_hao_data.get('ban', {})
+                chi_nam = _ban_cn.get('chi_nam', '')
+        if not chi_nam:
+            try:
+                import datetime as _dt_tp
+                from qmdg_calc import calculate_qmdg_params as _calc_tp
+                _pp = _calc_tp(_dt_tp.datetime.now())
+                chi_nam = _pp.get('chi_nam', '')
+            except:
+                pass
+        if chi_nam and dt_chi and LUC_XUNG_CHI.get(chi_nam) == dt_chi:
+            score -= 6
+            factors.append(f"TUẾ PHÁ: Thái Tuế ({chi_nam}) xung DT({dt_chi}) -6")
+        
+        # ⑰f V42.9.8: NHẬT PHÁ — Nhật Thần (Chi Ngày) xung DT khi DT SUY
+        if chi_ngay and dt_chi and LUC_XUNG_CHI.get(chi_ngay) == dt_chi:
+            _dt_vuong_np = str(dt_hao.get('vuong_suy', ''))
+            if 'Suy' in _dt_vuong_np or 'Tử' in _dt_vuong_np or 'Tuyệt' in _dt_vuong_np or 'Bệnh' in _dt_vuong_np:
+                score -= 7
+                factors.append(f"NHẬT PHÁ: Nhật({chi_ngay}) xung DT suy({dt_chi}) → TAN VỠ -7")
         
         # ⑱ Hào Động KHÁC sinh/khắc DT (QUAN TRỌNG NHẤT — scan TẤT CẢ hào động)
         if dong_hao and dt_hanh:
