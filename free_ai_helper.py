@@ -13147,6 +13147,14 @@ class FreeAIHelper:
                                 _dhs = luc_hao_data.get('dong_hao', [])
                                 _step_res = f"Có {len(_dhs)} hào động: {', '.join(map(str, _dhs))}." if _dhs else "Quẻ tĩnh, không có hào động."
                             elif 'Xung/Hợp' in _v['name']: _step_res = f"Xung hợp đã được rà soát trong V23_factors."
+                            elif 'Bất Thường' in _v['name']:
+                                _bt = []
+                                _lh_str = str(v23_lh_factors) if 'v23_lh_factors' in locals() else ''
+                                if 'Tuần Không' in _lh_str or 'Không Vong' in _lh_str: _bt.append('Tuần Không')
+                                if 'Nguyệt Phá' in _lh_str: _bt.append('Nguyệt Phá')
+                                if 'Phục Ngâm' in _lh_str: _bt.append('Phục Ngâm')
+                                if 'Phản Ngâm' in _lh_str: _bt.append('Phản Ngâm')
+                                _step_res = f"Phát hiện: {', '.join(_bt)}" if _bt else "Không có dấu hiệu Tuần Không/Phục Ngâm/Phản Ngâm."
                             elif 'Cát Hung' in _v['name']: _step_res = f"Kết luận: {_hub['methods']['LH']['verdict']}."
                         elif _pm_code == 'MH' and mai_hoa_data:
                             if 'Thể/Dụng' in _v['name']:
@@ -13157,7 +13165,14 @@ class FreeAIHelper:
                                 _step_res = f"Kết quả sinh khắc: {_hub['methods']['MH']['verdict']}."
                         elif _pm_code == 'KM':
                             if 'Dụng Thần' in _v['name']: _step_res = f"Tập trung vào: {dung_than}."
-                            elif 'Cung' in _v['name']: _step_res = f"Đã check Bát Môn & Cửu Tinh."
+                            elif 'Cung' in _v['name'] or 'Thiên Can' in _v['name'] or 'Cách Cục' in _v['name']: _step_res = f"Đã check Bát Môn & Cửu Tinh."
+                            elif 'Bất Thường' in _v['name']:
+                                _bt = []
+                                _km_str = str(v24_km_factors) if 'v24_km_factors' in locals() else ''
+                                if 'Không Vong' in _km_str: _bt.append('Không Vong')
+                                if 'Phục Ngâm' in _km_str: _bt.append('Phục Ngâm')
+                                if 'Phản Ngâm' in _km_str: _bt.append('Phản Ngâm')
+                                _step_res = f"Phát hiện: {', '.join(_bt)}" if _bt else "Cung Dụng Thần không bị Không Vong/Ngâm."
                         _dkt_steps_log.append(f"- **{_v['name']}**: {_v['desc']} → ✅ *{_step_res}*")
                     
                     _hub['synthesis']['dkt_steps_log'] = _dkt_steps_log

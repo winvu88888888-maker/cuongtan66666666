@@ -264,6 +264,7 @@ LH_TREE = {
         'step_3': {'name': 'Xét Vượng Suy', 'desc': 'Kiểm tra Dụng Thần vượng hay suy, có bị Tuần Không, Nguyệt Phá không'},
         'step_4': {'name': 'Phân tích Động Hào', 'desc': 'Xem hào động sinh hay khắc Dụng Thần, Hóa Hào tốt hay xấu'},
         'step_5': {'name': 'Xét Xung/Hợp', 'desc': 'Đánh giá tác động của Lục Xung, Lục Hợp, Tam Hợp cục'},
+        'step_5b': {'name': 'Xét Bất Thường (Tuần Không/Ngâm)', 'desc': 'Kiểm tra sát sao Phản Ngâm, Phục Ngâm, Tuần Không, Nguyệt Phá'},
         'step_6': {'name': 'Định Cát Hung', 'desc': 'Kết luận cuối cùng dựa trên tương quan sinh khắc và trạng thái của Dụng Thần'},
     },
 
@@ -382,6 +383,7 @@ KM_TREE = {
         'step_3': {'name': 'Phân tích Cung Dụng Thần', 'desc': 'Đánh giá Bát Môn (nhân sự), Cửu Tinh (thiên thời), Bát Thần (tâm linh)'},
         'step_4': {'name': 'Xét Thiên Can, Địa Bàn', 'desc': 'Xem tương tác giữa Can thiên bàn và Can địa bàn'},
         'step_5': {'name': 'Luận Cách Cục', 'desc': 'Xem có rơi vào Cát Cách hay Hung Cách đặc biệt không'},
+        'step_5b': {'name': 'Xét Bất Thường (Không Vong/Ngâm)', 'desc': 'Kiểm tra Không Vong, Phản Ngâm, Phục Ngâm của Cung Dụng Thần'},
         'step_6': {'name': 'Định Cát Hung', 'desc': 'Kết luận tổng thể dựa trên cung Dụng Thần sinh khắc với cung Thế/Can ngày'},
     },
 
