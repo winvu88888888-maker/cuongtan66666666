@@ -516,6 +516,21 @@ LN_TREE = {
         'step_4': {'name': 'Xét Thiên Tướng', 'desc': 'Đánh giá sự trợ giúp hay phá hoại của 12 thiên tướng (Quý Nhân, Bạch Hổ...)'},
         'step_5': {'name': 'Định Cát Hung', 'desc': 'Kết hợp toàn bộ yếu tố để đưa ra dự đoán chi tiết'},
     },
+
+    'verdict_rules': {
+        'CAT': [
+            'Sơ Truyền gặp Quý Nhân/Thanh Long/Lục Hợp',
+            'Tam Truyền thuận hành (không xung khắc)',
+            'Thiên Tướng cát chiếu khóa chính',
+            'Can ngày sinh Can chi lạc cung',
+        ],
+        'HUNG': [
+            'Sơ Truyền gặp Bạch Hổ/Đằng Xà/Huyền Vũ',
+            'Tam Truyền nghịch hành (xung khắc liên hoàn)',
+            'Thiên Tướng hung chiếu khóa chính',
+            'Can ngày bị khắc bởi chi lạc cung',
+        ],
+    },
 }
 
 # ═══════════════════════════════════════════════════════════
@@ -579,6 +594,19 @@ TB_TREE = {
         'step_4': {'name': 'Tra Thiết Bản', 'desc': 'Dùng Thần Số để tra các câu văn trong sách Thiết Bản'},
         'step_5': {'name': 'Giải Đoán', 'desc': 'Luận giải vận mệnh cả đời qua các câu văn'},
     },
+
+    'verdict_rules': {
+        'CAT': [
+            'Nạp Âm hành tương sinh với hành bản mệnh',
+            'Thần Số rơi vào cung Cát (1, 6, 8)',
+            'Câu văn Thiết Bản mang ý nghĩa thuận lợi',
+        ],
+        'HUNG': [
+            'Nạp Âm hành xung khắc với hành bản mệnh',
+            'Thần Số rơi vào cung Hung (2, 5)',
+            'Câu văn Thiết Bản mang ý nghĩa trắc trở',
+        ],
+    },
 }
 
 # ═══════════════════════════════════════════════════════════
@@ -639,6 +667,21 @@ TV_TREE = {
         'step_3': {'name': 'Xét Phụ Tinh, Sát Tinh', 'desc': 'Kiểm tra Lục Cát (tốt) và Lục Sát (xấu) tác động thế nào'},
         'step_4': {'name': 'Phân tích Tứ Hóa', 'desc': 'Xem Lộc, Quyền, Khoa, Kỵ làm biến đổi ý nghĩa các sao ra sao'},
         'step_5': {'name': 'Xem Vận Hạn', 'desc': 'Đánh giá Đại Hạn (10 năm) và Lưu Niên (1 năm) để dự báo sự kiện'},
+    },
+
+    'verdict_rules': {
+        'CAT': [
+            'Mệnh có Lục Cát tinh hội chiếu (Tả Phụ, Hữu Bật, Văn Xương, Văn Khúc, Thiên Khôi, Thiên Việt)',
+            'Hóa Lộc/Hóa Quyền/Hóa Khoa chiếu Mệnh',
+            'Chính Tinh miếu vượng tại cung Mệnh',
+            'Đại Hạn/Lưu Niên gặp Tam Cát hóa',
+        ],
+        'HUNG': [
+            'Mệnh có Lục Sát tinh hội chiếu (Kình Dương, Đà La, Hỏa Tinh, Linh Tinh, Địa Không, Địa Kiếp)',
+            'Hóa Kỵ nhập Mệnh/Thân',
+            'Chính Tinh hãm địa tại cung Mệnh',
+            'Đại Hạn/Lưu Niên gặp Hóa Kỵ + Sát tinh',
+        ],
     },
 }
 
@@ -704,6 +747,23 @@ XND_TREE = {
         'step_3': {'name': 'Xem Trực 12', 'desc': 'Chọn Trực phù hợp với việc cần làm (Khai, Thành, Mãn...)'},
         'step_4': {'name': 'Xét Ngũ Hành Sinh Khắc', 'desc': 'Ngày phải tương sinh hoặc không xung khắc với tuổi người dùng'},
         'step_5': {'name': 'Định Cát Hung', 'desc': 'Chốt ngày giờ tốt nhất cho sự kiện cụ thể'},
+    },
+
+    'verdict_rules': {
+        'CAT': [
+            'Ngày Hoàng Đạo (Thanh Long, Minh Đường, Kim Quỹ, Thiên Đức, Ngọc Đường, Tư Mệnh)',
+            'Trực Cát (Khai, Thành, Mãn, Định, Trừ, Bình)',
+            'Không trùng Tam Nương, Nguyệt Kỵ, Dương Công',
+            'Ngũ Hành ngày tương sinh/tỷ hòa với tuổi',
+            'Có Thiên Đức/Nguyệt Đức hợp',
+        ],
+        'HUNG': [
+            'Ngày Hắc Đạo (Thiên Hình, Chu Tước, Bạch Hổ, Thiên Lao, Huyền Vũ, Câu Trận)',
+            'Trực Hung (Phá, Nguy, Bế)',
+            'Trùng Tam Nương hoặc Nguyệt Kỵ hoặc Dương Công Kỵ',
+            'Ngũ Hành ngày xung khắc với tuổi',
+            'Trùng Sát Chủ theo tuổi',
+        ],
     },
 }
 

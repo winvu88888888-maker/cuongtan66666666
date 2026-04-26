@@ -12997,6 +12997,151 @@ class FreeAIHelper:
         # unified_narrative vẫn tính nhưng KHÔNG append vào sections
         # → Dùng cho offline_analysis_data gửi AI Online
         
+        # ═══════════════════════════════════════════════════════════
+        # V42.9.6: MULTI-INTENT CARD RENDERING — Trực tiếp vào sections
+        # Hiển thị TỪNG CÂU HỎI CON với verdict riêng biệt trong card
+        # ═══════════════════════════════════════════════════════════
+        try:
+            _mi_parsed = v32_parse_question(question)
+            _mi_all_dts = _get_all_dung_than(question)
+            if len(_mi_parsed) > 1 or len(_mi_all_dts) > 1:
+                _MI_DT_ROLE = {
+                    'Quan Quỷ': 'Công việc/Sếp', 'Thê Tài': 'Tiền/Vợ/Tình',
+                    'Tử Tôn': 'Con cái/Phúc', 'Phụ Mẫu': 'Bố mẹ/Nhà/Giấy tờ',
+                    'Huynh Đệ': 'Anh em/Bạn', 'Bản Thân': 'Bản thân',
+                }
+                _MI_LT_H = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa',
+                             'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                _MI_SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
+                _MI_HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
+                _MI_NGHE = {'Kim': 'Kỹ thuật/Ngân hàng', 'Mộc': 'Giáo dục/Y tế',
+                            'Thủy': 'Thương mại/Vận tải', 'Hỏa': 'CNTT/Quảng cáo', 'Thổ': 'Xây dựng/BĐS'}
+                _MI_THANG = {'Kim': 'tháng 7-8 ÂL', 'Mộc': 'tháng 1-2 ÂL',
+                             'Thủy': 'tháng 10-11 ÂL', 'Hỏa': 'tháng 4-5 ÂL', 'Thổ': 'tháng 3/6/9/12 ÂL'}
+                _MI_HD = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
+                
+                def _mi_detect_qtype(text):
+                    t = text.lower()
+                    if _is_competition_question(text): return 'COMPETITION'
+                    if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm']): return 'WHEN'
+                    if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào']): return 'WHERE'
+                    if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì']): return 'WHAT'
+                    if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi']): return 'AGE'
+                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','số lượng']): return 'COUNT'
+                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
+                    if any(k in t for k in ['sống','chết','qua khỏi','mất']): return 'LIFE_DEATH'
+                    return 'YESNO'
+                
+                def _mi_gen_verdict(qtype, sq_pct, sq_hanh, sq_dt, sq_text):
+                    _hd = _MI_HD.get(sq_hanh, (5, 10))
+                    if qtype == 'WHEN':
+                        thang = _MI_THANG.get(sq_hanh, '?')
+                        if sq_pct >= 55: return f"⏳ SẮP TỚI — ứng vào {thang} ({sq_pct}%)", "⏳"
+                        elif sq_pct >= 45: return f"⏳ CÓ THỂ — {thang} ({sq_pct}%)", "🟡"
+                        else: return f"⏳ CHẬM / CHƯA TỚI ({sq_pct}%)", "🔴"
+                    elif qtype == 'WHERE':
+                        huong = _MI_HUONG.get(sq_hanh, '?')
+                        return f"🧭 HƯỚNG {huong} (Hành {sq_hanh}) ({sq_pct}%)", "🧭"
+                    elif qtype == 'WHAT':
+                        nghe = _MI_NGHE.get(sq_hanh, '?')
+                        return f"🔮 Hành {sq_hanh} → {nghe} ({sq_pct}%)", "🔮"
+                    elif qtype == 'AGE':
+                        age = _hd[1] * 5 if sq_pct >= 55 else _hd[0] * 5
+                        return f"🎂 Khoảng {age} tuổi (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "🎂"
+                    elif qtype == 'COUNT':
+                        so = _hd[1] if sq_pct >= 55 else _hd[0]
+                        return f"👥 Số lượng: {so} (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "👥"
+                    elif qtype == 'SHOULD':
+                        if sq_pct >= 55: return f"NÊN — THUẬN LỢI ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"CÓ THỂ — THẬN TRỌNG ({sq_pct}%)", "🟡"
+                        else: return f"KHÔNG NÊN — BẤT LỢI ({sq_pct}%)", "🔴"
+                    elif qtype == 'LIFE_DEATH':
+                        if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
+                        elif sq_pct >= 40: return f"NGUY KỊCH ({sq_pct}%)", "🟡"
+                        else: return f"NGUY HIỂM ({sq_pct}%)", "🔴"
+                    elif qtype == 'COMPETITION':
+                        if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
+                        else: return f"THUA ({sq_pct}%)", "🔴"
+                    else:
+                        if sq_pct >= 55: return f"CÓ — THÀNH CÔNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 50: return f"CÓ — NỖ LỰC ({sq_pct}%)", "🟡"
+                        elif sq_pct >= 45: return f"KHÓ THÀNH ({sq_pct}%)", "🟡"
+                        else: return f"KHÔNG ({sq_pct}%)", "🔴"
+                
+                _MI_QTYPE_LABEL = {
+                    'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
+                    'WHAT': '🔮 Loại gì', 'AGE': '🎂 Tuổi', 'COUNT': '👥 Số lượng',
+                    'SHOULD': '⚖️ Nên/Không', 'LIFE_DEATH': '💀 Sống/Chết', 'COMPETITION': '⚔️ Thắng/Thua',
+                }
+                
+                _mi_cards = []
+                
+                # Card 1: câu hỏi chính (dùng weighted_pct đã tính)
+                _mi_pq1_text = _mi_parsed[0].get('text', question)[:60] if _mi_parsed else question[:60]
+                _mi_pq1_qtype = _mi_detect_qtype(_mi_pq1_text)
+                _mi_cards.append({
+                    'text': _mi_pq1_text,
+                    'pct': weighted_pct,
+                    'dt': dung_than,
+                    'role': _MI_DT_ROLE.get(dung_than, '?'),
+                    'qtype': _mi_pq1_qtype,
+                    'icon': '✅' if weighted_pct >= 55 else ('🟡' if weighted_pct >= 45 else '🔴'),
+                    'verdict_text': f"PHÁN QUYẾT: {'THUẬN LỢI' if weighted_pct >= 55 else ('CẦN THẬN TRỌNG' if weighted_pct >= 45 else 'BẤT LỢI')} ({weighted_pct}%)",
+                })
+                
+                # Card 2+: các câu hỏi con với verdict riêng
+                _mi_nguyet_hanh = ''
+                if chart_data and isinstance(chart_data, dict):
+                    _mi_nguyet_hanh = CHI_NGU_HANH.get(chart_data.get('chi_thang', ''), '')
+                
+                for _mi_idx, _mi_sq in enumerate(_mi_parsed[1:], start=2):
+                    _mi_sq_dt = _mi_sq.get('dung_than', _mi_all_dts[min(_mi_idx-1, len(_mi_all_dts)-1)] if _mi_idx-1 < len(_mi_all_dts) else 'Bản Thân')
+                    _mi_sq_text = _mi_sq.get('text', '')[:60]
+                    _mi_sq_hanh = _MI_LT_H.get(_mi_sq_dt, 'Thổ')
+                    
+                    # Tính pct riêng dựa trên Nguyệt Lệnh sinh khắc
+                    _mi_sq_pct = 50
+                    if _mi_nguyet_hanh:
+                        if _MI_SINH.get(_mi_nguyet_hanh) == _mi_sq_hanh: _mi_sq_pct = 62
+                        elif _mi_sq_hanh == _mi_nguyet_hanh: _mi_sq_pct = 55
+                        elif _MI_SINH.get(_mi_sq_hanh) == _mi_nguyet_hanh: _mi_sq_pct = 42
+                        else: _mi_sq_pct = 35
+                    
+                    _mi_sq_qtype = _mi_detect_qtype(_mi_sq_text)
+                    _mi_sq_verdict, _mi_sq_icon = _mi_gen_verdict(_mi_sq_qtype, _mi_sq_pct, _mi_sq_hanh, _mi_sq_dt, _mi_sq_text)
+                    
+                    _mi_cards.append({
+                        'text': _mi_sq_text,
+                        'pct': _mi_sq_pct,
+                        'dt': _mi_sq_dt,
+                        'role': _MI_DT_ROLE.get(_mi_sq_dt, '?'),
+                        'qtype': _mi_sq_qtype,
+                        'icon': _mi_sq_icon,
+                        'verdict_text': f"PHÁN QUYẾT: {_mi_sq_verdict}",
+                    })
+                
+                # Render tất cả cards vào sections
+                _mi_html = []
+                _mi_html.append(f'<div style="background:linear-gradient(135deg,#312e81,#1e1b4b);padding:18px;border-radius:14px;border:2px solid #8b5cf6;margin:16px 0;">')
+                _mi_html.append(f'<div style="font-size:1.15em;font-weight:900;color:#c4b5fd;margin-bottom:12px;">🔄 PHÂN TÍCH {len(_mi_cards)} CÂU HỎI RIÊNG BIỆT</div>')
+                
+                for _mi_ci, _mi_card in enumerate(_mi_cards):
+                    _mi_qt_label = _MI_QTYPE_LABEL.get(_mi_card['qtype'], '❓')
+                    _mi_pct_color = '#6ee7b7' if _mi_card['pct'] >= 55 else ('#fde68a' if _mi_card['pct'] >= 45 else '#fca5a5')
+                    _mi_html.append(
+                        f'<div style="color:#e2e8f0;font-size:1.05em;margin:10px 0;padding:14px;background:rgba(139,92,246,0.15);border-radius:10px;border-left:4px solid #8b5cf6;">'
+                        f'<div style="font-size:0.85em;color:#a5b4fc;margin-bottom:4px;">{_mi_qt_label} | DT: {_mi_card["dt"]} ({_mi_card["role"]})</div>'
+                        f'<div style="font-weight:800;font-size:1.1em;">📋 Câu {_mi_ci+1}: {_mi_card["text"]}...</div>'
+                        f'<div style="font-size:1.2em;font-weight:900;color:{_mi_pct_color};margin-top:6px;">{_mi_card["icon"]} {_mi_card["verdict_text"]}</div>'
+                        f'</div>'
+                    )
+                
+                _mi_html.append(f'</div>')
+                sections.append("\n".join(_mi_html))
+        except Exception as _mi_err:
+            self.log_step("V42.9.6 MultiIntent", "ERROR", str(_mi_err)[:80])
+        
         sections.append(f"\n---\n*🤖 Thiên Cơ Đại Sư V42.9 — Lực Lượng Tổng Hợp: Tổng Hợp 5PP={weighted_pct}%, Tổng Hợp 3 Tầng={unified_v22['unified_pct']}%, Ngũ Khí={ngu_khi_state_v22}.*")
         
         # ========================================
