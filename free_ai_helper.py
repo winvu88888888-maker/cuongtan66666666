@@ -11500,22 +11500,66 @@ class FreeAIHelper:
                     'qtype': _pq1_qtype,
                 })
                 
-                # Sub-questions 2+: tính verdict riêng theo LOẠI CÂU HỎI
+                # Sub-questions 2+: V42.9.9 — SUPER VERDICT cho từng câu hỏi phụ
                 for _sq_idx, _sq in enumerate(_parsed_qs[1:], start=2):
                     _sq_dt = _sq.get('dung_than', _all_dts_verdict[min(_sq_idx-1, len(_all_dts_verdict)-1)] if _sq_idx-1 < len(_all_dts_verdict) else 'Bản Thân')
                     _sq_text = _sq.get('text', '')[:60]
                     _sq_hanh = _LT_H.get(_sq_dt, 'Thổ')
                     
-                    # Tính pct riêng cho DT phụ
+                    # V42.9.9: Multi-factor scoring cho sub-question
+                    _sq_pct = 50  # Base
+                    _sq_factors_detail = []
+                    
+                    # ① Nguyệt Lệnh → DT phụ
                     _nguyet_hanh = ''
                     if chart_data and isinstance(chart_data, dict):
                         _nguyet_hanh = CHI_NGU_HANH.get(chart_data.get('chi_thang', ''), '')
-                    _sq_pct = 50
                     if _nguyet_hanh:
-                        if _SINH_V.get(_nguyet_hanh) == _sq_hanh: _sq_pct = 62
-                        elif _sq_hanh == _nguyet_hanh: _sq_pct = 55
-                        elif _SINH_V.get(_sq_hanh) == _nguyet_hanh: _sq_pct = 42
-                        else: _sq_pct = 35
+                        if _SINH_V.get(_nguyet_hanh) == _sq_hanh:
+                            _sq_pct += 12
+                            _sq_factors_detail.append(f"Nguyệt sinh DT +12")
+                        elif _sq_hanh == _nguyet_hanh:
+                            _sq_pct += 5
+                            _sq_factors_detail.append(f"Nguyệt tỷ hòa +5")
+                        elif _SINH_V.get(_sq_hanh) == _nguyet_hanh:
+                            _sq_pct -= 8
+                            _sq_factors_detail.append(f"Nguyệt tiết DT -8")
+                        else:
+                            _sq_pct -= 5
+                            _sq_factors_detail.append(f"Nguyệt khắc DT -5")
+                    
+                    # ② Tìm DT phụ trong Lục Hào → check Vượng/Suy
+                    if luc_hao_data and isinstance(luc_hao_data, dict):
+                        _ban_sq = luc_hao_data.get('ban', {})
+                        _haos_sq = _ban_sq.get('haos', _ban_sq.get('details', luc_hao_data.get('haos', [])))
+                        if _haos_sq and isinstance(_haos_sq, list):
+                            for _h_sq in _haos_sq:
+                                if _h_sq.get('luc_than', '') == _sq_dt:
+                                    _vs_sq = str(_h_sq.get('vuong_suy', ''))
+                                    if any(k in _vs_sq for k in ['Vượng', 'Tướng', 'Đế', 'Trường']):
+                                        _sq_pct += 8
+                                        _sq_factors_detail.append(f"DT {_sq_dt} Vượng +8")
+                                    elif any(k in _vs_sq for k in ['Suy', 'Tử', 'Tuyệt', 'Bệnh']):
+                                        _sq_pct -= 8
+                                        _sq_factors_detail.append(f"DT {_sq_dt} Suy -8")
+                                    break
+                    
+                    # ③ Dùng consensus từ main verdict (5PP đã tính)
+                    # Sub-question hưởng lợi/thiệt từ xu hướng chung quẻ
+                    if cat_pp >= 3:
+                        _sq_pct += 5
+                        _sq_factors_detail.append(f"Consensus {cat_pp}/5 CÁT +5")
+                    elif hung_pp >= 3:
+                        _sq_pct -= 5
+                        _sq_factors_detail.append(f"Consensus {hung_pp}/5 HUNG -5")
+                    
+                    # ④ Check critical factors ảnh hưởng sub-question
+                    if _has_tuan_khong:
+                        _sq_pct -= 5
+                        _sq_factors_detail.append("Tuần Không -5")
+                    
+                    # Clamp pct
+                    _sq_pct = max(15, min(90, _sq_pct))
                     
                     # Detect loại câu hỏi → tạo verdict tương ứng
                     _sq_qtype = _detect_qtype_sub(_sq_text)
@@ -11529,6 +11573,7 @@ class FreeAIHelper:
                         'role': _DT_ROLE_V.get(_sq_dt, '?'),
                         'pct': _sq_pct,
                         'qtype': _sq_qtype,
+                        'factors': _sq_factors_detail,
                     })
                 
                 # Render tất cả sub-verdicts
@@ -11551,6 +11596,7 @@ class FreeAIHelper:
                         f'<div style="font-size:0.85em;color:#a5b4fc;margin-bottom:4px;">{_qt_label} | DT: {_sv["dt"]} ({_sv["role"]})</div>'
                         f'<div style="font-weight:800;font-size:1.1em;">📋 Câu {_si+1}: {_sv["text"]}...</div>'
                         f'<div style="font-size:1.2em;font-weight:900;color:{_pct_color};margin-top:4px;">{_sv["icon"]} {_sv["verdict"]}</div>'
+                        f'<div style="font-size:0.8em;color:#94a3b8;margin-top:3px;">{"  |  ".join(_sv.get("factors", [])[:4])}</div>'
                         f'</div>'
                     )
                 lines.append(f'</div>')
