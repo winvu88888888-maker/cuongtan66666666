@@ -472,6 +472,32 @@ def _get_dung_than(question):
     """
     q = question.lower()
     
+    # V42.9.9d: Normalize tiếng Việt không dấu → có dấu
+    _DT_NORM = {
+        'me toi': 'mẹ tôi', 'bo toi': 'bố tôi', 'cha toi': 'cha tôi',
+        'vo toi': 'vợ tôi', 'chong toi': 'chồng tôi', 'con toi': 'con tôi',
+        'nguoi yeu': 'người yêu', 'ban trai': 'bạn trai', 'ban gai': 'bạn gái',
+        'anh em': 'anh em', 'anh chi em': 'anh chị em',
+        'con trai': 'con trai', 'con gai': 'con gái', 'con cai': 'con cái',
+        'di xa': 'đi xa', 'di choi': 'đi chơi', 'du lich': 'du lịch',
+        'xuat hanh': 'xuất hành', 've que': 'về quê',
+        'mat do': 'mất đồ', 'do mat': 'mất đồ', 'tim do': 'tìm đồ',
+        'mat xe': 'mất xe', 'that lac': 'thất lạc', 'mat cap': 'mất cắp',
+        'mat dien thoai': 'mất điện thoại', 'mat tien': 'mất tiền',
+        'mua nha': 'mua nhà', 'ban nha': 'bán nhà', 'xay nha': 'xây nhà',
+        'mua xe': 'mua xe', 'ban xe': 'bán xe', 'mua dat': 'mua đất',
+        'kinh doanh': 'kinh doanh', 'dau tu': 'đầu tư',
+        'tang luong': 'tăng lương', 'thang tien': 'thăng tiến',
+        'suc khoe': 'sức khỏe', 'benh': 'bệnh', 'chua benh': 'chữa bệnh',
+        'kien tung': 'kiện tụng', 'thang kien': 'thắng kiện',
+        'thuan loi': 'thuận lợi', 'nam nay': 'năm nay',
+        'me': 'mẹ', 'bo': 'bố', 'cha': 'cha',
+        'vo': 'vợ', 'chong': 'chồng',
+    }
+    for _nk, _ck in sorted(_DT_NORM.items(), key=lambda x: len(x[0]), reverse=True):
+        if _nk in q:
+            q = q.replace(_nk, _ck)
+    
     # ═══ TIER 1: CHỦ THỂ — Người / Vật được hỏi (LUÔN THẮNG) ═══
     # Sorted dài→ngắn để "con trai" match trước "con"
     _SUBJECT_DT = [
@@ -12292,6 +12318,20 @@ class FreeAIHelper:
             'di nuoc ngoai': 'đi nước ngoài', 'xuat ngoai': 'xuất ngoại',
             'dinh cu': 'định cư', 'di may bay': 'đi máy bay',
             'huong di': 'hướng đi', 'huong tot': 'hướng tốt',
+            'di xa': 'đi xa', 'di choi': 'đi chơi', 'du lich': 'du lịch',
+            'di cong tac': 'đi công tác', 'xuat hanh': 'xuất hành',
+            've que': 'về quê', 'chuyen di': 'chuyến đi', 'len duong': 'lên đường',
+            # === TÌM ĐỒ / MẤT ĐỒ ===
+            'mat do': 'mất đồ', 'do mat': 'mất đồ', 'tim do': 'tìm đồ',
+            'mat xe': 'mất xe', 'mat dien thoai': 'mất điện thoại',
+            'mat tien': 'mất tiền', 'mat vi': 'mất ví',
+            'that lac': 'thất lạc', 'mat cap': 'mất cắp', 'bi trom': 'bị trộm',
+            'de dau': 'để đâu', 'cat dau': 'cất đâu', 'o dau': 'ở đâu',
+            'cho nao': 'chỗ nào', 'tim lai': 'tìm lại',
+            # === PERSON (bổ sung) ===
+            'me toi': 'mẹ tôi', 'bo toi': 'bố tôi', 'cha toi': 'cha tôi',
+            'vo toi': 'vợ tôi', 'chong toi': 'chồng tôi',
+            'con toi': 'con tôi', 'me': 'mẹ', 'bo': 'bố',
             # === GIA ĐÌNH / NHÀ CỬA ===
             'sinh con': 'sinh con', 'co con': 'có con', 'con cai': 'con cái',
             'chia tai san': 'chia tài sản', 'thua ke': 'thừa kế',
