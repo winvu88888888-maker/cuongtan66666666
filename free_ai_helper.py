@@ -14886,39 +14886,81 @@ class FreeAIHelper:
                     + f'</div>'
                 )
             else:
-                # V42.9.9b: Offline-only NÂNG CẤP — hiển thị verdict + reasons đầy đủ
-                _off2_v_label = 'ĐẠI CÁT' if weighted_pct >= 75 else 'CÁT' if weighted_pct >= 60 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 35 else 'ĐẠI HUNG'
-                _off2_v_color = '#22c55e' if weighted_pct >= 60 else '#eab308' if weighted_pct >= 45 else '#ef4444'
-                _off2_v_icon = '🟢' if weighted_pct >= 60 else '🟡' if weighted_pct >= 45 else '🔴'
-                
-                _off2_summary = ''
-                if len(_offline_short_answer) < 80 or 'Cân nhắc' in _offline_short_answer or 'CẦN CÂN NHẮC' in _offline_short_answer or 'BÌNH' in _offline_short_answer:
-                    _off2_answer_show = f'{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)'
-                    _rp2 = []
-                    if ky_mon_reason and len(str(ky_mon_reason)) > 3:
-                        _rp2.append(f'🏯 KM: {str(ky_mon_reason)[:100]}')
-                    if luc_hao_reason and len(str(luc_hao_reason)) > 3:
-                        _rp2.append(f'📿 LH: {str(luc_hao_reason)[:100]}')
-                    if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
-                        _rp2.append(f'🌸 MH: {str(mai_hoa_reason)[:100]}')
-                    if _rp2:
-                        _off2_summary = (
-                            f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.25);border-radius:10px;">'
-                            f'<div style="font-size:1.05em;font-weight:700;color:#6ee7b7;margin-bottom:8px;">📋 LUẬN GIẢI CHI TIẾT:</div>'
-                            + ''.join(f'<div style="color:#d1fae5;margin:4px 0;font-size:0.95em;">{r}</div>' for r in _rp2)
-                            + f'</div>'
-                        )
+                # V42.9.9d: NÂNG CẤP TRẢ LỜI TRỰC TIẾP (GIỐNG path có Online)
+                _q_lower_fb = question.lower() if question else ''
+                if weighted_pct >= 60:
+                    _tone_fb = 'CÓ THỂ'
+                    _detail_fb = 'thuận lợi, nên tiến hành'
+                elif weighted_pct >= 50:
+                    _tone_fb = 'CÓ THỂ nhưng cần CẨN TRỌNG'
+                    _detail_fb = 'cần chuẩn bị kỹ'
+                elif weighted_pct >= 45:
+                    _tone_fb = 'KHÓ — cần CÂN NHẮC KỸ'
+                    _detail_fb = 'chưa thuận lợi lắm, nên chờ thêm'
                 else:
-                    _off2_answer_show = _offline_short_answer
+                    _tone_fb = 'KHÔNG NÊN vào lúc này'
+                    _detail_fb = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
+                
+                if 'mua' in _q_lower_fb and ('nhà' in _q_lower_fb or 'nha' in _q_lower_fb):
+                    _dr_fb = f'Việc MUA NHÀ năm nay: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                elif 'đầu tư' in _q_lower_fb or 'dau tu' in _q_lower_fb or 'kinh doanh' in _q_lower_fb:
+                    _dr_fb = f'Việc ĐẦU TƯ KINH DOANH: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                elif 'người yêu' in _q_lower_fb or 'nguoi yeu' in _q_lower_fb or 'tình' in _q_lower_fb:
+                    _dr_fb = f'TÌNH DUYÊN: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                elif 'sức khỏe' in _q_lower_fb or 'suc khoe' in _q_lower_fb or 'bệnh' in _q_lower_fb:
+                    _dr_fb = f'SỨC KHỎE: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                elif 'kiện' in _q_lower_fb or 'kien' in _q_lower_fb:
+                    _dr_fb = f'KIỆN TỤNG: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                elif 'đi xa' in _q_lower_fb or 'di xa' in _q_lower_fb or 'du lịch' in _q_lower_fb:
+                    _dr_fb = f'XUẤT HÀNH: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                elif 'tìm' in _q_lower_fb or 'mất' in _q_lower_fb:
+                    _dr_fb = f'TÌM ĐỒ: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                else:
+                    _dr_fb = f'Kết quả: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                
+                _rp2 = []
+                if ky_mon_reason and len(str(ky_mon_reason)) > 3:
+                    _rp2.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
+                if luc_hao_reason and len(str(luc_hao_reason)) > 3:
+                    _rp2.append(f'📿 <b>Lục Hào:</b> {str(luc_hao_reason)[:200]}')
+                if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
+                    _rp2.append(f'🌸 <b>Mai Hoa:</b> {str(mai_hoa_reason)[:200]}')
+                if luc_nham_reason and len(str(luc_nham_reason)) > 3:
+                    _rp2.append(f'🔮 <b>Đại Lục Nhâm:</b> {str(luc_nham_reason)[:200]}')
+                if thai_at_reason and len(str(thai_at_reason)) > 3:
+                    _rp2.append(f'⚔️ <b>Thái Ất:</b> {str(thai_at_reason)[:200]}')
+                _off2_summary = ''
+                if _rp2:
+                    _off2_summary = (
+                        f'<div style="margin-top:14px;padding:16px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(110,231,183,0.3);">'
+                        f'<div style="font-size:1.1em;font-weight:800;color:#6ee7b7;margin-bottom:10px;">📋 PHÂN TÍCH CHI TIẾT TỪ 5 PHƯƠNG PHÁP:</div>'
+                        + ''.join(f'<div style="color:#d1fae5;margin:6px 0;font-size:0.95em;line-height:1.5;">{r}</div>' for r in _rp2)
+                        + f'</div>'
+                    )
+                _adv_fb = []
+                if weighted_pct >= 60:
+                    _adv_fb.append('✅ Thời điểm thuận lợi để tiến hành.')
+                elif weighted_pct >= 50:
+                    _adv_fb.append('⚠️ Nên xác minh thêm trước khi cam kết.')
+                elif weighted_pct >= 45:
+                    _adv_fb.append('⏳ Chưa phải thời điểm tốt nhất — nên chờ thêm.')
+                else:
+                    _adv_fb.append('🛑 KHÔNG nên tiến hành vào thời điểm này.')
+                _adv_html_fb = (
+                    f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;border-left:4px solid {_off2_v_color};">'
+                    + ''.join(f'<div style="color:#fef3c7;margin:4px 0;font-size:0.95em;">{a}</div>' for a in _adv_fb)
+                    + f'</div>'
+                )
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9d</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
-                    f'<div style="font-size:1.1em;color:#ffffff;margin-bottom:12px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">{_off2_answer_show}</div>'
+                    f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                     + _comp_detail_html
                     + _off2_summary
+                    + _adv_html_fb
                     + _evidence_html
                     + f'</div>'
                 )
