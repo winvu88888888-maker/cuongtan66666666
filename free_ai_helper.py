@@ -5160,7 +5160,7 @@ class FreeAIHelper:
             # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.9d — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.9e — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
                 f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"① BẠN KHÔNG ĐƯỢC thay đổi verdict. Verdict trong <verdict_block> là CHÍNH THỨC.\n"
@@ -14596,7 +14596,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9d</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9e</div>'
                     # Line 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     # Line 2: Trả lời trực tiếp câu hỏi
@@ -15004,6 +15004,32 @@ class FreeAIHelper:
                         + ''.join(f'<div style="color:#d1fae5;margin:6px 0;font-size:0.95em;line-height:1.5;">{r}</div>' for r in _rp2)
                         + f'</div>'
                     )
+                # V42.9.9e FIX: Define verdict display variables (was missing → NameError crash)
+                if weighted_pct >= 70:
+                    _off2_v_color = '#34d399'
+                    _off2_v_icon = '🟢'
+                    _off2_v_label = 'ĐẠI CÁT'
+                elif weighted_pct >= 55:
+                    _off2_v_color = '#34d399'
+                    _off2_v_icon = '🟢'
+                    _off2_v_label = 'CÁT'
+                elif weighted_pct >= 50:
+                    _off2_v_color = '#fbbf24'
+                    _off2_v_icon = '🟡'
+                    _off2_v_label = 'CẦN CÂN NHẮC — BÌNH'
+                elif weighted_pct >= 45:
+                    _off2_v_color = '#fbbf24'
+                    _off2_v_icon = '🟡'
+                    _off2_v_label = 'BÌNH'
+                elif weighted_pct >= 30:
+                    _off2_v_color = '#f87171'
+                    _off2_v_icon = '🔴'
+                    _off2_v_label = 'HUNG'
+                else:
+                    _off2_v_color = '#ef4444'
+                    _off2_v_icon = '🔴'
+                    _off2_v_label = 'ĐẠI HUNG'
+                
                 _adv_fb = []
                 if weighted_pct >= 60:
                     _adv_fb.append('✅ Thời điểm thuận lợi để tiến hành.')
@@ -15021,7 +15047,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9d</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9e</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
