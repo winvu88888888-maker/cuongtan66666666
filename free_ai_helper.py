@@ -10342,7 +10342,7 @@ class FreeAIHelper:
             lines.append(f"- 💡 {_HANH_HELP.get(hanh_dt, 'Tìm người hỗ trợ.')}")
         else:
             lines.append("- ⏸️ Chuẩn bị kỹ, chờ thời điểm hành vượng mới hành động.")
-            lines.append(f"- 💡 {_HANH_HELP.get(hanh_dt, 'Cân nhắc kỹ.')}")
+            lines.append(f"- 💡 {_HANH_HELP.get(hanh_dt, 'Chuẩn bị kỹ, tìm quý nhân hỗ trợ. Chờ thời điểm vượng mới hành động.')}")
         
         # V40.6: Thêm impacts tóm tắt cuối
         if good_impacts and len(good_impacts) > 0:
@@ -14190,7 +14190,7 @@ class FreeAIHelper:
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.9)</div>'
                 f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
                 + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
@@ -14354,7 +14354,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -14362,12 +14362,45 @@ class FreeAIHelper:
                     + f'</div>'
                 )
             else:
-                # === SINGLE INTENT: 1 card lớn (như cũ) ===
+                # === SINGLE INTENT: 1 card lớn — V42.9.9b NÂNG CẤP ĐẦY ĐỦ ===
+                # V42.9.9b: Xây overall verdict text cho card
+                _off_v_label = 'ĐẠI CÁT' if weighted_pct >= 75 else 'CÁT' if weighted_pct >= 60 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 35 else 'ĐẠI HUNG'
+                _off_v_color = '#22c55e' if weighted_pct >= 60 else '#eab308' if weighted_pct >= 45 else '#ef4444'
+                
+                # V42.9.9b: Build evidence summary từ direct_answer nếu _off_answer quá ngắn
+                _off_summary_extra = ''
+                if len(_off_answer) < 30 or _off_answer.count('Cân nhắc') > 0:
+                    # _off_answer quá ngắn hoặc chỉ fallback → inject verdict_line + reasons
+                    _off_answer_enriched = f'{_off_v_icon} {_off_v_label} ({weighted_pct}%)'
+                    # Thêm verdict reasons
+                    _reason_parts = []
+                    if ky_mon_reason and len(str(ky_mon_reason)) > 3:
+                        _reason_parts.append(f'🏯 KM: {str(ky_mon_reason)[:100]}')
+                    if luc_hao_reason and len(str(luc_hao_reason)) > 3:
+                        _reason_parts.append(f'📿 LH: {str(luc_hao_reason)[:100]}')
+                    if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
+                        _reason_parts.append(f'🌸 MH: {str(mai_hoa_reason)[:100]}')
+                    if _reason_parts:
+                        _off_summary_extra = (
+                            f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.25);border-radius:10px;">'
+                            f'<div style="font-size:1.05em;font-weight:700;color:#6ee7b7;margin-bottom:8px;">📋 LUẬN GIẢI CHI TIẾT:</div>'
+                            + ''.join(f'<div style="color:#d1fae5;margin:4px 0;font-size:0.95em;">{r}</div>' for r in _reason_parts)
+                            + f'</div>'
+                        )
+                else:
+                    _off_answer_enriched = _off_answer
+                
+                # V42.9.9b: Consensus voting display
+                _cons_off_icon = '🟢' if weighted_pct >= 60 else '🟡' if weighted_pct >= 45 else '🔴'
+                _cons_off_text = f'KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}'
+                
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div>'
-                    f'<div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">{_off_answer}</div>'
-                    f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9</div>'
+                    f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
+                    f'<div style="font-size:1.1em;color:#ffffff;margin-bottom:12px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">{_off_answer_enriched}</div>'
+                    f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | {_cons_off_text}</div>'
+                    + _off_summary_extra
                     + _off_ev_html
                     + f'</div>'
                 )
@@ -14705,7 +14738,7 @@ class FreeAIHelper:
                     )
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_offline_short_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -14714,12 +14747,39 @@ class FreeAIHelper:
                     + f'</div>'
                 )
             else:
+                # V42.9.9b: Offline-only NÂNG CẤP — hiển thị verdict + reasons đầy đủ
+                _off2_v_label = 'ĐẠI CÁT' if weighted_pct >= 75 else 'CÁT' if weighted_pct >= 60 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 35 else 'ĐẠI HUNG'
+                _off2_v_color = '#22c55e' if weighted_pct >= 60 else '#eab308' if weighted_pct >= 45 else '#ef4444'
+                _off2_v_icon = '🟢' if weighted_pct >= 60 else '🟡' if weighted_pct >= 45 else '🔴'
+                
+                _off2_summary = ''
+                if len(_offline_short_answer) < 30 or 'Cân nhắc' in _offline_short_answer:
+                    _off2_answer_show = f'{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)'
+                    _rp2 = []
+                    if ky_mon_reason and len(str(ky_mon_reason)) > 3:
+                        _rp2.append(f'🏯 KM: {str(ky_mon_reason)[:100]}')
+                    if luc_hao_reason and len(str(luc_hao_reason)) > 3:
+                        _rp2.append(f'📿 LH: {str(luc_hao_reason)[:100]}')
+                    if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
+                        _rp2.append(f'🌸 MH: {str(mai_hoa_reason)[:100]}')
+                    if _rp2:
+                        _off2_summary = (
+                            f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.25);border-radius:10px;">'
+                            f'<div style="font-size:1.05em;font-weight:700;color:#6ee7b7;margin-bottom:8px;">📋 LUẬN GIẢI CHI TIẾT:</div>'
+                            + ''.join(f'<div style="color:#d1fae5;margin:4px 0;font-size:0.95em;">{r}</div>' for r in _rp2)
+                            + f'</div>'
+                        )
+                else:
+                    _off2_answer_show = _offline_short_answer
+                
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9</div>'
-                    f'<div style="font-size:2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:8px;">{_offline_short_answer}</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9</div>'
+                    f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
+                    f'<div style="font-size:1.1em;color:#ffffff;margin-bottom:12px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">{_off2_answer_show}</div>'
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                     + _comp_detail_html
+                    + _off2_summary
                     + _evidence_html
                     + f'</div>'
                 )
