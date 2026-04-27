@@ -2936,11 +2936,22 @@ if st.session_state.current_view == "ky_mon":
                         # V10.2: role_label phải phản ánh đúng đối tượng, KHÔNG hardcode
                         role_label = rel_type if rel_type and rel_type != 'Bản thân' else 'Bản thân'
                         
-                        # V28.0: Fix Lỗi 1 — GỬI CÂU HỎI THỰC thay vì prompt template
-                        # Prompt template cũ chứa "Bạn là đại sư..." khiến Smart Category phân loại SAI
-                        actual_question = f"Phân tích về {selected_topic}"
-                        if role_label and role_label != 'Bản thân':
-                            actual_question += f" cho {role_label}"
+                        # V42.9.9d: Fix — XÂY CÂU HỎI CÓ NGỮ CẢNH thay vì generic
+                        # "Phân tích về Chung" → engine classify = CHUNG → DT sai
+                        # Cần tạo câu hỏi mô phỏng intent thật dựa trên topic
+                        _TOPIC_TO_QUESTION = {
+                            'Tài lộc': f'Tài chính năm nay có thuận lợi không, {role_label} có kiếm được tiền không',
+                            'Công danh': f'{role_label} có thăng tiến trong công việc không, sự nghiệp có phát triển không',
+                            'Tình cảm': f'{role_label} có tình duyên thuận lợi không, tình cảm có tốt không',
+                            'Sức khỏe': f'Sức khỏe của {role_label} có tốt không, bệnh tật có nguy hiểm không',
+                            'Kiện tụng': f'{role_label} có thắng kiện không, vụ kiện có thuận lợi không',
+                            'Xuất hành': f'{role_label} đi xa có thuận lợi không, chuyến đi có an toàn không',
+                            'Nhà cửa': f'{role_label} có mua được nhà không, nhà cửa có thuận lợi không',
+                            'Hôn nhân': f'{role_label} hôn nhân có hạnh phúc không, kết hôn có thuận lợi không',
+                            'Thai sản': f'Thai sản của {role_label} có thuận lợi không, mẹ con có khỏe mạnh không',
+                            'Mất đồ': f'{role_label} có tìm lại được đồ bị mất không, đồ ở đâu',
+                        }
+                        actual_question = _TOPIC_TO_QUESTION.get(selected_topic, f"Phân tích tổng hợp về {selected_topic} cho {role_label}, có thuận lợi không")
                         
                         # ====== BƯỚC 1: AI OFFLINE phân tích quẻ trước ======
                         with st.spinner("⚙️ Bước 1/2: AI Offline đang phân tích quẻ..."):
