@@ -12336,6 +12336,73 @@ class FreeAIHelper:
             'sinh con': 'sinh con', 'co con': 'có con', 'con cai': 'con cái',
             'chia tai san': 'chia tài sản', 'thua ke': 'thừa kế',
             'xay nha': 'xây nhà', 'sua chua': 'sửa chữa', 'dong tho': 'động thổ',
+            # === V42.9.9e: TỪ ĐƠN PHỔ BIẾN — ROOT CAUSE FIX ===
+            # BUG: User nhập ASCII "nha", "tien", "benh"... nhưng category keywords là
+            # tiếng Việt có dấu "nhà", "tiền", "bệnh" → KHÔNG MATCH → category=CHUNG → DT SAI!
+            # FIX: Thêm TẤT CẢ từ đơn phổ biến mà category keywords dùng
+            # --- Nhà cửa ---
+            'nha': 'nhà', 'dat': 'đất', 'tang': 'tầng', 'phong': 'phòng',
+            'can ho': 'căn hộ', 'chung cu': 'chung cư', 'bat dong san': 'bất động sản',
+            'nha dat': 'nhà đất', 'mua nha': 'mua nhà', 'ban nha': 'bán nhà',
+            'thue nha': 'thuê nhà', 'sua nha': 'sửa nhà', 'chuyen nha': 'chuyển nhà',
+            'don nha': 'dọn nhà', 'huong nha': 'hướng nhà', 'cua nha': 'cửa nhà',
+            'lo dat': 'lô đất', 'thua dat': 'thửa đất',
+            # --- Tài chính ---
+            'tien': 'tiền', 'tai': 'tài', 'von': 'vốn', 'luong': 'lương',
+            'lai': 'lãi', 'lo': 'lỗ', 'no': 'nợ', 'vay': 'vay',
+            'giau': 'giàu', 'ngheo': 'nghèo', 'phat tai': 'phát tài',
+            'dau tu': 'đầu tư', 'co phieu': 'cổ phiếu', 'chung khoan': 'chứng khoán',
+            'tai chinh': 'tài chính', 'tai san': 'tài sản', 'tien bac': 'tiền bạc',
+            'mua ban': 'mua bán', 'buon ban': 'buôn bán',
+            'trung so': 'trúng số', 'ban hang': 'bán hàng',
+            'loi nhuan': 'lợi nhuận', 'lai suat': 'lãi suất',
+            'ngoai te': 'ngoại tệ', 'luong thang': 'lương tháng',
+            # --- Tình cảm ---
+            'yeu': 'yêu', 'tinh': 'tình', 'duyen': 'duyên',
+            'cuoi': 'cưới', 'ly hon': 'ly hôn', 'hon nhan': 'hôn nhân',
+            'chia tay': 'chia tay', 'ngoai tinh': 'ngoại tình',
+            'nguoi yeu': 'người yêu', 'tinh cam': 'tình cảm',
+            'ban trai': 'bạn trai', 'ban gai': 'bạn gái',
+            'lay vo': 'lấy vợ', 'lay chong': 'lấy chồng',
+            'dam cuoi': 'đám cưới', 'hen ho': 'hẹn hò',
+            'tinh yeu': 'tình yêu', 'ghen': 'ghen',
+            # --- Công việc ---
+            'viec': 'việc', 'cong viec': 'công việc', 'sep': 'sếp',
+            'su nghiep': 'sự nghiệp', 'nghe': 'nghề',
+            'xin viec': 'xin việc', 'nghi viec': 'nghỉ việc',
+            'sa thai': 'sa thải', 'hop dong': 'hợp đồng',
+            'du an': 'dự án', 'thau': 'thầu', 'dau thau': 'đấu thầu',
+            'quan chuc': 'quan chức', 'chuc vu': 'chức vụ', 'de bat': 'đề bạt',
+            'khoi nghiep': 'khởi nghiệp', 'bo nhiem': 'bổ nhiệm',
+            'san xuat': 'sản xuất', 'phat trien': 'phát triển',
+            'cong ty': 'công ty', 'nha may': 'nhà máy', 'xuong': 'xưởng',
+            'doanh nghiep': 'doanh nghiệp', 'co so': 'cơ sở',
+            'mo rong': 'mở rộng', 'pha san': 'phá sản',
+            'di lam': 'đi làm', 'chuc': 'chức',
+            # --- Sức khỏe ---
+            'benh': 'bệnh', 'om': 'ốm', 'dau': 'đau',
+            'chet': 'chết', 'song': 'sống', 'chua': 'chữa',
+            'vien': 'viện', 'benh vien': 'bệnh viện',
+            'phau thuat': 'phẫu thuật', 'ung thu': 'ung thư',
+            'tai nan': 'tai nạn', 'nguy hiem': 'nguy hiểm',
+            'qua khoi': 'qua khỏi', 'cuu duoc': 'cứu được',
+            'thuoc': 'thuốc', 'tri benh': 'trị bệnh',
+            'gia dinh': 'gia đình', 'thai': 'thai', 'mang thai': 'mang thai',
+            'khoe': 'khỏe',
+            # --- Tìm đồ ---
+            'tim': 'tìm', 'mat': 'mất', 'trom': 'trộm',
+            'lac duong': 'lạc đường', 'tim duong': 'tìm đường',
+            'giay to': 'giấy tờ',
+            # --- Thắng thua ---
+            'thang': 'thắng', 'thua': 'thua', 'hoa': 'hòa',
+            'doi nao': 'đội nào', 'ket qua': 'kết quả',
+            'vo dich': 'vô địch', 'ty so': 'tỷ số',
+            'bong da': 'bóng đá', 'tran dau': 'trận đấu',
+            'giai dau': 'giải đấu', 'thi dau': 'thi đấu',
+            # --- Tổng quát ---
+            'nam nay': 'năm nay', 'thang nay': 'tháng này',
+            'van menh': 'vận mệnh', 'van han': 'vận hạn',
+            'tuoi': 'tuổi',
         }
         
         # Tạo q_lower_normalized: thay thế ALL từ không dấu → có dấu
