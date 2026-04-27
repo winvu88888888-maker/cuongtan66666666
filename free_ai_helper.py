@@ -14369,7 +14369,7 @@ class FreeAIHelper:
                 
                 # V42.9.9b: Build evidence summary từ direct_answer nếu _off_answer quá ngắn
                 _off_summary_extra = ''
-                if len(_off_answer) < 30 or _off_answer.count('Cân nhắc') > 0:
+                if len(_off_answer) < 80 or 'Cân nhắc' in _off_answer or 'CẦN CÂN NHẮC' in _off_answer or 'BÌNH' in _off_answer:
                     # _off_answer quá ngắn hoặc chỉ fallback → inject verdict_line + reasons
                     _off_answer_enriched = f'{_off_v_icon} {_off_v_label} ({weighted_pct}%)'
                     # Thêm verdict reasons
@@ -14753,7 +14753,7 @@ class FreeAIHelper:
                 _off2_v_icon = '🟢' if weighted_pct >= 60 else '🟡' if weighted_pct >= 45 else '🔴'
                 
                 _off2_summary = ''
-                if len(_offline_short_answer) < 30 or 'Cân nhắc' in _offline_short_answer:
+                if len(_offline_short_answer) < 80 or 'Cân nhắc' in _offline_short_answer or 'CẦN CÂN NHẮC' in _offline_short_answer or 'BÌNH' in _offline_short_answer:
                     _off2_answer_show = f'{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)'
                     _rp2 = []
                     if ky_mon_reason and len(str(ky_mon_reason)) > 3:
