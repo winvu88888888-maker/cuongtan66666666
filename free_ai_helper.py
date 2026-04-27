@@ -5059,14 +5059,37 @@ class FreeAIHelper:
             # V42.9.4: KHÔNG CẮT — giữ full data, cấu trúc cây giúp Gemini đọc hiệu quả
             self.log_step("Online AI", "DATA_SIZE", f"raw_data={len(raw_data_section)} chars — FULL, NO TRUNCATION")
             
+            # V42.9.9d: Build verdict label from pct for Gemini
+            _vb_pct = v22.get('unified_pct', od.get('weighted_pct', 50))
+            try:
+                _vb_pct_int = int(_vb_pct)
+            except (ValueError, TypeError):
+                _vb_pct_int = 50
+            if _vb_pct_int >= 65:
+                _vb_label = 'ĐẠI CÁT — RẤT THUẬN LỢI'
+            elif _vb_pct_int >= 55:
+                _vb_label = 'CÁT — THUẬN LỢI'
+            elif _vb_pct_int >= 50:
+                _vb_label = 'TIỂU CÁT — CÓ nhưng CẦN NỖ LỰC'
+            elif _vb_pct_int >= 45:
+                _vb_label = 'BÌNH — CÂN NHẮC KỸ'
+            elif _vb_pct_int >= 35:
+                _vb_label = 'HUNG — BẤT LỢI'
+            else:
+                _vb_label = 'ĐẠI HUNG — RẤT BẤT LỢI'
+            
             offline_verdict_block = (
-                f"═══ VERDICT CHÍNH THỨC (BẮT BUỘC TUÂN THỦ) ═══\n"
-                f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:100]}\n"
-                f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:100]}\n"
-                f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:100]}\n"
-                f"ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?')} — {od.get('luc_nham_reason','')[:100]}\n"
-                f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:100]}\n"
-                f"TỔNG: Điểm = {v22.get('unified_pct', '?')}% | Mức = {v22.get('tier_cap', '?')}\n"
+                f"═══════════════════════════════════════════\n"
+                f"   ⚖️ PHÁN QUYẾT CHÍNH THỨC (BẮT BUỘC)\n"
+                f"═══════════════════════════════════════════\n"
+                f"🏆 KẾT QUẢ: {_vb_label} ({_vb_pct_int}%)\n"
+                f"→ BẠN PHẢI dùng ĐÚNG kết quả này. KHÔNG ĐƯỢC nói khác.\n\n"
+                f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:200]}\n"
+                f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:200]}\n"
+                f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:200]}\n"
+                f"ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?')} — {od.get('luc_nham_reason','')[:200]}\n"
+                f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:200]}\n"
+                f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {v22.get('tier_cap', '?')}\n"
             )
             # V42.9.5 PATCH: Inject Ứng Kỳ + Bất Thường vào prompt cho Gemini
             _hub_synth = od.get('hub', {}).get('synthesis', {})
@@ -5111,10 +5134,15 @@ class FreeAIHelper:
             # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.9 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
-                f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n"
-                f"BẠN KHÔNG ĐƯỢC thay đổi verdict. Việc của bạn: GIẢI THÍCH TẠI SAO verdict đúng, trích dẫn bằng chứng.\n"
-                f"QUY TẮC: ① Mỗi nhận định PHẢI trích dẫn yếu tố quẻ. ② Hỏi gì trả lời đó. ③ KHÔNG bịa đặt.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.9d — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
+                f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
+                f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
+                f"① BẠN KHÔNG ĐƯỢC thay đổi verdict. Verdict trong <verdict_block> là CHÍNH THỨC.\n"
+                f"② Nếu verdict = BÌNH/HUNG → BẠN PHẢI nói BÌNH/HUNG. KHÔNG ĐƯỢC nói CÁT.\n"
+                f"③ Nếu verdict = CÁT → BẠN PHẢI nói CÁT. KHÔNG ĐƯỢC nói HUNG.\n"
+                f"④ Mỗi nhận định PHẢI trích dẫn yếu tố quẻ cụ thể. KHÔNG bịa đặt.\n"
+                f"⑤ Hỏi gì trả lời đó — KHÔNG lan man sang chủ đề khác.\n"
+                f"⑥ Phần KẾT LUẬN phải NHẮC LẠI ĐÚNG verdict + điểm % từ verdict_block.\n\n"
                 f"VẠN VẬT: Kim=kim loại | Mộc=gỗ,vải | Thủy=nước,lỏng | Hỏa=điện,lửa | Thổ=đất,gốm\n"
                 f"SỐ: Hà Đồ Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
                 f"HƯỚNG: Kim=TÂY | Mộc=ĐÔNG | Thủy=BẮC | Hỏa=NAM | Thổ=TRUNG TÂM\n"
