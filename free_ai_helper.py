@@ -14430,45 +14430,116 @@ class FreeAIHelper:
                     + f'</div>'
                 )
             else:
-                # === SINGLE INTENT: 1 card lớn — V42.9.9b NÂNG CẤP ĐẦY ĐỦ ===
-                # V42.9.9b: Xây overall verdict text cho card
+                # === SINGLE INTENT: 1 card lớn — V42.9.9d NÂNG CẤP TRẢ LỜI TRỰC TIẾP ===
+                # V42.9.9d: Xây verdict label
                 _off_v_label = 'ĐẠI CÁT' if weighted_pct >= 75 else 'CÁT' if weighted_pct >= 60 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 35 else 'ĐẠI HUNG'
                 _off_v_color = '#22c55e' if weighted_pct >= 60 else '#eab308' if weighted_pct >= 45 else '#ef4444'
                 
-                # V42.9.9b: Build evidence summary từ direct_answer nếu _off_answer quá ngắn
-                _off_summary_extra = ''
-                if len(_off_answer) < 80 or 'Cân nhắc' in _off_answer or 'CẦN CÂN NHẮC' in _off_answer or 'BÌNH' in _off_answer:
-                    # _off_answer quá ngắn hoặc chỉ fallback → inject verdict_line + reasons
-                    _off_answer_enriched = f'{_off_v_icon} {_off_v_label} ({weighted_pct}%)'
-                    # Thêm verdict reasons
-                    _reason_parts = []
-                    if ky_mon_reason and len(str(ky_mon_reason)) > 3:
-                        _reason_parts.append(f'🏯 KM: {str(ky_mon_reason)[:100]}')
-                    if luc_hao_reason and len(str(luc_hao_reason)) > 3:
-                        _reason_parts.append(f'📿 LH: {str(luc_hao_reason)[:100]}')
-                    if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
-                        _reason_parts.append(f'🌸 MH: {str(mai_hoa_reason)[:100]}')
-                    if _reason_parts:
-                        _off_summary_extra = (
-                            f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.25);border-radius:10px;">'
-                            f'<div style="font-size:1.05em;font-weight:700;color:#6ee7b7;margin-bottom:8px;">📋 LUẬN GIẢI CHI TIẾT:</div>'
-                            + ''.join(f'<div style="color:#d1fae5;margin:4px 0;font-size:0.95em;">{r}</div>' for r in _reason_parts)
-                            + f'</div>'
-                        )
-                else:
-                    _off_answer_enriched = _off_answer
+                # ═══ V42.9.9d: TRẢ LỜI TRỰC TIẾP CÂU HỎI ═══
+                # Xây câu trả lời có ngữ cảnh dựa trên câu hỏi + verdict
+                _q_lower = question.lower() if question else ''
+                _direct_reply = ''
                 
-                # V42.9.9b: Consensus voting display
-                _cons_off_icon = '🟢' if weighted_pct >= 60 else '🟡' if weighted_pct >= 45 else '🔴'
+                if weighted_pct >= 60:
+                    _tone = 'CÓ THỂ'
+                    _detail = 'thuận lợi, nên tiến hành'
+                elif weighted_pct >= 50:
+                    _tone = 'CÓ THỂ nhưng cần CẨN TRỌNG'
+                    _detail = 'cần chuẩn bị kỹ'
+                elif weighted_pct >= 45:
+                    _tone = 'KHÓ — cần CÂN NHẮC KỸ'
+                    _detail = 'chưa thuận lợi lắm, nên chờ thêm'
+                else:
+                    _tone = 'KHÔNG NÊN vào lúc này'
+                    _detail = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
+                
+                # Map câu hỏi → câu trả lời cụ thể
+                _q_norm = _q_lower
+                if 'mua' in _q_norm and ('nhà' in _q_norm or 'nha' in _q_norm):
+                    _direct_reply = f'Việc MUA NHÀ năm nay: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'đầu tư' in _q_norm or 'dau tu' in _q_norm or 'kinh doanh' in _q_norm:
+                    _direct_reply = f'Việc ĐẦU TƯ KINH DOANH: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'người yêu' in _q_norm or 'nguoi yeu' in _q_norm or 'tình' in _q_norm:
+                    _direct_reply = f'TÌNH DUYÊN: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'sức khỏe' in _q_norm or 'suc khoe' in _q_norm or 'bệnh' in _q_norm or 'benh' in _q_norm:
+                    _direct_reply = f'SỨC KHỎE: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'kiện' in _q_norm or 'kien' in _q_norm or 'tòa' in _q_norm:
+                    _direct_reply = f'KIỆN TỤNG: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'đi xa' in _q_norm or 'di xa' in _q_norm or 'du lịch' in _q_norm or 'xuất hành' in _q_norm:
+                    _direct_reply = f'XUẤT HÀNH: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'tìm' in _q_norm or 'mất' in _q_norm or 'mat' in _q_norm or 'tim' in _q_norm:
+                    _direct_reply = f'TÌM ĐỒ: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'lương' in _q_norm or 'luong' in _q_norm or 'thăng' in _q_norm:
+                    _direct_reply = f'CÔNG VIỆC: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                elif 'con' in _q_norm and ('thi' in _q_norm or 'đỗ' in _q_norm or 'do' in _q_norm):
+                    _direct_reply = f'THI CỬ: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                else:
+                    _direct_reply = f'Kết quả: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                
+                # ═══ V42.9.9d: Build chi tiết luận giải ═══
+                _reason_parts = []
+                if ky_mon_reason and len(str(ky_mon_reason)) > 3:
+                    _reason_parts.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
+                if luc_hao_reason and len(str(luc_hao_reason)) > 3:
+                    _reason_parts.append(f'📿 <b>Lục Hào:</b> {str(luc_hao_reason)[:200]}')
+                if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
+                    _reason_parts.append(f'🌸 <b>Mai Hoa:</b> {str(mai_hoa_reason)[:200]}')
+                if luc_nham_reason and len(str(luc_nham_reason)) > 3:
+                    _reason_parts.append(f'🔮 <b>Đại Lục Nhâm:</b> {str(luc_nham_reason)[:200]}')
+                if thai_at_reason and len(str(thai_at_reason)) > 3:
+                    _reason_parts.append(f'⚔️ <b>Thái Ất:</b> {str(thai_at_reason)[:200]}')
+                
+                _off_summary_extra = ''
+                if _reason_parts:
+                    _off_summary_extra = (
+                        f'<div style="margin-top:14px;padding:16px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(110,231,183,0.3);">'
+                        f'<div style="font-size:1.1em;font-weight:800;color:#6ee7b7;margin-bottom:10px;">📋 PHÂN TÍCH CHI TIẾT TỪ 5 PHƯƠNG PHÁP:</div>'
+                        + ''.join(f'<div style="color:#d1fae5;margin:6px 0;font-size:0.95em;line-height:1.5;">{r}</div>' for r in _reason_parts)
+                        + f'</div>'
+                    )
+                
+                # ═══ V42.9.9d: Lời khuyên cụ thể ═══
+                _advice_parts = []
+                if weighted_pct >= 60:
+                    _advice_parts.append('✅ Thời điểm thuận lợi để tiến hành.')
+                    if 'mua' in _q_norm:
+                        _advice_parts.append('📋 Kiểm tra kỹ giấy tờ, pháp lý trước khi ký kết.')
+                    if 'dau tu' in _q_norm or 'đầu tư' in _q_norm or 'kinh doanh' in _q_norm:
+                        _advice_parts.append('💰 Chuẩn bị vốn kỹ, bắt đầu từ quy mô nhỏ.')
+                elif weighted_pct >= 50:
+                    _advice_parts.append('⚠️ Nên xác minh thêm trước khi cam kết.')
+                    _advice_parts.append('🔍 Tham khảo ý kiến chuyên gia trước quyết định lớn.')
+                elif weighted_pct >= 45:
+                    _advice_parts.append('⏳ Chưa phải thời điểm tốt nhất — nên chờ thêm 1-2 tháng.')
+                    _advice_parts.append('🛑 Hạn chế đầu tư lớn, ưu tiên bảo toàn vốn.')
+                else:
+                    _advice_parts.append('🛑 KHÔNG nên tiến hành vào thời điểm này.')
+                    _advice_parts.append('🔄 Nên hoãn lại hoặc thay đổi phương án.')
+                
+                _advice_html = ''
+                if _advice_parts:
+                    _advice_html = (
+                        f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;border-left:4px solid {_off_v_color};">'
+                        + ''.join(f'<div style="color:#fef3c7;margin:4px 0;font-size:0.95em;">{a}</div>' for a in _advice_parts)
+                        + f'</div>'
+                    )
+                
+                # Consensus voting display
                 _cons_off_text = f'KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}'
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.9d</div>'
+                    # Line 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
-                    f'<div style="font-size:1.1em;color:#ffffff;margin-bottom:12px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">{_off_answer_enriched}</div>'
+                    # Line 2: Trả lời trực tiếp câu hỏi
+                    f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off_v_color};line-height:1.6;">📢 {_direct_reply}</div>'
+                    # Line 3: Consensus
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | {_cons_off_text}</div>'
+                    # Block: Chi tiết phân tích
                     + _off_summary_extra
+                    # Block: Lời khuyên
+                    + _advice_html
                     + _off_ev_html
                     + f'</div>'
                 )
