@@ -588,7 +588,37 @@ def _get_dung_than(question):
                 best_dt = dt
                 best_kw = kw
     if best_dt:
-        return best_dt
+        # V42.9.9e FIX: PERSON + ACTION context
+        # Nếu có PERSON + ACTION → ACTION quyết định DT
+        # Nếu có PERSON + TRẠNG THÁI (bệnh/chết/khỏe) → PERSON quyết định DT
+        _PERSON_STATE_KW_S = ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua đời', 'mất',
+                              'hấp hối', 'nguy kịch', 'nằm viện', 'nhập viện', 'tai nạn',
+                              'phẫu thuật', 'mổ', 'ung thư', 'đau', 'sốt', 'khám',
+                              'hồi phục', 'bình an', 'an toàn', 'nguy hiểm']
+        _ACTION_DT_S = [
+            ('đầu tư', 'Thê Tài'), ('kinh doanh', 'Thê Tài'), ('buôn bán', 'Thê Tài'),
+            ('mua bán', 'Thê Tài'), ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'),
+            ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'), ('ngoại tình', 'Thê Tài'),
+            ('vay tiền', 'Thê Tài'), ('trả nợ', 'Thê Tài'), ('góp vốn', 'Thê Tài'),
+            ('cho vay', 'Thê Tài'), ('lợi nhuận', 'Thê Tài'),
+            ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'), ('nghỉ việc', 'Quan Quỷ'),
+            ('sa thải', 'Quan Quỷ'), ('phỏng vấn', 'Quan Quỷ'), ('chuyển việc', 'Quan Quỷ'),
+            ('kiện tụng', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'), ('thắng kiện', 'Quan Quỷ'),
+            ('thi đỗ', 'Phụ Mẫu'), ('thi trượt', 'Phụ Mẫu'), ('thi cử', 'Phụ Mẫu'),
+            ('du học', 'Phụ Mẫu'), ('tốt nghiệp', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'),
+            ('du lịch', 'Bản Thân'), ('xuất hành', 'Bản Thân'), ('đi xa', 'Bản Thân'),
+            ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
+            ('sinh con', 'Tử Tôn'), ('có thai', 'Tử Tôn'), ('mang thai', 'Tử Tôn'),
+            ('thi', 'Phụ Mẫu'), ('học', 'Phụ Mẫu'),
+        ]
+        _has_state = any(kw in q for kw in _PERSON_STATE_KW_S)
+        if _has_state:
+            return best_dt  # Trạng thái người → DT = PERSON
+        # Kiểm tra action
+        for _akw, _adt in _ACTION_DT_S:
+            if _akw in q:
+                return _adt  # ACTION override PERSON
+        return best_dt  # Không có action → DT = PERSON
     
     # ═══ TIER 2: NGỮ CẢNH — Hành động/trạng thái (chỉ khi ko có chủ thể) ═══
     _CONTEXT_DT = [
@@ -695,6 +725,261 @@ def _get_all_dung_than(question):
     if not result:
         result = [_get_dung_than(question)]
     
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════
+# V42.9.9e: PHÂN TÍCH HỆ SINH THÁI DỤNG THẦN — Nguyên/Kỵ/Cừu Thần
+# Chuỗi: Nguyên Thần SINH DT | Kỵ Thần KHẮC DT | Cừu Thần KHẮC Nguyên Thần
+# ═══════════════════════════════════════════════════════════════
+
+# Mapping: Hành → Lục Thân (tương đối với Bản Thân)
+_LUC_THAN_HAO = {
+    'Huynh Đệ': 'tỷ_hòa',     # Cùng hành
+    'Phụ Mẫu': 'sinh_ngã',     # Sinh ta
+    'Quan Quỷ': 'khắc_ngã',    # Khắc ta
+    'Thê Tài': 'ngã_khắc',     # Ta khắc
+    'Tử Tôn': 'ngã_sinh',      # Ta sinh
+}
+
+# Nguyên Thần = sinh DT | Kỵ Thần = khắc DT | Cừu Thần = khắc Nguyên Thần
+_NGUYEN_THAN_MAP = {
+    'Huynh Đệ': {'nguyen': 'Phụ Mẫu', 'ky': 'Quan Quỷ', 'cuu': 'Tử Tôn'},
+    'Phụ Mẫu': {'nguyen': 'Quan Quỷ', 'ky': 'Thê Tài', 'cuu': 'Huynh Đệ'},
+    'Quan Quỷ': {'nguyen': 'Thê Tài', 'ky': 'Tử Tôn', 'cuu': 'Phụ Mẫu'},
+    'Thê Tài': {'nguyen': 'Tử Tôn', 'ky': 'Huynh Đệ', 'cuu': 'Quan Quỷ'},
+    'Tử Tôn': {'nguyen': 'Huynh Đệ', 'ky': 'Phụ Mẫu', 'cuu': 'Thê Tài'},
+    'Bản Thân': {'nguyen': 'Phụ Mẫu', 'ky': 'Quan Quỷ', 'cuu': 'Tử Tôn'},
+}
+
+# Lục Xung (Địa Chi đối xung)
+_LUC_XUNG = {
+    'Tý': 'Ngọ', 'Sửu': 'Mùi', 'Dần': 'Thân', 'Mão': 'Dậu',
+    'Thìn': 'Tuất', 'Tị': 'Hợi', 'Ngọ': 'Tý', 'Mùi': 'Sửu',
+    'Thân': 'Dần', 'Dậu': 'Mão', 'Tuất': 'Thìn', 'Hợi': 'Tị',
+}
+
+# Mộ Khố: Hành → Chi Mộ
+_MO_KHO = {
+    'Mộc': 'Mùi', 'Hỏa': 'Tuất', 'Thổ': 'Tuất',
+    'Kim': 'Sửu', 'Thủy': 'Thìn',
+}
+
+def _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data=None):
+    """V42.9.9e: Phân tích HỆ SINH THÁI Dụng Thần — Nguyên/Kỵ/Cừu Thần + Nhập Mộ.
+    
+    Returns: dict with keys:
+        'nguyen_than': {name, hanh, strength, details}
+        'ky_than': {name, hanh, strength, details}
+        'cuu_than': {name, hanh, strength, details}
+        'dt_nhap_mo': bool
+        'dt_xung_mo': str or None (chi xung mở mộ)
+        'factors': [str] — list of factor descriptions
+        'overall_support': 'MẠNH'|'TRUNG BÌNH'|'YẾU'|'RẤT YẾU'
+    """
+    result = {
+        'nguyen_than': None, 'ky_than': None, 'cuu_than': None,
+        'dt_nhap_mo': False, 'dt_xung_mo': None,
+        'factors': [], 'overall_support': 'TRUNG BÌNH',
+    }
+    
+    if not dung_than or dung_than == 'Bản Thân':
+        # Bản Thân = hào Thế, dùng mapping riêng
+        dung_than = 'Bản Thân'
+    
+    nkc = _NGUYEN_THAN_MAP.get(dung_than)
+    if not nkc:
+        return result
+    
+    nguyen_name = nkc['nguyen']  # Sinh DT
+    ky_name = nkc['ky']          # Khắc DT
+    cuu_name = nkc['cuu']        # Khắc Nguyên Thần
+    
+    # Extract hào data từ Lục Hào
+    haos = []
+    chi_thang = ''
+    chi_ngay = ''
+    if luc_hao_data and isinstance(luc_hao_data, dict):
+        ban = luc_hao_data.get('ban', {})
+        haos = ban.get('haos', []) or ban.get('details', [])
+        chi_thang = luc_hao_data.get('chi_thang', '')
+        chi_ngay = luc_hao_data.get('chi_ngay', '')
+    if chart_data and isinstance(chart_data, dict):
+        chi_thang = chi_thang or chart_data.get('chi_thang', '')
+        chi_ngay = chi_ngay or chart_data.get('chi_ngay', '')
+    
+    # Tìm hào DT, Nguyên, Kỵ, Cừu trong quẻ
+    def _find_hao(luc_than_name, hao_list):
+        """Tìm hào có lục thân = luc_than_name"""
+        found = []
+        for h in hao_list:
+            lt = h.get('luc_than', '')
+            if luc_than_name in lt:
+                found.append(h)
+        return found
+    
+    def _assess_strength(hao_info, chi_thang_str, chi_ngay_str):
+        """Đánh giá vượng/suy của 1 hào dựa trên Nguyệt Kiến + Nhật Thần"""
+        if not hao_info:
+            return 'KHÔNG HIỆN', 0, 'Không xuất hiện trong quẻ'
+        
+        chi = hao_info.get('chi', '')
+        hanh = hao_info.get('ngu_hanh', CHI_NGU_HANH.get(chi, ''))
+        score = 50  # Base
+        details = []
+        
+        # Nguyệt Kiến sinh/khắc
+        hanh_thang = CHI_NGU_HANH.get(chi_thang_str, '')
+        if hanh and hanh_thang:
+            if SINH.get(hanh_thang) == hanh:
+                score += 20
+                details.append(f'Nguyệt Kiến ({chi_thang_str}/{hanh_thang}) SINH → Vượng')
+            elif hanh_thang == hanh:
+                score += 15
+                details.append(f'Nguyệt Kiến Tỷ Hòa → Vượng')
+            elif KHAC.get(hanh_thang) == hanh:
+                score -= 20
+                details.append(f'Nguyệt Kiến ({chi_thang_str}/{hanh_thang}) KHẮC → Suy')
+            elif SINH.get(hanh) == hanh_thang:
+                score -= 10
+                details.append(f'Nguyệt Kiến hao khí → Hơi yếu')
+        
+        # Nhật Thần sinh/khắc
+        hanh_ngay = CHI_NGU_HANH.get(chi_ngay_str, '')
+        if hanh and hanh_ngay:
+            if SINH.get(hanh_ngay) == hanh:
+                score += 15
+                details.append(f'Nhật Thần ({chi_ngay_str}/{hanh_ngay}) SINH → Có lực')
+            elif KHAC.get(hanh_ngay) == hanh:
+                score -= 15
+                details.append(f'Nhật Thần ({chi_ngay_str}/{hanh_ngay}) KHẮC → Bị chế')
+        
+        # Xung
+        if chi and chi_thang_str and _LUC_XUNG.get(chi) == chi_thang_str:
+            score -= 25
+            details.append(f'BỊ NGUYỆT PHÁ ({chi} xung {chi_thang_str}) → Rất yếu')
+        if chi and chi_ngay_str and _LUC_XUNG.get(chi) == chi_ngay_str:
+            score -= 15
+            details.append(f'Nhật xung ({chi} xung {chi_ngay_str})')
+        
+        # Phân cấp
+        if score >= 70: strength = 'VƯỢNG'
+        elif score >= 55: strength = 'TRUNG BÌNH'
+        elif score >= 40: strength = 'YẾU'
+        else: strength = 'RẤT YẾU'
+        
+        return strength, score, '; '.join(details) if details else 'Bình thường'
+    
+    # === PHÂN TÍCH TỪ HÀO ===
+    factors = []
+    support_score = 0
+    
+    # 1. Nguyên Thần (sinh DT)
+    nguyen_haos = _find_hao(nguyen_name, haos)
+    if nguyen_haos:
+        h = nguyen_haos[0]
+        strength, score, detail = _assess_strength(h, chi_thang, chi_ngay)
+        result['nguyen_than'] = {
+            'name': nguyen_name, 'chi': h.get('chi', ''),
+            'hanh': h.get('ngu_hanh', ''), 'strength': strength,
+            'score': score, 'detail': detail
+        }
+        if strength in ('VƯỢNG', 'TRUNG BÌNH'):
+            factors.append(f'✅ Nguyên Thần ({nguyen_name}) {strength} — {detail} → HỖ TRỢ DT mạnh')
+            support_score += 20
+        else:
+            factors.append(f'⚠️ Nguyên Thần ({nguyen_name}) {strength} — {detail} → Hỗ trợ DT yếu')
+            support_score -= 10
+    else:
+        factors.append(f'❌ Nguyên Thần ({nguyen_name}) KHÔNG HIỆN trong quẻ → DT thiếu nguồn sinh')
+        support_score -= 15
+        result['nguyen_than'] = {'name': nguyen_name, 'strength': 'KHÔNG HIỆN', 'score': 0, 'detail': 'Ẩn'}
+    
+    # 2. Kỵ Thần (khắc DT)
+    ky_haos = _find_hao(ky_name, haos)
+    if ky_haos:
+        h = ky_haos[0]
+        strength, score, detail = _assess_strength(h, chi_thang, chi_ngay)
+        result['ky_than'] = {
+            'name': ky_name, 'chi': h.get('chi', ''),
+            'hanh': h.get('ngu_hanh', ''), 'strength': strength,
+            'score': score, 'detail': detail
+        }
+        if strength in ('VƯỢNG', 'TRUNG BÌNH'):
+            factors.append(f'🔴 Kỵ Thần ({ky_name}) {strength} — {detail} → GÂY HẠI DT mạnh!')
+            support_score -= 25
+        else:
+            factors.append(f'🟡 Kỵ Thần ({ky_name}) {strength} — {detail} → Sức khắc yếu, ít ảnh hưởng')
+            support_score -= 5
+    else:
+        factors.append(f'✅ Kỵ Thần ({ky_name}) KHÔNG HIỆN trong quẻ → DT không bị đe dọa trực tiếp')
+        support_score += 10
+        result['ky_than'] = {'name': ky_name, 'strength': 'KHÔNG HIỆN', 'score': 0, 'detail': 'Ẩn'}
+    
+    # 3. Cừu Thần (khắc Nguyên Thần → gián tiếp hại DT)
+    cuu_haos = _find_hao(cuu_name, haos)
+    if cuu_haos:
+        h = cuu_haos[0]
+        strength, score, detail = _assess_strength(h, chi_thang, chi_ngay)
+        result['cuu_than'] = {
+            'name': cuu_name, 'chi': h.get('chi', ''),
+            'hanh': h.get('ngu_hanh', ''), 'strength': strength,
+            'score': score, 'detail': detail
+        }
+        if strength in ('VƯỢNG', 'TRUNG BÌNH'):
+            factors.append(f'⚠️ Cừu Thần ({cuu_name}) {strength} → Khắc Nguyên Thần → DT mất nguồn sinh!')
+            support_score -= 15
+        else:
+            factors.append(f'🟢 Cừu Thần ({cuu_name}) {strength} → Không đủ sức khắc Nguyên Thần')
+            support_score += 5
+    else:
+        factors.append(f'✅ Cừu Thần ({cuu_name}) KHÔNG HIỆN → Nguyên Thần an toàn')
+        support_score += 5
+        result['cuu_than'] = {'name': cuu_name, 'strength': 'KHÔNG HIỆN', 'score': 0, 'detail': 'Ẩn'}
+    
+    # 4. DT Nhập Mộ kiểm tra
+    dt_haos = _find_hao(dung_than if dung_than != 'Bản Thân' else 'Huynh Đệ', haos)
+    if dt_haos:
+        dt_chi = dt_haos[0].get('chi', '')
+        dt_hanh = dt_haos[0].get('ngu_hanh', CHI_NGU_HANH.get(dt_chi, ''))
+        mo_chi = _MO_KHO.get(dt_hanh, '')
+        
+        # DT chi = Mộ chi → Nhập Mộ
+        if dt_chi == mo_chi:
+            result['dt_nhap_mo'] = True
+            factors.append(f'🔴 DT NHẬP MỘ! ({dt_chi} = Mộ Khố của {dt_hanh}) → Sự việc bị tắc nghẽn')
+            support_score -= 30
+            
+            # Kiểm tra xung mở mộ
+            xung_chi = _LUC_XUNG.get(mo_chi)
+            if xung_chi:
+                if chi_ngay == xung_chi or chi_thang == xung_chi:
+                    result['dt_xung_mo'] = xung_chi
+                    factors.append(f'✅ Nhưng {xung_chi} XUNG MỞ Mộ → Có thể giải thoát')
+                    support_score += 15
+                else:
+                    factors.append(f'⏳ Cần chờ đến ngày/tháng {xung_chi} để phá Mộ → Ứng kỳ: tháng/ngày {xung_chi}')
+    
+    # 5. Kết luận tổng hợp
+    if support_score >= 20:
+        result['overall_support'] = 'MẠNH'
+    elif support_score >= 0:
+        result['overall_support'] = 'TRUNG BÌNH'
+    elif support_score >= -15:
+        result['overall_support'] = 'YẾU'
+    else:
+        result['overall_support'] = 'RẤT YẾU'
+    
+    # Summary factor
+    factors.append(f'\n📊 TỔNG HỢP HỆ SINH THÁI DT ({dung_than}): {result["overall_support"]} (Score: {support_score:+d})')
+    factors.append(f'   Nguyên Thần ({nguyen_name}): {result["nguyen_than"]["strength"]}')
+    factors.append(f'   Kỵ Thần ({ky_name}): {result["ky_than"]["strength"]}')
+    factors.append(f'   Cừu Thần ({cuu_name}): {result["cuu_than"]["strength"]}')
+    if result['dt_nhap_mo']:
+        factors.append(f'   ⚠️ DT NHẬP MỘ — sự việc bị trì trệ')
+    
+    result['factors'] = factors
+    result['support_score'] = support_score
     return result
 
 
@@ -2696,9 +2981,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V42.2 Siêu Premium + Answer-First + 28 Handlers + VV 3378 + KV/DM Chuẩn QMDG)"
-        self.version = "V35.8-Full-Pipeline"
-        self.model_name = "offline-rule-engine-v35.0"
+        self.name = "Thiên Cơ Đại Sư (V42.9.9e Siêu Premium + Answer-First + 28 Handlers + VV 3378 + KV/DM Chuẩn QMDG)"
+        self.version = "V42.9.9e-Full-Pipeline"
+        self.model_name = "offline-rule-engine-v42.9.9e"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -11179,6 +11464,44 @@ class FreeAIHelper:
             consensus_confidence = 95
             critical_overrides.append(('LOCK_HUNG', 'Đa số PP đồng thuận HUNG → KHẲNG ĐỊNH'))
         
+        # ═══ V42.9.9e: 5 CRITICAL OVERRIDE MỚI ═══
+        
+        # Override 5: DT NHẬP MỘ → HUNG (sự việc bị khóa)
+        _has_nhap_mo = 'NHẬP MỘ' in _all_factors_upper or 'MỘ KHỐ' in _all_factors_upper
+        if _has_nhap_mo and not any(o[0] == 'FORCE_HUNG' for o in critical_overrides):
+            critical_overrides.append(('FORCE_HUNG', 'DT Nhập Mộ = sự việc bị khóa/tắc nghẽn, cần chờ Xung mở Mộ'))
+            if 'CÁT' in consensus:
+                consensus = 'BÌNH — THIÊN HUNG'
+                consensus_confidence = max(consensus_confidence - 15, 40)
+        
+        # Override 6: TAM HÌNH → cảnh báo pháp lý/tai nạn
+        _has_tam_hinh = 'TAM HÌNH' in _all_factors_upper
+        if _has_tam_hinh:
+            critical_overrides.append(('WARN_HUNG', 'Tam Hình = nguy cơ pháp lý, tai nạn, thị phi'))
+            if 'CÁT' in consensus:
+                consensus_confidence = max(consensus_confidence - 10, 45)
+        
+        # Override 7: LỤC HẠI → trở ngại ngầm
+        _has_luc_hai = 'LỤC HẠI' in _all_factors_upper or 'SÁU HẠI' in _all_factors_upper
+        if _has_luc_hai:
+            critical_overrides.append(('WARN_HUNG', 'Lục Hại = trở ngại ngầm, tiểu nhân, xung đột nội bộ'))
+            if 'ĐẠI CÁT' in consensus:
+                consensus = 'CÁT'
+                consensus_confidence = max(consensus_confidence - 8, 50)
+        
+        # Override 8: PHỤC NGÂM → sự việc lặp lại, trì trệ
+        _has_phuc_ngam = 'PHỤC NGÂM' in _all_factors_upper
+        if _has_phuc_ngam and not _has_phan_ngam:  # Tránh double-count với Phản Ngâm
+            critical_overrides.append(('WARN_HUNG', 'Phục Ngâm = sự việc trì trệ, lặp lại, không tiến được'))
+            if 'CÁT' in consensus:
+                consensus_confidence = max(consensus_confidence - 12, 42)
+        
+        # Override 9: DT AN TĨNH + KHÔNG ĐỘNG = chưa đến lúc
+        _has_an_tinh = 'AN TĨNH' in _all_factors_upper or 'TĨNH' in _all_factors_upper
+        _has_dong_hao = 'ĐỘNG HÀO' in _all_factors_upper or 'HÀO ĐỘNG' in _all_factors_upper
+        if _has_an_tinh and not _has_dong_hao:
+            critical_overrides.append(('INFO', 'DT An Tĩnh + Quẻ Tĩnh = sự việc chưa đến lúc, cần chờ đợi'))
+        
         # ═══════════════════════════════════════════════════════════
         # TỔNG HỢP: weighted_pct + consensus → overall verdict CUỐI CÙNG
         # ═══════════════════════════════════════════════════════════
@@ -11754,7 +12077,41 @@ class FreeAIHelper:
                 _uk_sinh = _UK_TIMING.get(_hanh_sinh_dt, {})
                 lines.append(f"  • Nên ĐỢI: **{_uk_sinh.get('thang', '?')}** (hành {_hanh_sinh_dt} sinh {_hanh_dt_kl})")
                 lines.append(f"  • Tránh: {_uk_info['thang']} (hành {_hanh_dt_kl} bị khắc = thêm bất lợi)")
+            
+            # V42.9.9e: Thêm ứng kỳ từ DT Ecosystem (Nhập Mộ)
+            try:
+                _eco_kl = _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data)
+                if _eco_kl.get('dt_nhap_mo'):
+                    _xung_mo = _eco_kl.get('dt_xung_mo')
+                    if _xung_mo:
+                        lines.append(f"  • ⚰️ DT Nhập Mộ — **sự việc tắc đến khi gặp ngày/tháng {_xung_mo}** (Xung mở Mộ)")
+                    else:
+                        lines.append(f"  • ⚰️ DT Nhập Mộ — **sự việc bị khoá**, cần chờ Xung Mộ")
+            except Exception:
+                pass
+            
             lines.append("")
+        
+        # V42.9.9e: HIỂN THỊ TÌNH TRẠNG NGUYÊN/KỴ/CỪU THẦN TRONG KẾT LUẬN
+        try:
+            _nkc_kl = _NGUYEN_THAN_MAP.get(dung_than if dung_than != 'Bản Thân' else 'Bản Thân', {})
+            _eco_kl2 = _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data)
+            if _nkc_kl and _eco_kl2:
+                lines.append("**🔬 HỆ SINH THÁI DT (tóm tắt):**")
+                _nt = _eco_kl2.get('nguyen_than', {})
+                _kt = _eco_kl2.get('ky_than', {})
+                _ct = _eco_kl2.get('cuu_than', {})
+                _nt_icon = '✅' if _nt.get('strength') in ('VƯỢNG', 'TRUNG BÌNH') else ('❌' if _nt.get('strength') == 'KHÔNG HIỆN' else '⚠️')
+                _kt_icon = '✅' if _kt.get('strength') in ('KHÔNG HIỆN', 'RẤT YẾU') else ('🔴' if _kt.get('strength') in ('VƯỢNG', 'TRUNG BÌNH') else '🟡')
+                _ct_icon = '✅' if _ct.get('strength') in ('KHÔNG HIỆN', 'RẤT YẾU') else '⚠️'
+                lines.append(f"  {_nt_icon} Nguyên Thần ({_nkc_kl.get('nguyen','?')}): **{_nt.get('strength','?')}** — {'hỗ trợ DT' if _nt.get('strength') in ('VƯỢNG','TRUNG BÌNH') else 'yếu/ẩn'}")
+                lines.append(f"  {_kt_icon} Kỵ Thần ({_nkc_kl.get('ky','?')}): **{_kt.get('strength','?')}** — {'NGUY HIỂM!' if _kt.get('strength') in ('VƯỢNG','TRUNG BÌNH') else 'ít ảnh hưởng'}")
+                lines.append(f"  {_ct_icon} Cừu Thần ({_nkc_kl.get('cuu','?')}): **{_ct.get('strength','?')}** — {'đe dọa Nguyên Thần' if _ct.get('strength') in ('VƯỢNG','TRUNG BÌNH') else 'an toàn'}")
+                lines.append(f"  → Hệ sinh thái DT: **{_eco_kl2.get('overall_support','?')}**")
+                lines.append("")
+        except Exception:
+            pass
+
         
         # ══════════════════════════════════════════════════════════
         # PHẦN 1: PHÂN TÍCH CHI TIẾT 5PP (collapsible)
@@ -12086,7 +12443,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.2 — Answer-First + 100% Data Direct + KV/DM Chuẩn QMDG). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 78 yếu tố → 1 câu trả lời! Vạn Vật 2226+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.9.9e — Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Nguyên/Kỵ/Cừu Thần). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
         
 
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
@@ -12592,9 +12949,56 @@ class FreeAIHelper:
                 _person_dt = _pd
                 break
         
-        # Bước 2: Gán DT
+        # Bước 2: Gán DT — V42.9.9e FIX: PERSON + ACTION CONTEXT
+        # Nguyên lý: Nếu có PERSON + ACTION → ACTION quyết định DT
+        # Nếu có PERSON + TRẠNG THÁI (bệnh, khỏe, chết) → PERSON quyết định DT
+        # Nếu chỉ có PERSON → PERSON quyết định DT
+        _PERSON_STATE_KW = ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua đời', 'mất',
+                            'hấp hối', 'nguy kịch', 'nằm viện', 'nhập viện', 'tai nạn',
+                            'phẫu thuật', 'mổ', 'ung thư', 'đau', 'sốt', 'khám',
+                            'hồi phục', 'bình an', 'an toàn', 'nguy hiểm']
+        _ACTION_DT_OVERRIDE = [
+            # (action_keyword, override_dt) — sorted dài trước ngắn
+            ('đầu tư', 'Thê Tài'), ('kinh doanh', 'Thê Tài'), ('buôn bán', 'Thê Tài'),
+            ('mua bán', 'Thê Tài'), ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'),
+            ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'), ('ngoại tình', 'Thê Tài'),
+            ('vay tiền', 'Thê Tài'), ('trả nợ', 'Thê Tài'), ('góp vốn', 'Thê Tài'),
+            ('hùn vốn', 'Thê Tài'), ('cho vay', 'Thê Tài'), ('lợi nhuận', 'Thê Tài'),
+            ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'), ('nghỉ việc', 'Quan Quỷ'),
+            ('sa thải', 'Quan Quỷ'), ('phỏng vấn', 'Quan Quỷ'), ('chuyển việc', 'Quan Quỷ'),
+            ('kiện tụng', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'), ('thắng kiện', 'Quan Quỷ'),
+            ('thi đỗ', 'Phụ Mẫu'), ('thi trượt', 'Phụ Mẫu'), ('thi cử', 'Phụ Mẫu'),
+            ('du học', 'Phụ Mẫu'), ('tốt nghiệp', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'),
+            ('mua nhà', 'Phụ Mẫu'), ('bán nhà', 'Thê Tài'), ('xây nhà', 'Phụ Mẫu'),
+            ('sửa nhà', 'Phụ Mẫu'), ('thuê nhà', 'Phụ Mẫu'),
+            ('du lịch', 'Bản Thân'), ('xuất hành', 'Bản Thân'), ('đi xa', 'Bản Thân'),
+            ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
+            ('sinh con', 'Tử Tôn'), ('có thai', 'Tử Tôn'), ('mang thai', 'Tử Tôn'),
+            ('thi', 'Phụ Mẫu'), ('học', 'Phụ Mẫu'),  # Ngắn, match cuối
+        ]
+        
         if _person_dt:
-            dung_than = _person_dt
+            # Có PERSON → kiểm tra có ACTION context không
+            _has_person_state = any(kw in q_lower for kw in _PERSON_STATE_KW)
+            if _has_person_state:
+                # "Bố bệnh", "Mẹ ốm" → DT = PERSON (hỏi về trạng thái người đó)
+                dung_than = _person_dt
+                self.log_step("V42.9.9e DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
+            else:
+                # Kiểm tra ACTION override
+                _action_override = None
+                for _akw, _adt in _ACTION_DT_OVERRIDE:
+                    if _akw in q_lower:
+                        _action_override = _adt
+                        self.log_step("V42.9.9e DT", "ACTION_OVERRIDE", 
+                                      f"Person={_detected_person}({_person_dt}) + Action={_akw} → DT={_adt}")
+                        break
+                if _action_override:
+                    dung_than = _action_override
+                else:
+                    # Không có action rõ → dùng PERSON DT
+                    dung_than = _person_dt
+                    self.log_step("V42.9.9e DT", "PERSON_ONLY", f"Person={_detected_person} → DT={_person_dt}")
         elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE_GIA_ĐÌNH'):
             # "tôi" = Bản Thân CHỈ khi hỏi CHUNG hoặc SỨC_KHỎE (hào Thế)
             # TÀI_CHÍNH "tôi giàu?" → DT = Thê Tài, CÔNG_VIỆC → Quan Quỷ
@@ -12738,7 +13142,32 @@ class FreeAIHelper:
         sections.append(f"- **Dụng Thần (Ngũ Hành):** {dung_than}")
         if topic and topic != matched_topic:
             sections.append(f"- Chủ đề gốc: **{topic}**")
+        
+        # ═══ V42.9.9e: HIỂN THỊ HỆ SINH THÁI DT — Nguyên/Kỵ/Cừu Thần ═══
+        try:
+            dt_eco = _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data)
+            if dt_eco and dt_eco.get('factors'):
+                sections.append("")
+                sections.append("#### 🔬 HỆ SINH THÁI DỤNG THẦN (Nguyên → Kỵ → Cừu)")
+                _nkc_map = _NGUYEN_THAN_MAP.get(dung_than if dung_than != 'Bản Thân' else 'Bản Thân', {})
+                if _nkc_map:
+                    sections.append(f"- **Chuỗi tác động:** {_nkc_map.get('nguyen','?')} (Nguyên Thần → SINH DT) | "
+                                    f"{_nkc_map.get('ky','?')} (Kỵ Thần → KHẮC DT) | "
+                                    f"{_nkc_map.get('cuu','?')} (Cừu Thần → KHẮC Nguyên)")
+                for eco_f in dt_eco['factors']:
+                    sections.append(f"  {eco_f}")
+                sections.append(f"- **Kết luận:** Hệ sinh thái DT **{dt_eco['overall_support']}** "
+                                f"(điểm: {dt_eco.get('support_score', 0):+d})")
+                if dt_eco.get('dt_nhap_mo'):
+                    sections.append(f"- ⚠️ **CẢNH BÁO: DT NHẬP MỘ** — Sự việc bị khoá/trì trệ")
+                    if dt_eco.get('dt_xung_mo'):
+                        sections.append(f"  → Có thể phá Mộ bằng ngày/tháng {dt_eco['dt_xung_mo']}")
+                self.log_step("V42.9.9e", "DT_ECO", f"Support={dt_eco['overall_support']} Score={dt_eco.get('support_score',0):+d} Mộ={dt_eco.get('dt_nhap_mo')}")
+        except Exception as _eco_err:
+            self.log_step("V42.9.9e", "DT_ECO_ERR", str(_eco_err)[:80])
+        
         sections.append("")
+
         
         ky_mon_verdict = "BÌNH"
         ky_mon_reason = ""
@@ -13020,6 +13449,27 @@ class FreeAIHelper:
                     ts_power = TRUONG_SINH_POWER.get(ts_stage, {}).get('power', 50)
                     ts_bonus = int((ts_power - 50) * 0.15)  # ±7.5 max
         weighted_pct = max(5, min(95, weighted_pct + ts_bonus))
+        
+        # ═══ V42.9.9e: DT ECOSYSTEM BONUS/PENALTY ═══
+        # Tích hợp điểm Nguyên/Kỵ/Cừu Thần vào weighted_pct
+        _eco_bonus = 0
+        try:
+            _dt_eco_verdict = _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data)
+            _eco_support = _dt_eco_verdict.get('support_score', 0)
+            _eco_bonus = int(_eco_support * 0.3)  # Scale: ±12 max
+            _eco_bonus = max(-12, min(12, _eco_bonus))
+            weighted_pct = max(5, min(95, weighted_pct + _eco_bonus))
+            
+            # DT Nhập Mộ → penalty thêm
+            if _dt_eco_verdict.get('dt_nhap_mo'):
+                weighted_pct = max(15, weighted_pct - 10)
+                _eco_bonus -= 10
+            
+            self.log_step("V42.9.9e", "ECO_PCT", 
+                          f"EcoScore={_eco_support} → Bonus={_eco_bonus} → pct={weighted_pct}%")
+        except Exception:
+            pass
+
         
         # ═══ V42.9.3 P0-B: CONFLICT DETECTION — phát hiện xung đột giữa các PP ═══
         _conflict_warnings = []
