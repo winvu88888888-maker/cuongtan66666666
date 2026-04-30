@@ -13939,17 +13939,18 @@ class FreeAIHelper:
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
                     # SĐ5: Khi Nào
-                    if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu']): return 'WHEN'
+                    if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu','mấy giờ','giờ nào','ngày nào','tháng nào']): return 'WHEN'
                     # SĐ4: Ở Đâu / Hướng Nào
                     if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
-                    # SĐ3: Cái Gì / Loại Gì
+                    # SĐ3: Cái Gì / Loại Gì / Màu gì
+                    if any(k in t for k in ['màu gì', 'màu sắc', 'màu nào', 'xe màu']): return 'COLOR'
                     if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','sản phẩm gì','bán gì','kinh doanh gì']): return 'WHAT'
                     # SĐ2: Tuổi
                     if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi','năm sinh']): return 'AGE'
                     # SĐ2: Số lượng
-                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy']): return 'COUNT'
+                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy','giá tiền','tiền']): return 'COUNT'
                     # SĐ13: Ai / Người Nào
-                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai']): return 'WHO'
+                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai','nam hay nữ','giới tính','đàn ông','phụ nữ','con trai','con gái']): return 'WHO'
                     # SĐ14: Tại Sao / Nguyên Nhân
                     if any(k in t for k in ['tại sao','vì sao','nguyên nhân','lý do','do đâu','sao lại']): return 'WHY'
                     # SĐ16: Cái Nào / Chọn Lọc
@@ -13981,12 +13982,20 @@ class FreeAIHelper:
                     _hd = _MI_HD.get(sq_hanh, (5, 10))
                     if qtype == 'WHEN':
                         thang = _MI_THANG.get(sq_hanh, '?')
+                        if 'giờ' in sq_text.lower():
+                            _MI_GIO = {'Thủy': 'Tý/Hợi (21h-1h)', 'Thổ': 'Sửu/Thìn/Mùi/Tuất', 'Mộc': 'Dần/Mão (3h-7h)', 'Hỏa': 'Tỵ/Ngọ (9h-13h)', 'Kim': 'Thân/Dậu (15h-19h)'}
+                            gio = _MI_GIO.get(sq_hanh, '?')
+                            return f"⏳ Giờ ứng nghiệm: {gio} ({sq_pct}%)", "⏳"
                         if sq_pct >= 55: return f"⏳ SẮP TỚI — ứng vào {thang} ({sq_pct}%)", "⏳"
                         elif sq_pct >= 45: return f"⏳ CÓ THỂ — {thang} ({sq_pct}%)", "🟡"
                         else: return f"⏳ CHẬM / CHƯA TỚI ({sq_pct}%)", "🔴"
                     elif qtype == 'WHERE':
                         huong = _MI_HUONG.get(sq_hanh, '?')
                         return f"🧭 HƯỚNG {huong} (Hành {sq_hanh}) ({sq_pct}%)", "🧭"
+                    elif qtype == 'COLOR':
+                        _MI_MAU = {'Kim': 'Trắng/Xám/Ghi', 'Mộc': 'Xanh lá/Xanh lục', 'Thủy': 'Đen/Xanh dương', 'Hỏa': 'Đỏ/Hồng/Tím', 'Thổ': 'Vàng/Nâu'}
+                        mau = _MI_MAU.get(sq_hanh, '?')
+                        return f"🎨 Màu sắc: {mau} (Hành {sq_hanh}) ({sq_pct}%)", "🎨"
                     elif qtype == 'WHAT':
                         nghe = _MI_NGHE.get(sq_hanh, '?')
                         return f"🔮 Hành {sq_hanh} → {nghe} ({sq_pct}%)", "🔮"
@@ -13995,7 +14004,8 @@ class FreeAIHelper:
                         return f"🎂 Khoảng {age} tuổi (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "🎂"
                     elif qtype == 'COUNT':
                         so = _hd[1] if sq_pct >= 55 else _hd[0]
-                        return f"👥 Số lượng: {so} (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "👥"
+                        prefix = "💰 Số lượng/Tiền" if any(k in sq_text.lower() for k in ['tiền', 'giá']) else "👥 Số lượng"
+                        return f"{prefix}: Khoảng {so} (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "📊"
                     elif qtype == 'SHOULD':
                         if sq_pct >= 55: return f"NÊN — THUẬN LỢI ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CÓ THỂ — THẬN TRỌNG ({sq_pct}%)", "🟡"
@@ -14038,7 +14048,11 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC — nhưng cẩn thận ({sq_pct}%)", "🟡"
                         else: return f"✈️ KHÔNG NÊN ĐI — trở ngại, nguy hiểm ({sq_pct}%)", "🔴"
                     elif qtype == 'WHO':
+                        _MI_GIOI = {'Kim': 'Nam (Cương quyết)', 'Hỏa': 'Nam (Nhiệt tình)', 'Mộc': 'Nam (Ôn hòa)', 'Thủy': 'Nữ (Mềm mỏng)', 'Thổ': 'Nữ (Trầm tĩnh)'}
                         nghe = _MI_NGHE.get(sq_hanh, '?')
+                        gioi = _MI_GIOI.get(sq_hanh, '?')
+                        if any(k in sq_text.lower() for k in ['nam', 'nữ', 'giới tính', 'con trai', 'con gái']):
+                            return f"👤 Giới tính: {gioi} — Hành {sq_hanh} ({sq_pct}%)", "👤"
                         return f"👤 Người hành {sq_hanh} — {nghe} ({sq_pct}%)", "👤"
                     elif qtype == 'WHY':
                         return f"🔎 Nguyên nhân thuộc hành {sq_hanh} — xem yếu tố xung khắc ({sq_pct}%)", "🔎"
@@ -14056,7 +14070,7 @@ class FreeAIHelper:
                 
                 _MI_QTYPE_LABEL = {
                     'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
-                    'WHAT': '🔮 Loại gì', 'AGE': '🎂 Tuổi', 'COUNT': '👥 Số lượng',
+                    'WHAT': '🔮 Loại gì', 'COLOR': '🎨 Màu sắc', 'AGE': '🎂 Tuổi', 'COUNT': '📊 Số lượng',
                     'SHOULD': '⚖️ Nên/Không', 'LIFE_DEATH': '💀 Sống/Chết', 'COMPETITION': '⚔️ Thắng/Thua',
                     'FINANCE': '💰 Tài Lộc', 'LOVE': '❤️ Tình Duyên', 'HEALTH': '🏥 Sức Khỏe',
                     'CAREER': '💼 Công Việc', 'LAWSUIT': '⚖️ Kiện Tụng', 'LOST_ITEM': '🔍 Mất Đồ',
@@ -14068,15 +14082,20 @@ class FreeAIHelper:
                 
                 # Card 1: câu hỏi chính (dùng weighted_pct đã tính)
                 _mi_pq1_text = _mi_parsed[0].get('text', question)[:60] if _mi_parsed else question[:60]
+                _mi_pq1_dt = _mi_parsed[0].get('dung_than', dung_than) if _mi_parsed else dung_than
+                _mi_pq1_hanh = _MI_LT_H.get(_mi_pq1_dt, 'Thổ')
                 _mi_pq1_qtype = _mi_detect_qtype(_mi_pq1_text)
+                
+                _mi_pq1_vtext, _mi_pq1_icon = _mi_gen_verdict(_mi_pq1_qtype, weighted_pct, _mi_pq1_hanh, _mi_pq1_dt, _mi_pq1_text)
+                
                 _mi_cards.append({
                     'text': _mi_pq1_text,
                     'pct': weighted_pct,
-                    'dt': dung_than,
-                    'role': _MI_DT_ROLE.get(dung_than, '?'),
+                    'dt': _mi_pq1_dt,
+                    'role': _MI_DT_ROLE.get(_mi_pq1_dt, '?'),
                     'qtype': _mi_pq1_qtype,
-                    'icon': '✅' if weighted_pct >= 55 else ('🟡' if weighted_pct >= 45 else '🔴'),
-                    'verdict_text': f"PHÁN QUYẾT: {'THUẬN LỢI' if weighted_pct >= 55 else ('CẦN THẬN TRỌNG' if weighted_pct >= 45 else 'BẤT LỢI')} ({weighted_pct}%)",
+                    'icon': _mi_pq1_icon,
+                    'verdict_text': f"PHÁN QUYẾT: {_mi_pq1_vtext}" if not _mi_pq1_vtext.startswith(('⏳', '🧭', '🎨', '🔮', '🎂', '👥', '👤', '🔎', '📊', '🎯', '💰', '❤️', '🏥', '💼', '⚖️', '🔍', '✈️')) else _mi_pq1_vtext,
                 })
                 
                 # Card 2+: các câu hỏi con với verdict riêng
@@ -14107,7 +14126,7 @@ class FreeAIHelper:
                         'role': _MI_DT_ROLE.get(_mi_sq_dt, '?'),
                         'qtype': _mi_sq_qtype,
                         'icon': _mi_sq_icon,
-                        'verdict_text': f"PHÁN QUYẾT: {_mi_sq_verdict}",
+                        'verdict_text': f"PHÁN QUYẾT: {_mi_sq_verdict}" if not _mi_sq_verdict.startswith(('⏳', '🧭', '🎨', '🔮', '🎂', '👥', '👤', '🔎', '📊', '🎯', '💰', '❤️', '🏥', '💼', '⚖️', '🔍', '✈️')) else _mi_sq_verdict,
                     })
                 
                 # Render tất cả cards vào sections
@@ -14876,7 +14895,7 @@ class FreeAIHelper:
                     _off_answer_list = []
                     for c in _mi_cards:
                         _qt = _MI_QTYPE_LABEL.get(c['qtype'], '❓') if '_MI_QTYPE_LABEL' in locals() else c['qtype']
-                        _off_answer_list.append(f"<b>\"{c['text']}\"</b><br>{c['icon']} {_qt}: {c['verdict_text']} (DT: {c['dt']})")
+                        _off_answer_list.append(f"<b>\"{c['text']}\"</b><br>{c['verdict_text']} (DT: {c['dt']})")
             except NameError:
                 pass
             
@@ -15233,7 +15252,7 @@ class FreeAIHelper:
                     _offline_short_answer_list = []
                     for c in _mi_cards:
                         _qt = _MI_QTYPE_LABEL.get(c['qtype'], '❓') if '_MI_QTYPE_LABEL' in locals() else c['qtype']
-                        _offline_short_answer_list.append(f"<b>\"{c['text']}\"</b><br>{c['icon']} {_qt}: {c['verdict_text']} (DT: {c['dt']})")
+                        _offline_short_answer_list.append(f"<b>\"{c['text']}\"</b><br>{c['verdict_text']} (DT: {c['dt']})")
             except NameError:
                 pass
 
