@@ -589,8 +589,18 @@ def _get_dung_than(question):
                 best_kw = kw
     if best_dt:
         # V42.9.9i FIX: PERSON + ACTION context
-        # Nếu có PERSON + ACTION → ACTION quyết định DT
-        # Nếu có PERSON + TRẠNG THÁI (bệnh/chết/khỏe) → PERSON quyết định DT
+        # Nếu có PERSON + ACTION → PERSON quyết định DT (nếu hỏi cho người khác)
+        # Nếu KHÔNG CÓ PERSON (ví dụ: Tôi) + ACTION → ACTION quyết định DT
+        _PERSON_KWS = {
+            'ông ngoại', 'ông nội', 'bà ngoại', 'bà nội', 'bố mẹ', 'cha mẹ', 'tổ tiên',
+            'bố', 'mẹ', 'cha', 'người yêu', 'bạn trai', 'bạn gái', 'vợ', 'chồng',
+            'con trai', 'con gái', 'con dâu', 'con rể', 'con cái', 'con', 'cháu',
+            'anh chị em', 'anh em', 'bạn', 'anh', 'chị', 'em', 'sếp', 'đồng nghiệp',
+            'đối tác', 'khách hàng', 'đối thủ'
+        }
+        if best_kw in _PERSON_KWS:
+            return best_dt  # Chủ thể là Người thì không bị override bởi Hành động
+            
         _PERSON_STATE_KW_S = ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua đời', 'mất',
                               'hấp hối', 'nguy kịch', 'nằm viện', 'nhập viện', 'tai nạn',
                               'phẫu thuật', 'mổ', 'ung thư', 'đau', 'sốt', 'khám',
@@ -600,7 +610,9 @@ def _get_dung_than(question):
             ('mua bán', 'Thê Tài'), ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'),
             ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'), ('ngoại tình', 'Thê Tài'),
             ('vay tiền', 'Thê Tài'), ('trả nợ', 'Thê Tài'), ('góp vốn', 'Thê Tài'),
-            ('cho vay', 'Thê Tài'), ('lợi nhuận', 'Thê Tài'),
+            ('cho vay', 'Thê Tài'), ('lợi nhuận', 'Thê Tài'), 
+            ('mua nhà', 'Thê Tài'), ('bán nhà', 'Thê Tài'), ('mua xe', 'Thê Tài'), 
+            ('bán xe', 'Thê Tài'), ('mua đất', 'Thê Tài'), ('bán đất', 'Thê Tài'),
             ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'), ('nghỉ việc', 'Quan Quỷ'),
             ('sa thải', 'Quan Quỷ'), ('phỏng vấn', 'Quan Quỷ'), ('chuyển việc', 'Quan Quỷ'),
             ('kiện tụng', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'), ('thắng kiện', 'Quan Quỷ'),
@@ -613,12 +625,12 @@ def _get_dung_than(question):
         ]
         _has_state = any(kw in q for kw in _PERSON_STATE_KW_S)
         if _has_state:
-            return best_dt  # Trạng thái người → DT = PERSON
+            return best_dt  # Trạng thái người/vật → DT = PERSON/OBJECT
         # Kiểm tra action
         for _akw, _adt in _ACTION_DT_S:
             if _akw in q:
-                return _adt  # ACTION override PERSON
-        return best_dt  # Không có action → DT = PERSON
+                return _adt  # ACTION override OBJECT
+        return best_dt  # Không có action → DT = PERSON/OBJECT
     
     # ═══ TIER 2: NGỮ CẢNH — Hành động/trạng thái (chỉ khi ko có chủ thể) ═══
     _CONTEXT_DT = [
@@ -685,6 +697,7 @@ def _get_all_dung_than(question):
         ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
         ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'),
         ('hợp đồng', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'),
+        ('công ty', 'Quan Quỷ'), ('nghề nghiệp', 'Quan Quỷ'),
         ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'),
         ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'),
         ('người yêu', 'Thê Tài'), ('bạn trai', 'Thê Tài'), ('bạn gái', 'Thê Tài'),

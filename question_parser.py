@@ -399,14 +399,14 @@ class ContextSplitter:
         'có ', 'không', 'nào', 'nên', 'khi nào', 'bao giờ',
         'ở đâu', 'thế nào', 'ra sao', 'bao nhiêu', 'tại sao',
         'vì sao', 'đâu', 'ai ', 'mấy', 'được không', 'liệu',
-        'có nên', 'có được', 'có thể',
+        'có nên', 'có được', 'có thể', 'gì', 'cái gì', 'chưa'
     }
     
     # Từ khóa topic riêng biệt
     TOPIC_MARKERS = {
         'sức khỏe', 'tài chính', 'tình cảm', 'công việc', 'tình hình',
-        'bệnh', 'tiền', 'yêu', 'việc', 'thi', 'kinh doanh',
-        'thu nhập', 'lương', 'vợ', 'chồng', 'con',
+        'bệnh', 'tiền', 'yêu', 'việc', 'thi', 'kinh doanh', 'công ty',
+        'thu nhập', 'lương', 'vợ', 'chồng', 'con', 'nhà', 'xe', 'đất'
     }
     
     # Từ nối — dùng để tách nhưng chỉ khi context khác
