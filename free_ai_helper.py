@@ -14963,18 +14963,33 @@ class FreeAIHelper:
                 _q_lower = question.lower() if question else ''
                 _direct_reply = ''
                 
-                if weighted_pct >= 60:
-                    _tone = 'CÓ THỂ'
-                    _detail = 'thuận lợi, nên tiến hành'
-                elif weighted_pct >= 50:
-                    _tone = 'CÓ THỂ nhưng cần CẨN TRỌNG'
-                    _detail = 'cần chuẩn bị kỹ'
-                elif weighted_pct >= 45:
-                    _tone = 'KHÓ — cần CÂN NHẮC KỸ'
-                    _detail = 'chưa thuận lợi lắm, nên chờ thêm'
+                if is_find:
+                    _tone = 'CÓ THỂ TÌM THẤY' if weighted_pct >= 50 else 'KHÓ TÌM THẤY'
+                    _detail = v15_timing if v15_timing else 'Hãy xem chi tiết ở dưới'
+                elif is_age:
+                    _tone = 'PHÂN TÍCH TUỔI'
+                    _avg_age = int(sum([n for _, n in age_numbers]) / len(age_numbers)) if 'age_numbers' in locals() and age_numbers else 'không rõ'
+                    _detail = f'Khoảng {_avg_age} tuổi'
+                elif is_count:
+                    _tone = 'PHÂN TÍCH SỐ LƯỢNG'
+                    _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else 'không rõ'
+                    _detail = f'Khoảng {_avg_c}'
+                elif any(kw in _q_lower for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
+                    _tone = 'THỜI ĐIỂM'
+                    _detail = v15_timing if v15_timing else 'Cần chờ thêm'
                 else:
-                    _tone = 'KHÔNG NÊN vào lúc này'
-                    _detail = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
+                    if weighted_pct >= 60:
+                        _tone = 'CÓ THỂ'
+                        _detail = 'thuận lợi, nên tiến hành'
+                    elif weighted_pct >= 50:
+                        _tone = 'CÓ THỂ nhưng cần CẨN TRỌNG'
+                        _detail = 'cần chuẩn bị kỹ'
+                    elif weighted_pct >= 45:
+                        _tone = 'KHÓ — cần CÂN NHẮC KỸ'
+                        _detail = 'chưa thuận lợi lắm, nên chờ thêm'
+                    else:
+                        _tone = 'KHÔNG NÊN vào lúc này'
+                        _detail = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
                 # V42.9.9g: Dùng trực tiếp câu hỏi của user để tránh trả lời chung chung
                 _q_clean = question.strip() if question else "Sự việc"
                 if len(_q_clean) > 80: _q_clean = _q_clean[:77] + "..."
@@ -15392,18 +15407,33 @@ class FreeAIHelper:
             else:
                 # V42.9.9d: NÂNG CẤP TRẢ LỜI TRỰC TIẾP (GIỐNG path có Online)
                 _q_lower_fb = question.lower() if question else ''
-                if weighted_pct >= 60:
-                    _tone_fb = 'CÓ THỂ'
-                    _detail_fb = 'thuận lợi, nên tiến hành'
-                elif weighted_pct >= 50:
-                    _tone_fb = 'CÓ THỂ nhưng cần CẨN TRỌNG'
-                    _detail_fb = 'cần chuẩn bị kỹ'
-                elif weighted_pct >= 45:
-                    _tone_fb = 'KHÓ — cần CÂN NHẮC KỸ'
-                    _detail_fb = 'chưa thuận lợi lắm, nên chờ thêm'
+                if is_find:
+                    _tone_fb = 'CÓ THỂ TÌM THẤY' if weighted_pct >= 50 else 'KHÓ TÌM THẤY'
+                    _detail_fb = v15_timing if v15_timing else 'Hãy xem chi tiết ở dưới'
+                elif is_age:
+                    _tone_fb = 'PHÂN TÍCH TUỔI'
+                    _avg_age = int(sum([n for _, n in age_numbers]) / len(age_numbers)) if 'age_numbers' in locals() and age_numbers else 'không rõ'
+                    _detail_fb = f'Khoảng {_avg_age} tuổi'
+                elif is_count:
+                    _tone_fb = 'PHÂN TÍCH SỐ LƯỢNG'
+                    _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else 'không rõ'
+                    _detail_fb = f'Khoảng {_avg_c}'
+                elif any(kw in _q_lower_fb for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
+                    _tone_fb = 'THỜI ĐIỂM'
+                    _detail_fb = v15_timing if v15_timing else 'Cần chờ thêm'
                 else:
-                    _tone_fb = 'KHÔNG NÊN vào lúc này'
-                    _detail_fb = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
+                    if weighted_pct >= 60:
+                        _tone_fb = 'CÓ THỂ'
+                        _detail_fb = 'thuận lợi, nên tiến hành'
+                    elif weighted_pct >= 50:
+                        _tone_fb = 'CÓ THỂ nhưng cần CẨN TRỌNG'
+                        _detail_fb = 'cần chuẩn bị kỹ'
+                    elif weighted_pct >= 45:
+                        _tone_fb = 'KHÓ — cần CÂN NHẮC KỸ'
+                        _detail_fb = 'chưa thuận lợi lắm, nên chờ thêm'
+                    else:
+                        _tone_fb = 'KHÔNG NÊN vào lúc này'
+                        _detail_fb = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
                 # V42.9.9g: Dùng trực tiếp câu hỏi của user để tránh trả lời chung chung
                 _q_clean_fb = question.strip() if question else "Sự việc"
                 if len(_q_clean_fb) > 80: _q_clean_fb = _q_clean_fb[:77] + "..."
