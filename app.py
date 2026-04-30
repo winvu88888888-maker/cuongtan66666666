@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.9e"
+APP_VERSION = "V42.9.9f"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -402,8 +402,15 @@ except ImportError:
     FREE_AI_AVAILABLE = False
 
 # ======================================================================
-# INITIALIZE SESSION STATE
+# INITIALIZE SESSION STATE & CACHE BUSTING
 # ======================================================================
+# V42.9.9e: FORCE CACHE BUST WHEN VERSION CHANGES
+if st.session_state.get('saved_app_version') != APP_VERSION:
+    _saved_keys = {k: st.session_state[k] for k in st.session_state if 'api_key' in k.lower() or 'cookie' in k.lower()}
+    st.session_state.clear()
+    for k, v in _saved_keys.items():
+        st.session_state[k] = v
+    st.session_state['saved_app_version'] = APP_VERSION
 if 'zoom_level' not in st.session_state:
     st.session_state.zoom_level = 100
 if 'chu_de_hien_tai' not in st.session_state:

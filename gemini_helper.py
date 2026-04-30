@@ -51,7 +51,7 @@ class GeminiQMDGHelper:
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V42.9.9e-GenAI-SDK"
+        self.version = "V42.9.9f-GenAI-SDK"
         # V21.0: Khởi tạo Client mới (google-genai SDK)
         self._client = None
         if self.api_key:

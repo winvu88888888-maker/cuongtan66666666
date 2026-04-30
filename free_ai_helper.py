@@ -2982,7 +2982,7 @@ class FreeAIHelper:
     """
     def __init__(self, api_key=None):
         self.name = "Thiên Cơ Đại Sư (V42.9.9e Siêu Premium + Answer-First + 28 Handlers + VV 3378 + KV/DM Chuẩn QMDG)"
-        self.version = "V42.9.9e-Full-Pipeline"
+        self.version = "V42.9.9f-Full-Pipeline"
         self.model_name = "offline-rule-engine-v42.9.9e"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
