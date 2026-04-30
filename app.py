@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.9h"
+APP_VERSION = "V42.9.9i"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -2980,7 +2980,7 @@ if st.session_state.current_view == "ky_mon":
                             
                             if not mai_hoa_for_offline:
                                 try:
-                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    dt_now = selected_datetime
                                     mai_hoa_for_offline = tinh_qua_theo_thoi_gian(dt_now.year, dt_now.month, dt_now.day, dt_now.hour)
                                     mai_hoa_for_offline['interpretation'] = giai_qua(mai_hoa_for_offline, selected_topic)
                                     st.session_state.mai_hoa_result = mai_hoa_for_offline
@@ -2989,7 +2989,7 @@ if st.session_state.current_view == "ky_mon":
                             
                             if not luc_hao_for_offline:
                                 try:
-                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    dt_now = selected_datetime
                                     # V28.0: Fix Lỗi 6 — Lấy Can/Chi từ chart_data thay vì params rỗng
                                     _chart = st.session_state.get('chart_data', {})
                                     can_ngay_val = _chart.get('can_ngay', 'Giáp') if _chart else 'Giáp'
@@ -3652,7 +3652,7 @@ PHÂN TÍCH LIÊN MẠCH:
                             
                             if not mai_hoa_for_q:
                                 try:
-                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    dt_now = selected_datetime
                                     mai_hoa_for_q = tinh_qua_theo_thoi_gian(dt_now.year, dt_now.month, dt_now.day, dt_now.hour)
                                     mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
                                     st.session_state.mai_hoa_result = mai_hoa_for_q
@@ -3661,7 +3661,7 @@ PHÂN TÍCH LIÊN MẠCH:
                             
                             if not luc_hao_for_q:
                                 try:
-                                    dt_now = dt_module.datetime.now(vn_tz)
+                                    dt_now = selected_datetime
                                     # V28.0: Fix Lỗi 6 — Lấy Can/Chi từ chart_data thay vì params rỗng
                                     _chart_q = st.session_state.get('chart_data', {})
                                     can_ngay_val = _chart_q.get('can_ngay', 'Giáp') if _chart_q else 'Giáp'
@@ -3717,9 +3717,9 @@ elif st.session_state.current_view == "mai_hoa":
     
     st.markdown("### 🎯 Chủ đề: **{selected_topic}**")
 
-    # AUTO CAST TIME
-    dt = dt_module.datetime.now(vn_tz)
-    st.info(f"🕒 Giờ hiện tại: {dt.strftime('%H:%M - %d/%m/%Y')}. Quẻ tự động cập nhật theo thời gian thực.")
+    # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
+    dt = selected_datetime
+    st.info(f"🕒 Giờ gieo quẻ: {dt.strftime('%H:%M - %d/%m/%Y')}.")
     res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
     res['interpretation'] = giai_qua(res, selected_topic)
     st.session_state.mai_hoa_result = res
@@ -3824,8 +3824,8 @@ elif st.session_state.current_view == "luc_hao":
 
     show_debug_ih = st.checkbox("🐛 Chế độ Kiểm tra Dữ liệu", key="debug_iching_mode")
 
-    # AUTO CAST TIME
-    dt = dt_module.datetime.now(vn_tz)
+    # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
+    dt = selected_datetime
     can_ngay = params.get('can_ngay', 'Giáp') if params else "Giáp"
     chi_ngay = params.get('chi_ngay', 'Tý') if params else "Tý"
     can_gio = params.get('can_gio', '') if params else ""
@@ -4034,9 +4034,9 @@ elif st.session_state.current_view == "thiet_ban":
     
     st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
     
-    # AUTO CAST TIME
-    dt = dt_module.datetime.now(vn_tz)
-    st.info(f"🕒 Giờ hiện tại: {dt.strftime('%H:%M - %d/%m/%Y')}. Kết quả tự động cập nhật theo thời gian thực.")
+    # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
+    dt = selected_datetime
+    st.info(f"🕒 Giờ gieo quẻ: {dt.strftime('%H:%M - %d/%m/%Y')}.")
     now = dt
 
     import qmdg_data
@@ -4325,7 +4325,7 @@ elif st.session_state.current_view == "gemini_ai":
                         import hashlib
                         import datetime as dt_module
                         vn_tz = dt_module.timezone(dt_module.timedelta(hours=7))
-                        current_dt = dt_module.datetime.now(vn_tz) # Use the real-time auto-refresh datetime
+                        current_dt = selected_datetime # V42.9.9i: Đồng bộ giờ
                         
                         # 1. KỲ MÔN ĐỘN GIÁP
                         temp_chart_data = st.session_state.get('chart_data')
