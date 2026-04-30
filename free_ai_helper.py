@@ -14870,6 +14870,16 @@ class FreeAIHelper:
                         if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
                             _off_evidence.append(_s)
             
+            # V42.9.9j: ALWAYS override with _mi_cards if we detected multiple intents
+            try:
+                if isinstance(_mi_cards, list) and len(_mi_cards) > 1:
+                    _off_answer_list = []
+                    for c in _mi_cards:
+                        _qt = _MI_QTYPE_LABEL.get(c['qtype'], '❓') if '_MI_QTYPE_LABEL' in locals() else c['qtype']
+                        _off_answer_list.append(f"<b>\"{c['text']}\"</b><br>{c['icon']} {_qt}: {c['verdict_text']} (DT: {c['dt']})")
+            except NameError:
+                pass
+            
             _off_answer = "<br>".join(_off_answer_list) if _off_answer_list else ""
             
             if not _off_answer:
@@ -14915,12 +14925,16 @@ class FreeAIHelper:
                 
                 if _fb_on:
                     _off_answer = "<br>".join(_fb_on)
+                    _off_answer_list.append(_off_answer)
                 elif _off_verdict == 'CÁT':
                     _off_answer = f"{_off_v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
+                    _off_answer_list.append(_off_answer)
                 elif _off_verdict == 'HUNG':
                     _off_answer = f"{_off_v_icon} KHÔNG — BẤT LỢI ({weighted_pct}%)"
+                    _off_answer_list.append(_off_answer)
                 else:
                     _off_answer = f"{_off_v_icon} CẦN CÂN NHẮC — {_off_verdict} ({weighted_pct}%)"
+                    _off_answer_list.append(_off_answer)
             
             _off_ev_html = ""
             if _off_evidence:
@@ -14930,6 +14944,7 @@ class FreeAIHelper:
                 _off_ev_html += '</div>'
             
             # V42.9.5: MULTI-CARD SYSTEM — Mỗi sub-question 1 card riêng
+            final_parts.append(f"<div>DEBUG_FINAL: len(_off_answer_list)={len(_off_answer_list)}</div>")
             if len(_off_answer_list) > 1:
                 # === MULTI-INTENT: Tạo CARD riêng cho từng câu trả lời ===
                 _multi_cards = ''
@@ -15211,6 +15226,16 @@ class FreeAIHelper:
                     elif len(_offline_evidence) < 3:
                         if _s.startswith(('- ✅', '- 🔴', '- ⚠️', '- 📌', '- 📊', '- 💡')):
                             _offline_evidence.append(_s)
+                            
+            # V42.9.9j: ALWAYS override with _mi_cards if we detected multiple intents (OFFLINE path)
+            try:
+                if isinstance(_mi_cards, list) and len(_mi_cards) > 1:
+                    _offline_short_answer_list = []
+                    for c in _mi_cards:
+                        _qt = _MI_QTYPE_LABEL.get(c['qtype'], '❓') if '_MI_QTYPE_LABEL' in locals() else c['qtype']
+                        _offline_short_answer_list.append(f"<b>\"{c['text']}\"</b><br>{c['icon']} {_qt}: {c['verdict_text']} (DT: {c['dt']})")
+            except NameError:
+                pass
 
             _offline_short_answer = "<br>".join(_offline_short_answer_list) if _offline_short_answer_list else ""
             
