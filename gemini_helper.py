@@ -1,5 +1,5 @@
 """
-Enhanced Gemini Helper - THIÊN CƠ ĐẠI SƯ (V20.0 - Siêu Trí Tuệ Thông Minh Nhất)
+Enhanced Gemini Helper - THIÊN CƠ ĐẠI SƯ (V42.9.9e - Siêu Trí Tuệ + Nguyên/Kỵ/Cừu Thần)
 Python Pre-Analysis Engine + 12-Step CoT + Deep Reasoning + Tam Tài + Contradiction Resolution
 Lục Thuật Hợp Nhất: Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất + Mang Đoán + Vạn Vật
 """
@@ -51,7 +51,7 @@ class GeminiQMDGHelper:
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V21.0-GenAI-SDK"
+        self.version = "V42.9.9e-GenAI-SDK"
         # V21.0: Khởi tạo Client mới (google-genai SDK)
         self._client = None
         if self.api_key:
