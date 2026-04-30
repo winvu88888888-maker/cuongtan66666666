@@ -19,6 +19,14 @@ import os
 import traceback
 import re
 
+# V42.9.9e: Force reload free_ai_helper to avoid Streamlit cache serving old .pyc
+import importlib
+try:
+    import free_ai_helper as _fah_mod
+    importlib.reload(_fah_mod)
+except Exception:
+    pass
+
 import extra_streamlit_components as stx
 # REMOVED: st_autorefresh was causing full page rerun every 60s, wiping AI analysis data
 # from streamlit_autorefresh import st_autorefresh
