@@ -19,7 +19,7 @@ import os
 import traceback
 import re
 
-# V42.9.9e: Force reload free_ai_helper to avoid Streamlit cache serving old .pyc
+# V42.9.9i: Force reload free_ai_helper to avoid Streamlit cache serving old .pyc
 import importlib
 try:
     import free_ai_helper as _fah_mod
@@ -404,7 +404,7 @@ except ImportError:
 # ======================================================================
 # INITIALIZE SESSION STATE & CACHE BUSTING
 # ======================================================================
-# V42.9.9e: FORCE CACHE BUST WHEN VERSION CHANGES
+# V42.9.9i: FORCE CACHE BUST WHEN VERSION CHANGES
 if st.session_state.get('saved_app_version') != APP_VERSION:
     _saved_keys = {k: st.session_state[k] for k in st.session_state if 'api_key' in k.lower() or 'cookie' in k.lower()}
     st.session_state.clear()
@@ -2951,7 +2951,7 @@ if st.session_state.current_view == "ky_mon":
                         # V10.2: role_label phải phản ánh đúng đối tượng, KHÔNG hardcode
                         role_label = rel_type if rel_type and rel_type != 'Bản thân' else 'Bản thân'
                         
-                        # V42.9.9d: Fix — XÂY CÂU HỎI CÓ NGỮ CẢNH thay vì generic
+                        # V42.9.9i: Fix — XÂY CÂU HỎI CÓ NGỮ CẢNH thay vì generic
                         # "Phân tích về Chung" → engine classify = CHUNG → DT sai
                         # Cần tạo câu hỏi mô phỏng intent thật dựa trên topic
                         _TOPIC_TO_QUESTION = {

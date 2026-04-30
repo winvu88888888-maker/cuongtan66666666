@@ -1,5 +1,5 @@
 """
-🤖 SUPER AUDIT ROBOT V1.0 — Kiểm tra toàn bộ Divination Engine V42.9.9
+🤖 SUPER AUDIT ROBOT V1.0 — Kiểm tra toàn bộ Divination Engine V42.9.9i
 Chạy: python _super_audit_robot.py
 6 Module: Data Integrity → Scoring Logic → Verdict Consistency → Multi-Q → Prompt → Regression
 """
@@ -30,7 +30,7 @@ def warn(name, detail=""):
     DETAILS.append(f"WARN: {name} — {detail}")
 
 print("=" * 70)
-print("🤖 SUPER AUDIT ROBOT V1.0 — DIVINATION ENGINE V42.9.9")
+print("🤖 SUPER AUDIT ROBOT V1.0 — DIVINATION ENGINE V42.9.9i")
 print("=" * 70)
 
 # ══════════════════════════════════════════════════════
@@ -211,7 +211,7 @@ for qt in QTYPES:
 check("_sub_verdicts list created", '_sub_verdicts' in src)
 check("_detect_qtype_sub function", '_detect_qtype_sub' in src)
 check("_gen_verdict_by_qtype function", '_gen_verdict_by_qtype' in src)
-check("Sub-question multi-factor scoring (V42.9.9)", 'Multi-factor scoring cho sub-question' in src)
+check("Sub-question multi-factor scoring (V42.9.9i)", 'Multi-factor scoring cho sub-question' in src)
 check("Sub-question factors display", 'factors' in src and '_sq_factors_detail' in src)
 
 # ══════════════════════════════════════════════════════
@@ -219,7 +219,7 @@ check("Sub-question factors display", 'factors' in src and '_sq_factors_detail' 
 # ══════════════════════════════════════════════════════
 print("\n🤖 MODULE 5: GEMINI PROMPT (Clean + Role)")
 
-check("Prompt version V42.9.9", 'V42.9.9' in src)
+check("Prompt version V42.9.9i", 'V42.9.9i' in src)
 check("Role: CHUYÊN GIA DIỄN GIẢI", 'DIỄN GIẢI' in src)
 check("Verdict block injection", 'verdict_block' in src or 'offline_verdict_block' in src)
 check("Output format template", 'output_format' in src)
@@ -314,6 +314,6 @@ if DETAILS:
         print(f"  • {d}")
 
 if FAIL == 0:
-    print("\n🎉 HỆ THỐNG V42.9.9 HOÀN TOÀN SẠCH — SẴN SÀNG DEPLOY!")
+    print("\n🎉 HỆ THỐNG V42.9.9i HOÀN TOÀN SẠCH — SẴN SÀNG DEPLOY!")
 else:
     print(f"\n⚠️  CẦN SỬA {FAIL} LỖI TRƯỚC KHI DEPLOY!")
