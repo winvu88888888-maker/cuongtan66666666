@@ -13465,6 +13465,12 @@ class FreeAIHelper:
                 weighted_pct = max(15, weighted_pct - 10)
                 _eco_bonus -= 10
             
+            # V42.9.9g: Inject ECO vào v23_lh_factors để AI Online đọc được
+            if _dt_eco_verdict.get('factors') and 'v23_lh_factors' in locals() and isinstance(v23_lh_factors, list):
+                for _f in _dt_eco_verdict['factors']:
+                    if 'TỔNG HỢP' not in _f and 'Nguyên Thần (' not in _f and str(_f).strip():
+                        v23_lh_factors.append(f"[HỆ SINH THÁI DT] {_f}")
+            
             self.log_step("V42.9.9e", "ECO_PCT", 
                           f"EcoScore={_eco_support} → Bonus={_eco_bonus} → pct={weighted_pct}%")
         except Exception:
@@ -14969,29 +14975,10 @@ class FreeAIHelper:
                 else:
                     _tone = 'KHÔNG NÊN vào lúc này'
                     _detail = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
-                
-                # Map câu hỏi → câu trả lời cụ thể
-                _q_norm = _q_lower
-                if 'mua' in _q_norm and ('nhà' in _q_norm or 'nha' in _q_norm):
-                    _direct_reply = f'Việc MUA NHÀ năm nay: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'đầu tư' in _q_norm or 'dau tu' in _q_norm or 'kinh doanh' in _q_norm:
-                    _direct_reply = f'Việc ĐẦU TƯ KINH DOANH: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'người yêu' in _q_norm or 'nguoi yeu' in _q_norm or 'tình' in _q_norm:
-                    _direct_reply = f'TÌNH DUYÊN: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'sức khỏe' in _q_norm or 'suc khoe' in _q_norm or 'bệnh' in _q_norm or 'benh' in _q_norm:
-                    _direct_reply = f'SỨC KHỎE: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'kiện' in _q_norm or 'kien' in _q_norm or 'tòa' in _q_norm:
-                    _direct_reply = f'KIỆN TỤNG: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'đi xa' in _q_norm or 'di xa' in _q_norm or 'du lịch' in _q_norm or 'xuất hành' in _q_norm:
-                    _direct_reply = f'XUẤT HÀNH: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'tìm' in _q_norm or 'mất' in _q_norm or 'mat' in _q_norm or 'tim' in _q_norm:
-                    _direct_reply = f'TÌM ĐỒ: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'lương' in _q_norm or 'luong' in _q_norm or 'thăng' in _q_norm:
-                    _direct_reply = f'CÔNG VIỆC: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                elif 'con' in _q_norm and ('thi' in _q_norm or 'đỗ' in _q_norm or 'do' in _q_norm):
-                    _direct_reply = f'THI CỬ: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
-                else:
-                    _direct_reply = f'Kết quả: <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
+                # V42.9.9g: Dùng trực tiếp câu hỏi của user để tránh trả lời chung chung
+                _q_clean = question.strip() if question else "Sự việc"
+                if len(_q_clean) > 80: _q_clean = _q_clean[:77] + "..."
+                _direct_reply = f'Cho "{_q_clean}": <b>{_tone}</b> ({weighted_pct}%). {_detail.capitalize()}.'
                 
                 # ═══ V42.9.9d: Build chi tiết luận giải ═══
                 _reason_parts = []
@@ -15417,23 +15404,10 @@ class FreeAIHelper:
                 else:
                     _tone_fb = 'KHÔNG NÊN vào lúc này'
                     _detail_fb = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
-                
-                if 'mua' in _q_lower_fb and ('nhà' in _q_lower_fb or 'nha' in _q_lower_fb):
-                    _dr_fb = f'Việc MUA NHÀ năm nay: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                elif 'đầu tư' in _q_lower_fb or 'dau tu' in _q_lower_fb or 'kinh doanh' in _q_lower_fb:
-                    _dr_fb = f'Việc ĐẦU TƯ KINH DOANH: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                elif 'người yêu' in _q_lower_fb or 'nguoi yeu' in _q_lower_fb or 'tình' in _q_lower_fb:
-                    _dr_fb = f'TÌNH DUYÊN: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                elif 'sức khỏe' in _q_lower_fb or 'suc khoe' in _q_lower_fb or 'bệnh' in _q_lower_fb:
-                    _dr_fb = f'SỨC KHỎE: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                elif 'kiện' in _q_lower_fb or 'kien' in _q_lower_fb:
-                    _dr_fb = f'KIỆN TỤNG: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                elif 'đi xa' in _q_lower_fb or 'di xa' in _q_lower_fb or 'du lịch' in _q_lower_fb:
-                    _dr_fb = f'XUẤT HÀNH: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                elif 'tìm' in _q_lower_fb or 'mất' in _q_lower_fb:
-                    _dr_fb = f'TÌM ĐỒ: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
-                else:
-                    _dr_fb = f'Kết quả: <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
+                # V42.9.9g: Dùng trực tiếp câu hỏi của user để tránh trả lời chung chung
+                _q_clean_fb = question.strip() if question else "Sự việc"
+                if len(_q_clean_fb) > 80: _q_clean_fb = _q_clean_fb[:77] + "..."
+                _dr_fb = f'Cho "{_q_clean_fb}": <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
                 
                 _rp2 = []
                 if ky_mon_reason and len(str(ky_mon_reason)) > 3:
