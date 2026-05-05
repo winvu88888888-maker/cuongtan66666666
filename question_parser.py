@@ -79,7 +79,7 @@ UNIFIED_TOPICS = {
                      'vay', 'cho vay', 'kinh doanh', 'buôn bán', 'lãi', 'lỗ',
                      'cổ phiếu', 'crypto', 'bitcoin', 'nhà đất', 'mua nhà',
                      'bất động sản', 'vốn', 'hùn vốn', 'trúng số', 'tài sản',
-                     'vàng', 'mua bán', 'giàu', 'nghèo'],
+                     'vàng', 'mua bán', 'giàu', 'nghèo', 'làm ăn', 'thất bát', 'hợp tác'],
         'negative_keywords': [],
         'default_dt': 'Thê Tài',
         'label': '💰 Tài Chính',
@@ -881,9 +881,15 @@ class EntityExtractor:
         
         # 4. Inherit context nếu thiếu
         if not person and ctx.get('person'):
-            person = ctx['person']
-            dt_override = ctx.get('dt_override')
-            person_kw = ctx.get('person_kw')
+            # V42.9.11: Không kế thừa person từ câu trước nếu câu này ám chỉ rõ bản thân (SELF)
+            _self_kws = ['tôi', 'mình', 'em', 'cháu', 'anh', 'chị', 'tớ', 'ta', 'con']
+            _text_lower = f" {text.lower()} "
+            if any(f" {kw} " in _text_lower for kw in _self_kws):
+                pass # Có đại từ nhân xưng ngôi thứ nhất -> giữ nguyên Bản Thân
+            else:
+                person = ctx['person']
+                dt_override = ctx.get('dt_override')
+                person_kw = ctx.get('person_kw')
         
         if topic == 'CHUNG' and ctx.get('topic') and ctx['topic'] != 'CHUNG':
             topic = ctx['topic']

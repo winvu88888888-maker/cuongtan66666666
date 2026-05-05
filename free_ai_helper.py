@@ -1,4 +1,4 @@
-﻿"""
+"""
 Free AI Helper V42.9.11 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
@@ -14863,7 +14863,7 @@ class FreeAIHelper:
             'v24_ln_factors': v24_ln_factors,
             'v24_ta_factors': v24_ta_factors,
             # V14.0: Gửi báo cáo offline (V26.3: giảm xuống 4000 ký tự tránh Gemini ngộp)
-            'full_offline_report': offline_full_output[:4000] if offline_full_output else '',
+            'full_offline_report': offline_full_output[:40000] if offline_full_output else '',
             # V40.2: Mai Hoa — Hỗ Quái + Biến Quái + Nghĩa (keys thật từ engine)
             'mai_hoa_ho_quai': mai_hoa_data.get('ten_ho', '') if mai_hoa_data else '',
             'mai_hoa_bien_quai': mai_hoa_data.get('ten_qua_bien', '') if mai_hoa_data else '',
