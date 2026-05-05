@@ -13167,6 +13167,13 @@ class FreeAIHelper:
                 # V42.9.14: Authenticity Check (Nghiệm Chứng Thành Tâm)
         auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data)
         
+        auth_html = ""
+        if is_fake:
+            auth_html = f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:16px;border-radius:12px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 15px rgba(239,68,68,0.4);"><div style="font-size:1.1em;font-weight:800;color:#fca5a5;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC (CẢNH BÁO)</div>'
+            for w in auth_warnings:
+                auth_html += f'<div style="font-size:1em;color:#fee2e2;margin-bottom:6px;">{w}</div>'
+            auth_html += '</div>'
+
         sections = []
         sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V42.9 Phân Tích Thống Nhất\n")
         sections.append(f"**Câu hỏi:** {question}\n")
@@ -15427,6 +15434,7 @@ class FreeAIHelper:
             final_parts.append("\n</details>")
             final_parts.append("")
             
+            if auth_html: final_parts.insert(0, auth_html)
             return "\n".join(final_parts)
         else:
             # AI Online không khả dụng → Hiện KếT LUẬN trực tiếp, offline chi tiết ẩn sau
@@ -15957,6 +15965,7 @@ class FreeAIHelper:
             
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
+            if auth_html: final_parts.insert(0, auth_html)
             return "\n".join(final_parts)
 
 
