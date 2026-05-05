@@ -14202,20 +14202,17 @@ class FreeAIHelper:
                     
                     # Factor 5: Hub Consensus (Weight: 10%)
                     _mi_f5 = 0
-                    if _consensus == 'STRONG':
-                        _mi_f5 = 5 if _cat_methods > _hung_methods else -5
-                    elif _consensus == 'MODERATE':
-                        _mi_f5 = 3 if _cat_methods > _hung_methods else -3
-                    elif _consensus == 'MIXED':
-                        _mi_f5 = 0
+                    _mi_cat_m = sum(1 for v in [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict] if 'CÁT' in str(v) or 'TỐT' in str(v))
+                    _mi_hung_m = sum(1 for v in [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict] if 'HUNG' in str(v) or 'XẤU' in str(v))
+                    if _mi_cat_m >= 3: _mi_f5 = 5
+                    elif _mi_hung_m >= 3: _mi_f5 = -5
+                    elif _mi_cat_m > _mi_hung_m: _mi_f5 = 3
+                    elif _mi_hung_m > _mi_cat_m: _mi_f5 = -3
                     if _mi_f5 != 0:
-                        _mi_sq_factors.append(f"Consensus={_consensus} ({'+' if _mi_f5 > 0 else ''}{_mi_f5})")
+                        _mi_sq_factors.append(f"Consensus ({'+' if _mi_f5 > 0 else ''}{_mi_f5})")
                     
                     # Factor 6: Conflict penalty (Weight: 10%)
                     _mi_f6 = 0
-                    if _conflict_penalty > 0:
-                        _mi_f6 = -min(_conflict_penalty, 5)
-                        _mi_sq_factors.append(f"Conflicts (-{abs(_mi_f6)})")
                     
                     # Tổng hợp
                     _mi_sq_pct = max(15, min(85, 50 + _mi_f1 + _mi_f2 + _mi_f3 + _mi_f4 + _mi_f5 + _mi_f6))
@@ -14250,13 +14247,15 @@ class FreeAIHelper:
                     )
                 
                 # V42.9.10: Hiển thị Conflicts nếu có
-                if _conflicts:
+                _mi_conflicts = locals().get('_conflicts', [])
+                _mi_conflict_penalty = locals().get('_conflict_penalty', 0)
+                if _mi_conflicts:
                     _mi_html.append(
                         f'<div style="color:#fbbf24;font-size:0.95em;margin:10px 0;padding:12px;'
                         f'background:rgba(251,191,36,0.1);border-radius:10px;border-left:4px solid #f59e0b;">'
-                        f'<div style="font-weight:800;margin-bottom:6px;">⚠️ XUNG ĐỘT GIỮA CÁC PHƯƠNG PHÁP (Penalty: -{_conflict_penalty}%)</div>'
+                        f'<div style="font-weight:800;margin-bottom:6px;">⚠️ XUNG ĐỘT GIỮA CÁC PHƯƠNG PHÁP (Penalty: -{_mi_conflict_penalty}%)</div>'
                     )
-                    for _cf in _conflicts[:5]:
+                    for _cf in _mi_conflicts[:5]:
                         _mi_html.append(f'<div style="font-size:0.9em;color:#fde68a;margin:3px 0;">• {_cf}</div>')
                     _mi_html.append('</div>')
                 
