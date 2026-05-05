@@ -1,4 +1,4 @@
-﻿"""
+"""
 Free AI Helper V42.9.12 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
@@ -12499,7 +12499,7 @@ class FreeAIHelper:
     # ===========================
     # CORE: ANSWER QUESTION
     # ===========================
-    def _check_authenticity(self, chart_data, luc_hao_data):
+    def _check_authenticity(self, chart_data, luc_hao_data, dung_than=None):
         warnings = []
         is_fake = False
         if not chart_data or not isinstance(chart_data, dict): return warnings, is_fake
@@ -12519,6 +12519,7 @@ class FreeAIHelper:
                 tu = str(hao.get('tu', ''))
                 chi = hao.get('chi', '')
                 luc_thu = hao.get('luc_thu', hao.get('luc_than_kd', ''))
+                luc_than = hao.get('luc_than', '')
                 
                 if 'Thế' in tu:
                     if chi in kv:
@@ -12533,6 +12534,11 @@ class FreeAIHelper:
                 if 'Ứng' in tu:
                     if chi in kv:
                         warnings.append('Lục Hào - Hào Ứng (Sự việc/Đối phương) rơi vào Tuần Không: Đối tượng không có thật, hư ảo, hoặc sự kiện đã trôi qua, không còn tồn tại ở thời điểm hiện tại.')
+                        is_fake = True
+                        
+                if dung_than and dung_than != 'Bản Thân' and luc_than == dung_than:
+                    if chi in kv:
+                        warnings.append(f'Lục Hào - Dụng Thần ({dung_than}) lâm Tuần Không: Đối tượng hoặc sự việc được hỏi hiện đang trống rỗng, chưa diễn ra hoặc hoàn toàn không tồn tại (chờ xuất Không).')
                         is_fake = True
                         
         if chart_data and 'can_thien_ban' in chart_data and 'nhan_ban' in chart_data and 'than_ban' in chart_data:
@@ -12617,6 +12623,7 @@ class FreeAIHelper:
 
     def answer_question(self, question, chart_data=None, topic=None, selected_subject=None, mai_hoa_data=None, luc_hao_data=None, **kwargs):
         """Trả lời câu hỏi bằng phân tích rule-based từ dữ liệu quẻ"""
+        auth_html = ""
         
         if not question or len(question.strip()) < 2:
             return "Vui lòng nhập câu hỏi."
@@ -13246,15 +13253,6 @@ class FreeAIHelper:
             matched_topic, topic_data = None, None
         
                 # V42.9.14: Authenticity Check (Nghiệm Chứng Thành Tâm)
-        auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data)
-        
-        auth_html = ""
-        if is_fake:
-            auth_html = f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:16px;border-radius:12px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 15px rgba(239,68,68,0.4);"><div style="font-size:1.1em;font-weight:800;color:#fca5a5;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC (CẢNH BÁO)</div>'
-            for w in auth_warnings:
-                auth_html += f'<div style="font-size:1em;color:#fee2e2;margin-bottom:6px;">{w}</div>'
-            auth_html += '</div>'
-
         sections = []
         sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V42.9 Phân Tích Thống Nhất\n")
         sections.append(f"**Câu hỏi:** {question}\n")
@@ -13285,6 +13283,15 @@ class FreeAIHelper:
                         self.log_step("V32.5 Grammar", "INFO", 
                                       f"Parser suggest: {parser_dt} | V35.8 final: {dung_than} | {reason[:60]}")
                 
+            # V42.9.15: Authenticity Check with Dung Than
+            auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data, dung_than=dung_than)
+            if is_fake:
+                auth_html = f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:16px;border-radius:12px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 15px rgba(239,68,68,0.4);"><div style="font-size:1.1em;font-weight:800;color:#fca5a5;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC (CẢNH BÁO)</div>'
+                for w in auth_warnings:
+                    auth_html += f'<div style="font-size:1em;color:#fee2e2;margin-bottom:6px;">{w}</div>'
+                auth_html += '</div>'
+
+            if v31_parsed_questions and len(v31_parsed_questions) >= 1:
                 # Hiển thị bảng phân tách
                 if len(v31_parsed_questions) > 1:
                     parsed_table = format_parsed_questions_v2(v31_parsed_questions)
