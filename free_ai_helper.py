@@ -5180,10 +5180,12 @@ class FreeAIHelper:
             _mh_bien = od.get('mai_hoa_bien_quai', '')
             _mh_nghia = od.get('mai_hoa_nghia', '')
             _mh_interp = od.get('mai_hoa_interpretation', '')
-            if _mh_ho or _mh_bien or _mh_nghia:
-                raw_data_section += f"═══ [MHb] MAI HOA — HỖ QUÁI + BIẾN QUÁI ═══\n"
+            _mh_thac = od.get('mai_hoa_thac_quai', '')  # V42.9.10
+            if _mh_ho or _mh_bien or _mh_nghia or _mh_thac:
+                raw_data_section += f"═══ [MHb] MAI HOA — HỖ QUÁI + BIẾN QUÁI + THÁC QUÁI ═══\n"
                 if _mh_ho: raw_data_section += f"• Hỗ Quái: {_mh_ho}\n"
                 if _mh_bien: raw_data_section += f"• Biến Quái: {_mh_bien}\n"
+                if _mh_thac: raw_data_section += f"• {_mh_thac}\n"
                 if _mh_nghia: raw_data_section += f"• Quẻ Nghĩa: {_mh_nghia}\n"
                 if _mh_interp: raw_data_section += f"• Giải nghĩa: {_mh_interp}\n"
                 raw_data_section += "\n"
@@ -5314,6 +5316,49 @@ class FreeAIHelper:
                 if _nk:
                     raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
                 raw_data_section += "\n"
+            
+            # ═══ V42.9.10: BLIND READING (MANG ĐOÁN) ═══
+            try:
+                from blind_reading import blind_read, format_blind_reading
+                _br_result = blind_read(
+                    chart_data=chart_data,
+                    mai_hoa_data=mai_hoa_data,
+                    luc_hao_data=luc_hao_data
+                )
+                if _br_result and 'error' not in _br_result:
+                    _br_text = format_blind_reading(_br_result)
+                    if _br_text:
+                        raw_data_section += f"═══ [BR] MANG ĐOÁN — DỮ LIỆU THÔ ═══\n"
+                        raw_data_section += _br_text + "\n\n"
+            except Exception:
+                pass
+            
+            # ═══ V42.9.10: DATABASE TƯƠNG TÁC SAO-MÔN ═══
+            try:
+                from database_tuong_tac import TUONG_TAC_SAO_MON, SINH_KHAC_MATRIX
+                if chart_data and isinstance(chart_data, dict):
+                    _tb_chart = chart_data.get('thien_ban', {})
+                    _nb_chart = chart_data.get('nhan_ban', {})
+                    _tt_matches = []
+                    for _cung in range(1, 10):
+                        _sao_tt = _tb_chart.get(_cung, _tb_chart.get(str(_cung), ''))
+                        _mon_tt = _nb_chart.get(_cung, _nb_chart.get(str(_cung), ''))
+                        if isinstance(_sao_tt, dict): _sao_tt = _sao_tt.get('sao', '')
+                        if isinstance(_mon_tt, dict): _mon_tt = _mon_tt.get('mon', '')
+                        _sao_str = str(_sao_tt)
+                        _mon_str = str(_mon_tt)
+                        # Check exact match
+                        _tt_key = (_sao_str, _mon_str)
+                        _tt_val = TUONG_TAC_SAO_MON.get(_tt_key)
+                        if _tt_val:
+                            _tt_matches.append(f"Cung {_cung}: {_sao_str}+{_mon_str} → {_tt_val}")
+                    if _tt_matches:
+                        raw_data_section += f"═══ [TT] TƯƠNG TÁC SAO-MÔN (Database) ═══\n"
+                        for _ttm in _tt_matches:
+                            raw_data_section += f"• {_ttm}\n"
+                        raw_data_section += "\n"
+            except Exception:
+                pass
             
             # ═══ V42.9.4: REORDER SECTIONS — sắp xếp theo priority ═══
             # Tách raw_data_section thành các section dựa trên header ═══
@@ -14098,23 +14143,82 @@ class FreeAIHelper:
                     'verdict_text': f"PHÁN QUYẾT: {_mi_pq1_vtext}" if not _mi_pq1_vtext.startswith(('⏳', '🧭', '🎨', '🔮', '🎂', '👥', '👤', '🔎', '📊', '🎯', '💰', '❤️', '🏥', '💼', '⚖️', '🔍', '✈️')) else _mi_pq1_vtext,
                 })
                 
-                # Card 2+: các câu hỏi con với verdict riêng
+                # Card 2+: các câu hỏi con với verdict riêng — V42.9.10 ENHANCED
                 _mi_nguyet_hanh = ''
+                _mi_nhat_hanh = ''  # V42.9.10: Thêm Nhật Thần
                 if chart_data and isinstance(chart_data, dict):
                     _mi_nguyet_hanh = CHI_NGU_HANH.get(chart_data.get('chi_thang', ''), '')
+                    _mi_nhat_hanh = CHI_NGU_HANH.get(chart_data.get('chi_ngay', ''), '')
                 
                 for _mi_idx, _mi_sq in enumerate(_mi_parsed[1:], start=2):
                     _mi_sq_dt = _mi_sq.get('dung_than', _mi_all_dts[min(_mi_idx-1, len(_mi_all_dts)-1)] if _mi_idx-1 < len(_mi_all_dts) else 'Bản Thân')
                     _mi_sq_text = _mi_sq.get('text', '')[:60]
                     _mi_sq_hanh = _MI_LT_H.get(_mi_sq_dt, 'Thổ')
                     
-                    # Tính pct riêng dựa trên Nguyệt Lệnh sinh khắc
-                    _mi_sq_pct = 50
+                    # ═══ V42.9.10: PHÂN TÍCH ĐA YẾU TỐ cho câu phụ ═══
+                    # 6 yếu tố: Nguyệt Lệnh + Nhật Thần + 12TS + Ngũ Khí + DKT + Consensus
+                    _mi_sq_pct = 50  # Base
+                    _mi_sq_factors = []
+                    
+                    # Factor 1: Nguyệt Lệnh sinh khắc (Weight: 25%)
+                    _mi_f1 = 0
                     if _mi_nguyet_hanh:
-                        if _MI_SINH.get(_mi_nguyet_hanh) == _mi_sq_hanh: _mi_sq_pct = 62
-                        elif _mi_sq_hanh == _mi_nguyet_hanh: _mi_sq_pct = 55
-                        elif _MI_SINH.get(_mi_sq_hanh) == _mi_nguyet_hanh: _mi_sq_pct = 42
-                        else: _mi_sq_pct = 35
+                        if _MI_SINH.get(_mi_nguyet_hanh) == _mi_sq_hanh:
+                            _mi_f1 = 12; _mi_sq_factors.append(f"Nguyệt sinh DT (+12)")
+                        elif _mi_sq_hanh == _mi_nguyet_hanh:
+                            _mi_f1 = 5; _mi_sq_factors.append(f"Nguyệt tỷ hòa (+5)")
+                        elif _MI_SINH.get(_mi_sq_hanh) == _mi_nguyet_hanh:
+                            _mi_f1 = -8; _mi_sq_factors.append(f"DT tiết khí Nguyệt (-8)")
+                        elif _mi_nguyet_hanh and _mi_sq_hanh:
+                            _mi_f1 = -12; _mi_sq_factors.append(f"Nguyệt khắc DT (-12)")
+                    
+                    # Factor 2: Nhật Thần sinh khắc (Weight: 20%)
+                    _mi_f2 = 0
+                    if _mi_nhat_hanh:
+                        if _MI_SINH.get(_mi_nhat_hanh) == _mi_sq_hanh:
+                            _mi_f2 = 8; _mi_sq_factors.append(f"Nhật sinh DT (+8)")
+                        elif _mi_sq_hanh == _mi_nhat_hanh:
+                            _mi_f2 = 3; _mi_sq_factors.append(f"Nhật tỷ hòa (+3)")
+                        elif _MI_SINH.get(_mi_sq_hanh) == _mi_nhat_hanh:
+                            _mi_f2 = -5; _mi_sq_factors.append(f"DT tiết khí Nhật (-5)")
+                        elif _mi_nhat_hanh and _mi_sq_hanh:
+                            _mi_f2 = -8; _mi_sq_factors.append(f"Nhật khắc DT (-8)")
+                    
+                    # Factor 3: 12 Trường Sinh (Weight: 20%)
+                    _mi_f3 = 0
+                    if ts_stage:
+                        _ts_power_mi = TRUONG_SINH_POWER.get(ts_stage, {}).get('power', 50)
+                        _mi_f3 = int((_ts_power_mi - 50) * 0.2)  # Scale to ±10
+                        if _mi_f3 != 0:
+                            _mi_sq_factors.append(f"12TS={ts_stage} ({'+' if _mi_f3 > 0 else ''}{_mi_f3})")
+                    
+                    # Factor 4: Ngũ Khí (Weight: 15%)
+                    _mi_f4 = 0
+                    if ngu_khi_state_v22:
+                        _nk_power_mi = NGU_KHI_POWER.get(ngu_khi_state_v22, {}).get('power', 50)
+                        _mi_f4 = int((_nk_power_mi - 50) * 0.15)
+                        if _mi_f4 != 0:
+                            _mi_sq_factors.append(f"Ngũ Khí={ngu_khi_state_v22} ({'+' if _mi_f4 > 0 else ''}{_mi_f4})")
+                    
+                    # Factor 5: Hub Consensus (Weight: 10%)
+                    _mi_f5 = 0
+                    if _consensus == 'STRONG':
+                        _mi_f5 = 5 if _cat_methods > _hung_methods else -5
+                    elif _consensus == 'MODERATE':
+                        _mi_f5 = 3 if _cat_methods > _hung_methods else -3
+                    elif _consensus == 'MIXED':
+                        _mi_f5 = 0
+                    if _mi_f5 != 0:
+                        _mi_sq_factors.append(f"Consensus={_consensus} ({'+' if _mi_f5 > 0 else ''}{_mi_f5})")
+                    
+                    # Factor 6: Conflict penalty (Weight: 10%)
+                    _mi_f6 = 0
+                    if _conflict_penalty > 0:
+                        _mi_f6 = -min(_conflict_penalty, 5)
+                        _mi_sq_factors.append(f"Conflicts (-{abs(_mi_f6)})")
+                    
+                    # Tổng hợp
+                    _mi_sq_pct = max(15, min(85, 50 + _mi_f1 + _mi_f2 + _mi_f3 + _mi_f4 + _mi_f5 + _mi_f6))
                     
                     _mi_sq_qtype = _mi_detect_qtype(_mi_sq_text)
                     _mi_sq_verdict, _mi_sq_icon = _mi_gen_verdict(_mi_sq_qtype, _mi_sq_pct, _mi_sq_hanh, _mi_sq_dt, _mi_sq_text)
@@ -14143,6 +14247,51 @@ class FreeAIHelper:
                         f'<div style="font-weight:800;font-size:1.1em;">📋 Câu {_mi_ci+1}: {_mi_card["text"]}...</div>'
                         f'<div style="font-size:1.2em;font-weight:900;color:{_mi_pct_color};margin-top:6px;">{_mi_card["icon"]} {_mi_card["verdict_text"]}</div>'
                         f'</div>'
+                    )
+                
+                # V42.9.10: Hiển thị Conflicts nếu có
+                if _conflicts:
+                    _mi_html.append(
+                        f'<div style="color:#fbbf24;font-size:0.95em;margin:10px 0;padding:12px;'
+                        f'background:rgba(251,191,36,0.1);border-radius:10px;border-left:4px solid #f59e0b;">'
+                        f'<div style="font-weight:800;margin-bottom:6px;">⚠️ XUNG ĐỘT GIỮA CÁC PHƯƠNG PHÁP (Penalty: -{_conflict_penalty}%)</div>'
+                    )
+                    for _cf in _conflicts[:5]:
+                        _mi_html.append(f'<div style="font-size:0.9em;color:#fde68a;margin:3px 0;">• {_cf}</div>')
+                    _mi_html.append('</div>')
+                
+                # V42.9.10: CROSS-QUESTION SYNTHESIS — Tổng hợp liên câu
+                if len(_mi_cards) >= 2:
+                    _mi_avg_pct = sum(c['pct'] for c in _mi_cards) / len(_mi_cards)
+                    _mi_cat_cards = sum(1 for c in _mi_cards if c['pct'] >= 55)
+                    _mi_hung_cards = sum(1 for c in _mi_cards if c['pct'] < 45)
+                    _mi_binh_cards = len(_mi_cards) - _mi_cat_cards - _mi_hung_cards
+                    
+                    if _mi_cat_cards > _mi_hung_cards:
+                        _mi_overall = f"🟢 TỔNG QUAN: {_mi_cat_cards}/{len(_mi_cards)} câu THUẬN LỢI"
+                        _mi_overall_color = '#6ee7b7'
+                    elif _mi_hung_cards > _mi_cat_cards:
+                        _mi_overall = f"🔴 TỔNG QUAN: {_mi_hung_cards}/{len(_mi_cards)} câu BẤT LỢI"
+                        _mi_overall_color = '#fca5a5'
+                    else:
+                        _mi_overall = f"🟡 TỔNG QUAN: CÂN NHẮC — {_mi_cat_cards} thuận / {_mi_hung_cards} bất lợi"
+                        _mi_overall_color = '#fde68a'
+                    
+                    # Detect cross-question contradiction
+                    _mi_cross_note = ''
+                    _mi_dts_unique = set(c['dt'] for c in _mi_cards)
+                    if len(_mi_dts_unique) >= 3:
+                        _mi_cross_note = f"📌 {len(_mi_dts_unique)} Dụng Thần khác nhau → tình huống phức tạp, cần xem xét từng khía cạnh riêng."
+                    
+                    _mi_html.append(
+                        f'<div style="background:linear-gradient(135deg,#065f46,#064e3b);padding:14px;'
+                        f'border-radius:10px;margin:10px 0;border:2px solid #10b981;">'
+                        f'<div style="font-size:1.1em;font-weight:900;color:{_mi_overall_color};">{_mi_overall}</div>'
+                        f'<div style="font-size:0.95em;color:#a7f3d0;margin-top:4px;">'
+                        f'Trung bình: {_mi_avg_pct:.0f}% | CÁT: {_mi_cat_cards} | BÌNH: {_mi_binh_cards} | HUNG: {_mi_hung_cards}'
+                        f'</div>'
+                        + (f'<div style="font-size:0.9em;color:#fde68a;margin-top:4px;">{_mi_cross_note}</div>' if _mi_cross_note else '')
+                        + f'</div>'
                     )
                 
                 _mi_html.append(f'</div>')
@@ -14308,13 +14457,52 @@ class FreeAIHelper:
         
         # Chuẩn hóa 6 PP thành format thống nhất
         _hub_methods = {}
+        
+        # V42.9.10: Thiết Bản verdict — tính CÁT/HUNG dựa trên Nạp Âm sinh khắc DT
+        _tb_verdict = 'BÌNH'
+        _tb_reason = ''
+        try:
+            if chart_data and isinstance(chart_data, dict) and hanh_dt_v22:
+                _can_ngay_tb = chart_data.get('can_ngay', '')
+                _chi_ngay_tb = chart_data.get('chi_ngay', '')
+                if _can_ngay_tb and _chi_ngay_tb:
+                    # Tính Nạp Âm từ Can Chi Ngày
+                    _NAP_AM_HANH = {}
+                    try:
+                        import json as _json_tb
+                        with open('thiet_ban_than_toan.json', 'r', encoding='utf-8') as _f_tb:
+                            _tb_data = _json_tb.load(_f_tb)
+                            for _key, _val in _tb_data.items():
+                                if isinstance(_val, dict) and 'hanh' in _val:
+                                    _NAP_AM_HANH[_key] = _val['hanh']
+                    except Exception:
+                        pass
+                    _na_key = f"{_can_ngay_tb}{_chi_ngay_tb}"
+                    _na_hanh = _NAP_AM_HANH.get(_na_key, '')
+                    _dt_hanh_tb = hanh_dt_v22
+                    _SINH_TB = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
+                    _KHAC_TB = {'Mộc': 'Thổ', 'Thổ': 'Thủy', 'Thủy': 'Hỏa', 'Hỏa': 'Kim', 'Kim': 'Mộc'}
+                    if _na_hanh and _dt_hanh_tb:
+                        if _SINH_TB.get(_na_hanh) == _dt_hanh_tb:
+                            _tb_verdict = 'CÁT'; _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) SINH DT ({_dt_hanh_tb}) → hỗ trợ"
+                        elif _na_hanh == _dt_hanh_tb:
+                            _tb_verdict = 'CÁT'; _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) TỶ HÒA DT ({_dt_hanh_tb})"
+                        elif _KHAC_TB.get(_na_hanh) == _dt_hanh_tb:
+                            _tb_verdict = 'HUNG'; _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) KHẮC DT ({_dt_hanh_tb}) → bất lợi"
+                        elif _SINH_TB.get(_dt_hanh_tb) == _na_hanh:
+                            _tb_verdict = 'BÌNH'; _tb_reason = f"DT({_dt_hanh_tb}) tiết khí cho Nạp Âm({_na_hanh})"
+                        else:
+                            _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) vs DT({_dt_hanh_tb})"
+        except Exception:
+            pass
+        
         _PP_DATA = [
             ('LH', 'Lục Hào', luc_hao_verdict, luc_hao_reason, v16_lh_score, v23_lh_factors, 0.35),
             ('KM', 'Kỳ Môn', ky_mon_verdict, ky_mon_reason, 0, v24_km_factors, 0.25),
             ('MH', 'Mai Hoa', mai_hoa_verdict, mai_hoa_reason, v16_mh_score, v24_mh_factors, 0.15),
             ('LN', 'Đại Lục Nhâm', luc_nham_verdict, luc_nham_reason, v16_ln_score, v24_ln_factors, 0.10),
             ('TA', 'Thái Ất', thai_at_verdict, thai_at_reason, v16_ta_score, v24_ta_factors, 0.08),
-            ('TB', 'Thiết Bản', 'BÌNH', '', v16_tb_score, v24_tb_factors, 0.07),
+            ('TB', 'Thiết Bản', _tb_verdict, _tb_reason, v16_tb_score, v24_tb_factors, 0.07),
         ]
         for _pp_code, _pp_name, _pp_vrd, _pp_rsn, _pp_score, _pp_factors, _pp_weight in _PP_DATA:
             _hub_methods[_pp_code] = {
@@ -14351,6 +14539,44 @@ class FreeAIHelper:
                         _key_evidence.append({'pp': _pp_code, 'text': _f_str, 'impact': _impact})
         _key_evidence = _key_evidence[:10]  # Top 10
         
+        # ═══ V42.9.10: CROSS-METHOD CONFLICT DETECTION ═══
+        # So sánh verdict giữa 3 PP chính (LH, KM, MH) → phát hiện mâu thuẫn
+        _conflicts = []
+        _conflict_penalty = 0
+        _PRIMARY_PP_PAIRS = [('LH', 'KM'), ('LH', 'MH'), ('KM', 'MH')]
+        _SECONDARY_PP = ['LN', 'TA', 'TB']
+        _PP_NAMES = {'LH': 'Lục Hào', 'KM': 'Kỳ Môn', 'MH': 'Mai Hoa', 'LN': 'Đại Lục Nhâm', 'TA': 'Thái Ất', 'TB': 'Thiết Bản'}
+        
+        for _pp1, _pp2 in _PRIMARY_PP_PAIRS:
+            _v1 = _hub_methods.get(_pp1, {}).get('verdict', 'BÌNH')
+            _v2 = _hub_methods.get(_pp2, {}).get('verdict', 'BÌNH')
+            # Xung đột = 1 CÁT + 1 HUNG (mâu thuẫn trực tiếp)
+            if (_v1 == 'CÁT' and _v2 == 'HUNG') or (_v1 == 'HUNG' and _v2 == 'CÁT'):
+                _r1 = _hub_methods.get(_pp1, {}).get('reason', '')[:80]
+                _r2 = _hub_methods.get(_pp2, {}).get('reason', '')[:80]
+                _conflicts.append(
+                    f"⚠️ {_PP_NAMES[_pp1]}={_v1} ↔ {_PP_NAMES[_pp2]}={_v2} "
+                    f"| {_PP_NAMES[_pp1]}: {_r1} | {_PP_NAMES[_pp2]}: {_r2}"
+                )
+                _conflict_penalty += 5  # Mỗi xung đột trừ 5%
+        
+        # Kiểm tra PP phụ có xung đột với đa số không
+        _majority_verdict = 'CÁT' if _cat_methods > _hung_methods else ('HUNG' if _hung_methods > _cat_methods else 'BÌNH')
+        for _spp in _SECONDARY_PP:
+            _sv = _hub_methods.get(_spp, {}).get('verdict', 'BÌNH')
+            if _sv != 'BÌNH' and _sv != _majority_verdict and _majority_verdict != 'BÌNH':
+                _sr = _hub_methods.get(_spp, {}).get('reason', '')[:60]
+                _conflicts.append(
+                    f"📌 {_PP_NAMES[_spp]}={_sv} ngược đa số ({_majority_verdict}) | {_sr}"
+                )
+                _conflict_penalty += 2  # PP phụ trừ ít hơn
+        
+        # Áp dụng penalty
+        if _conflict_penalty > 0:
+            weighted_pct = max(15, weighted_pct - _conflict_penalty)
+            self.log_step("V42.9.10", "CONFLICT", 
+                f"{len(_conflicts)} conflicts, penalty=-{_conflict_penalty}% → pct={weighted_pct}%")
+        
         # Build Hub
         _hub = {
             'meta': {
@@ -14371,14 +14597,14 @@ class FreeAIHelper:
                 'consensus': _consensus,
                 'cat_count': _cat_methods,
                 'hung_count': _hung_methods,
-                'conflicts': [],  # Sẽ được fill bởi conflict detection
-                'conflict_penalty': 0,
+                'conflicts': _conflicts,
+                'conflict_penalty': _conflict_penalty,
                 'key_evidence': _key_evidence,
             },
         }
         
         self.log_step("V42.9.4", "HUB", 
-            f"Consensus={_consensus} | CÁT={_cat_methods}/HUNG={_hung_methods} | Evidence={len(_key_evidence)}")
+            f"Consensus={_consensus} | CÁT={_cat_methods}/HUNG={_hung_methods} | Evidence={len(_key_evidence)} | Conflicts={len(_conflicts)}")
         
         # ═══ V42.9.4: DKT VALIDATE — Dùng Knowledge Tree kiểm tra verdict ═══
         try:
@@ -14637,13 +14863,32 @@ class FreeAIHelper:
             'mai_hoa_bien_quai': mai_hoa_data.get('ten_qua_bien', '') if mai_hoa_data else '',
             'mai_hoa_nghia': mai_hoa_data.get('nghĩa', mai_hoa_data.get('nghia', '')) if mai_hoa_data else '',
             'mai_hoa_interpretation': mai_hoa_data.get('interpretation', '') if mai_hoa_data else '',
+            # V42.9.10: Thác Quái — đảo ngược Âm/Dương → mặt trái tình huống
+            'mai_hoa_thac_quai': '',
             # V40.2: Lục Hào — Tên quẻ
             'luc_hao_ten_que': luc_hao_data.get('ban', {}).get('name', '') if luc_hao_data and isinstance(luc_hao_data, dict) else '',
             'luc_hao_cung': luc_hao_data.get('ban', {}).get('palace', '') if luc_hao_data and isinstance(luc_hao_data, dict) else '',
             # V42.9.3 P0-B: Conflict Detection data
-            'conflict_warnings': _conflict_warnings,
+            'conflict_warnings': _conflict_warnings + _conflicts,  # V42.9.10: Merge old + new conflicts
             'conflict_penalty': _conflict_penalty,
         }
+        
+        # V42.9.10: THÁC QUÁI — Tính quẻ đảo (Invert all Yin/Yang lines)
+        try:
+            if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                _mh_thuong = mai_hoa_data.get('thuong_quai', mai_hoa_data.get('upper', 0))
+                _mh_ha = mai_hoa_data.get('ha_quai', mai_hoa_data.get('lower', 0))
+                if isinstance(_mh_thuong, int) and isinstance(_mh_ha, int) and _mh_thuong > 0 and _mh_ha > 0:
+                    # Thác = đảo ngược tất cả hào (XOR với 7 vì quái = 3 bit, max = 7)
+                    _thac_thuong = 7 - _mh_thuong + 1  # Complement: 1↔8, 2↔7, 3↔6, 4↔5
+                    _thac_ha = 7 - _mh_ha + 1
+                    _QUAI_TEN = {1: 'Càn', 2: 'Đoài', 3: 'Ly', 4: 'Chấn', 5: 'Tốn', 6: 'Khảm', 7: 'Cấn', 8: 'Khôn'}
+                    _thac_name = f"{_QUAI_TEN.get(_thac_thuong, '?')}/{_QUAI_TEN.get(_thac_ha, '?')}"
+                    _mh_orig = f"{_QUAI_TEN.get(_mh_thuong, '?')}/{_QUAI_TEN.get(_mh_ha, '?')}"
+                    offline_analysis_data['mai_hoa_thac_quai'] = f"Thác Quái: {_mh_orig} → {_thac_name} (đảo Âm/Dương = mặt trái tình huống)"
+                    self.log_step("V42.9.10", "THAC_QUAI", f"{_mh_orig} → {_thac_name}")
+        except Exception:
+            pass
         
         # ═══════════════════════════════════════════════════════════
         # V31.0: TẠO SƠ ĐỒ TƯƠNG TÁC THỜI GIAN THỰC
