@@ -12499,6 +12499,41 @@ class FreeAIHelper:
     # ===========================
     # CORE: ANSWER QUESTION
     # ===========================
+    def _check_authenticity(self, chart_data, luc_hao_data):
+        warnings = []
+        is_fake = False
+        if not chart_data or not isinstance(chart_data, dict): return warnings, is_fake
+        
+        can_ngay = chart_data.get('can_ngay')
+        chi_ngay = chart_data.get('chi_ngay')
+        if not can_ngay or not chi_ngay: return warnings, is_fake
+        
+        kv = _get_khong_vong(can_ngay, chi_ngay)
+        if not kv: return warnings, is_fake
+        
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            haos = luc_hao_data.get('haos', [])
+            for hao in haos:
+                tu = str(hao.get('tu', ''))
+                chi = hao.get('chi', '')
+                luc_thu = hao.get('luc_thu', hao.get('luc_than_kd', ''))
+                
+                if 'Thế' in tu:
+                    if chi in kv:
+                        warnings.append("Hào Thế (Người hỏi) rơi vào Tuần Không: Việc tự bản thân còn mơ hồ, chưa có chủ đích thực sự, mông lung hoặc thiếu thành tâm (hỏi thử).")
+                        is_fake = True
+                    if luc_thu == 'Huyền Vũ':
+                        warnings.append("Hào Thế lâm Huyền Vũ: Huyền Vũ chủ về sự giả dối, mờ ám, che giấu. Cảnh báo người hỏi không trung thực hoặc đang giấu giếm sự thật.")
+                        is_fake = True
+                    if luc_thu == 'Đằng Xà':
+                        warnings.append("Hào Thế lâm Đằng Xà: Người hỏi đang tự lo âu thái quá, thần hồn nát thần tính, tưởng tượng ra sự việc chứ chưa chắc đã có thật.")
+                
+                if 'Ứng' in tu:
+                    if chi in kv:
+                        warnings.append("Hào Ứng (Sự việc/Đối phương) rơi vào Tuần Không: Đối tượng không có thật, hư ảo, hoặc sự kiện đã trôi qua, không còn tồn tại ở thời điểm hiện tại.")
+                        is_fake = True
+        return warnings, is_fake
+
     def answer_question(self, question, chart_data=None, topic=None, selected_subject=None, mai_hoa_data=None, luc_hao_data=None, **kwargs):
         """Trả lời câu hỏi bằng phân tích rule-based từ dữ liệu quẻ"""
         
@@ -13128,6 +13163,9 @@ class FreeAIHelper:
             matched_topic, topic_data = _match_topic(question, topic)
         else:
             matched_topic, topic_data = None, None
+        
+                # V42.9.14: Authenticity Check (Nghiệm Chứng Thành Tâm)
+        auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data)
         
         sections = []
         sections.append(f"## 🔮 THIÊN CƠ ĐẠI SƯ — V42.9 Phân Tích Thống Nhất\n")
@@ -17841,3 +17879,4 @@ class FreeAIHelper:
     def analyze_mai_hoa(self, mai_hoa_res, topic="Chung"):
         section, verdict, _ = self._analyze_mai_hoa_full(mai_hoa_res, False)
         return f"### 🌸 Luận Giải Mai Hoa — Offline V8.0\n**Chủ đề:** {topic}\n\n{section}\n→ Kết luận: **{verdict}**"
+
