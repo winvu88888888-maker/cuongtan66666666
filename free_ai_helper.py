@@ -14135,37 +14135,37 @@ class FreeAIHelper:
                     if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
                     # SĐ3: Cái Gì / Loại Gì / Màu gì
                     if any(k in t for k in ['màu gì', 'màu sắc', 'màu nào', 'xe màu']): return 'COLOR'
-                    if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','sản phẩm gì','bán gì','kinh doanh gì']): return 'WHAT'
+                    if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','sản phẩm gì','kinh doanh gì']): return 'WHAT'
                     # SĐ2: Tuổi
                     if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi','năm sinh']): return 'AGE'
                     # SĐ2: Số lượng
-                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy','giá tiền','tiền']): return 'COUNT'
+                    if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy','giá tiền','giá bao nhiêu']): return 'COUNT'
                     # SĐ13: Ai / Người Nào
                     if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai','nam hay nữ','giới tính','đàn ông','phụ nữ','con trai','con gái']): return 'WHO'
                     # SĐ14: Tại Sao / Nguyên Nhân
                     if any(k in t for k in ['tại sao','vì sao','nguyên nhân','lý do','do đâu','sao lại']): return 'WHY'
                     # SĐ16: Cái Nào / Chọn Lọc
                     if any(k in t for k in ['cái nào','nào tốt','chọn','lựa chọn','nào hơn','nào nên','hay là']): return 'CHOOSE'
-                    # SĐ15: Thế Nào / Trạng Thái
-                    if any(k in t for k in ['như thế nào','thế nào','ra sao','tình trạng','diễn biến','tiến triển','lên hay','xuống hay','tốt hay xấu','thành hay bại','thế cờ']): return 'HOW'
+                    # SĐ15: Thế Nào / Trạng Thái / Giải Pháp
+                    if any(k in t for k in ['như thế nào','thế nào','ra sao','tình trạng','diễn biến','tiến triển','lên hay','xuống hay','tốt hay xấu','thành hay bại','thế cờ','giải pháp','làm sao','cách nào']): return 'HOW'
                     # SĐ10: Kiện Tụng
                     if any(k in t for k in ['kiện','kiện tụng','tòa','tranh chấp','pháp lý','thắng kiện','thua kiện']): return 'LAWSUIT'
                     # SĐ11: Mất Đồ / Tìm Kiếm
                     if any(k in t for k in ['mất đồ','mất','thất lạc','trộm','mất cắp','tìm','để đâu','cất đâu']): return 'LOST_ITEM'
                     # SĐ12: Xuất Hành / Di Chuyển
-                    if any(k in t for k in ['đi','xuất hành','du lịch','di chuyển','chuyến đi','về quê','đi xa','đi công tác']): return 'TRAVEL'
+                    if any(k in t for k in ['đi ','xuất hành','du lịch','di chuyển','chuyến đi','về quê','đi xa','đi công tác']): return 'TRAVEL'
                     # SĐ7: Tình Duyên
                     if any(k in t for k in ['yêu','tình','duyên','hôn nhân','cưới','ly hôn','chia tay','người yêu','bạn trai','bạn gái','hẹn hò','ngoại tình']): return 'LOVE'
                     # SĐ6: Tài Lộc
-                    if any(k in t for k in ['tiền','tài','lộc','giàu','nghèo','lương','đầu tư','kinh doanh','vốn','lãi','lỗ','nợ','cổ phiếu','crypto','mua bán']): return 'FINANCE'
+                    if any(k in t for k in ['tiền','tài','lộc','giàu','nghèo','lương','đầu tư','kinh doanh','vốn','lãi','lỗ','nợ','cổ phiếu','crypto','mua ','bán ','mua bán']): return 'FINANCE'
                     # SĐ8: Sức Khỏe
                     if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật','ung thư','tai nạn']): return 'HEALTH'
                     # SĐ9: Công Việc
-                    if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi','đỗ','trượt','sự nghiệp','khởi nghiệp']): return 'CAREER'
+                    if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi ','đỗ ','trượt ','sự nghiệp','khởi nghiệp']): return 'CAREER'
                     # SĐ1: Có/Không & Nên/Không
                     if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
                     if any(k in t for k in ['sống','chết','qua khỏi','tử vong','hấp hối']): return 'LIFE_DEATH'
-                    if any(k in t for k in ['có không','được không','có được','liệu có']): return 'YESNO'
+                    if any(k in t for k in ['có không','được không','có được','liệu có']) or t.endswith(' không') or t.endswith(' không?'): return 'YESNO'
                     # SĐ0: Tổng Quát (fallback)
                     return 'GENERAL'
                 
