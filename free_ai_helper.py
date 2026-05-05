@@ -12506,6 +12506,87 @@ class FreeAIHelper:
         
         can_ngay = chart_data.get('can_ngay')
         chi_ngay = chart_data.get('chi_ngay')
+        can_gio = chart_data.get('can_gio')
+        chi_gio = chart_data.get('chi_gio')
+        if not can_ngay or not chi_ngay: return warnings, is_fake
+        
+        kv = _get_khong_vong(can_ngay, chi_ngay)
+        if not kv: return warnings, is_fake
+        
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            haos = luc_hao_data.get('haos', [])
+            for hao in haos:
+                tu = str(hao.get('tu', ''))
+                chi = hao.get('chi', '')
+                luc_thu = hao.get('luc_thu', hao.get('luc_than_kd', ''))
+                
+                if 'Thế' in tu:
+                    if chi in kv:
+                        warnings.append('Lục Hào - Hào Thế (Người hỏi) rơi vào Tuần Không: Việc tự bản thân còn mơ hồ, chưa có chủ đích thực sự, mông lung hoặc thiếu thành tâm (hỏi thử).')
+                        is_fake = True
+                    if luc_thu == 'Huyền Vũ':
+                        warnings.append('Lục Hào - Hào Thế lâm Huyền Vũ: Huyền Vũ chủ về sự giả dối, mờ ám, che giấu. Cảnh báo người hỏi không trung thực hoặc đang giấu giếm sự thật.')
+                        is_fake = True
+                    if luc_thu == 'Đằng Xà':
+                        warnings.append('Lục Hào - Hào Thế lâm Đằng Xà: Người hỏi đang tự lo âu thái quá, thần hồn nát thần tính, tưởng tượng ra sự việc chứ chưa chắc đã có thật.')
+                
+                if 'Ứng' in tu:
+                    if chi in kv:
+                        warnings.append('Lục Hào - Hào Ứng (Sự việc/Đối phương) rơi vào Tuần Không: Đối tượng không có thật, hư ảo, hoặc sự kiện đã trôi qua, không còn tồn tại ở thời điểm hiện tại.')
+                        is_fake = True
+                        
+        if chart_data and 'can_thien_ban' in chart_data and 'nhan_ban' in chart_data and 'than_ban' in chart_data:
+            kv_cung = []
+            try:
+                import qmdg_calc
+                kv_cung = [qmdg_calc.CHI_CUNG_MAP.get(c) for c in kv if c in qmdg_calc.CHI_CUNG_MAP]
+            except Exception:
+                pass
+
+            can_thien_ban = chart_data.get('can_thien_ban', {})
+            nhan_ban = chart_data.get('nhan_ban', {})
+            than_ban = chart_data.get('than_ban', {})
+
+            nhat_can_cung = None
+            thoi_can_cung = None
+            for cung, can in can_thien_ban.items():
+                if str(can) == str(can_ngay):
+                    nhat_can_cung = int(cung)
+                if str(can) == str(can_gio):
+                    thoi_can_cung = int(cung)
+            
+            if nhat_can_cung:
+                _than = than_ban.get(nhat_can_cung, than_ban.get(str(nhat_can_cung), ''))
+                _mon = nhan_ban.get(nhat_can_cung, nhan_ban.get(str(nhat_can_cung), ''))
+                if nhat_can_cung in kv_cung:
+                    warnings.append(f'Kỳ Môn - Nhật Can (Người hỏi) tại cung {nhat_can_cung} bị Tuần Không: Tư tưởng trống rỗng, sự việc không có thực, mục đích hỏi mông lung hoặc hỏi thử.')
+                    is_fake = True
+                if _than == 'Huyền Vũ':
+                    warnings.append(f'Kỳ Môn - Nhật Can lâm Huyền Vũ: Huyền Vũ là sự giả dối, mờ ám. Người hỏi có sự che giấu, mưu đồ không chính đáng hoặc thông tin cung cấp là giả.')
+                    is_fake = True
+                if _than == 'Đằng Xà':
+                    warnings.append(f'Kỳ Môn - Nhật Can lâm Đằng Xà: Người hỏi đang tưởng tượng thái quá, tự dọa mình, hoặc sự việc mang tính chất hoang tưởng.')
+                if _mon == 'Tử Môn':
+                    warnings.append(f'Kỳ Môn - Nhật Can lâm Tử Môn: Sự việc đã đi vào bế tắc, kết thúc, hoặc đây là một sự việc đã xảy ra từ lâu, không còn đường tiến.')
+                    is_fake = True
+
+            if thoi_can_cung:
+                _than = than_ban.get(thoi_can_cung, than_ban.get(str(thoi_can_cung), ''))
+                _mon = nhan_ban.get(thoi_can_cung, nhan_ban.get(str(thoi_can_cung), ''))
+                if thoi_can_cung in kv_cung:
+                    warnings.append(f'Kỳ Môn - Thời Can (Sự việc) tại cung {thoi_can_cung} bị Tuần Không: Sự việc được hỏi hoàn toàn không có thật, hư ảo hoặc đã tan biến.')
+                    is_fake = True
+                if _than == 'Huyền Vũ':
+                    warnings.append(f'Kỳ Môn - Thời Can lâm Huyền Vũ: Bản chất sự việc có gian dối, giả tạo hoặc không đúng như bề ngoài người hỏi trình bày.')
+                    is_fake = True
+                if _mon == 'Tử Môn':
+                    warnings.append(f'Kỳ Môn - Thời Can lâm Tử Môn: Sự việc đã đi vào ngõ cụt, không thể phát sinh trong tương lai hoặc đã hoàn toàn kết thúc.')
+                    is_fake = True
+
+        return warnings, is_fake
+        
+        can_ngay = chart_data.get('can_ngay')
+        chi_ngay = chart_data.get('chi_ngay')
         if not can_ngay or not chi_ngay: return warnings, is_fake
         
         kv = _get_khong_vong(can_ngay, chi_ngay)
