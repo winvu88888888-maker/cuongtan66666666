@@ -5075,6 +5075,15 @@ class FreeAIHelper:
                 raw_data_section += f"📊 CONSENSUS: {_cons} (CÁT={_cat_c} HUNG={_hung_c})\n"
             raw_data_section += "\n"
             
+            # V42.9.11: Inject Multi-Intent verdicts for Gemini
+            if od.get('mi_cards') and len(od.get('mi_cards')) > 1:
+                raw_data_section += f"╔══════════════════════════════════════╗\n"
+                raw_data_section += f"║  🧩 OFFLINE AI TÁCH CÂU HỎI PHỤ      ║\n"
+                raw_data_section += f"╚══════════════════════════════════════╝\n"
+                for c in od['mi_cards']:
+                    raw_data_section += f"• Câu: \"{c['text']}\" -> PHÁN QUYẾT: {c['verdict_text']} (Tỷ lệ: {c['pct']}%, DT: {c.get('dt','')}, Icon: {c.get('icon','')})\n"
+                raw_data_section += "\n"
+            
             # ────────────────────────────────────────
             # TẦNG 1+2: CHI TIẾT TỪNG PP — theo thứ tự ưu tiên
             # ────────────────────────────────────────
@@ -14808,6 +14817,7 @@ class FreeAIHelper:
         offline_analysis_data = {
             # V42.9.4: Inject hub
             'hub': _hub,
+            'mi_cards': _mi_cards, # V42.9.11: Truyền sub-questions verdicts cho Gemini
             'dung_than': dung_than,
             'category_label': cat_data['label'],
             'ky_mon_verdict': ky_mon_verdict,
