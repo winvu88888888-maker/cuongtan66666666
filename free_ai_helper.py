@@ -14147,7 +14147,7 @@ class FreeAIHelper:
                     # SĐ16: Cái Nào / Chọn Lọc
                     if any(k in t for k in ['cái nào','nào tốt','chọn','lựa chọn','nào hơn','nào nên','hay là']): return 'CHOOSE'
                     # SĐ15: Thế Nào / Trạng Thái
-                    if any(k in t for k in ['như thế nào','thế nào','ra sao','tình trạng','diễn biến','tiến triển']): return 'HOW'
+                    if any(k in t for k in ['như thế nào','thế nào','ra sao','tình trạng','diễn biến','tiến triển','lên hay','xuống hay','tốt hay xấu','thành hay bại','thế cờ']): return 'HOW'
                     # SĐ10: Kiện Tụng
                     if any(k in t for k in ['kiện','kiện tụng','tòa','tranh chấp','pháp lý','thắng kiện','thua kiện']): return 'LAWSUIT'
                     # SĐ11: Mất Đồ / Tìm Kiếm

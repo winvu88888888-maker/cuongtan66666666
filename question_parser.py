@@ -221,7 +221,7 @@ QTYPE_RULES = [
     # THẾ NÀO
     {
         'keywords': ['thế nào', 'như thế nào', 'ra sao', 'tình trạng',
-                     'tình hình', 'tiến triển'],
+                     'tình hình', 'tiến triển', 'lên hay', 'xuống hay', 'tốt hay xấu', 'thành hay bại', 'thế cờ', 'tốt hay'],
         'qtype': 'THẾ NÀO',
         'diagram_id': 'SD15',
         'label': '📊 THẾ NÀO',
