@@ -9744,7 +9744,7 @@ class FreeAIHelper:
             lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid {_color};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_color};">{icon} VỀ "{_q_short}"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">{vv_data["cap"]} — {pct}%</span></div>')
             lines.append(f'\n<b style="color:#94a3b8;font-size:0.95em;">📋 Mô tả chi tiết (Vạn Vật Loại Tượng {hanh_dt} × {_ts_map}):</b>')
             if _vv_full_text:
-                for _line in _vv_full_text.split('\n')[:30]:
+                for _line in _vv_full_text.split('\n'):
                     if _line.strip():
                         lines.append(f"  {_line}")
             else:
@@ -9854,7 +9854,7 @@ class FreeAIHelper:
             # Vạn Vật tổng hợp nếu có
             if _vv_full_text:
                 lines.append(f"\n📋 **VẠN VẬT LOẠI TƯỢNG CHI TIẾT (Hành {hanh_dt}):**")
-                for _vvl in _vv_full_text.split('\n')[:10]:
+                for _vvl in _vv_full_text.split('\n'):
                     if _vvl.strip():
                         lines.append(f"  {_vvl.strip()}")
         
@@ -10585,7 +10585,7 @@ class FreeAIHelper:
                 # Thêm Vạn Vật tổng hợp nếu có
                 if _vv_full_text:
                     lines.append(f"\n**📋 VẠN VẬT LOẠI TƯỢNG CHI TIẾT (hành {_hanh}):**")
-                    for _vvl in _vv_full_text.split('\n')[:10]:
+                    for _vvl in _vv_full_text.split('\n'):
                         if _vvl.strip():
                             lines.append(f"  {_vvl.strip()}")
                 

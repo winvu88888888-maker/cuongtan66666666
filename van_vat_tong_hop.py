@@ -633,7 +633,7 @@ NGU_HANH_VAN_VAT = {
             'Trường Sinh': ['Hòn sỏi nhỏ', 'Viên đất sét', 'Hạt cát', 'Viên gạch nhỏ', 'Nắp chén'],
             'Mộc Dục': ['Bát đĩa rửa sạch', 'Sàn nhà lau xong', 'Gạch mới rửa', 'Tường sơn lại'],
             'Suy': ['Tường loang lổ', 'Gạch vỡ', 'Bát mẻ', 'Sàn nứt', 'Đất khô cằn', 'Tượng bạc màu'],
-            'Bệnh': ['Tường nứt', 'Nền lún', 'Gạch vỡ vụn', 'Sàn trơn trượt', 'Đất ô nhiễm'],
+'Bệnh': ['Tường nứt', 'Nền lún', 'Gạch vỡ vụn', 'Sàn trơn trượt', 'Đất ô nhiễm'],
             'Tử': ['Gạch vỡ nát', 'Tường đổ', 'Bình vỡ', 'Đất chết (không trồng được)', 'Cát bỏ hoang', 'Tro tàn đất'],
             'Mộ': ['Mộ phần', 'Đất chôn kho báu', 'Hầm đất', 'Hang động', 'Đá quý trong mỏ', 'Gốm cổ chôn'],
             'Tuyệt': ['Bụi đất', 'Cát bay sa mạc', 'Đá vôite tan', 'Sỏi nghiền', 'Tro than'],
@@ -768,10 +768,13 @@ VAN_VAT_MO_RONG = {
         'quoc_gia': ['Phương Tây', 'Châu Âu', 'Mỹ', 'Anh', 'Đức', 'Nhật Bản (công nghệ)',
                      'Hàn Quốc (Samsung)', 'Thụy Sĩ (đồng hồ)', 'Ý (siêu xe)'],
                      
-        # 👻 TÂM LINH / MA QUỶ
-        'tam_linh': ['Thần chiến tranh', 'Tướng quân cõi âm', 'Hồn ma chiến binh', 'Diêm chúa',
-                     'Quỷ dạ xoa mang giáp', 'Ác thần Bạch Hổ', 'Thần vũ khí', 'Hồn ma chết do kim loại/xe cộ',
-                     'Oán linh tà kiếm', 'Hồn ma giữ kho báu', 'Thần tài'],
+        # 👻 TÂM LINH / MA QUỶ (TRỜI, QUYỀN LỰC, ĐAO KIẾM, CHIẾN TRANH)
+        'tam_linh': ['Ngọc Hoàng Thượng Đế', 'Phật Tổ Như Lai', 'Thái Thượng Lão Quân', 
+                     'Mẫu Đệ Nhất Thượng Thiên', 'Tây Vương Mẫu', 'Quan Lớn Đệ Nhất', 'Quan Lớn Đệ Tứ (Khâm sai)',
+                     'Phù Đổng Thiên Vương (Thánh Gióng)', 'Quan Thánh Đế Quân (Quan Công)', 'Đức Thánh Trần',
+                     'Tôn Ngộ Không', 'Thần Tài', 'Triệu Công Minh',
+                     'Tướng quân cõi âm', 'Thần chiến tranh', 'Thần vũ khí', 'Ma binh ma tướng',
+                     'Hồn ma tử trận', 'Hồn ma chết do kim loại/xe cộ', 'Oán linh tà kiếm', 'Quỷ dạ xoa mang giáp'],
     },
     
     'Mộc': {
@@ -831,10 +834,16 @@ VAN_VAT_MO_RONG = {
         'quoc_gia': ['Phương Đông', 'Việt Nam (tre, lúa)', 'Trung Quốc (trà, gỗ)',
                      'Nhật Bản (tre/bonsai)', 'Indonesia (gỗ teak)', 'Brazil (nhiệt đới)'],
                      
-        # 👻 TÂM LINH / MA QUỶ
-        'tam_linh': ['Mộc tinh', 'Thần rừng', 'Thần cây đa/cây sanh', 'Yêu quái trong rừng',
-                     'Ma xó', 'Cô hồn vất vưởng bụi tre', 'Ma treo cổ (dây thừng)',
-                     'Thần nông', 'Tinh linh thực vật', 'Ma lai (ẩn trong cây)'],
+        # 👻 TÂM LINH / MA QUỶ (RỪNG, NÚI, GIÓ, NHÂN TỪ, TRỒNG TRỌT)
+        'tam_linh': ['Mẫu Đệ Nhị Thượng Ngàn', 'Bà Chúa Năm Phương', 'Chúa Thác Bờ',
+                     'Ông Hoàng Bảy (Bảo Hà)', 'Ông Hoàng Đôi (Hoàng Triệu)', 'Chầu Lục', 'Chầu Bé Bắc Lệ', 
+                     'Cô Đôi Thượng Ngàn', 'Cô Năm Suối Lân', 'Cô Sáu Sơn Trang', 'Cô Bảy Kim Giao', 
+                     'Cô Tám Đồi Chè', 'Cô Mười Đồng Mỏ', 'Cô Bé Thượng Ngàn', 'Cậu Đôi Thượng Ngàn',
+                     'Quan Thế Âm Bồ Tát', 'Thần Nông', 'Then (Thần Trời Thái)', 'Mụ (Thần Mường)', 
+                     'Neak Tà (Ông Tà Khmer)', 'Mộc tinh (Yêu tinh cây)', 'Xà tinh', 'Thạch tinh',
+                     'Thần rừng', 'Thần cây đa/cây sanh', 'Tiên nữ', 'Yêu quái rừng sâu',
+                     'Phi (Ma Thái)', 'Phi hướn (Ma nhà)', 'Ma xó', 'Ma gà', 'Ma lai', 'Ma trành (hổ vồ)', 
+                     'Cô hồn vất vưởng bụi tre', 'Ma treo cổ'],
         
         # 💄 MỸ PHẨM
         'my_pham': ['Serum thiên nhiên', 'Kem dưỡng hữu cơ', 'Son môi thảo dược',
@@ -903,10 +912,15 @@ VAN_VAT_MO_RONG = {
         'quoc_gia': ['Phương Bắc', 'Bắc Cực', 'Scandinavia', 'Canada', 'Russia',
                      'New Zealand', 'Iceland', 'Nhật Bản (biển)', 'Maldives (đảo)'],
                      
-        # 👻 TÂM LINH / MA QUỶ
-        'tam_linh': ['Thủy tề', 'Hà bá', 'Ma da', 'Quỷ nước', 'Tiên nữ hồ/biển',
-                     'Oan hồn chết đuối', 'Thần biển', 'Thủy quái', 'Hồn ma lang thang trên biển',
-                     'Ma nữ tóc dài ướt sũng', 'Tinh linh nước', 'Vong nhi (nước ối)'],
+        # 👻 TÂM LINH / MA QUỶ (NƯỚC, ÂM TY, TRÍ TUỆ, ĐỀN ĐÀI SÔNG NƯỚC)
+        'tam_linh': ['Mẫu Đệ Tam Thoải Phủ', 'Ông Hoàng Mười (Nghệ An)', 'Ông Hoàng Bơ (Thoải)',
+                     'Quan Lớn Đệ Tam', 'Cô Bơ (Thoải)', 'Cô Bé Thoải', 'Cậu Bơ Thoải Cung', 'Lạc Long Quân',
+                     'Long Vương (Thủy Tề)', 'Nam Hải Long Vương', 'Hà Bá', 'Thanh Xà Bạch Xà (Ông Lốt)',
+                     'Sở Giang Vương', 'Tống Đế Vương', 'Ngũ Quan Vương', 'Diêm La Thiên Tử',
+                     'Biện Thành Vương', 'Thái Sơn Vương', 'Đô Thị Vương', 'Bình Đẳng Vương', 'Chuyển Luân Vương',
+                     'Địa Tạng Vương Bồ Tát', 'Diêm Vương', 'Hắc Bạch Vô Thường', 'Đầu Trâu Mặt Ngựa', 'Mạnh Bà',
+                     'Rắn thần Naga', 'Thủy quái', 'Tinh linh nước', 'Ma da', 'Oan hồn chết đuối', 'Tiên nữ hồ/biển',
+                     'Hồn ma trôi sông', 'Ma nữ tóc dài ướt sũng', 'Vong nhi (nước ối)'],
         
         'my_pham': ['Nước hoa', 'Perfume', 'Kem dưỡng ẩm', 'Serum hyaluronic',
                     'Toner', 'Micellar water', 'Sữa rửa mặt', 'Kem chống nắng dạng gel',
@@ -974,10 +988,13 @@ VAN_VAT_MO_RONG = {
         'quoc_gia': ['Phương Nam', 'Úc (nắng)', 'Ấn Độ', 'Dubai', 'Bắc Phi (Sahara)',
                      'Mexico', 'Spain', 'Italy (thời trang, ẩm thực)'],
                      
-        # 👻 TÂM LINH / MA QUỶ
-        'tam_linh': ['Hỏa thần', 'Táo quân', 'Quỷ nhập tràng', 'Ác quỷ địa ngục', 'Ma chơi',
-                     'Hồn ma chết cháy', 'Thần mặt trời', 'Chu Tước', 'Linh hồn giận dữ',
-                     'Ánh sáng Phật quang', 'Vong linh cuồng nộ', 'Cô hồn đói khát'],
+        # 👻 TÂM LINH / MA QUỶ (LỬA, SẤM CHỚP, ÁNH SÁNG, TRỪNG PHẠT)
+        'tam_linh': ['Cửu Thiên Huyền Nữ', 'Táo Quân (Thần Bếp)', 'Hỏa Đức Tinh Quân (Hỏa Thần)',
+                     'Bất Động Minh Vương', 'Bà Chúa Hỏa', 'Bà Ngũ Hành (Ngũ Hành Nương Nương)',
+                     'Cô Chín Sòng Sơn (bói toán/phép thuật)', 'Thái Dương Tinh Quân', 'Phật A Di Đà (hào quang)', 
+                     'Chu Tước', 'Phán Quan cõi âm', 'Ác quỷ địa ngục', 'Quỷ sai', 'Quỷ nhập tràng', 
+                     'Ma trơi (will-o\'the-wisp)', 'Oan hồn chết cháy', 'Vong linh cuồng nộ', 
+                     'Linh hồn giận dữ', 'Cô hồn đói khát'],
         
         'my_pham': ['Son môi đỏ', 'Mascara', 'Eyeliner', 'Phấn highlight',
                     'Bronzer', 'Blush đỏ', 'Nail polish đỏ', 'Body glitter'],
@@ -1046,10 +1063,15 @@ VAN_VAT_MO_RONG = {
                      'Ấn Độ (Taj Mahal)', 'Campuchia (Angkor Wat)', 'Rome (Colosseum)',
                      'Đồng bằng sông Cửu Long', 'Tây Nguyên'],
                      
-        # 👻 TÂM LINH / MA QUỶ
-        'tam_linh': ['Thổ công', 'Sơn thần', 'Thần đất', 'Phật tổ', 'Diêm vương',
-                     'Vong hồn dưới mộ', 'Âm binh', 'Ma đói', 'Xác ướp', 'Cương thi',
-                     'Hồn ma chôn giấu', 'Quỷ giữ hầm mộ', 'Cô hồn bãi tha ma', 'Thần hoàng'],
+        # 👻 TÂM LINH / MA QUỶ (ĐẤT ĐAI, ÂM PHẦN, BẢO VỆ, NUÔI DƯỠNG)
+        'tam_linh': ['Mẫu Liễu Hạnh (Mẫu Đệ Tứ Địa Phủ)', 'Tản Viên Sơn Thánh', 'Âu Cơ', 'Chử Đồng Tử',
+                     'Ông Hoàng Tư', 'Ông Hoàng Năm', 'Ông Hoàng Sáu', 'Ông Hoàng Tám', 'Ông Hoàng Chín',
+                     'Cô Tư Địa Phủ (Cô Tư Ỷ La)', 'Cậu Bé Đồi Ngang',
+                     'Bà Chúa Xứ', 'Bà Đen', 'Thiên Y A Na', 'Thành Hoàng Bản Cảnh',
+                     'Thổ Công', 'Thổ Địa', 'Sơn Thần (Thần Núi)', 'Quan Lớn Đệ Ngũ',
+                     'Ngũ Hổ Thần Tướng (Ông Cẩu/Hổ)', 'Phật Di Lặc', 'Bụt Mọc (Thần đá Mường)', 'Ông đầu rau',
+                     'Cương thi', 'Xác ướp', 'Ngạ quỷ (Ma đói)', 'Hồ ly tinh', 'Chó đội nón mê',
+                     'Vong hồn dưới mộ', 'Cô hồn bãi tha ma', 'Dạ xoa', 'Quỷ giữ hầm mộ', 'Hồn ma chôn giấu'],
         
         'my_pham': ['Kem nền', 'Foundation', 'Concealer', 'Phấn phủ', 'Setting powder',
                     'Mặt nạ đất sét (clay mask)', 'Scrub (tẩy da chết)', 'Bùn khoáng'],
@@ -1451,6 +1473,13 @@ QUESTION_CATEGORY_MAP = {
         'icons': ['🐾', '🌾'],
         'extra_icons': [],
     },
+    # === TÂM LINH, THẦN THÁNH, MA QUỶ ===
+    'tam_linh': {
+        'keys': ['tâm linh', 'thần', 'thánh', 'ma', 'quỷ', 'vong', 'oan hồn', 'địa ngục', 'cõi âm',
+                 'thiên đàng', 'phật', 'chúa', 'cúng', 'bái', 'bùa', 'ngải', 'phong thủy', 'linh hồn', 'hồn'],
+        'icons': ['👻', '⛪', '🔮'],
+        'extra_icons': ['🧑'],
+    },
 }
 
 def smart_van_vat_for_question(hanh, truong_sinh_stage, question=""):
@@ -1506,7 +1535,7 @@ def smart_van_vat_for_question(hanh, truong_sinh_stage, question=""):
         
         has_icon = any(icon in line for icon in ['👁','👂','👃','👅','✋','🔮','🧑','🏠','🏥',
                        '🐾','🧭','📈','🚗','👔','🍜','🥤','💎','📱','🎵','🏭','⚔','⚽',
-                       '🌤','🎭','🌍','💄','🧸','🛋','💉','⛪','🗻','🦴','🌾','🏢','🏡','🎨','💻'])
+                       '🌤','🎭','🌍','💄','🧸','🛋','💉','⛪','🗻','🦴','🌾','🏢','🏡','🎨','💻','👻'])
         
         # Dòng không có icon → thuộc tính cơ bản → LUÔN GIỮ
         if not has_icon:

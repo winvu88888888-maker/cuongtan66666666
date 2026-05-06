@@ -54,6 +54,7 @@ NGU_HANH_LOAI_TUONG = {
         ["Thực Vật", "Tre, Tùng, Liễu", "Hoàng hoa, Hướng dương", "Lúa, Ngô, Khoai", "Cúc, phong lan", "Sen, Rong, Tảo"],
         ["Đồ Ăn", "Rau xanh, đồ chua", "Đồ nướng, đồ đắng", "Ngũ cốc, đồ ngọt", "Đồ cay, gia vị", "Hải sản, đồ mặn"],
         ["Tĩnh Vật", "Gỗ, giấy, sách", "Đèn, nến, điện tử", "Gạch, đất, gốm sứ", "Kim loại, dao, kéo", "Bình nước, gương"],
+        ["Tâm Linh", "Mẫu Thượng Ngàn, Ông Bảy, Quan Âm, Cô Đôi Thượng Ngàn", "Cửu Thiên Huyền Nữ, Táo Quân, Bà Chúa Hỏa, Ma chơi", "Mẫu Liễu Hạnh, Tản Viên Sơn Thánh, Bà Đen, Thổ Công", "Ngọc Hoàng, Phật Tổ, Quan Công, Thánh Gióng", "Mẫu Thoải, Ông Hoàng Mười, Cô Bơ, Diêm Vương, Hà Bá"],
         ["Số", "3, 8", "2, 7", "5, 10", "4, 9", "1, 6"],
 
         # === XẾP HẠNG VƯỢNG SUY ===
@@ -114,6 +115,8 @@ BAT_QUAI_LOAI_TUONG = {
         ["Tình Huống HUNG", "Kiêu ngạo, cô độc, cứng nhắc", "Cãi vã, lừa gạt bằng lời, khẩu thiệt", "Kiện tụng, cháy nổ, tách ly, phản bội", "Tai nạn, giận mất khôn, phá hoại", "Tin đồn, lừa đảo, gió chiều nào che đó", "Trộm cắp, rượu chè, tai nạn nước", "Bế tắc, cô lập, chia rẽ", "Lười biếng, yếu đuối, mất phương hướng"],
         # === PHONG THỦY ===
         ["Phong Thủy", "Cửa chính hướng TN, nhà cao, mái vòm", "Ao đầm trước nhà, cửa sổ hướng Tây", "Bếp lửa, đèn sáng, phòng khách phía Nam", "Cầu thang, cửa lớn, sân rộng phía Đông", "Cây xanh trước cửa, hành lang dài", "Nhà cạnh sông, bể nước, giếng", "Tường cao, đá trang trí, hướng ĐB", "Sân rộng, đất bằng, vườn hướng TN"],
+        # === TÂM LINH / MA QUỶ ===
+        ["Tâm Linh/Ma Quỷ", "Ngọc Hoàng, Phật Tổ, Thánh Gióng, Quan Công", "Cô Chín, Tiên nữ, Vu nữ, Đồng cốt", "Cửu Thiên Huyền Nữ, Táo Quân, Bà Chúa Hỏa, Ma chơi", "Thần Sấm, Tôn Ngộ Không, Quan Lớn Đệ Tam", "Ông Hoàng Bảy, Mẫu Thượng Ngàn, Cô Đôi Thượng Ngàn", "Mẫu Thoải, Ông Mười, Cô Bơ, Diêm Vương, Ma da", "Sơn Thánh, Bà Đen, Bà Chúa Xứ, Ông Hổ, Vong nhi", "Mẫu Liễu Hạnh, Âu Cơ, Thành Hoàng, Thổ Công"],
         # === KIM LOẠI / KHOÁNG SẢN ===
         ["Kim Loại/KS", "Vàng ròng, Bạch kim, Ngọc, Kim cương", "Bạc, Đồng trắng, Pha lê, Thủy tinh", "Đồng đỏ, Sắt nóng, Than, Diêm sinh", "Sắt, Thép, Kẽm, Đồng thau", "Thiếc, Nhôm, Fiber, Gỗ quý", "Chì, Thủy ngân, Dầu mỏ, Nước khoáng", "Đá hoa cương, Thạch anh, Xi măng", "Đất sét, Gạch, Ngói, Gốm sứ"],
         # === ÂM THANH ===
