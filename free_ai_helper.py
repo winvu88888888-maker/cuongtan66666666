@@ -11793,13 +11793,13 @@ class FreeAIHelper:
                 verdict_line = f"📢 **PHÁN QUYẾT: CHƯA XÁC ĐỊNH THỜI GIAN ({pct}%)**"
         else:
             if pct >= 55:
-                verdict_line = f"📢 **PHÁN QUYẾT: THUẬN LỢI ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: THUẬN LỢI ({pct}%) — Năng lượng Ngũ Hành ({hanh_dt}) đang hỗ trợ mạnh mẽ, mọi việc tiến triển thuận lợi dù ở lĩnh vực nào!**"
             elif pct >= 50:
-                verdict_line = f"📢 **PHÁN QUYẾT: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({pct}%) — Có sự giằng co năng lượng, cần mượn lực từ Hành sinh cho {hanh_dt} để thành công.**"
             elif pct >= 45:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ KHĂN — cần tìm giải pháp ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: NHIỀU BIẾN ĐỘNG ({pct}%) — Đang đối mặt với lực cản lớn, cần tìm hướng giải quyết khác.**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG THUẬN — nên hoãn hoặc đổi hướng ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: BẤT LỢI ({pct}%) — Khí trường suy yếu, xung khắc mạnh, tuyệt đối nên phòng thủ chờ thời!**"
         
         lines.append(verdict_line)
         lines.append("")
@@ -14261,10 +14261,12 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"CẦN CÂN NHẮC KỸ ({sq_pct}%)", "🟡"
                         else: return f"KẾT QUẢ BẤT LỢI ({sq_pct}%)", "🔴"
                     else:  # GENERAL / YESNO
-                        if sq_pct >= 55: return f"CÓ — THÀNH CÔNG ({sq_pct}%)", "✅"
-                        elif sq_pct >= 50: return f"CÓ — NỖ LỰC ({sq_pct}%)", "🟡"
-                        elif sq_pct >= 45: return f"KHÓ THÀNH ({sq_pct}%)", "🟡"
-                        else: return f"KHÔNG ({sq_pct}%)", "🔴"
+                        _hd = _MI_HD.get(sq_hanh, (5, 10))
+                        _ts_desc = "Sinh/Vượng" if sq_pct >= 50 else "Suy/Tuyệt"
+                        if sq_pct >= 55: return f"✅ OMNI-DOMAIN: THUẬN LỢI ({sq_pct}%) — Năng lượng Ngũ Hành {sq_hanh} ({_ts_desc}) đang hỗ trợ, phát huy cực tốt ở mọi lĩnh vực!", "✅"
+                        elif sq_pct >= 50: return f"🟡 OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({sq_pct}%) — Cần trợ lực từ Hành sinh cho {sq_hanh} (Hà Đồ {_hd[0]},{_hd[1]}).", "🟡"
+                        elif sq_pct >= 45: return f"🟡 OMNI-DOMAIN: BIẾN ĐỘNG ({sq_pct}%) — Khí lực {sq_hanh} chưa đủ mạnh, rủi ro cao, cần cẩn trọng.", "🟡"
+                        else: return f"🔴 OMNI-DOMAIN: BẤT LỢI ({sq_pct}%) — Xung khắc lớn, nên rút lui hoặc phòng thủ!", "🔴"
                 
                 _MI_QTYPE_LABEL = {
                     'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
