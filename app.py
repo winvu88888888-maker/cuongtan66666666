@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.17"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh)"
+APP_VERSION = "V42.9.18"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -2935,6 +2935,39 @@ if st.session_state.current_view == "ky_mon":
             with st.container():
                 st.markdown("### 🎯 KẾT LUẬN TỔNG HỢP TỪ AI (Dụng Thần)")
                 
+                # V42.9.18: TOGGLE GIEO QUẺ NGẪU NHIÊN — mỗi lần hỏi = quẻ mới
+                _col_toggle, _col_info = st.columns([1, 3])
+                with _col_toggle:
+                    _random_on = st.toggle(
+                        "🎲 Gieo Ngẫu Nhiên",
+                        value=st.session_state.get('random_hexagram_mode', False),
+                        key="random_hex_toggle",
+                        help="ON = Mỗi lần hỏi gieo quẻ Lục Hào + Mai Hoa MỚI (ngẫu nhiên). OFF = Giữ nguyên quẻ theo thời gian."
+                    )
+                    st.session_state['random_hexagram_mode'] = _random_on
+                with _col_info:
+                    if _random_on:
+                        st.markdown("""
+                        <div style='background:linear-gradient(135deg,#1e3a5f,#2d5a3d);padding:10px 16px;border-radius:12px;
+                                    border:1px solid rgba(34,197,94,0.4);margin-bottom:8px;'>
+                            <span style='color:#86efac;font-weight:800;font-size:0.9rem;'>🎲 CHẾ ĐỘ NGẪU NHIÊN: BẬT</span>
+                            <span style='color:#94a3b8;font-size:0.78rem;margin-left:8px;'>
+                                Mỗi lần ấn Phân Tích → Lục Hào & Mai Hoa sẽ được gieo LẠI hoàn toàn mới.
+                                Cùng 1 câu hỏi nhưng mỗi người hỏi sẽ nhận kết quả KHÁC NHAU.
+                            </span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown("""
+                        <div style='background:linear-gradient(135deg,#1e293b,#334155);padding:10px 16px;border-radius:12px;
+                                    border:1px solid rgba(148,163,184,0.3);margin-bottom:8px;'>
+                            <span style='color:#94a3b8;font-weight:700;font-size:0.9rem;'>📌 CHẾ ĐỘ MẶC ĐỊNH: TẮT</span>
+                            <span style='color:#64748b;font-size:0.78rem;margin-left:8px;'>
+                                Quẻ Lục Hào & Mai Hoa giữ nguyên theo thời gian đã chọn (web mặc định).
+                            </span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                
                 # V8.2: MỘT NÚT DUY NHẤT — Kết hợp AI Offline + Online
                 unified_clicked = st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", type="primary", key="ai_unified_btn", use_container_width=True)
                 
@@ -2975,8 +3008,53 @@ if st.session_state.current_view == "ky_mon":
                             offline_ai = FreeAIHelper(api_key=_offline_api_key)
                             
                             # Auto-compute Mai Hoa & Lục Hào
-                            mai_hoa_for_offline = st.session_state.get('mai_hoa_result')
-                            luc_hao_for_offline = st.session_state.get('luc_hao_result')
+                            # V42.9.18: Chế độ Gieo Ngẫu Nhiên
+                            _use_random = st.session_state.get('random_hexagram_mode', False)
+                            
+                            if _use_random:
+                                # ═══ CHẾ ĐỘ NGẪU NHIÊN: Gieo quẻ MỚI mỗi lần ấn ═══
+                                try:
+                                    import random as _rnd_mod
+                                    # Mai Hoa: Gieo ngẫu nhiên hoàn toàn
+                                    mai_hoa_for_offline = tinh_qua_ngau_nhien()
+                                    mai_hoa_for_offline['interpretation'] = giai_qua(mai_hoa_for_offline, selected_topic)
+                                    mai_hoa_for_offline['_random_cast'] = True
+                                    st.session_state.mai_hoa_result = mai_hoa_for_offline
+                                    
+                                    # Lục Hào: Gieo với seed ngẫu nhiên (biến đổi giờ + random offset)
+                                    _chart = st.session_state.get('chart_data', {})
+                                    _cans_rnd = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                                    _chis_rnd = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                                    # Random Can/Chi Ngày → tạo quẻ hoàn toàn khác
+                                    _rnd_can = _rnd_mod.choice(_cans_rnd)
+                                    _rnd_chi = _rnd_mod.choice(_chis_rnd)
+                                    _rnd_can_t = _rnd_mod.choice(_cans_rnd)
+                                    _rnd_chi_t = _rnd_mod.choice(_chis_rnd)
+                                    # Random giờ để biến đổi quẻ
+                                    _rnd_hour = _rnd_mod.randint(0, 23)
+                                    _rnd_day = _rnd_mod.randint(1, 28)
+                                    _rnd_month = _rnd_mod.randint(1, 12)
+                                    dt_now = selected_datetime
+                                    luc_hao_for_offline = lap_qua_luc_hao(
+                                        dt_now.year, _rnd_month, _rnd_day, _rnd_hour,
+                                        topic=selected_topic,
+                                        can_ngay=_rnd_can,
+                                        chi_ngay=_rnd_chi,
+                                        can_thang=_rnd_can_t,
+                                        chi_thang=_rnd_chi_t
+                                    )
+                                    luc_hao_for_offline['_random_cast'] = True
+                                    st.session_state.luc_hao_result = luc_hao_for_offline
+                                    
+                                    st.toast("🎲 Đã gieo quẻ Lục Hào + Mai Hoa NGẪU NHIÊN!", icon="🎲")
+                                except Exception as _rnd_err:
+                                    st.warning(f"⚠️ Lỗi gieo ngẫu nhiên: {str(_rnd_err)[:80]}")
+                                    mai_hoa_for_offline = st.session_state.get('mai_hoa_result')
+                                    luc_hao_for_offline = st.session_state.get('luc_hao_result')
+                            else:
+                                # ═══ CHẾ ĐỘ MẶC ĐỊNH: Giữ nguyên quẻ theo thời gian ═══
+                                mai_hoa_for_offline = st.session_state.get('mai_hoa_result')
+                                luc_hao_for_offline = st.session_state.get('luc_hao_result')
                             
                             if not mai_hoa_for_offline:
                                 try:
@@ -3647,8 +3725,48 @@ PHÂN TÍCH LIÊN MẠCH:
                             offline_ai = FreeAIHelper(api_key=_api_key)
                             
                             # Auto-compute Mai Hoa & Lục Hào
-                            mai_hoa_for_q = st.session_state.get('mai_hoa_result')
-                            luc_hao_for_q = st.session_state.get('luc_hao_result')
+                            # V42.9.18: Chế độ Gieo Ngẫu Nhiên (Q&A box)
+                            _use_random_q = st.session_state.get('random_hexagram_mode', False)
+                            
+                            if _use_random_q:
+                                # ═══ CHẾ ĐỘ NGẪU NHIÊN: Gieo quẻ MỚI mỗi lần hỏi ═══
+                                try:
+                                    import random as _rnd_q
+                                    # Mai Hoa: Gieo ngẫu nhiên
+                                    mai_hoa_for_q = tinh_qua_ngau_nhien()
+                                    mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
+                                    mai_hoa_for_q['_random_cast'] = True
+                                    st.session_state.mai_hoa_result = mai_hoa_for_q
+                                    
+                                    # Lục Hào: Gieo với Can/Chi ngẫu nhiên
+                                    _cans_rq = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                                    _chis_rq = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                                    _rq_can = _rnd_q.choice(_cans_rq)
+                                    _rq_chi = _rnd_q.choice(_chis_rq)
+                                    _rq_can_t = _rnd_q.choice(_cans_rq)
+                                    _rq_chi_t = _rnd_q.choice(_chis_rq)
+                                    _rq_hour = _rnd_q.randint(0, 23)
+                                    _rq_day = _rnd_q.randint(1, 28)
+                                    _rq_month = _rnd_q.randint(1, 12)
+                                    dt_now = selected_datetime
+                                    luc_hao_for_q = lap_qua_luc_hao(
+                                        dt_now.year, _rq_month, _rq_day, _rq_hour,
+                                        topic=selected_topic,
+                                        can_ngay=_rq_can, chi_ngay=_rq_chi,
+                                        can_thang=_rq_can_t, chi_thang=_rq_chi_t
+                                    )
+                                    luc_hao_for_q['_random_cast'] = True
+                                    st.session_state.luc_hao_result = luc_hao_for_q
+                                    
+                                    st.toast("🎲 Đã gieo quẻ Lục Hào + Mai Hoa NGẪU NHIÊN!", icon="🎲")
+                                except Exception as _rnd_q_err:
+                                    st.warning(f"⚠️ Lỗi gieo ngẫu nhiên: {str(_rnd_q_err)[:80]}")
+                                    mai_hoa_for_q = st.session_state.get('mai_hoa_result')
+                                    luc_hao_for_q = st.session_state.get('luc_hao_result')
+                            else:
+                                # ═══ CHẾ ĐỘ MẶC ĐỊNH: Giữ nguyên quẻ ═══
+                                mai_hoa_for_q = st.session_state.get('mai_hoa_result')
+                                luc_hao_for_q = st.session_state.get('luc_hao_result')
                             
                             if not mai_hoa_for_q:
                                 try:
@@ -3719,10 +3837,20 @@ elif st.session_state.current_view == "mai_hoa":
 
     # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
     dt = selected_datetime
-    st.info(f"🕒 Giờ gieo quẻ: {dt.strftime('%H:%M - %d/%m/%Y')}.")
-    res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
-    res['interpretation'] = giai_qua(res, selected_topic)
-    st.session_state.mai_hoa_result = res
+    
+    # V42.9.18: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
+    _mh_random_mode = st.session_state.get('random_hexagram_mode', False)
+    _mh_existing = st.session_state.get('mai_hoa_result')
+    
+    if _mh_random_mode and _mh_existing and _mh_existing.get('_random_cast'):
+        # Hiển thị quẻ ngẫu nhiên đã gieo
+        res = _mh_existing
+        st.info(f"🎲 Chế độ Ngẫu Nhiên: Đang hiển thị quẻ đã gieo ngẫu nhiên. Tắt toggle để về quẻ theo thời gian.")
+    else:
+        st.info(f"🕒 Giờ gieo quẻ: {dt.strftime('%H:%M - %d/%m/%Y')}.")
+        res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
+        res['interpretation'] = giai_qua(res, selected_topic)
+        st.session_state.mai_hoa_result = res
 
     if 'mai_hoa_result' in st.session_state:
         res = st.session_state.mai_hoa_result
@@ -3840,17 +3968,25 @@ elif st.session_state.current_view == "luc_hao":
     nhat_than = f"{chi_ngay}"
     nguyet_lenh = f"{chi_thang}"
     
-    try:
-        st.session_state.luc_hao_result = lap_qua_luc_hao(
-            dt.year, dt.month, dt.day, dt.hour,
-            topic=selected_topic,
-            can_ngay=can_ngay,
-            chi_ngay=chi_ngay,
-            can_thang=can_thang,
-            chi_thang=chi_thang
-        )
-    except Exception as e:
-        st.error(f"Lỗi lập quẻ Lục Hào: {e}")
+    # V42.9.18: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
+    _lh_random_mode = st.session_state.get('random_hexagram_mode', False)
+    _lh_existing = st.session_state.get('luc_hao_result')
+    
+    if _lh_random_mode and _lh_existing and isinstance(_lh_existing, dict) and _lh_existing.get('_random_cast'):
+        # Hiển thị quẻ ngẫu nhiên đã gieo
+        st.info(f"🎲 Chế độ Ngẫu Nhiên: Đang hiển thị quẻ Lục Hào đã gieo ngẫu nhiên. Tắt toggle để về quẻ theo thời gian.")
+    else:
+        try:
+            st.session_state.luc_hao_result = lap_qua_luc_hao(
+                dt.year, dt.month, dt.day, dt.hour,
+                topic=selected_topic,
+                can_ngay=can_ngay,
+                chi_ngay=chi_ngay,
+                can_thang=can_thang,
+                chi_thang=chi_thang
+            )
+        except Exception as e:
+            st.error(f"Lỗi lập quẻ Lục Hào: {e}")
 
     if 'luc_hao_result' in st.session_state:
         res = st.session_state.luc_hao_result
