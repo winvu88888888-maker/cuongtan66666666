@@ -194,6 +194,7 @@ class GeminiQMDGHelper:
                         top_k=20,                 # V29.2: Giảm mạnh — bám sát data, không suy diễn
                         max_output_tokens=8192,   # V30.0: Giảm từ 65536 → buộc Gemini viết TẬP TRUNG, không lan man
                         safety_settings=safety_settings,
+                        tools=[{'google_search': {}}] # V42.9.25: Kích hoạt Google Search Grounding toàn cầu
                     )
                     resp = client.models.generate_content(
                         model=model_name,
