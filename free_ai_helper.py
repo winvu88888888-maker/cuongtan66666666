@@ -5525,7 +5525,7 @@ class FreeAIHelper:
                 f"   - Bước 1: Quét TẤT CẢ các yếu tố trong quẻ (Lục thần, Sao, Cửa, Quẻ Dịch, Tuần Không...) có tác động sinh/khắc trực tiếp đến DỤNG THẦN.\n"
                 f"   - Bước 2: Dùng Internet tra cứu ĐÀO SÂU ý nghĩa chuyên môn Huyền học của TỪNG YẾU TỐ đó tác động lên Dụng Thần (VD: Bạch Hổ lâm Dụng Thần báo hiệu gì?).\n"
                 f"   - Bước 3: Tổng hợp toàn bộ dữ liệu mạng và Vạn Vật sẵn có để xâu chuỗi nhân quả, lập luận hợp lý, sắc bén nhằm ra được câu trả lời CHÍNH XÁC NHẤT.\n"
-                f"⑧ CHỐNG GIAN LẬN SUY LUẬN: Nếu câu hỏi là dạng 'làm nghề gì/cái gì/ai/ở đâu/màu gì', BẠN TUYỆT ĐỐI KHÔNG ĐƯỢC copy/lặp lại tên Chủ Đề (Topic) có sẵn trong quẻ để trả lời! BẠN PHẢI che giấu chủ đề đó đi và BẮT BUỘC dùng Ngũ Hành, Bát Quái của Dụng Thần đối chiếu với BẢNG VẠN VẬT LOẠI TƯỢNG (kết hợp Internet Search) để tự suy luận độc lập ra kết quả!\n\n"
+                f"⑧ ĐỊNH VỊ CHÍNH XÁC MỤC TIÊU: Nếu câu hỏi là dạng 'làm nghề gì/cái gì/ai/ở đâu/màu gì', BẠN TUYỆT ĐỐI KHÔNG ĐƯỢC copy tên Chủ Đề (Topic) có sẵn để trả lời! BẠN PHẢI dựa vào Ngũ Hành, Bát Quái của Dụng Thần, kết hợp với trạng thái khí (Vượng/Suy/Tướng/Tù/Tử) và 12 Trường Sinh để LOẠI TRỪ và CHỐT ĐÚNG 1 KẾT QUẢ DUY NHẤT (1 nghề nghiệp, 1 sự vật cụ thể nhất). TUYỆT ĐỐI KHÔNG liệt kê một loạt các đáp án lan man!\n\n"
                 f"VẠN VẬT: Kim=kim loại | Mộc=gỗ,vải | Thủy=nước,lỏng | Hỏa=điện,lửa | Thổ=đất,gốm\n"
                 f"SỐ: Hà Đồ Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
                 f"HƯỚNG: Kim=TÂY | Mộc=ĐÔNG | Thủy=BẮC | Hỏa=NAM | Thổ=TRUNG TÂM\n"
