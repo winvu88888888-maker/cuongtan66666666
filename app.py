@@ -3560,6 +3560,20 @@ PHÂN TÍCH LIÊN MẠCH:
             st.session_state['selected_doi_tuong'] = qa_luc_than
             
             user_question = st.text_area("💬 Đặt câu hỏi bất kỳ (tự do, không giới hạn chủ đề):", placeholder="Ví dụ: Năm nay có mua được nhà không? / Con mèo lạc tìm ở đâu? / Bao giờ tìm được việc?...", key="ai_q_input", height=80)
+            
+            # V42.9.18: Hiển thị trạng thái Gieo Ngẫu Nhiên cho nút Q&A
+            _qa_random_status = st.session_state.get('random_hexagram_mode', False)
+            if _qa_random_status:
+                st.markdown("""
+                <div style='background:linear-gradient(135deg,#1e3a5f,#2d5a3d);padding:8px 14px;border-radius:10px;
+                            border:1px solid rgba(34,197,94,0.4);margin-bottom:6px;text-align:center;'>
+                    <span style='color:#86efac;font-weight:800;font-size:0.85rem;'>🎲 GIEO NGẪU NHIÊN: BẬT</span>
+                    <span style='color:#94a3b8;font-size:0.75rem;margin-left:6px;'>
+                        Mỗi lần ấn → Quẻ Lục Hào & Mai Hoa sẽ được gieo MỚI hoàn toàn
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+            
             if st.button("🔮 PHÂN TÍCH TỔNG HỢP AI", key="ai_ask_unified", type="primary", use_container_width=True):
                 if user_question:
                     try:
