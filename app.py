@@ -4005,20 +4005,28 @@ elif st.session_state.current_view == "luc_hao":
     if 'luc_hao_result' in st.session_state:
         res = st.session_state.luc_hao_result
         
+        # V42.9.18 Fix: Read actual can/chi from the result (vital for random cast)
+        _d_can_ngay = res.get('can_ngay', can_ngay)
+        _d_chi_ngay = res.get('chi_ngay', chi_ngay)
+        _d_can_thang = res.get('can_thang', can_thang)
+        _d_chi_thang = res.get('chi_thang', chi_thang)
+        _d_nhat_than = res.get('nhat_than', f"{_d_chi_ngay}")
+        _d_nguyet_lenh = res.get('nguyet_lenh', f"{_d_chi_thang}")
+        
         # ========== COMPACT HEADER (giống xinhdich.com) ==========
         st.markdown(f"""
         <div style="background: linear-gradient(135deg, rgba(30,27,75,0.9), rgba(22,33,62,0.9)); border: 2px solid #7c3aed; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-size: 13px;">
             <div style="text-align:center; font-weight:900; font-size:15px; color:#a78bfa; margin-bottom:6px;">
-                📜 PHẦN MỀM LẬP QUẺ DỊCH — Phương pháp: Mai Hoa
+                📜 PHẦN MỀM LẬP QUẺ DỊCH — Phương pháp: Lục Hào
             </div>
             <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
                 <span>⏰ <b>Thời gian:</b> {dt.strftime('%H:%M %d/%m/%Y')}</span>
-                <span>🌙 <b>Can Chi:</b> giờ {can_gio} {chi_gio}, ngày {can_ngay} {chi_ngay}, tháng {can_thang} {chi_thang}, năm {can_nam} {chi_nam}</span>
+                <span>🌙 <b>Can Chi:</b> giờ {can_gio} {chi_gio}, ngày {_d_can_ngay} {_d_chi_ngay}, tháng {_d_can_thang} {_d_chi_thang}, năm {can_nam} {chi_nam}</span>
             </div>
             <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px; margin-top:4px;">
                 <span>🌿 <b>Tiết khí:</b> {tiet_khi}</span>
-                <span>☀️ <b>Nhật thần:</b> {nhat_than}</span>
-                <span>🌙 <b>Nguyệt lệnh:</b> {nguyet_lenh}</span>
+                <span>☀️ <b>Nhật thần:</b> {_d_nhat_than}</span>
+                <span>🌙 <b>Nguyệt lệnh:</b> {_d_nguyet_lenh}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)

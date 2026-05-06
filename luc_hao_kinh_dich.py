@@ -414,5 +414,11 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         'dong_hao': [moving_idx],
         'phuc_than': phuc_than_list,
         'conclusion': f"Quẻ {ban_name} biến {bien_name}. {topic} có biến tại hào {moving_idx}.",
-        'the_ung': f"Thế hào {the_pos}, Ứng hào {ung_pos}"
+        'the_ung': f"Thế hào {the_pos}, Ứng hào {ung_pos}",
+        'can_ngay': can_ngay,
+        'chi_ngay': chi_ngay,
+        'can_thang': can_thang,
+        'chi_thang': chi_thang,
+        'nhat_than': chi_ngay,
+        'nguyet_lenh': chi_thang
     }
