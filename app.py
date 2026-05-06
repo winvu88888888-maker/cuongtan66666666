@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.22"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật Tâm Linh + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên)"
+APP_VERSION = "V42.9.23"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + Omni-Domain 🌍 + Vạn Vật Tâm Linh + 🎲 Gieo Ngẫu Nhiên)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
