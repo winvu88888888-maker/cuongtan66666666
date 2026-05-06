@@ -5544,20 +5544,22 @@ class FreeAIHelper:
                 f"</verdict_block>\n\n"
                 
                 f"<output_format>\n"
-                f"FORMAT BẮT BUỘC — Trả lời NGẮN GỌN, DỨT KHOÁT:\n\n"
+                f"FORMAT BẮT BUỘC — Lập luận SẮC BÉN, CHUYÊN MÔN CAO:\n\n"
                 f"### 🏆 KẾT LUẬN\n"
                 + (
-                    f"**📢 CÂU TRẢ LỜI:** [Mô tả CỤ THỂ vật/sản phẩm/nghề dựa trên Vạn Vật Loại Tượng]\n"
+                    f"**📢 CÂU TRẢ LỜI:** [Mô tả CỤ THỂ dựa trên Vạn Vật Loại Tượng]\n"
                     if question_type in ('WHAT', 'WHERE', 'WHEN') else
                     f"**📢 VERDICT:** [Dùng ĐÚNG verdict từ verdict_block] ([XX]%)\n"
-                    f"**📋 TÓM TẮT:** [1 câu trả lời trực tiếp, dứt khoát]\n"
+                    f"**📋 TÓM TẮT:** [1 câu kết luận dứt khoát]\n"
                 ) +
-                f"\n### 🔮 PHÂN TÍCH\n"
-                f"**TOP 3 BẰNG CHỨNG:** [Trích 3 yếu tố MẠNH NHẤT từ raw data, có điểm số]\n"
-                f"**CROSS-CHECK:** [Các PP đồng thuận hay mâu thuẫn? 1-2 câu]\n"
+                f"\n### 🔍 TRA CỨU ĐẠI SƯ (INTERNET & HUYỀN HỌC)\n"
+                f"- **Dụng Thần:** [Là gì?]\n"
+                f"- **Yếu Tố Tác Động:** [Liệt kê các yếu tố tác động (Ví dụ: Bạch Hổ, Đằng Xà, Cửa...). ÁP DỤNG INTERNET SEARCH để phân tích ý nghĩa sâu xa của từng yếu tố lên Dụng Thần trong thực tế].\n"
+                f"\n### 🔮 TỔNG HỢP LOGIC\n"
+                f"**CHỨNG CỨ:** [Xâu chuỗi dữ liệu tra cứu và Vạn Vật để ra kết luận cuối cùng]\n"
                 f"**⏳ ỨNG KỲ:** [Thời gian + Hướng cụ thể]\n"
-                f"**🔧 LỜI KHUYÊN:** [1-2 câu hành động cụ thể]\n\n"
-                f"GIỚI HẠN: Tối đa 500 chữ. ⛔ CẤM bịa, thay verdict, lan man.\n"
+                f"**🔧 LỜI KHUYÊN:** [Hành động cụ thể]\n\n"
+                f"GIỚI HẠN: KHÔNG GIỚI HẠN TỪ. Hãy diễn giải chi tiết, sâu sắc như một Đại Sư thực thụ. ⛔ CẤM thay đổi verdict gốc.\n"
                 f"</output_format>\n\n"
             )
             
@@ -5652,22 +5654,10 @@ class FreeAIHelper:
             result = gemini._call_ai(deep_prompt, use_hub=False)
             
             if result and len(str(result)) > 50:
-                # V29.4: Strip phần "old format" mà Gemini tự thêm (bỏ qua output_format constraint)
+                # V42.9.30: Removed CUT_MARKERS to allow full detailed reasoning
                 result_str = str(result)
-                CUT_MARKERS = [
-                    '📊 PHÂN TÍCH', '📊 PHÂ', 
-                    '\n🎴 1.', '\n☯️ 2.', '\n🌸 3.', '\n🏯 4.', '\n🌟 5.',
-                    '\n📝 TỔNG KẾT', '\n💡 HƯỚNG DẪN', '\n⏰ THỜI VẬN',
-                    '\n🔮 TỔNG HỢP',
-                    '\n📋 TỔNG HỢP', '\nBẮT BUỘC DIỄN GIẢI',
-                ]
-                for marker in CUT_MARKERS:
-                    idx = result_str.find(marker)
-                    if idx > 100:  # chỉ cắt nếu đã có nội dung phía trước (>100 chars)
-                        result_str = result_str[:idx].rstrip()
-                        break
                 
-                self.log_step("Online AI", "DONE", f"Gemini trả lời {len(result_str)} ký tự (stripped)")
+                self.log_step("Online AI", "DONE", f"Gemini trả lời {len(result_str)} ký tự (Full Reasoning)")
                 return result_str
             
             return None
