@@ -14142,8 +14142,8 @@ class FreeAIHelper:
                     if any(k in t for k in ['bao nhiêu tuổi','mấy tuổi','tuổi','năm sinh']): return 'AGE'
                     # SĐ2: Số lượng
                     if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy','giá tiền','giá bao nhiêu']): return 'COUNT'
-                    # SĐ13: Ai / Người Nào
-                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai','nam hay nữ','giới tính','đàn ông','phụ nữ','con trai','con gái']): return 'WHO'
+                    # SĐ13: Ai / Người Nào / Tên / Thần
+                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai','nam hay nữ','giới tính','đàn ông','phụ nữ','con trai','con gái','tên gì','tên là gì','thần gì','vị nào','vong nào','ma nào','thánh nào']): return 'WHO'
                     # SĐ14: Tại Sao / Nguyên Nhân
                     if any(k in t for k in ['tại sao','vì sao','nguyên nhân','lý do','do đâu','sao lại']): return 'WHY'
                     # SĐ15: Thế Nào / Trạng Thái / Giải Pháp
@@ -14244,6 +14244,8 @@ class FreeAIHelper:
                         _MI_GIOI = {'Kim': 'Nam (Cương quyết)', 'Hỏa': 'Nam (Nhiệt tình)', 'Mộc': 'Nam (Ôn hòa)', 'Thủy': 'Nữ (Mềm mỏng)', 'Thổ': 'Nữ (Trầm tĩnh)'}
                         nghe = _MI_NGHE.get(sq_hanh, '?')
                         gioi = _MI_GIOI.get(sq_hanh, '?')
+                        if any(k in sq_text.lower() for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tên', 'vị']):
+                            return f"👻 Xem tên cụ thể tại phần VẠN VẬT LOẠI TƯỢNG (Tâm Linh) bên dưới!", "👻"
                         if any(k in sq_text.lower() for k in ['nam', 'nữ', 'giới tính', 'con trai', 'con gái']):
                             return f"👤 Giới tính: {gioi} — Hành {sq_hanh} ({sq_pct}%)", "👤"
                         return f"👤 Người hành {sq_hanh} — {nghe} ({sq_pct}%)", "👤"
