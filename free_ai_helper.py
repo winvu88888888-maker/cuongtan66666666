@@ -11801,9 +11801,9 @@ class FreeAIHelper:
                 verdict_line = f"📢 **PHÁN QUYẾT: CHƯA XÁC ĐỊNH THỜI GIAN ({pct}%)**"
         else:
             if pct >= 55:
-                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: THUẬN LỢI ({pct}%) — Năng lượng Ngũ Hành ({hanh_dt}) đang hỗ trợ mạnh mẽ, mọi việc tiến triển thuận lợi dù ở lĩnh vực nào!**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: THUẬN LỢI ({pct}%) — Năng lượng Ngũ Hành ({_hanh_dt_kl}) đang hỗ trợ mạnh mẽ, mọi việc tiến triển thuận lợi dù ở lĩnh vực nào!**"
             elif pct >= 50:
-                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({pct}%) — Có sự giằng co năng lượng, cần mượn lực từ Hành sinh cho {hanh_dt} để thành công.**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({pct}%) — Có sự giằng co năng lượng, cần mượn lực từ Hành sinh cho {_hanh_dt_kl} để thành công.**"
             elif pct >= 45:
                 verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: NHIỀU BIẾN ĐỘNG ({pct}%) — Đang đối mặt với lực cản lớn, cần tìm hướng giải quyết khác.**"
             else:
