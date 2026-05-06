@@ -4343,6 +4343,7 @@ class FreeAIHelper:
                 ts_tuoi_min = ts_data_direct.get('tuoi_min', 0)
                 ts_tuoi_max = ts_data_direct.get('tuoi_max', 0)
                 ts_stage_name = ts_stage_direct
+                ngu_khi = v22.get('ngu_khi', '')
                 
                 # Nếu Thai/Dưỡng (chưa sinh) → fallback Ngũ Khí
                 if ts_tuoi_max <= 2 and ngu_khi:
@@ -6372,7 +6373,7 @@ class FreeAIHelper:
                                 tb_factors, ln_factors, ta_factors,
                                 tb_score, ln_score, ta_score,
                                 weighted_pct, chart_data=None,
-                                luc_hao_data=None, mai_hoa_data=None):
+                                luc_hao_data=None, mai_hoa_data=None, ts_stage=''):
         """V38.2: Protocol 27 bước — logic liền mạch, không tách rời.
         
         MỖI BƯỚC: Đọc data thô → Luận giải → Kết quả → Chuyển sang bước tiếp
@@ -7858,6 +7859,7 @@ class FreeAIHelper:
                     hex_num = mai_hoa_data.get('que_so') or mai_hoa_data.get('hex_number')
                 if hex_num and hex_num in ICHING_HEXAGRAMS:
                     ic = ICHING_HEXAGRAMS[hex_num]
+                    topic = ''
                     cat_key = topic.lower() if topic else 'general'
                     # Map topic to ICHING key
                     topic_map = {
@@ -14952,10 +14954,12 @@ class FreeAIHelper:
         # ═══════════════════════════════════════════════════════════════
         _ung_ky_chot = "Chưa rõ"
         try:
-            if 'dung_than_hao' in locals() and dung_than_hao and isinstance(dung_than_hao, dict):
-                _dt_chi = dung_than_hao.get('chi', '')
+            _dung_than_hao = locals().get('dung_than_hao')
+            if _dung_than_hao and isinstance(_dung_than_hao, dict):
+                _dt_chi = _dung_than_hao.get('chi', '')
                 _is_khong = 'Tuần Không' in str(v23_lh_factors)
-                _is_dong = dung_than_idx in (luc_hao_data.get('dong_hao') or []) if 'luc_hao_data' in locals() and luc_hao_data else False
+                _dung_than_idx = locals().get('dung_than_idx')
+                _is_dong = _dung_than_idx in (luc_hao_data.get('dong_hao') or []) if 'luc_hao_data' in locals() and luc_hao_data else False
                 _is_mo = ts_stage == 'Mộ' if 'ts_stage' in locals() else False
                 
                 if _dt_chi:
@@ -15165,6 +15169,7 @@ class FreeAIHelper:
                 chart_data=chart_data,
                 luc_hao_data=luc_hao_data,
                 mai_hoa_data=mai_hoa_data,
+                ts_stage=ts_stage,
             )
             self.log_step("V38.1", "27-STEP OK", v38_conclusion[:80])
         except Exception as e:
@@ -15489,6 +15494,7 @@ class FreeAIHelper:
                 
                 # ═══ V42.9.29: Lời khuyên cụ thể ═══
                 _advice_parts = []
+                _q_norm = question.lower()
                 if weighted_pct >= 60:
                     _advice_parts.append('✅ Thời điểm thuận lợi để tiến hành.')
                     if 'mua' in _q_norm:
@@ -17158,8 +17164,8 @@ class FreeAIHelper:
                             hanh_bien_hao = bien_haos[d-1].get('ngu_hanh', '') if bien_haos and d <= len(bien_haos) else ''
                             hoa_results = _analyze_hoa_hoi_dau(
                                 nh, hanh_bien_hao, chi_dong, chi_bien,
-                                _lh_can_ngay if '_lh_can_ngay' in dir() else '',
-                                _lh_chi_ngay if '_lh_chi_ngay' in dir() else ''
+                                locals().get('_lh_can_ngay', ''),
+                                locals().get('_lh_chi_ngay', '')
                             )
                             for hoa_label, hoa_desc, hoa_impact in hoa_results:
                                 lines.append(f"  → {hoa_label}: {hoa_desc}")
