@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.34"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Sniper Targeting 🎯 + Uncapped Output 📜 + Anti-Cheat 🛡️ + Internet 🌐)"
+APP_VERSION = "V42.9.35"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Deep Forensic 🕵️‍♂️ + Sniper Targeting 🎯 + Uncapped Output 📜 + Anti-Cheat 🛡️ + Internet 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
