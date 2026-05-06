@@ -5521,7 +5521,7 @@ class FreeAIHelper:
                 f"④ Mỗi nhận định PHẢI trích dẫn yếu tố quẻ cụ thể. KHÔNG bịa đặt.\n"
                 f"⑤ Hỏi gì trả lời đó — KHÔNG lan man sang chủ đề khác.\n"
                 f"⑥ Phần KẾT LUẬN phải NHẮC LẠI ĐÚNG verdict + điểm % từ verdict_block.\n"
-                f"⑦ NĂNG LỰC TÌM KIẾM ĐA VŨ TRỤ (Google Search): BẮT BUỘC dựa trên 2 NGUỒN CHÍNH: Nguồn 1 là Phán Quyết Quẻ (của AI Offline đưa xuống) và Nguồn 2 là Internet. Điểm chung cốt lõi: Bạn LẤY QUẺ LÀM GỐC, sau đó lên mạng tra cứu thông tin chi tiết về sự vật/sự kiện đó để có dẫn chứng thực tế minh họa cho Quẻ. Tuyệt đối KHÔNG ĐƯỢC dùng tin tức trên mạng để đảo ngược Phán Quyết của Quẻ!\n\n"
+                f"⑦ NĂNG LỰC TÌM KIẾM ĐẠI SƯ (Google Search): Lấy Phán Quyết Quẻ làm gốc, NHƯNG BẮT BUỘC dùng Internet để tra cứu ĐÀO SÂU các khái niệm Huyền học xuất hiện trong quẻ (Ví dụ: ý nghĩa sâu xa của Bạch Hổ, Đằng Xà, hình tượng các Hào, hay chi tiết quẻ Kinh Dịch / Mai Hoa). Sau đó, kết hợp kho tàng kiến thức uy tín trên mạng này với các yếu tố Vạn Vật sẵn có để diễn giải vấn đề một cách uyên thâm, chi tiết và chuẩn xác tuyệt đối.\n\n"
                 f"VẠN VẬT: Kim=kim loại | Mộc=gỗ,vải | Thủy=nước,lỏng | Hỏa=điện,lửa | Thổ=đất,gốm\n"
                 f"SỐ: Hà Đồ Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
                 f"HƯỚNG: Kim=TÂY | Mộc=ĐÔNG | Thủy=BẮC | Hỏa=NAM | Thổ=TRUNG TÂM\n"
