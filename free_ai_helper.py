@@ -2994,9 +2994,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V42.9.18 Siêu Premium + Answer-First + 28 Handlers + VV 3378 + KV/DM Chuẩn QMDG + 🎲 Gieo Ngẫu Nhiên)"
-        self.version = "V42.9.18-Full-Pipeline"
-        self.model_name = "offline-rule-engine-V42.9.18"
+        self.name = "Thiên Cơ Đại Sư (V42.9.36 Unleashed Intelligence + Deep Forensic + Uncapped Output + 🎲 Gieo Ngẫu Nhiên)"
+        self.version = "V42.9.36-Full-Pipeline"
+        self.model_name = "offline-rule-engine-V42.9.36"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -5512,7 +5512,7 @@ class FreeAIHelper:
             # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.29 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.36 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
                 f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"① BẠN KHÔNG ĐƯỢC thay đổi verdict. Verdict trong <verdict_block> là CHÍNH THỨC.\n"
@@ -12631,7 +12631,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.9.18 — Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Nguyên/Kỵ/Cừu Thần + 🎲 Gieo Ngẫu Nhiên). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.9.36 — Unleashed Intelligence + Deep Forensic + 100+ Yếu Tố + 8PP + 🎲 Gieo Ngẫu Nhiên). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
         
 
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
@@ -15223,7 +15223,7 @@ class FreeAIHelper:
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.29)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.36)</div>'
                 f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
                 + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
@@ -15402,7 +15402,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.29</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -15505,7 +15505,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.29</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
                     # Line 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     # Line 2: Trả lời trực tiếp câu hỏi
@@ -15864,7 +15864,7 @@ class FreeAIHelper:
                     )
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.29</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_offline_short_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -15969,7 +15969,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.29</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
