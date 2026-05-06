@@ -767,6 +767,11 @@ VAN_VAT_MO_RONG = {
         # 🌍 QUỐC GIA / VÙNG
         'quoc_gia': ['Phương Tây', 'Châu Âu', 'Mỹ', 'Anh', 'Đức', 'Nhật Bản (công nghệ)',
                      'Hàn Quốc (Samsung)', 'Thụy Sĩ (đồng hồ)', 'Ý (siêu xe)'],
+                     
+        # 👻 TÂM LINH / MA QUỶ
+        'tam_linh': ['Thần chiến tranh', 'Tướng quân cõi âm', 'Hồn ma chiến binh', 'Diêm chúa',
+                     'Quỷ dạ xoa mang giáp', 'Ác thần Bạch Hổ', 'Thần vũ khí', 'Hồn ma chết do kim loại/xe cộ',
+                     'Oán linh tà kiếm', 'Hồn ma giữ kho báu', 'Thần tài'],
     },
     
     'Mộc': {
@@ -825,6 +830,11 @@ VAN_VAT_MO_RONG = {
         
         'quoc_gia': ['Phương Đông', 'Việt Nam (tre, lúa)', 'Trung Quốc (trà, gỗ)',
                      'Nhật Bản (tre/bonsai)', 'Indonesia (gỗ teak)', 'Brazil (nhiệt đới)'],
+                     
+        # 👻 TÂM LINH / MA QUỶ
+        'tam_linh': ['Mộc tinh', 'Thần rừng', 'Thần cây đa/cây sanh', 'Yêu quái trong rừng',
+                     'Ma xó', 'Cô hồn vất vưởng bụi tre', 'Ma treo cổ (dây thừng)',
+                     'Thần nông', 'Tinh linh thực vật', 'Ma lai (ẩn trong cây)'],
         
         # 💄 MỸ PHẨM
         'my_pham': ['Serum thiên nhiên', 'Kem dưỡng hữu cơ', 'Son môi thảo dược',
@@ -892,6 +902,11 @@ VAN_VAT_MO_RONG = {
         
         'quoc_gia': ['Phương Bắc', 'Bắc Cực', 'Scandinavia', 'Canada', 'Russia',
                      'New Zealand', 'Iceland', 'Nhật Bản (biển)', 'Maldives (đảo)'],
+                     
+        # 👻 TÂM LINH / MA QUỶ
+        'tam_linh': ['Thủy tề', 'Hà bá', 'Ma da', 'Quỷ nước', 'Tiên nữ hồ/biển',
+                     'Oan hồn chết đuối', 'Thần biển', 'Thủy quái', 'Hồn ma lang thang trên biển',
+                     'Ma nữ tóc dài ướt sũng', 'Tinh linh nước', 'Vong nhi (nước ối)'],
         
         'my_pham': ['Nước hoa', 'Perfume', 'Kem dưỡng ẩm', 'Serum hyaluronic',
                     'Toner', 'Micellar water', 'Sữa rửa mặt', 'Kem chống nắng dạng gel',
@@ -958,6 +973,11 @@ VAN_VAT_MO_RONG = {
         
         'quoc_gia': ['Phương Nam', 'Úc (nắng)', 'Ấn Độ', 'Dubai', 'Bắc Phi (Sahara)',
                      'Mexico', 'Spain', 'Italy (thời trang, ẩm thực)'],
+                     
+        # 👻 TÂM LINH / MA QUỶ
+        'tam_linh': ['Hỏa thần', 'Táo quân', 'Quỷ nhập tràng', 'Ác quỷ địa ngục', 'Ma chơi',
+                     'Hồn ma chết cháy', 'Thần mặt trời', 'Chu Tước', 'Linh hồn giận dữ',
+                     'Ánh sáng Phật quang', 'Vong linh cuồng nộ', 'Cô hồn đói khát'],
         
         'my_pham': ['Son môi đỏ', 'Mascara', 'Eyeliner', 'Phấn highlight',
                     'Bronzer', 'Blush đỏ', 'Nail polish đỏ', 'Body glitter'],
@@ -1025,6 +1045,11 @@ VAN_VAT_MO_RONG = {
         'quoc_gia': ['Trung Quốc (đại lục)', 'Ai Cập (kim tự tháp)', 'Peru (Machu Picchu)',
                      'Ấn Độ (Taj Mahal)', 'Campuchia (Angkor Wat)', 'Rome (Colosseum)',
                      'Đồng bằng sông Cửu Long', 'Tây Nguyên'],
+                     
+        # 👻 TÂM LINH / MA QUỶ
+        'tam_linh': ['Thổ công', 'Sơn thần', 'Thần đất', 'Phật tổ', 'Diêm vương',
+                     'Vong hồn dưới mộ', 'Âm binh', 'Ma đói', 'Xác ướp', 'Cương thi',
+                     'Hồn ma chôn giấu', 'Quỷ giữ hầm mộ', 'Cô hồn bãi tha ma', 'Thần hoàng'],
         
         'my_pham': ['Kem nền', 'Foundation', 'Concealer', 'Phấn phủ', 'Setting powder',
                     'Mặt nạ đất sét (clay mask)', 'Scrub (tẩy da chết)', 'Bùn khoáng'],
@@ -1608,6 +1633,8 @@ def format_van_vat_for_ai(hanh, truong_sinh_stage):
         if yt: lines.append(f"💉 **Y tế:** {', '.join(yt[:5])}")
         tg_rel = bo_sung.get('ton_giao', [])
         if tg_rel: lines.append(f"⛪ **Tôn giáo:** {', '.join(tg_rel[:5])}")
+        tl = expanded.get('tam_linh', [])
+        if tl: lines.append(f"👻 **Tâm linh / Ma quỷ:** {', '.join(tl)}")
         dl = bo_sung.get('dia_ly', [])
         if dl: lines.append(f"🗻 **Địa lý:** {', '.join(dl[:5])}")
         bp = bo_sung.get('bo_phan_co_the', [])
@@ -1768,6 +1795,9 @@ def get_tham_tu_mo_ta(hanh, truong_sinh_stage, question=""):
         qg = expanded.get('quoc_gia', [])
         if qg:
             lines.append(f"🌍 **Quốc gia/Vùng:** {', '.join(qg[:5])}")
+        tl = expanded.get('tam_linh', [])
+        if tl:
+            lines.append(f"👻 **Tâm linh / Ma quỷ:** {', '.join(tl)}")
         
         # Mỹ phẩm
         mp = expanded.get('my_pham', [])
