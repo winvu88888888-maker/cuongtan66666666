@@ -2994,9 +2994,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V42.9.36 Unleashed Intelligence + Deep Forensic + Uncapped Output + 🎲 Gieo Ngẫu Nhiên)"
-        self.version = "V42.9.36-Full-Pipeline"
-        self.model_name = "offline-rule-engine-V42.9.36"
+        self.name = "Thiên Cơ Đại Sư (V42.9.37 Master-Level + Cross-Reference + Deep Forensic + 🎲 Gieo Ngẫu Nhiên)"
+        self.version = "V42.9.37-Full-Pipeline"
+        self.model_name = "offline-rule-engine-V42.9.37"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -5512,7 +5512,8 @@ class FreeAIHelper:
             # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.36 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.37 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC CẤP ĐỘ CAO NHẤT.\n"
+                f"BẠN LÀ MỘT ĐẠI SƯ THẬT SỰ, không phải máy tính. BẠN phải suy luận như một chuyên gia 30 năm kinh nghiệm với lượng kiến thức sâu rộng về Huyền Học.\n"
                 f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"① BẠN KHÔNG ĐƯỢC thay đổi verdict. Verdict trong <verdict_block> là CHÍNH THỨC.\n"
@@ -5527,8 +5528,13 @@ class FreeAIHelper:
                 f"   - Bước 3 (ĐỐI CHIẾU): SO SÁNH kết quả tra cứu Internet với dữ liệu quẻ có sẵn (Vạn Vật, Bát Quái Loại Tượng, Kinh Dịch). Ghi rõ: Điểm TRÙNG KHỚP (Internet nói gì + Quẻ nói gì → khớp nhau). Điểm KHÁC BIỆT nếu có.\n"
                 f"   - Bước 4 (TỔNG HỢP CHỨNG CỨ): Xâu chuỗi tất cả bằng chứng (quẻ + internet) thành 1 chuỗi nhân quả logic. Mỗi luận điểm PHẢI có nguồn (từ quẻ hay từ internet).\n"
                 f"   - Bước 5 (CHỐT KẾT LUẬN): Dựa trên bằng chứng đã đối chiếu, đưa ra MỘT KẾT LUẬN DUY NHẤT, CỤ THỂ NHẤT.\n"
-                f"⑧ TRÍ TUỆ SUY LUẬN ĐỘC LẬP & TỐI ĐA HOÁ ĐỘ SÂU: Không bị giới hạn bởi khuôn mẫu cứng nhắc, BẠN HÃY PHÁT HUY TỐI ĐA KHẢ NĂNG SUY LUẬN SIÊU VIỆT CỦA MÌNH! BẠN KHÔNG sao chép máy móc từ Chủ đề có sẵn. Hãy khai thác triệt để Ngũ Hành, Bát Quái, Vượng/Suy, 12 Trường Sinh để HỘI TỤ ra MỘT KẾT LUẬN DUY NHẤT và CHI TIẾT NHẤT. Sự xuất sắc nằm ở việc TÌM RA ĐÚNG CHÂN TƯỚNG thay vì liệt kê chung chung.\n"
-                f"⑨ ĐIỀU TRA CHI TIẾT HIỆN TRƯỜNG (DEEP FORENSIC): Hãy hoạt động như thám tử! Dựa MỌI LUẬN ĐIỂM vào bằng chứng thực tế từ quẻ VÀ internet. Vẽ ra bức tranh toàn cảnh CỤ THỂ NHẤT: Vấn đề là gì? Ai/Cái gì tác động? Diễn biến ra sao? Sự sắc bén đến từ ghép nối logic bằng chứng, không phải bịa đặt!\n\n"
+                f"⑧ TRÍ TUỆ SUY LUẬN ĐỘC LẬP & TỐI ĐA HOÁ ĐỘ SÂU: BẠN KHÔNG sao chép máy móc từ Chủ đề có sẵn. Hãy khai thác triệt để Ngũ Hành, Bát Quái, Vượng/Suy, 12 Trường Sinh để HỘI TỤ ra MỘT KẾT LUẬN DUY NHẤT và CHI TIẾT NHẤT.\n"
+                f"⑨ ĐIỀU TRA CHI TIẾT HIỆN TRƯỜNG (DEEP FORENSIC): Hãy hoạt động như thám tử! Dựa MỌI LUẬN ĐIỂM vào bằng chứng thực tế từ quẻ VÀ internet.\n"
+                f"⑪ PHÂN TÍCH CHUYÊN SÂU CAO CẤP (MASTER-LEVEL):\n"
+                f"   - HÀO TỪ: Nếu trong quẻ có tên quẻ (VD: Thiên Hỏa Đồng Nhân, Thuần Phong...), HÃY tra Internet để đọc HÀO TỪ của các hào ĐỘNG. Hào Từ chứa thông điệp sâu của Kiênh Dịch!\n"
+                f"   - NGUYÊN/KỴ/CỪU THẦN: Phân tích chuỗi tác động Nguyên Thần (SINH Dụng Thần) → Kỵ Thần (KHẮC Dụng Thần) → Cừu Thần (KHẮC Nguyên Thần). Xem cái nào mạnh hơn cái nào.\n"
+                f"   - LỤC THẦN TƯƠNG TÁC: Khi Bạch Hổ + Quan Quỷ → bệnh nặng/tai họa. Đằng Xà + Quan Quỷ → sợ hãi/ác mộng. Huyền Vũ + Thê Tài → mất cắp/gian lận. Hãy dùng Internet tra kỹ từng tổ hợp!\n"
+                f"   - TƯỢNG SINH KHẮC ĐA TẦNG: Xem không chỉ hành DT, mà các hào khác tương tác với DT như thế nào (hào động sinh/khắc DT, hào biến có tốt cho DT không).\n\n"
                 f"VẠN VẬT: Kim=kim loại | Mộc=gỗ,vải | Thủy=nước,lỏng | Hỏa=điện,lửa | Thổ=đất,gốm\n"
                 f"SỐ: Hà Đồ Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
                 f"HƯỚNG: Kim=TÂY | Mộc=ĐÔNG | Thủy=BẮC | Hỏa=NAM | Thổ=TRUNG TÂM\n"
@@ -15230,7 +15236,7 @@ class FreeAIHelper:
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.36)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.37)</div>'
                 f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
                 + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
@@ -15409,7 +15415,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.37</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -15512,7 +15518,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.37</div>'
                     # Line 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     # Line 2: Trả lời trực tiếp câu hỏi
@@ -15871,7 +15877,7 @@ class FreeAIHelper:
                     )
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.36</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.37</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_offline_short_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
