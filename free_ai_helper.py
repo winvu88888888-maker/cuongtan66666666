@@ -14253,7 +14253,11 @@ class FreeAIHelper:
                         if sq_pct >= 55: return f"LỰA CHỌN TỐT ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CẦN CÂN NHẮC KỸ ({sq_pct}%)", "🟡"
                         else: return f"KẾT QUẢ BẤT LỢI ({sq_pct}%)", "🔴"
-                    else:  # GENERAL / YESNO
+                    elif qtype == 'YESNO':
+                        if sq_pct >= 55: return f"✅ CÓ / ĐỒNG Ý ({sq_pct}%) — Xác suất hiện diện/xảy ra rất cao.", "✅"
+                        elif sq_pct >= 45: return f"🟡 CÓ THỂ ({sq_pct}%) — Kết quả 50/50, chưa rõ ràng.", "🟡"
+                        else: return f"🔴 KHÔNG / TỪ CHỐI ({sq_pct}%) — Khả năng cực thấp, không có dấu hiệu.", "🔴"
+                    else:  # GENERAL
                         _hd = _MI_HD.get(sq_hanh, (5, 10))
                         _ts_desc = "Sinh/Vượng" if sq_pct >= 50 else "Suy/Tuyệt"
                         if sq_pct >= 55: return f"✅ OMNI-DOMAIN: THUẬN LỢI ({sq_pct}%) — Năng lượng Ngũ Hành {sq_hanh} ({_ts_desc}) đang hỗ trợ, phát huy cực tốt ở mọi lĩnh vực!", "✅"
@@ -14276,6 +14280,8 @@ class FreeAIHelper:
                 # Card 1: câu hỏi chính (dùng weighted_pct đã tính)
                 _mi_pq1_text = _mi_parsed[0].get('text', question)[:60] if _mi_parsed else question[:60]
                 _mi_pq1_dt = _mi_parsed[0].get('dung_than', dung_than) if _mi_parsed else dung_than
+                if any(k in _mi_pq1_text.lower() for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh']):
+                    _mi_pq1_dt = 'Tâm Linh'
                 _mi_pq1_hanh = _MI_LT_H.get(_mi_pq1_dt, 'Thổ')
                 _mi_pq1_qtype = _mi_detect_qtype(_mi_pq1_text)
                 
@@ -14301,6 +14307,8 @@ class FreeAIHelper:
                 for _mi_idx, _mi_sq in enumerate(_mi_parsed[1:], start=2):
                     _mi_sq_dt = _mi_sq.get('dung_than', _mi_all_dts[min(_mi_idx-1, len(_mi_all_dts)-1)] if _mi_idx-1 < len(_mi_all_dts) else 'Bản Thân')
                     _mi_sq_text = _mi_sq.get('text', '')[:60]
+                    if any(k in _mi_sq_text.lower() for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh']):
+                        _mi_sq_dt = 'Tâm Linh'
                     _mi_sq_hanh = _MI_LT_H.get(_mi_sq_dt, 'Thổ')
                     
                     # ═══ V42.9.29: PHÂN TÍCH ĐA YẾU TỐ cho câu phụ ═══
