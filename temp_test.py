@@ -7158,26 +7158,21 @@ class FreeAIHelper:
                     if can_val == can_gio:
                         sv_cung = int(cung_num) if cung_num else None
                         break
-            if sv_cung and bt_cung:
-                if sv_cung != bt_cung:
-                    sv_hanh = CUNG_NGU_HANH.get(sv_cung, '')
-                    if bt_hanh and sv_hanh:
-                        if KHAC.get(bt_hanh) == sv_hanh:
-                            score += 5
-                            factors.append(f"KM BT khắc Cung SV → chủ THẮNG +5")
-                        elif KHAC.get(sv_hanh) == bt_hanh:
-                            score -= 5
-                            factors.append(f"KM Cung SV khắc BT → bị THUA -5")
-                        elif SINH.get(sv_hanh) == bt_hanh:
-                            score += 3
-                            factors.append(f"KM Cung SV sinh BT → được giúp +3")
-                else:
-                    score += 2
-                    factors.append(f"KM Can Ngày và Giờ Đồng Cung → Sự việc liên quan mật thiết đến mình +2")
+            if sv_cung and bt_cung and sv_cung != bt_cung:
+                sv_hanh = CUNG_NGU_HANH.get(sv_cung, '')
+                if bt_hanh and sv_hanh:
+                    if KHAC.get(bt_hanh) == sv_hanh:
+                        score += 5
+                        factors.append(f"KM BT khắc Cung SV → chủ THẮNG +5")
+                    elif KHAC.get(sv_hanh) == bt_hanh:
+                        score -= 5
+                        factors.append(f"KM Cung SV khắc BT → bị THUA -5")
+                    elif SINH.get(sv_hanh) == bt_hanh:
+                        score += 3
+                        factors.append(f"KM Cung SV sinh BT → được giúp +3")
         except Exception:
             score, factors = _base_score, _base_factors
         
-
         return score, summary, factors
 
     def _luc_hao_scoring(self, luc_hao_data, dung_than):
@@ -13274,6 +13269,7 @@ class FreeAIHelper:
         
         try:
             v31_parsed_questions = v32_parse_question(question)
+            print(chr(80)+chr(65)+chr(82)+chr(83)+chr(69)+chr(68), len(v31_parsed_questions))
             if v31_parsed_questions and len(v31_parsed_questions) >= 1:
                 v31_primary = v31_parsed_questions[0]
                 
@@ -15187,14 +15183,6 @@ class FreeAIHelper:
             offline_analysis_data=offline_analysis_data
         )
         
-        # V42.9.38: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
-        _real_multi = False
-        try:
-            if v31_parsed_questions and len(v31_parsed_questions) > 1:
-                _real_multi = True
-        except NameError:
-            pass
-            
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
             final_parts = []
@@ -15401,6 +15389,15 @@ class FreeAIHelper:
                 _off_ev_html += '</div>'
             
             # V42.9.38: Multi-card CHỈ khi PARSER V32 thật sự detect nhiều câu hỏi riêng biệt
+            # KHÔNG dùng _mi_cards (MI pipeline luôn tạo 2+ cards từ mở rộng)
+            # KHÔNG dùng _off_answer_list (extraction dễ split sai)
+            _real_multi = False
+            try:
+                if v31_parsed_questions and len(v31_parsed_questions) > 1:
+                    _real_multi = True
+            except NameError:
+                pass
+            
             if _real_multi and len(_off_answer_list) > 1:
                 # === MULTI-INTENT: Tạo CARD riêng cho từng câu trả lời ===
                 _multi_cards = ''
@@ -15452,67 +15449,31 @@ class FreeAIHelper:
                 # KM: Sao + Cửa tại cung DT/BT
                 if chart_data and isinstance(chart_data, dict):
                     _can_ng = chart_data.get('can_ngay', '')
-                    _can_gio = chart_data.get('can_gio', '')
                     _ctb = chart_data.get('can_thien_ban', {})
                     _tb = chart_data.get('thien_ban', {})
                     _nb = chart_data.get('nhan_ban', {})
                     _snb = chart_data.get('than_ban', {})
-                    
-                    _dt_can_map = {
-                        'Quan Quỷ': _can_gio, 'Thê Tài': _can_gio, 'Tử Tôn': _can_gio,
-                        'Phụ Mẫu': chart_data.get('can_nam', ''), 'Huynh Đệ': chart_data.get('can_thang', ''),
-                        'Bản Thân': _can_ng
-                    }
-                    _dt_can = _dt_can_map.get(dung_than, _can_gio)
-                    
-                    _dia_ban = chart_data.get('dia_ban') or chart_data.get('dia_can', {})
-                    _dt_c = None
+                    # Tìm cung BT
+                    _bt_c = None
                     for _cn, _cv in _ctb.items():
-                        if _cv == _dt_can: _dt_c = int(_cn) if _cn else None; break
-                    if not _dt_c and _dt_can == 'Giáp':
+                        if _cv == _can_ng:
+                            _bt_c = int(_cn) if _cn else None; break
+                    if not _bt_c and _can_ng == 'Giáp':
                         for _cn, _cv in _ctb.items():
-                            if _cv == 'Mậu': _dt_c = int(_cn) if _cn else None; break
-                    if not _dt_c and _dia_ban:
-                        _db5 = _dia_ban.get(5, _dia_ban.get('5'))
-                        if _dt_can and _db5 and _dt_can == _db5:
-                            _db2 = _dia_ban.get(2, _dia_ban.get('2'))
-                            for _cn, _cv in _ctb.items():
-                                if _cv == _db2: _dt_c = int(_cn) if _cn else None; break
-                            
-                    _sv_c = None
-                    for _cn, _cv in _ctb.items():
-                        if _cv == _can_gio: _sv_c = int(_cn) if _cn else None; break
-                    if not _sv_c and _can_gio == 'Giáp':
-                        for _cn, _cv in _ctb.items():
-                            if _cv == 'Mậu': _sv_c = int(_cn) if _cn else None; break
-                    if not _sv_c and _dia_ban:
-                        _db5 = _dia_ban.get(5, _dia_ban.get('5'))
-                        if _can_gio and _db5 and _can_gio == _db5:
-                            _db2 = _dia_ban.get(2, _dia_ban.get('2'))
-                            for _cn, _cv in _ctb.items():
-                                if _cv == _db2: _sv_c = int(_cn) if _cn else None; break
-                    
-                    _target_c = _dt_c if _dt_c else _sv_c
-                    # Nếu Dụng Thần là Bản Thân (Day Can) và Cung Sự Việc (Can Giờ) khác, ưu tiên xem Cửa của Sự Việc.
-                    if dung_than == 'Bản Thân' and _sv_c and _sv_c != _dt_c:
-                        _target_c = _sv_c
-                        
-                    _bt_c = _dt_c # For backward compatibility with _kc_detail below
-                    
-                    if _target_c:
-                        _sao_bt = str(_tb.get(_target_c, _tb.get(str(_target_c), '?')))
-                        _cua_bt = str(_nb.get(_target_c, _nb.get(str(_target_c), '?')))
-                        
+                            if _cv == 'Mậu':
+                                _bt_c = int(_cn) if _cn else None; break
+                    if _bt_c:
+                        _sao_bt = str(_tb.get(_bt_c, _tb.get(str(_bt_c), '?')))
+                        _cua_bt = str(_nb.get(_bt_c, _nb.get(str(_bt_c), '?')))
                         _sao_cat = any(s in _sao_bt for s in ['Tâm', 'Nhậm', 'Phụ', 'Xung'])
                         _cua_cat = any(c in _cua_bt for c in ['Hưu', 'Sinh', 'Khai'])
                         _cua_hung = any(c in _cua_bt for c in ['Tử', 'Kinh', 'Thương'])
-                        
-                        if _sao_bt != '?':
-                            _core_evidence.append(f'Sao {_sao_bt} CÁT' if _sao_cat else f'Sao {_sao_bt}')
-                        if _cua_bt != '?':
-                            if _cua_cat: _core_evidence.append(f'Cửa {_cua_bt} CÁT')
-                            elif _cua_hung: _core_evidence.append(f'Cửa {_cua_bt} HUNG')
-                            else: _core_evidence.append(f'Cửa {_cua_bt}')
+                        if _sao_cat:
+                            _core_evidence.append(f'Sao {_sao_bt} CÁT')
+                        if _cua_cat:
+                            _core_evidence.append(f'Cửa {_cua_bt} CÁT')
+                        elif _cua_hung:
+                            _core_evidence.append(f'Cửa {_cua_bt} HUNG')
                 
                 # LH: DT Vượng/Suy
                 if luc_hao_data and isinstance(luc_hao_data, dict):
@@ -15522,10 +15483,10 @@ class FreeAIHelper:
                         _lt = _h.get('luc_than', '')
                         _vs = str(_h.get('vuong_suy', ''))
                         if _lt == dung_than or (dung_than == 'Bản Thân' and 'Thế' in str(_h.get('the_ung', ''))):
-                            if _vs:
-                                if 'Vượng' in _vs or 'Tướng' in _vs: _core_evidence.append(f'DT {_vs}')
-                                elif 'Suy' in _vs or 'Tử' in _vs or 'Tuyệt' in _vs: _core_evidence.append(f'DT {_vs} ⚠️')
-                                else: _core_evidence.append(f'DT {_vs}')
+                            if 'Vượng' in _vs or 'Tướng' in _vs:
+                                _core_evidence.append(f'DT {_vs}')
+                            elif 'Suy' in _vs or 'Tử' in _vs or 'Tuyệt' in _vs:
+                                _core_evidence.append(f'DT {_vs} ⚠️')
                             break
                 
                 # Knowledge Complete: bộ phận/hướng/đặc điểm
@@ -15534,10 +15495,10 @@ class FreeAIHelper:
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
-                            if any(k in _q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'dau', 'khoe', 'suc khoe', 'chet', 'song']):
+                            if any(k in _q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua']):
                                 _bp = _kc.get('Than_The', '')
                                 if _bp: _kc_detail = f'Bệnh vùng {_bp}'
-                            elif any(k in _q_lower for k in ['tìm', 'mất', 'đâu', 'ở đâu', 'tim', 'mat', 'dau', 'o dau']):
+                            elif any(k in _q_lower for k in ['tìm', 'mất', 'đâu', 'ở đâu']):
                                 _noi = _kc.get('Noi', ''); _huong = _kc.get('Huong', '')
                                 if _noi: _kc_detail = f'Nơi: {_noi}'
                                 if _huong: _kc_detail += f', Hướng {_huong}'
@@ -15560,10 +15521,10 @@ class FreeAIHelper:
                 elif is_count:
                     _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else '?'
                     _direct_reply = f'Khoảng <b>{_avg_c}</b> ({weighted_pct}%). {_evidence_str}.'
-                elif any(kw in _q_lower for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào', 'khi nao', 'bao gio', 'luc nao', 'thang may', 'nam nao']):
+                elif any(kw in _q_lower for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
                     _timing = v15_timing if 'v15_timing' in dir() and v15_timing else 'Chưa xác định rõ'
                     _direct_reply = f'<b>{_timing}</b> ({weighted_pct}%). {_evidence_str}.'
-                elif any(kw in _q_lower for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch', 'benh', 'om', 'khoe', 'chet', 'song', 'qua duoc', 'qua khoi', 'nguy kich']):
+                elif any(kw in _q_lower for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch']):
                     if weighted_pct >= 55:
                         _tone = f'{_subj} QUA ĐƯỢC / HỒI PHỤC'
                     elif weighted_pct >= 45:
@@ -15572,7 +15533,7 @@ class FreeAIHelper:
                         _tone = f'{_subj} RẤT NGUY — tiên lượng xấu'
                     _med_info = f'. {_kc_detail}' if _kc_detail else ''
                     _direct_reply = f'<b>{_tone}</b> ({weighted_pct}%){_med_info}. {_evidence_str}.'
-                elif any(kw in _q_lower for kw in ['có nên', 'nên không', 'nên hay', 'co nen', 'nen khong', 'nen hay']):
+                elif any(kw in _q_lower for kw in ['có nên', 'nên không', 'nên hay']):
                     if weighted_pct >= 55:
                         _direct_reply = f'<b>NÊN — THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 45:
@@ -15580,18 +15541,17 @@ class FreeAIHelper:
                     else:
                         _direct_reply = f'<b>KHÔNG NÊN</b> ({weighted_pct}%). {_evidence_str}.'
                 elif is_competition:
-                    _v_lbl = 'CÁT / CÓ LỢI' if weighted_pct >= 60 else 'HUNG / BẤT LỢI'
-                    _direct_reply = f'{_subj}: <b>{_v_lbl}</b> ({weighted_pct}%). {_evidence_str}.'
+                    _direct_reply = f'{_subj}: <b>{_off_v_label}</b> ({weighted_pct}%). {_evidence_str}.'
                 else:
                     # Yes/No hoặc câu hỏi chung
                     if weighted_pct >= 60:
-                        _direct_reply = f'{_subj}: <b>CÓ / ĐẠT ĐƯỢC / THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 50:
-                        _direct_reply = f'{_subj}: <b>CÓ THỂ / CẦN NỖ LỰC THÊM</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>CÓ THỂ — cần nỗ lực</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 45:
-                        _direct_reply = f'{_subj}: <b>KHÓ KHĂN / CHƯA THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>KHÓ — cần đổi cách</b> ({weighted_pct}%). {_evidence_str}.'
                     else:
-                        _direct_reply = f'{_subj}: <b>KHÔNG / BẤT LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>BẤT LỢI</b> ({weighted_pct}%). {_evidence_str}.'
                 
                 # ═══ V42.9.38: NGUYÊN NHÂN + CẢNH BÁO (từ data thật) ═══
                 _reason_parts = []
@@ -16017,7 +15977,7 @@ class FreeAIHelper:
                 )
             
             # V42.9.5: MULTI-CARD SYSTEM (Offline-only path)
-            if _real_multi and len(_offline_short_answer_list) > 1:
+            if len(_offline_short_answer_list) > 1:
                 _multi_cards_off = ''
                 _card_colors_off = [
                     ('#064e3b', '#065f46', '#34d399', '#6ee7b7'),
@@ -16051,209 +16011,98 @@ class FreeAIHelper:
                 )
             else:
                 # V42.9.29: NÂNG CẤP TRẢ LỜI TRỰC TIẾP (GIỐNG path có Online)
-                # ═══ V42.9.38: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE (OFFLINE PATH) ═══
                 _q_lower_fb = question.lower() if question else ''
-                _dr_fb = ''
-                
-                # --- Thu thập bằng chứng cốt lõi từ data thật ---
-                _core_evidence_fb = []
-                if chart_data and isinstance(chart_data, dict):
-                    _can_ng = chart_data.get('can_ngay', '')
-                    _can_gio = chart_data.get('can_gio', '')
-                    _ctb = chart_data.get('can_thien_ban', {})
-                    _tb = chart_data.get('thien_ban', {})
-                    _nb = chart_data.get('nhan_ban', {})
-                    
-                    _dt_can_map = {
-                        'Quan Quỷ': _can_gio, 'Thê Tài': _can_gio, 'Tử Tôn': _can_gio,
-                        'Phụ Mẫu': chart_data.get('can_nam', ''), 'Huynh Đệ': chart_data.get('can_thang', ''),
-                        'Bản Thân': _can_ng
-                    }
-                    _dt_can = _dt_can_map.get(dung_than, _can_gio)
-                    
-                    _dia_ban = chart_data.get('dia_ban') or chart_data.get('dia_can', {})
-                    _dt_c = None
-                    for _cn, _cv in _ctb.items():
-                        if _cv == _dt_can: _dt_c = int(_cn) if _cn else None; break
-                    if not _dt_c and _dt_can == 'Giáp':
-                        for _cn, _cv in _ctb.items():
-                            if _cv == 'Mậu': _dt_c = int(_cn) if _cn else None; break
-                    if not _dt_c and _dia_ban:
-                        _db5 = _dia_ban.get(5, _dia_ban.get('5'))
-                        if _dt_can and _db5 and _dt_can == _db5:
-                            _db2 = _dia_ban.get(2, _dia_ban.get('2'))
-                            for _cn, _cv in _ctb.items():
-                                if _cv == _db2: _dt_c = int(_cn) if _cn else None; break
-                            
-                    _sv_c = None
-                    for _cn, _cv in _ctb.items():
-                        if _cv == _can_gio: _sv_c = int(_cn) if _cn else None; break
-                    if not _sv_c and _can_gio == 'Giáp':
-                        for _cn, _cv in _ctb.items():
-                            if _cv == 'Mậu': _sv_c = int(_cn) if _cn else None; break
-                    if not _sv_c and _dia_ban:
-                        _db5 = _dia_ban.get(5, _dia_ban.get('5'))
-                        if _can_gio and _db5 and _can_gio == _db5:
-                            _db2 = _dia_ban.get(2, _dia_ban.get('2'))
-                            for _cn, _cv in _ctb.items():
-                                if _cv == _db2: _sv_c = int(_cn) if _cn else None; break
-                            
-                    _target_c = _dt_c if _dt_c else _sv_c
-                    if dung_than == 'Bản Thân' and _sv_c and _sv_c != _dt_c:
-                        _target_c = _sv_c
-                        
-                    _bt_c = _dt_c
-                    
-                    if _target_c:
-                        _sao_bt = str(_tb.get(_target_c, _tb.get(str(_target_c), '?')))
-                        _cua_bt = str(_nb.get(_target_c, _nb.get(str(_target_c), '?')))
-                        
-                        _sao_cat = any(s in _sao_bt for s in ['Tâm', 'Nhậm', 'Phụ', 'Xung'])
-                        _cua_cat = any(c in _cua_bt for c in ['Hưu', 'Sinh', 'Khai'])
-                        _cua_hung = any(c in _cua_bt for c in ['Tử', 'Kinh', 'Thương'])
-                        
-                        if _sao_bt != '?':
-                            _core_evidence_fb.append(f'Sao {_sao_bt} CÁT' if _sao_cat else f'Sao {_sao_bt}')
-                        if _cua_bt != '?':
-                            if _cua_cat: _core_evidence_fb.append(f'Cửa {_cua_bt} CÁT')
-                            elif _cua_hung: _core_evidence_fb.append(f'Cửa {_cua_bt} HUNG')
-                            else: _core_evidence_fb.append(f'Cửa {_cua_bt}')
-                
-                if luc_hao_data and isinstance(luc_hao_data, dict):
-                    _lh_haos = luc_hao_data.get('ban', {}).get('haos') or luc_hao_data.get('ban', {}).get('details', [])
-                    for _h in _lh_haos:
-                        _lt = _h.get('luc_than', '')
-                        _vs = str(_h.get('vuong_suy', ''))
-                        if _lt == dung_than or (dung_than == 'Bản Thân' and 'Thế' in str(_h.get('the_ung', ''))):
-                            if _vs:
-                                if 'Vượng' in _vs or 'Tướng' in _vs: _core_evidence_fb.append(f'DT {_vs}')
-                                elif 'Suy' in _vs or 'Tử' in _vs or 'Tuyệt' in _vs: _core_evidence_fb.append(f'DT {_vs} ⚠️')
-                                else: _core_evidence_fb.append(f'DT {_vs}')
-                            break
-                
-                _kc_detail_fb = ''
-                if chart_data and isinstance(chart_data, dict) and _bt_c if 'chart_data' in dir() and '_bt_c' in dir() else False:
-                    try:
-                        _kc = tra_cuu_cung(_bt_c)
-                        if _kc:
-                            if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'dau', 'khoe', 'suc khoe', 'chet', 'song']):
-                                _bp = _kc.get('Than_The', '')
-                                if _bp: _kc_detail_fb = f'Bệnh vùng {_bp}'
-                            elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu', 'ở đâu', 'tim', 'mat', 'dau', 'o dau']):
-                                _noi = _kc.get('Noi', ''); _huong = _kc.get('Huong', '')
-                                if _noi: _kc_detail_fb = f'Nơi: {_noi}'
-                                if _huong: _kc_detail_fb += f', Hướng {_huong}'
-                    except Exception:
-                        pass
-                
-                _ev_str_fb = ' + '.join(_core_evidence_fb[:3]) if _core_evidence_fb else ''
-                _person_name_fb = _detected_person.capitalize() if '_detected_person' in dir() and _detected_person else ''
-                _subj_fb = _person_name_fb if _person_name_fb else 'Sự việc'
-                
                 if is_find:
                     _tone_fb = 'CÓ THỂ TÌM THẤY' if weighted_pct >= 50 else 'KHÓ TÌM THẤY'
-                    _detail_fb = _kc_detail_fb if _kc_detail_fb else (v15_timing if 'v15_timing' in dir() and v15_timing else '')
-                    _dr_fb = f'<b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb}. {_ev_str_fb}.'
+                    _detail_fb = v15_timing if v15_timing else 'Hãy xem chi tiết ở dưới'
                 elif is_age:
-                    _avg_age = int(sum([n for _, n in age_numbers]) / len(age_numbers)) if 'age_numbers' in locals() and age_numbers else '?'
-                    _dr_fb = f'Khoảng <b>{_avg_age} tuổi</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    _tone_fb = 'PHÂN TÍCH TUỔI'
+                    _avg_age = int(sum([n for _, n in age_numbers]) / len(age_numbers)) if 'age_numbers' in locals() and age_numbers else 'không rõ'
+                    _detail_fb = f'Khoảng {_avg_age} tuổi'
                 elif is_count:
-                    _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else '?'
-                    _dr_fb = f'Khoảng <b>{_avg_c}</b> ({weighted_pct}%). {_ev_str_fb}.'
-                elif any(kw in _q_lower_fb for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào', 'khi nao', 'bao gio', 'luc nao', 'thang may', 'nam nao']):
-                    _timing = v15_timing if 'v15_timing' in dir() and v15_timing else 'Chưa xác định rõ'
-                    _dr_fb = f'<b>{_timing}</b> ({weighted_pct}%). {_ev_str_fb}.'
-                elif any(kw in _q_lower_fb for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch', 'benh', 'om', 'khoe', 'chet', 'song', 'qua duoc', 'qua khoi', 'nguy kich']):
-                    if weighted_pct >= 55: _tone_fb = f'{_subj_fb} QUA ĐƯỢC / HỒI PHỤC'
-                    elif weighted_pct >= 45: _tone_fb = f'{_subj_fb} CÒN NGUY — cần tích cực chữa trị'
-                    else: _tone_fb = f'{_subj_fb} RẤT NGUY — tiên lượng xấu'
-                    _med_info = f'. {_kc_detail_fb}' if _kc_detail_fb else ''
-                    _dr_fb = f'<b>{_tone_fb}</b> ({weighted_pct}%){_med_info}. {_ev_str_fb}.'
-                elif any(kw in _q_lower_fb for kw in ['có nên', 'nên không', 'nên hay', 'co nen', 'nen khong', 'nen hay']):
-                    if weighted_pct >= 55: _dr_fb = f'<b>NÊN — THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    elif weighted_pct >= 45: _dr_fb = f'<b>CÓ THỂ nhưng THẬN TRỌNG</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    else: _dr_fb = f'<b>KHÔNG NÊN</b> ({weighted_pct}%). {_ev_str_fb}.'
-                elif is_competition:
-                    _v_lbl = 'CÁT / CÓ LỢI' if weighted_pct >= 60 else 'HUNG / BẤT LỢI'
-                    _dr_fb = f'{_subj_fb}: <b>{_v_lbl}</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    _tone_fb = 'PHÂN TÍCH SỐ LƯỢNG'
+                    _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else 'không rõ'
+                    _detail_fb = f'Khoảng {_avg_c}'
+                elif any(kw in _q_lower_fb for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
+                    _tone_fb = 'THỜI ĐIỂM'
+                    _detail_fb = v15_timing if v15_timing else 'Cần chờ thêm'
                 else:
-                    if weighted_pct >= 60: _dr_fb = f'{_subj_fb}: <b>CÓ / ĐẠT ĐƯỢC / THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    elif weighted_pct >= 50: _dr_fb = f'{_subj_fb}: <b>CÓ THỂ / CẦN NỖ LỰC THÊM</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    elif weighted_pct >= 45: _dr_fb = f'{_subj_fb}: <b>KHÓ KHĂN / CHƯA THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    else: _dr_fb = f'{_subj_fb}: <b>KHÔNG / BẤT LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    if weighted_pct >= 60:
+                        _tone_fb = 'CÓ THỂ'
+                        _detail_fb = 'thuận lợi, nên tiến hành'
+                    elif weighted_pct >= 50:
+                        _tone_fb = 'CÓ THỂ nhưng cần CẨN TRỌNG'
+                        _detail_fb = 'cần chuẩn bị kỹ'
+                    elif weighted_pct >= 45:
+                        _tone_fb = 'KHÓ — cần CÂN NHẮC KỸ'
+                        _detail_fb = 'chưa thuận lợi lắm, nên chờ thêm'
+                    else:
+                        _tone_fb = 'KHÔNG NÊN vào lúc này'
+                        _detail_fb = 'bất lợi, nên hoãn hoặc thay đổi kế hoạch'
+                # V42.9.29: Dùng trực tiếp câu hỏi của user để tránh trả lời chung chung
+                _q_clean_fb = question.strip() if question else "Sự việc"
+                if len(_q_clean_fb) > 80: _q_clean_fb = _q_clean_fb[:77] + "..."
+                _dr_fb = f'Cho "{_q_clean_fb}": <b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb.capitalize()}.'
                 
-                # NGUYÊN NHÂN + CẢNH BÁO
                 _rp2 = []
-                if ky_mon_reason and len(str(ky_mon_reason)) > 3: _rp2.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
-                if luc_hao_reason and len(str(luc_hao_reason)) > 3: _rp2.append(f'📿 <b>Lục Hào:</b> {str(luc_hao_reason)[:200]}')
-                if mai_hoa_reason and len(str(mai_hoa_reason)) > 3: _rp2.append(f'🌸 <b>Mai Hoa:</b> {str(mai_hoa_reason)[:200]}')
-                if luc_nham_reason and len(str(luc_nham_reason)) > 3: _rp2.append(f'🔮 <b>Đại Lục Nhâm:</b> {str(luc_nham_reason)[:200]}')
-                if thai_at_reason and len(str(thai_at_reason)) > 3: _rp2.append(f'⚔️ <b>Thái Ất:</b> {str(thai_at_reason)[:200]}')
-                
-                _warn_fb = []
-                _all_fac_str_fb = ' '.join([str(f) for f in (v23_lh_factors or [])] + [str(f) for f in (v24_km_factors or [])]).upper()
-                if 'TUẦN KHÔNG' in _all_fac_str_fb: _warn_fb.append('⚠️ Tuần Không — sự việc có thể không thực')
-                if 'PHẢN NGÂM' in _all_fac_str_fb: _warn_fb.append('⚠️ Phản Ngâm — đảo ngược, thay đổi bất ngờ')
-                if 'NHẬP MỘ' in _all_fac_str_fb: _warn_fb.append('⚠️ Nhập Mộ — tắc nghẽn, cần chờ Xung mở')
-                if 'TAM HÌNH' in _all_fac_str_fb: _warn_fb.append('⚠️ Tam Hình — nguy cơ pháp lý/tai nạn')
-                if 'PHỤC THẦN' in _all_fac_str_fb: _warn_fb.append('⚠️ Phục Thần — DT ẩn, sự việc chưa lộ')
-                
+                if ky_mon_reason and len(str(ky_mon_reason)) > 3:
+                    _rp2.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
+                if luc_hao_reason and len(str(luc_hao_reason)) > 3:
+                    _rp2.append(f'📿 <b>Lục Hào:</b> {str(luc_hao_reason)[:200]}')
+                if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
+                    _rp2.append(f'🌸 <b>Mai Hoa:</b> {str(mai_hoa_reason)[:200]}')
+                if luc_nham_reason and len(str(luc_nham_reason)) > 3:
+                    _rp2.append(f'🔮 <b>Đại Lục Nhâm:</b> {str(luc_nham_reason)[:200]}')
+                if thai_at_reason and len(str(thai_at_reason)) > 3:
+                    _rp2.append(f'⚔️ <b>Thái Ất:</b> {str(thai_at_reason)[:200]}')
                 _off2_summary = ''
-                if _rp2 or _warn_fb:
-                    _inner_fb = ''
-                    if _rp2:
-                        _inner_fb += f'<div style="font-size:1.05em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">📋 NGUYÊN NHÂN:</div>'
-                        _inner_fb += ''.join(f'<div style="color:#d1fae5;margin:4px 0;font-size:0.93em;line-height:1.5;">{r}</div>' for r in _rp2)
-                    if _warn_fb:
-                        _inner_fb += f'<div style="font-size:1.05em;font-weight:800;color:#fbbf24;margin:10px 0 6px 0;">🚨 CẢNH BÁO:</div>'
-                        _inner_fb += ''.join(f'<div style="color:#fef3c7;margin:3px 0;font-size:0.93em;">{w}</div>' for w in _warn_fb)
+                if _rp2:
                     _off2_summary = (
-                        f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(110,231,183,0.3);">'
-                        + _inner_fb + '</div>'
-                    )
-                
-                # LỜI KHUYÊN CỤ THỂ
-                _HANH_HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
-                _hanh_dt_adv = hanh_dt_v22 if 'hanh_dt_v22' in dir() else '?'
-                _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
-                
-                _adv_fb = []
-                if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'khoe', 'chet', 'song']):
-                    if weighted_pct >= 55: _adv_fb.append('💊 Tích cực chữa trị, tiên lượng tốt.')
-                    else: _adv_fb.append('💊 Cần chuyển viện/đổi phác đồ điều trị.')
-                    if _kc_detail_fb: _adv_fb.append(f'🏥 {_kc_detail_fb} — chú ý vùng này.')
-                    if _huong_tot: _adv_fb.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_lower_fb for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn', 'ban', 'dau tu', 'von']):
-                    if weighted_pct >= 55: _adv_fb.append('💰 Thời điểm tốt, nhưng kiểm tra kỹ pháp lý.')
-                    else: _adv_fb.append('⏳ Chưa nên, ưu tiên bảo toàn vốn.')
-                    if _huong_tot: _adv_fb.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_lower_fb for k in ['thi', 'đỗ', 'học', 'trượt', 'do', 'hoc', 'truot']):
-                    if weighted_pct >= 55: _adv_fb.append('📚 Khả năng đỗ cao, tiếp tục ôn luyện.')
-                    else: _adv_fb.append('📚 Cần nỗ lực gấp đôi, chưa chắc chắn.')
-                elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu', 'tim', 'mat', 'dau']):
-                    if _kc_detail_fb: _adv_fb.append(f'📍 {_kc_detail_fb}')
-                    if _huong_tot: _adv_fb.append(f'🧭 Tìm hướng {_huong_tot}.')
-                else:
-                    if weighted_pct >= 60: _adv_fb.append('✅ Thuận lợi, nên tiến hành.')
-                    elif weighted_pct >= 50: _adv_fb.append('⚠️ Cần xác minh thêm trước khi cam kết.')
-                    elif weighted_pct >= 45: _adv_fb.append('⏳ Chưa phải lúc tốt nhất — chờ 1-2 tháng.')
-                    else: _adv_fb.append('🛑 Nên hoãn hoặc thay đổi phương án.')
-                
-                # Define verdict display variables
-                if weighted_pct >= 70: _off2_v_color = '#34d399'; _off2_v_icon = '🟢'; _off2_v_label = 'ĐẠI CÁT'
-                elif weighted_pct >= 55: _off2_v_color = '#34d399'; _off2_v_icon = '🟢'; _off2_v_label = 'CÁT'
-                elif weighted_pct >= 50: _off2_v_color = '#fbbf24'; _off2_v_icon = '🟡'; _off2_v_label = 'BÌNH'
-                elif weighted_pct >= 45: _off2_v_color = '#fbbf24'; _off2_v_icon = '🟡'; _off2_v_label = 'BÌNH'
-                elif weighted_pct >= 30: _off2_v_color = '#f87171'; _off2_v_icon = '🔴'; _off2_v_label = 'HUNG'
-                else: _off2_v_color = '#ef4444'; _off2_v_icon = '🔴'; _off2_v_label = 'ĐẠI HUNG'
-                
-                _adv_html_fb = ''
-                if _adv_fb:
-                    _adv_html_fb = (
-                        f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;border-left:4px solid {_off2_v_color};">'
-                        + ''.join(f'<div style="color:#fef3c7;margin:4px 0;font-size:0.95em;">{a}</div>' for a in _adv_fb)
+                        f'<div style="margin-top:14px;padding:16px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(110,231,183,0.3);">'
+                        f'<div style="font-size:1.1em;font-weight:800;color:#6ee7b7;margin-bottom:10px;">📋 PHÂN TÍCH CHI TIẾT TỪ 5 PHƯƠNG PHÁP:</div>'
+                        + ''.join(f'<div style="color:#d1fae5;margin:6px 0;font-size:0.95em;line-height:1.5;">{r}</div>' for r in _rp2)
                         + f'</div>'
                     )
+                # V42.9.29 FIX: Define verdict display variables (was missing → NameError crash)
+                if weighted_pct >= 70:
+                    _off2_v_color = '#34d399'
+                    _off2_v_icon = '🟢'
+                    _off2_v_label = 'ĐẠI CÁT'
+                elif weighted_pct >= 55:
+                    _off2_v_color = '#34d399'
+                    _off2_v_icon = '🟢'
+                    _off2_v_label = 'CÁT'
+                elif weighted_pct >= 50:
+                    _off2_v_color = '#fbbf24'
+                    _off2_v_icon = '🟡'
+                    _off2_v_label = 'CẦN CÂN NHẮC — BÌNH'
+                elif weighted_pct >= 45:
+                    _off2_v_color = '#fbbf24'
+                    _off2_v_icon = '🟡'
+                    _off2_v_label = 'BÌNH'
+                elif weighted_pct >= 30:
+                    _off2_v_color = '#f87171'
+                    _off2_v_icon = '🔴'
+                    _off2_v_label = 'HUNG'
+                else:
+                    _off2_v_color = '#ef4444'
+                    _off2_v_icon = '🔴'
+                    _off2_v_label = 'ĐẠI HUNG'
+                
+                _adv_fb = []
+                if weighted_pct >= 60:
+                    _adv_fb.append('✅ Thời điểm thuận lợi để tiến hành.')
+                elif weighted_pct >= 50:
+                    _adv_fb.append('⚠️ Nên xác minh thêm trước khi cam kết.')
+                elif weighted_pct >= 45:
+                    _adv_fb.append('⏳ Chưa phải thời điểm tốt nhất — nên chờ thêm.')
+                else:
+                    _adv_fb.append('🛑 KHÔNG nên tiến hành vào thời điểm này.')
+                _adv_html_fb = (
+                    f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;border-left:4px solid {_off2_v_color};">'
+                    + ''.join(f'<div style="color:#fef3c7;margin:4px 0;font-size:0.95em;">{a}</div>' for a in _adv_fb)
+                    + f'</div>'
+                )
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
