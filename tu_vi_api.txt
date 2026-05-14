@@ -1,0 +1,8 @@
+﻿_vi_tri_tu_vi(ngay_am, cuc_so)
+nap_am(nam_sinh)
+can_chi_nam(nam)
+tinh_menh_cung(thang_am, gio_chi_idx)
+tinh_than_cung(menh_cung_idx, gio_chi_idx)
+tinh_cuc(can_nam, menh_chi_idx)
+lap_la_so(nam_sinh, thang_am, ngay_am, gio_idx, gioi_tinh)
+format_la_so_text(ls)

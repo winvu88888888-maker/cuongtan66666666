@@ -13181,27 +13181,17 @@ class FreeAIHelper:
         ]
         
         if _person_dt:
-            # Có PERSON → kiểm tra có ACTION context không
+            # V42.9.37: Có PERSON → DT = PERSON. KHÔNG cho action override.
+            # Nguyên lý: Hỏi CHO ai thì DT theo NGƯỜI ĐÓ.
+            # "con trai thi đỗ" → DT = Tử Tôn (con trai), KHÔNG phải Phụ Mẫu (thi)
+            # "mẹ bệnh nặng" → DT = Phụ Mẫu (mẹ), KHÔNG phải Quan Quỷ (bệnh)
+            # "chồng đi công tác" → DT = Quan Quỷ (chồng), KHÔNG phải Bản Thân (đi)
+            dung_than = _person_dt
             _has_person_state = any(kw in q_lower for kw in _PERSON_STATE_KW)
             if _has_person_state:
-                # "Bố bệnh", "Mẹ ốm" → DT = PERSON (hỏi về trạng thái người đó)
-                dung_than = _person_dt
-                self.log_step("V42.9.29 DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
+                self.log_step("V42.9.37 DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
             else:
-                # Kiểm tra ACTION override
-                _action_override = None
-                for _akw, _adt in _ACTION_DT_OVERRIDE:
-                    if _akw in q_lower:
-                        _action_override = _adt
-                        self.log_step("V42.9.29 DT", "ACTION_OVERRIDE", 
-                                      f"Person={_detected_person}({_person_dt}) + Action={_akw} → DT={_adt}")
-                        break
-                if _action_override:
-                    dung_than = _action_override
-                else:
-                    # Không có action rõ → dùng PERSON DT
-                    dung_than = _person_dt
-                    self.log_step("V42.9.29 DT", "PERSON_ONLY", f"Person={_detected_person} → DT={_person_dt}")
+                self.log_step("V42.9.37 DT", "PERSON_PRIMARY", f"Person={_detected_person} → DT={_person_dt} (person luôn thắng action)")
         elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE_GIA_ĐÌNH'):
             # "tôi" = Bản Thân CHỈ khi hỏi CHUNG hoặc SỨC_KHỎE (hào Thế)
             # TÀI_CHÍNH "tôi giàu?" → DT = Thê Tài, CÔNG_VIỆC → Quan Quỷ
@@ -13222,12 +13212,12 @@ class FreeAIHelper:
         # CHUNG: khi không detect person → giữ default = Bản Thân (hào Thế)
         # (Không override sang Quan Quỷ nữa — hỏi chung = hỏi cho mình)
         
-        # XUẤT_HÀNH → luôn Bản Thân
-        if detected_category == "XUẤT_HÀNH":
+        # XUẤT_HÀNH → Bản Thân CHỈ khi không có person (tránh "chồng đi công tác" bị đổi)
+        if detected_category == "XUẤT_HÀNH" and not _detected_person:
             dung_than = "Bản Thân"
         
-        # TÌM_ĐỒ → luôn Thê Tài
-        if detected_category == "TÌM_ĐỒ":
+        # TÌM_ĐỒ → Thê Tài CHỈ khi không có person (tránh "con tìm đồ" bị đổi)
+        if detected_category == "TÌM_ĐỒ" and not _detected_person:
             dung_than = "Thê Tài"
         
         # Anh chị em override (mạnh nhất)
@@ -13289,7 +13279,14 @@ class FreeAIHelper:
                 purpose = v31_primary.get('ask_purpose', 'CHO')
                 reason = v31_primary.get('dung_than_reason', '')
                 if parser_dt:
-                    if parser_dt != dung_than:
+                    # V42.9.37 FIX: Parser KHÔNG ĐƯỢC phép ghi đè DT khi PERSON_STATE đã phát hiện rõ ràng
+                    # Ví dụ: "mẹ bệnh" → PERSON_STATE = Phụ Mẫu (ĐÚNG) → Parser muốn đổi → CHẶN
+                    # Parser chỉ được override khi KHÔNG có person detection
+                    if _detected_person and dung_than in ['Phụ Mẫu', 'Thê Tài', 'Tử Tôn', 'Quan Quỷ', 'Huynh Đệ']:
+                        # PERSON đã detect → giữ nguyên, KHÔNG cho parser override
+                        self.log_step("V42.9.37 DT Guard", "BLOCK_PARSER",
+                                      f"Person={_detected_person}({dung_than}) — Parser muốn: {parser_dt} → BỊ CHẶN")
+                    elif parser_dt != dung_than:
                         self.log_step("V42.9.29 DT Fix", "OVERRIDE", f"Regex DT: {dung_than} -> Parser DT: {parser_dt} ({reason[:60]})")
                         dung_than = parser_dt
                     else:
