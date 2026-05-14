@@ -1,5 +1,5 @@
 """
-Free AI Helper V42.9.18 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên)
+Free AI Helper V42.9.37 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V42.2: +7 thiếu sót chuyên gia (Ứng Kỳ chuyên sâu, Hóa Hồi Đầu, Hào Từ, Phản/Phục Ngâm,

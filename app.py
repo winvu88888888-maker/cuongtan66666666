@@ -45,6 +45,13 @@ def show_fatal_error(e):
 import random
 import textwrap
 import datetime as dt_module
+import time
+import json
+
+try:
+    import requests
+except ImportError:
+    requests = None
 
 try:
     import pytz

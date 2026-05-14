@@ -1,5 +1,5 @@
 """
-Enhanced Gemini Helper - THIÊN CƠ ĐẠI SƯ (V42.9.36 - Unleashed Intelligence + Deep Forensic)
+Enhanced Gemini Helper - THIÊN CƠ ĐẠI SƯ (V42.9.37 - Cross-Reference + Unleashed Intelligence + Deep Forensic)
 Python Pre-Analysis Engine + 12-Step CoT + Deep Reasoning + Tam Tài + Contradiction Resolution
 Lục Thuật Hợp Nhất: Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất + Mang Đoán + Vạn Vật
 """
@@ -51,7 +51,7 @@ class GeminiQMDGHelper:
         self.current_key_index = 0
         self.api_key = self.api_keys[0] if self.api_keys else None
         
-        self.version = "V42.9.36-GenAI-SDK"
+        self.version = "V42.9.37-GenAI-SDK"
         # V21.0: Khởi tạo Client mới (google-genai SDK)
         self._client = None
         if self.api_key:
@@ -738,6 +738,18 @@ class GeminiQMDGHelper:
                         f"★ QUAN HỆ NGŨ HÀNH: {relation}\n"
                     )
                     
+                    def _get_giap_tuan_chi(chart):
+                        """Trả về Chi đầu tuần (Tý/Tuất/Thân/Ngọ/Thìn/Dần)"""
+                        THIEN_CAN = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                        DIA_CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                        cn = chart.get('can_ngay', '')
+                        chn = chart.get('chi_ngay', '')
+                        if cn not in THIEN_CAN or chn not in DIA_CHI:
+                            return 'Tý'
+                        can_idx = THIEN_CAN.index(cn)
+                        chi_idx = DIA_CHI.index(chn)
+                        return DIA_CHI[(chi_idx - can_idx) % 12]
+
                     # V12.2: 六甲遁甲 — Hiển thị Can Giáp ẩn ở cung nào
                     if subj_stem == 'Giáp':
                         hidden_can = _get_giap_hidden_can(qmdg_input)
@@ -755,18 +767,6 @@ class GeminiQMDGHelper:
                                 f"Thần: {qmdg_input.get('than_ban',{}).get(hidden_palace,'?')}\n"
                                 f"  (Tuần: Giáp {_get_giap_tuan_chi(qmdg_input)} → ẩn {hidden_can})\n"
                             )
-                    
-                    def _get_giap_tuan_chi(chart):
-                        """Trả về Chi đầu tuần (Tý/Tuất/Thân/Ngọ/Thìn/Dần)"""
-                        THIEN_CAN = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
-                        DIA_CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
-                        cn = chart.get('can_ngay', '')
-                        chn = chart.get('chi_ngay', '')
-                        if cn not in THIEN_CAN or chn not in DIA_CHI:
-                            return 'Tý'
-                        can_idx = THIEN_CAN.index(cn)
-                        chi_idx = DIA_CHI.index(chn)
-                        return DIA_CHI[(chi_idx - can_idx) % 12]
                     
                     # --- V5.0: CAN CHI NÂNG CAO ---
                     try:
