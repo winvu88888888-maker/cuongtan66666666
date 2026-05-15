@@ -15535,10 +15535,10 @@ class FreeAIHelper:
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
-                            if any(k in _q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'dau', 'khoe', 'suc khoe', 'chet', 'song']):
+                            if any(k in _q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua']):
                                 _bp = _kc.get('Than_The', '')
                                 if _bp: _kc_detail = f'Bệnh vùng {_bp}'
-                            elif any(k in _q_lower for k in ['tìm', 'mất', 'đâu', 'ở đâu', 'tim', 'mat', 'dau', 'o dau']):
+                            elif any(k in _q_lower for k in ['tìm', 'mất', 'đâu', 'ở đâu']):
                                 _noi = _kc.get('Noi', ''); _huong = _kc.get('Huong', '')
                                 if _noi: _kc_detail = f'Nơi: {_noi}'
                                 if _huong: _kc_detail += f', Hướng {_huong}'
@@ -15561,10 +15561,10 @@ class FreeAIHelper:
                 elif is_count:
                     _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else '?'
                     _direct_reply = f'Khoảng <b>{_avg_c}</b> ({weighted_pct}%). {_evidence_str}.'
-                elif any(kw in _q_lower for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào', 'khi nao', 'bao gio', 'luc nao', 'thang may', 'nam nao']):
+                elif any(kw in _q_lower for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
                     _timing = v15_timing if 'v15_timing' in dir() and v15_timing else 'Chưa xác định rõ'
                     _direct_reply = f'<b>{_timing}</b> ({weighted_pct}%). {_evidence_str}.'
-                elif any(kw in _q_lower for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch', 'benh', 'om', 'khoe', 'chet', 'song', 'qua duoc', 'qua khoi', 'nguy kich']):
+                elif any(kw in _q_lower for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch']):
                     if weighted_pct >= 55:
                         _tone = f'{_subj} QUA ĐƯỢC / HỒI PHỤC'
                     elif weighted_pct >= 45:
@@ -15573,7 +15573,7 @@ class FreeAIHelper:
                         _tone = f'{_subj} RẤT NGUY — tiên lượng xấu'
                     _med_info = f'. {_kc_detail}' if _kc_detail else ''
                     _direct_reply = f'<b>{_tone}</b> ({weighted_pct}%){_med_info}. {_evidence_str}.'
-                elif any(kw in _q_lower for kw in ['có nên', 'nên không', 'nên hay', 'co nen', 'nen khong', 'nen hay']):
+                elif any(kw in _q_lower for kw in ['có nên', 'nên không', 'nên hay']):
                     if weighted_pct >= 55:
                         _direct_reply = f'<b>NÊN — THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 45:
@@ -15639,25 +15639,25 @@ class FreeAIHelper:
                 _hanh_dt_adv = hanh_dt_v22 if 'hanh_dt_v22' in dir() else '?'
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
-                if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'khoe', 'chet', 'song']):
+                if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua']):
                     if weighted_pct >= 55:
                         _advice_parts.append('💊 Tích cực chữa trị, tiên lượng tốt.')
                     else:
                         _advice_parts.append('💊 Cần chuyển viện/đổi phác đồ điều trị.')
                     if _kc_detail: _advice_parts.append(f'🏥 {_kc_detail} — chú ý vùng này.')
                     if _huong_tot: _advice_parts.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_norm for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn', 'ban', 'dau tu', 'von']):
+                elif any(k in _q_norm for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn']):
                     if weighted_pct >= 55:
                         _advice_parts.append('💰 Thời điểm tốt, nhưng kiểm tra kỹ pháp lý.')
                     else:
                         _advice_parts.append('⏳ Chưa nên, ưu tiên bảo toàn vốn.')
                     if _huong_tot: _advice_parts.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_norm for k in ['thi', 'đỗ', 'học', 'trượt', 'do', 'hoc', 'truot']):
+                elif any(k in _q_norm for k in ['thi', 'đỗ', 'học', 'trượt']):
                     if weighted_pct >= 55:
                         _advice_parts.append('📚 Khả năng đỗ cao, tiếp tục ôn luyện.')
                     else:
                         _advice_parts.append('📚 Cần nỗ lực gấp đôi, chưa chắc chắn.')
-                elif any(k in _q_norm for k in ['tìm', 'mất', 'đâu', 'tim', 'mat', 'dau']):
+                elif any(k in _q_norm for k in ['tìm', 'mất', 'đâu']):
                     if _kc_detail: _advice_parts.append(f'📍 {_kc_detail}')
                     if _huong_tot: _advice_parts.append(f'🧭 Tìm hướng {_huong_tot}.')
                 else:
@@ -16137,10 +16137,10 @@ class FreeAIHelper:
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
-                            if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'dau', 'khoe', 'suc khoe', 'chet', 'song']):
+                            if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua']):
                                 _bp = _kc.get('Than_The', '')
                                 if _bp: _kc_detail_fb = f'Bệnh vùng {_bp}'
-                            elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu', 'ở đâu', 'tim', 'mat', 'dau', 'o dau']):
+                            elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu', 'ở đâu']):
                                 _noi = _kc.get('Noi', ''); _huong = _kc.get('Huong', '')
                                 if _noi: _kc_detail_fb = f'Nơi: {_noi}'
                                 if _huong: _kc_detail_fb += f', Hướng {_huong}'
@@ -16161,16 +16161,16 @@ class FreeAIHelper:
                 elif is_count:
                     _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else '?'
                     _dr_fb = f'Khoảng <b>{_avg_c}</b> ({weighted_pct}%). {_ev_str_fb}.'
-                elif any(kw in _q_lower_fb for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào', 'khi nao', 'bao gio', 'luc nao', 'thang may', 'nam nao']):
+                elif any(kw in _q_lower_fb for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
                     _timing = v15_timing if 'v15_timing' in dir() and v15_timing else 'Chưa xác định rõ'
                     _dr_fb = f'<b>{_timing}</b> ({weighted_pct}%). {_ev_str_fb}.'
-                elif any(kw in _q_lower_fb for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch', 'benh', 'om', 'khoe', 'chet', 'song', 'qua duoc', 'qua khoi', 'nguy kich']):
+                elif any(kw in _q_lower_fb for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch']):
                     if weighted_pct >= 55: _tone_fb = f'{_subj_fb} QUA ĐƯỢC / HỒI PHỤC'
                     elif weighted_pct >= 45: _tone_fb = f'{_subj_fb} CÒN NGUY — cần tích cực chữa trị'
                     else: _tone_fb = f'{_subj_fb} RẤT NGUY — tiên lượng xấu'
                     _med_info = f'. {_kc_detail_fb}' if _kc_detail_fb else ''
                     _dr_fb = f'<b>{_tone_fb}</b> ({weighted_pct}%){_med_info}. {_ev_str_fb}.'
-                elif any(kw in _q_lower_fb for kw in ['có nên', 'nên không', 'nên hay', 'co nen', 'nen khong', 'nen hay']):
+                elif any(kw in _q_lower_fb for kw in ['có nên', 'nên không', 'nên hay']):
                     if weighted_pct >= 55: _dr_fb = f'<b>NÊN — THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
                     elif weighted_pct >= 45: _dr_fb = f'<b>CÓ THỂ nhưng THẬN TRỌNG</b> ({weighted_pct}%). {_ev_str_fb}.'
                     else: _dr_fb = f'<b>KHÔNG NÊN</b> ({weighted_pct}%). {_ev_str_fb}.'
@@ -16219,19 +16219,19 @@ class FreeAIHelper:
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
                 _adv_fb = []
-                if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'khoe', 'chet', 'song']):
+                if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua']):
                     if weighted_pct >= 55: _adv_fb.append('💊 Tích cực chữa trị, tiên lượng tốt.')
                     else: _adv_fb.append('💊 Cần chuyển viện/đổi phác đồ điều trị.')
                     if _kc_detail_fb: _adv_fb.append(f'🏥 {_kc_detail_fb} — chú ý vùng này.')
                     if _huong_tot: _adv_fb.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_lower_fb for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn', 'ban', 'dau tu', 'von']):
+                elif any(k in _q_lower_fb for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn']):
                     if weighted_pct >= 55: _adv_fb.append('💰 Thời điểm tốt, nhưng kiểm tra kỹ pháp lý.')
                     else: _adv_fb.append('⏳ Chưa nên, ưu tiên bảo toàn vốn.')
                     if _huong_tot: _adv_fb.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_lower_fb for k in ['thi', 'đỗ', 'học', 'trượt', 'do', 'hoc', 'truot']):
+                elif any(k in _q_lower_fb for k in ['thi', 'đỗ', 'học', 'trượt']):
                     if weighted_pct >= 55: _adv_fb.append('📚 Khả năng đỗ cao, tiếp tục ôn luyện.')
                     else: _adv_fb.append('📚 Cần nỗ lực gấp đôi, chưa chắc chắn.')
-                elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu', 'tim', 'mat', 'dau']):
+                elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu']):
                     if _kc_detail_fb: _adv_fb.append(f'📍 {_kc_detail_fb}')
                     if _huong_tot: _adv_fb.append(f'🧭 Tìm hướng {_huong_tot}.')
                 else:
