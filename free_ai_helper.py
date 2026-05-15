@@ -3814,7 +3814,7 @@ class FreeAIHelper:
             pass
         
         # === V42.9.8: Ám Can variable (đã extract ở trên) ===
-        if 'km_am_can_str' not in dir():
+        if not locals().get('km_am_can_str'):
             km_am_can_str = 'N/A'
         
         # === Fill template ===
@@ -4490,7 +4490,7 @@ class FreeAIHelper:
             _KTNN = {'Kim':'Pháp luật/tranh chấp','Mộc':'Stress/gan','Thủy':'Cảm xúc/thận','Hỏa':'Tim/mắt','Thổ':'Chậm trễ/ì trệ'}
             generic_slots.setdefault('ky_than', f"{_kth} ({KY_THAN_NGUYEN_NHAN.get(dung_than, '?')})" if _kth else '?')
             generic_slots.setdefault('kt_nguyen_nhan', _KTNN.get(_kth, '?'))
-            _dl = [h.get('luc_than','?') for h in (_hl if '_hl' in dir() else []) if isinstance(h, dict) and (h.get('dong') or h.get('is_moving'))]
+            _dl = [h.get('luc_than','?') for h in (locals().get('_hl') or []) if isinstance(h, dict) and (h.get('dong') or h.get('is_moving'))]
             generic_slots.setdefault('hao_dong', ', '.join(_dl) if _dl else 'Không có hào động')
             generic_slots.setdefault('cua_hung', str(_cdt) if any(c in str(_cdt) for c in _chung) else 'Không')
             generic_slots.setdefault('cua_tro_ngai', 'Trở ngại' if generic_slots.get('cua_hung','') != 'Không' else 'Không có')
@@ -10439,7 +10439,7 @@ class FreeAIHelper:
                 # Âm Dương quái → giới tính
                 if the_quai:
                     from free_ai_helper import QUAI_AM_DUONG
-                    _ad = QUAI_AM_DUONG.get(the_quai, '') if 'QUAI_AM_DUONG' in dir() else ''
+                    _ad = QUAI_AM_DUONG.get(the_quai, '') if locals().get('QUAI_AM_DUONG') else ''
                 if pct >= 55:
                     lines.append(f"- 👶 **Nghiêng CON TRAI** (Dương khí vượng, {pct}%)")
                 else:
@@ -10509,7 +10509,7 @@ class FreeAIHelper:
             else:
                 lines.append(f"- 🟡 **CẨN THẬN** — Cần xem xét kỹ ({pct}%)")
             lines.append(f"- 🧭 **Hướng tốt:** {HANH_HUONG_NT.get(hanh_dt, '?')} (Hành {hanh_dt})")
-            lines.append(f"- 🎨 **Màu sơn tốt:** {HANH_MAU.get(hanh_dt, '?') if 'HANH_MAU' in dir() else '?'}")
+            lines.append(f"- 🎨 **Màu sơn tốt:** {HANH_MAU.get(hanh_dt, '?') if locals().get('HANH_MAU') else '?'}")
         
         # [28] THI CỬ / HỌC HÀNH / ĐỖ ĐẠT
         elif any(k in q for k in ['thi', 'đỗ', 'đạt', 'trượt', 'kết quả thi', 'điểm thi',
@@ -11473,7 +11473,7 @@ class FreeAIHelper:
         _is_yesno_w = any(kw in q_lower_weight for kw in ['có không', 'được không', 'có được', 'thắng', 'thua', 'đỗ', 'trượt', 'có nên', 'nên không'])
         _is_what_w = any(kw in q_lower_weight for kw in ['cái gì', 'loại gì', 'nghề gì', 'ngành gì', 'sản phẩm', 'mặt hàng', 'là gì', 'ai vậy', 'người nào'])
         _is_when_w = any(kw in q_lower_weight for kw in ['khi nào', 'bao giờ', 'lúc nào', 'thời điểm', 'ứng kỳ'])
-        _is_compete_w = _is_competition_question(question) if '_is_competition_question' in dir() else False
+        _is_compete_w = _is_competition_question(question)
         
         # Trọng số: {method: weight}
         if _is_compete_w:
@@ -13690,7 +13690,7 @@ class FreeAIHelper:
                 _eco_bonus -= 10
             
             # V42.9.29: Inject ECO vào v23_lh_factors để AI Online đọc được
-            if _dt_eco_verdict.get('factors') and 'v23_lh_factors' in locals() and isinstance(v23_lh_factors, list):
+            if _dt_eco_verdict.get('factors') and locals().get('v23_lh_factors') is not None and isinstance(v23_lh_factors, list):
                 for _f in _dt_eco_verdict['factors']:
                     if 'TỔNG HỢP' not in _f and 'Nguyên Thần (' not in _f and str(_f).strip():
                         v23_lh_factors.append(f"[HỆ SINH THÁI DT] {_f}")
@@ -13729,7 +13729,7 @@ class FreeAIHelper:
             try:
                 _lh_dt_suy = False
                 _lh_dt_vuong = False
-                if 'v23_lh_factors' in locals() and v23_lh_factors:
+                if locals().get('v23_lh_factors') and v23_lh_factors:
                     _lh_f_str = str(v23_lh_factors)
                     _lh_dt_suy = any(kw in _lh_f_str for kw in ['Tuyệt', 'Tử', 'Mộ', 'Không', 'Phá', 'Khắc'])
                     _lh_dt_vuong = any(kw in _lh_f_str for kw in ['Trường Sinh', 'Đế Vượng', 'Lâm Quan', 'Sinh'])
@@ -13906,7 +13906,7 @@ class FreeAIHelper:
         sections.append(f"| **TỔNG HỢP 5PP** | **KM+LH+MH+LN+TA** | **{weighted_pct}%** | {vv_data['cap']} |")
         
         # A2. V26.2: BẢNG THỐNG KÊ TOÀN BỘ YẾU TỐ TÁC ĐỘNG DT
-        if v23_lh_factors:
+        if locals().get('v23_lh_factors') and v23_lh_factors:
             # Phân loại factors
             noi_tai = []  # Yếu tố nội tại DT
             ben_ngoai = []  # Yếu tố bên ngoài (Nhật/Nguyệt/Hào khác)
@@ -14086,8 +14086,8 @@ class FreeAIHelper:
             thai_at_verdict=thai_at_verdict,
             weighted_pct=weighted_pct,
             lh_factors=v23_lh_factors,
-            km_factors=v24_km_factors if 'v24_km_factors' in dir() else [],
-            mh_factors=v24_mh_factors if 'v24_mh_factors' in dir() else [],
+            km_factors=locals().get('v24_km_factors', []),
+            mh_factors=locals().get('v24_mh_factors', []),
         )
         
         # V42.9: direct_answer GIỮ trong sections[] → offline_full_output chứa THÁM TỬ/PHÁN QUYẾT
@@ -14110,15 +14110,14 @@ class FreeAIHelper:
             ky_mon_reason=ky_mon_reason,
             luc_hao_reason=luc_hao_reason,
             mai_hoa_reason=mai_hoa_reason,
-            impact_evidence=impact_evidence,
+            age_numbers=age_numbers,
+            count_numbers=count_numbers,
             luc_nham_verdict=luc_nham_verdict,
-            luc_nham_reason=luc_nham_reason,
             thai_at_verdict=thai_at_verdict,
-            thai_at_reason=thai_at_reason,
-            final_pct=weighted_pct,
+            weighted_pct=weighted_pct,
             lh_factors=v23_lh_factors,
-            km_factors=v24_km_factors,
-            mh_factors=v24_mh_factors
+            km_factors=locals().get('v24_km_factors', []),
+            mh_factors=locals().get('v24_mh_factors', []),
         )
         # unified_narrative vẫn tính nhưng KHÔNG append vào sections
         # → Dùng cho offline_analysis_data gửi AI Online
@@ -15536,7 +15535,7 @@ class FreeAIHelper:
                 
                 # Knowledge Complete: bộ phận/hướng/đặc điểm
                 _kc_detail = ''
-                if chart_data and isinstance(chart_data, dict) and _bt_c if 'chart_data' in dir() and '_bt_c' in dir() else False:
+                if locals().get('chart_data') and isinstance(chart_data, dict) and locals().get('_bt_c'):
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
@@ -15553,12 +15552,12 @@ class FreeAIHelper:
                 _evidence_str = ' + '.join(_core_evidence[:3]) if _core_evidence else ''
                 
                 # --- Tạo câu trả lời theo LOẠI CÂU HỎI ---
-                _person_name = _detected_person.capitalize() if '_detected_person' in dir() and _detected_person else ''
+                _person_name = _detected_person.capitalize() if locals().get('_detected_person') else ''
                 _subj = _person_name if _person_name else 'Sự việc'
                 
                 if is_find:
                     _tone = 'CÓ THỂ TÌM THẤY' if weighted_pct >= 50 else 'KHÓ TÌM THẤY'
-                    _detail = _kc_detail if _kc_detail else (v15_timing if 'v15_timing' in dir() and v15_timing else '')
+                    _detail = _kc_detail if _kc_detail else (v15_timing if locals().get('v15_timing') else '')
                     _direct_reply = f'<b>{_tone}</b> ({weighted_pct}%). {_detail}. {_evidence_str}.'
                 elif is_age:
                     _avg_age = int(sum([n for _, n in age_numbers]) / len(age_numbers)) if 'age_numbers' in locals() and age_numbers else '?'
@@ -15567,7 +15566,7 @@ class FreeAIHelper:
                     _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else '?'
                     _direct_reply = f'Khoảng <b>{_avg_c}</b> ({weighted_pct}%). {_evidence_str}.'
                 elif any(kw in _q_lower for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
-                    _timing = v15_timing if 'v15_timing' in dir() and v15_timing else 'Chưa xác định rõ'
+                    _timing = v15_timing if locals().get('v15_timing') else 'Chưa xác định rõ'
                     _direct_reply = f'<b>{_timing}</b> ({weighted_pct}%). {_evidence_str}.'
                 elif any(kw in _q_lower for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch']):
                     if weighted_pct >= 55:
@@ -15641,7 +15640,7 @@ class FreeAIHelper:
                 _q_norm = question.lower()
                 # Hướng thuận lợi từ Ngũ Hành DT
                 _HANH_HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
-                _hanh_dt_adv = hanh_dt_v22 if 'hanh_dt_v22' in dir() else '?'
+                _hanh_dt_adv = locals().get('hanh_dt_v22', '?')
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
                 if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua']):
@@ -16138,7 +16137,7 @@ class FreeAIHelper:
                             break
                 
                 _kc_detail_fb = ''
-                if chart_data and isinstance(chart_data, dict) and _bt_c if 'chart_data' in dir() and '_bt_c' in dir() else False:
+                if locals().get('chart_data') and isinstance(chart_data, dict) and locals().get('_bt_c'):
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
@@ -16153,12 +16152,12 @@ class FreeAIHelper:
                         pass
                 
                 _ev_str_fb = ' + '.join(_core_evidence_fb[:3]) if _core_evidence_fb else ''
-                _person_name_fb = _detected_person.capitalize() if '_detected_person' in dir() and _detected_person else ''
+                _person_name_fb = _detected_person.capitalize() if locals().get('_detected_person') else ''
                 _subj_fb = _person_name_fb if _person_name_fb else 'Sự việc'
                 
                 if is_find:
                     _tone_fb = 'CÓ THỂ TÌM THẤY' if weighted_pct >= 50 else 'KHÓ TÌM THẤY'
-                    _detail_fb = _kc_detail_fb if _kc_detail_fb else (v15_timing if 'v15_timing' in dir() and v15_timing else '')
+                    _detail_fb = _kc_detail_fb if _kc_detail_fb else (v15_timing if locals().get('v15_timing') else '')
                     _dr_fb = f'<b>{_tone_fb}</b> ({weighted_pct}%). {_detail_fb}. {_ev_str_fb}.'
                 elif is_age:
                     _avg_age = int(sum([n for _, n in age_numbers]) / len(age_numbers)) if 'age_numbers' in locals() and age_numbers else '?'
@@ -16167,7 +16166,7 @@ class FreeAIHelper:
                     _avg_c = int(sum([n for _, n in count_numbers]) / len(count_numbers)) if 'count_numbers' in locals() and count_numbers else '?'
                     _dr_fb = f'Khoảng <b>{_avg_c}</b> ({weighted_pct}%). {_ev_str_fb}.'
                 elif any(kw in _q_lower_fb for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'năm nào']):
-                    _timing = v15_timing if 'v15_timing' in dir() and v15_timing else 'Chưa xác định rõ'
+                    _timing = v15_timing if locals().get('v15_timing') else 'Chưa xác định rõ'
                     _dr_fb = f'<b>{_timing}</b> ({weighted_pct}%). {_ev_str_fb}.'
                 elif any(kw in _q_lower_fb for kw in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua được', 'qua khỏi', 'nguy kịch']):
                     if weighted_pct >= 55: _tone_fb = f'{_subj_fb} QUA ĐƯỢC / HỒI PHỤC'
@@ -16220,7 +16219,7 @@ class FreeAIHelper:
                 
                 # LỜI KHUYÊN CỤ THỂ
                 _HANH_HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
-                _hanh_dt_adv = hanh_dt_v22 if 'hanh_dt_v22' in dir() else '?'
+                _hanh_dt_adv = locals().get('hanh_dt_v22', '?')
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
                 _adv_fb = []
@@ -16677,7 +16676,7 @@ class FreeAIHelper:
             
             # V42.1: GÓC NHÌN CHIẾN LƯỢC THIÊN-ĐỊA-NHÂN-THẦN
             try:
-                _lenh_hanh_tdnt = _lenh_hanh_km if '_lenh_hanh_km' in dir() else None
+                _lenh_hanh_tdnt = locals().get('_lenh_hanh_km')
                 if not _lenh_hanh_tdnt:
                     _lr = _get_lenh_thang_hanh()
                     _lenh_hanh_tdnt = _lr[0] if isinstance(_lr, tuple) else _lr
