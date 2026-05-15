@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-VẠN VẬT PROXY — V42.9.39
+VẠN VẬT PROXY — V42.9.40
 Proxy module chuyển tiếp sang van_vat_tong_hop.py
 Đảm bảo import ổn định cho free_ai_helper.py
 """
