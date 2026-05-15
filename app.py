@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.38"
+APP_VERSION = "V42.9.39"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Cross-Reference 📊 + Unleashed Intelligence 🧠 + Deep Forensic 🕵️‍♂️ + Internet 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -2942,7 +2942,7 @@ if st.session_state.current_view == "ky_mon":
             with st.container():
                 st.markdown("### 🎯 KẾT LUẬN TỔNG HỢP TỪ AI (Dụng Thần)")
                 
-                # V42.9.38: TOGGLE GIEO QUẺ NGẪU NHIÊN — mỗi lần hỏi = quẻ mới
+                # V42.9.39: TOGGLE GIEO QUẺ NGẪU NHIÊN — mỗi lần hỏi = quẻ mới
                 _col_toggle, _col_info = st.columns([1, 3])
                 with _col_toggle:
                     _random_on = st.toggle(
@@ -3015,7 +3015,7 @@ if st.session_state.current_view == "ky_mon":
                             offline_ai = FreeAIHelper(api_key=_offline_api_key)
                             
                             # Auto-compute Mai Hoa & Lục Hào
-                            # V42.9.38: Chế độ Gieo Ngẫu Nhiên
+                            # V42.9.39: Chế độ Gieo Ngẫu Nhiên
                             _use_random = st.session_state.get('random_hexagram_mode', False)
                             
                             if _use_random:
@@ -3568,7 +3568,7 @@ PHÂN TÍCH LIÊN MẠCH:
             
             user_question = st.text_area("💬 Đặt câu hỏi bất kỳ (tự do, không giới hạn chủ đề):", placeholder="Ví dụ: Năm nay có mua được nhà không? / Con mèo lạc tìm ở đâu? / Bao giờ tìm được việc?...", key="ai_q_input", height=80)
             
-            # V42.9.38: Hiển thị trạng thái Gieo Ngẫu Nhiên cho nút Q&A
+            # V42.9.39: Hiển thị trạng thái Gieo Ngẫu Nhiên cho nút Q&A
             _qa_random_status = st.session_state.get('random_hexagram_mode', False)
             if _qa_random_status:
                 st.markdown("""
@@ -3746,7 +3746,7 @@ PHÂN TÍCH LIÊN MẠCH:
                             offline_ai = FreeAIHelper(api_key=_api_key)
                             
                             # Auto-compute Mai Hoa & Lục Hào
-                            # V42.9.38: Chế độ Gieo Ngẫu Nhiên (Q&A box)
+                            # V42.9.39: Chế độ Gieo Ngẫu Nhiên (Q&A box)
                             _use_random_q = st.session_state.get('random_hexagram_mode', False)
                             
                             if _use_random_q:
@@ -3859,7 +3859,7 @@ elif st.session_state.current_view == "mai_hoa":
     # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
     dt = selected_datetime
     
-    # V42.9.38: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
+    # V42.9.39: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
     _mh_random_mode = st.session_state.get('random_hexagram_mode', False)
     _mh_existing = st.session_state.get('mai_hoa_result')
     
@@ -3989,7 +3989,7 @@ elif st.session_state.current_view == "luc_hao":
     nhat_than = f"{chi_ngay}"
     nguyet_lenh = f"{chi_thang}"
     
-    # V42.9.38: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
+    # V42.9.39: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
     _lh_random_mode = st.session_state.get('random_hexagram_mode', False)
     _lh_existing = st.session_state.get('luc_hao_result')
     
@@ -4012,7 +4012,7 @@ elif st.session_state.current_view == "luc_hao":
     if 'luc_hao_result' in st.session_state:
         res = st.session_state.luc_hao_result
         
-        # V42.9.38 Fix: Read actual can/chi from the result (vital for random cast)
+        # V42.9.39 Fix: Read actual can/chi from the result (vital for random cast)
         _d_can_ngay = res.get('can_ngay', can_ngay)
         _d_chi_ngay = res.get('chi_ngay', chi_ngay)
         _d_can_thang = res.get('can_thang', can_thang)

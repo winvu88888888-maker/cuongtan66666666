@@ -1,5 +1,5 @@
 """
-Free AI Helper V42.9.38 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên)
+Free AI Helper V42.9.39 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V42.2: +7 thiếu sót chuyên gia (Ứng Kỳ chuyên sâu, Hóa Hồi Đầu, Hào Từ, Phản/Phục Ngâm,
@@ -2994,9 +2994,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V42.9.38 Master-Level + Cross-Reference + Deep Forensic + 🎲 Gieo Ngẫu Nhiên)"
-        self.version = "V42.9.38-Full-Pipeline"
-        self.model_name = "offline-rule-engine-V42.9.38"
+        self.name = "Thiên Cơ Đại Sư (V42.9.39 Master-Level + Cross-Reference + Deep Forensic + 🎲 Gieo Ngẫu Nhiên)"
+        self.version = "V42.9.39-Full-Pipeline"
+        self.model_name = "offline-rule-engine-V42.9.39"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -5513,7 +5513,7 @@ class FreeAIHelper:
             # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.38 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC CẤP ĐỘ CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.39 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC CẤP ĐỘ CAO NHẤT.\n"
                 f"BẠN LÀ MỘT ĐẠI SƯ THẬT SỰ, không phải máy tính. BẠN phải suy luận như một chuyên gia 30 năm kinh nghiệm với lượng kiến thức sâu rộng về Huyền Học.\n"
                 f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
@@ -12651,7 +12651,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.9.38 — Unleashed Intelligence + Deep Forensic + 100+ Yếu Tố + 8PP + 🎲 Gieo Ngẫu Nhiên). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.9.39 — Unleashed Intelligence + Deep Forensic + 100+ Yếu Tố + 8PP + 🎲 Gieo Ngẫu Nhiên). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
         
 
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
@@ -13186,7 +13186,7 @@ class FreeAIHelper:
         ]
         
         if _person_dt:
-            # V42.9.38: Có PERSON → DT = PERSON. KHÔNG cho action override.
+            # V42.9.39: Có PERSON → DT = PERSON. KHÔNG cho action override.
             # Nguyên lý: Hỏi CHO ai thì DT theo NGƯỜI ĐÓ.
             # "con trai thi đỗ" → DT = Tử Tôn (con trai), KHÔNG phải Phụ Mẫu (thi)
             # "mẹ bệnh nặng" → DT = Phụ Mẫu (mẹ), KHÔNG phải Quan Quỷ (bệnh)
@@ -13194,9 +13194,9 @@ class FreeAIHelper:
             dung_than = _person_dt
             _has_person_state = any(kw in q_lower for kw in _PERSON_STATE_KW)
             if _has_person_state:
-                self.log_step("V42.9.38 DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
+                self.log_step("V42.9.39 DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
             else:
-                self.log_step("V42.9.38 DT", "PERSON_PRIMARY", f"Person={_detected_person} → DT={_person_dt} (person luôn thắng action)")
+                self.log_step("V42.9.39 DT", "PERSON_PRIMARY", f"Person={_detected_person} → DT={_person_dt} (person luôn thắng action)")
         elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE_GIA_ĐÌNH'):
             # "tôi" = Bản Thân CHỈ khi hỏi CHUNG hoặc SỨC_KHỎE (hào Thế)
             # TÀI_CHÍNH "tôi giàu?" → DT = Thê Tài, CÔNG_VIỆC → Quan Quỷ
@@ -13284,12 +13284,12 @@ class FreeAIHelper:
                 purpose = v31_primary.get('ask_purpose', 'CHO')
                 reason = v31_primary.get('dung_than_reason', '')
                 if parser_dt:
-                    # V42.9.38 FIX: Parser KHÔNG ĐƯỢC phép ghi đè DT khi PERSON_STATE đã phát hiện rõ ràng
+                    # V42.9.39 FIX: Parser KHÔNG ĐƯỢC phép ghi đè DT khi PERSON_STATE đã phát hiện rõ ràng
                     # Ví dụ: "mẹ bệnh" → PERSON_STATE = Phụ Mẫu (ĐÚNG) → Parser muốn đổi → CHẶN
                     # Parser chỉ được override khi KHÔNG có person detection
                     if _detected_person and dung_than in ['Phụ Mẫu', 'Thê Tài', 'Tử Tôn', 'Quan Quỷ', 'Huynh Đệ']:
                         # PERSON đã detect → giữ nguyên, KHÔNG cho parser override
-                        self.log_step("V42.9.38 DT Guard", "BLOCK_PARSER",
+                        self.log_step("V42.9.39 DT Guard", "BLOCK_PARSER",
                                       f"Person={_detected_person}({dung_than}) — Parser muốn: {parser_dt} → BỊ CHẶN")
                     elif parser_dt != dung_than:
                         self.log_step("V42.9.29 DT Fix", "OVERRIDE", f"Regex DT: {dung_than} -> Parser DT: {parser_dt} ({reason[:60]})")
@@ -15187,7 +15187,7 @@ class FreeAIHelper:
             offline_analysis_data=offline_analysis_data
         )
         
-        # V42.9.38: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
+        # V42.9.39: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
         _real_multi = False
         try:
             if v31_parsed_questions and len(v31_parsed_questions) > 1:
@@ -15251,7 +15251,7 @@ class FreeAIHelper:
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.38)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.39)</div>'
                 f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
                 + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
@@ -15400,7 +15400,7 @@ class FreeAIHelper:
                     _off_ev_html += f'<div style="font-size:1em;color:#d1fae5;margin:4px 0;">{_ev}</div>'
                 _off_ev_html += '</div>'
             
-            # V42.9.38: Multi-card CHỈ khi PARSER V32 thật sự detect nhiều câu hỏi riêng biệt
+            # V42.9.39: Multi-card CHỈ khi PARSER V32 thật sự detect nhiều câu hỏi riêng biệt
             if _real_multi and len(_off_answer_list) > 1:
                 # === MULTI-INTENT: Tạo CARD riêng cho từng câu trả lời ===
                 _multi_cards = ''
@@ -15429,7 +15429,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.38</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.39</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -15438,11 +15438,12 @@ class FreeAIHelper:
                 )
             else:
                 # === SINGLE INTENT: 1 card lớn — V42.9.29 NÂNG CẤP TRẢ LỜI TRỰC TIẾP ===
-                # V42.9.29: Xây verdict label
-                _off_v_label = 'ĐẠI CÁT' if weighted_pct >= 75 else 'CÁT' if weighted_pct >= 60 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 35 else 'ĐẠI HUNG'
-                _off_v_color = '#22c55e' if weighted_pct >= 60 else '#eab308' if weighted_pct >= 45 else '#ef4444'
+                # V42.9.29: Xây verdict label — V42.9.39: Đồng bộ thresholds với Offline path
+                _off_v_label = 'ĐẠI CÁT' if weighted_pct >= 70 else 'CÁT' if weighted_pct >= 55 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 30 else 'ĐẠI HUNG'
+                _off_v_color = '#22c55e' if weighted_pct >= 55 else '#eab308' if weighted_pct >= 45 else '#ef4444'
+                _off_v_icon = '🟢' if weighted_pct >= 55 else '🟡' if weighted_pct >= 45 else '🔴'
                 
-                # ═══ V42.9.38: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE ═══
+                # ═══ V42.9.39: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE ═══
                 # Trả lời dựa trên: DT + data thật từ quẻ + loại câu hỏi
                 _q_lower = question.lower() if question else ''
                 _direct_reply = ''
@@ -15593,7 +15594,7 @@ class FreeAIHelper:
                     else:
                         _direct_reply = f'{_subj}: <b>KHÔNG / BẤT LỢI</b> ({weighted_pct}%). {_evidence_str}.'
                 
-                # ═══ V42.9.38: NGUYÊN NHÂN + CẢNH BÁO (từ data thật) ═══
+                # ═══ V42.9.39: NGUYÊN NHÂN + CẢNH BÁO (từ data thật) ═══
                 _reason_parts = []
                 if ky_mon_reason and len(str(ky_mon_reason)) > 3:
                     _reason_parts.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
@@ -15630,7 +15631,7 @@ class FreeAIHelper:
                         + _inner + '</div>'
                     )
                 
-                # ═══ V42.9.38: LỜI KHUYÊN CỤ THỂ THEO NGỮ CẢNH ═══
+                # ═══ V42.9.39: LỜI KHUYÊN CỤ THỂ THEO NGỮ CẢNH ═══
                 _advice_parts = []
                 _q_norm = question.lower()
                 # Hướng thuận lợi từ Ngũ Hành DT
@@ -15638,25 +15639,25 @@ class FreeAIHelper:
                 _hanh_dt_adv = hanh_dt_v22 if 'hanh_dt_v22' in dir() else '?'
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
-                if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua']):
+                if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua', 'benh', 'om', 'khoe', 'chet', 'song']):
                     if weighted_pct >= 55:
                         _advice_parts.append('💊 Tích cực chữa trị, tiên lượng tốt.')
                     else:
                         _advice_parts.append('💊 Cần chuyển viện/đổi phác đồ điều trị.')
                     if _kc_detail: _advice_parts.append(f'🏥 {_kc_detail} — chú ý vùng này.')
                     if _huong_tot: _advice_parts.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_norm for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn']):
+                elif any(k in _q_norm for k in ['mua', 'bán', 'đầu tư', 'kinh doanh', 'vốn', 'ban', 'dau tu', 'von']):
                     if weighted_pct >= 55:
                         _advice_parts.append('💰 Thời điểm tốt, nhưng kiểm tra kỹ pháp lý.')
                     else:
                         _advice_parts.append('⏳ Chưa nên, ưu tiên bảo toàn vốn.')
                     if _huong_tot: _advice_parts.append(f'🧭 Hướng thuận: {_huong_tot}.')
-                elif any(k in _q_norm for k in ['thi', 'đỗ', 'học', 'trượt']):
+                elif any(k in _q_norm for k in ['thi', 'đỗ', 'học', 'trượt', 'do', 'hoc', 'truot']):
                     if weighted_pct >= 55:
                         _advice_parts.append('📚 Khả năng đỗ cao, tiếp tục ôn luyện.')
                     else:
                         _advice_parts.append('📚 Cần nỗ lực gấp đôi, chưa chắc chắn.')
-                elif any(k in _q_norm for k in ['tìm', 'mất', 'đâu']):
+                elif any(k in _q_norm for k in ['tìm', 'mất', 'đâu', 'tim', 'mat', 'dau']):
                     if _kc_detail: _advice_parts.append(f'📍 {_kc_detail}')
                     if _huong_tot: _advice_parts.append(f'🧭 Tìm hướng {_huong_tot}.')
                 else:
@@ -15682,7 +15683,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.38</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.39</div>'
                     # Line 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     # Line 2: Trả lời trực tiếp câu hỏi
@@ -16041,7 +16042,7 @@ class FreeAIHelper:
                     )
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.38</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.39</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_offline_short_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
@@ -16051,7 +16052,7 @@ class FreeAIHelper:
                 )
             else:
                 # V42.9.29: NÂNG CẤP TRẢ LỜI TRỰC TIẾP (GIỐNG path có Online)
-                # ═══ V42.9.38: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE (OFFLINE PATH) ═══
+                # ═══ V42.9.39: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE (OFFLINE PATH) ═══
                 _q_lower_fb = question.lower() if question else ''
                 _dr_fb = ''
                 
@@ -16257,7 +16258,7 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.38</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.39</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
