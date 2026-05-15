@@ -15685,19 +15685,187 @@ class FreeAIHelper:
                 # Consensus voting display
                 _cons_off_text = f'KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}'
                 
+                # ═══════════════════════════════════════════════════════════════
+                # V42.9.40: HỆ THỐNG LUẬN GIẢI 7 TẦNG — THIÊN CƠ ĐẠI SƯ
+                # ═══════════════════════════════════════════════════════════════
+                
+                # --- TẦNG 2: SƠ ĐỒ LỰC LƯỢNG (Trường Sinh + Ngũ Khí + Vạn Vật) ---
+                _t2_html = ''
+                try:
+                    _t2_ts = locals().get('ts_stage', '')
+                    _t2_ts_info = TRUONG_SINH_POWER.get(_t2_ts, {}) if _t2_ts else {}
+                    _t2_nk = locals().get('ngu_khi_state_v22', '')
+                    _t2_nk_info = NGU_KHI_POWER.get(_t2_nk, {}) if _t2_nk else {}
+                    _t2_hanh = locals().get('hanh_dt_v22', '?')
+                    _t2_vv = {}
+                    try:
+                        _t2_tier = locals().get('unified_v22', {})
+                        _t2_tier_key = _t2_tier.get('tier_key', 'TRUNG_BÌNH') if _t2_tier else 'TRUNG_BÌNH'
+                        _t2_vv = _get_van_vat_cu_the(_t2_hanh, _t2_tier_key) if _t2_hanh != '?' else {}
+                    except Exception:
+                        pass
+                    
+                    _t2_parts = []
+                    _t2_parts.append(f'⚡ <b>Dụng Thần:</b> {dung_than} (Hành {_t2_hanh})')
+                    if _t2_ts:
+                        _t2_parts.append(f'🔄 <b>12 Trường Sinh:</b> {_t2_ts} — {_t2_ts_info.get("cap", "?")} ({_t2_ts_info.get("power", "?")}%)')
+                        _t2_parts.append(f'👤 <b>Ví như:</b> {_t2_ts_info.get("con_nguoi", "?")}')
+                    if _t2_nk:
+                        _t2_parts.append(f'🌊 <b>Ngũ Khí:</b> {_t2_nk} — {_t2_nk_info.get("label", "?")} ({_t2_nk_info.get("power", "?")}%)')
+                    if _t2_vv:
+                        _vv_items = []
+                        if _t2_vv.get('do_vat'): _vv_items.append(f'Đồ vật: {_t2_vv["do_vat"]}')
+                        if _t2_vv.get('nguoi'): _vv_items.append(f'Người: {_t2_vv["nguoi"]}')
+                        if _t2_vv.get('benh'): _vv_items.append(f'Bệnh: {_t2_vv["benh"]}')
+                        if _vv_items:
+                            _t2_parts.append(f'🏷️ <b>Vạn Vật:</b> {" | ".join(_vv_items)}')
+                    
+                    if _t2_parts:
+                        _t2_inner = ''.join(f'<div style="color:#d1fae5;margin:3px 0;font-size:0.93em;line-height:1.5;">{p}</div>' for p in _t2_parts)
+                        _t2_html = (
+                            f'<div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.25);border-radius:12px;border:1px solid rgba(110,231,183,0.25);">'
+                            f'<div style="font-size:1.05em;font-weight:800;color:#6ee7b7;margin-bottom:6px;">📐 SƠ ĐỒ LỰC LƯỢNG</div>'
+                            + _t2_inner + '</div>'
+                        )
+                except Exception:
+                    pass
+                
+                # --- TẦNG 3: BẰNG CHỨNG 6PP + THOÁN TỪ ---
+                # (giữ nguyên _off_summary_extra đã tạo ở trên — chứa NGUYÊN NHÂN + CẢNH BÁO)
+                _t3_thoan = ''
+                try:
+                    _t3_hex_name = locals().get('luc_hao_data', {})
+                    if _t3_hex_name and isinstance(_t3_hex_name, dict):
+                        _t3_ban = _t3_hex_name.get('ban', {})
+                        _t3_name = _t3_ban.get('name', '')
+                        if _t3_name:
+                            _t3_info = QUE_THOAN_64.get(_t3_name, {})
+                            if not _t3_info:
+                                _t3_palace = _t3_ban.get('palace', '')
+                                _t3_info = QUE_THOAN_DAI_TUONG.get(_t3_palace, {})
+                            if _t3_info:
+                                _t3_thoan = (
+                                    f'<div style="margin-top:10px;padding:12px;background:rgba(139,92,246,0.15);border-radius:10px;border-left:4px solid #8b5cf6;">'
+                                    f'<div style="font-size:0.95em;font-weight:700;color:#c4b5fd;">📜 THOÁN TỪ — {_t3_name}</div>'
+                                    f'<div style="color:#e9d5ff;font-size:0.9em;margin:4px 0;font-style:italic;">"{_t3_info.get("thoan", "")}"</div>'
+                                    f'<div style="color:#ddd6fe;font-size:0.88em;">🏔️ Đại Tượng: {_t3_info.get("dai_tuong", "")}</div>'
+                                    f'<div style="color:#c4b5fd;font-size:0.88em;">💡 {_t3_info.get("lk", "")}</div>'
+                                    f'</div>'
+                                )
+                except Exception:
+                    pass
+                
+                # --- TẦNG 4: ỨNG KỲ ---
+                _t4_html = ''
+                try:
+                    _t4_uk = locals().get('_hub', {}).get('synthesis', {}).get('ung_ky', '')
+                    if _t4_uk and _t4_uk != 'Chưa rõ':
+                        _t4_html = (
+                            f'<div style="margin-top:10px;padding:12px;background:rgba(59,130,246,0.15);border-radius:10px;border-left:4px solid #3b82f6;">'
+                            f'<div style="font-size:1em;font-weight:700;color:#93c5fd;">⏱ ỨNG KỲ — THỜI GIAN DỰ BÁO</div>'
+                            f'<div style="color:#bfdbfe;font-size:0.95em;margin-top:4px;">⏳ <b>{_t4_uk}</b></div>'
+                            f'</div>'
+                        )
+                except Exception:
+                    pass
+                
+                # --- TẦNG 5: CẢNH BÁO NÂNG CAO (Tam Hình + Tương Tác Sao-Môn) ---
+                _t5_html = ''
+                try:
+                    _t5_parts = []
+                    # Tam Hình detection
+                    _all_chi = set()
+                    if chart_data and isinstance(chart_data, dict):
+                        for _key in ['chi_ngay', 'chi_thang', 'chi_nam', 'chi_gio']:
+                            _v = chart_data.get(_key, '')
+                            if _v: _all_chi.add(_v)
+                    for _tam_set, (_tam_name, _tam_desc) in TAM_HINH.items():
+                        if _tam_set.issubset(_all_chi):
+                            _t5_parts.append(f'⚠️ <b>{_tam_name}:</b> {_tam_desc}')
+                    
+                    # Tương Tác Sao-Môn từ database
+                    try:
+                        from database_tuong_tac import TUONG_TAC_SAO_MON
+                        if chart_data and isinstance(chart_data, dict):
+                            _tb5 = chart_data.get('thien_ban', {})
+                            _nb5 = chart_data.get('nhan_ban', {})
+                            for _c5 in [locals().get('_dt_c'), locals().get('_sv_c')]:
+                                if _c5:
+                                    _s5 = str(_tb5.get(_c5, _tb5.get(str(_c5), '')))
+                                    _m5 = str(_nb5.get(_c5, _nb5.get(str(_c5), '')))
+                                    _tt5 = TUONG_TAC_SAO_MON.get((_s5, _m5))
+                                    if _tt5:
+                                        _t5_parts.append(f'🔗 <b>Cung {_c5}:</b> {_s5}+{_m5} → {_tt5}')
+                    except Exception:
+                        pass
+                    
+                    if _t5_parts:
+                        _t5_inner = ''.join(f'<div style="color:#fef3c7;margin:3px 0;font-size:0.9em;">{p}</div>' for p in _t5_parts)
+                        _t5_html = (
+                            f'<div style="margin-top:10px;padding:12px;background:rgba(245,158,11,0.12);border-radius:10px;border-left:4px solid #f59e0b;">'
+                            f'<div style="font-size:1em;font-weight:700;color:#fbbf24;">🔍 PHÂN TÍCH CHUYÊN SÂU</div>'
+                            + _t5_inner + '</div>'
+                        )
+                except Exception:
+                    pass
+                
+                # --- TẦNG 7: CONSENSUS VOTING VISUAL ---
+                _t7_html = ''
+                try:
+                    _verdicts = [
+                        ('🏯', 'KỲ MÔN', ky_mon_verdict),
+                        ('📿', 'LỤC HÀO', luc_hao_verdict),
+                        ('🌸', 'MAI HOA', mai_hoa_verdict),
+                        ('🔮', 'Đ.L.NHÂM', luc_nham_verdict),
+                        ('⚔️', 'THÁI ẤT', thai_at_verdict),
+                    ]
+                    _cat_count = sum(1 for _, _, v in _verdicts if v and 'CÁT' in str(v).upper())
+                    _hung_count = sum(1 for _, _, v in _verdicts if v and 'HUNG' in str(v).upper())
+                    _binh_count = 5 - _cat_count - _hung_count
+                    
+                    _v_chips = ''
+                    for _vi, _vn, _vv in _verdicts:
+                        _vu = str(_vv).upper() if _vv else ''
+                        if 'CÁT' in _vu:
+                            _vc, _vt = '#22c55e', '✅'
+                        elif 'HUNG' in _vu:
+                            _vc, _vt = '#ef4444', '❌'
+                        else:
+                            _vc, _vt = '#eab308', '🟡'
+                        _v_chips += f'<span style="display:inline-block;margin:3px;padding:4px 10px;background:rgba(0,0,0,0.3);border-radius:8px;border:1px solid {_vc};font-size:0.85em;">{_vi} {_vn}: <b style="color:{_vc};">{_vt}</b></span>'
+                    
+                    _t7_html = (
+                        f'<div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;">'
+                        f'<div style="font-size:0.95em;font-weight:700;color:#a7f3d0;margin-bottom:6px;">📊 BỎ PHIẾU 5 PHƯƠNG PHÁP: '
+                        f'<span style="color:#22c55e;">{_cat_count} CÁT</span> · '
+                        f'<span style="color:#eab308;">{_binh_count} BÌNH</span> · '
+                        f'<span style="color:#ef4444;">{_hung_count} HUNG</span></div>'
+                        + _v_chips + '</div>'
+                    )
+                except Exception:
+                    pass
+                
+                # ═══ ASSEMBLE: 7 TẦNG LUẬN GIẢI ═══
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.39</div>'
-                    # Line 1: Verdict lớn
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ THIÊN CƠ ĐẠI SƯ — AI OFFLINE V42.9.40</div>'
+                    # TẦNG 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
-                    # Line 2: Trả lời trực tiếp câu hỏi
+                    # TẦNG 1b: Trả lời trực tiếp
                     f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off_v_color};line-height:1.6;">📢 {_direct_reply}</div>'
-                    # Line 3: Consensus
-                    f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | {_cons_off_text}</div>'
-                    # Block: Chi tiết phân tích
+                    # TẦNG 2: Sơ đồ lực lượng
+                    + _t2_html
+                    # TẦNG 3: Nguyên nhân + Thoán Từ
                     + _off_summary_extra
-                    # Block: Lời khuyên
+                    + _t3_thoan
+                    # TẦNG 4: Ứng Kỳ
+                    + _t4_html
+                    # TẦNG 5: Cảnh báo + Tương tác
+                    + _t5_html
+                    # TẦNG 6: Lời khuyên
                     + _advice_html
+                    # TẦNG 7: Consensus
+                    + _t7_html
                     + _off_ev_html
                     + f'</div>'
                 )
