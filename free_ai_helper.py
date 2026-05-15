@@ -15845,6 +15845,74 @@ class FreeAIHelper:
                 except Exception:
                     pass
                 
+                # --- TẦNG 6b: SUY LUẬN CHUYÊN SÂU — NGŨ HÀNH + DỤNG THẦN + CHUYÊN GIA ---
+                _t6b_html = ''
+                try:
+                    _t6b_parts = []
+                    _t6b_hanh = locals().get('hanh_dt_v22', '?')
+                    _t6b_lenh = ''
+                    try:
+                        _lr6 = _get_lenh_thang_hanh()
+                        _t6b_lenh = _lr6[0] if isinstance(_lr6, tuple) else (_lr6 or '')
+                    except Exception:
+                        pass
+                    
+                    # A. Chuỗi Ngũ Hành suy luận
+                    if _t6b_hanh and _t6b_hanh != '?':
+                        _hanh_sinh = SINH.get(_t6b_hanh, '')
+                        _hanh_khac = KHAC.get(_t6b_hanh, '')
+                        _hanh_bi_khac = [k for k, v in KHAC.items() if v == _t6b_hanh]
+                        _hanh_bi_khac_str = _hanh_bi_khac[0] if _hanh_bi_khac else '?'
+                        _hanh_bi_sinh = [k for k, v in SINH.items() if v == _t6b_hanh]
+                        _hanh_bi_sinh_str = _hanh_bi_sinh[0] if _hanh_bi_sinh else '?'
+                        
+                        _t6b_parts.append(f'🔥 <b>Chuỗi Ngũ Hành DT ({_t6b_hanh}):</b>')
+                        _t6b_parts.append(f'  → Được sinh bởi: <b>{_hanh_bi_sinh_str}</b> (Nguyên Thần — Quý nhân hỗ trợ)')
+                        _t6b_parts.append(f'  → Sinh ra: <b>{_hanh_sinh}</b> (Tử Tôn — Con cái, sản phẩm)')
+                        _t6b_parts.append(f'  → Khắc: <b>{_hanh_khac}</b> (Thê Tài — Tài lộc, vợ/chồng)')
+                        _t6b_parts.append(f'  → Bị khắc bởi: <b>{_hanh_bi_khac_str}</b> (Quan Quỷ — Áp lực, bệnh tật)')
+                        
+                        # B. Quan hệ DT vs Lệnh Tháng
+                        if _t6b_lenh:
+                            _rel_lenh = _ngu_hanh_relation(_t6b_hanh, _t6b_lenh)
+                            _rel_icon = '✅' if 'SINH' in _rel_lenh.upper() or 'TỶ' in _rel_lenh.upper() else '⚠️' if 'KHẮC' in _rel_lenh.upper() else '🟡'
+                            _t6b_parts.append(f'🌙 <b>DT ({_t6b_hanh}) vs Lệnh Tháng ({_t6b_lenh}):</b> {_rel_icon} {_rel_lenh}')
+                    
+                    # C. Gọi _custom_reasoning để có gợi ý theo chủ đề
+                    try:
+                        _cr_lines = self._custom_reasoning(question, dung_than, chart_data)
+                        if _cr_lines:
+                            # Extract key info: nhóm, gợi ý, lời khuyên
+                            for _crl in _cr_lines.split('\n'):
+                                _crl = _crl.strip()
+                                if not _crl or _crl.startswith('#'): continue
+                                if 'Nhóm suy luận:' in _crl:
+                                    _t6b_parts.append(f'🎯 {_crl.replace("- ", "").replace("**", "")}')
+                                elif 'Sao trọng tâm:' in _crl:
+                                    _t6b_parts.append(f'⭐ {_crl.replace("- ", "").replace("**", "")}')
+                                elif 'Gợi ý phân tích:' in _crl:
+                                    _t6b_parts.append(f'💡 {_crl.replace("- ", "").replace("**", "")}')
+                                elif 'Lời khuyên:' in _crl:
+                                    _t6b_parts.append(f'💬 {_crl.replace("- ", "").replace("**", "")}')
+                                elif 'Cung Bản Thân' in _crl:
+                                    _t6b_parts.append(f'🏠 {_crl.replace("  ", "").replace("**", "")}')
+                                elif 'CÁT ✅' in _crl or 'HUNG' in _crl:
+                                    _t6b_parts.append(f'  {_crl.replace("  ", "").replace("**", "")}')
+                                elif 'Bản thân' in _crl and 'vs' in _crl:
+                                    _t6b_parts.append(f'👤 {_crl.replace("- ", "").replace("**", "")}')
+                    except Exception:
+                        pass
+                    
+                    if _t6b_parts:
+                        _t6b_inner = ''.join(f'<div style="color:#e0f2fe;margin:2px 0;font-size:0.9em;line-height:1.5;">{p}</div>' for p in _t6b_parts)
+                        _t6b_html = (
+                            f'<div style="margin-top:12px;padding:14px;background:rgba(14,165,233,0.12);border-radius:12px;border:1px solid rgba(56,189,248,0.3);">'
+                            f'<div style="font-size:1.05em;font-weight:800;color:#38bdf8;margin-bottom:6px;">🧠 SUY LUẬN CHUYÊN SÂU — NGŨ HÀNH + DỤNG THẦN</div>'
+                            + _t6b_inner + '</div>'
+                        )
+                except Exception:
+                    pass
+                
                 # ═══ ASSEMBLE: 7 TẦNG LUẬN GIẢI ═══
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
@@ -15862,7 +15930,9 @@ class FreeAIHelper:
                     + _t4_html
                     # TẦNG 5: Cảnh báo + Tương tác
                     + _t5_html
-                    # TẦNG 6: Lời khuyên
+                    # TẦNG 6: Suy luận chuyên sâu
+                    + _t6b_html
+                    # TẦNG 6b: Lời khuyên
                     + _advice_html
                     # TẦNG 7: Consensus
                     + _t7_html
