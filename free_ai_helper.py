@@ -95,6 +95,11 @@ except ImportError:
     THE_POSITION = {}
 
 # V10.1: Knowledge Complete — Tri thức siêu chi tiết
+# V42.9.39: Thoán Từ 64 quẻ
+try:
+    from thoan_tu_64 import QUE_THOAN_64
+except ImportError:
+    QUE_THOAN_64 = {}
 try:
     from qmdg_knowledge_complete import (
         CUU_CUNG, CUU_TINH, BAT_MON as BAT_MON_KB, BAT_THAN as BAT_THAN_KB,
@@ -18093,9 +18098,13 @@ class FreeAIHelper:
                         lines.append(f"  → Tượng: {qd.get('tượng', '?')} | Đức: {qd.get('đức', '?')} | Ý nghĩa: {qd.get('ý_nghĩa', '?')}")
                         break
                 
-                # ====== V9.0: THOÁN TỪ + ĐẠI TƯỢNG ======
-                if hex_palace:
-                    thoan_info = QUE_THOAN_DAI_TUONG.get(hex_palace, {})
+                # ====== V42.9.39: THOÁN TỪ + ĐẠI TƯỢNG — 64 QUẺ ======
+                if hex_name or hex_palace:
+                    # Ưu tiên tra theo tên quẻ đầy đủ (64 quẻ)
+                    thoan_info = QUE_THOAN_64.get(hex_name, {}) if hex_name else {}
+                    # Fallback: tra theo tên Cung (8 cung)
+                    if not thoan_info and hex_palace:
+                        thoan_info = QUE_THOAN_DAI_TUONG.get(hex_palace, {})
                     if thoan_info:
                         lines.append(f"\n  **📜 THOÁN TỪ:** {thoan_info.get('thoan', '')}")
                         lines.append(f"  **🏔️ ĐẠI TƯỢNG:** {thoan_info.get('dai_tuong', '')}")
