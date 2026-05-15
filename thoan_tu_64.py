@@ -2,7 +2,7 @@
 """
 THOÁN TỪ + ĐẠI TƯỢNG — 64 QUẺ KINH DỊCH
 Nguồn: Kinh Dịch - Chu Dịch (周易)
-V42.9.40: Bổ sung đầy đủ 64 quẻ cho AI luận giải chính xác
+V42.9.41: Bổ sung đầy đủ 64 quẻ cho AI luận giải chính xác
 """
 
 QUE_THOAN_64 = {
