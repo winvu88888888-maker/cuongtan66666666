@@ -16394,22 +16394,22 @@ class FreeAIHelper:
                         _brain_ans = ''
                         try:
                             _brain_verdicts = {
-                                'km': ky_mon_verdict, 'lh': luc_hao_verdict,
-                                'mh': mai_hoa_verdict, 'ln': luc_nham_verdict,
-                                'ta': thai_at_verdict,
+                                'km': locals().get('ky_mon_verdict', ''), 'lh': locals().get('luc_hao_verdict', ''),
+                                'mh': locals().get('mai_hoa_verdict', ''), 'ln': locals().get('luc_nham_verdict', ''),
+                                'ta': locals().get('thai_at_verdict', ''),
                             }
-                            _brain_all_factors = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
+                            _brain_all_factors = list(locals().get('v23_lh_factors') or []) + list(locals().get('v24_km_factors') or []) + list(locals().get('v24_mh_factors') or [])
                             _brain_ung_ky = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
                             _brain_ans = generate_smart_offline_answer(
                                 question=_c.get('text', ''),
-                                dung_than=_c.get('dt', dung_than),
-                                weighted_pct=_c.get('pct', weighted_pct),
-                                category=detected_category,
+                                dung_than=_c.get('dt', locals().get('dung_than', '')),
+                                weighted_pct=_c.get('pct', locals().get('weighted_pct', 50)),
+                                category=locals().get('detected_category', 'CHUNG'),
                                 verdicts_dict=_brain_verdicts,
                                 all_factors=_brain_all_factors,
                                 ung_ky_str=_brain_ung_ky,
-                                chart_data=chart_data,
-                                v38_conclusion=v38_conclusion,
+                                chart_data=locals().get('chart_data', {}),
+                                v38_conclusion=locals().get('v38_conclusion', ''),
                             )
                         except Exception as _b_err:
                             self.log_step("Brain Multi", "ERR", str(_b_err)[:50])
