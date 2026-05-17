@@ -85,6 +85,9 @@ DIAGRAM_MASTER = {
 ║  │ 🏛 BT(Cung{cung_bt}) {bt_sv_rel} SV(Cung{cung_sv})             │     ║
 ║  │ 📍 Địa Bàn DT: {dia_ban_dt}                                     │     ║
 ║  │ 🔄 Phản/Phục Ngâm cung: {km_phan_phuc}                          │     ║
+║  │ 🔭 Nhìn xa-gần: {km_xa_gan}                                     │     ║
+║  │ 👁 Bốn cách nhìn: {km_4_cach_nhin}                               │     ║
+║  │ ⏳ Vận Hạn: {km_van_han}                                        │     ║
 ║  │                                                                   │     ║
 ║  │ 🚪 Bát Môn Cát/Hung: {bat_mon_cat_hung}                         │     ║
 ║  │ ⭐ Cửu Tinh Cát/Hung: {cuu_tinh_cat_hung}                       │     ║

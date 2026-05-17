@@ -120,6 +120,13 @@ except ImportError:
     def xac_dinh_huong_khoang_cach(c): return {}
     def kha_nang_tim_duoc(m): return ""
 
+try:
+    from km_luan_nang_cao import luan_nhin_xa_gan, luan_bon_cach_nhin, luan_van_han
+except ImportError:
+    def luan_nhin_xa_gan(*args, **kwargs): return ""
+    def luan_bon_cach_nhin(*args, **kwargs): return {}
+    def luan_van_han(*args, **kwargs): return ""
+
 # V31.0: Interaction Diagrams — Sơ đồ tương tác thời gian thực
 try:
     from interaction_diagrams import (
@@ -3816,6 +3823,38 @@ class FreeAIHelper:
         # === V42.9.8: Ám Can variable (đã extract ở trên) ===
         if not locals().get('km_am_can_str'):
             km_am_can_str = 'N/A'
+            
+        # === V42.9.42: LUẬN KỲ MÔN NÂNG CAO (Xa-gần, 4 cách nhìn, vận hạn) ===
+        km_xa_gan_str = ""
+        km_4_cach_nhin_str = ""
+        km_van_han_str = ""
+        try:
+            _is_duong_don = chart_data.get('is_duong_don', True) if chart_data else True
+            _is_phan_ngam = 'Phản Ngâm' in km_phan_phuc_str
+            _is_phuc_ngam = 'Phục Ngâm' in km_phan_phuc_str
+            km_xa_gan_str = luan_nhin_xa_gan(_is_duong_don, cung_dt_str, _is_phan_ngam, _is_phuc_ngam)
+            
+            _hanh_can = hanh_dt
+            _hanh_cua = KM_BAT_MON_REF.get(cua_dt_str, {}).get('hanh', '?') if cua_dt_str else '?'
+            _hanh_sao = KM_CUU_TINH_REF.get(sao_dt_str, {}).get('hanh', '?') if sao_dt_str else '?'
+            _can_ngay_km = chart_data.get('can_ngay', '?') if chart_data else '?'
+            
+            _4_cach = luan_bon_cach_nhin(_can_ngay_km, cua_dt_str, sao_dt_str, than_dt_str, _hanh_can, _hanh_cua, _hanh_sao, km_xa_gan_str)
+            km_4_cach_nhin_str = f"Ngang: {_4_cach.get('nhin_ngang','?')} | Dọc: {_4_cach.get('nhin_doc','?')} | Toàn: {_4_cach.get('nhin_toan_ban','?')}"
+            
+            _tu_tru_dict = {
+                'can_nam': chart_data.get('can_nam', '') if chart_data else '',
+                'chi_nam': chart_data.get('chi_nam', '') if chart_data else '',
+                'can_thang': chart_data.get('can_thang', '') if chart_data else '',
+                'chi_thang': chart_data.get('chi_thang', '') if chart_data else '',
+                'can_ngay': chart_data.get('can_ngay', '') if chart_data else '',
+                'chi_ngay': chart_data.get('chi_ngay', '') if chart_data else '',
+                'can_gio': chart_data.get('can_gio', '') if chart_data else '',
+                'chi_gio': chart_data.get('chi_gio', '') if chart_data else '',
+            }
+            km_van_han_str = luan_van_han(_tu_tru_dict)
+        except Exception as e:
+            km_xa_gan_str = str(e)
         
         # === Fill template ===
         slots = {
@@ -3870,6 +3909,9 @@ class FreeAIHelper:
             'bt_sv_rel': bt_sv_rel_str or '?',
             'dia_ban_dt': dia_ban_dt_str or '?',
             'km_phan_phuc': km_phan_phuc_str,
+            'km_xa_gan': km_xa_gan_str,
+            'km_4_cach_nhin': km_4_cach_nhin_str,
+            'km_van_han': km_van_han_str,
             # V42.9.8: Bát Môn/Cửu Tinh Cát Hung + Ám Can
             'bat_mon_cat_hung': bat_mon_cat_hung_str,
             'cuu_tinh_cat_hung': cuu_tinh_cat_hung_str,
