@@ -1,4 +1,4 @@
-﻿"""
+"""
 Free AI Helper V42.9.42 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên + 🧠 Offline Brain)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
@@ -138,6 +138,12 @@ try:
     from offline_brain import generate_smart_offline_answer
 except ImportError:
     def generate_smart_offline_answer(*args, **kwargs): return ""
+
+# V42.9.42: Ứng Kỳ Chi Tiết — Giờ/Ngày/Tháng/Năm
+try:
+    from ung_ky_engine import calc_ung_ky_detail
+except ImportError:
+    def calc_ung_ky_detail(*args, **kwargs): return {'summary': '', 'html': '', 'hour': '', 'day': '', 'month': '', 'year': '', 'speed': '', 'confidence': '', 'method': ''}
 
 # V31.0: Interaction Diagrams — Sơ đồ tương tác thời gian thực
 try:
@@ -15056,7 +15062,48 @@ class FreeAIHelper:
         except Exception as _uk_err:
             self.log_step("V42.9.5", "UNG_KY_ERR", str(_uk_err)[:80])
 
-        
+        # ═══════════════════════════════════════════════════════════════
+        # V42.9.42: ỨNG KỲ CHI TIẾT — Giờ/Ngày/Tháng/Năm cụ thể
+        # ═══════════════════════════════════════════════════════════════
+        _ung_ky_detail_result = {}
+        try:
+            _ukd_chi_dt = ''
+            _ukd_hanh_dt = hanh_dt_v22 if 'hanh_dt_v22' in locals() else ''
+            _ukd_is_khong = 'Tuần Không' in str(v23_lh_factors)
+            _ukd_is_mo = ts_stage == 'Mộ' if 'ts_stage' in locals() else False
+            _ukd_is_dong = False
+            _ukd_the_quai = chart_data.get('the_quai', '') if chart_data else ''
+            _ukd_dung_quai = chart_data.get('dung_quai', '') if chart_data else ''
+            _ukd_am_duong = chart_data.get('am_duong_don', '') if chart_data else ''
+            
+            if 'dung_than_hao' in locals() and dung_than_hao and isinstance(dung_than_hao, dict):
+                _ukd_chi_dt = dung_than_hao.get('chi', '')
+                _dti = locals().get('dung_than_idx')
+                _ukd_is_dong = _dti in (luc_hao_data.get('dong_hao') or []) if luc_hao_data else False
+            
+            _ung_ky_detail_result = calc_ung_ky_detail(
+                chi_dt=_ukd_chi_dt,
+                hanh_dt=_ukd_hanh_dt,
+                is_tuan_khong=_ukd_is_khong,
+                is_nhap_mo=_ukd_is_mo,
+                is_dong=_ukd_is_dong,
+                ts_stage=ts_stage if 'ts_stage' in locals() else '',
+                am_duong_don=_ukd_am_duong,
+                the_quai=_ukd_the_quai,
+                dung_quai=_ukd_dung_quai,
+                verdict=ky_mon_verdict or '',
+                weighted_pct=weighted_pct,
+            )
+            
+            if _ung_ky_detail_result.get('html'):
+                offline_full_output += f"\n\n{_ung_ky_detail_result['html']}"
+            
+            # Inject summary vào hub cho Gemini
+            if _ung_ky_detail_result.get('summary'):
+                _hub['synthesis']['ung_ky_detail'] = _ung_ky_detail_result['summary']
+                self.log_step("V42.9.42", "UNG_KY_DETAIL", _ung_ky_detail_result['summary'][:80])
+        except Exception as _ukd_err:
+            self.log_step("V42.9.42", "UNG_KY_DETAIL_ERR", str(_ukd_err)[:80])
 
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
