@@ -133,6 +133,12 @@ except ImportError:
     def luan_xem_tong_quat_nhanh(*args, **kwargs): return ""
     def detect_extra_category(*args, **kwargs): return None, None
 
+# V42.9.42: Offline Brain — Não suy luận AI Offline
+try:
+    from offline_brain import generate_smart_offline_answer
+except ImportError:
+    def generate_smart_offline_answer(*args, **kwargs): return ""
+
 # V31.0: Interaction Diagrams — Sơ đồ tương tác thời gian thực
 try:
     from interaction_diagrams import (
@@ -16564,6 +16570,34 @@ class FreeAIHelper:
                         + ''.join(f'<div style="color:#fef3c7;margin:4px 0;font-size:0.95em;">{a}</div>' for a in _adv_fb)
                         + f'</div>'
                     )
+                
+                
+                # ═══ V42.9.42: OFFLINE BRAIN — Câu trả lời thông minh ═══
+                _brain_answer = ''
+                try:
+                    _brain_verdicts = {
+                        'km': ky_mon_verdict, 'lh': luc_hao_verdict,
+                        'mh': mai_hoa_verdict, 'ln': luc_nham_verdict,
+                        'ta': thai_at_verdict,
+                    }
+                    _brain_all_factors = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
+                    _brain_ung_ky = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
+                    _brain_answer = generate_smart_offline_answer(
+                        question=question,
+                        dung_than=dung_than,
+                        weighted_pct=weighted_pct,
+                        category=detected_category,
+                        verdicts_dict=_brain_verdicts,
+                        all_factors=_brain_all_factors,
+                        ung_ky_str=_brain_ung_ky,
+                        chart_data=chart_data,
+                        v38_conclusion=v38_conclusion,
+                    )
+                except Exception as _brain_err:
+                    self.log_step("V42.9.42 Brain", "ERROR", str(_brain_err)[:80])
+                
+                if _brain_answer:
+                    final_parts.append(_brain_answer)
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
