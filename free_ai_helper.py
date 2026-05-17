@@ -16388,20 +16388,64 @@ class FreeAIHelper:
                     ('#4c1d95', '#5b21b6', '#8b5cf6', '#c4b5fd'),
                     ('#78350f', '#92400e', '#f59e0b', '#fde68a'),
                 ]
-                for _ci2, _ans2 in enumerate(_offline_short_answer_list):
-                    _cc2 = _card_colors_off[_ci2 % len(_card_colors_off)]
-                    _icon2 = '🟡'
-                    if any(x in _ans2 for x in ['✅', '🟢', 'CÓ', 'NÊN', 'THẮNG', 'THUẬN', 'TỐT', 'ĐƯỢC']):
-                        _icon2 = '🟢'
-                    elif any(x in _ans2 for x in ['🔴', 'KHÔNG', 'THUA', 'HUNG', 'XẤU', 'MẤT', 'BẤT LỢI']):
-                        _icon2 = '🔴'
-                    _multi_cards_off += (
-                        f'<div style="background:linear-gradient(135deg,{_cc2[0]},{_cc2[1]});padding:20px;border-radius:14px;'
-                        f'margin:8px 0;border:2px solid {_cc2[2]};box-shadow:0 4px 20px rgba(0,0,0,0.3);">'
-                        f'<div style="font-size:0.9em;font-weight:600;color:{_cc2[3]};margin-bottom:6px;">📋 CÂU TRẢ LỜI {_ci2+1}/{len(_offline_short_answer_list)}</div>'
-                        f'<div style="font-size:1.5em;font-weight:900;color:#ffffff;line-height:1.3;">{_icon2} {_ans2}</div>'
-                        f'</div>'
-                    )
+                _mi_cards_local = locals().get('_mi_cards', [])
+                if isinstance(_mi_cards_local, list) and len(_mi_cards_local) == len(_offline_short_answer_list):
+                    for _ci2, _c in enumerate(_mi_cards_local):
+                        _brain_ans = ''
+                        try:
+                            _brain_verdicts = {
+                                'km': ky_mon_verdict, 'lh': luc_hao_verdict,
+                                'mh': mai_hoa_verdict, 'ln': luc_nham_verdict,
+                                'ta': thai_at_verdict,
+                            }
+                            _brain_all_factors = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
+                            _brain_ung_ky = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
+                            _brain_ans = generate_smart_offline_answer(
+                                question=_c.get('text', ''),
+                                dung_than=_c.get('dt', dung_than),
+                                weighted_pct=_c.get('pct', weighted_pct),
+                                category=detected_category,
+                                verdicts_dict=_brain_verdicts,
+                                all_factors=_brain_all_factors,
+                                ung_ky_str=_brain_ung_ky,
+                                chart_data=chart_data,
+                                v38_conclusion=v38_conclusion,
+                            )
+                        except Exception as _b_err:
+                            self.log_step("Brain Multi", "ERR", str(_b_err)[:50])
+                        
+                        if _brain_ans:
+                            _multi_cards_off += (
+                                f'<div style="margin-top:16px;">'
+                                f'<div style="font-size:0.95em;font-weight:800;color:#34d399;margin-bottom:6px;">📋 CÂU TRẢ LỜI {_ci2+1}/{len(_mi_cards_local)}:</div>'
+                                f'{_brain_ans}'
+                                f'</div>'
+                            )
+                        else:
+                            _ans2 = _offline_short_answer_list[_ci2]
+                            _cc2 = _card_colors_off[_ci2 % len(_card_colors_off)]
+                            _multi_cards_off += (
+                                f'<div style="background:linear-gradient(135deg,{_cc2[0]},{_cc2[1]});padding:20px;border-radius:14px;'
+                                f'margin:8px 0;border:2px solid {_cc2[2]};box-shadow:0 4px 20px rgba(0,0,0,0.3);">'
+                                f'<div style="font-size:0.9em;font-weight:600;color:{_cc2[3]};margin-bottom:6px;">📋 CÂU TRẢ LỜI {_ci2+1}/{len(_offline_short_answer_list)}</div>'
+                                f'<div style="font-size:1.2em;font-weight:900;color:#ffffff;line-height:1.4;">{_ans2}</div>'
+                                f'</div>'
+                            )
+                else:
+                    for _ci2, _ans2 in enumerate(_offline_short_answer_list):
+                        _cc2 = _card_colors_off[_ci2 % len(_card_colors_off)]
+                        _icon2 = '🟡'
+                        if any(x in _ans2 for x in ['✅', '🟢', 'CÓ', 'NÊN', 'THẮNG', 'THUẬN', 'TỐT', 'ĐƯỢC']):
+                            _icon2 = '🟢'
+                        elif any(x in _ans2 for x in ['🔴', 'KHÔNG', 'THUA', 'HUNG', 'XẤU', 'MẤT', 'BẤT LỢI']):
+                            _icon2 = '🔴'
+                        _multi_cards_off += (
+                            f'<div style="background:linear-gradient(135deg,{_cc2[0]},{_cc2[1]});padding:20px;border-radius:14px;'
+                            f'margin:8px 0;border:2px solid {_cc2[2]};box-shadow:0 4px 20px rgba(0,0,0,0.3);">'
+                            f'<div style="font-size:0.9em;font-weight:600;color:{_cc2[3]};margin-bottom:6px;">📋 CÂU TRẢ LỜI {_ci2+1}/{len(_offline_short_answer_list)}</div>'
+                            f'<div style="font-size:1.5em;font-weight:900;color:#ffffff;line-height:1.3;">{_icon2} {_ans2}</div>'
+                            f'</div>'
+                        )
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.42</div>'
