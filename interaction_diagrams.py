@@ -88,6 +88,8 @@ DIAGRAM_MASTER = {
 ║  │ 🔭 Nhìn xa-gần: {km_xa_gan}                                     │     ║
 ║  │ 👁 Bốn cách nhìn: {km_4_cach_nhin}                               │     ║
 ║  │ ⏳ Vận Hạn: {km_van_han}                                        │     ║
+║  │ 🔍 Xem Tổng Quát: {km_xem_tong_quat}                            │     ║
+║  │ 🎯 DT Đặc Thù KM: {km_dt_dac_thu}                               │     ║
 ║  │                                                                   │     ║
 ║  │ 🚪 Bát Môn Cát/Hung: {bat_mon_cat_hung}                         │     ║
 ║  │ ⭐ Cửu Tinh Cát/Hung: {cuu_tinh_cat_hung}                       │     ║

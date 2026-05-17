@@ -121,11 +121,17 @@ except ImportError:
     def kha_nang_tim_duoc(m): return ""
 
 try:
-    from km_luan_nang_cao import luan_nhin_xa_gan, luan_bon_cach_nhin, luan_van_han
+    from km_luan_nang_cao import (
+        luan_nhin_xa_gan, luan_bon_cach_nhin, luan_van_han,
+        luan_dung_than_dac_thu_km, luan_xem_tong_quat_nhanh, detect_extra_category,
+    )
 except ImportError:
     def luan_nhin_xa_gan(*args, **kwargs): return ""
     def luan_bon_cach_nhin(*args, **kwargs): return {}
     def luan_van_han(*args, **kwargs): return ""
+    def luan_dung_than_dac_thu_km(*args, **kwargs): return None
+    def luan_xem_tong_quat_nhanh(*args, **kwargs): return ""
+    def detect_extra_category(*args, **kwargs): return None, None
 
 # V31.0: Interaction Diagrams — Sơ đồ tương tác thời gian thực
 try:
@@ -3853,8 +3859,27 @@ class FreeAIHelper:
                 'chi_gio': chart_data.get('chi_gio', '') if chart_data else '',
             }
             km_van_han_str = luan_van_han(_tu_tru_dict)
+            
+            # V42.9.42: Xem Tổng Quát nhanh
+            _can_gio_km = chart_data.get('can_gio', '') if chart_data else ''
+            km_xem_tong_quat_str = luan_xem_tong_quat_nhanh(_can_gio_km, truc_phu, truc_su)
+            
+            # V42.9.42: Dụng Thần đặc thù KM
+            _dt_dac_thu = luan_dung_than_dac_thu_km(question)
+            if _dt_dac_thu:
+                km_dt_dac_thu_str = f"{_dt_dac_thu['dung_than_km']} — {_dt_dac_thu['ghi_chu']}"
+            else:
+                km_dt_dac_thu_str = "Tiêu chuẩn (Can Ngày/Giờ)"
         except Exception as e:
-            km_xa_gan_str = str(e)
+            km_xa_gan_str = km_xa_gan_str or str(e)
+            km_xem_tong_quat_str = km_xem_tong_quat_str if 'km_xem_tong_quat_str' in dir() else ''
+            km_dt_dac_thu_str = km_dt_dac_thu_str if 'km_dt_dac_thu_str' in dir() else ''
+        
+        # Ensure variables exist
+        if 'km_xem_tong_quat_str' not in dir():
+            km_xem_tong_quat_str = ''
+        if 'km_dt_dac_thu_str' not in dir():
+            km_dt_dac_thu_str = ''
         
         # === Fill template ===
         slots = {
@@ -3912,6 +3937,8 @@ class FreeAIHelper:
             'km_xa_gan': km_xa_gan_str,
             'km_4_cach_nhin': km_4_cach_nhin_str,
             'km_van_han': km_van_han_str,
+            'km_xem_tong_quat': km_xem_tong_quat_str,
+            'km_dt_dac_thu': km_dt_dac_thu_str,
             # V42.9.8: Bát Môn/Cửu Tinh Cát Hung + Ám Can
             'bat_mon_cat_hung': bat_mon_cat_hung_str,
             'cuu_tinh_cat_hung': cuu_tinh_cat_hung_str,
