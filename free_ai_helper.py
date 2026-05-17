@@ -14239,7 +14239,8 @@ class FreeAIHelper:
                     # SĐ2: Số lượng
                     if any(k in t for k in ['bao nhiêu','mấy người','mấy cái','mấy đứa','số lượng','mấy','giá tiền','giá bao nhiêu']): return 'COUNT'
                     # SĐ13: Ai / Người Nào / Tên / Thần
-                    if any(k in t for k in ['ai ','người nào','ai đó','do ai','của ai','là ai','nam hay nữ','giới tính','đàn ông','phụ nữ','con trai','con gái','tên gì','tên là gì','thần gì','vị nào','vong nào','ma nào','thánh nào']): return 'WHO'
+                    _t_pad = f" {t} "
+                    if any(kw in _t_pad for kw in [' ai ', ' ai?', ' ai.', ' người nào', ' ai đó', ' do ai', ' của ai', ' là ai', ' nam hay nữ', ' giới tính', ' đàn ông', ' phụ nữ', ' con trai', ' con gái', ' tên gì', ' tên là gì', ' thần gì', ' vị nào', ' vong nào', ' ma nào', ' thánh nào']): return 'WHO'
                     # SĐ14: Tại Sao / Nguyên Nhân
                     if any(k in t for k in ['tại sao','vì sao','nguyên nhân','lý do','do đâu','sao lại']): return 'WHY'
                     # SĐ15: Thế Nào / Trạng Thái / Giải Pháp
@@ -14382,7 +14383,8 @@ class FreeAIHelper:
                 # Card 1: câu hỏi chính (dùng weighted_pct đã tính)
                 _mi_pq1_text = _mi_parsed[0].get('text', question)[:60] if _mi_parsed else question[:60]
                 _mi_pq1_dt = _mi_parsed[0].get('dung_than', dung_than) if _mi_parsed else dung_than
-                if any(k in _mi_pq1_text.lower() for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh']):
+                _pq1_padded = f" {_mi_pq1_text.lower()} "
+                if any(f" {k} " in _pq1_padded or f" {k}?" in _pq1_padded or f" {k}." in _pq1_padded for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh', 'phong thủy', 'bùa']):
                     _mi_pq1_dt = 'Tâm Linh'
                 _mi_pq1_hanh = _MI_LT_H.get(_mi_pq1_dt, 'Thổ')
                 _mi_pq1_qtype = _mi_detect_qtype(_mi_pq1_text)
