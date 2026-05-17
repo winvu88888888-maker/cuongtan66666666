@@ -14409,7 +14409,8 @@ class FreeAIHelper:
                 for _mi_idx, _mi_sq in enumerate(_mi_parsed[1:], start=2):
                     _mi_sq_dt = _mi_sq.get('dung_than', _mi_all_dts[min(_mi_idx-1, len(_mi_all_dts)-1)] if _mi_idx-1 < len(_mi_all_dts) else 'Bản Thân')
                     _mi_sq_text = _mi_sq.get('text', '')[:60]
-                    if any(k in _mi_sq_text.lower() for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh']):
+                    _sq_padded = f" {_mi_sq_text.lower()} "
+                    if any(f" {k} " in _sq_padded or f" {k}?" in _sq_padded or f" {k}." in _sq_padded for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh', 'phong thủy', 'bùa']):
                         _mi_sq_dt = 'Tâm Linh'
                     _mi_sq_hanh = _MI_LT_H.get(_mi_sq_dt, 'Thổ')
                     
@@ -16388,9 +16389,8 @@ class FreeAIHelper:
                     ('#4c1d95', '#5b21b6', '#8b5cf6', '#c4b5fd'),
                     ('#78350f', '#92400e', '#f59e0b', '#fde68a'),
                 ]
-                _mi_cards_local = locals().get('_mi_cards', [])
-                if isinstance(_mi_cards_local, list) and len(_mi_cards_local) == len(_offline_short_answer_list):
-                    for _ci2, _c in enumerate(_mi_cards_local):
+                if isinstance(_mi_cards, list) and len(_mi_cards) == len(_offline_short_answer_list):
+                    for _ci2, _c in enumerate(_mi_cards):
                         _brain_ans = ''
                         try:
                             _brain_verdicts = {
@@ -16413,15 +16413,13 @@ class FreeAIHelper:
                             )
                         except Exception as _b_err:
                             import traceback
-                            with open("multi_err.txt", "a", encoding="utf-8") as f:
-                                f.write("ERROR IN MULTI BRAIN:\\n")
-                                f.write(traceback.format_exc() + "\\n")
-                            self.log_step("Brain Multi", "ERR", str(_b_err)[:50])
+                            _err_trace = traceback.format_exc()
+                            _brain_ans = f"<div style='color:red;'><b>ERROR IN SMART ANSWER:</b><br><pre>{_err_trace}</pre></div>"
                         
                         if _brain_ans:
                             _multi_cards_off += (
                                 f'<div style="margin-top:16px;">'
-                                f'<div style="font-size:0.95em;font-weight:800;color:#34d399;margin-bottom:6px;">📋 CÂU TRẢ LỜI {_ci2+1}/{len(_mi_cards_local)}:</div>'
+                                f'<div style="font-size:0.95em;font-weight:800;color:#34d399;margin-bottom:6px;">📋 CÂU TRẢ LỜI {_ci2+1}/{len(_mi_cards)}:</div>'
                                 f'{_brain_ans}'
                                 f'</div>'
                             )
