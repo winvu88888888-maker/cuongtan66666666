@@ -16412,6 +16412,10 @@ class FreeAIHelper:
                                 v38_conclusion=locals().get('v38_conclusion', ''),
                             )
                         except Exception as _b_err:
+                            import traceback
+                            with open("multi_err.txt", "a", encoding="utf-8") as f:
+                                f.write("ERROR IN MULTI BRAIN:\\n")
+                                f.write(traceback.format_exc() + "\\n")
                             self.log_step("Brain Multi", "ERR", str(_b_err)[:50])
                         
                         if _brain_ans:
