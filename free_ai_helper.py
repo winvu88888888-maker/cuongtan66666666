@@ -14294,34 +14294,34 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
                         else: return f"THUA ({sq_pct}%)", "🔴"
                     elif qtype == 'FINANCE':
-                        if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG — có tài ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH — cầu tài được nhưng không nhiều ({sq_pct}%)", "🟡"
-                        else: return f"💰 THẤT TÀI — không nên mạo hiểm ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"💰 THẤT TÀI ({sq_pct}%)", "🔴"
                     elif qtype == 'LOVE':
-                        if sq_pct >= 55: return f"❤️ TÌNH DUYÊN TỐT — có duyên, hợp ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"❤️ TÌNH DUYÊN BÌNH — có nhưng cần nỗ lực ({sq_pct}%)", "🟡"
-                        else: return f"❤️ TÌNH DUYÊN KHÓ — bất hòa, trắc trở ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"❤️ TÌNH DUYÊN TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"❤️ TÌNH DUYÊN BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"❤️ TÌNH DUYÊN KHÓ ({sq_pct}%)", "🔴"
                     elif qtype == 'HEALTH':
-                        if sq_pct >= 55: return f"🏥 BỆNH NHẸ — chữa được, mau khỏi ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"🏥 BỆNH VỪA — cần chữa trị, kiên nhẫn ({sq_pct}%)", "🟡"
-                        else: return f"🏥 BỆNH NẶNG — khó chữa, cần bác sĩ giỏi ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"🏥 BỆNH NHẸ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🏥 BỆNH VỪA ({sq_pct}%)", "🟡"
+                        else: return f"🏥 BỆNH NẶNG ({sq_pct}%)", "🔴"
                     elif qtype == 'CAREER':
                         if sq_pct >= 55: return f"💼 CÔNG VIỆC TỐT ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH ({sq_pct}%)", "🟡"
                         else: return f"💼 CÔNG VIỆC KHÓ ({sq_pct}%)", "🔴"
                     elif qtype == 'LAWSUIT':
-                        if sq_pct >= 55: return f"⚖️ THẮNG KIỆN — có lý, được hỗ trợ ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"⚖️ HÒA GIẢI — nên thương lượng ({sq_pct}%)", "🟡"
-                        else: return f"⚖️ THUA KIỆN — xấu, nên rút ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"⚖️ THẮNG KIỆN ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"⚖️ HÒA GIẢI ({sq_pct}%)", "🟡"
+                        else: return f"⚖️ THUA KIỆN ({sq_pct}%)", "🔴"
                     elif qtype == 'LOST_ITEM':
                         huong = _MI_HUONG.get(sq_hanh, '?')
-                        if sq_pct >= 55: return f"🔍 TÌM ĐƯỢC — hướng {huong}, còn nguyên ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong}, có thể hỏng ({sq_pct}%)", "🟡"
-                        else: return f"🔍 MẤT HẲN — không tìm được ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"🔍 TÌM ĐƯỢC — hướng {huong} ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong} ({sq_pct}%)", "🟡"
+                        else: return f"🔍 MẤT HẲN ({sq_pct}%)", "🔴"
                     elif qtype == 'TRAVEL':
-                        if sq_pct >= 55: return f"✈️ NÊN ĐI — tốt, bình an ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC — nhưng cẩn thận ({sq_pct}%)", "🟡"
-                        else: return f"✈️ KHÔNG NÊN ĐI — trở ngại, nguy hiểm ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"✈️ NÊN ĐI ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC ({sq_pct}%)", "🟡"
+                        else: return f"✈️ KHÔNG NÊN ĐI ({sq_pct}%)", "🔴"
                     elif qtype == 'WHO':
                         _MI_GIOI = {'Kim': 'Nam (Cương quyết)', 'Hỏa': 'Nam (Nhiệt tình)', 'Mộc': 'Nam (Ôn hòa)', 'Thủy': 'Nữ (Mềm mỏng)', 'Thổ': 'Nữ (Trầm tĩnh)'}
                         nghe = _MI_NGHE.get(sq_hanh, '?')
