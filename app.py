@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V99"
+APP_VERSION = "V6886"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Cross-Reference 📊 + Unleashed Intelligence 🧠 + Deep Forensic 🕵️‍♂️ + Internet 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
