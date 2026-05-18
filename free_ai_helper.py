@@ -14306,9 +14306,9 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"🏥 BỆNH VỪA — cần chữa trị, kiên nhẫn ({sq_pct}%)", "🟡"
                         else: return f"🏥 BỆNH NẶNG — khó chữa, cần bác sĩ giỏi ({sq_pct}%)", "🔴"
                     elif qtype == 'CAREER':
-                        if sq_pct >= 55: return f"💼 CÔNG VIỆC THUẬN — thăng tiến, đỗ đạt ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH — ổn định nhưng chậm ({sq_pct}%)", "🟡"
-                        else: return f"💼 CÔNG VIỆC KHÓ — trở ngại, cạnh tranh ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"💼 CÔNG VIỆC TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"💼 CÔNG VIỆC KHÓ ({sq_pct}%)", "🔴"
                     elif qtype == 'LAWSUIT':
                         if sq_pct >= 55: return f"⚖️ THẮNG KIỆN — có lý, được hỗ trợ ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"⚖️ HÒA GIẢI — nên thương lượng ({sq_pct}%)", "🟡"
