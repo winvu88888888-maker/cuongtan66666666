@@ -43,7 +43,7 @@ def test_question(label, question, must_contain=None, must_not_contain=None):
                     issues.append(f"Should NOT contain: '{kw}'")
         
         # General checks
-        has_verdict = any(k in result for k in ['KHẲNG ĐỊNH', 'PHÁN QUYẾT', 'CÂU TRẢ LỜI'])
+        has_verdict = any(k in result for k in ['CÂU TRẢ LỜI', 'PHÁN QUYẾT', 'CÂU TRẢ LỜI'])
         has_analysis = any(k in result for k in ['LỤC HÀO', 'KỲ MÔN', 'MAI HOA'])
         
         status = '✅ PASS' if ok else '❌ FAIL'
@@ -55,8 +55,8 @@ def test_question(label, question, must_contain=None, must_not_contain=None):
         print(f"   {status} — {tag}")
         
         # Show key parts
-        if 'KHẲNG ĐỊNH' in result:
-            idx = result.index('KHẲNG ĐỊNH')
+        if 'CÂU TRẢ LỜI' in result:
+            idx = result.index('CÂU TRẢ LỜI')
             snippet = result[max(0,idx-20):idx+200].replace('\n', ' | ')
             print(f"   KẾT LUẬN: {snippet[:150]}")
         
@@ -105,13 +105,13 @@ print("❓"*20)
 test_question(
     "2a. Có nên đầu tư?",
     "Tôi có nên đầu tư bất động sản không?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 test_question(
     "2b. Có nên kết hôn?",
     "Có nên kết hôn năm nay không?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 # ═══════════════════════════════════════
@@ -124,7 +124,7 @@ print("🏥"*20)
 test_question(
     "3a. Bố bệnh nặng",
     "Bố tôi bệnh nặng có qua khỏi không?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 # ═══════════════════════════════════════
@@ -137,7 +137,7 @@ print("💰"*20)
 test_question(
     "4a. Kinh doanh năm nay",
     "Kinh doanh năm nay có lãi không?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 # ═══════════════════════════════════════
@@ -150,7 +150,7 @@ print("❤️"*20)
 test_question(
     "5a. Người yêu có thật lòng?",
     "Người yêu tôi có thật lòng không?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 # ═══════════════════════════════════════
@@ -163,7 +163,7 @@ print("⏰"*20)
 test_question(
     "6a. Bao giờ có việc?",
     "Bao giờ tôi xin được việc mới?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 # ═══════════════════════════════════════
@@ -176,7 +176,7 @@ print("🔍"*20)
 test_question(
     "7a. Mất điện thoại",
     "Tôi mất điện thoại ở đâu?",
-    must_contain=['KHẲNG ĐỊNH'],
+    must_contain=['CÂU TRẢ LỜI'],
 )
 
 # ═══════════════════════════════════════

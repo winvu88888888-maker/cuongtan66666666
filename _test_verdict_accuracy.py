@@ -101,6 +101,10 @@ for idx, q in enumerate(TEST_QUESTIONS, 1):
             r'KHÔNG NÊN',
             r'KHÓ nhưng chưa hẳn KHÔNG',
             r'CÂN NHẮC',
+            r'🔴 HUNG',
+            r'🟢 CÁT',
+            r'HUNG — KHÓ KHĂN',
+            r'CÁT — THÀNH CÔNG',
         ]
         
         found_verdict = None
