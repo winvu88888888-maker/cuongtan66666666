@@ -6843,7 +6843,7 @@ class FreeAIHelper:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: KHÔNG NÊN — XẤU ({weighted_pct}%)**")
         elif any(kw in q_lower for kw in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không', 'qua khỏi', 'cứu được', 'mất chưa', 'đã mất', 'sống hay', 'mất rồi', 'chết hay', 'sống chết', 'còn hay mất', 'qua đời', 'tử vong', 'sống sót', 'qua được', 'bệnh nặng', 'nguy kịch', 'hấp hối']):
             if weighted_pct >= 50:
-                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÒN SỐNG / QUA ĐƯỢC ({weighted_pct}%)**")
+                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÒN SỐNG ({weighted_pct}%)**")
             elif weighted_pct >= 40:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: CÒN SỐNG nhưng NGUY KỊCH ({weighted_pct}%)**")
             else:
@@ -11839,14 +11839,14 @@ class FreeAIHelper:
             elif _diff >= 2:
                 verdict_line = f"📢 **PHÁN QUYẾT: {_side_a} HƠI TRỘI ↗️ (Thế +{_diff}) — {_side_b} yếu hơn**"
             elif _diff >= -1:
-                verdict_line = f"📢 **PHÁN QUYẾT: HÒA / CÂN BẰNG ⚖️ ({_side_a} ≈ {_side_b}, chênh {_diff:+d})**"
+                verdict_line = f"📢 **PHÁN QUYẾT: HÒA ⚖️ ({_side_a} ≈ {_side_b}, chênh {_diff:+d})**"
             elif _diff >= -4:
                 verdict_line = f"📢 **PHÁN QUYẾT: {_side_b} HƠI TRỘI ↗️ (Ứng {abs(_diff):+d}) — {_side_a} yếu hơn**"
             else:
                 verdict_line = f"📢 **PHÁN QUYẾT: {_side_b} THẮNG ✅ (Ứng {abs(_diff):+d}) — {_side_a} THUA**"
         elif is_life_death:
             if pct >= 50:
-                verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG / QUA ĐƯỢC ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG ({pct}%)**"
             elif pct >= 40:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG nhưng NGUY KỊCH ({pct}%)**"
             else:
@@ -11963,13 +11963,13 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"CÓ THỂ — nhưng THẬN TRỌNG ({sq_pct}%)", "🟡"
                         else: return f"KHÔNG NÊN — XẤU ({sq_pct}%)", "🔴"
                     elif qtype == 'LIFE_DEATH':
-                        if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
-                        elif sq_pct >= 40: return f"NGUY KỊCH — cần cứu chữa gấp ({sq_pct}%)", "🟡"
-                        else: return f"NGUY HIỂM — rất khó ({sq_pct}%)", "🔴"
+                        if sq_pct >= 50: return f"CÒN SỐNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 40: return f"NGUY KỊCH ({sq_pct}%)", "🟡"
+                        else: return f"NGUY HIỂM ({sq_pct}%)", "🔴"
                     elif qtype == 'COMPETITION':
-                        if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"HÒA / CÂN BẰNG ({sq_pct}%)", "🟡"
-                        else: return f"THUA — YẾU THẾ ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"THẮNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
+                        else: return f"THUA ({sq_pct}%)", "🔴"
                     elif qtype == 'FINANCE':
                         if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH ({sq_pct}%)", "🟡"
@@ -12430,7 +12430,7 @@ class FreeAIHelper:
         elif is_life_death:
             if pct >= 50:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: CÒN SỐNG / QUA ĐƯỢC ({pct}%).**\n"
+                    f"**👉 KHẲNG ĐỊNH: CÒN SỐNG ({pct}%).**\n"
                     f"• {dung_than} ({_hanh_dt_kl}) CÓ SINH KHÍ — chưa tuyệt.\n"
                 )
                 ev_lines = []
@@ -14286,11 +14286,11 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"CÓ THỂ — THẬN TRỌNG ({sq_pct}%)", "🟡"
                         else: return f"KHÔNG NÊN — XẤU ({sq_pct}%)", "🔴"
                     elif qtype == 'LIFE_DEATH':
-                        if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
+                        if sq_pct >= 50: return f"CÒN SỐNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 40: return f"NGUY KỊCH ({sq_pct}%)", "🟡"
                         else: return f"NGUY HIỂM ({sq_pct}%)", "🔴"
                     elif qtype == 'COMPETITION':
-                        if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
+                        if sq_pct >= 55: return f"THẮNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
                         else: return f"THUA ({sq_pct}%)", "🔴"
                     elif qtype == 'FINANCE':
