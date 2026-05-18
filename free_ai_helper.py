@@ -13648,6 +13648,10 @@ class FreeAIHelper:
             km_s, km_sum, v24_km_factors = self._ky_mon_scoring(chart_data, dung_than)
             v16_km_raw = km_s
             # Override km_verdict_to_score from raw calculation
+            if km_sum:
+                ky_mon_verdict = km_sum
+            if v24_km_factors:
+                ky_mon_reason = ", ".join([str(f).replace("KM ", "").replace("  ", "") for f in v24_km_factors])
         except Exception:
             pass
             
@@ -13655,12 +13659,20 @@ class FreeAIHelper:
             lh_s, lh_sum, v23_lh_factors = self._luc_hao_scoring(luc_hao_data, dung_than)
             v16_lh_score_str = lh_sum
             v16_lh_raw = lh_s
+            if lh_sum:
+                luc_hao_verdict = lh_sum
+            if v23_lh_factors:
+                luc_hao_reason = ", ".join([str(f).replace("LH ", "").replace("  ", "") for f in v23_lh_factors])
         except Exception:
             pass
         try:
             mh_s, mh_sum, v24_mh_factors = self._mai_hoa_scoring(mai_hoa_data, chart_data)
             v16_mh_score_str = mh_sum
             v16_mh_raw = mh_s
+            if mh_sum:
+                mai_hoa_verdict = mh_sum
+            if v24_mh_factors:
+                mai_hoa_reason = ", ".join([str(f).replace("MH ", "").replace("  ", "") for f in v24_mh_factors])
         except Exception:
             pass
         try:
@@ -13673,12 +13685,20 @@ class FreeAIHelper:
             ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data)
             v16_ln_score_str = ln_sum
             v16_ln_raw = ln_s
+            if ln_sum:
+                luc_nham_verdict = ln_sum
+            if v24_ln_factors:
+                luc_nham_reason = ", ".join([str(f).replace("LN ", "").replace("  ", "") for f in v24_ln_factors])
         except Exception:
             pass
         try:
             ta_s, ta_sum, v24_ta_factors = self._thai_at_scoring(chart_data)
             v16_ta_score_str = ta_sum
             v16_ta_raw = ta_s
+            if ta_sum:
+                thai_at_verdict = ta_sum
+            if v24_ta_factors:
+                thai_at_reason = ", ".join([str(f).replace("TA ", "").replace("  ", "") for f in v24_ta_factors])
         except Exception:
             pass
         
@@ -14897,17 +14917,7 @@ class FreeAIHelper:
                             _hub['methods']['MH']['verdict'] = _mh_verdict_dkt
                             _hub['methods']['MH']['reason'] = '; '.join(_dkt_fixes[-1:])
                 
-                # 2. Kỳ Môn: Kiểm tra Bát Môn cát/hung
-                _km_mon_tree = DKT.get('KM', {}).get('bat_mon', {})
-                if chart_data and isinstance(chart_data, dict) and _km_mon_tree:
-                    _nhan_ban = chart_data.get('nhan_ban', {})
-                    if _nhan_ban:
-                        for _cung_val in _nhan_ban.values():
-                            _mon_name = _cung_val if isinstance(_cung_val, str) else str(_cung_val.get('mon', '')) if isinstance(_cung_val, dict) else ''
-                            if _mon_name in _km_mon_tree:
-                                _mon_info = _km_mon_tree[_mon_name]
-                                _dkt_fixes.append(f"KM: {_mon_name} → {_mon_info['cat_hung']}")
-                
+                # Removed generic DKT loop for all gates (caused hallucinations)
                 # 3. Lục Hào: Kiểm tra Hồi Đầu Sinh/Khắc (từ DKT)
                 _lh_factors_tree = DKT.get('LH', {}).get('factors', {})
                 if _lh_factors_tree and luc_hao_data and isinstance(luc_hao_data, dict):

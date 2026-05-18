@@ -193,8 +193,8 @@ class GeminiQMDGHelper:
                         top_p=0.7,                # V29.2: Thu hẹp tối đa — chỉ chọn từ ngữ chính xác nhất
                         top_k=20,                 # V29.2: Giảm mạnh — bám sát data, không suy diễn
                         max_output_tokens=65536,   # V42.9.32: Mở rộng tối đa — cho AI trình bày đầy đủ, KHÔNG bị cắt
-                        safety_settings=safety_settings,
-                        tools=[{'google_search': {}}] # V42.9.25: Kích hoạt Google Search Grounding toàn cầu
+                        safety_settings=safety_settings
+                        # Removed forced google_search to prevent Grounding from breaking formatting/persona
                     )
                     resp = client.models.generate_content(
                         model=model_name,
