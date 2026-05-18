@@ -4073,8 +4073,8 @@ class FreeAIHelper:
             elif cat_c >= 3: concl = 'CÁT'
             elif hung_c >= 4: concl = 'ĐẠI HUNG'
             elif hung_c >= 3: concl = 'HUNG'
-            elif cat_c > hung_c: concl = 'CÓ — TỐT'
-            elif hung_c > cat_c: concl = 'KHÔNG — XẤU'
+            elif cat_c > hung_c: concl = 'CÓ'
+            elif hung_c > cat_c: concl = 'KHÔNG'
             else: concl = 'CÓ THỂ — CẦN THẬN TRỌNG'
             
             slots.update({
@@ -4357,9 +4357,9 @@ class FreeAIHelper:
             elif hung_c >= 3:
                 generic_slots['conclusion'] = 'XẤU ❌'
             elif cat_c > hung_c:
-                generic_slots['conclusion'] = f'CÓ — TỐT ✅ ({cat_c} cát vs {hung_c} hung)'
+                generic_slots['conclusion'] = f'CÓ ✅ ({cat_c} cát vs {hung_c} hung)'
             elif hung_c > cat_c:
-                generic_slots['conclusion'] = f'KHÔNG — XẤU ⚠️ ({hung_c} hung vs {cat_c} cát)'
+                generic_slots['conclusion'] = f'KHÔNG ⚠️ ({hung_c} hung vs {cat_c} cát)'
             else:
                 generic_slots['conclusion'] = f'CÓ THỂ — CẦN THẬN TRỌNG ({cat_c} cát = {hung_c} hung)'
             
@@ -6850,7 +6850,7 @@ class FreeAIHelper:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: ĐÃ MẤT hoặc KHÔNG QUA ĐƯỢC ({weighted_pct}%)**")
         elif any(kw in q_lower for kw in ['có không', 'không', 'chưa', 'thắng', 'thua', 'đỗ', 'trượt']):
             if weighted_pct >= 55:
-                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÓ — TỐT ({weighted_pct}%)**")
+                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÓ ({weighted_pct}%)**")
             elif weighted_pct >= 45:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: KHÓ THÀNH — cần đổi cách hoặc đợi ({weighted_pct}%)**")
             else:
@@ -11860,13 +11860,13 @@ class FreeAIHelper:
                 verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG NÊN — XẤU ({pct}%)**"
         elif is_yesno_kl:
             if pct >= 55:
-                verdict_line = f"📢 **PHÁN QUYẾT: CÓ — TỐT ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ ({pct}%)**"
             elif pct >= 50:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÓ — nhưng cần NỖ LỰC ({pct}%)**"
             elif pct >= 45:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ THÀNH — cần đổi hướng hoặc đợi ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ THỂ (khó thành) hoặc đợi ({pct}%)**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG — XẤU ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG ({pct}%)**"
         elif is_timing_kl:
             # --- PHÁN QUYẾT THỜI GIAN ---
             if pct >= 55 and _timing_fast:
@@ -11916,6 +11916,10 @@ class FreeAIHelper:
                     """Phát hiện loại câu hỏi cho sub-question — V42.9.7: 20 loại (SĐ0-SĐ16+)"""
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
+                    if any(k in t for k in ['sống','chết','qua khỏi','mất','tử vong','hấp hối']): return 'LIFE_DEATH'
+                    if any(k in t for k in ['có không','được không','có được','liệu có','không ạ','chưa']): return 'YESNO'
+                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
+                    
                     if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu']): return 'WHEN'
                     if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
                     if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','bán gì','kinh doanh gì','sản phẩm']): return 'WHAT'
@@ -11932,9 +11936,7 @@ class FreeAIHelper:
                     if any(k in t for k in ['tiền','tài','lộc','giàu','nghèo','lương','đầu tư','kinh doanh','vốn']): return 'FINANCE'
                     if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật']): return 'HEALTH'
                     if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi','đỗ','trượt']): return 'CAREER'
-                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
-                    if any(k in t for k in ['sống','chết','qua khỏi','mất','tử vong','hấp hối']): return 'LIFE_DEATH'
-                    if any(k in t for k in ['có không','được không','có được','liệu có']): return 'YESNO'
+                    
                     return 'GENERAL'
                 
                 def _gen_verdict_by_qtype(qtype, sq_pct, sq_hanh, sq_dt, sq_text):
@@ -12013,10 +12015,10 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"CẦN CÂN NHẮC KỸ ({sq_pct}%)", "🟡"
                         else: return f"KẾT QUẢ XẤU ({sq_pct}%)", "🔴"
                     else:  # GENERAL / YESNO
-                        if sq_pct >= 55: return f"CÓ — TỐT ({sq_pct}%)", "✅"
-                        elif sq_pct >= 50: return f"CÓ — nhưng NỖ LỰC ({sq_pct}%)", "🟡"
-                        elif sq_pct >= 45: return f"KHÓ THÀNH — cần đổi hướng ({sq_pct}%)", "🟡"
-                        else: return f"KHÔNG — XẤU ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"CÓ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 50: return f"CÓ (nhưng khó) ({sq_pct}%)", "🟡"
+                        elif sq_pct >= 45: return f"CÓ THỂ (khó thành) ({sq_pct}%)", "🟡"
+                        else: return f"KHÔNG ({sq_pct}%)", "🔴"
                 
                 _sub_verdicts = []
                 
@@ -14212,6 +14214,11 @@ class FreeAIHelper:
                 def _mi_detect_qtype(text):
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
+                    # Ưu tiên các loại câu hỏi Đóng/Mở (YES/NO) lên đầu tiên
+                    if any(k in t for k in ['có không','được không','có được','liệu có','hay không']) or t.endswith(' không') or t.endswith(' không?'): return 'YESNO'
+                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
+                    if any(k in t for k in ['sống','chết','qua khỏi','tử vong','hấp hối','âm phủ','trần gian','trên trời','đầu thai','siêu thoát','cõi âm','cõi dương']): return 'LIFE_DEATH'
+                    
                     # SĐ5: Khi Nào
                     if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu','mấy giờ','giờ nào','ngày nào','tháng nào']): return 'WHEN'
                     # SĐ4: Ở Đâu / Hướng Nào
@@ -14244,10 +14251,6 @@ class FreeAIHelper:
                     if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật','ung thư','tai nạn']): return 'HEALTH'
                     # SĐ9: Công Việc
                     if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi ','đỗ ','trượt ','sự nghiệp','khởi nghiệp']): return 'CAREER'
-                    # SĐ1: Có/Không & Nên/Không
-                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
-                    if any(k in t for k in ['sống','chết','qua khỏi','tử vong','hấp hối','âm phủ','trần gian','trên trời','đầu thai','siêu thoát','cõi âm','cõi dương']): return 'LIFE_DEATH'
-                    if any(k in t for k in ['có không','được không','có được','liệu có','hay không']) or t.endswith(' không') or t.endswith(' không?'): return 'YESNO'
                     # SĐ16: Cái Nào / Chọn Lọc (đặt sau HOW và YESNO)
                     if any(k in t for k in ['cái nào','nào tốt','chọn','lựa chọn','nào hơn','nào nên','hay là',' hay ']): return 'CHOOSE'
                     # SĐ0: Tổng Quát (fallback)
@@ -14342,16 +14345,16 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"CẦN CÂN NHẮC KỸ ({sq_pct}%)", "🟡"
                         else: return f"KẾT QUẢ XẤU ({sq_pct}%)", "🔴"
                     elif qtype == 'YESNO':
-                        if sq_pct >= 55: return f"✅ CÓ / ĐỒNG Ý ({sq_pct}%) — Xác suất hiện diện/xảy ra rất cao.", "✅"
-                        elif sq_pct >= 45: return f"🟡 CÓ THỂ ({sq_pct}%) — Kết quả 50/50, chưa rõ ràng.", "🟡"
-                        else: return f"🔴 KHÔNG / TỪ CHỐI ({sq_pct}%) — Khả năng cực thấp, không có dấu hiệu.", "🔴"
+                        if sq_pct >= 55: return f"✅ CÓ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🟡 CÓ THỂ ({sq_pct}%)", "🟡"
+                        else: return f"🔴 KHÔNG ({sq_pct}%)", "🔴"
                     else:  # GENERAL
                         _hd = _MI_HD.get(sq_hanh, (5, 10))
                         _ts_desc = "Sinh/Vượng" if sq_pct >= 50 else "Suy/Tuyệt"
-                        if sq_pct >= 55: return f"✅ OMNI-DOMAIN: TỐT ({sq_pct}%) — Năng lượng Ngũ Hành {sq_hanh} ({_ts_desc}) đang hỗ trợ, phát huy cực tốt ở mọi lĩnh vực!", "✅"
-                        elif sq_pct >= 50: return f"🟡 OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({sq_pct}%) — Cần trợ lực từ Hành sinh cho {sq_hanh} (Hà Đồ {_hd[0]},{_hd[1]}).", "🟡"
-                        elif sq_pct >= 45: return f"🟡 OMNI-DOMAIN: BIẾN ĐỘNG ({sq_pct}%) — Khí lực {sq_hanh} chưa đủ mạnh, rủi ro cao, cần cẩn trọng.", "🟡"
-                        else: return f"🔴 OMNI-DOMAIN: XẤU ({sq_pct}%) — Xung khắc lớn, nên rút lui hoặc phòng thủ!", "🔴"
+                        if sq_pct >= 55: return f"✅ KẾT LUẬN: TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 50: return f"🟡 KẾT LUẬN: CÓ THỂ ĐẠT ĐƯỢC ({sq_pct}%)", "🟡"
+                        elif sq_pct >= 45: return f"🟡 KẾT LUẬN: BIẾN ĐỘNG ({sq_pct}%)", "🟡"
+                        else: return f"🔴 KẾT LUẬN: XẤU ({sq_pct}%)", "🔴"
                 
                 _MI_QTYPE_LABEL = {
                     'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
@@ -15496,10 +15499,10 @@ class FreeAIHelper:
                     _off_answer = "<br>".join(_fb_on)
                     _off_answer_list.append(_off_answer)
                 elif _off_verdict == 'CÁT':
-                    _off_answer = f"{_off_v_icon} CÓ — TỐT ({weighted_pct}%)"
+                    _off_answer = f"{_off_v_icon} CÓ ({weighted_pct}%)"
                     _off_answer_list.append(_off_answer)
                 elif _off_verdict == 'HUNG':
-                    _off_answer = f"{_off_v_icon} KHÔNG — XẤU ({weighted_pct}%)"
+                    _off_answer = f"{_off_v_icon} KHÔNG ({weighted_pct}%)"
                     _off_answer_list.append(_off_answer)
                 else:
                     _off_answer = f"{_off_v_icon} CẦN CÂN NHẮC — {_off_verdict} ({weighted_pct}%)"
@@ -16307,9 +16310,9 @@ class FreeAIHelper:
                 if _fb_parts:
                     _offline_short_answer = "<br>".join(_fb_parts)
                 elif overall_short in ('CÁT', 'ĐẠI CÁT'):
-                    _offline_short_answer = f"{v_icon} CÓ — TỐT ({weighted_pct}%)"
+                    _offline_short_answer = f"{v_icon} CÓ ({weighted_pct}%)"
                 elif overall_short in ('HUNG', 'ĐẠI HUNG'):
-                    _offline_short_answer = f"{v_icon} KHÔNG — XẤU ({weighted_pct}%)"
+                    _offline_short_answer = f"{v_icon} KHÔNG ({weighted_pct}%)"
                 else:
                     _offline_short_answer = f"{v_icon} CẦN CÂN NHẮC — {overall_short} ({weighted_pct}%)"
             
