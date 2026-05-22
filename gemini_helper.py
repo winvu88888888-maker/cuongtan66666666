@@ -172,14 +172,14 @@ class GeminiQMDGHelper:
 
         error_log = []
 
-        # KEY ROTATION & MODEL CASCADE
-        for current_api_key in self.api_keys:
-            try:
-                client = genai.Client(api_key=current_api_key)
-            except Exception:
-                continue
+        # MODEL CASCADE & KEY ROTATION
+        for model_name in self.cascade_models:
+            for current_api_key in self.api_keys:
+                try:
+                    client = genai.Client(api_key=current_api_key)
+                except Exception:
+                    continue
 
-            for model_name in self.cascade_models:
                 # V21.0: Thử TẤT CẢ model — mỗi model có quota RIÊNG!
                 try:
                     # V35.8-FIX: Giới hạn prompt size → tránh timeout
@@ -227,19 +227,23 @@ class GeminiQMDGHelper:
 
                 except Exception as e:
                     error_str = str(e)
+                    key_suffix = f"...{current_api_key[-4:]}" if current_api_key and len(current_api_key) > 4 else "unknown"
                     if "429" in error_str:
-                        error_log.append(f"{model_name}: ⏳ Hết quota — thử model khác...")
+                        error_log.append(f"{model_name} (Key {key_suffix}): ⏳ Hết quota — thử key khác...")
                         time.sleep(0.3)  # V35.8-FIX: Giảm wait từ 0.5 → 0.3
+                        continue # Try next key
                     elif "404" in error_str or "not found" in error_str.lower():
                         error_log.append(f"{model_name}: ❌ Model không khả dụng.")
+                        break # Break key loop, move to next model
                     elif "API_KEY_INVALID" in error_str or "expired" in error_str.lower():
-                        error_log.append(f"{model_name}: 🔑 Key không hợp lệ!")
-                        break  # Key lỗi hoàn toàn → skip key này
+                        error_log.append(f"{model_name} (Key {key_suffix}): 🔑 Key không hợp lệ!")
+                        continue  # Try next key
                     elif "timeout" in error_str.lower() or "deadline" in error_str.lower():
-                        error_log.append(f"{model_name}: ⏰ Timeout — thử model nhẹ hơn...")
+                        error_log.append(f"{model_name} (Key {key_suffix}): ⏰ Timeout — thử key khác...")
+                        continue # Try next key
                     else:
-                        error_log.append(f"{model_name}: {error_str[:80]}...")
-                    continue
+                        error_log.append(f"{model_name} (Key {key_suffix}): {error_str[:80]}...")
+                        continue # Try next key
 
         # === FALLBACK: Nếu tất cả Gemini model đều lỗi ===
         error_summary = " | ".join(error_log[:3]) if error_log else "Không có model khả dụng"
