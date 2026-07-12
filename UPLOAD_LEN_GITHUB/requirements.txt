@@ -1,0 +1,21 @@
+# Optimized requirements for AI-powered QMDG web app
+streamlit>=1.30.0
+python-dateutil>=2.8.2
+Pillow>=10.0.0
+
+# AI Development System
+google-genai>=1.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+
+# Utilities
+python-dotenv>=1.0.0
+pytz>=2023.3
+tzdata
+backports.zoneinfo;python_version<"3.9"
+# V42.8: Accurate lunar calendar conversion
+lunardate>=0.2.0
+
+streamlit-autorefresh>=1.0.1
+extra-streamlit-components>=0.1.71
+# Force Rebuild: 2026-03-03-V2.6

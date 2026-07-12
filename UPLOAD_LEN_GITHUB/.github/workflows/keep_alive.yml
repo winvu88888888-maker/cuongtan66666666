@@ -1,0 +1,13 @@
+name: Keep Streamlit App Awake
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *' # Chạy mỗi 2 ngày lúc 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit App
+        run: curl -sL https://cuongtan888888.streamlit.app > /dev/null
