@@ -2278,13 +2278,54 @@ if USE_MULTI_LAYER_ANALYSIS:
 # MAIN CONTENT
 # ======================================================================
 
-if st.session_state.current_view == "ai_factory":
+# ═══ GLOBAL SYNC HUB: Tự động đồng bộ dữ liệu liên kết giữa tất cả 13 mục theo Thời Gian & Chủ Đề ═══
+if params:
     try:
-        from web.ai_factory_view import render_ai_factory_view
-        render_ai_factory_view()
-    except ImportError as e:
-        st.error(f"Không thể tải module AI Factory: {e}")
-        st.info("Vui lòng kiểm tra lại file web/ai_factory_view.py")
+        from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg, tinh_khong_vong, tinh_dich_ma
+        _g_can_gio = params['can_gio']
+        _g_dia_can = an_bai_luc_nghi(params['cuc'], params['is_duong_don'])
+        _g_tb, _g_ctb, _g_nb, _g_sb, _g_tpc = lap_ban_qmdg(
+            params['cuc'], params['truc_phu'], params['truc_su'],
+            _g_can_gio, params['chi_gio'], params['is_duong_don']
+        )
+        st.session_state.chart_data = {
+            'thien_ban': _g_tb,
+            'can_thien_ban': _g_ctb,
+            'nhan_ban': _g_nb,
+            'than_ban': _g_sb,
+            'dia_can': _g_dia_can,
+            'dia_ban': _g_dia_can,
+            'khong_vong_4': params.get('khong', {}),
+            'dich_ma_4': params.get('ma', {}),
+            'can_gio': _g_can_gio,
+            'chi_gio': params['chi_gio'],
+            'can_ngay': params['can_ngay'],
+            'chi_ngay': params['chi_ngay'],
+            'can_thang': params.get('can_thang', 'N/A'),
+            'chi_thang': params.get('chi_thang', 'N/A'),
+            'can_nam': params.get('can_nam', 'N/A'),
+            'chi_nam': params.get('chi_nam', 'N/A'),
+            'tiet_khi': params.get('tiet_khi', ''),
+            'cuc': params.get('cuc', 1),
+            'am_duong_don': f"{'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn {params.get('cuc', 1)} Cục",
+            'truc_phu': params.get('truc_phu', ''),
+            'truc_su': params.get('truc_su', ''),
+        }
+        if USE_MAI_HOA and not (st.session_state.get('random_hexagram_mode') and st.session_state.get('mai_hoa_result', {}).get('_random_cast')):
+            _g_mh = tinh_qua_theo_thoi_gian(selected_datetime.year, selected_datetime.month, selected_datetime.day, selected_datetime.hour)
+            _g_mh['interpretation'] = giai_qua(_g_mh, selected_topic)
+            st.session_state.mai_hoa_result = _g_mh
+        if USE_LUC_HAO and not (st.session_state.get('random_hexagram_mode') and st.session_state.get('luc_hao_result', {}).get('_random_cast')):
+            st.session_state.luc_hao_result = lap_qua_luc_hao(
+                selected_datetime.year, selected_datetime.month, selected_datetime.day, selected_datetime.hour,
+                topic=selected_topic,
+                can_ngay=params['can_ngay'],
+                chi_ngay=params['chi_ngay'],
+                can_thang=params.get('can_thang', ''),
+                chi_thang=params.get('chi_thang', '')
+            )
+    except Exception:
+        pass
 
 if st.session_state.current_view == "ky_mon":
     st.markdown("## 🔮 BẢNG KỲ MÔN ĐỘN GIÁP")
@@ -3898,7 +3939,7 @@ elif st.session_state.current_view == "mai_hoa":
         st.error("❌ Module Mai Hoa Dịch Số không khả dụng.")
         st.stop()
     
-    st.markdown("### 🎯 Chủ đề: **{selected_topic}**")
+    st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
 
     # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
     dt = selected_datetime
@@ -4013,7 +4054,7 @@ elif st.session_state.current_view == "luc_hao":
         st.error("❌ Module Lục Hào Kinh Dịch không khả dụng.")
         st.stop()
     
-    st.markdown("### 🎯 Chủ đề: **{selected_topic}**")
+    st.markdown(f"### 🎯 Chủ đề: **{selected_topic}**")
 
     show_debug_ih = st.checkbox("🐛 Chế độ Kiểm tra Dữ liệu", key="debug_iching_mode")
 
@@ -4251,21 +4292,33 @@ elif st.session_state.current_view == "thiet_ban":
     import qmdg_data
     from qmdg_calc import calculate_qmdg_params
     tb_data = getattr(qmdg_data, 'KY_MON_DATA', {}).get("THIET_BAN_THAN_TOAN", {})
+    if not tb_data:
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "thiet_ban_than_toan.json"), "r", encoding="utf-8") as _f_tb:
+                tb_data = json.load(_f_tb)
+        except Exception:
+            tb_data = {}
     hoa_giap = tb_data.get("LUC_THAP_HOA_GIAP_NAP_AM", {})
     
     # Calculate params based on now
     params = calculate_qmdg_params(now)
     nam_tru = f"{params.get('can_nam')} {params.get('chi_nam')}"
+    thang_tru = f"{params.get('can_thang')} {params.get('chi_thang')}"
     ngay_tru = f"{params.get('can_ngay')} {params.get('chi_ngay')}"
+    gio_tru = f"{params.get('can_gio')} {params.get('chi_gio')}"
     
-    na_nam = hoa_giap.get(nam_tru, {}).get("Nạp_Âm", "Không rõ")
-    na_ngay = hoa_giap.get(ngay_tru, {}).get("Nạp_Âm", "Không rõ")
+    na_nam_obj = hoa_giap.get(nam_tru, {})
+    na_thang_obj = hoa_giap.get(thang_tru, {})
+    na_ngay_obj = hoa_giap.get(ngay_tru, {})
+    na_gio_obj = hoa_giap.get(gio_tru, {})
     
     col1, col2 = st.columns(2)
     with col1:
-        st.info(f"**🍁 Mệnh Năm (Thái Tuế):**\n- {nam_tru}\n- Nạp Âm: {na_nam}")
+        st.info(f"**🍁 Trụ Năm (Thái Tuế): {nam_tru}**\n- **Nạp Âm:** {na_nam_obj.get('Nạp_Âm', 'Không rõ')} ({na_nam_obj.get('Hành', '?')})\n- **Ý nghĩa:** {na_nam_obj.get('Ý_Nghĩa', '')}")
+        st.success(f"**🌙 Trụ Tháng (Nguyệt Lệnh): {thang_tru}**\n- **Nạp Âm:** {na_thang_obj.get('Nạp_Âm', 'Không rõ')} ({na_thang_obj.get('Hành', '?')})\n- **Ý nghĩa:** {na_thang_obj.get('Ý_Nghĩa', '')}")
     with col2:
-        st.warning(f"**☀️ Mệnh Ngày (Chủ Sự):**\n- {ngay_tru}\n- Nạp Âm: {na_ngay}")
+        st.warning(f"**☀️ Trụ Ngày (Chủ Sự): {ngay_tru}**\n- **Nạp Âm:** {na_ngay_obj.get('Nạp_Âm', 'Không rõ')} ({na_ngay_obj.get('Hành', '?')})\n- **Ý nghĩa:** {na_ngay_obj.get('Ý_Nghĩa', '')}")
+        st.info(f"**⏰ Trụ Giờ (Biến Hóa): {gio_tru}**\n- **Nạp Âm:** {na_gio_obj.get('Nạp_Âm', 'Không rõ')} ({na_gio_obj.get('Hành', '?')})\n- **Ý nghĩa:** {na_gio_obj.get('Ý_Nghĩa', '')}")
         
     st.markdown(f'''
     <div style="background:#1e293b; padding:15px; border-radius:10px; color:white; border-left:4px solid #f59e0b; margin-top:20px;">
@@ -4284,135 +4337,90 @@ elif st.session_state.current_view == "thiet_ban":
 # AI FACTORY VIEW
 # ======================================================================
 elif st.session_state.current_view == "ai_factory":
-    st.markdown("## 🏭 NHÀ MÁY PHÁT TRIỂN AI - 10 AGENTS HUB")
-    st.info("Hệ thống tự động hóa điều phối bởi AI Orchestrator + n8n.")
-    
-    # Status Row
-    c1, c2, c3 = st.columns(3)
-    with c1: st.metric("Agents Đang Chạy", "10/10", "Active")
-    with c2: st.metric("Công Việc Hoàn Tất", "1,248", "Today")
-    with c3: st.metric("Độ Ổn Định", "99.9%", "Verified")
-    
-    st.markdown("### 🤖 Agents Hoạt Động 24/7")
-    
-    # List of Agents in a Grid
-    agents = [
-        ("Secretary AI", "Phân tích yêu cầu & Lập kế hoạch", "🟢"),
-        ("Code Writer", "Viết code chức năng tự động", "🟢"),
-        ("Tester AI", "Kiểm thử Unit Test & UI", "🟢"),
-        ("Orchestrator", "Điều phối luồng công việc", "🟢"),
-        ("Memory Manager", "Lưu trữ & Truy xuất tri thức", "🟢"),
-        ("Gemini Pro", "Siêu trí tuệ phân tích chuyên sâu", "🟢")
-    ]
-    
-    rows = [st.columns(3) for _ in range(2)]
-    for i, (name, desc, status) in enumerate(agents):
-        col = rows[i // 3][i % 3]
-        with col:
-            st.markdown(f"""
-            <div style="background: rgba(22,33,62,0.9); padding: 15px; border-radius: 10px; border-left: 5px solid #7c3aed; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-                <div style="font-weight: 800; color: #a78bfa;">{status} {name}</div>
-                <div style="font-size: 13px; color: #94a3b8;">{desc}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    # Sidebar Header
-    st.sidebar.markdown("""
-    <div style="text-align: center; padding: 10px; background: linear-gradient(to right, #047857, #6ee7b7); border-radius: 10px; color: white; margin-bottom: 20px;">
-        <h2 style="margin:0; font-size: 1.5rem;">KỲ MÔN PRO</h2>
-        <p style="margin:0; font-size: 0.8rem; opacity: 0.9;">✨ V1.9.1 (SMART KEYS)</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("### 🧪 Gửi Yêu Cầu Cho Nhà Máy")
-    factory_prompt = st.text_area("Yêu cầu phát triển mới:", placeholder="Ví dụ: Tạo module phân tích bát tự tích hợp...")
-    if st.button("🚀 Bắt Đầu Quy Trình Tự Động", type="primary"):
-        st.warning("⚠️ Đang gửi yêu cầu tới workflow n8n... Vui lòng kiểm tra Dashboard n8n để theo dõi.")
+    try:
+        from web.ai_factory_view import render_ai_factory_view
+        render_ai_factory_view()
+    except ImportError as e:
+        st.error(f"Không thể tải module AI Factory: {e}")
 
 # ======================================================================
-# AI EXPERTS VIEW (40 AGENTS)
+# AI EXPERTS VIEW (40 AGENTS) — ĐÃ FIX LỖI GHI ĐÈ TAB & LIÊN KẾT TOÀN BỘ QUẺ
 # ======================================================================
 elif st.session_state.current_view == "ai_experts":
     st.markdown("## 🌟 40 CHUYÊN GIA AI - TƯ VẤN CHUYÊN SÂU")
-    st.caption("Danh sách 40 AI Agents chuyên biệt cho từng lĩnh vực khác nhau.")
-    
-    # Choose Agent Category
-    cat = st.tabs(["💎 Super AI", "🏡 Đời Sống", "📈 Tài Chính", "🛠️ Tiện Ích"])
-    
-    with cat[0]: # Super AI
-        selected_agent = st.selectbox("Chọn Chuyên Gia Siêu Trí Tuệ:", [
+    st.caption("Liên kết trực tiếp với Bàn Kỳ Môn, Lục Hào, Mai Hoa, Thiết Bản, Lục Nhâm, Thái Ất và Lịch Vạn Niên đang chọn.")
+
+    _EXPERT_GROUPS = {
+        "💎 Super AI (Huyền Học Cốt Lõi)": [
             "Chart Interpreter AI (Phân tích bàn Kỳ Môn)",
             "Scheduler AI (Tìm giờ đẹp thông minh)",
             "Mai Hoa Expert (Chuyên gia Dịch số)",
             "Luc Hao Expert (Bậc thầy Lục Hào)",
-            "Topic Advisor (Gợi ý chủ đề linh hoạt)"
-        ])
-        
-    with cat[1]: # Life
-        selected_agent = st.selectbox("Chọn Chuyên Gia Đời Sống:", [
+            "Topic Advisor (Gợi ý chủ đề linh hoạt)",
+        ],
+        "🏡 Đời Sống & Sự Nghiệp": [
             "Career Advisor AI (Sự nghiệp & Công danh)",
             "Health Advisor (Sức khỏe & Bình an)",
             "Relationship AI (Tình duyên & Hôn nhân)",
             "Name Analyzer (Phân tích danh tính)",
-            "Dream Interpreter (Giải mã giấc mơ)"
-        ])
-        
-    with cat[2]: # Finance
-        selected_agent = st.selectbox("Chọn Chuyên Gia Tài Chính:", [
+            "Dream Interpreter (Giải mã giấc mơ)",
+        ],
+        "📈 Tài Chính & Đầu Tư": [
             "Wealth Advisor (Tài lộc & Đầu tư)",
             "Direction Advisor (Phương hướng kinh doanh)",
             "Date Selector (Chọn ngày đại sự)",
-            "Fortune Calendar (Lịch vận hạn năm/tháng)"
-        ])
-
-    with cat[3]: # Utilities
-        selected_agent = st.selectbox("Chọn Agent Tiện Ích:", [
+            "Fortune Calendar (Lịch vận hạn năm/tháng)",
+        ],
+        "🛠️ Tiện Ích & Kiểm Chứng": [
             "History Tracker (Theo dõi lịch sử)",
             "Prediction Validator (Kiểm chứng kết quả)",
             "Report Generator (Tạo báo cáo chuyên nghiệp)",
             "Comparison AI (So sánh đa tầng)",
             "Notification AI (Cảnh báo giờ lành)",
             "Learning Assistant (Trình học liệu QMDG)",
-            "Voice Assistant (Trợ lý giọng nói AI)"
-        ])
+        ],
+    }
+
+    col_eg, col_ea = st.columns(2)
+    with col_eg:
+        chosen_group = st.selectbox("1️⃣ Chọn Nhóm Chuyên Gia:", list(_EXPERT_GROUPS.keys()), key="exp_group_sel")
+    with col_ea:
+        selected_agent = st.selectbox("2️⃣ Chọn Chuyên Gia:", _EXPERT_GROUPS[chosen_group], key="exp_agent_sel")
 
     st.markdown(f"### 🤖 Bắt đầu tư vấn với: **{selected_agent.split('(')[0]}**")
-    exp_q = st.text_area("Nội dung cần tư vấn:", placeholder="Nhập câu hỏi hoặc bối cảnh cụ thể của bạn...")
+    exp_q = st.text_area("Nội dung cần tư vấn:", placeholder="Nhập câu hỏi hoặc bối cảnh cụ thể của bạn...", key="exp_q_input")
     
-    if st.button("🧙 Triệu hồi Chuyên Gia AI", type="primary"):
+    if st.button("🧙 Triệu hồi Chuyên Gia AI", type="primary", use_container_width=True):
         if exp_q:
-            with st.spinner(f"AI {selected_agent} đang chạy quy trình xử lý chuyên sâu..."):
+            with st.spinner(f"AI {selected_agent} đang phân tích dữ liệu 6 phương pháp..."):
                 try:
-                    # INITIALIZE ORCHESTRATOR -> REDIRECT TO KNOWLEDGE BRAIN
-                    # orc = PhoenixOrchestrator(st.session_state.gemini_helper)
-                    orc = st.session_state.gemini_helper # Use the main brain
-                    
-                    # RUN PIPELINE with Role Injected
+                    if 'gemini_helper' not in st.session_state or st.session_state.gemini_helper is None:
+                        from free_ai_helper import FreeAIHelper
+                        st.session_state.gemini_helper = FreeAIHelper()
+                    if 'chat_history' not in st.session_state:
+                        st.session_state.chat_history = []
+
+                    orc = st.session_state.gemini_helper
                     safe_topic = selected_agent.split('(')[0].strip()
-                    full_query = f"Bạn đang đóng vai chuyên gia: {selected_agent}. Hãy trả lời câu hỏi: {exp_q}"
+                    full_query = f"[{safe_topic}] {exp_q}"
                     
-                    # V32.4: PHẢI truyền đầy đủ dữ liệu quẻ đã gieo
                     raw_response = orc.answer_question(
                         full_query, 
-                        topic=safe_topic,
+                        topic=selected_topic,
                         chart_data=st.session_state.get('chart_data'),
                         mai_hoa_data=st.session_state.get('mai_hoa_result'),
                         luc_hao_data=st.session_state.get('luc_hao_result')
                     )
                     
-                    # PROCESS & DISPLAY
-                    res = st.session_state.gemini_helper._process_response(raw_response)
-                    st.info(res)
-                    # === SAVE TO CHAT HISTORY ===
+                    res = orc._process_response(raw_response) if hasattr(orc, '_process_response') else raw_response
+                    st.markdown(res, unsafe_allow_html=True)
                     st.session_state.chat_history.append({'role': 'user', 'content': exp_q})
                     st.session_state.chat_history.append({'role': 'assistant', 'content': res})
                     if len(st.session_state.chat_history) > 20:
                         st.session_state.chat_history = st.session_state.chat_history[-20:]
                     
-                    # SHOW LOGS
-                    orc.render_logs()
-                    
+                    if hasattr(orc, 'render_logs'):
+                        orc.render_logs()
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
         else:
