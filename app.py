@@ -2399,6 +2399,13 @@ def render_master_unified_qa_box(location_key="main"):
                 help="BẬT = Mỗi lần bấm Phân Tích sẽ gieo lại quẻ Lục Hào & Mai Hoa ngẫu nhiên mới. TẮT = Giữ quẻ theo thời gian."
             )
             st.session_state['random_hexagram_mode'] = _rnd_mode
+            _use_cloud_llm = st.toggle(
+                "🌐 Gọi thêm Gemini Cloud (2-4s)",
+                value=st.session_state.get('qa_use_cloud_llm', False),
+                key=f"qa_cloud_{location_key}",
+                help="TẮT (Mặc định Siêu Tốc < 0.05 giây): Giải mã tức thì bằng Siêu Máy Tính 10 Hệ Thống Nội Bộ. BẬT: Gọi thêm Gemini Cloud API."
+            )
+            st.session_state['qa_use_cloud_llm'] = _use_cloud_llm
 
         st.markdown("---")
         c_tv_opt, c_xn_opt = st.columns(2)
@@ -2465,17 +2472,23 @@ def render_master_unified_qa_box(location_key="main"):
     # ── NÚT BẤM HỢP NHẤT DUY NHẤT ──
     if st.button("🔮 PHÂN TÍCH HỢP NHẤT TOÀN BỘ 10 HỆ THỐNG QUẺ & AI CHUYÊN SÂU", key=f"master_qa_submit_{location_key}", type="primary", use_container_width=True):
         if user_question and len(user_question.strip()) >= 2:
+            import time as _time_perf
+            _t_start = _time_perf.perf_counter()
             st.session_state['master_qa_prefill'] = ''
-            with st.spinner("⚙️ Đang đồng bộ 10 Hệ Thống Quẻ (Kỳ Môn · Lục Hào · Mai Hoa · Thiết Bản · Đại Lục Nhâm · Thái Ất · Xem Ngày · Tử Vi · Thiên Văn · Vạn Vật) & Hội Đồng 40 Chuyên Gia AI..."):
-                try:
-                    from free_ai_helper import FreeAIHelper
-                    _api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
-                    if not _api_key:
-                        try:
-                            _api_key = st.secrets.get('GEMINI_API_KEY', '')
-                        except Exception:
-                            _api_key = ''
-                    offline_ai = FreeAIHelper(api_key=_api_key)
+            try:
+                from free_ai_helper import FreeAIHelper
+                _api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
+                if not _api_key and st.session_state.get('qa_use_cloud_llm', False):
+                    try:
+                        _api_key = st.secrets.get('GEMINI_API_KEY', '')
+                    except Exception:
+                        _api_key = ''
+                if '_cached_free_ai_helper' not in st.session_state or st.session_state['_cached_free_ai_helper'] is None:
+                    st.session_state['_cached_free_ai_helper'] = FreeAIHelper(api_key=_api_key)
+                offline_ai = st.session_state['_cached_free_ai_helper']
+                if _api_key:
+                    offline_ai._api_key = _api_key
+                if True:
 
                     dt_now = selected_datetime
                     _use_rnd = st.session_state.get('random_hexagram_mode', False)
@@ -2561,19 +2574,31 @@ def render_master_unified_qa_box(location_key="main"):
                         _exp_tag = lead_expert.split("(")[0].strip()
                         _q_to_send = f"[{_exp_tag}] {_q_to_send}"
 
-                    combined_answer = offline_ai.answer_question(
-                        _q_to_send,
-                        chart_data=st.session_state.get('chart_data'),
-                        topic=None,
-                        selected_subject=st.session_state.get('selected_doi_tuong', '👤 Bản thân'),
-                        mai_hoa_data=mai_hoa_for_q,
-                        luc_hao_data=luc_hao_for_q,
-                        tu_vi_data=_tv_data_q,
-                        xem_ngay_data=_xn_data_q,
-                    )
+                    _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
+                    _cache_key = f"{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{st.session_state.get('qa_use_cloud_llm',False)}"
+                    if not _use_rnd and _cache_key in _cache_store:
+                        combined_answer = _cache_store[_cache_key]
+                    else:
+                        combined_answer = offline_ai.answer_question(
+                            _q_to_send,
+                            chart_data=st.session_state.get('chart_data'),
+                            topic=None,
+                            selected_subject=st.session_state.get('selected_doi_tuong', '👤 Bản thân'),
+                            mai_hoa_data=mai_hoa_for_q,
+                            luc_hao_data=luc_hao_for_q,
+                            tu_vi_data=_tv_data_q,
+                            xem_ngay_data=_xn_data_q,
+                            use_online_api=st.session_state.get('qa_use_cloud_llm', False),
+                        )
+                        if not _use_rnd:
+                            if len(_cache_store) > 30:
+                                _cache_store.clear()
+                            _cache_store[_cache_key] = combined_answer
 
+                    _elapsed_sec = _time_perf.perf_counter() - _t_start
                     st.session_state['master_qa_last_result'] = combined_answer
                     st.session_state['master_qa_last_question'] = user_question.strip()
+                    st.session_state['master_qa_elapsed_ms'] = _elapsed_sec * 1000.0
 
                     if 'chat_history' not in st.session_state:
                         st.session_state.chat_history = []
@@ -2596,14 +2621,20 @@ def render_master_unified_qa_box(location_key="main"):
                     except Exception:
                         pass
 
-                except Exception as e:
-                    st.error(f"❌ Lỗi phân tích: {str(e)}")
+            except Exception as e:
+                st.error(f"❌ Lỗi phân tích: {str(e)}")
         else:
             st.warning("⚠️ Vui lòng nhập câu hỏi vào ô bên trên.")
 
     # ── HIỂN THỊ KẾT QUẢ PHÂN TÍCH HỢP NHẤT ──
     if st.session_state.get('master_qa_last_result'):
-        st.markdown("---")
+        _ms = st.session_state.get('master_qa_elapsed_ms', 40.0)
+        st.markdown(
+            f"<div style='background:rgba(16,185,129,0.12);border:1px solid #10b981;padding:6px 14px;border-radius:8px;margin-top:8px;font-size:0.85rem;color:#6ee7b7;'>"
+            f"⚡ <b>Tốc độ giải mã Siêu Tốc: {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã hợp nhất đồng thời 10 Hệ Thống Quẻ, Thiên Văn & 40 Chuyên Gia AI"
+            f"</div>",
+            unsafe_allow_html=True
+        )
         display_ai_result(st.session_state['master_qa_last_result'], key_prefix=f"master_{location_key}")
 
     # ── LỊCH SỬ HỘI THOẠI GỌN GÀNG ──

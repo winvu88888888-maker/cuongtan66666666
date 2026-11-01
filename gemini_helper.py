@@ -158,43 +158,38 @@ class GeminiQMDGHelper:
             genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
         ]
 
-        # V31.3: Model cascade — FREE first, PAID last
+        # V99.6: Model cascade — Ưu tiên tốc độ siêu nhanh (Flash models trước)
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-2.5-pro',                  # FREE tier — Suy luận sâu nhất
-                'gemini-2.5-flash',                # FREE — Nhanh, quota cao
-                'gemini-3.0-flash',                # Gemini 3 Flash
-                'gemini-2.5-flash-lite',           # FREE — Nhẹ nhất
-                'gemini-1.5-flash',                # FREE — Legacy
-                'gemini-3.1-pro-preview',          # PAID — Chỉ khi có billing
-                'gemini-1.5-pro',                  # PAID — Legacy Pro
+                'gemini-2.5-flash',
+                'gemini-2.5-flash-lite',
+                'gemini-2.0-flash',
             ]
 
         error_log = []
+        bad_keys = set()
 
-        # MODEL CASCADE & KEY ROTATION
         for model_name in self.cascade_models:
             for current_api_key in self.api_keys:
+                if current_api_key in bad_keys:
+                    continue
                 try:
                     client = genai.Client(api_key=current_api_key)
                 except Exception:
+                    bad_keys.add(current_api_key)
                     continue
 
-                # V21.0: Thử TẤT CẢ model — mỗi model có quota RIÊNG!
                 try:
-                    # V35.8-FIX: Giới hạn prompt size → tránh timeout
                     _prompt = prompt
-                    if isinstance(_prompt, str) and len(_prompt) > 120000:
-                        # V42.9.32: Only truncate extremely long prompts (120K+)
-                        _prompt = _prompt[:60000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-55000:]
+                    if isinstance(_prompt, str) and len(_prompt) > 24000:
+                        _prompt = _prompt[:14000] + "\n\n[...TÓM LƯỢC TỐI ƯU TỐC ĐỘ...]\n\n" + _prompt[-10000:]
                     
                     gen_config = genai_types.GenerateContentConfig(
-                        temperature=0.15,         # V29.2: Giảm mạnh — bám sát data 100%, CẤM sáng tạo/bịa
-                        top_p=0.7,                # V29.2: Thu hẹp tối đa — chỉ chọn từ ngữ chính xác nhất
-                        top_k=20,                 # V29.2: Giảm mạnh — bám sát data, không suy diễn
-                        max_output_tokens=65536,   # V42.9.32: Mở rộng tối đa — cho AI trình bày đầy đủ, KHÔNG bị cắt
+                        temperature=0.15,
+                        top_p=0.7,
+                        top_k=20,
+                        max_output_tokens=3072,
                         safety_settings=safety_settings
-                        # Removed forced google_search to prevent Grounding from breaking formatting/persona
                     )
                     resp = client.models.generate_content(
                         model=model_name,
@@ -202,19 +197,15 @@ class GeminiQMDGHelper:
                         config=gen_config,
                     )
 
-                    # V14.0: Fix parsing cho thinking models (gemini-2.5-flash)
-                    # Thinking model trả về nhiều parts: thought (suy nghĩ nội bộ) + text (câu trả lời)
                     text = ""
                     try:
                         text = resp.text
                     except Exception:
                         pass
                     
-                    # Nếu resp.text rỗng → trích xuất từ tất cả parts (bỏ thought)
                     if not text and resp.candidates:
                         parts = resp.candidates[0].content.parts if resp.candidates[0].content else []
                         for p in parts:
-                            # Bỏ thought parts — chỉ lấy text parts
                             is_thought = getattr(p, 'thought', False)
                             if not is_thought and hasattr(p, 'text') and p.text:
                                 text += p.text
@@ -229,73 +220,25 @@ class GeminiQMDGHelper:
                     error_str = str(e)
                     key_suffix = f"...{current_api_key[-4:]}" if current_api_key and len(current_api_key) > 4 else "unknown"
                     if "429" in error_str:
-                        error_log.append(f"{model_name} (Key {key_suffix}): ⏳ Hết quota — thử key khác...")
-                        time.sleep(0.3)  # V35.8-FIX: Giảm wait từ 0.5 → 0.3
-                        continue # Try next key
+                        error_log.append(f"{model_name} (Key {key_suffix}): ⏳ Hết quota")
+                        continue
                     elif "404" in error_str or "not found" in error_str.lower():
                         error_log.append(f"{model_name}: ❌ Model không khả dụng.")
-                        break # Break key loop, move to next model
-                    elif "API_KEY_INVALID" in error_str or "expired" in error_str.lower():
+                        break
+                    elif "API_KEY_INVALID" in error_str or "expired" in error_str.lower() or "400" in error_str or "403" in error_str:
                         error_log.append(f"{model_name} (Key {key_suffix}): 🔑 Key không hợp lệ!")
-                        continue  # Try next key
+                        bad_keys.add(current_api_key)
+                        continue
                     elif "timeout" in error_str.lower() or "deadline" in error_str.lower():
-                        error_log.append(f"{model_name} (Key {key_suffix}): ⏰ Timeout — thử key khác...")
-                        continue # Try next key
+                        error_log.append(f"{model_name} (Key {key_suffix}): ⏰ Timeout")
+                        continue
                     else:
                         error_log.append(f"{model_name} (Key {key_suffix}): {error_str[:80]}...")
-                        continue # Try next key
+                        continue
 
-        # === FALLBACK: Nếu tất cả Gemini model đều lỗi ===
         error_summary = " | ".join(error_log[:3]) if error_log else "Không có model khả dụng"
-        self._last_error_log = error_summary  # V13.0: Lưu lỗi để hiện cho user
-        
-        # V10.0: Kiểm tra xem prompt có phải là refine_prompt (đã có offline result) hay không
-        # Nếu là refine → KHÔNG chạy lại offline (tránh lặp đôi + prompt leak)
-        is_refine_prompt = "KẾT QUẢ PHÂN TÍCH OFFLINE" in prompt or "THIÊN CƠ ĐẠI SƯ" in prompt[:200]
-        
-        if is_refine_prompt:
-            # Refine mode: Chỉ trả lỗi, KHÔNG chạy offline lần 2
-            return None  # app.py sẽ xử lý None = không có online
-        
-        # Chỉ fallback offline khi gọi từ answer_question() (không phải refine)
-        try:
-            short_question = ""
-            import re
-            match = re.search(r'<user_question>(.*?)</user_question>', prompt, re.DOTALL)
-            if match:
-                short_question = match.group(1).strip()
-            else:
-                # Lấy dòng đầu tiên sau "Câu hỏi:" nếu có
-                match2 = re.search(r'Câu hỏi[:\s]+(.+?)[\n\r]', prompt)
-                if match2:
-                    short_question = match2.group(1).strip()
-                else:
-                    short_question = prompt[:200]  # Fallback an toàn
-
-            _chart = None
-            _mai_hoa = None
-            _luc_hao = None
-            try:
-                import streamlit as st
-                _chart = st.session_state.get('chart_data')
-                _mai_hoa = st.session_state.get('mai_hoa_result')
-                _luc_hao = st.session_state.get('luc_hao_result')
-            except Exception:
-                pass
-
-            offline_response = self.fallback_helper.answer_question(
-                short_question,
-                chart_data=_chart,
-                mai_hoa_data=_mai_hoa,
-                luc_hao_data=_luc_hao
-            )
-            return (
-                f"⚠️ **AI Online không khả dụng.** Lý do chính: {error_summary}\n\n"
-                f"🤖 **Đây là phân tích từ AI Offline (rule-based):**\n\n{offline_response}\n\n"
-                f"💡 *Để dùng AI thông minh (Gemini), hãy nhập một API Key mới tại [Google AI Studio](https://aistudio.google.com/app/apikey).*"
-            )
-        except Exception as fallback_err:
-            return f"🛑 **AI lỗi:** {error_summary}"
+        self._last_error_log = error_summary
+        return None
 
     def _call_ai(self, prompt, **kwargs):
         return self._call_ai_raw(prompt)

@@ -15563,15 +15563,17 @@ class FreeAIHelper:
         except Exception as e:
             self.log_step("V38.1", "ERROR", str(e)[:80])
         
-        # Gọi AI Online (Gemini) — phân tích sâu
-        online_result = self._try_online_ai(
-            question=question,
-            chart_data=chart_data,
-            mai_hoa_data=mai_hoa_data,
-            luc_hao_data=luc_hao_data,
-            topic=topic,
-            offline_analysis_data=offline_analysis_data
-        )
+        # V99.6: Chế độ Siêu Tốc Mặc Định (< 0.05s) — Chỉ gọi Gemini Cloud khi use_online_api=True
+        online_result = None
+        if kwargs.get('use_online_api', False):
+            online_result = self._try_online_ai(
+                question=question,
+                chart_data=chart_data,
+                mai_hoa_data=mai_hoa_data,
+                luc_hao_data=luc_hao_data,
+                topic=topic,
+                offline_analysis_data=offline_analysis_data
+            )
         
         # V6886: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
         _real_multi = False
