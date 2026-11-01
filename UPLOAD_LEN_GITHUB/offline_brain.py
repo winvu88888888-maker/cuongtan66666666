@@ -296,6 +296,30 @@ def generate_smart_offline_answer(
     # Consensus từ 5 phương pháp
     consensus = _build_consensus(verdicts_dict)
     
+    # V99.0: Trích xuất nhanh thông tin Tiên Tri Toàn Tri 360° cho Brain Card
+    omni_quick_html = ""
+    try:
+        from omniscient_prophecy import build_omniscient_prophecy
+        _omni = build_omniscient_prophecy(
+            question=question,
+            dung_than=dung_than or 'Bản Thân',
+            weighted_pct=pct,
+            chart_data=chart_data,
+            ung_ky_detail={'exact_timestamp': ung_ky_str} if ung_ky_str else {},
+        )
+        _od = _omni.get('data', {})
+        if _od:
+            omni_quick_html = (
+                f'<div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:10px;margin-top:10px;font-size:0.95em;color:#fef3c7;line-height:1.55;">'
+                f'<b>🔮 Tóm tắt Tiên Tri 360°:</b><br>'
+                f'• <b>Người liên quan:</b> {_od.get("gender", "?")} — {_od.get("age_tier", "?")} ({", ".join(_od.get("birth_years", [])[:2])})<br>'
+                f'• <b>Địa điểm & Hướng:</b> {_od.get("where_summary", "?")}<br>'
+                f'• <b>Đồ vật & Đặc điểm:</b> {_od.get("objects", "?")} | Màu: {_od.get("colors", "?")} | {_od.get("condition", "?")}'
+                f'</div>'
+            )
+    except Exception:
+        pass
+    
     # === BUILD HTML ===
     # Màu nền theo verdict
     if pct >= 55:
@@ -315,6 +339,7 @@ def generate_smart_offline_answer(
 <div style="font-size:1.3em;font-weight:900;color:#ffffff;margin-bottom:12px;line-height:1.4;">
 {opener}{filled}
 </div>
+{omni_quick_html}
 <div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:12px;margin-top:8px;">
 <div style="font-size:1.05em;color:{accent};font-weight:700;margin-bottom:8px;">📊 Đồng Thuận 5 Phương Pháp:</div>
 <div style="font-size:1em;color:#e2e8f0;">{consensus}</div>

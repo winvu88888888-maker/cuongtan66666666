@@ -1,5 +1,5 @@
 """
-Free AI Helper V42.9.43 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên + 🧠 Offline Brain)
+Free AI Helper V6886 — THIÊN CƠ ĐẠI SƯ (Super Verdict 3 Tầng + 100+ Yếu Tố + 8PP + Vạn Vật 3378+ + 12 Trường Sinh + 🎲 Gieo Ngẫu Nhiên + 🧠 Offline Brain)
 Kết hợp Python rule-based + Gemini Online Deep Reasoning.
 Sử dụng dữ liệu Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất Thần Số.
 V42.2: +7 thiếu sót chuyên gia (Ứng Kỳ chuyên sâu, Hóa Hồi Đầu, Hào Từ, Phản/Phục Ngâm,
@@ -95,7 +95,7 @@ except ImportError:
     THE_POSITION = {}
 
 # V10.1: Knowledge Complete — Tri thức siêu chi tiết
-# V42.9.43: Thoán Từ 64 quẻ
+# V6886: Thoán Từ 64 quẻ
 try:
     from thoan_tu_64 import QUE_THOAN_64
 except ImportError:
@@ -133,17 +133,23 @@ except ImportError:
     def luan_xem_tong_quat_nhanh(*args, **kwargs): return ""
     def detect_extra_category(*args, **kwargs): return None, None
 
-# V42.9.43: Offline Brain — Não suy luận AI Offline
+# V6886: Offline Brain — Não suy luận AI Offline
 try:
     from offline_brain import generate_smart_offline_answer
 except ImportError:
     def generate_smart_offline_answer(*args, **kwargs): return ""
 
-# V42.9.43: Ứng Kỳ Chi Tiết — Giờ/Ngày/Tháng/Năm
+# V6886: Ứng Kỳ Chi Tiết — Giờ/Ngày/Tháng/Năm/Khắc/Phút
 try:
     from ung_ky_engine import calc_ung_ky_detail
 except ImportError:
-    def calc_ung_ky_detail(*args, **kwargs): return {'summary': '', 'html': '', 'hour': '', 'day': '', 'month': '', 'year': '', 'speed': '', 'confidence': '', 'method': ''}
+    def calc_ung_ky_detail(*args, **kwargs): return {'summary': '', 'html': '', 'minute': '', 'hour': '', 'day': '', 'month': '', 'year': '', 'speed': '', 'confidence': '', 'method': ''}
+
+# V99.0: Engine Tiên Tri Toàn Tri 360° (Omniscient Forensic Prophecy)
+try:
+    from omniscient_prophecy import build_omniscient_prophecy
+except ImportError:
+    def build_omniscient_prophecy(*args, **kwargs): return {'html': '', 'text': '', 'data': {}}
 
 # V31.0: Interaction Diagrams — Sơ đồ tương tác thời gian thực
 try:
@@ -416,7 +422,7 @@ SYNONYM_MAP = {
     'lost': ['mất', 'thất lạc'], 'find': ['tìm', 'kiếm'],
     'steal': ['trộm', 'cắp'], 'thief': ['kẻ trộm', 'trộm'],
     'lucky': ['may mắn', 'hên'], 'unlucky': ['xui', 'xui xẻo'],
-    'success': ['thành công', 'đạt'], 'fail': ['thất bại', 'trượt'],
+    'success': ['tốt', 'đạt'], 'fail': ['thất bại', 'trượt'],
     'should': ['có nên', 'nên'], 'when': ['khi nào', 'bao giờ'],
     'where': ['ở đâu', 'hướng nào'], 'how': ['như thế nào', 'ra sao'],
     'gamble': ['cờ bạc', 'đánh bạc'], 'lottery': ['xổ số', 'lô đề'],
@@ -520,183 +526,145 @@ def _get_dung_than(question):
         'tang luong': 'tăng lương', 'thang tien': 'thăng tiến',
         'suc khoe': 'sức khỏe', 'benh': 'bệnh', 'chua benh': 'chữa bệnh',
         'kien tung': 'kiện tụng', 'thang kien': 'thắng kiện',
-        'thuan loi': 'thuận lợi', 'nam nay': 'năm nay',
+        'thuan loi': 'tốt', 'nam nay': 'năm nay',
         'me': 'mẹ', 'bo': 'bố', 'cha': 'cha',
         'vo': 'vợ', 'chong': 'chồng',
+        'nha': 'nhà', 'tien': 'tiền', 'dat': 'đất', 'viec': 'việc', 'benh': 'bệnh'
     }
     for _nk, _ck in sorted(_DT_NORM.items(), key=lambda x: len(x[0]), reverse=True):
         if _nk in q:
             q = q.replace(_nk, _ck)
     
     # ═══ TIER 1: CHỦ THỂ — Người / Vật được hỏi (LUÔN THẮNG) ═══
-    # Sorted dài→ngắn để "con trai" match trước "con"
+    # Sorted dài→ngắn
     _SUBJECT_DT = [
-        # Phụ Mẫu — người bề trên + tài sản che chở
-        ('bất động sản', 'Phụ Mẫu'), ('nhà đất', 'Phụ Mẫu'),
-        ('căn hộ', 'Phụ Mẫu'), ('chung cư', 'Phụ Mẫu'),
-        ('ông ngoại', 'Phụ Mẫu'), ('ông nội', 'Phụ Mẫu'),
-        ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
-        ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'),
-        ('tổ tiên', 'Phụ Mẫu'), ('mồ mả', 'Phụ Mẫu'),
-        ('hợp đồng', 'Phụ Mẫu'), ('văn bằng', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'),
-        ('giấy phép', 'Phụ Mẫu'), ('bằng lái', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'),
-        ('hộ chiếu', 'Phụ Mẫu'), ('thẻ căn cước', 'Phụ Mẫu'),
-        ('quần áo', 'Phụ Mẫu'), ('trang phục', 'Phụ Mẫu'), ('giày dép', 'Phụ Mẫu'),
-        ('mũ nón', 'Phụ Mẫu'), ('ô dù', 'Phụ Mẫu'),
-        ('sách vở', 'Phụ Mẫu'), ('văn bản', 'Phụ Mẫu'),
-        ('máy bay', 'Phụ Mẫu'), ('tàu hỏa', 'Phụ Mẫu'),
-        ('bảo hiểm', 'Phụ Mẫu'), ('phong thủy', 'Phụ Mẫu'),
-        ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'),
-        ('sách', 'Phụ Mẫu'), ('giấy', 'Phụ Mẫu'),
+        # Phụ Mẫu
+        ('bất động sản', 'Phụ Mẫu'), ('nhà đất', 'Phụ Mẫu'), ('căn hộ', 'Phụ Mẫu'), ('chung cư', 'Phụ Mẫu'),
+        ('nhà cửa', 'Phụ Mẫu'), ('thành quách', 'Phụ Mẫu'), ('công ty', 'Phụ Mẫu'), ('văn phòng', 'Phụ Mẫu'), ('cơ quan', 'Phụ Mẫu'),
+        ('mồ mả', 'Phụ Mẫu'), ('tổ tiên', 'Phụ Mẫu'), ('phong thủy', 'Phụ Mẫu'),
+        ('ông ngoại', 'Phụ Mẫu'), ('ông nội', 'Phụ Mẫu'), ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
+        ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'), ('bố vợ', 'Phụ Mẫu'), ('mẹ vợ', 'Phụ Mẫu'), ('bố chồng', 'Phụ Mẫu'), ('mẹ chồng', 'Phụ Mẫu'),
+        ('thầy giáo', 'Phụ Mẫu'), ('cô giáo', 'Phụ Mẫu'), ('sư phụ', 'Phụ Mẫu'),
+        ('hợp đồng', 'Phụ Mẫu'), ('văn bằng', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'), ('chứng chỉ', 'Phụ Mẫu'),
+        ('giấy phép', 'Phụ Mẫu'), ('bằng lái', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'), ('chứng minh thư', 'Phụ Mẫu'), ('căn cước', 'Phụ Mẫu'),
+        ('hộ chiếu', 'Phụ Mẫu'), ('visa', 'Phụ Mẫu'), ('đơn kiện', 'Phụ Mẫu'), ('thư từ', 'Phụ Mẫu'), ('tin tức', 'Phụ Mẫu'),
+        ('bài thi', 'Phụ Mẫu'), ('điểm thi', 'Phụ Mẫu'),
+        ('quần áo', 'Phụ Mẫu'), ('trang phục', 'Phụ Mẫu'), ('giày dép', 'Phụ Mẫu'), ('mũ nón', 'Phụ Mẫu'), ('ô dù', 'Phụ Mẫu'), ('chăn màn', 'Phụ Mẫu'), ('áo mưa', 'Phụ Mẫu'),
+        ('máy bay', 'Phụ Mẫu'), ('tàu hỏa', 'Phụ Mẫu'), ('xe máy', 'Phụ Mẫu'), ('ô tô', 'Phụ Mẫu'), ('phương tiện', 'Phụ Mẫu'),
+        ('trường học', 'Phụ Mẫu'), ('đại học', 'Phụ Mẫu'), ('bảo hiểm', 'Phụ Mẫu'),
+        ('trời mưa', 'Phụ Mẫu'), ('tuyết', 'Phụ Mẫu'),
+        ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'), ('sách', 'Phụ Mẫu'), ('vở', 'Phụ Mẫu'), ('giấy', 'Phụ Mẫu'),
         ('thuyền', 'Phụ Mẫu'), ('tàu', 'Phụ Mẫu'),
-        ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'),
-        ('áo', 'Phụ Mẫu'), ('mộ', 'Phụ Mẫu'),
-        ('passport', 'Phụ Mẫu'), ('visa', 'Phụ Mẫu'),
+        ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'), ('má', 'Phụ Mẫu'),
+        ('cô', 'Phụ Mẫu'), ('dì', 'Phụ Mẫu'), ('chú', 'Phụ Mẫu'), ('bác', 'Phụ Mẫu'), ('cậu', 'Phụ Mẫu'), ('mợ', 'Phụ Mẫu'),
+        ('áo', 'Phụ Mẫu'), ('mộ', 'Phụ Mẫu'), ('passport', 'Phụ Mẫu'),
 
-        # Thê Tài — tài sản, vợ, người yêu
-        ('người yêu', 'Thê Tài'), ('bạn trai', 'Thê Tài'), ('bạn gái', 'Thê Tài'),
-        ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'),
-        ('điện thoại', 'Thê Tài'), ('laptop', 'Thê Tài'),
-        ('kim cương', 'Thê Tài'), ('trang sức', 'Thê Tài'),
+        # Thê Tài
+        ('người yêu', 'Thê Tài'), ('bạn gái', 'Thê Tài'), ('tình nhân', 'Thê Tài'), ('chị em dâu', 'Thê Tài'),
+        ('người làm công', 'Thê Tài'), ('người giúp việc', 'Thê Tài'), ('ô sin', 'Thê Tài'), ('nô bộc', 'Thê Tài'), ('nhân viên', 'Thê Tài'),
+        ('tiền bạc', 'Thê Tài'), ('tài sản', 'Thê Tài'), ('thu nhập', 'Thê Tài'), ('lợi nhuận', 'Thê Tài'), ('cổ tức', 'Thê Tài'),
+        ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'), ('crypto', 'Thê Tài'), ('bitcoin', 'Thê Tài'),
+        ('giá cả', 'Thê Tài'), ('thị trường', 'Thê Tài'),
+        ('điện thoại', 'Thê Tài'), ('laptop', 'Thê Tài'), ('máy tính', 'Thê Tài'), ('hành lý', 'Thê Tài'),
+        ('kim cương', 'Thê Tài'), ('trang sức', 'Thê Tài'), ('đồ đạc', 'Thê Tài'),
         ('hàng hóa', 'Thê Tài'), ('kho hàng', 'Thê Tài'),
-        ('lương thực', 'Thê Tài'), ('thức ăn', 'Thê Tài'),
-        ('tiền', 'Thê Tài'), ('vốn', 'Thê Tài'), ('lương', 'Thê Tài'),
-        ('vàng', 'Thê Tài'), ('nợ', 'Thê Tài'),
-        ('vợ', 'Thê Tài'), ('crypto', 'Thê Tài'), ('coin', 'Thê Tài'),
+        ('lương thực', 'Thê Tài'), ('thức ăn', 'Thê Tài'), ('nước uống', 'Thê Tài'),
+        ('tiền', 'Thê Tài'), ('vốn', 'Thê Tài'), ('lương', 'Thê Tài'), ('lãi', 'Thê Tài'),
+        ('vàng', 'Thê Tài'), ('bạc', 'Thê Tài'), ('nợ', 'Thê Tài'), ('coin', 'Thê Tài'),
+        ('vợ', 'Thê Tài'), ('hàng', 'Thê Tài'), ('gạo', 'Thê Tài'),
 
-        ('thi công chức', 'Phụ Mẫu'),  # thi = giáo dục, thắng công chức
-        # Quan Quỷ — chồng (nữ hỏi), sếp, đối tác, tranh chấp
-        ('tranh chấp', 'Quan Quỷ'), ('đối tác', 'Quan Quỷ'), ('khách hàng', 'Quan Quỷ'),
-        ('công chức', 'Quan Quỷ'), ('công an', 'Quan Quỷ'), ('quân đội', 'Quan Quỷ'),
-        ('chồng', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'),
+        # Quan Quỷ
+        ('đối tác', 'Quan Quỷ'), ('khách hàng', 'Quan Quỷ'),
+        ('lãnh đạo', 'Quan Quỷ'), ('chỉ huy', 'Quan Quỷ'), ('giám đốc', 'Quan Quỷ'), ('quan chức', 'Quan Quỷ'), ('chính quyền', 'Quan Quỷ'),
+        ('công chức', 'Quan Quỷ'), ('công an', 'Quan Quỷ'), ('quân đội', 'Quan Quỷ'), ('cảnh sát', 'Quan Quỷ'),
+        ('tòa án', 'Quan Quỷ'), ('thẩm phán', 'Quan Quỷ'), ('luật sư', 'Quan Quỷ'),
+        ('kẻ gian', 'Quan Quỷ'), ('kẻ trộm', 'Quan Quỷ'), ('kẻ thù', 'Quan Quỷ'), ('tiểu nhân', 'Quan Quỷ'), ('kẻ lừa đảo', 'Quan Quỷ'),
+        ('ma quỷ', 'Quan Quỷ'), ('thần thánh', 'Quan Quỷ'), ('người khuất mặt', 'Quan Quỷ'), ('tử thi', 'Quan Quỷ'),
+        ('công việc', 'Quan Quỷ'), ('việc làm', 'Quan Quỷ'), ('nghề nghiệp', 'Quan Quỷ'), ('sự nghiệp', 'Quan Quỷ'), ('công danh', 'Quan Quỷ'),
+        ('bệnh tật', 'Quan Quỷ'), ('ốm đau', 'Quan Quỷ'), ('ung thư', 'Quan Quỷ'), ('đau đớn', 'Quan Quỷ'), ('dịch bệnh', 'Quan Quỷ'),
+        ('tai nạn', 'Quan Quỷ'), ('hỏa hoạn', 'Quan Quỷ'), ('động đất', 'Quan Quỷ'), ('lũ lụt', 'Quan Quỷ'), ('thiên tai', 'Quan Quỷ'),
+        ('lo âu', 'Quan Quỷ'), ('trầm cảm', 'Quan Quỷ'), ('stress', 'Quan Quỷ'), ('sợ hãi', 'Quan Quỷ'), ('nguy hiểm', 'Quan Quỷ'), ('nguy kịch', 'Quan Quỷ'),
+        ('chồng', 'Quan Quỷ'), ('bạn trai', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'), ('bệnh', 'Quan Quỷ'), ('cháy', 'Quan Quỷ'),
 
-        # Tử Tôn — con cái, vật nuôi, bác sĩ, thuốc
-        ('con trai', 'Tử Tôn'), ('con gái', 'Tử Tôn'), ('con dâu', 'Tử Tôn'),
-        ('con rể', 'Tử Tôn'), ('con cái', 'Tử Tôn'),
-        ('bác sĩ', 'Tử Tôn'), ('bệnh viện', 'Tử Tôn'),
-        ('vật nuôi', 'Tử Tôn'), ('thú cưng', 'Tử Tôn'),
-        ('nhà sư', 'Tử Tôn'), ('tu hành', 'Tử Tôn'),
-        ('thuốc', 'Tử Tôn'), ('chó', 'Tử Tôn'), ('mèo', 'Tử Tôn'),
+        # Tử Tôn
+        ('thực phẩm chức năng', 'Tử Tôn'), ('vắc xin', 'Tử Tôn'), ('thuốc men', 'Tử Tôn'),
+        ('con trai', 'Tử Tôn'), ('con gái', 'Tử Tôn'), ('con dâu', 'Tử Tôn'), ('con rể', 'Tử Tôn'), ('con cái', 'Tử Tôn'),
+        ('con đẻ', 'Tử Tôn'), ('con nuôi', 'Tử Tôn'), ('cháu nội', 'Tử Tôn'), ('cháu ngoại', 'Tử Tôn'),
+        ('vãn bối', 'Tử Tôn'), ('đệ tử', 'Tử Tôn'), ('môn sinh', 'Tử Tôn'),
+        ('bác sĩ', 'Tử Tôn'), ('thầy thuốc', 'Tử Tôn'), ('bệnh viện', 'Tử Tôn'), ('phòng khám', 'Tử Tôn'),
+        ('nhà sư', 'Tử Tôn'), ('tu sĩ', 'Tử Tôn'), ('ni cô', 'Tử Tôn'), ('tu hành', 'Tử Tôn'),
+        ('vật nuôi', 'Tử Tôn'), ('thú cưng', 'Tử Tôn'), ('gia súc', 'Tử Tôn'), ('gia cầm', 'Tử Tôn'),
+        ('thuốc', 'Tử Tôn'), ('chó', 'Tử Tôn'), ('mèo', 'Tử Tôn'), ('lợn', 'Tử Tôn'), ('gà', 'Tử Tôn'), ('trâu', 'Tử Tôn'), ('bò', 'Tử Tôn'), ('chim', 'Tử Tôn'), ('cá', 'Tử Tôn'),
         ('con', 'Tử Tôn'), ('cháu', 'Tử Tôn'),
 
-        # Huynh Đệ — ngang hàng
-        ('anh chị em', 'Huynh Đệ'), ('anh em', 'Huynh Đệ'),
-        ('đối thủ cạnh tranh', 'Huynh Đệ'),
-        ('đồng nghiệp', 'Huynh Đệ'), ('đối thủ', 'Huynh Đệ'),
-        ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
-        ('lô đề', 'Huynh Đệ'),
+        # Huynh Đệ
+        ('đối thủ cạnh tranh', 'Huynh Đệ'), ('đồng nghiệp', 'Huynh Đệ'), ('đối thủ', 'Huynh Đệ'), ('kẻ địch', 'Huynh Đệ'),
+        ('anh chị em', 'Huynh Đệ'), ('anh ruột', 'Huynh Đệ'), ('em ruột', 'Huynh Đệ'), ('chị ruột', 'Huynh Đệ'), ('anh em', 'Huynh Đệ'), ('chị em', 'Huynh Đệ'),
+        ('anh họ', 'Huynh Đệ'), ('chị họ', 'Huynh Đệ'), ('em họ', 'Huynh Đệ'),
+        ('bạn bè', 'Huynh Đệ'), ('chiến hữu', 'Huynh Đệ'), ('người quen', 'Huynh Đệ'),
+        ('chị dâu', 'Huynh Đệ'), ('em rể', 'Huynh Đệ'), ('anh rể', 'Huynh Đệ'), ('em dâu', 'Huynh Đệ'),
         ('bạn', 'Huynh Đệ'), ('anh', 'Huynh Đệ'), ('chị', 'Huynh Đệ'), ('em', 'Huynh Đệ'),
 
         # Bản Thân
-        ('tuổi', 'Bản Thân'),
+        ('tuổi thọ', 'Bản Thân'), ('vận mệnh', 'Bản Thân'), ('tướng mạo', 'Bản Thân'), ('tuổi', 'Bản Thân'),
     ]
     
-    # Tìm chủ thể xuất hiện SỚM NHẤT trong câu (vị trí đầu = chủ thể chính)
+    # Tìm chủ thể xuất hiện SỚM NHẤT trong câu
     best_pos = len(q) + 1
     best_dt = None
     best_kw = ''
     
-    # Danh sách keywords ngắn cần kiểm tra word boundary
-    # (tránh 'anh' trong 'kinh doanh', 'em' trong 'xem', 'chị' trong 'chỉ')
-    _SHORT_BOUNDARY = {'anh', 'em', 'chị', 'bạn', 'con', 'áo', 'mộ', 'xe', 'tàu'}
+    _SHORT_BOUNDARY = {'anh', 'em', 'chị', 'bạn', 'con', 'áo', 'mộ', 'xe', 'tàu', 'nhà', 'đất'}
     
     for kw, dt in _SUBJECT_DT:
         pos = q.find(kw)
         if pos >= 0:
-            # Word boundary check cho keywords ngắn (≤3 chars)
             if kw in _SHORT_BOUNDARY:
-                # Kiểm tra trước và sau keyword phải là space, đầu/cuối câu, hoặc dấu
                 before_ok = (pos == 0) or (q[pos-1] in ' ,;.!?')
                 after_pos = pos + len(kw)
                 after_ok = (after_pos >= len(q)) or (q[after_pos] in ' ,;.!?')
                 if not (before_ok and after_ok):
-                    continue  # Skip false positive
+                    continue
             
-            # Ưu tiên: vị trí sớm nhất, nếu cùng vị trí thì keyword dài hơn thắng
             if pos < best_pos or (pos == best_pos and len(kw) > len(best_kw)):
                 best_pos = pos
                 best_dt = dt
                 best_kw = kw
+                
     if best_dt:
-        # V42.9.29 FIX: PERSON + ACTION context
-        # Nếu có PERSON + ACTION → PERSON quyết định DT (nếu hỏi cho người khác)
-        # Nếu KHÔNG CÓ PERSON (ví dụ: Tôi) + ACTION → ACTION quyết định DT
-        _PERSON_KWS = {
-            'ông ngoại', 'ông nội', 'bà ngoại', 'bà nội', 'bố mẹ', 'cha mẹ', 'tổ tiên',
-            'bố', 'mẹ', 'cha', 'người yêu', 'bạn trai', 'bạn gái', 'vợ', 'chồng',
-            'con trai', 'con gái', 'con dâu', 'con rể', 'con cái', 'con', 'cháu',
-            'anh chị em', 'anh em', 'bạn', 'anh', 'chị', 'em', 'sếp', 'đồng nghiệp',
-            'đối tác', 'khách hàng', 'đối thủ'
-        }
-        if best_kw in _PERSON_KWS:
-            return best_dt  # Chủ thể là Người thì không bị override bởi Hành động
-            
-        _PERSON_STATE_KW_S = ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua đời', 'mất',
-                              'hấp hối', 'nguy kịch', 'nằm viện', 'nhập viện', 'tai nạn',
-                              'phẫu thuật', 'mổ', 'ung thư', 'đau', 'sốt', 'khám',
-                              'hồi phục', 'bình an', 'an toàn', 'nguy hiểm']
-        _ACTION_DT_S = [
-            ('đầu tư', 'Thê Tài'), ('kinh doanh', 'Thê Tài'), ('buôn bán', 'Thê Tài'),
-            ('mua bán', 'Thê Tài'), ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'),
-            ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'), ('ngoại tình', 'Thê Tài'),
-            ('vay tiền', 'Thê Tài'), ('trả nợ', 'Thê Tài'), ('góp vốn', 'Thê Tài'),
-            ('cho vay', 'Thê Tài'), ('lợi nhuận', 'Thê Tài'), 
-            ('mua nhà', 'Thê Tài'), ('bán nhà', 'Thê Tài'), ('mua xe', 'Thê Tài'), 
-            ('bán xe', 'Thê Tài'), ('mua đất', 'Thê Tài'), ('bán đất', 'Thê Tài'),
-            ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'), ('nghỉ việc', 'Quan Quỷ'),
-            ('sa thải', 'Quan Quỷ'), ('phỏng vấn', 'Quan Quỷ'), ('chuyển việc', 'Quan Quỷ'),
-            ('kiện tụng', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'), ('thắng kiện', 'Quan Quỷ'),
-            ('thi đỗ', 'Phụ Mẫu'), ('thi trượt', 'Phụ Mẫu'), ('thi cử', 'Phụ Mẫu'),
-            ('du học', 'Phụ Mẫu'), ('tốt nghiệp', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'),
-            ('du lịch', 'Bản Thân'), ('xuất hành', 'Bản Thân'), ('đi xa', 'Bản Thân'),
-            ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
-            ('sinh con', 'Tử Tôn'), ('có thai', 'Tử Tôn'), ('mang thai', 'Tử Tôn'),
-            ('thi', 'Phụ Mẫu'), ('học', 'Phụ Mẫu'),
-        ]
-        _has_state = any(kw in q for kw in _PERSON_STATE_KW_S)
-        if _has_state:
-            return best_dt  # Trạng thái người/vật → DT = PERSON/OBJECT
-        # Kiểm tra action
-        for _akw, _adt in _ACTION_DT_S:
-            if _akw in q:
-                return _adt  # ACTION override OBJECT
-        return best_dt  # Không có action → DT = PERSON/OBJECT
+        return best_dt  # TRẢ VỀ LUÔN NẾU TÌM THẤY CHỦ THỂ (KHÔNG CÓ ACTION OVERRIDE NỮA)
     
     # ═══ TIER 2: NGỮ CẢNH — Hành động/trạng thái (chỉ khi ko có chủ thể) ═══
     _CONTEXT_DT = [
+        # Bản Thân (Các hành động / yếu tố của chính mình)
+        ('sức khỏe', 'Bản Thân'), ('bình an', 'Bản Thân'), ('xuất hành', 'Bản Thân'), 
+        ('đi xa', 'Bản Thân'), ('đi đường', 'Bản Thân'), ('du lịch', 'Bản Thân'),
+        
         # Phụ Mẫu — hành động liên quan nhà, học, thi
-        ('xây nhà', 'Phụ Mẫu'), ('sửa nhà', 'Phụ Mẫu'), ('thuê nhà', 'Phụ Mẫu'),
-        ('mua nhà', 'Phụ Mẫu'), ('bán nhà', 'Phụ Mẫu'),
-        ('mua xe', 'Phụ Mẫu'), ('bán xe', 'Phụ Mẫu'), ('mua đất', 'Phụ Mẫu'),
-        ('học', 'Phụ Mẫu'), ('thi', 'Phụ Mẫu'), ('trường', 'Phụ Mẫu'),
-        ('cúng', 'Phụ Mẫu'),
+        ('xây nhà', 'Phụ Mẫu'), ('sửa nhà', 'Phụ Mẫu'), ('mua nhà', 'Phụ Mẫu'), ('bán nhà', 'Phụ Mẫu'), ('thuê nhà', 'Phụ Mẫu'),
+        ('mua xe', 'Phụ Mẫu'), ('bán xe', 'Phụ Mẫu'), ('mua đất', 'Phụ Mẫu'), ('bán đất', 'Phụ Mẫu'),
+        ('thi cử', 'Phụ Mẫu'), ('du học', 'Phụ Mẫu'), ('học tập', 'Phụ Mẫu'), ('tốt nghiệp', 'Phụ Mẫu'), ('xin giấy', 'Phụ Mẫu'),
+        ('học', 'Phụ Mẫu'), ('thi', 'Phụ Mẫu'), ('trường', 'Phụ Mẫu'), ('cúng', 'Phụ Mẫu'),
 
         # Thê Tài — mua bán, đầu tư, mất, tình duyên
-        ('ngoại tình', 'Thê Tài'), ('đầu tư', 'Thê Tài'),
-        ('tăng lương', 'Thê Tài'), ('thu nhập', 'Thê Tài'),
-        ('tình duyên', 'Thê Tài'), ('kết hôn', 'Thê Tài'), ('ly hôn', 'Thê Tài'),
-        ('kinh doanh', 'Thê Tài'), ('buôn bán', 'Thê Tài'),
-        ('mua', 'Thê Tài'), ('bán', 'Thê Tài'), ('vay', 'Thê Tài'),
-        ('mất', 'Thê Tài'), ('trộm', 'Thê Tài'), ('cắp', 'Thê Tài'),
-        ('lãi', 'Thê Tài'), ('lời', 'Thê Tài'), ('lỗ', 'Thê Tài'),
-        ('tài', 'Thê Tài'),
+        ('ngoại tình', 'Thê Tài'), ('đầu tư', 'Thê Tài'), ('kinh doanh', 'Thê Tài'), ('buôn bán', 'Thê Tài'),
+        ('tăng lương', 'Thê Tài'), ('tình duyên', 'Thê Tài'), ('kết hôn', 'Thê Tài'), ('ly hôn', 'Thê Tài'),
+        ('vay tiền', 'Thê Tài'), ('đòi nợ', 'Thê Tài'), ('trả nợ', 'Thê Tài'), ('cho vay', 'Thê Tài'),
+        ('mất đồ', 'Thê Tài'), ('rơi đồ', 'Thê Tài'), ('mất tiền', 'Thê Tài'), ('mất trộm', 'Thê Tài'),
+        ('mua', 'Thê Tài'), ('bán', 'Thê Tài'), ('vay', 'Thê Tài'), ('mất', 'Thê Tài'),
+        ('lãi', 'Thê Tài'), ('lời', 'Thê Tài'), ('lỗ', 'Thê Tài'), ('tài', 'Thê Tài'),
 
         # Quan Quỷ — bệnh, kiện, tai nạn, việc
-        ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'),
-        ('kiện tụng', 'Quan Quỷ'), ('kiện cáo', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'),
-        ('ung thư', 'Quan Quỷ'), ('tai nạn', 'Quan Quỷ'),
-        ('trầm cảm', 'Quan Quỷ'), ('lo âu', 'Quan Quỷ'),
-        ('hỏa hoạn', 'Quan Quỷ'), ('lũ lụt', 'Quan Quỷ'), ('động đất', 'Quan Quỷ'),
-        ('việc', 'Quan Quỷ'), ('bệnh', 'Quan Quỷ'), ('kiện', 'Quan Quỷ'),
-        ('ốm', 'Quan Quỷ'), ('đau', 'Quan Quỷ'), ('stress', 'Quan Quỷ'),
-        ('cháy', 'Quan Quỷ'),
+        ('thăng chức', 'Quan Quỷ'), ('xin việc', 'Quan Quỷ'), ('nhậm chức', 'Quan Quỷ'), ('chuyển việc', 'Quan Quỷ'), ('sa thải', 'Quan Quỷ'), ('phỏng vấn', 'Quan Quỷ'),
+        ('kiện tụng', 'Quan Quỷ'), ('kiện cáo', 'Quan Quỷ'), ('tranh chấp', 'Quan Quỷ'), ('ra tòa', 'Quan Quỷ'),
+        ('việc', 'Quan Quỷ'), ('kiện', 'Quan Quỷ'), ('ốm', 'Quan Quỷ'), ('đau', 'Quan Quỷ'),
 
         # Tử Tôn — giải trí, bình an, chơi
-        ('du lịch', 'Tử Tôn'), ('giải trí', 'Tử Tôn'),
-        ('bình an', 'Tử Tôn'), ('vui', 'Tử Tôn'), ('chơi', 'Tử Tôn'),
+        ('chữa bệnh', 'Tử Tôn'), ('giải hạn', 'Tử Tôn'), ('cầu an', 'Tử Tôn'), ('thoát nạn', 'Tử Tôn'),
+        ('giải trí', 'Tử Tôn'), ('vui', 'Tử Tôn'), ('chơi', 'Tử Tôn'),
 
         # Huynh Đệ — cờ bạc, cạnh tranh
-        ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'),
+        ('cờ bạc', 'Huynh Đệ'), ('đánh bạc', 'Huynh Đệ'), ('xổ số', 'Huynh Đệ'), ('cá độ', 'Huynh Đệ'), ('đua ngựa', 'Huynh Đệ'),
     ]
     
     for kw, dt in _CONTEXT_DT:
@@ -704,46 +672,51 @@ def _get_dung_than(question):
             return dt
     
     # ═══ TIER 3: DEFAULT ═══
-    # Nếu ko match gì → xem "tôi/mình" → Bản Thân, còn lại → Quan Quỷ
     if 'tôi' in q or 'mình' in q:
         return 'Bản Thân'
     return "Quan Quỷ"
 
 
 def _get_all_dung_than(question):
-    """V41.0: Trả về TẤT CẢ Dụng Thần cho câu hỏi phức hợp.
-    
-    Ví dụ: "vợ bệnh, con thất học" → ['Thê Tài', 'Tử Tôn']
-    Ví dụ: "mẹ tôi bệnh" → ['Phụ Mẫu']
-    
-    Returns: list[str] — danh sách DT (primary đứng đầu)
-    """
+    """V43.0: Trả về TẤT CẢ Dụng Thần cho câu hỏi phức hợp dựa trên DỤNG THẦN TOÀN THƯ."""
     q = question.lower()
     
-    # Reuse SUBJECT_DT from _get_dung_than
+    # Mảng này cần đồng bộ với _SUBJECT_DT chính
     _SUBJECT_DT = [
-        ('bất động sản', 'Phụ Mẫu'), ('nhà đất', 'Phụ Mẫu'),
-        ('ông ngoại', 'Phụ Mẫu'), ('ông nội', 'Phụ Mẫu'),
-        ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
-        ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'),
-        ('hợp đồng', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'),
-        ('công ty', 'Quan Quỷ'), ('nghề nghiệp', 'Quan Quỷ'),
-        ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'),
-        ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'),
-        ('người yêu', 'Thê Tài'), ('bạn trai', 'Thê Tài'), ('bạn gái', 'Thê Tài'),
-        ('cổ phiếu', 'Thê Tài'), ('điện thoại', 'Thê Tài'),
-        ('tiền', 'Thê Tài'), ('vốn', 'Thê Tài'), ('lương', 'Thê Tài'),
-        ('vợ', 'Thê Tài'), ('crypto', 'Thê Tài'),
-        ('chồng', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'), ('đối tác', 'Quan Quỷ'),
+        # Phụ Mẫu
+        ('bất động sản', 'Phụ Mẫu'), ('nhà đất', 'Phụ Mẫu'), ('căn hộ', 'Phụ Mẫu'), ('chung cư', 'Phụ Mẫu'),
+        ('nhà cửa', 'Phụ Mẫu'), ('công ty', 'Phụ Mẫu'), ('mồ mả', 'Phụ Mẫu'),
+        ('ông ngoại', 'Phụ Mẫu'), ('ông nội', 'Phụ Mẫu'), ('bà ngoại', 'Phụ Mẫu'), ('bà nội', 'Phụ Mẫu'),
+        ('bố mẹ', 'Phụ Mẫu'), ('cha mẹ', 'Phụ Mẫu'), ('bố vợ', 'Phụ Mẫu'), ('mẹ vợ', 'Phụ Mẫu'), ('bố chồng', 'Phụ Mẫu'), ('mẹ chồng', 'Phụ Mẫu'),
+        ('thầy giáo', 'Phụ Mẫu'), ('cô giáo', 'Phụ Mẫu'),
+        ('hợp đồng', 'Phụ Mẫu'), ('văn bằng', 'Phụ Mẫu'), ('bằng cấp', 'Phụ Mẫu'), ('giấy phép', 'Phụ Mẫu'), ('giấy tờ', 'Phụ Mẫu'),
+        ('nhà', 'Phụ Mẫu'), ('xe', 'Phụ Mẫu'), ('đất', 'Phụ Mẫu'), ('bố', 'Phụ Mẫu'), ('mẹ', 'Phụ Mẫu'), ('cha', 'Phụ Mẫu'),
+
+        # Thê Tài
+        ('người yêu', 'Thê Tài'), ('bạn gái', 'Thê Tài'), ('vợ', 'Thê Tài'),
+        ('tiền bạc', 'Thê Tài'), ('tài sản', 'Thê Tài'), ('thu nhập', 'Thê Tài'),
+        ('cổ phiếu', 'Thê Tài'), ('chứng khoán', 'Thê Tài'), ('crypto', 'Thê Tài'),
+        ('điện thoại', 'Thê Tài'), ('laptop', 'Thê Tài'), ('hàng hóa', 'Thê Tài'),
+        ('tiền', 'Thê Tài'), ('vốn', 'Thê Tài'), ('lương', 'Thê Tài'), ('vàng', 'Thê Tài'),
+
+        # Quan Quỷ
+        ('đối tác', 'Quan Quỷ'), ('khách hàng', 'Quan Quỷ'), ('sếp', 'Quan Quỷ'), ('lãnh đạo', 'Quan Quỷ'),
+        ('chồng', 'Quan Quỷ'), ('bạn trai', 'Quan Quỷ'),
+        ('công việc', 'Quan Quỷ'), ('nghề nghiệp', 'Quan Quỷ'), ('sự nghiệp', 'Quan Quỷ'),
+        ('bệnh tật', 'Quan Quỷ'), ('tai nạn', 'Quan Quỷ'), ('kiện tụng', 'Quan Quỷ'),
+
+        # Tử Tôn
         ('con trai', 'Tử Tôn'), ('con gái', 'Tử Tôn'), ('con cái', 'Tử Tôn'),
-        ('bác sĩ', 'Tử Tôn'), ('thuốc', 'Tử Tôn'),
-        ('chó', 'Tử Tôn'), ('mèo', 'Tử Tôn'), ('con', 'Tử Tôn'), ('cháu', 'Tử Tôn'),
-        ('anh em', 'Huynh Đệ'), ('đồng nghiệp', 'Huynh Đệ'),
-        ('xổ số', 'Huynh Đệ'), ('cờ bạc', 'Huynh Đệ'),
-        ('bạn', 'Huynh Đệ'),
+        ('bác sĩ', 'Tử Tôn'), ('bệnh viện', 'Tử Tôn'), ('thú cưng', 'Tử Tôn'),
+        ('chó', 'Tử Tôn'), ('mèo', 'Tử Tôn'), ('con', 'Tử Tôn'), ('cháu', 'Tử Tôn'), ('thuốc', 'Tử Tôn'),
+
+        # Huynh Đệ
+        ('đồng nghiệp', 'Huynh Đệ'), ('đối thủ', 'Huynh Đệ'),
+        ('anh chị em', 'Huynh Đệ'), ('anh em', 'Huynh Đệ'),
+        ('bạn bè', 'Huynh Đệ'), ('bạn', 'Huynh Đệ'), ('anh', 'Huynh Đệ'), ('chị', 'Huynh Đệ'), ('em', 'Huynh Đệ'),
     ]
     
-    _SHORT_BOUNDARY = {'anh', 'em', 'chị', 'bạn', 'con', 'áo', 'mộ', 'xe', 'tàu'}
+    _SHORT_BOUNDARY = {'anh', 'em', 'chị', 'bạn', 'con', 'áo', 'mộ', 'xe', 'tàu', 'nhà', 'đất'}
     
     found = []  # list of (position, dt_name, keyword)
     seen_dt = set()
@@ -761,7 +734,6 @@ def _get_all_dung_than(question):
                 found.append((pos, dt, kw))
                 seen_dt.add(dt)
     
-    # Sort by position → primary DT first
     found.sort(key=lambda x: x[0])
     result = [f[1] for f in found]
     
@@ -1288,7 +1260,7 @@ def _build_tam_thoi(question, dung_than, hanh_dt, ts_stage, ngu_khi, weighted_pc
     def _strength_verdict(strength, stage, obj):
         """Tạo mô tả LINH HOẠT từ điểm sức mạnh thực tế"""
         if strength >= 75:
-            return f"🟢 **CỰC VƯỢNG** ({strength}%)", f"{obj} rất mạnh, thuận lợi, phát triển đỉnh cao"
+            return f"🟢 **CỰC VƯỢNG** ({strength}%)", f"{obj} rất mạnh, tốt, phát triển đỉnh cao"
         elif strength >= 55:
             return f"🔵 **VƯỢNG** ({strength}%)", f"{obj} có lực, đang phát triển tốt"
         elif strength >= 40:
@@ -1399,7 +1371,7 @@ SAO_GIAI_THICH = {
 }
 
 CUA_GIAI_THICH = {
-    'Khai Môn': {'cat_hung': 'Đại Cát', 'y_nghia': 'Mở ra, khởi nghiệp, công việc, nhậm chức', 'loi_khuyen': 'Rất thuận lợi cho việc bắt đầu mới'},
+    'Khai Môn': {'cat_hung': 'Đại Cát', 'y_nghia': 'Mở ra, khởi nghiệp, công việc, nhậm chức', 'loi_khuyen': 'Rất tốt cho việc bắt đầu mới'},
     'Hưu Môn': {'cat_hung': 'Cát', 'y_nghia': 'Nghỉ ngơi, vui vẻ, gặp quý nhân, thư giãn', 'loi_khuyen': 'Thuận lợi cho giao tiếp, hòa giải'},
     'Sinh Môn': {'cat_hung': 'Đại Cát', 'y_nghia': 'Tài lộc, sinh sôi, kinh doanh, phát triển', 'loi_khuyen': 'Rất tốt cho cầu tài, đầu tư'},
     'Thương Môn': {'cat_hung': 'Hung', 'y_nghia': 'Cãi vã, đòi nợ, kiện cáo, xung đột', 'loi_khuyen': 'Cẩn thận tranh chấp, thị phi'},
@@ -1922,10 +1894,10 @@ TAM_HINH = {
     # Vô Lễ Chi Hình (Hình phạt vô lễ)
     frozenset(['Tý', 'Mão']): ('Vô Lễ Chi Hình', '⚠️ TAI HỌA do xúc phạm/vô lễ — HUNG'),
     # Tự Hình (Tự phạt)
-    frozenset(['Thìn']): ('Tự Hình Thìn', '⚠️ Tự mình gây họa — bất lợi'),
-    frozenset(['Ngọ']): ('Tự Hình Ngọ', '⚠️ Tự mình gây họa — bất lợi'),
-    frozenset(['Dậu']): ('Tự Hình Dậu', '⚠️ Tự mình gây họa — bất lợi'),
-    frozenset(['Hợi']): ('Tự Hình Hợi', '⚠️ Tự mình gây họa — bất lợi'),
+    frozenset(['Thìn']): ('Tự Hình Thìn', '⚠️ Tự mình gây họa — xấu'),
+    frozenset(['Ngọ']): ('Tự Hình Ngọ', '⚠️ Tự mình gây họa — xấu'),
+    frozenset(['Dậu']): ('Tự Hình Dậu', '⚠️ Tự mình gây họa — xấu'),
+    frozenset(['Hợi']): ('Tự Hình Hợi', '⚠️ Tự mình gây họa — xấu'),
 }
 
 # Tam Hình pair lookup (2 chi cũng trigger partial punishment)
@@ -2181,7 +2153,7 @@ def _analyze_hoa_hoi_dau(hanh_dong, hanh_bien, chi_dong, chi_bien,
     
     # 1. Hóa Hồi Đầu Sinh: hào biến sinh lại hào động
     if hanh_dong and hanh_bien and SINH.get(hanh_bien) == hanh_dong:
-        results.append(('🟢 Hóa Hồi Đầu Sinh', f'{hanh_bien} sinh {hanh_dong} → Được trợ giúp mạnh mẽ, sự việc thuận lợi dần', 'CÁT'))
+        results.append(('🟢 Hóa Hồi Đầu Sinh', f'{hanh_bien} sinh {hanh_dong} → Được trợ giúp mạnh mẽ, sự việc tốt dần', 'CÁT'))
     
     # 2. Hóa Hồi Đầu Khắc: hào biến khắc lại hào động → RẤT XẤU
     if hanh_dong and hanh_bien and KHAC.get(hanh_bien) == hanh_dong:
@@ -2256,7 +2228,7 @@ LUC_THAN_DEEP = {
         'luc_than_map': {
             'Quan Quỷ': 'Công việc vui vẻ, thăng chức có tiệc mừng',
             'Thê Tài': 'Tài lộc đến vui vẻ, thu nhập qua tiệc tùng',
-            'Phụ Mẫu': 'Nhà cửa mới, giấy tờ thuận lợi',
+            'Phụ Mẫu': 'Nhà cửa mới, giấy tờ tốt',
             'Tử Tôn': 'Con cái mang lại niềm vui lớn',
             'Huynh Đệ': 'Bạn bè tụ họp vui vẻ, hao tiền tiệc tùng',
         }
@@ -2563,7 +2535,7 @@ def _build_thien_dia_nhan_than(thien_ban, nhan_ban, than_ban, chu_cung, sv_cung,
     elif total_ok >= 2:
         lines.append(f"\n→ **✅ TỔNG KẾT CHIẾN LƯỢC: {total_ok}/4 trụ THUẬN** — Đa số thuận, có thể hành động nhưng cần lưu ý trụ yếu.")
     elif total_bad >= 3:
-        lines.append(f"\n→ **🔴 TỔNG KẾT CHIẾN LƯỢC: {total_bad}/4 trụ NGHỊCH** — Thiên-Địa-Nhân-Thần đều bất lợi → TUYỆT ĐỐI KHÔNG NÊN hành động!")
+        lines.append(f"\n→ **🔴 TỔNG KẾT CHIẾN LƯỢC: {total_bad}/4 trụ NGHỊCH** — Thiên-Địa-Nhân-Thần đều xấu → TUYỆT ĐỐI KHÔNG NÊN hành động!")
     else:
         lines.append(f"\n→ **🟡 TỔNG KẾT CHIẾN LƯỢC: Cân bằng** — Có thuận có nghịch, cần cân nhắc kỹ từng yếu tố.")
     
@@ -2721,7 +2693,7 @@ def _build_nguyet_pha_warning(dung_than_chi, chi_thang, dung_than_name='Dụng T
                 elif h_lt == 'Huynh Đệ':
                     impact = '→ Huynh Đệ bị phá = Đối thủ YẾU ĐI ✅'
                 elif h_lt == 'Phụ Mẫu':
-                    impact = '→ Phụ Mẫu bị phá = Giấy tờ/hợp đồng BẤT LỢI ⚠️'
+                    impact = '→ Phụ Mẫu bị phá = Giấy tờ/hợp đồng XẤU ⚠️'
                 elif h_lt == 'Tử Tôn':
                     impact = '→ Tử Tôn bị phá = Niềm vui/giải trừ BỊ MẤT ⚠️'
                 lines.append(f"  - Hào {h_idx} **{h_lt}** ({h_chi}) bị Nguyệt Phá {impact}")
@@ -3024,9 +2996,9 @@ class FreeAIHelper:
     Kế thừa V9.0: Phản/Phục Ngâm, Tam Kỳ, Tam Tài, Không Vong.
     """
     def __init__(self, api_key=None):
-        self.name = "Thiên Cơ Đại Sư (V42.9.43 Master-Level + Cross-Reference + Deep Forensic + 🎲 Gieo Ngẫu Nhiên)"
-        self.version = "V42.9.43-Full-Pipeline"
-        self.model_name = "offline-rule-engine-V42.9.43"
+        self.name = "Thiên Cơ Đại Sư (V6886 Master-Level + Cross-Reference + Deep Forensic + 🎲 Gieo Ngẫu Nhiên)"
+        self.version = "V6886-Full-Pipeline"
+        self.model_name = "offline-rule-engine-V6886"
         self.logs = []
         self.learned_count = len(_load_learned_topics())
         self._api_key = api_key  # Lưu API key để gọi Gemini khi cần
@@ -3531,10 +3503,10 @@ class FreeAIHelper:
             if the_quai_hanh_str and dung_quai_hanh_str:
                 if SINH.get(the_quai_hanh_str) == dung_quai_hanh_str:
                     the_dung_rel_str = 'sinh'
-                    the_dung_y_nghia_str = 'Thể sinh Dụng → hao tổn, bất lợi cho ta'
+                    the_dung_y_nghia_str = 'Thể sinh Dụng → hao tổn, xấu cho ta'
                 elif SINH.get(dung_quai_hanh_str) == the_quai_hanh_str:
                     the_dung_rel_str = 'được sinh'
-                    the_dung_y_nghia_str = 'Dụng sinh Thể → CÁT, thuận lợi'
+                    the_dung_y_nghia_str = 'Dụng sinh Thể → CÁT, tốt'
                 elif KHAC.get(the_quai_hanh_str) == dung_quai_hanh_str:
                     the_dung_rel_str = 'khắc'
                     the_dung_y_nghia_str = 'Thể khắc Dụng → ta thắng, CÁT'
@@ -3738,7 +3710,7 @@ class FreeAIHelper:
                 'Đại Dịch Thổ': 'Đất trạm dịch — rộng lớn, phát triển',
                 'Thoa Xuyến Kim': 'Vàng trang sức — đẹp đẽ, giá trị',
                 'Tang Đố Mộc': 'Gỗ cây dâu — cứng cáp, hữu dụng',
-                'Đại Khê Thủy': 'Nước suối lớn — dồi dào, thuận lợi',
+                'Đại Khê Thủy': 'Nước suối lớn — dồi dào, tốt',
                 'Sa Trung Thổ': 'Đất trong cát — mong manh, bất ổn',
                 'Thiên Thượng Hỏa': 'Lửa trên trời — mạnh mẽ, tỏa sáng',
                 'Thạch Lựu Mộc': 'Cây lựu đá — cứng cáp, sống dai',
@@ -3842,7 +3814,7 @@ class FreeAIHelper:
         if not locals().get('km_am_can_str'):
             km_am_can_str = 'N/A'
             
-        # === V42.9.43: LUẬN KỲ MÔN NÂNG CAO (Xa-gần, 4 cách nhìn, vận hạn) ===
+        # === V6886: LUẬN KỲ MÔN NÂNG CAO (Xa-gần, 4 cách nhìn, vận hạn) ===
         km_xa_gan_str = ""
         km_4_cach_nhin_str = ""
         km_van_han_str = ""
@@ -3872,11 +3844,11 @@ class FreeAIHelper:
             }
             km_van_han_str = luan_van_han(_tu_tru_dict)
             
-            # V42.9.43: Xem Tổng Quát nhanh
+            # V6886: Xem Tổng Quát nhanh
             _can_gio_km = chart_data.get('can_gio', '') if chart_data else ''
             km_xem_tong_quat_str = luan_xem_tong_quat_nhanh(_can_gio_km, truc_phu, truc_su)
             
-            # V42.9.43: Dụng Thần đặc thù KM
+            # V6886: Dụng Thần đặc thù KM
             _dt_dac_thu = luan_dung_than_dac_thu_km(question)
             if _dt_dac_thu:
                 km_dt_dac_thu_str = f"{_dt_dac_thu['dung_than_km']} — {_dt_dac_thu['ghi_chu']}"
@@ -4107,8 +4079,8 @@ class FreeAIHelper:
             elif cat_c >= 3: concl = 'CÁT'
             elif hung_c >= 4: concl = 'ĐẠI HUNG'
             elif hung_c >= 3: concl = 'HUNG'
-            elif cat_c > hung_c: concl = 'CÓ — THUẬN LỢI'
-            elif hung_c > cat_c: concl = 'KHÔNG — BẤT LỢI'
+            elif cat_c > hung_c: concl = 'CÓ'
+            elif hung_c > cat_c: concl = 'KHÔNG'
             else: concl = 'CÓ THỂ — CẦN THẬN TRỌNG'
             
             slots.update({
@@ -4387,13 +4359,13 @@ class FreeAIHelper:
             
             # Auto-conclusion based on cat/hung (V34.3: QUYẾT ĐOÁN)
             if cat_c >= 3:
-                generic_slots['conclusion'] = 'THUẬN LỢI ✅'
+                generic_slots['conclusion'] = 'TỐT ✅'
             elif hung_c >= 3:
-                generic_slots['conclusion'] = 'BẤT LỢI ❌'
+                generic_slots['conclusion'] = 'XẤU ❌'
             elif cat_c > hung_c:
-                generic_slots['conclusion'] = f'CÓ — THUẬN LỢI ✅ ({cat_c} cát vs {hung_c} hung)'
+                generic_slots['conclusion'] = f'CÓ ✅ ({cat_c} cát vs {hung_c} hung)'
             elif hung_c > cat_c:
-                generic_slots['conclusion'] = f'KHÔNG — BẤT LỢI ⚠️ ({hung_c} hung vs {cat_c} cát)'
+                generic_slots['conclusion'] = f'KHÔNG ⚠️ ({hung_c} hung vs {cat_c} cát)'
             else:
                 generic_slots['conclusion'] = f'CÓ THỂ — CẦN THẬN TRỌNG ({cat_c} cát = {hung_c} hung)'
             
@@ -4590,7 +4562,7 @@ class FreeAIHelper:
                 generic_slots.setdefault('dung_ket_luan', 'Lựa chọn A HỖ TRỢ')
             elif 'khắc' in str(_tdr).lower():
                 generic_slots.setdefault('dung_sinh_the', 'KHẮC ❌')
-                generic_slots.setdefault('dung_ket_luan', 'Lựa chọn A BẤT LỢI')
+                generic_slots.setdefault('dung_ket_luan', 'Lựa chọn A XẤU')
             else:
                 generic_slots.setdefault('dung_sinh_the', str(_tdr))
                 generic_slots.setdefault('dung_ket_luan', 'Trung lập')
@@ -5531,17 +5503,17 @@ class FreeAIHelper:
             except (ValueError, TypeError):
                 _vb_pct_int = 50
             if _vb_pct_int >= 65:
-                _vb_label = 'ĐẠI CÁT — RẤT THUẬN LỢI'
+                _vb_label = 'ĐẠI CÁT — RẤT TỐT'
             elif _vb_pct_int >= 55:
-                _vb_label = 'CÁT — THUẬN LỢI'
+                _vb_label = 'CÁT — TỐT'
             elif _vb_pct_int >= 50:
                 _vb_label = 'TIỂU CÁT — CÓ nhưng CẦN NỖ LỰC'
             elif _vb_pct_int >= 45:
                 _vb_label = 'BÌNH — CÂN NHẮC KỸ'
             elif _vb_pct_int >= 35:
-                _vb_label = 'HUNG — BẤT LỢI'
+                _vb_label = 'HUNG — XẤU'
             else:
-                _vb_label = 'ĐẠI HUNG — RẤT BẤT LỢI'
+                _vb_label = 'ĐẠI HUNG — RẤT XẤU'
             
             offline_verdict_block = (
                 f"═══════════════════════════════════════════\n"
@@ -5556,13 +5528,16 @@ class FreeAIHelper:
                 f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:200]}\n"
                 f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {v22.get('tier_cap', '?')}\n"
             )
-            # V42.9.5 PATCH: Inject Ứng Kỳ + Bất Thường vào prompt cho Gemini
+            # V42.9.5 + V99 PATCH: Inject Ứng Kỳ Chi Tiết (đến Phút/Khắc) + Tiên Tri Toàn Tri 360° vào prompt cho Gemini
             _hub_synth = od.get('hub', {}).get('synthesis', {})
-            _ung_ky_for_gemini = _hub_synth.get('ung_ky', '')
+            _ung_ky_for_gemini = _hub_synth.get('ung_ky_detail') or _hub_synth.get('ung_ky', '')
             _bt_for_gemini = _hub_synth.get('bt_detected', [])
+            _omni_for_gemini = _hub_synth.get('omniscient_prophecy', '')
             if _ung_ky_for_gemini:
-                offline_verdict_block += f"\n⏱ ỨNG KỲ (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
-                offline_verdict_block += f"→ BẠN PHẢI dùng CHÍNH XÁC thời gian này khi trả lời. KHÔNG ĐƯỢC tự bịa thời gian khác.\n"
+                offline_verdict_block += f"\n⏱ ỨNG KỲ CHI TIẾT ĐẾN PHÚT/KHẮC (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
+                offline_verdict_block += f"→ BẠN PHẢI dùng CHÍNH XÁC Năm, Tháng, Ngày, Giờ, Khắc, Phút này khi trả lời. KHÔNG ĐƯỢC tự bịa thời gian khác.\n"
+            if _omni_for_gemini:
+                offline_verdict_block += f"\n🔮 HỒ SƠ TIÊN TRI TOÀN TRI 360° (ĐÃ GIẢI MÃ TỪ QUẺ — BẮT BUỘC TRÌNH BÀY ĐẦY ĐỦ):\n{_omni_for_gemini}\n"
             if _bt_for_gemini:
                 offline_verdict_block += f"\n🚨 BẤT THƯỜNG NGHIÊM TRỌNG: {', '.join(_bt_for_gemini)}\n"
                 offline_verdict_block += f"→ Yếu tố này ĐÃ BỊ TRỪ ĐIỂM. BẠN PHẢI đề cập trong phần phân tích.\n"
@@ -5599,7 +5574,7 @@ class FreeAIHelper:
             # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V42.9.43 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC CẤP ĐỘ CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V6886 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC CẤP ĐỘ CAO NHẤT.\n"
                 f"BẠN LÀ MỘT ĐẠI SƯ THẬT SỰ, không phải máy tính. BẠN phải suy luận như một chuyên gia 30 năm kinh nghiệm với lượng kiến thức sâu rộng về Huyền Học.\n"
                 f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
@@ -5657,10 +5632,14 @@ class FreeAIHelper:
                 f"|---|---|---|---|\n"
                 f"| [Tên yếu tố 1] | [Dữ liệu từ quẻ] | [Dữ liệu tra mạng] | [Khớp/Không khớp] |\n"
                 f"| [Tên yếu tố 2] | ... | ... | ... |\n"
-                f"\n### 🔮 TỔNG HỢP LOGIC\n"
+                f"\n### 🔮 TỔNG HỢP LOGIC & HỒ SƠ TIÊN TRI TOÀN TRI 360°\n"
                 f"**CHỨNG CỨ:** [Xâu chuỗi dữ liệu đối chiếu (quẻ + internet) để ra kết luận cuối cùng]\n"
-                f"**⏳ ỨNG KỲ:** [Thời gian + Hướng cụ thể]\n"
-                f"**🔧 LỜI KHUYÊN:** [Hành động cụ thể]\n\n"
+                f"**📜 SỰ VIỆC CHI TIẾT (Quá khứ - Hiện tại - Tương lai):** [Mô tả rõ chuyện gì đã khởi phát, ẩn tình hiện tại và kết cục]\n"
+                f"**⏳ THỜI ĐIỂM CHÍNH XÁC (Năm - Tháng - Ngày - Giờ - Khắc - Phút):** [Ghi rõ Năm, Tháng, Ngày Dương/Âm, Giờ Địa Chi, Khắc 15 phút và Phút đuôi chính xác]\n"
+                f"**📍 ĐỊA ĐIỂM & HIỆN TRƯỜNG (Ở đâu):** [Phương hướng Bát Quái + 24 Sơn La Kinh, khoảng cách mét/km, độ cao/tầng, cảnh vật xung quanh]\n"
+                f"**👤 HỒ SƠ CON NGƯỜI:** [Trai hay Gái, Già hay Trẻ, Bao nhiêu tuổi cụ thể, Ngoại hình, Tính cách, Nghề nghiệp, Người quen hay lạ]\n"
+                f"**📦 HỒ SƠ ĐỒ VẬT & ĐỊNH LƯỢNG:** [Đồ vật gì cụ thể, Màu sắc, Chất liệu, Hình dáng, Kích thước, Tình trạng Mới hay Cũ, Số lượng/Giá trị]\n"
+                f"**🔧 LỜI KHUYÊN & PHÁP QUYẾT HÓA GIẢI:** [Hành động cụ thể]\n\n"
                 f"GIỚI HẠN: KHÔNG GIỚI HẠN TỪ. Hãy diễn giải chi tiết, sâu sắc như một Đại Sư thực thụ. ⛔ CẤM thay đổi verdict gốc.\n"
                 f"</output_format>\n\n"
             )
@@ -5683,7 +5662,7 @@ class FreeAIHelper:
                         "BƯỚC 2 — MỆNH + THÂN: Chính tinh Miếu/Vượng/Đắc/Hãm + phụ tinh.\n"
                         "  → 14 Chính Tinh: Tử Vi, Thiên Cơ, Thái Dương, Vũ Khúc, Thiên Đồng, Liêm Trinh,\n"
                         "     Thiên Phủ, Thái Âm, Tham Lang, Cự Môn, Thiên Tướng, Thiên Lương, Thất Sát, Phá Quân.\n"
-                        "BƯỚC 3 — TAM GIÁC VÀNG: Mệnh + Tài Bạch + Quan Lộc → tổng thể thành công.\n"
+                        "BƯỚC 3 — TAM GIÁC VÀNG: Mệnh + Tài Bạch + Quan Lộc → tổng thể tốt.\n"
                         "BƯỚC 4 — TỨ HÓA: Lộc=tài lộc, Quyền=quyền lực, Khoa=danh tiếng, Kỵ=trở ngại.\n"
                         "  → Hóa Kỵ vào cung nào = cung đó gặp trở ngại lớn nhất.\n"
                         "  → Hóa Lộc+Quyền cùng cung = rất mạnh. Kỵ+Kình/Đà = tai họa.\n"
@@ -5693,7 +5672,7 @@ class FreeAIHelper:
                         "BƯỚC 6 — KẾT HỢP KỲ MÔN: Tử Vi (dài hạn) + Kỳ Môn (thời điểm) → phối hợp.\n"
                         "BƯỚC 7 — KẾT LUẬN: Trả lời DỰA TRÊN cả Tử Vi + Kỳ Môn. Lời khuyên CỤ THỂ.\n\n"
                         "LƯU Ý TỬ VI:\n"
-                        "• Sao sáng (Miếu/Vượng) tại Mệnh = thuận lợi, Hãm = khó khăn\n"
+                        "• Sao sáng (Miếu/Vượng) tại Mệnh = tốt, Hãm = khó khăn\n"
                         "• Lộc Tồn + Hóa Lộc cùng cung = Song Lộc = rất giàu\n"
                         "• Kình Dương + Đà La + Hỏa/Linh = Sát tinh = khó khăn, nhưng có thể tốt nếu gặp Tử Vi/Thiên Phủ\n"
                         "• Tả Phụ + Hữu Bật + Thiên Khôi + Thiên Việt = quý nhân phù trợ\n"
@@ -5713,7 +5692,7 @@ class FreeAIHelper:
                         "   Trực HUNG: Phá, Nguy, Thu, Bế\n"
                         "   Trực BÌNH: Trừ, Chấp\n"
                         "6. 28 TÚ: Sao CÁT=tốt, HUNG=cẩn thận.\n"
-                        "7. HOÀNG ĐẠO/HẮC ĐẠO: Hoàng Đạo=thuận, Hắc Đạo=bất lợi.\n"
+                        "7. HOÀNG ĐẠO/HẮC ĐẠO: Hoàng Đạo=thuận, Hắc Đạo=xấu.\n"
                         "   Sao Hoàng Đạo: Thanh Long, Minh Đường, Kim Quỹ, Kim Đường, Ngọc Đường, Tư Mệnh\n"
                         "   Sao Hắc Đạo: Thiên Hình, Chu Tước, Bạch Hổ, Thiên Lao, Nguyên Vũ, Câu Trận\n"
                         "8. THIÊN/NGUYỆT ĐỨC: CÓ → hóa giải hung, tăng cát.\n"
@@ -5974,7 +5953,7 @@ class FreeAIHelper:
         if cung_chi and dich_ma and cung_chi == dich_ma:
             if any(k in q for k in ['di chuyển', 'đi', 'xuất hành', 'du lịch', 'chuyển', 'đổi']):
                 score += 5
-                details.append(f"├ ⑦ ✅ Cung lâm **DỊCH MÃ** ({cung_chi}) → thuận lợi di chuyển/thay đổi (+5)")
+                details.append(f"├ ⑦ ✅ Cung lâm **DỊCH MÃ** ({cung_chi}) → tốt di chuyển/thay đổi (+5)")
             elif any(k in q for k in ['ổn định', 'giữ', 'ở yên', 'nhà', 'bất động']):
                 score -= 5
                 details.append(f"├ ⑦ ⚠️ Cung lâm **DỊCH MÃ** ({cung_chi}) → khó ổn định, hay biến động (-5)")
@@ -6068,7 +6047,7 @@ class FreeAIHelper:
             if net > 0:
                 details.append(f"├ ⑩ ✅ Tứ Trụ: {tu_tru_sinh} trụ SINH, {tu_tru_khac} trụ KHẮC → thuận ({'+' if bonus >= 0 else ''}{bonus})")
             elif net < 0:
-                details.append(f"├ ⑩ ⚠️ Tứ Trụ: {tu_tru_sinh} trụ sinh, {tu_tru_khac} trụ KHẮC → bất lợi ({bonus})")
+                details.append(f"├ ⑩ ⚠️ Tứ Trụ: {tu_tru_sinh} trụ sinh, {tu_tru_khac} trụ KHẮC → xấu ({bonus})")
             else:
                 details.append(f"├ ⑩ ℹ️ Tứ Trụ: {tu_tru_sinh} trụ sinh = {tu_tru_khac} trụ khắc → cân bằng")
             if tu_tru_parts and len(details) < 20:
@@ -6192,7 +6171,7 @@ class FreeAIHelper:
             if KHAC.get(cua_hanh) == hanh_cung:
                 ht_parts.append("đang bị BỨC — cửa phá cung, tình huống căng thẳng")
             elif SINH.get(cua_hanh) == hanh_cung:
-                ht_parts.append("đang được cửa sinh cung — thuận lợi, trôi chảy")
+                ht_parts.append("đang được cửa sinh cung — tốt, trôi chảy")
             elif cua_hanh == hanh_cung:
                 ht_parts.append("hòa hợp — tình huống ổn định")
         
@@ -6222,9 +6201,9 @@ class FreeAIHelper:
             hanh_thien = CAN_NGU_HANH.get(can_thien, '?')
             if hanh_thien and hanh_cung and hanh_thien != '?' and hanh_cung != '?':
                 if SINH.get(hanh_thien) == hanh_cung:
-                    tl_parts.append("xu hướng thuận lợi — trời sinh cung")
+                    tl_parts.append("xu hướng tốt — trời sinh cung")
                 elif KHAC.get(hanh_thien) == hanh_cung:
-                    tl_parts.append("xu hướng bất lợi — trời khắc cung")
+                    tl_parts.append("xu hướng xấu — trời khắc cung")
                 elif hanh_thien == hanh_cung:
                     tl_parts.append("xu hướng ổn định — trời hòa cung")
             
@@ -6273,7 +6252,7 @@ class FreeAIHelper:
         if trend_score >= 2:
             details.append(f"└ 📈 **XU HƯỚNG: TIẾN TRIỂN TỐT** — Quá khứ → Hiện tại → Tương lai đều thuận")
         elif trend_score <= -2:
-            details.append(f"└ 📉 **XU HƯỚNG: SUY GIẢM** — Nhiều yếu tố bất lợi xuyên suốt")
+            details.append(f"└ 📉 **XU HƯỚNG: SUY GIẢM** — Nhiều yếu tố xấu xuyên suốt")
         elif trend_score == 1:
             details.append(f"└ 📊 **XU HƯỚNG: KHỞI SẮC** — Có yếu tố tích cực, cần nỗ lực thêm")
         elif trend_score == -1:
@@ -6792,7 +6771,7 @@ class FreeAIHelper:
             final_verdict = 'ĐẠI CÁT'
             final_icon = '🟢'
         elif weighted_pct >= 55:
-            final_verdict = 'CÁT — THUẬN LỢI'
+            final_verdict = 'CÁT — TỐT'
             final_icon = '✅'
         elif weighted_pct >= 45:
             final_verdict = 'BÌNH — CÓ THỂ' if weighted_pct >= 50 else 'BÌNH — CẦN CÂN NHẮC'
@@ -6806,7 +6785,7 @@ class FreeAIHelper:
         
         # Override nếu evidence mâu thuẫn với %
         if hung_count >= 4 and weighted_pct >= 50:
-            final_verdict = 'HUNG — ĐA SỐ PP BẤT LỢI'
+            final_verdict = 'HUNG — ĐA SỐ PP XẤU'
             final_icon = '🔴'
             weighted_pct = min(weighted_pct, 42)
         elif cat_count >= 4 and weighted_pct < 50:
@@ -6874,24 +6853,24 @@ class FreeAIHelper:
             elif weighted_pct >= 45:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: CÓ THỂ LÀM — nhưng phải THẬN TRỌNG ({weighted_pct}%)**")
             else:
-                lines.append(f"> 📢 **CÂU TRẢ LỜI: KHÔNG NÊN — BẤT LỢI ({weighted_pct}%)**")
-        elif any(kw in q_lower for kw in ['sống', 'chết', 'mất', 'qua khỏi', 'qua được']):
+                lines.append(f"> 📢 **CÂU TRẢ LỜI: KHÔNG NÊN — XẤU ({weighted_pct}%)**")
+        elif any(kw in q_lower for kw in ['mất hay chưa', 'chết chưa', 'còn sống', 'sống không', 'qua khỏi', 'cứu được', 'mất chưa', 'đã mất', 'sống hay', 'mất rồi', 'chết hay', 'sống chết', 'còn hay mất', 'qua đời', 'tử vong', 'sống sót', 'qua được', 'bệnh nặng', 'nguy kịch', 'hấp hối']):
             if weighted_pct >= 50:
-                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÒN SỐNG / QUA ĐƯỢC ({weighted_pct}%)**")
+                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÒN SỐNG ({weighted_pct}%)**")
             elif weighted_pct >= 40:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: CÒN SỐNG nhưng NGUY KỊCH ({weighted_pct}%)**")
             else:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: ĐÃ MẤT hoặc KHÔNG QUA ĐƯỢC ({weighted_pct}%)**")
         elif any(kw in q_lower for kw in ['có không', 'không', 'chưa', 'thắng', 'thua', 'đỗ', 'trượt']):
             if weighted_pct >= 55:
-                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÓ — THÀNH CÔNG ({weighted_pct}%)**")
+                lines.append(f"> 📢 **CÂU TRẢ LỜI: CÓ ({weighted_pct}%)**")
             elif weighted_pct >= 45:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: KHÓ THÀNH — cần đổi cách hoặc đợi ({weighted_pct}%)**")
             else:
                 lines.append(f"> 📢 **CÂU TRẢ LỜI: KHÔNG — THẤT BẠI ({weighted_pct}%)**")
         else:
             if weighted_pct >= 55:
-                lines.append(f"> 📢 **KẾT LUẬN: THUẬN LỢI ({weighted_pct}%)**")
+                lines.append(f"> 📢 **KẾT LUẬN: TỐT ({weighted_pct}%)**")
             elif weighted_pct >= 45:
                 lines.append(f"> 📢 **KẾT LUẬN: CÓ THỂ ĐƯỢC — nhưng CẦN THẬN TRỌNG ({weighted_pct}%)**")
             else:
@@ -7854,7 +7833,7 @@ class FreeAIHelper:
             factors.append(f"MH Dụng khắc Thể -10")
         elif KHAC.get(the_el) == dung_el:
             score += 8
-            factors.append(f"MH Thể khắc Dụng (thuận lợi) +8")
+            factors.append(f"MH Thể khắc Dụng (tốt) +8")
         elif SINH.get(the_el) == dung_el:
             score -= 5
             factors.append(f"MH Thể sinh Dụng (hao mòn) -5")
@@ -9115,7 +9094,7 @@ class FreeAIHelper:
                 else:
                     # Generic nhưng vẫn mô tả tác động
                     if 'Đại Cát' in cua_cat_hung:
-                        impacts.append(f"✅ Cửa **{cua}** ({cua_cat_hung}) → {dung_than} được MỞ ĐƯỜNG, thuận lợi: {cua_y_nghia}")
+                        impacts.append(f"✅ Cửa **{cua}** ({cua_cat_hung}) → {dung_than} được MỞ ĐƯỜNG, tốt: {cua_y_nghia}")
                     elif 'Đại Hung' in cua_cat_hung:
                         impacts.append(f"🔴 Cửa **{cua}** ({cua_cat_hung}) → {dung_than} bị CHẶN ĐƯỜNG: {cua_y_nghia}")
                     elif 'Hung' in cua_cat_hung:
@@ -9349,11 +9328,11 @@ class FreeAIHelper:
                     if any(k in q for k in ['bệnh', 'ốm', 'chết', 'mất']):
                         impacts.append(f"✅ Hào {dung_than} ({dt_canchi}) **VƯỢNG** → {dung_than} CÒN SỨC, tình trạng KHẢ QUAN")
                     elif any(k in q for k in ['tiền', 'tài', 'lương', 'đầu tư']):
-                        impacts.append(f"✅ Hào {dung_than} ({dt_canchi}) **VƯỢNG** → Tài chính THUẬN LỢI, có khả năng sinh lời")
+                        impacts.append(f"✅ Hào {dung_than} ({dt_canchi}) **VƯỢNG** → Tài chính TỐT, có khả năng sinh lời")
                     elif any(k in q for k in ['việc', 'thi', 'đỗ', 'thăng']):
                         impacts.append(f"✅ Hào {dung_than} ({dt_canchi}) **VƯỢNG** → Công việc/Thi cử CÓ KẾT QUẢ TỐT")
                     else:
-                        impacts.append(f"✅ Hào {dung_than} ({dt_canchi}) **VƯỢNG** → {dung_than} MẠNH MẼ, sự việc thuận lợi")
+                        impacts.append(f"✅ Hào {dung_than} ({dt_canchi}) **VƯỢNG** → {dung_than} MẠNH MẼ, sự việc tốt")
                     evidence.append(f"Dụng Thần {dung_than} Vượng")
                 elif 'Tử' in dt_vuong or 'Tuyệt' in dt_vuong:
                     if any(k in q for k in ['bệnh', 'ốm', 'chết', 'mất', 'sống']):
@@ -9685,7 +9664,7 @@ class FreeAIHelper:
         # weighted_pct đã tính chính xác từ 6 PP + 12 Trường Sinh — KHÔNG nên thay đổi
         good_impacts = [i for i in impacts if i.startswith('✅')]
         bad_impacts = [i for i in impacts if i.startswith('🔴')]
-        # V35.0: ⚠️ chỉ tính là bất lợi NẾU chứa từ khóa xác thực (tránh đếm thông tin trung tính)
+        # V35.0: ⚠️ chỉ tính là xấu NẾU chứa từ khóa xác thực (tránh đếm thông tin trung tính)
         REAL_BAD_KEYWORDS = ['KHẮC', 'YẾU', 'TỬ', 'TUYỆT', 'HUNG', 'GÂY HẠI', 'CHẶN', 'BẾ TẮC',
                              'NGUY HIỂM', 'MẤT MÁT', 'XUNG ĐỘT', 'CHẤM DỨT', 'SUY', 'BỊ KHẮC']
         for i in impacts:
@@ -9840,7 +9819,7 @@ class FreeAIHelper:
             lines.append(f"- Tỷ số dự đoán: **{_predicted_score}** (tính từ Hà Đồ Số hành {_hanh_comp})")
         
         # THẾ NÀO / RA SAO / NHƯ NÀO / NGHĨ GÌ / HÀNH ĐỘNG — mô tả chi tiết
-        if any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
+        elif any(k in q for k in ['thế nào', 'ra sao', 'như thế nào', 'như nào', 'sao rồi',
                                   'nghĩ gì', 'hành động', 'làm gì', 'xử lý', 'tính sao']):
             _color = '#16a34a' if pct >= 55 else '#dc2626' if pct <= 40 else '#ca8a04'
             lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 22px;border-radius:14px;border-left:6px solid {_color};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_color};">{icon} VỀ "{_q_short}"</span><br><span style="font-size:1.15em;color:#f1f5f9;font-weight:700;">{vv_data["cap"]} — {pct}%</span></div>')
@@ -9854,14 +9833,14 @@ class FreeAIHelper:
                 lines.append(f"- 🔧 Tình trạng: {vv_data.get('tinh_trang', '?')}")
                 lines.append(f"- 🎨 Chất lượng: {vv_data.get('chat_luong', '?')}")
             if pct >= 60:
-                lines.append(f"\n→ Tình hình **THUẬN LỢI** ({pct}%). Xu hướng tốt lên.")
+                lines.append(f"\n→ Tình hình **TỐT** ({pct}%). Xu hướng tốt lên.")
             elif pct <= 40:
                 lines.append(f"\n→ Tình hình **KHÓ KHĂN** ({pct}%). Cần chú ý, cải thiện.")
             else:
                 lines.append(f"\n→ Tình hình **TRUNG BÌNH** ({pct}%). Ổn nhưng cần nỗ lực thêm.")
         
         # AI / NGƯỜI NÀO — dùng Lục Thân để xác định
-        if any(k in q for k in ['ai ', 'người nào', 'ai đó', 'người gì', 'người như thế nào']):
+        elif any(k in q for k in ['ai ', 'người nào', 'ai đó', 'người gì', 'người như thế nào']):
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: Đặc điểm người được hỏi ({dung_than})**")
             lines.append(f"\n📋 **Mô tả (Vạn Vật Loại Tượng — {vv_key}):**")
             lines.append(f"- 👤 {vv_data.get('con_nguoi', '?')}")
@@ -9881,7 +9860,7 @@ class FreeAIHelper:
                 lines.append(f"- 🤝 Mối quan hệ: Anh em, bạn bè, đồng nghiệp, đối thủ")
         
         # CÁI GÌ / VẬT GÌ / SẢN PHẨM GÌ / ĐỒ GÌ — V42.0: Vạn Vật Loại Tượng chuyên sâu
-        if any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì',
+        elif any(k in q for k in ['cái gì', 'điều gì', 'muốn gì', 'hỏi gì', 'nói gì', 'làm gì',
                                    'chuyện gì', 'việc gì', 'vật gì', 'sản phẩm', 'hàng gì',
                                    'đồ gì', 'loại gì', 'mặt hàng', 'sản xuất gì', 'bán gì',
                                    'kinh doanh gì', 'buôn gì', 'mua gì', 'đầu tư gì', 'ngành gì',
@@ -9988,13 +9967,13 @@ class FreeAIHelper:
         # V36.1: CÓ NÊN — Tách riêng TRƯỚC CÓ/KHÔNG, thresholds khớp Phase D (55/45)
         elif any(k in q for k in ['có nên', 'nên không', 'nên hay']):
             if pct >= 55:
-                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#22c55e;">✅ CÂU TRẢ LỜI: NÊN — THUẬN LỢI</span><br><span style="color:#bbf7d0;font-size:1.1em;">{pct}%</span></div>')
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#22c55e;">✅ CÂU TRẢ LỜI: NÊN</span><br><span style="color:#bbf7d0;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} VƯỢNG, thời điểm tốt. Nên tiến hành.")
             elif pct >= 45:
-                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 CÓ THỂ nhưng CẦN THẬN TRỌNG</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
+                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 CÓ THỂ NÊN nhưng CẦN THẬN TRỌNG</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- Thế trận chưa rõ ({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). Chuẩn bị phương án B.")
             else:
-                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#ef4444;">🔴 KHÔNG NÊN — BẤT LỢI</span><br><span style="color:#fecaca;font-size:1.1em;">{pct}%</span></div>')
+                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#ef4444;">🔴 CÂU TRẢ LỜI: KHÔNG NÊN</span><br><span style="color:#fecaca;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} SUY, nhiều trở ngại. Chờ thời điểm tốt hơn.")
         
         # CÓ/KHÔNG — thresholds khớp Phase D (55/50/45)
@@ -10002,16 +9981,16 @@ class FreeAIHelper:
                                  'có thành', 'có đỗ', 'có đạt', 'có thắng', 'có tốt',
                                  'có không', 'không']):
             if pct >= 55:
-                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#22c55e;">✅ CÓ — Thành công</span><br><span style="color:#bbf7d0;font-size:1.2em;font-weight:700;">{pct}%</span></div>')
-                lines.append(f"- {dung_than} VƯỢNG, thuận lợi. Nắm bắt cơ hội.")
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #22c55e;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#22c55e;">✅ CÂU TRẢ LỜI: CÓ</span><br><span style="color:#bbf7d0;font-size:1.2em;font-weight:700;">{pct}%</span></div>')
+                lines.append(f"- {dung_than} VƯỢNG, tốt. Nắm bắt cơ hội.")
             elif pct >= 50:
-                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #86efac;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#86efac;">🟢 CÓ nhưng KHÓ</span><br><span style="color:#bbf7d0;font-size:1.1em;">{pct}%</span></div>')
+                lines.append(f'\n<div style="background:#052e16;padding:18px;border-radius:14px;border-left:6px solid #86efac;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#86efac;">🟢 CÂU TRẢ LỜI: CÓ (nhưng khó khăn)</span><br><span style="color:#bbf7d0;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- Nghiêng CÓ ({len(good_impacts)} thuận vs {len(bad_impacts)} nghịch). Cần nỗ lực thêm.")
             elif pct >= 45:
-                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 KHÓ nhưng chưa hẳn KHÔNG</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
+                lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 CÂU TRẢ LỜI: KHÓ (chưa hẳn KHÔNG)</span><br><span style="color:#fef3c7;font-size:1.1em;">{pct}%</span></div>')
                 lines.append(f"- Nghiêng KHÔNG ({len(bad_impacts)} nghịch vs {len(good_impacts)} thuận). Cần nỗ lực lớn.")
             else:
-                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#ef4444;">🔴 KHÔNG — Bất lợi</span><br><span style="color:#fecaca;font-size:1.2em;font-weight:700;">{pct}%</span></div>')
+                lines.append(f'\n<div style="background:#450a0a;padding:18px;border-radius:14px;border-left:6px solid #ef4444;margin:12px 0;"><span style="font-size:1.4em;font-weight:900;color:#ef4444;">🔴 CÂU TRẢ LỜI: KHÔNG</span><br><span style="color:#fecaca;font-size:1.2em;font-weight:700;">{pct}%</span></div>')
                 lines.append(f"- {dung_than} SUY, nhiều trở ngại. Nên chờ hoặc đổi hướng.")
         
         # KHI NÀO / THÁNG NÀO / BAO GIỜ — trả lời CỤ THỂ tháng/chi
@@ -10197,7 +10176,7 @@ class FreeAIHelper:
                 lines.append(f"- 💡 Ưu tiên: **ngày** > giờ > tháng (ngày gần nhất ảnh hưởng trực tiếp)")
         
         # TUỔI
-        if any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
+        elif any(k in q for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
             if age_numbers:
                 all_nums = [n for _, n in age_numbers]
                 avg = int(sum(all_nums) / len(all_nums)) if all_nums else 0
@@ -10208,7 +10187,7 @@ class FreeAIHelper:
                 lines.append(f"\n🎂 **TUỔI:** Không đủ dữ liệu tuổi từ quẻ.")
         
         # BAO NHIÊU / MẤY — V41.0: Luôn trả số cụ thể
-        if any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con', 'mấy']):
+        elif any(k in q for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con', 'mấy']):
             # V41.0: Nếu chưa có count_numbers → tự tính từ Ngũ Hành
             if not count_numbers and hanh_dt:
                 _HD = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
@@ -10318,7 +10297,7 @@ class FreeAIHelper:
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: ƯỚC TÍNH THỜI GIAN**")
             lines.append(f"- ⏱️ **Dự kiến:** {tg} (theo Hành {hanh_dt} của Dụng Thần)")
             if pct >= 60:
-                lines.append(f"- ✅ Thời gian **NGẮN**, thuận lợi giải quyết nhanh")
+                lines.append(f"- ✅ Thời gian **NGẮN**, tốt giải quyết nhanh")
             elif pct <= 40:
                 lines.append(f"- 🔴 Thời gian **DÀI**, nhiều trở ngại kéo dài")
             else:
@@ -10430,10 +10409,10 @@ class FreeAIHelper:
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: TÌNH CẢM / HÔN NHÂN**")
             lines.append(f"\n📋 **Phân tích (DT: {dung_than}, Hành {hanh_dt}):**")
             if pct >= 60:
-                lines.append(f"- ✅ **THUẬN LỢI** — Tình cảm tốt, có cơ hội phát triển")
+                lines.append(f"- ✅ **TỐT** — Tình cảm tốt, có cơ hội phát triển")
                 lines.append(f"- 💕 DT vượng → hai bên hòa hợp, có tương lai")
             elif pct <= 40:
-                lines.append(f"- 🔴 **BẤT LỢI** — Nhiều trở ngại, khó hòa hợp")
+                lines.append(f"- 🔴 **XẤU** — Nhiều trở ngại, khó hòa hợp")
                 lines.append(f"- 💔 DT suy → mâu thuẫn, thiếu tin tưởng")
             else:
                 lines.append(f"- 🟡 **BÌNH THƯỜNG** — Có một số thử thách cần vượt qua")
@@ -10486,10 +10465,10 @@ class FreeAIHelper:
                                    'pháp lý', 'luật sư', 'tố cáo', 'khiếu nại', 'đòi lại']):
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: KIỆN TỤNG / TRANH CHẤP**")
             if pct >= 55:
-                lines.append(f"- ✅ **THUẬN LỢI — Có khả năng THẮNG** ({pct}%)")
+                lines.append(f"- ✅ **TỐT — Có khả năng THẮNG** ({pct}%)")
                 lines.append(f"- 📋 DT vượng, bên mình có lý, pháp luật ủng hộ")
             elif pct <= 40:
-                lines.append(f"- 🔴 **BẤT LỢI — Khó THẮNG** ({pct}%)")
+                lines.append(f"- 🔴 **XẤU — Khó THẮNG** ({pct}%)")
                 lines.append(f"- ⚠️ DT suy, đối phương mạnh hơn. Nên hòa giải thay vì kiện")
             else:
                 lines.append(f"- 🟡 **50/50 — Kết quả chưa rõ**")
@@ -10508,7 +10487,7 @@ class FreeAIHelper:
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: DỰ BÁO THỜI TIẾT (theo Huyền Học)**")
             lines.append(f"- 🌤️ **Xu hướng (Hành {hanh_dt} thịnh):** {HANH_THOITIET.get(hanh_dt, '?')}")
             if pct >= 55:
-                lines.append(f"- ✅ Thời tiết ỔN ĐỊNH, thuận lợi cho hoạt động ngoài trời")
+                lines.append(f"- ✅ Thời tiết ỔN ĐỊNH, tốt cho hoạt động ngoài trời")
             else:
                 lines.append(f"- ⚠️ Thời tiết KHÔNG ỔN ĐỊNH, nên chuẩn bị phương án dự phòng")
         
@@ -10529,7 +10508,7 @@ class FreeAIHelper:
             else:
                 if pct >= 55:
                     lines.append(f"- ✅ **CÓ THAI / SẼ CÓ** — Tử Tôn vượng ({pct}%)")
-                    lines.append(f"- 💡 Thời gian thuận lợi, nên tiến hành")
+                    lines.append(f"- 💡 Thời gian tốt, nên tiến hành")
                 elif pct <= 40:
                     lines.append(f"- 🔴 **KHÓ / CHƯA ĐÚNG LÚC** ({pct}%)")
                     lines.append(f"- ⚠️ Tử Tôn suy, cần bổ sung sức khỏe, chờ thời điểm tốt")
@@ -10570,7 +10549,7 @@ class FreeAIHelper:
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: CHỜ HAY HÀNH ĐỘNG?**")
             if pct >= 60:
                 lines.append(f"- ✅ **HÀNH ĐỘNG NGAY!** — Thời cơ đã đến ({pct}%)")
-                lines.append(f"- 🚀 DT vượng, cơ hội thuận lợi, không nên lần lữa")
+                lines.append(f"- 🚀 DT vượng, cơ hội tốt, không nên lần lữa")
             elif pct <= 40:
                 lines.append(f"- 🔴 **NÊN CHỜ!** — Chưa đúng thời điểm ({pct}%)")
                 lines.append(f"- ⏳ DT suy, hành động bây giờ nhiều rủi ro. Chờ Ứng Kỳ phù hợp")
@@ -10584,7 +10563,7 @@ class FreeAIHelper:
             HANH_HUONG_NT = {'Mộc': 'Đông/Đông Nam', 'Hỏa': 'Nam', 'Thổ': 'Trung Tâm/Tây Nam/Đông Bắc', 'Kim': 'Tây/Tây Bắc', 'Thủy': 'Bắc'}
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: NHÀ CỬA / PHONG THỦY**")
             if pct >= 55:
-                lines.append(f"- ✅ **THUẬN LỢI** — Nên tiến hành ({pct}%)")
+                lines.append(f"- ✅ **TỐT** — Nên tiến hành ({pct}%)")
             elif pct <= 40:
                 lines.append(f"- 🔴 **CHƯA NÊN** — Nhiều trở ngại ({pct}%)")
             else:
@@ -10598,7 +10577,7 @@ class FreeAIHelper:
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: THI CỬ / HỌC HÀNH**")
             if pct >= 60:
                 lines.append(f"- ✅ **ĐỖ / ĐẠT KẾT QUẢ TỐT** ({pct}%)")
-                lines.append(f"- 📚 Phụ Mẫu (giấy tờ, bằng cấp) thuận lợi")
+                lines.append(f"- 📚 Phụ Mẫu (giấy tờ, bằng cấp) tốt")
             elif pct <= 40:
                 lines.append(f"- 🔴 **TRƯỢT / KẾT QUẢ KHÔNG TỐT** ({pct}%)")
                 lines.append(f"- ⚠️ Cần chuẩn bị thêm, ôn luyện kỹ hơn")
@@ -10722,7 +10701,7 @@ class FreeAIHelper:
                 if pct >= 55:
                     _mota = f"Tích cực, chủ động, có thiện ý. Tính chất {_hanh}: {_vv.get('hinh', '')}."
                 elif pct <= 40:
-                    _mota = f"Tiêu cực, e dè, có ý đồ không tốt. Tính chất {_hanh}: bất lợi."
+                    _mota = f"Tiêu cực, e dè, có ý đồ không tốt. Tính chất {_hanh}: xấu."
                 else:
                     _mota = f"Trung lập, chưa rõ ràng, cân nhắc. Tính chất {_hanh}: {_vv.get('hinh', '')}."
                 _dcolor = '#16a34a' if pct >= 55 else '#dc2626' if pct <= 40 else '#ca8a04'
@@ -10736,10 +10715,28 @@ class FreeAIHelper:
                 else:
                     lines.append(f'\n<div style="background:#422006;padding:18px;border-radius:14px;border-left:6px solid #eab308;margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:#fbbf24;">🟡 CÓ THỂ ĐƯỢC</span> <span style="color:#fef3c7;font-size:1.05em;">cho "{_q_short}" — cần thận trọng ({pct}%)</span></div>')
             else:
-                # Câu hỏi TỔNG QUÁT → khẳng định + context
+                # Câu hỏi TỔNG QUÁT → phân tích NLP và quy luật Ngũ Hành Vạn Vật
                 _gcolor = '#22c55e' if pct >= 55 else '#ef4444' if pct <= 40 else '#eab308'
-                _gtext = 'THUẬN LỢI' if pct >= 55 else 'BẤT LỢI' if pct <= 40 else 'TRUNG BÌNH'
-                lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px;border-radius:14px;border-left:6px solid {_gcolor};margin:12px 0;"><span style="font-size:1.3em;font-weight:900;color:{_gcolor};">{icon} VỀ "{_q_short}"</span><br><span style="color:#f1f5f9;font-size:1.15em;font-weight:700;">{_gtext} — {pct}%</span></div>')
+                _gtext = 'TỐT' if pct >= 55 else 'XẤU' if pct <= 40 else 'TRUNG BÌNH'
+                _hanh_hien_tai = hanh_dt or 'Thổ'
+                _vv_hinh = ''
+                if locals().get('NGU_HANH_VAT_CHAT'):
+                    _vv_hinh = NGU_HANH_VAT_CHAT.get(_hanh_hien_tai, {}).get('hinh', '')
+                
+                # Giải thích chuẩn xác theo nguyên lý
+                _ly_do_ngu_hanh = ""
+                if pct >= 55:
+                    _ly_do_ngu_hanh = f"Dụng thần [{dung_than}] mang hành {_hanh_hien_tai} đang VƯỢNG TƯỚNG, hội tụ năng lượng tốt. {f'Hình thái: {_vv_hinh}' if _vv_hinh else ''} → Kết quả TỐT."
+                elif pct <= 40:
+                    _ly_do_ngu_hanh = f"Dụng thần [{dung_than}] mang hành {_hanh_hien_tai} đang SUY NHƯỢC/BỊ KHẮC. Năng lượng phân tán, gặp nhiều cản trở. → Kết quả XẤU."
+                else:
+                    _ly_do_ngu_hanh = f"Dụng thần [{dung_than}] mang hành {_hanh_hien_tai} ở trạng thái BÌNH HÒA. Đang giằng co, cần mượn lực từ hành sinh cho {_hanh_hien_tai} để bứt phá."
+
+                lines.append(f'\n<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px;border-radius:14px;border-left:6px solid {_gcolor};margin:12px 0;">')
+                lines.append(f'<span style="font-size:1.3em;font-weight:900;color:{_gcolor};">{icon} KẾT LUẬN: {_gtext} ({pct}%)</span><br><br>')
+                lines.append(f'<span style="color:#f1f5f9;font-size:1.05em;">📌 <b>Sự việc:</b> "{_q_short}"</span><br>')
+                lines.append(f'<span style="color:#cbd5e1;font-size:1em;">⚖️ <b>Luận giải:</b> {_ly_do_ngu_hanh}</span>')
+                lines.append(f'</div>')
         
         # --- V40.6: VÌ SAO — bằng chứng THẬT từ factors + evidence ---
         lines.append(f'\n<div style="background:#1e1b4b;padding:14px 18px;border-radius:10px;border-left:5px solid #818cf8;margin:12px 0;"><b style="color:#a5b4fc;font-size:1.05em;">📋 VÌ SAO — BẰNG CHỨNG TỪ QUẺ</b></div>')
@@ -10835,9 +10832,9 @@ class FreeAIHelper:
             elif any(k in q for k in ['bệnh', 'ốm', 'khỏe', 'sức khỏe', 'đau']):
                 lines.append("- ✅ Bệnh sẽ hồi phục, tìm bác sĩ chuyên khoa để trị dứt.")
             elif any(k in q for k in ['yêu', 'tình', 'vợ', 'chồng', 'cưới', 'hẹn hò']):
-                lines.append("- ✅ Mối quan hệ thuận lợi, chủ động bày tỏ.")
+                lines.append("- ✅ Mối quan hệ tốt, chủ động bày tỏ.")
             elif any(k in q for k in ['việc', 'công ty', 'thi', 'đỗ', 'sếp', 'lương']):
-                lines.append("- ✅ Thời cơ tốt, hành động quyết đoán sẽ thành công.")
+                lines.append("- ✅ Thời cơ tốt, hành động quyết đoán sẽ tốt.")
             else:
                 lines.append("- ✅ Nắm bắt cơ hội ngay, đừng chần chừ.")
         elif final_verdict == 'HUNG' or pct <= 40:
@@ -11315,8 +11312,8 @@ class FreeAIHelper:
                 dt_cua_bad = any(c in dt_cua for c in CUA_HUNG)
                 
                 if dt_sao_ok and dt_cua_ok:
-                    dt_statuses.append(('Kỳ Môn', f'{dung_than} tại Cung {dt_cung}: Sao {dt_sao} CÁT + Cửa {dt_cua} CÁT → SỰ VIỆC THUẬN LỢI', 'good'))
-                    chain_evidence.append(f"Sự việc (Cung {dt_cung}): Sao {dt_sao} CÁT + Cửa {dt_cua} CÁT → THUẬN LỢI")
+                    dt_statuses.append(('Kỳ Môn', f'{dung_than} tại Cung {dt_cung}: Sao {dt_sao} CÁT + Cửa {dt_cua} CÁT → SỰ VIỆC TỐT', 'good'))
+                    chain_evidence.append(f"Sự việc (Cung {dt_cung}): Sao {dt_sao} CÁT + Cửa {dt_cua} CÁT → TỐT")
                 elif dt_cua_bad:
                     dt_statuses.append(('Kỳ Môn', f'{dung_than} tại Cung {dt_cung}: Cửa {dt_cua} HUNG → SỰ VIỆC GẶP TRỞ NGẠI', 'bad'))
                     chain_evidence.append(f"Sự việc (Cung {dt_cung}): Cửa {dt_cua} HUNG → TRỞ NGẠI")
@@ -11679,23 +11676,23 @@ class FreeAIHelper:
         if consensus_confidence >= 80:
             # Consensus mạnh → dùng consensus
             if 'ĐẠI CÁT' in consensus:
-                overall = 'CÁT — RẤT TỐT, CHẮC CHẮN THUẬN LỢI'
+                overall = 'CÁT — RẤT TỐT, CHẮC CHẮN TỐT'
                 pct = max(pct, 75)
             elif 'CÁT' in consensus and 'HUNG' not in consensus:
-                overall = 'CÁT — THUẬN LỢI'
+                overall = 'CÁT — TỐT'
                 pct = max(pct, 60)
             elif 'ĐẠI HUNG' in consensus:
                 overall = 'HUNG — RẤT XẤU, PHẢI DỪNG/ĐỔI HƯỚNG'
                 pct = min(pct, 25)
             elif 'HUNG' in consensus and 'CÁT' not in consensus:
-                overall = 'HUNG — BẤT LỢI'
+                overall = 'HUNG — XẤU'
                 pct = min(pct, 40)
             else:
                 overall = f'{consensus}'
         else:
             # Consensus yếu → dùng pct + weighted_score
             if pct >= 60 and weighted_score > 0.3:
-                overall = 'CÁT — THUẬN LỢI (nhưng có yếu tố nghịch)'
+                overall = 'CÁT — TỐT (nhưng có yếu tố nghịch)'
             elif pct >= 55:
                 overall = 'THIÊN CÁT — CÓ THỂ ĐƯỢC, cần nỗ lực'
             elif pct >= 50:
@@ -11703,7 +11700,7 @@ class FreeAIHelper:
             elif pct >= 45:
                 overall = 'THIÊN HUNG — KHÓ, cần đổi cách tiếp cận'
             elif pct >= 35:
-                overall = 'HUNG — BẤT LỢI, nên đợi hoặc đổi hướng'
+                overall = 'HUNG — XẤU, nên đợi hoặc đổi hướng'
             else:
                 overall = 'ĐẠI HUNG — RẤT XẤU, PHẢI DỪNG NGAY'
         
@@ -11734,9 +11731,10 @@ class FreeAIHelper:
         
         # Phân loại câu hỏi
         is_life_death = any(kw in q_lower_kl for kw in [
-            'sống', 'chết', 'mất', 'còn sống', 'đã mất', 'qua đời', 'qua khỏi',
-            'cứu được', 'sống sót', 'nguy hiểm', 'tử vong', 'chết chưa',
-            'sống hay', 'mất rồi', 'còn hay', 'sống không', 'qua được',
+            'mất hay chưa', 'chết chưa', 'còn sống', 'sống không',
+            'qua khỏi', 'cứu được', 'mất chưa', 'đã mất', 'sống hay',
+            'mất rồi', 'chết hay', 'sống chết', 'còn hay mất',
+            'qua đời', 'tử vong', 'sống sót', 'qua được',
             'bệnh nặng', 'nguy kịch', 'hấp hối'
         ])
         is_yesno_kl = any(kw in q_lower_kl for kw in [
@@ -11854,34 +11852,34 @@ class FreeAIHelper:
             elif _diff >= 2:
                 verdict_line = f"📢 **PHÁN QUYẾT: {_side_a} HƠI TRỘI ↗️ (Thế +{_diff}) — {_side_b} yếu hơn**"
             elif _diff >= -1:
-                verdict_line = f"📢 **PHÁN QUYẾT: HÒA / CÂN BẰNG ⚖️ ({_side_a} ≈ {_side_b}, chênh {_diff:+d})**"
+                verdict_line = f"📢 **PHÁN QUYẾT: HÒA ⚖️ ({_side_a} ≈ {_side_b}, chênh {_diff:+d})**"
             elif _diff >= -4:
                 verdict_line = f"📢 **PHÁN QUYẾT: {_side_b} HƠI TRỘI ↗️ (Ứng {abs(_diff):+d}) — {_side_a} yếu hơn**"
             else:
                 verdict_line = f"📢 **PHÁN QUYẾT: {_side_b} THẮNG ✅ (Ứng {abs(_diff):+d}) — {_side_a} THUA**"
         elif is_life_death:
             if pct >= 50:
-                verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG / QUA ĐƯỢC ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG ({pct}%)**"
             elif pct >= 40:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÒN SỐNG nhưng NGUY KỊCH ({pct}%)**"
             else:
                 verdict_line = f"📢 **PHÁN QUYẾT: ĐÃ MẤT hoặc KHÔNG QUA ĐƯỢC ({pct}%)**"
         elif is_should:
             if pct >= 55:
-                verdict_line = f"📢 **PHÁN QUYẾT: NÊN — THUẬN LỢI ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: NÊN ({pct}%)**"
             elif pct >= 45:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÓ THỂ — nhưng phải THẬN TRỌNG ({pct}%)**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG NÊN — BẤT LỢI ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG NÊN — XẤU ({pct}%)**"
         elif is_yesno_kl:
             if pct >= 55:
-                verdict_line = f"📢 **PHÁN QUYẾT: CÓ — THÀNH CÔNG ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ ({pct}%)**"
             elif pct >= 50:
                 verdict_line = f"📢 **PHÁN QUYẾT: CÓ — nhưng cần NỖ LỰC ({pct}%)**"
             elif pct >= 45:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÓ THÀNH — cần đổi hướng hoặc đợi ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: CÓ THỂ (khó thành) hoặc đợi ({pct}%)**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG — BẤT LỢI ({pct}%)**"
+                verdict_line = f"📢 **PHÁN QUYẾT: KHÔNG ({pct}%)**"
         elif is_timing_kl:
             # --- PHÁN QUYẾT THỜI GIAN ---
             if pct >= 55 and _timing_fast:
@@ -11894,13 +11892,13 @@ class FreeAIHelper:
                 verdict_line = f"📢 **PHÁN QUYẾT: CHƯA XÁC ĐỊNH THỜI GIAN ({pct}%)**"
         else:
             if pct >= 55:
-                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: THUẬN LỢI ({pct}%) — Năng lượng Ngũ Hành ({_hanh_dt_kl}) đang hỗ trợ mạnh mẽ, mọi việc tiến triển thuận lợi dù ở lĩnh vực nào!**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: TỐT ({pct}%) — Năng lượng Ngũ Hành ({_hanh_dt_kl}) đang hỗ trợ mạnh mẽ, mọi việc tiến triển tốt dù ở lĩnh vực nào!**"
             elif pct >= 50:
-                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({pct}%) — Có sự giằng co năng lượng, cần mượn lực từ Hành sinh cho {_hanh_dt_kl} để thành công.**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({pct}%) — Có sự giằng co năng lượng, cần mượn lực từ Hành sinh cho {_hanh_dt_kl} để tốt.**"
             elif pct >= 45:
                 verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: NHIỀU BIẾN ĐỘNG ({pct}%) — Đang đối mặt với lực cản lớn, cần tìm hướng giải quyết khác.**"
             else:
-                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: BẤT LỢI ({pct}%) — Khí trường suy yếu, xung khắc mạnh, tuyệt đối nên phòng thủ chờ thời!**"
+                verdict_line = f"📢 **PHÁN QUYẾT OMNI-DOMAIN: XẤU ({pct}%) — Khí trường suy yếu, xung khắc mạnh, tuyệt đối nên phòng thủ chờ thời!**"
         
         lines.append(verdict_line)
         lines.append("")
@@ -11931,6 +11929,10 @@ class FreeAIHelper:
                     """Phát hiện loại câu hỏi cho sub-question — V42.9.7: 20 loại (SĐ0-SĐ16+)"""
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
+                    if any(k in t for k in ['sống','chết','qua khỏi','mất','tử vong','hấp hối']): return 'LIFE_DEATH'
+                    if any(k in t for k in ['có không','được không','có được','liệu có','không ạ','chưa']): return 'YESNO'
+                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
+                    
                     if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu']): return 'WHEN'
                     if any(k in t for k in ['ở đâu','hướng nào','phương nào','chỗ nào','tìm đâu']): return 'WHERE'
                     if any(k in t for k in ['cái gì','loại gì','làm gì','nghề gì','ngành gì','bán gì','kinh doanh gì','sản phẩm']): return 'WHAT'
@@ -11947,9 +11949,7 @@ class FreeAIHelper:
                     if any(k in t for k in ['tiền','tài','lộc','giàu','nghèo','lương','đầu tư','kinh doanh','vốn']): return 'FINANCE'
                     if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật']): return 'HEALTH'
                     if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi','đỗ','trượt']): return 'CAREER'
-                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
-                    if any(k in t for k in ['sống','chết','qua khỏi','mất','tử vong','hấp hối']): return 'LIFE_DEATH'
-                    if any(k in t for k in ['có không','được không','có được','liệu có']): return 'YESNO'
+                    
                     return 'GENERAL'
                 
                 def _gen_verdict_by_qtype(qtype, sq_pct, sq_hanh, sq_dt, sq_text):
@@ -11974,17 +11974,17 @@ class FreeAIHelper:
                         so = _hd[1] if sq_pct >= 55 else _hd[0]
                         return f"👥 Số lượng: {so} (Hà Đồ Số {sq_hanh}: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "👥"
                     elif qtype == 'SHOULD':
-                        if sq_pct >= 55: return f"NÊN — THUẬN LỢI ({sq_pct}%)", "✅"
+                        if sq_pct >= 55: return f"NÊN ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CÓ THỂ — nhưng THẬN TRỌNG ({sq_pct}%)", "🟡"
-                        else: return f"KHÔNG NÊN — BẤT LỢI ({sq_pct}%)", "🔴"
+                        else: return f"KHÔNG NÊN — XẤU ({sq_pct}%)", "🔴"
                     elif qtype == 'LIFE_DEATH':
-                        if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
-                        elif sq_pct >= 40: return f"NGUY KỊCH — cần cứu chữa gấp ({sq_pct}%)", "🟡"
-                        else: return f"NGUY HIỂM — rất khó ({sq_pct}%)", "🔴"
+                        if sq_pct >= 50: return f"CÒN SỐNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 40: return f"NGUY KỊCH ({sq_pct}%)", "🟡"
+                        else: return f"NGUY HIỂM ({sq_pct}%)", "🔴"
                     elif qtype == 'COMPETITION':
-                        if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"HÒA / CÂN BẰNG ({sq_pct}%)", "🟡"
-                        else: return f"THUA — YẾU THẾ ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"THẮNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
+                        else: return f"THUA ({sq_pct}%)", "🔴"
                     elif qtype == 'FINANCE':
                         if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH ({sq_pct}%)", "🟡"
@@ -12011,7 +12011,7 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong} ({sq_pct}%)", "🟡"
                         else: return f"🔍 MẤT HẲN ({sq_pct}%)", "🔴"
                     elif qtype == 'TRAVEL':
-                        if sq_pct >= 55: return f"✈️ NÊN ĐI — thuận lợi ({sq_pct}%)", "✅"
+                        if sq_pct >= 55: return f"✈️ NÊN ĐI — tốt ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC — cẩn thận ({sq_pct}%)", "🟡"
                         else: return f"✈️ KHÔNG NÊN ĐI ({sq_pct}%)", "🔴"
                     elif qtype == 'WHO':
@@ -12026,12 +12026,12 @@ class FreeAIHelper:
                     elif qtype == 'CHOOSE':
                         if sq_pct >= 55: return f"LỰA CHỌN TỐT ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CẦN CÂN NHẮC KỸ ({sq_pct}%)", "🟡"
-                        else: return f"KẾT QUẢ BẤT LỢI ({sq_pct}%)", "🔴"
+                        else: return f"KẾT QUẢ XẤU ({sq_pct}%)", "🔴"
                     else:  # GENERAL / YESNO
-                        if sq_pct >= 55: return f"CÓ — THÀNH CÔNG ({sq_pct}%)", "✅"
-                        elif sq_pct >= 50: return f"CÓ — nhưng NỖ LỰC ({sq_pct}%)", "🟡"
-                        elif sq_pct >= 45: return f"KHÓ THÀNH — cần đổi hướng ({sq_pct}%)", "🟡"
-                        else: return f"KHÔNG — BẤT LỢI ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"CÓ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 50: return f"CÓ (nhưng khó) ({sq_pct}%)", "🟡"
+                        elif sq_pct >= 45: return f"CÓ THỂ (khó thành) ({sq_pct}%)", "🟡"
+                        else: return f"KHÔNG ({sq_pct}%)", "🔴"
                 
                 _sub_verdicts = []
                 
@@ -12243,11 +12243,11 @@ class FreeAIHelper:
                 lines.append(f"  • Thuận lợi nhất: **{_uk_info['thang']}**, {_uk_info['ngay']}")
                 lines.append(f"  • Hướng tốt: **{_uk_info['huong']}** (theo hành {_hanh_dt_kl} của DT)")
             else:
-                # Khi bất lợi → nên ĐỢI tháng hành sinh DT
+                # Khi xấu → nên ĐỢI tháng hành sinh DT
                 _hanh_sinh_dt = {v: k for k, v in SINH.items()}.get(_hanh_dt_kl, '?')
                 _uk_sinh = _UK_TIMING.get(_hanh_sinh_dt, {})
                 lines.append(f"  • Nên ĐỢI: **{_uk_sinh.get('thang', '?')}** (hành {_hanh_sinh_dt} sinh {_hanh_dt_kl})")
-                lines.append(f"  • Tránh: {_uk_info['thang']} (hành {_hanh_dt_kl} bị khắc = thêm bất lợi)")
+                lines.append(f"  • Tránh: {_uk_info['thang']} (hành {_hanh_dt_kl} bị khắc = thêm xấu)")
             
             # V42.9.29: Thêm ứng kỳ từ DT Ecosystem (Nhập Mộ)
             try:
@@ -12445,7 +12445,7 @@ class FreeAIHelper:
         elif is_life_death:
             if pct >= 50:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: CÒN SỐNG / QUA ĐƯỢC ({pct}%).**\n"
+                    f"**👉 KHẲNG ĐỊNH: CÒN SỐNG ({pct}%).**\n"
                     f"• {dung_than} ({_hanh_dt_kl}) CÓ SINH KHÍ — chưa tuyệt.\n"
                 )
                 ev_lines = []
@@ -12475,7 +12475,7 @@ class FreeAIHelper:
         elif is_should:
             if pct >= 55:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: NÊN LÀM — THUẬN LỢI ({pct}%).**\n"
+                    f"**👉 KHẲNG ĐỊNH: NÊN LÀM — TỐT ({pct}%).**\n"
                     f"• {dung_than} vượng, {cat_count} yếu tố thuận > {hung_count} nghịch.\n"
                 )
                 if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
@@ -12497,7 +12497,7 @@ class FreeAIHelper:
                 )
             else:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: KHÔNG NÊN LÀM — BẤT LỢI ({pct}%).**\n"
+                    f"**👉 KHẲNG ĐỊNH: KHÔNG NÊN LÀM — XẤU ({pct}%).**\n"
                     f"• {dung_than} suy ({hung_count} nghịch > {cat_count} thuận).\n"
                 )
                 if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
@@ -12554,7 +12554,7 @@ class FreeAIHelper:
             # CÂU HỎI TỔNG QUÁT — vẫn KHẲNG ĐỊNH rõ ràng
             if pct >= 55:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: THUẬN LỢI ({pct}%).**\n"
+                    f"**👉 KHẲNG ĐỊNH: TỐT ({pct}%).**\n"
                     f"• {dung_than} được hỗ trợ mạnh ({cat_count} thuận > {hung_count} nghịch).\n"
                 )
                 if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
@@ -12577,7 +12577,7 @@ class FreeAIHelper:
             elif pct >= 45:
                 conclusion = (
                     f"**👉 KHẲNG ĐỊNH: KHÓ KHĂN — cần giải pháp ({pct}%).**\n"
-                    f"• {hung_count} nghịch > {cat_count} thuận — thế trận bất lợi.\n"
+                    f"• {hung_count} nghịch > {cat_count} thuận — thế trận xấu.\n"
                 )
                 if nghich_factors: conclusion += f"• Trở ngại: {nghich_factors[0][:60]}.\n"
                 conclusion += (
@@ -12586,7 +12586,7 @@ class FreeAIHelper:
                 )
             else:
                 conclusion = (
-                    f"**👉 KHẲNG ĐỊNH: BẤT LỢI ({pct}%) — cần đổi hướng.**\n"
+                    f"**👉 KHẲNG ĐỊNH: XẤU ({pct}%) — cần đổi hướng.**\n"
                     f"• {dung_than} suy ({hung_count} nghịch >> {cat_count} thuận).\n"
                 )
                 if ky_mon_reason: conclusion += f"• KM: {ky_mon_reason[:70]}.\n"
@@ -12737,7 +12737,7 @@ class FreeAIHelper:
         q_words = question.lower().split()
         if len(q_words) < 5 and any(k in q_words or k == question.lower().strip() for k in social):
             lc = len(_load_learned_topics())
-            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V42.9.43 — Unleashed Intelligence + Deep Forensic + 100+ Yếu Tố + 8PP + 🎲 Gieo Ngẫu Nhiên). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
+            return f"Chào bạn, tôi là THIÊN CƠ ĐẠI SƯ (V6886 — Unleashed Intelligence + Deep Forensic + 100+ Yếu Tố + 8PP + 🎲 Gieo Ngẫu Nhiên). 6 phương pháp (KM+LH+MH+TB+LN+TA) → 100+ yếu tố → 1 câu trả lời! Vạn Vật 3378+ items. Đã học {lc} câu hỏi mới."
         
 
         # V31.2: LÀM SẠCH CÂU HỎI — loại bỏ từ thừa, dấu thừa, noise
@@ -12933,7 +12933,7 @@ class FreeAIHelper:
             # === TÌNH DUYÊN ===
             'tinh duyen': 'tình duyên', 'gia dao': 'gia đạo', 'luc duc': 'lục đục',
             'bat hoa': 'bất hòa', 'chan thanh': 'chân thành', 'that long': 'thật lòng',
-            'lam an': 'làm ăn', 'thuan loi': 'thuận lợi', 'bat loi': 'bất lợi',
+            'lam an': 'làm ăn', 'thuan loi': 'tốt', 'bat loi': 'xấu',
             'hanh phuc': 'hạnh phúc', 'ganh ghet': 'gắn kết', 'ket hon': 'kết hôn',
             'dan ong': 'đàn ông', 'dan ba': 'đàn bà', 'phu nu': 'phụ nữ',
             # === CÔNG DANH / HỌC TẬP ===
@@ -13272,7 +13272,7 @@ class FreeAIHelper:
         ]
         
         if _person_dt:
-            # V42.9.43: Có PERSON → DT = PERSON. KHÔNG cho action override.
+            # V6886: Có PERSON → DT = PERSON. KHÔNG cho action override.
             # Nguyên lý: Hỏi CHO ai thì DT theo NGƯỜI ĐÓ.
             # "con trai thi đỗ" → DT = Tử Tôn (con trai), KHÔNG phải Phụ Mẫu (thi)
             # "mẹ bệnh nặng" → DT = Phụ Mẫu (mẹ), KHÔNG phải Quan Quỷ (bệnh)
@@ -13280,9 +13280,9 @@ class FreeAIHelper:
             dung_than = _person_dt
             _has_person_state = any(kw in q_lower for kw in _PERSON_STATE_KW)
             if _has_person_state:
-                self.log_step("V42.9.43 DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
+                self.log_step("V6886 DT", "PERSON_STATE", f"Person={_detected_person} → DT={_person_dt}")
             else:
-                self.log_step("V42.9.43 DT", "PERSON_PRIMARY", f"Person={_detected_person} → DT={_person_dt} (person luôn thắng action)")
+                self.log_step("V6886 DT", "PERSON_PRIMARY", f"Person={_detected_person} → DT={_person_dt} (person luôn thắng action)")
         elif 'tôi' in q_lower and detected_category in ('CHUNG', 'SỨC_KHỎE_GIA_ĐÌNH'):
             # "tôi" = Bản Thân CHỈ khi hỏi CHUNG hoặc SỨC_KHỎE (hào Thế)
             # TÀI_CHÍNH "tôi giàu?" → DT = Thê Tài, CÔNG_VIỆC → Quan Quỷ
@@ -13370,12 +13370,12 @@ class FreeAIHelper:
                 purpose = v31_primary.get('ask_purpose', 'CHO')
                 reason = v31_primary.get('dung_than_reason', '')
                 if parser_dt:
-                    # V42.9.43 FIX: Parser KHÔNG ĐƯỢC phép ghi đè DT khi PERSON_STATE đã phát hiện rõ ràng
+                    # V6886 FIX: Parser KHÔNG ĐƯỢC phép ghi đè DT khi PERSON_STATE đã phát hiện rõ ràng
                     # Ví dụ: "mẹ bệnh" → PERSON_STATE = Phụ Mẫu (ĐÚNG) → Parser muốn đổi → CHẶN
                     # Parser chỉ được override khi KHÔNG có person detection
                     if _detected_person and dung_than in ['Phụ Mẫu', 'Thê Tài', 'Tử Tôn', 'Quan Quỷ', 'Huynh Đệ']:
                         # PERSON đã detect → giữ nguyên, KHÔNG cho parser override
-                        self.log_step("V42.9.43 DT Guard", "BLOCK_PARSER",
+                        self.log_step("V6886 DT Guard", "BLOCK_PARSER",
                                       f"Person={_detected_person}({dung_than}) — Parser muốn: {parser_dt} → BỊ CHẶN")
                     elif parser_dt != dung_than:
                         self.log_step("V42.9.29 DT Fix", "OVERRIDE", f"Regex DT: {dung_than} -> Parser DT: {parser_dt} ({reason[:60]})")
@@ -13661,6 +13661,10 @@ class FreeAIHelper:
             km_s, km_sum, v24_km_factors = self._ky_mon_scoring(chart_data, dung_than)
             v16_km_raw = km_s
             # Override km_verdict_to_score from raw calculation
+            if km_sum:
+                ky_mon_verdict = km_sum
+            if v24_km_factors:
+                ky_mon_reason = ", ".join([str(f).replace("KM ", "").replace("  ", "") for f in v24_km_factors])
         except Exception:
             pass
             
@@ -13668,12 +13672,20 @@ class FreeAIHelper:
             lh_s, lh_sum, v23_lh_factors = self._luc_hao_scoring(luc_hao_data, dung_than)
             v16_lh_score_str = lh_sum
             v16_lh_raw = lh_s
+            if lh_sum:
+                luc_hao_verdict = lh_sum
+            if v23_lh_factors:
+                luc_hao_reason = ", ".join([str(f).replace("LH ", "").replace("  ", "") for f in v23_lh_factors])
         except Exception:
             pass
         try:
             mh_s, mh_sum, v24_mh_factors = self._mai_hoa_scoring(mai_hoa_data, chart_data)
             v16_mh_score_str = mh_sum
             v16_mh_raw = mh_s
+            if mh_sum:
+                mai_hoa_verdict = mh_sum
+            if v24_mh_factors:
+                mai_hoa_reason = ", ".join([str(f).replace("MH ", "").replace("  ", "") for f in v24_mh_factors])
         except Exception:
             pass
         try:
@@ -13686,12 +13698,20 @@ class FreeAIHelper:
             ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data)
             v16_ln_score_str = ln_sum
             v16_ln_raw = ln_s
+            if ln_sum:
+                luc_nham_verdict = ln_sum
+            if v24_ln_factors:
+                luc_nham_reason = ", ".join([str(f).replace("LN ", "").replace("  ", "") for f in v24_ln_factors])
         except Exception:
             pass
         try:
             ta_s, ta_sum, v24_ta_factors = self._thai_at_scoring(chart_data)
             v16_ta_score_str = ta_sum
             v16_ta_raw = ta_s
+            if ta_sum:
+                thai_at_verdict = ta_sum
+            if v24_ta_factors:
+                thai_at_reason = ", ".join([str(f).replace("TA ", "").replace("  ", "") for f in v24_ta_factors])
         except Exception:
             pass
         
@@ -14227,6 +14247,11 @@ class FreeAIHelper:
                 def _mi_detect_qtype(text):
                     t = text.lower()
                     if _is_competition_question(text): return 'COMPETITION'
+                    # Ưu tiên các loại câu hỏi Đóng/Mở (YES/NO) lên đầu tiên
+                    if any(k in t for k in ['có không','được không','có được','liệu có','hay không']) or t.endswith(' không') or t.endswith(' không?'): return 'YESNO'
+                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
+                    if any(k in t for k in ['sống','chết','qua khỏi','tử vong','hấp hối','âm phủ','trần gian','trên trời','đầu thai','siêu thoát','cõi âm','cõi dương']): return 'LIFE_DEATH'
+                    
                     # SĐ5: Khi Nào
                     if any(k in t for k in ['khi nào','bao giờ','lúc nào','chừng nào','thời điểm','chờ bao lâu','mấy giờ','giờ nào','ngày nào','tháng nào']): return 'WHEN'
                     # SĐ4: Ở Đâu / Hướng Nào
@@ -14259,10 +14284,6 @@ class FreeAIHelper:
                     if any(k in t for k in ['bệnh','ốm','đau','sức khỏe','khỏe','thuốc','chữa','phẫu thuật','ung thư','tai nạn']): return 'HEALTH'
                     # SĐ9: Công Việc
                     if any(k in t for k in ['việc','công việc','sếp','thăng chức','xin việc','thi ','đỗ ','trượt ','sự nghiệp','khởi nghiệp']): return 'CAREER'
-                    # SĐ1: Có/Không & Nên/Không
-                    if any(k in t for k in ['nên','có nên','nên không']): return 'SHOULD'
-                    if any(k in t for k in ['sống','chết','qua khỏi','tử vong','hấp hối','âm phủ','trần gian','trên trời','đầu thai','siêu thoát','cõi âm','cõi dương']): return 'LIFE_DEATH'
-                    if any(k in t for k in ['có không','được không','có được','liệu có','hay không']) or t.endswith(' không') or t.endswith(' không?'): return 'YESNO'
                     # SĐ16: Cái Nào / Chọn Lọc (đặt sau HOW và YESNO)
                     if any(k in t for k in ['cái nào','nào tốt','chọn','lựa chọn','nào hơn','nào nên','hay là',' hay ']): return 'CHOOSE'
                     # SĐ0: Tổng Quát (fallback)
@@ -14297,46 +14318,46 @@ class FreeAIHelper:
                         prefix = "💰 Số lượng/Tiền" if any(k in sq_text.lower() for k in ['tiền', 'giá']) else "👥 Số lượng"
                         return f"{prefix}: Khoảng {so} (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "📊"
                     elif qtype == 'SHOULD':
-                        if sq_pct >= 55: return f"NÊN — THUẬN LỢI ({sq_pct}%)", "✅"
+                        if sq_pct >= 55: return f"NÊN ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CÓ THỂ — THẬN TRỌNG ({sq_pct}%)", "🟡"
-                        else: return f"KHÔNG NÊN — BẤT LỢI ({sq_pct}%)", "🔴"
+                        else: return f"KHÔNG NÊN — XẤU ({sq_pct}%)", "🔴"
                     elif qtype == 'LIFE_DEATH':
-                        if sq_pct >= 50: return f"CÒN SỐNG / QUA ĐƯỢC ({sq_pct}%)", "✅"
+                        if sq_pct >= 50: return f"CÒN SỐNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 40: return f"NGUY KỊCH ({sq_pct}%)", "🟡"
                         else: return f"NGUY HIỂM ({sq_pct}%)", "🔴"
                     elif qtype == 'COMPETITION':
-                        if sq_pct >= 55: return f"THẮNG — ƯU THẾ ({sq_pct}%)", "✅"
+                        if sq_pct >= 55: return f"THẮNG ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"HÒA ({sq_pct}%)", "🟡"
                         else: return f"THUA ({sq_pct}%)", "🔴"
                     elif qtype == 'FINANCE':
-                        if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG — có tài ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH — cầu tài được nhưng không nhiều ({sq_pct}%)", "🟡"
-                        else: return f"💰 THẤT TÀI — không nên mạo hiểm ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"💰 TÀI LỘC VƯỢNG ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💰 TÀI LỘC BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"💰 THẤT TÀI ({sq_pct}%)", "🔴"
                     elif qtype == 'LOVE':
-                        if sq_pct >= 55: return f"❤️ TÌNH DUYÊN TỐT — có duyên, hợp ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"❤️ TÌNH DUYÊN BÌNH — có nhưng cần nỗ lực ({sq_pct}%)", "🟡"
-                        else: return f"❤️ TÌNH DUYÊN KHÓ — bất hòa, trắc trở ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"❤️ TÌNH DUYÊN TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"❤️ TÌNH DUYÊN BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"❤️ TÌNH DUYÊN KHÓ ({sq_pct}%)", "🔴"
                     elif qtype == 'HEALTH':
-                        if sq_pct >= 55: return f"🏥 BỆNH NHẸ — chữa được, mau khỏi ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"🏥 BỆNH VỪA — cần chữa trị, kiên nhẫn ({sq_pct}%)", "🟡"
-                        else: return f"🏥 BỆNH NẶNG — khó chữa, cần bác sĩ giỏi ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"🏥 BỆNH NHẸ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🏥 BỆNH VỪA ({sq_pct}%)", "🟡"
+                        else: return f"🏥 BỆNH NẶNG ({sq_pct}%)", "🔴"
                     elif qtype == 'CAREER':
-                        if sq_pct >= 55: return f"💼 CÔNG VIỆC THUẬN — thăng tiến, đỗ đạt ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH — ổn định nhưng chậm ({sq_pct}%)", "🟡"
-                        else: return f"💼 CÔNG VIỆC KHÓ — trở ngại, cạnh tranh ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"💼 CÔNG VIỆC TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"💼 CÔNG VIỆC BÌNH ({sq_pct}%)", "🟡"
+                        else: return f"💼 CÔNG VIỆC KHÓ ({sq_pct}%)", "🔴"
                     elif qtype == 'LAWSUIT':
-                        if sq_pct >= 55: return f"⚖️ THẮNG KIỆN — có lý, được hỗ trợ ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"⚖️ HÒA GIẢI — nên thương lượng ({sq_pct}%)", "🟡"
-                        else: return f"⚖️ THUA KIỆN — bất lợi, nên rút ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"⚖️ THẮNG KIỆN ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"⚖️ HÒA GIẢI ({sq_pct}%)", "🟡"
+                        else: return f"⚖️ THUA KIỆN ({sq_pct}%)", "🔴"
                     elif qtype == 'LOST_ITEM':
                         huong = _MI_HUONG.get(sq_hanh, '?')
-                        if sq_pct >= 55: return f"🔍 TÌM ĐƯỢC — hướng {huong}, còn nguyên ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong}, có thể hỏng ({sq_pct}%)", "🟡"
-                        else: return f"🔍 MẤT HẲN — không tìm được ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"🔍 TÌM ĐƯỢC — hướng {huong} ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🔍 KHÓ TÌM — hướng {huong} ({sq_pct}%)", "🟡"
+                        else: return f"🔍 MẤT HẲN ({sq_pct}%)", "🔴"
                     elif qtype == 'TRAVEL':
-                        if sq_pct >= 55: return f"✈️ NÊN ĐI — thuận lợi, bình an ({sq_pct}%)", "✅"
-                        elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC — nhưng cẩn thận ({sq_pct}%)", "🟡"
-                        else: return f"✈️ KHÔNG NÊN ĐI — trở ngại, nguy hiểm ({sq_pct}%)", "🔴"
+                        if sq_pct >= 55: return f"✈️ NÊN ĐI ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC ({sq_pct}%)", "🟡"
+                        else: return f"✈️ KHÔNG NÊN ĐI ({sq_pct}%)", "🔴"
                     elif qtype == 'WHO':
                         _MI_GIOI = {'Kim': 'Nam (Cương quyết)', 'Hỏa': 'Nam (Nhiệt tình)', 'Mộc': 'Nam (Ôn hòa)', 'Thủy': 'Nữ (Mềm mỏng)', 'Thổ': 'Nữ (Trầm tĩnh)'}
                         nghe = _MI_NGHE.get(sq_hanh, '?')
@@ -14349,24 +14370,24 @@ class FreeAIHelper:
                     elif qtype == 'WHY':
                         return f"🔎 Nguyên nhân thuộc hành {sq_hanh} — xem yếu tố xung khắc ({sq_pct}%)", "🔎"
                     elif qtype == 'HOW':
-                        if sq_pct >= 55: return f"📊 TÌNH TRẠNG TỐT — đang thuận lợi ({sq_pct}%)", "✅"
+                        if sq_pct >= 55: return f"📊 TÌNH TRẠNG TỐT — đang tốt ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"📊 TÌNH TRẠNG BÌNH — không tốt không xấu ({sq_pct}%)", "🟡"
-                        else: return f"📊 TÌNH TRẠNG XẤU — đang bất lợi ({sq_pct}%)", "🔴"
+                        else: return f"📊 TÌNH TRẠNG XẤU — đang xấu ({sq_pct}%)", "🔴"
                     elif qtype == 'CHOOSE':
                         if sq_pct >= 55: return f"LỰA CHỌN TỐT ({sq_pct}%)", "✅"
                         elif sq_pct >= 45: return f"CẦN CÂN NHẮC KỸ ({sq_pct}%)", "🟡"
-                        else: return f"KẾT QUẢ BẤT LỢI ({sq_pct}%)", "🔴"
+                        else: return f"KẾT QUẢ XẤU ({sq_pct}%)", "🔴"
                     elif qtype == 'YESNO':
-                        if sq_pct >= 55: return f"✅ CÓ / ĐỒNG Ý ({sq_pct}%) — Xác suất hiện diện/xảy ra rất cao.", "✅"
-                        elif sq_pct >= 45: return f"🟡 CÓ THỂ ({sq_pct}%) — Kết quả 50/50, chưa rõ ràng.", "🟡"
-                        else: return f"🔴 KHÔNG / TỪ CHỐI ({sq_pct}%) — Khả năng cực thấp, không có dấu hiệu.", "🔴"
+                        if sq_pct >= 55: return f"✅ CÓ ({sq_pct}%)", "✅"
+                        elif sq_pct >= 45: return f"🟡 CÓ THỂ ({sq_pct}%)", "🟡"
+                        else: return f"🔴 KHÔNG ({sq_pct}%)", "🔴"
                     else:  # GENERAL
                         _hd = _MI_HD.get(sq_hanh, (5, 10))
                         _ts_desc = "Sinh/Vượng" if sq_pct >= 50 else "Suy/Tuyệt"
-                        if sq_pct >= 55: return f"✅ OMNI-DOMAIN: THUẬN LỢI ({sq_pct}%) — Năng lượng Ngũ Hành {sq_hanh} ({_ts_desc}) đang hỗ trợ, phát huy cực tốt ở mọi lĩnh vực!", "✅"
-                        elif sq_pct >= 50: return f"🟡 OMNI-DOMAIN: CÓ THỂ ĐẠT ĐƯỢC ({sq_pct}%) — Cần trợ lực từ Hành sinh cho {sq_hanh} (Hà Đồ {_hd[0]},{_hd[1]}).", "🟡"
-                        elif sq_pct >= 45: return f"🟡 OMNI-DOMAIN: BIẾN ĐỘNG ({sq_pct}%) — Khí lực {sq_hanh} chưa đủ mạnh, rủi ro cao, cần cẩn trọng.", "🟡"
-                        else: return f"🔴 OMNI-DOMAIN: BẤT LỢI ({sq_pct}%) — Xung khắc lớn, nên rút lui hoặc phòng thủ!", "🔴"
+                        if sq_pct >= 55: return f"✅ KẾT LUẬN: TỐT ({sq_pct}%)", "✅"
+                        elif sq_pct >= 50: return f"🟡 KẾT LUẬN: CÓ THỂ ĐẠT ĐƯỢC ({sq_pct}%)", "🟡"
+                        elif sq_pct >= 45: return f"🟡 KẾT LUẬN: BIẾN ĐỘNG ({sq_pct}%)", "🟡"
+                        else: return f"🔴 KẾT LUẬN: XẤU ({sq_pct}%)", "🔴"
                 
                 _MI_QTYPE_LABEL = {
                     'YESNO': '❓ Có/Không', 'WHEN': '⏳ Thời gian', 'WHERE': '🧭 Phương hướng',
@@ -14535,13 +14556,13 @@ class FreeAIHelper:
                     _mi_binh_cards = len(_mi_cards) - _mi_cat_cards - _mi_hung_cards
                     
                     if _mi_cat_cards > _mi_hung_cards:
-                        _mi_overall = f"🟢 TỔNG QUAN: {_mi_cat_cards}/{len(_mi_cards)} câu THUẬN LỢI"
+                        _mi_overall = f"🟢 TỔNG QUAN: {_mi_cat_cards}/{len(_mi_cards)} câu TỐT"
                         _mi_overall_color = '#6ee7b7'
                     elif _mi_hung_cards > _mi_cat_cards:
-                        _mi_overall = f"🔴 TỔNG QUAN: {_mi_hung_cards}/{len(_mi_cards)} câu BẤT LỢI"
+                        _mi_overall = f"🔴 TỔNG QUAN: {_mi_hung_cards}/{len(_mi_cards)} câu XẤU"
                         _mi_overall_color = '#fca5a5'
                     else:
-                        _mi_overall = f"🟡 TỔNG QUAN: CÂN NHẮC — {_mi_cat_cards} thuận / {_mi_hung_cards} bất lợi"
+                        _mi_overall = f"🟡 TỔNG QUAN: CÂN NHẮC — {_mi_cat_cards} thuận / {_mi_hung_cards} xấu"
                         _mi_overall_color = '#fde68a'
                     
                     # Detect cross-question contradiction
@@ -14755,7 +14776,7 @@ class FreeAIHelper:
                         elif _na_hanh == _dt_hanh_tb:
                             _tb_verdict = 'CÁT'; _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) TỶ HÒA DT ({_dt_hanh_tb})"
                         elif _KHAC_TB.get(_na_hanh) == _dt_hanh_tb:
-                            _tb_verdict = 'HUNG'; _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) KHẮC DT ({_dt_hanh_tb}) → bất lợi"
+                            _tb_verdict = 'HUNG'; _tb_reason = f"Nạp Âm {_na_key}({_na_hanh}) KHẮC DT ({_dt_hanh_tb}) → xấu"
                         elif _SINH_TB.get(_dt_hanh_tb) == _na_hanh:
                             _tb_verdict = 'BÌNH'; _tb_reason = f"DT({_dt_hanh_tb}) tiết khí cho Nạp Âm({_na_hanh})"
                         else:
@@ -14909,17 +14930,7 @@ class FreeAIHelper:
                             _hub['methods']['MH']['verdict'] = _mh_verdict_dkt
                             _hub['methods']['MH']['reason'] = '; '.join(_dkt_fixes[-1:])
                 
-                # 2. Kỳ Môn: Kiểm tra Bát Môn cát/hung
-                _km_mon_tree = DKT.get('KM', {}).get('bat_mon', {})
-                if chart_data and isinstance(chart_data, dict) and _km_mon_tree:
-                    _nhan_ban = chart_data.get('nhan_ban', {})
-                    if _nhan_ban:
-                        for _cung_val in _nhan_ban.values():
-                            _mon_name = _cung_val if isinstance(_cung_val, str) else str(_cung_val.get('mon', '')) if isinstance(_cung_val, dict) else ''
-                            if _mon_name in _km_mon_tree:
-                                _mon_info = _km_mon_tree[_mon_name]
-                                _dkt_fixes.append(f"KM: {_mon_name} → {_mon_info['cat_hung']}")
-                
+                # Removed generic DKT loop for all gates (caused hallucinations)
                 # 3. Lục Hào: Kiểm tra Hồi Đầu Sinh/Khắc (từ DKT)
                 _lh_factors_tree = DKT.get('LH', {}).get('factors', {})
                 if _lh_factors_tree and luc_hao_data and isinstance(luc_hao_data, dict):
@@ -15066,7 +15077,7 @@ class FreeAIHelper:
             self.log_step("V42.9.5", "UNG_KY_ERR", str(_uk_err)[:80])
 
         # ═══════════════════════════════════════════════════════════════
-        # V42.9.43: ỨNG KỲ CHI TIẾT — Giờ/Ngày/Tháng/Năm cụ thể
+        # V6886: ỨNG KỲ CHI TIẾT — Giờ/Ngày/Tháng/Năm cụ thể
         # ═══════════════════════════════════════════════════════════════
         _ung_ky_detail_result = {}
         try:
@@ -15084,6 +15095,18 @@ class FreeAIHelper:
                 _dti = locals().get('dung_than_idx')
                 _ukd_is_dong = _dti in (luc_hao_data.get('dong_hao') or []) if luc_hao_data else False
             
+            _ukd_dong_hao = 0
+            if luc_hao_data and luc_hao_data.get('dong_hao'):
+                try:
+                    _ukd_dong_hao = int(luc_hao_data['dong_hao'][0])
+                except Exception:
+                    pass
+            elif mai_hoa_data and mai_hoa_data.get('dong_hao'):
+                try:
+                    _ukd_dong_hao = int(mai_hoa_data['dong_hao'])
+                except Exception:
+                    pass
+
             _ung_ky_detail_result = calc_ung_ky_detail(
                 chi_dt=_ukd_chi_dt,
                 hanh_dt=_ukd_hanh_dt,
@@ -15096,6 +15119,7 @@ class FreeAIHelper:
                 dung_quai=_ukd_dung_quai,
                 verdict=ky_mon_verdict or '',
                 weighted_pct=weighted_pct,
+                dong_hao=_ukd_dong_hao,
             )
             
             if _ung_ky_detail_result.get('html'):
@@ -15104,9 +15128,33 @@ class FreeAIHelper:
             # Inject summary vào hub cho Gemini
             if _ung_ky_detail_result.get('summary'):
                 _hub['synthesis']['ung_ky_detail'] = _ung_ky_detail_result['summary']
-                self.log_step("V42.9.43", "UNG_KY_DETAIL", _ung_ky_detail_result['summary'][:80])
+                self.log_step("V6886", "UNG_KY_DETAIL", _ung_ky_detail_result['summary'][:80])
         except Exception as _ukd_err:
-            self.log_step("V42.9.43", "UNG_KY_DETAIL_ERR", str(_ukd_err)[:80])
+            self.log_step("V6886", "UNG_KY_DETAIL_ERR", str(_ukd_err)[:80])
+
+        # ═══════════════════════════════════════════════════════════════
+        # V99.0: TIÊN TRI TOÀN TRI 360° — Sự việc, Năm-Tháng-Ngày-Giờ-Phút, Ở đâu, Trai/Gái, Già/Trẻ, Đồ vật
+        # ═══════════════════════════════════════════════════════════════
+        _omniscient_res = {'html': '', 'text': '', 'data': {}}
+        try:
+            _omniscient_res = build_omniscient_prophecy(
+                question=question,
+                dung_than=dung_than,
+                hanh_dt=hanh_dt_v22 if 'hanh_dt_v22' in locals() else '',
+                weighted_pct=weighted_pct,
+                ts_stage=ts_stage if 'ts_stage' in locals() else '',
+                ngu_khi=ngu_khi_v22 if 'ngu_khi_v22' in locals() else '',
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                ung_ky_detail=_ung_ky_detail_result,
+            )
+            if _omniscient_res.get('text'):
+                offline_full_output += f"\n\n{_omniscient_res['text']}"
+                _hub['synthesis']['omniscient_prophecy'] = _omniscient_res['text']
+                self.log_step("V99.0", "OMNISCIENT_360", "Full 6-dimension prophecy generated")
+        except Exception as _omni_err:
+            self.log_step("V99.0", "OMNISCIENT_ERR", str(_omni_err)[:80])
 
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
@@ -15314,7 +15362,7 @@ class FreeAIHelper:
             offline_analysis_data=offline_analysis_data
         )
         
-        # V42.9.43: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
+        # V6886: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
         _real_multi = False
         try:
             if v31_parsed_questions and len(v31_parsed_questions) > 1:
@@ -15378,7 +15426,7 @@ class FreeAIHelper:
             # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V42.9.43)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V6886)</div>'
                 f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
                 + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
@@ -15511,10 +15559,10 @@ class FreeAIHelper:
                     _off_answer = "<br>".join(_fb_on)
                     _off_answer_list.append(_off_answer)
                 elif _off_verdict == 'CÁT':
-                    _off_answer = f"{_off_v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
+                    _off_answer = f"{_off_v_icon} CÓ ({weighted_pct}%)"
                     _off_answer_list.append(_off_answer)
                 elif _off_verdict == 'HUNG':
-                    _off_answer = f"{_off_v_icon} KHÔNG — BẤT LỢI ({weighted_pct}%)"
+                    _off_answer = f"{_off_v_icon} KHÔNG ({weighted_pct}%)"
                     _off_answer_list.append(_off_answer)
                 else:
                     _off_answer = f"{_off_v_icon} CẦN CÂN NHẮC — {_off_verdict} ({weighted_pct}%)"
@@ -15527,7 +15575,7 @@ class FreeAIHelper:
                     _off_ev_html += f'<div style="font-size:1em;color:#d1fae5;margin:4px 0;">{_ev}</div>'
                 _off_ev_html += '</div>'
             
-            # V42.9.43: Multi-card CHỈ khi PARSER V32 thật sự detect nhiều câu hỏi riêng biệt
+            # V6886: Multi-card CHỈ khi PARSER V32 thật sự detect nhiều câu hỏi riêng biệt
             if _real_multi and len(_off_answer_list) > 1:
                 # === MULTI-INTENT: Tạo CARD riêng cho từng câu trả lời ===
                 _multi_cards = ''
@@ -15543,7 +15591,7 @@ class FreeAIHelper:
                     _card_icon = '🟡'
                     if any(x in _ans_item for x in ['✅', '🟢', 'CÓ', 'NÊN', 'THẮNG', 'THUẬN', 'TỐT', 'ĐƯỢC']):
                         _card_icon = '🟢'
-                    elif any(x in _ans_item for x in ['🔴', 'KHÔNG', 'THUA', 'HUNG', 'XẤU', 'MẤT', 'BẤT LỢI']):
+                    elif any(x in _ans_item for x in ['🔴', 'KHÔNG', 'THUA', 'HUNG', 'XẤU', 'MẤT', 'XẤU']):
                         _card_icon = '🔴'
                     
                     _multi_cards += (
@@ -15556,21 +15604,22 @@ class FreeAIHelper:
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.43</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V6886</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + _off_ev_html
                     + f'</div>'
                 )
             else:
                 # === SINGLE INTENT: 1 card lớn — V42.9.29 NÂNG CẤP TRẢ LỜI TRỰC TIẾP ===
-                # V42.9.29: Xây verdict label — V42.9.43: Đồng bộ thresholds với Offline path
+                # V42.9.29: Xây verdict label — V6886: Đồng bộ thresholds với Offline path
                 _off_v_label = 'ĐẠI CÁT' if weighted_pct >= 70 else 'CÁT' if weighted_pct >= 55 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 30 else 'ĐẠI HUNG'
                 _off_v_color = '#22c55e' if weighted_pct >= 55 else '#eab308' if weighted_pct >= 45 else '#ef4444'
                 _off_v_icon = '🟢' if weighted_pct >= 55 else '🟡' if weighted_pct >= 45 else '🔴'
                 
-                # ═══ V42.9.43: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE ═══
+                # ═══ V6886: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE ═══
                 # Trả lời dựa trên: DT + data thật từ quẻ + loại câu hỏi
                 _q_lower = question.lower() if question else ''
                 _direct_reply = ''
@@ -15702,26 +15751,26 @@ class FreeAIHelper:
                     _direct_reply = f'<b>{_tone}</b> ({weighted_pct}%){_med_info}. {_evidence_str}.'
                 elif any(kw in _q_lower for kw in ['có nên', 'nên không', 'nên hay']):
                     if weighted_pct >= 55:
-                        _direct_reply = f'<b>NÊN — THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'<b>NÊN</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 45:
                         _direct_reply = f'<b>CÓ THỂ nhưng THẬN TRỌNG</b> ({weighted_pct}%). {_evidence_str}.'
                     else:
                         _direct_reply = f'<b>KHÔNG NÊN</b> ({weighted_pct}%). {_evidence_str}.'
                 elif is_competition:
-                    _v_lbl = 'CÁT / CÓ LỢI' if weighted_pct >= 60 else 'HUNG / BẤT LỢI'
+                    _v_lbl = 'CÁT / CÓ LỢI' if weighted_pct >= 60 else 'HUNG / XẤU'
                     _direct_reply = f'{_subj}: <b>{_v_lbl}</b> ({weighted_pct}%). {_evidence_str}.'
                 else:
                     # Yes/No hoặc câu hỏi chung
                     if weighted_pct >= 60:
-                        _direct_reply = f'{_subj}: <b>CÓ / ĐẠT ĐƯỢC / THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>CÓ / ĐẠT ĐƯỢC / TỐT</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 50:
                         _direct_reply = f'{_subj}: <b>CÓ THỂ / CẦN NỖ LỰC THÊM</b> ({weighted_pct}%). {_evidence_str}.'
                     elif weighted_pct >= 45:
-                        _direct_reply = f'{_subj}: <b>KHÓ KHĂN / CHƯA THUẬN LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>KHÓ KHĂN / CHƯA TỐT</b> ({weighted_pct}%). {_evidence_str}.'
                     else:
-                        _direct_reply = f'{_subj}: <b>KHÔNG / BẤT LỢI</b> ({weighted_pct}%). {_evidence_str}.'
+                        _direct_reply = f'{_subj}: <b>KHÔNG / XẤU</b> ({weighted_pct}%). {_evidence_str}.'
                 
-                # ═══ V42.9.43: NGUYÊN NHÂN + CẢNH BÁO (từ data thật) ═══
+                # ═══ V6886: NGUYÊN NHÂN + CẢNH BÁO (từ data thật) ═══
                 _reason_parts = []
                 if ky_mon_reason and len(str(ky_mon_reason)) > 3:
                     _reason_parts.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
@@ -15758,10 +15807,10 @@ class FreeAIHelper:
                         + _inner + '</div>'
                     )
                 
-                # ═══ V42.9.43: LỜI KHUYÊN CỤ THỂ THEO NGỮ CẢNH ═══
+                # ═══ V6886: LỜI KHUYÊN CỤ THỂ THEO NGỮ CẢNH ═══
                 _advice_parts = []
                 _q_norm = question.lower()
-                # Hướng thuận lợi từ Ngũ Hành DT
+                # Hướng tốt từ Ngũ Hành DT
                 _HANH_HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
                 _hanh_dt_adv = locals().get('hanh_dt_v22', '?')
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
@@ -15809,7 +15858,7 @@ class FreeAIHelper:
                 _cons_off_text = f'KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}'
                 
                 # ═══════════════════════════════════════════════════════════════
-                # V42.9.43: HỆ THỐNG LUẬN GIẢI 7 TẦNG — THIÊN CƠ ĐẠI SƯ
+                # V6886: HỆ THỐNG LUẬN GIẢI 7 TẦNG — THIÊN CƠ ĐẠI SƯ
                 # ═══════════════════════════════════════════════════════════════
                 
                 # --- TẦNG 2: SƠ ĐỒ LỰC LƯỢNG (Trường Sinh + Ngũ Khí + Vạn Vật) ---
@@ -16039,7 +16088,7 @@ class FreeAIHelper:
                 # ═══ ASSEMBLE: 7 TẦNG LUẬN GIẢI ═══
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ THIÊN CƠ ĐẠI SƯ — AI OFFLINE V42.9.43</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ THIÊN CƠ ĐẠI SƯ — AI OFFLINE V6886</div>'
                     # TẦNG 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     # TẦNG 1b: Trả lời trực tiếp
@@ -16057,6 +16106,8 @@ class FreeAIHelper:
                     + _t6b_html
                     # TẦNG 6b: Lời khuyên
                     + _advice_html
+                    # TẦNG 6c: Hồ sơ Tiên Tri Toàn Tri 360° (V99)
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     # TẦNG 7: Consensus
                     + _t7_html
                     + _off_ev_html
@@ -16322,9 +16373,9 @@ class FreeAIHelper:
                 if _fb_parts:
                     _offline_short_answer = "<br>".join(_fb_parts)
                 elif overall_short in ('CÁT', 'ĐẠI CÁT'):
-                    _offline_short_answer = f"{v_icon} CÓ — THUẬN LỢI ({weighted_pct}%)"
+                    _offline_short_answer = f"{v_icon} CÓ ({weighted_pct}%)"
                 elif overall_short in ('HUNG', 'ĐẠI HUNG'):
-                    _offline_short_answer = f"{v_icon} KHÔNG — BẤT LỢI ({weighted_pct}%)"
+                    _offline_short_answer = f"{v_icon} KHÔNG ({weighted_pct}%)"
                 else:
                     _offline_short_answer = f"{v_icon} CẦN CÂN NHẮC — {overall_short} ({weighted_pct}%)"
             
@@ -16441,7 +16492,7 @@ class FreeAIHelper:
                         _icon2 = '🟡'
                         if any(x in _ans2 for x in ['✅', '🟢', 'CÓ', 'NÊN', 'THẮNG', 'THUẬN', 'TỐT', 'ĐƯỢC']):
                             _icon2 = '🟢'
-                        elif any(x in _ans2 for x in ['🔴', 'KHÔNG', 'THUA', 'HUNG', 'XẤU', 'MẤT', 'BẤT LỢI']):
+                        elif any(x in _ans2 for x in ['🔴', 'KHÔNG', 'THUA', 'HUNG', 'XẤU', 'MẤT', 'XẤU']):
                             _icon2 = '🔴'
                         _multi_cards_off += (
                             f'<div style="background:linear-gradient(135deg,{_cc2[0]},{_cc2[1]});padding:20px;border-radius:14px;'
@@ -16452,17 +16503,18 @@ class FreeAIHelper:
                         )
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:24px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.43</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V6886</div>'
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_offline_short_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                     + _comp_detail_html
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + _evidence_html
                     + f'</div>'
                 )
             else:
                 # V42.9.29: NÂNG CẤP TRẢ LỜI TRỰC TIẾP (GIỐNG path có Online)
-                # ═══ V42.9.43: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE (OFFLINE PATH) ═══
+                # ═══ V6886: TRẢ LỜI THÔNG MINH — CONTEXT-AWARE (OFFLINE PATH) ═══
                 _q_lower_fb = question.lower() if question else ''
                 _dr_fb = ''
                 
@@ -16581,17 +16633,17 @@ class FreeAIHelper:
                     _med_info = f'. {_kc_detail_fb}' if _kc_detail_fb else ''
                     _dr_fb = f'<b>{_tone_fb}</b> ({weighted_pct}%){_med_info}. {_ev_str_fb}.'
                 elif any(kw in _q_lower_fb for kw in ['có nên', 'nên không', 'nên hay']):
-                    if weighted_pct >= 55: _dr_fb = f'<b>NÊN — THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    if weighted_pct >= 55: _dr_fb = f'<b>NÊN</b> ({weighted_pct}%). {_ev_str_fb}.'
                     elif weighted_pct >= 45: _dr_fb = f'<b>CÓ THỂ nhưng THẬN TRỌNG</b> ({weighted_pct}%). {_ev_str_fb}.'
                     else: _dr_fb = f'<b>KHÔNG NÊN</b> ({weighted_pct}%). {_ev_str_fb}.'
                 elif is_competition:
-                    _v_lbl = 'CÁT / CÓ LỢI' if weighted_pct >= 60 else 'HUNG / BẤT LỢI'
+                    _v_lbl = 'CÁT / CÓ LỢI' if weighted_pct >= 60 else 'HUNG / XẤU'
                     _dr_fb = f'{_subj_fb}: <b>{_v_lbl}</b> ({weighted_pct}%). {_ev_str_fb}.'
                 else:
-                    if weighted_pct >= 60: _dr_fb = f'{_subj_fb}: <b>CÓ / ĐẠT ĐƯỢC / THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    if weighted_pct >= 60: _dr_fb = f'{_subj_fb}: <b>CÓ / ĐẠT ĐƯỢC / TỐT</b> ({weighted_pct}%). {_ev_str_fb}.'
                     elif weighted_pct >= 50: _dr_fb = f'{_subj_fb}: <b>CÓ THỂ / CẦN NỖ LỰC THÊM</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    elif weighted_pct >= 45: _dr_fb = f'{_subj_fb}: <b>KHÓ KHĂN / CHƯA THUẬN LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
-                    else: _dr_fb = f'{_subj_fb}: <b>KHÔNG / BẤT LỢI</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    elif weighted_pct >= 45: _dr_fb = f'{_subj_fb}: <b>KHÓ KHĂN / CHƯA TỐT</b> ({weighted_pct}%). {_ev_str_fb}.'
+                    else: _dr_fb = f'{_subj_fb}: <b>KHÔNG / XẤU</b> ({weighted_pct}%). {_ev_str_fb}.'
                 
                 # NGUYÊN NHÂN + CẢNH BÁO
                 _rp2 = []
@@ -16667,7 +16719,7 @@ class FreeAIHelper:
                     )
                 
                 
-                # ═══ V42.9.43: OFFLINE BRAIN — Câu trả lời thông minh ═══
+                # ═══ V6886: OFFLINE BRAIN — Câu trả lời thông minh ═══
                 _brain_answer = ''
                 try:
                     _brain_verdicts = {
@@ -16689,20 +16741,21 @@ class FreeAIHelper:
                         v38_conclusion=v38_conclusion,
                     )
                 except Exception as _brain_err:
-                    self.log_step("V42.9.43 Brain", "ERROR", str(_brain_err)[:80])
+                    self.log_step("V6886 Brain", "ERROR", str(_brain_err)[:80])
                 
                 if _brain_answer:
                     final_parts.append(_brain_answer)
                 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V42.9.43</div>'
+                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V6886</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
                     f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                     + _comp_detail_html
                     + _off2_summary
                     + _adv_html_fb
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + _evidence_html
                     + f'</div>'
                 )
@@ -16779,9 +16832,9 @@ class FreeAIHelper:
                 final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(all_factors)})")
                 for f in all_factors:
                     if '+' in f:
-                        final_parts.append(f"- ✅ **THUẬN LỢI:** {f}")
+                        final_parts.append(f"- ✅ **TỐT:** {f}")
                     elif '-' in f:
-                        final_parts.append(f"- ⚠️ **BẤT LỢI:** {f}")
+                        final_parts.append(f"- ⚠️ **XẤU:** {f}")
                     else:
                         final_parts.append(f"- ℹ️ **THÔNG TIN:** {f}")
             
@@ -16906,7 +16959,7 @@ class FreeAIHelper:
         lines.append(f"- **Sao trọng tâm:** {cat['sao_cua_focus']['sao']}")
         lines.append(f"- **Cửa trọng tâm:** {cat['sao_cua_focus']['cua']}")
         lines.append(f"- **Thần trọng tâm:** {cat['sao_cua_focus']['than']}")
-        lines.append(f"- **Ngũ Hành thuận lợi:** {cat['ngu_hanh_tot']}")
+        lines.append(f"- **Ngũ Hành tốt:** {cat['ngu_hanh_tot']}")
         lines.append(f"- **💡 Gợi ý phân tích:** {cat['goi_y']}")
         
         # 4. Phân tích SÂU từ chart_data (V7.0 Deep Reasoning)
@@ -17461,9 +17514,9 @@ class FreeAIHelper:
                         score += 1
                         reasons_list.append("Giờ sinh Ngày (lợi)")
                     elif 'BỊ KHẮC' in rel_ngay_gio:
-                        lines.append(f"  - 📊 Giờ ({hanh_can_gio}) khắc Ngày ({hanh_can}): Kết quả GÂY BẤT LỢI")
+                        lines.append(f"  - 📊 Giờ ({hanh_can_gio}) khắc Ngày ({hanh_can}): Kết quả GÂY XẤU")
                         score -= 1
-                        reasons_list.append("Giờ khắc Ngày (bất lợi)")
+                        reasons_list.append("Giờ khắc Ngày (xấu)")
                     elif 'thắng' in rel_ngay_gio:
                         lines.append(f"  - 📊 Ngày ({hanh_can}) khắc Giờ ({hanh_can_gio}): Mình KIỂM SOÁT kết quả")
             
@@ -17737,7 +17790,7 @@ class FreeAIHelper:
             if 'Vượng' in str(vuong) or 'Tướng' in str(vuong):
                 verdict = "CÁT"
                 reasons_list.append("Dụng Thần Vượng")
-                lines.append(f"- Dụng Thần **VƯỢNG** → Sự việc **THUẬN LỢI**")
+                lines.append(f"- Dụng Thần **VƯỢNG** → Sự việc **TỐT**")
             elif 'Tử' in str(vuong) or 'Tuyệt' in str(vuong) or 'Mộ' in str(vuong):
                 verdict = "HUNG"
                 reasons_list.append("Dụng Thần Suy/Tử")
@@ -17745,7 +17798,7 @@ class FreeAIHelper:
             elif 'Suy' in str(vuong) or 'Bệnh' in str(vuong):
                 verdict = "HUNG"
                 reasons_list.append(f"Dụng Thần {vuong}")
-                lines.append(f"- Dụng Thần **{vuong}** → Sự việc **BẤT LỢI**")
+                lines.append(f"- Dụng Thần **{vuong}** → Sự việc **XẤU**")
             else:
                 verdict = "BÌNH"
                 reasons_list.append(f"Dụng Thần {vuong}")
@@ -17974,7 +18027,7 @@ class FreeAIHelper:
                         reasons_list.append("Thế Ứng Lục Xung")
                     elif LUC_HOP_CHI.get(the_chi) == ung_chi:
                         lines.append(f"\n**🤝 LỤC HỢP THẾ-ỨNG:** {the_chi} hợp {ung_chi}")
-                        lines.append(f"  → Người hỏi và đối phương HÒA HỢP, sự việc THUẬN LỢI! ✅")
+                        lines.append(f"  → Người hỏi và đối phương HÒA HỢP, sự việc TỐT! ✅")
                         reasons_list.append("Thế Ứng Lục Hợp")
             
             # ====== V9.0 Phase 4: LỤC HÀO RULES (18 QUY TẮC VÀNG) ======
@@ -18303,7 +18356,7 @@ class FreeAIHelper:
             elif KHAC.get(dung_el) == the_el:
                 verdict = "HUNG"
                 reason = f"Dụng ({dung_el}) KHẮC Thể ({the_el})"
-                lines.append(f"- Dụng KHẮC Thể → **HUNG** (bất lợi) ⚠️")
+                lines.append(f"- Dụng KHẮC Thể → **HUNG** (xấu) ⚠️")
             elif KHAC.get(the_el) == dung_el:
                 verdict = "CÁT"
                 reason = f"Thể ({the_el}) KHẮC Dụng ({dung_el})"
@@ -18531,7 +18584,7 @@ class FreeAIHelper:
                         lines.append(f"  → Tượng: {qd.get('tượng', '?')} | Đức: {qd.get('đức', '?')} | Ý nghĩa: {qd.get('ý_nghĩa', '?')}")
                         break
                 
-                # ====== V42.9.43: THOÁN TỪ + ĐẠI TƯỢNG — 64 QUẺ ======
+                # ====== V6886: THOÁN TỪ + ĐẠI TƯỢNG — 64 QUẺ ======
                 if hex_name or hex_palace:
                     # Ưu tiên tra theo tên quẻ đầy đủ (64 quẻ)
                     thoan_info = QUE_THOAN_64.get(hex_name, {}) if hex_name else {}
@@ -18578,7 +18631,7 @@ class FreeAIHelper:
                         trung_text = " + TRUNG (cân bằng hoàn hảo) 🌟" if is_trung else ""
                         lines.append(f"\n  **📐 HÀO VỊ:** Hào Thế ({the_pos}) = **{chinh_text}**{trung_text}")
                         if is_chinh and is_trung:
-                            lines.append(f"  → Chính + Trung = Vị trí HOÀN HẢO — Sự việc THUẬN LỢI nhất!")
+                            lines.append(f"  → Chính + Trung = Vị trí HOÀN HẢO — Sự việc TỐT nhất!")
                         elif not is_chinh:
                             lines.append(f"  → Bất Chính = Sai vị trí — Cần ĐIỀU CHỈNH phương pháp tiếp cận")
             

@@ -139,11 +139,17 @@ try:
 except ImportError:
     def generate_smart_offline_answer(*args, **kwargs): return ""
 
-# V6886: Ứng Kỳ Chi Tiết — Giờ/Ngày/Tháng/Năm
+# V6886: Ứng Kỳ Chi Tiết — Giờ/Ngày/Tháng/Năm/Khắc/Phút
 try:
     from ung_ky_engine import calc_ung_ky_detail
 except ImportError:
-    def calc_ung_ky_detail(*args, **kwargs): return {'summary': '', 'html': '', 'hour': '', 'day': '', 'month': '', 'year': '', 'speed': '', 'confidence': '', 'method': ''}
+    def calc_ung_ky_detail(*args, **kwargs): return {'summary': '', 'html': '', 'minute': '', 'hour': '', 'day': '', 'month': '', 'year': '', 'speed': '', 'confidence': '', 'method': ''}
+
+# V99.0: Engine Tiên Tri Toàn Tri 360° (Omniscient Forensic Prophecy)
+try:
+    from omniscient_prophecy import build_omniscient_prophecy
+except ImportError:
+    def build_omniscient_prophecy(*args, **kwargs): return {'html': '', 'text': '', 'data': {}}
 
 # V31.0: Interaction Diagrams — Sơ đồ tương tác thời gian thực
 try:
@@ -5522,13 +5528,16 @@ class FreeAIHelper:
                 f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:200]}\n"
                 f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {v22.get('tier_cap', '?')}\n"
             )
-            # V42.9.5 PATCH: Inject Ứng Kỳ + Bất Thường vào prompt cho Gemini
+            # V42.9.5 + V99 PATCH: Inject Ứng Kỳ Chi Tiết (đến Phút/Khắc) + Tiên Tri Toàn Tri 360° vào prompt cho Gemini
             _hub_synth = od.get('hub', {}).get('synthesis', {})
-            _ung_ky_for_gemini = _hub_synth.get('ung_ky', '')
+            _ung_ky_for_gemini = _hub_synth.get('ung_ky_detail') or _hub_synth.get('ung_ky', '')
             _bt_for_gemini = _hub_synth.get('bt_detected', [])
+            _omni_for_gemini = _hub_synth.get('omniscient_prophecy', '')
             if _ung_ky_for_gemini:
-                offline_verdict_block += f"\n⏱ ỨNG KỲ (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
-                offline_verdict_block += f"→ BẠN PHẢI dùng CHÍNH XÁC thời gian này khi trả lời. KHÔNG ĐƯỢC tự bịa thời gian khác.\n"
+                offline_verdict_block += f"\n⏱ ỨNG KỲ CHI TIẾT ĐẾN PHÚT/KHẮC (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
+                offline_verdict_block += f"→ BẠN PHẢI dùng CHÍNH XÁC Năm, Tháng, Ngày, Giờ, Khắc, Phút này khi trả lời. KHÔNG ĐƯỢC tự bịa thời gian khác.\n"
+            if _omni_for_gemini:
+                offline_verdict_block += f"\n🔮 HỒ SƠ TIÊN TRI TOÀN TRI 360° (ĐÃ GIẢI MÃ TỪ QUẺ — BẮT BUỘC TRÌNH BÀY ĐẦY ĐỦ):\n{_omni_for_gemini}\n"
             if _bt_for_gemini:
                 offline_verdict_block += f"\n🚨 BẤT THƯỜNG NGHIÊM TRỌNG: {', '.join(_bt_for_gemini)}\n"
                 offline_verdict_block += f"→ Yếu tố này ĐÃ BỊ TRỪ ĐIỂM. BẠN PHẢI đề cập trong phần phân tích.\n"
@@ -5623,10 +5632,14 @@ class FreeAIHelper:
                 f"|---|---|---|---|\n"
                 f"| [Tên yếu tố 1] | [Dữ liệu từ quẻ] | [Dữ liệu tra mạng] | [Khớp/Không khớp] |\n"
                 f"| [Tên yếu tố 2] | ... | ... | ... |\n"
-                f"\n### 🔮 TỔNG HỢP LOGIC\n"
+                f"\n### 🔮 TỔNG HỢP LOGIC & HỒ SƠ TIÊN TRI TOÀN TRI 360°\n"
                 f"**CHỨNG CỨ:** [Xâu chuỗi dữ liệu đối chiếu (quẻ + internet) để ra kết luận cuối cùng]\n"
-                f"**⏳ ỨNG KỲ:** [Thời gian + Hướng cụ thể]\n"
-                f"**🔧 LỜI KHUYÊN:** [Hành động cụ thể]\n\n"
+                f"**📜 SỰ VIỆC CHI TIẾT (Quá khứ - Hiện tại - Tương lai):** [Mô tả rõ chuyện gì đã khởi phát, ẩn tình hiện tại và kết cục]\n"
+                f"**⏳ THỜI ĐIỂM CHÍNH XÁC (Năm - Tháng - Ngày - Giờ - Khắc - Phút):** [Ghi rõ Năm, Tháng, Ngày Dương/Âm, Giờ Địa Chi, Khắc 15 phút và Phút đuôi chính xác]\n"
+                f"**📍 ĐỊA ĐIỂM & HIỆN TRƯỜNG (Ở đâu):** [Phương hướng Bát Quái + 24 Sơn La Kinh, khoảng cách mét/km, độ cao/tầng, cảnh vật xung quanh]\n"
+                f"**👤 HỒ SƠ CON NGƯỜI:** [Trai hay Gái, Già hay Trẻ, Bao nhiêu tuổi cụ thể, Ngoại hình, Tính cách, Nghề nghiệp, Người quen hay lạ]\n"
+                f"**📦 HỒ SƠ ĐỒ VẬT & ĐỊNH LƯỢNG:** [Đồ vật gì cụ thể, Màu sắc, Chất liệu, Hình dáng, Kích thước, Tình trạng Mới hay Cũ, Số lượng/Giá trị]\n"
+                f"**🔧 LỜI KHUYÊN & PHÁP QUYẾT HÓA GIẢI:** [Hành động cụ thể]\n\n"
                 f"GIỚI HẠN: KHÔNG GIỚI HẠN TỪ. Hãy diễn giải chi tiết, sâu sắc như một Đại Sư thực thụ. ⛔ CẤM thay đổi verdict gốc.\n"
                 f"</output_format>\n\n"
             )
@@ -15082,6 +15095,18 @@ class FreeAIHelper:
                 _dti = locals().get('dung_than_idx')
                 _ukd_is_dong = _dti in (luc_hao_data.get('dong_hao') or []) if luc_hao_data else False
             
+            _ukd_dong_hao = 0
+            if luc_hao_data and luc_hao_data.get('dong_hao'):
+                try:
+                    _ukd_dong_hao = int(luc_hao_data['dong_hao'][0])
+                except Exception:
+                    pass
+            elif mai_hoa_data and mai_hoa_data.get('dong_hao'):
+                try:
+                    _ukd_dong_hao = int(mai_hoa_data['dong_hao'])
+                except Exception:
+                    pass
+
             _ung_ky_detail_result = calc_ung_ky_detail(
                 chi_dt=_ukd_chi_dt,
                 hanh_dt=_ukd_hanh_dt,
@@ -15094,6 +15119,7 @@ class FreeAIHelper:
                 dung_quai=_ukd_dung_quai,
                 verdict=ky_mon_verdict or '',
                 weighted_pct=weighted_pct,
+                dong_hao=_ukd_dong_hao,
             )
             
             if _ung_ky_detail_result.get('html'):
@@ -15105,6 +15131,30 @@ class FreeAIHelper:
                 self.log_step("V6886", "UNG_KY_DETAIL", _ung_ky_detail_result['summary'][:80])
         except Exception as _ukd_err:
             self.log_step("V6886", "UNG_KY_DETAIL_ERR", str(_ukd_err)[:80])
+
+        # ═══════════════════════════════════════════════════════════════
+        # V99.0: TIÊN TRI TOÀN TRI 360° — Sự việc, Năm-Tháng-Ngày-Giờ-Phút, Ở đâu, Trai/Gái, Già/Trẻ, Đồ vật
+        # ═══════════════════════════════════════════════════════════════
+        _omniscient_res = {'html': '', 'text': '', 'data': {}}
+        try:
+            _omniscient_res = build_omniscient_prophecy(
+                question=question,
+                dung_than=dung_than,
+                hanh_dt=hanh_dt_v22 if 'hanh_dt_v22' in locals() else '',
+                weighted_pct=weighted_pct,
+                ts_stage=ts_stage if 'ts_stage' in locals() else '',
+                ngu_khi=ngu_khi_v22 if 'ngu_khi_v22' in locals() else '',
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                ung_ky_detail=_ung_ky_detail_result,
+            )
+            if _omniscient_res.get('text'):
+                offline_full_output += f"\n\n{_omniscient_res['text']}"
+                _hub['synthesis']['omniscient_prophecy'] = _omniscient_res['text']
+                self.log_step("V99.0", "OMNISCIENT_360", "Full 6-dimension prophecy generated")
+        except Exception as _omni_err:
+            self.log_step("V99.0", "OMNISCIENT_ERR", str(_omni_err)[:80])
 
         # V15.3: Thu thập dữ liệu TOÀN DIỆN cho AI Online
         offline_analysis_data = {
@@ -15558,6 +15608,7 @@ class FreeAIHelper:
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + _off_ev_html
                     + f'</div>'
                 )
@@ -16055,6 +16106,8 @@ class FreeAIHelper:
                     + _t6b_html
                     # TẦNG 6b: Lời khuyên
                     + _advice_html
+                    # TẦNG 6c: Hồ sơ Tiên Tri Toàn Tri 360° (V99)
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     # TẦNG 7: Consensus
                     + _t7_html
                     + _off_ev_html
@@ -16455,6 +16508,7 @@ class FreeAIHelper:
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                     + _comp_detail_html
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + _evidence_html
                     + f'</div>'
                 )
@@ -16701,6 +16755,7 @@ class FreeAIHelper:
                     + _comp_detail_html
                     + _off2_summary
                     + _adv_html_fb
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + _evidence_html
                     + f'</div>'
                 )
