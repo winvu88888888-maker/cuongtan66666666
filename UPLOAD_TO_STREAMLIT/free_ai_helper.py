@@ -13480,16 +13480,24 @@ class FreeAIHelper:
         luc_hao_reason = ""
         mai_hoa_verdict = "BÌNH"
         mai_hoa_reason = ""
+        thiet_ban_verdict = "BÌNH"
+        thiet_ban_reason = ""
         luc_nham_verdict = "BÌNH"
         luc_nham_reason = ""
         thai_at_verdict = "BÌNH"
         thai_at_reason = ""
+        xem_ngay_verdict = "BÌNH"
+        xem_ngay_reason = ""
+        tu_vi_verdict = "BÌNH"
+        tu_vi_reason = ""
+        thien_van_reason = ""
+        chuyen_gia_reason = ""
         age_numbers = []
         count_numbers = []  # V8.0: dùng cho đếm số
         
-        # BƯỚC 2-5: Wrap trong <details> để collapse (V11.0)
+        # BƯỚC 2-5.68: Wrap trong <details> để collapse
         sections.append("\n<details>")
-        sections.append("<summary><b>🔍 XEM CHI TIẾT PHÂN TÍCH 5 PHƯƠNG PHÁP (nhấn để mở)</b></summary>\n")
+        sections.append("<summary><b>🔍 XEM CHI TIẾT PHÂN TÍCH HỢP NHẤT TOÀN BỘ 10 HỆ THỐNG QUẺ & AI (nhấn để mở)</b></summary>\n")
         
         # BƯỚC 2: KỲ MÔN
         sections.append(f"### BƯỚC 2 — KỲ MÔN ĐỘN GIÁP")
@@ -13635,6 +13643,201 @@ class FreeAIHelper:
         except Exception as e:
             sections.append(f"- ⚠️ Lỗi tính Thái Ất Thần Số: {str(e)[:80]}\n")
         
+        # ========================================
+        # V99.5: BƯỚC 5.65 — XEM NGÀY ĐẸP (12 Trực · 28 Tú · Hoàng/Hắc Đạo)
+        # ========================================
+        sections.append(f"### BƯỚC 5.65 — XEM NGÀY ĐẸP (12 Trực · 28 Tú · Hoàng/Hắc Đạo)")
+        v16_xn_raw = 0
+        v24_xn_factors = []
+        try:
+            from xem_ngay_dep import danh_gia_ngay, solar2lunar as _xn_s2l
+            _xn_data = kwargs.get('xem_ngay_data')
+            if not _xn_data or not isinstance(_xn_data, dict):
+                _cat_to_viec = {
+                    'TÀI_CHÍNH': 'cau_tai', 'CÔNG_VIỆC': 'ky_ket',
+                    'TÌNH_CẢM': 'cuoi_hoi', 'SỨC_KHỎE_GIA_ĐÌNH': 'chua_benh',
+                    'NHÀ_CỬA': 'lam_nha', 'XUẤT_HÀNH': 'xuat_hanh',
+                }
+                _loai_viec_auto = _cat_to_viec.get(detected_category, 'cau_tai')
+                if any(k in q_lower for k in ['cưới', 'kết hôn', 'hôn nhân']): _loai_viec_auto = 'cuoi_hoi'
+                elif any(k in q_lower for k in ['mộ', 'an táng', 'chôn', 'cải táng']): _loai_viec_auto = 'an_tang'
+                elif any(k in q_lower for k in ['khai trương', 'mở hàng', 'mở cửa']): _loai_viec_auto = 'khai_truong'
+                elif any(k in q_lower for k in ['dọn nhà', 'nhập trạch', 'chuyển nhà']): _loai_viec_auto = 'don_nha'
+                _d_al_xn, _m_al_xn, _y_al_xn, _ = _xn_s2l(_d, _m, _y)
+                _cn_xn = chart_data.get('can_ngay', 'Giáp') if chart_data else 'Giáp'
+                _chin_xn = chart_data.get('chi_ngay', 'Tý') if chart_data else 'Tý'
+                _xn_data = danh_gia_ngay(_m_al_xn, _d_al_xn, _cn_xn, _chin_xn, _loai_viec_auto, ngay_dl=(_d, _m, _y))
+            
+            _xn_diem = _xn_data.get('diem', 50)
+            v16_xn_raw = max(-35, min(35, int((_xn_diem - 50) * 0.7)))
+            if _xn_diem >= 75: xem_ngay_verdict = 'ĐẠI CÁT'
+            elif _xn_diem >= 60: xem_ngay_verdict = 'CÁT'
+            elif _xn_diem <= 25: xem_ngay_verdict = 'ĐẠI HUNG'
+            elif _xn_diem < 45: xem_ngay_verdict = 'HUNG'
+            else: xem_ngay_verdict = 'BÌNH'
+            
+            _xn_truc = _xn_data.get('truc', '?')
+            _xn_truc_ch = _xn_data.get('truc_info', {}).get('cat_hung', '?')
+            _xn_sao_hd = _xn_data.get('sao_hoang_dao', ('?', '?', '', ''))
+            _xn_s28 = _xn_data.get('sao_28_tu')
+            _xn_s28_str = f"Sao {_xn_s28[0]} ({_xn_s28[3]})" if _xn_s28 and len(_xn_s28) > 3 else ""
+            xem_ngay_reason = f"Điểm {_xn_diem}/100, Trực {_xn_truc} ({_xn_truc_ch}), {_xn_sao_hd[0]} ({_xn_sao_hd[1]}){', ' + _xn_s28_str if _xn_s28_str else ''}"
+            v24_xn_factors.append(f"XN: {xem_ngay_reason}")
+            
+            _xn_lines = [
+                f"- **Ngày Âm lịch:** {_xn_data.get('ngay_am','?')}/{_xn_data.get('thang_am','?')} ({_xn_data.get('can_ngay','?')} {_xn_data.get('chi_ngay','?')}) — Xét việc: **{_xn_data.get('loai_viec','?')}**",
+                f"- **Điểm Trạch Nhật:** **{_xn_diem}/100** ({_xn_data.get('verdict','?')})",
+                f"- **12 Trực (Đổng Công):** Trực **{_xn_truc}** ({_xn_truc_ch}) — {_xn_data.get('truc_info',{}).get('mo_ta','')}",
+                f"- **Hoàng/Hắc Đạo:** Sao **{_xn_sao_hd[0]}** ({_xn_sao_hd[1]}) — {_xn_sao_hd[3] if len(_xn_sao_hd) > 3 else ''}",
+            ]
+            if _xn_s28 and len(_xn_s28) > 5:
+                _xn_lines.append(f"- **Nhị Thập Bát Tú:** Sao **{_xn_s28[0]}** ({_xn_s28[1]}/{_xn_s28[2]} - {_xn_s28[3]}) — {_xn_s28[5]}")
+            for _lt in _xn_data.get('ly_do_tot', [])[:3]:
+                _xn_lines.append(f"  - {_lt}")
+            for _lx in _xn_data.get('ly_do_xau', [])[:3]:
+                _xn_lines.append(f"  - {_lx}")
+            _xn_lines.append(f"\n→ **XEM NGÀY ĐẸP: {xem_ngay_verdict}** ({xem_ngay_reason})")
+            sections.append("\n".join(_xn_lines))
+        except Exception as _xn_e:
+            sections.append(f"- ⚠️ Lỗi tính Xem Ngày Đẹp: {str(_xn_e)[:80]}\n")
+
+        # ========================================
+        # V99.5: BƯỚC 5.66 — LỊCH VẠN NIÊN & THIÊN VĂN HỌC (Mặt Trời λ☉ · 24 Tiết Khí)
+        # ========================================
+        sections.append(f"### BƯỚC 5.66 — LỊCH VẠN NIÊN & THIÊN VĂN HỌC (Mặt Trời λ☉ · 24 Tiết Khí)")
+        try:
+            from lich_van_nien_thien_van import get_full_day_calendar_info
+            _lvn_info = get_full_day_calendar_info(_d, _m, _y, _h, 0)
+            _tk_info = _lvn_info.get('tiet_khi', {})
+            _cc_info = _lvn_info.get('can_chi', {})
+            _hd_hours = ", ".join([f"{h['chi']} ({h['khung_gio']})" for h in _lvn_info.get('gio_hoang_dao', [])])
+            thien_van_reason = (
+                f"Kinh độ Mặt Trời λ☉={_tk_info.get('solar_lon_deg','?')}°, "
+                f"Tiết khí {_tk_info.get('name','?')} ({_tk_info.get('han','')}), "
+                f"Tứ Trụ: {_cc_info.get('nam','?')} / {_cc_info.get('thang','?')} / {_cc_info.get('ngay','?')} / {_cc_info.get('gio','?')}"
+            )
+            _lvn_lines = [
+                f"- **Dương lịch:** {_lvn_info.get('thu','')}, {_lvn_info.get('solar_str','')} | **Âm lịch:** {_lvn_info.get('lunar_str','')} (JDN: `{_lvn_info.get('jdn','?')}`)",
+                f"- **Kinh độ Hoàng đạo Mặt Trời (λ☉):** `{_tk_info.get('solar_lon_deg','?')}°` — Tiết khí: **{_tk_info.get('name','?')} ({_tk_info.get('han','')})** [{_tk_info.get('progress_in_term_pct',0)}% kỳ tiết khí]",
+                f"- **Khí hậu & Thiên văn:** {_tk_info.get('meaning','')}",
+                f"- **Tứ Trụ Thiên Văn:** Năm **{_cc_info.get('nam','?')}** · Tháng **{_cc_info.get('thang','?')}** · Ngày **{_cc_info.get('ngay','?')}** · Giờ **{_cc_info.get('gio','?')}**",
+                f"- **6 Giờ Hoàng Đạo trong ngày:** {_hd_hours}",
+            ]
+            sections.append("\n".join(_lvn_lines))
+        except Exception as _lvn_e:
+            sections.append(f"- ⚠️ Lỗi tính Lịch Vạn Niên Thiên Văn: {str(_lvn_e)[:80]}\n")
+
+        # ========================================
+        # V99.5: BƯỚC 5.67 — TỬ VI ĐẨU SỐ (12 Cung · 14 Chính Tinh · Tứ Hóa)
+        # ========================================
+        sections.append(f"### BƯỚC 5.67 — TỬ VI ĐẨU SỐ (12 Cung · Tứ Hóa · Lưu Niên)")
+        v16_tv_raw = 0
+        v24_tv_factors = []
+        try:
+            from tu_vi import lap_la_so
+            from xem_ngay_dep import solar2lunar as _tv_s2l
+            _tv_data = kwargs.get('tu_vi_data')
+            _tv_mode_label = "Lá số Cá nhân"
+            if not _tv_data or not isinstance(_tv_data, dict):
+                _d_tv, _m_tv, _y_tv, _ = _tv_s2l(_d, _m, _y)
+                _gio_idx_tv = (_h // 2) % 12
+                _tv_data = lap_la_so(_y_tv, _m_tv, _d_tv, _gio_idx_tv, 'nam')
+                _tv_mode_label = "Lá số Thời Thần / Lưu Niên lúc động tâm"
+            
+            _cat_to_cung_tv = {
+                'TÀI_CHÍNH': 'Tài Bạch', 'CÔNG_VIỆC': 'Quan Lộc',
+                'TÌNH_CẢM': 'Phu Thê', 'SỨC_KHỎE_GIA_ĐÌNH': 'Tật Ách',
+                'NHÀ_CỬA': 'Điền Trạch', 'XUẤT_HÀNH': 'Thiên Di',
+                'TÌM_ĐỒ': 'Điền Trạch', 'THẮNG_THUA': 'Mệnh', 'CHUNG': 'Mệnh',
+            }
+            _target_cung_tv = _cat_to_cung_tv.get(detected_category, 'Mệnh')
+            _cung_map_tv = _tv_data.get('cung_map', {})
+            _c_info_tv = _cung_map_tv.get(_target_cung_tv, {})
+            _m_info_tv = _cung_map_tv.get('Mệnh', {})
+            _tu_hoa_tv = _tv_data.get('tu_hoa', {})
+            
+            _chinh_target = _c_info_tv.get('chinh_tinh', [])
+            _phu_target = _c_info_tv.get('phu_tinh', [])
+            _chinh_menh = _m_info_tv.get('chinh_tinh', [])
+            _phu_menh = _m_info_tv.get('phu_tinh', [])
+            _all_target_stars = set(_chinh_target + _phu_target)
+            _all_menh_stars = set(_chinh_menh + _phu_menh)
+            
+            _tv_score = 0
+            _cat_chinh = {'Tử Vi', 'Thiên Phủ', 'Thái Dương', 'Thái Âm', 'Vũ Khúc', 'Thiên Đồng', 'Thiên Lương', 'Thiên Tướng', 'Thiên Cơ'}
+            _cat_phu = {'Lộc Tồn', 'Thiên Khôi', 'Thiên Việt', 'Tả Phụ', 'Hữu Bật', 'Văn Xương', 'Văn Khúc', 'Đào Hoa', 'Hồng Loan', 'Thiên Hỷ', 'Long Trì', 'Phượng Các', 'Thiên Quan', 'Thiên Phúc', 'Trường Sinh', 'Đế Vượng', 'Lâm Quan', 'Quan Đới'}
+            _hung_phu = {'Kình Dương', 'Đà La', 'Hỏa Tinh', 'Linh Tinh', 'Địa Không', 'Địa Kiếp', 'Tang Môn', 'Bạch Hổ', 'Quan Phù', 'Thiên Khốc', 'Thiên Hư', 'Cô Thần', 'Quả Tú', 'Tử', 'Mộ', 'Tuyệt', 'Bệnh'}
+            
+            for _st in _chinh_target:
+                if _st in _cat_chinh: _tv_score += 6
+                else: _tv_score += 2
+            for _st in _phu_target:
+                if _st in _cat_phu: _tv_score += 4
+                elif _st in _hung_phu: _tv_score -= 5
+            
+            for _th_k, _th_star in _tu_hoa_tv.items():
+                if _th_star in _all_target_stars or _th_star in _all_menh_stars:
+                    if _th_k in ('Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa'):
+                        _tv_score += 10
+                        v24_tv_factors.append(f"TV {_th_k} ({_th_star})")
+                    elif _th_k == 'Hóa Kỵ':
+                        _tv_score -= 14
+                        v24_tv_factors.append(f"TV Hóa Kỵ ({_th_star})")
+            
+            v16_tv_raw = max(-35, min(35, _tv_score))
+            if v16_tv_raw >= 16: tu_vi_verdict = 'ĐẠI CÁT'
+            elif v16_tv_raw >= 5: tu_vi_verdict = 'CÁT'
+            elif v16_tv_raw <= -16: tu_vi_verdict = 'ĐẠI HUNG'
+            elif v16_tv_raw <= -5: tu_vi_verdict = 'HUNG'
+            else: tu_vi_verdict = 'BÌNH'
+            
+            _chinh_str_tv = ", ".join(_chinh_target) if _chinh_target else "Vô Chính Diệu"
+            _menh_chi_tv = _tv_data.get('menh_cung', {}).get('chi', '?')
+            tu_vi_reason = (
+                f"{_tv_mode_label}: Mệnh {_menh_chi_tv} ({_tv_data.get('cuc_ten','?')}, {_tv_data.get('nap_am','?')}), "
+                f"Cung {_target_cung_tv} ({_c_info_tv.get('chi','?')}) có [{_chinh_str_tv}], "
+                f"Tứ Hóa [Lộc:{_tu_hoa_tv.get('Hóa Lộc','?')}, Quyền:{_tu_hoa_tv.get('Hóa Quyền','?')}, Khoa:{_tu_hoa_tv.get('Hóa Khoa','?')}, Kỵ:{_tu_hoa_tv.get('Hóa Kỵ','?')}]"
+            )
+            v24_tv_factors.append(f"TV Cung {_target_cung_tv}: {_chinh_str_tv}")
+            
+            _tv_lines = [
+                f"- **Loại Lá Số:** {_tv_mode_label} — Năm **{_tv_data.get('can_nam','?')} {_tv_data.get('chi_nam','?')}** ({_tv_data.get('nap_am','?')}) — **{_tv_data.get('cuc_ten','?')}**",
+                f"- **Cung Mệnh ({_menh_chi_tv}):** Chính tinh `{', '.join(_chinh_menh) if _chinh_menh else 'Vô Chính Diệu'}` | Phụ tinh: `{', '.join(_phu_menh[:6])}`",
+                f"- **Cung Trọng Tâm theo câu hỏi — {_target_cung_tv} ({_c_info_tv.get('chi','?')}):** Chính tinh `{_chinh_str_tv}` | Phụ tinh: `{', '.join(_phu_target[:8])}`",
+                f"- **Tứ Hóa:** Hóa Lộc (**{_tu_hoa_tv.get('Hóa Lộc','?')}**) · Hóa Quyền (**{_tu_hoa_tv.get('Hóa Quyền','?')}**) · Hóa Khoa (**{_tu_hoa_tv.get('Hóa Khoa','?')}**) · Hóa Kỵ (**{_tu_hoa_tv.get('Hóa Kỵ','?')}**)",
+                f"- **Lưu Niên {_tv_data.get('luu_nien',{}).get('nam','?')}:** Cung **{_tv_data.get('luu_nien',{}).get('cung','?')} ({_tv_data.get('luu_nien',{}).get('chi','?')})**",
+                f"\n→ **TỬ VI ĐẨU SỐ: {tu_vi_verdict}** ({tu_vi_reason})"
+            ]
+            sections.append("\n".join(_tv_lines))
+        except Exception as _tv_e:
+            sections.append(f"- ⚠️ Lỗi tính Tử Vi Đẩu Số: {str(_tv_e)[:80]}\n")
+
+        # ========================================
+        # V99.5: BƯỚC 5.68 — HỘI ĐỒNG 40 CHUYÊN GIA AI (ĐỒNG HỢP LUẬN)
+        # ========================================
+        sections.append(f"### BƯỚC 5.68 — HỘI ĐỒNG 40 CHUYÊN GIA AI (Tư Vấn Đa Chiều)")
+        try:
+            _EXP_MAP = {
+                'TÀI_CHÍNH': ["Wealth Advisor (Chuyên gia Tài lộc & Đầu tư)", "Direction Advisor (Chuyên gia Phương hướng Kinh doanh)", "Chart Interpreter AI (Đại sư Kỳ Môn)"],
+                'CÔNG_VIỆC': ["Career Advisor AI (Chuyên gia Sự nghiệp & Công danh)", "Scheduler AI (Chuyên gia Thời vận)", "Luc Hao Expert (Bậc thầy Lục Hào)"],
+                'TÌNH_CẢM': ["Relationship AI (Chuyên gia Tình duyên & Hôn nhân)", "Mai Hoa Expert (Chuyên gia Dịch số)", "Fortune Calendar (Chuyên gia Lưu niên)"],
+                'SỨC_KHỎE_GIA_ĐÌNH': ["Health Advisor (Chuyên gia Y Dịch & Sức khỏe)", "Date Selector (Chuyên gia Trạch cát)", "Luc Hao Expert (Bậc thầy Lục Hào)"],
+                'TÌM_ĐỒ': ["Chart Interpreter AI (Chuyên gia Định vị Kỳ Môn)", "Mai Hoa Expert (Chuyên gia Ngoại ứng)", "Direction Advisor (Chuyên gia Phương vị La Kinh)"],
+                'NHÀ_CỬA': ["Direction Advisor (Chuyên gia Phong thủy & Dương trạch)", "Date Selector (Chuyên gia Động thổ & Nhập trạch)", "Wealth Advisor (Chuyên gia Điền sản)"],
+                'XUẤT_HÀNH': ["Direction Advisor (Chuyên gia Xuất hành & Phương vị)", "Scheduler AI (Chuyên gia Giờ Cát Tường)", "Notification AI (Chuyên gia Cảnh báo An toàn)"],
+                'THẮNG_THUA': ["Comparison AI (Chuyên gia Đối kháng Chủ - Khách)", "Prediction Validator (Chuyên gia Kiểm chứng)", "Chart Interpreter AI (Đại sư Kỳ Môn)"],
+                'CHUNG': ["Chart Interpreter AI (Đại sư Kỳ Môn)", "Luc Hao Expert (Bậc thầy Lục Hào)", "Prediction Validator (Chuyên gia Kiểm chứng)"],
+            }
+            _active_experts = _EXP_MAP.get(detected_category, _EXP_MAP['CHUNG'])
+            chuyen_gia_reason = f"Hội đồng {', '.join([e.split('(')[0].strip() for e in _active_experts])} đồng thẩm định Dụng Thần {dung_than}"
+            _exp_lines = [
+                f"- **Ban Cố Vấn Chuyên Gia kích hoạt tự động ({len(_active_experts)}/40 Đại Sư chủ chốt):** " + " · ".join([f"**{e}**" for e in _active_experts]),
+                f"- **Trọng tâm thẩm định:** Đối chiếu chéo toàn bộ hệ thống trên trục Dụng Thần **{dung_than}**.",
+            ]
+            sections.append("\n".join(_exp_lines))
+        except Exception:
+            pass
+        
         # Đóng </details>
         sections.append("\n</details>\n")
         
@@ -13692,6 +13895,10 @@ class FreeAIHelper:
             tb_s, tb_sum, v24_tb_factors = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data)
             v16_tb_score_str = tb_sum
             v16_tb_raw = tb_s
+            if tb_sum:
+                thiet_ban_verdict = tb_sum
+            if v24_tb_factors:
+                thiet_ban_reason = ", ".join([str(f).replace("TB ", "").replace("  ", "") for f in v24_tb_factors])
         except Exception:
             pass
         try:
@@ -13715,10 +13922,10 @@ class FreeAIHelper:
         except Exception:
             pass
         
-        # V21.0 BƯỚC 6: TỔNG HỢP + WEIGHTED SCORING — 5 PHƯƠNG PHÁP
-        sections.append(f"### ĐỐI CHIẾU MỌI PHƯƠNG PHÁP")
-        verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
-        reasons = [ky_mon_reason, luc_hao_reason, mai_hoa_reason, luc_nham_reason, thai_at_reason]
+        # V99.5 BƯỚC 6: TỔNG HỢP + WEIGHTED SCORING — TOÀN BỘ 8 PHƯƠNG PHÁP CHẤM ĐIỂM (+ THIÊN VĂN · VẠN VẬT · 40 CHUYÊN GIA)
+        sections.append(f"### ĐỐI CHIẾU HỢP NHẤT MỌI PHƯƠNG PHÁP")
+        verdicts = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, thiet_ban_verdict, luc_nham_verdict, thai_at_verdict, xem_ngay_verdict, tu_vi_verdict]
+        reasons = [ky_mon_reason, luc_hao_reason, mai_hoa_reason, thiet_ban_reason, luc_nham_reason, thai_at_reason, xem_ngay_reason, tu_vi_reason]
         
         # V21.0: Normalize raw scores → 0-100% per method
         # KM đã có score thực nên không lấy từ estimation nữa
@@ -13733,6 +13940,8 @@ class FreeAIHelper:
             'TB': v16_tb_raw,
             'LN': v16_ln_raw,
             'TA': v16_ta_raw,
+            'XN': v16_xn_raw,
+            'TV': v16_tv_raw,
         }
         # Normalize: map [-40,+40] → [0,100]
         def _norm_score(s, scale=40):
@@ -13756,6 +13965,8 @@ class FreeAIHelper:
             'TB': method_w.get('thiet_ban', 40),
             'LN': method_w.get('luc_nham', 50),
             'TA': method_w.get('thai_at', 35),
+            'XN': method_w.get('xem_ngay', 40),
+            'TV': method_w.get('tu_vi', 45),
         }
         
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
@@ -13809,8 +14020,8 @@ class FreeAIHelper:
         # Phân loại verdict thành CÁT/HUNG groups
         _v_cat = set()  # PP nào nói CÁT/ĐẠI CÁT
         _v_hung = set() # PP nào nói HUNG/ĐẠI HUNG
-        _pp_labels = ['KM', 'LH', 'MH', 'TB', 'LN', 'TA']
-        _pp_fullnames = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất']
+        _pp_labels = ['KM', 'LH', 'MH', 'TB', 'LN', 'TA', 'XN', 'TV']
+        _pp_fullnames = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất', 'Xem Ngày', 'Tử Vi']
         for _vi, _verdict in enumerate(verdicts):
             _vstr = str(_verdict).upper()
             if _vi < len(_pp_labels):
@@ -13889,8 +14100,8 @@ class FreeAIHelper:
         
         sections.append(f"| Phương pháp | Kết luận | Điểm | % | Trọng số |")
         sections.append(f"|---|---|---|---|---|")
-        pp_names = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất']
-        pp_keys = ['KM', 'LH', 'MH', 'TB', 'LN', 'TA']
+        pp_names = ['Kỳ Môn', 'Lục Hào', 'Mai Hoa', 'Thiết Bản', 'Đại Lục Nhâm', 'Thái Ất', 'Xem Ngày', 'Tử Vi']
+        pp_keys = ['KM', 'LH', 'MH', 'TB', 'LN', 'TA', 'XN', 'TV']
         for i, (pp_name, pp_key) in enumerate(zip(pp_names, pp_keys)):
             v = verdicts[i] if i < len(verdicts) else 'BÌNH'
             r = reasons[i] if i < len(reasons) else ''
@@ -15778,10 +15989,20 @@ class FreeAIHelper:
                     _reason_parts.append(f'📿 <b>Lục Hào:</b> {str(luc_hao_reason)[:200]}')
                 if mai_hoa_reason and len(str(mai_hoa_reason)) > 3:
                     _reason_parts.append(f'🌸 <b>Mai Hoa:</b> {str(mai_hoa_reason)[:200]}')
+                if thiet_ban_reason and len(str(thiet_ban_reason)) > 3:
+                    _reason_parts.append(f'📜 <b>Thiết Bản:</b> {str(thiet_ban_reason)[:200]}')
                 if luc_nham_reason and len(str(luc_nham_reason)) > 3:
                     _reason_parts.append(f'🔮 <b>Đại Lục Nhâm:</b> {str(luc_nham_reason)[:200]}')
                 if thai_at_reason and len(str(thai_at_reason)) > 3:
                     _reason_parts.append(f'⚔️ <b>Thái Ất:</b> {str(thai_at_reason)[:200]}')
+                if xem_ngay_reason and len(str(xem_ngay_reason)) > 3:
+                    _reason_parts.append(f'📅 <b>Xem Ngày:</b> {str(xem_ngay_reason)[:200]}')
+                if tu_vi_reason and len(str(tu_vi_reason)) > 3:
+                    _reason_parts.append(f'🔯 <b>Tử Vi:</b> {str(tu_vi_reason)[:220]}')
+                if thien_van_reason and len(str(thien_van_reason)) > 3:
+                    _reason_parts.append(f'🌏 <b>Thiên Văn & Lịch Vạn Niên:</b> {str(thien_van_reason)[:220]}')
+                if chuyen_gia_reason and len(str(chuyen_gia_reason)) > 3:
+                    _reason_parts.append(f'🧙 <b>Hội Đồng 40 Chuyên Gia:</b> {str(chuyen_gia_reason)[:220]}')
                 
                 # Thêm cảnh báo từ critical factors
                 _warn_parts = []
@@ -15988,12 +16209,15 @@ class FreeAIHelper:
                         ('🏯', 'KỲ MÔN', ky_mon_verdict),
                         ('📿', 'LỤC HÀO', luc_hao_verdict),
                         ('🌸', 'MAI HOA', mai_hoa_verdict),
+                        ('📜', 'THIẾT BẢN', thiet_ban_verdict),
                         ('🔮', 'Đ.L.NHÂM', luc_nham_verdict),
                         ('⚔️', 'THÁI ẤT', thai_at_verdict),
+                        ('📅', 'XEM NGÀY', xem_ngay_verdict),
+                        ('🔯', 'TỬ VI', tu_vi_verdict),
                     ]
                     _cat_count = sum(1 for _, _, v in _verdicts if v and 'CÁT' in str(v).upper())
                     _hung_count = sum(1 for _, _, v in _verdicts if v and 'HUNG' in str(v).upper())
-                    _binh_count = 5 - _cat_count - _hung_count
+                    _binh_count = len(_verdicts) - _cat_count - _hung_count
                     
                     _v_chips = ''
                     for _vi, _vn, _vv in _verdicts:
@@ -16008,7 +16232,7 @@ class FreeAIHelper:
                     
                     _t7_html = (
                         f'<div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;">'
-                        f'<div style="font-size:0.95em;font-weight:700;color:#a7f3d0;margin-bottom:6px;">📊 BỎ PHIẾU 5 PHƯƠNG PHÁP: '
+                        f'<div style="font-size:0.95em;font-weight:700;color:#a7f3d0;margin-bottom:6px;">📊 BỎ PHIẾU HỢP NHẤT 8 PHƯƠNG PHÁP (+ THIÊN VĂN · VẠN VẬT · 40 CHUYÊN GIA): '
                         f'<span style="color:#22c55e;">{_cat_count} CÁT</span> · '
                         f'<span style="color:#eab308;">{_binh_count} BÌNH</span> · '
                         f'<span style="color:#ef4444;">{_hung_count} HUNG</span></div>'
@@ -16143,7 +16367,7 @@ class FreeAIHelper:
             pct_short = weighted_pct  # Từ BƯỚC 6 đã tính (giữ nội bộ)
             
             # V35.0: Dùng weighted_pct (đã tính chính xác) thay vì đếm verdict thô
-            _verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict]
+            _verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, thiet_ban_verdict, luc_nham_verdict, thai_at_verdict, xem_ngay_verdict, tu_vi_verdict]
             _cat_count = sum(1 for v in _verdicts_list if v and 'CÁT' in str(v).upper())
             _hung_count = sum(1 for v in _verdicts_list if v and 'HUNG' in str(v).upper())
             
@@ -16650,8 +16874,13 @@ class FreeAIHelper:
                 if ky_mon_reason and len(str(ky_mon_reason)) > 3: _rp2.append(f'🏯 <b>Kỳ Môn:</b> {str(ky_mon_reason)[:200]}')
                 if luc_hao_reason and len(str(luc_hao_reason)) > 3: _rp2.append(f'📿 <b>Lục Hào:</b> {str(luc_hao_reason)[:200]}')
                 if mai_hoa_reason and len(str(mai_hoa_reason)) > 3: _rp2.append(f'🌸 <b>Mai Hoa:</b> {str(mai_hoa_reason)[:200]}')
+                if thiet_ban_reason and len(str(thiet_ban_reason)) > 3: _rp2.append(f'📜 <b>Thiết Bản:</b> {str(thiet_ban_reason)[:200]}')
                 if luc_nham_reason and len(str(luc_nham_reason)) > 3: _rp2.append(f'🔮 <b>Đại Lục Nhâm:</b> {str(luc_nham_reason)[:200]}')
                 if thai_at_reason and len(str(thai_at_reason)) > 3: _rp2.append(f'⚔️ <b>Thái Ất:</b> {str(thai_at_reason)[:200]}')
+                if xem_ngay_reason and len(str(xem_ngay_reason)) > 3: _rp2.append(f'📅 <b>Xem Ngày:</b> {str(xem_ngay_reason)[:200]}')
+                if tu_vi_reason and len(str(tu_vi_reason)) > 3: _rp2.append(f'🔯 <b>Tử Vi:</b> {str(tu_vi_reason)[:220]}')
+                if thien_van_reason and len(str(thien_van_reason)) > 3: _rp2.append(f'🌏 <b>Thiên Văn & Lịch Vạn Niên:</b> {str(thien_van_reason)[:220]}')
+                if chuyen_gia_reason and len(str(chuyen_gia_reason)) > 3: _rp2.append(f'🧙 <b>Hội Đồng 40 Chuyên Gia:</b> {str(chuyen_gia_reason)[:220]}')
                 
                 _warn_fb = []
                 _all_fac_str_fb = ' '.join([str(f) for f in (v23_lh_factors or [])] + [str(f) for f in (v24_km_factors or [])]).upper()
@@ -16724,8 +16953,9 @@ class FreeAIHelper:
                 try:
                     _brain_verdicts = {
                         'km': ky_mon_verdict, 'lh': luc_hao_verdict,
-                        'mh': mai_hoa_verdict, 'ln': luc_nham_verdict,
-                        'ta': thai_at_verdict,
+                        'mh': mai_hoa_verdict, 'tb': thiet_ban_verdict,
+                        'ln': luc_nham_verdict, 'ta': thai_at_verdict,
+                        'xn': xem_ngay_verdict, 'tv': tu_vi_verdict,
                     }
                     _brain_all_factors = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
                     _brain_ung_ky = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
@@ -16751,7 +16981,7 @@ class FreeAIHelper:
                     f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V6886</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
-                    f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
+                    f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm Hợp Nhất 10 Hệ Thống: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict} | TB: {thiet_ban_verdict} | ĐLN: {luc_nham_verdict} | TA: {thai_at_verdict} | XN: {xem_ngay_verdict} | TV: {tu_vi_verdict}</div>'
                     + _comp_detail_html
                     + _off2_summary
                     + _adv_html_fb

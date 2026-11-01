@@ -341,8 +341,8 @@ def generate_smart_offline_answer(
 </div>
 {omni_quick_html}
 <div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:12px;margin-top:8px;">
-<div style="font-size:1.05em;color:{accent};font-weight:700;margin-bottom:8px;">📊 Đồng Thuận 5 Phương Pháp:</div>
-<div style="font-size:1em;color:#e2e8f0;">{consensus}</div>
+<div style="font-size:1.05em;color:{accent};font-weight:700;margin-bottom:8px;">📊 Đồng Thuận Hợp Nhất Toàn Bộ Phương Pháp (Kỳ Môn · Lục Hào · Mai Hoa · Thiết Bản · Đại Lục Nhâm · Thái Ất · Xem Ngày · Tử Vi · Thiên Văn · Vạn Vật · 40 Chuyên Gia):</div>
+<div style="font-size:1em;color:#e2e8f0;line-height:1.6;">{consensus}</div>
 </div>
 <div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:12px;margin-top:12px;">
 <div style="font-size:1.05em;color:{accent};font-weight:700;margin-bottom:8px;">🎯 Lời Khuyên:</div>
@@ -354,18 +354,27 @@ def generate_smart_offline_answer(
 
 
 def _build_consensus(verdicts_dict):
-    """Xây dựng chuỗi consensus từ 5 PP"""
+    """Xây dựng chuỗi consensus từ toàn bộ 8 PP"""
     if not verdicts_dict:
         return "Chưa có dữ liệu consensus."
     
-    PP_NAMES = {'km': 'Kỳ Môn', 'lh': 'Lục Hào', 'mh': 'Mai Hoa', 'ln': 'Đại Lục Nhâm', 'ta': 'Thái Ất'}
-    PP_ICONS = {'km': '🏛', 'lh': '📊', 'mh': '☰', 'ln': '🔮', 'ta': '⚖️'}
+    PP_NAMES = {
+        'km': 'Kỳ Môn', 'lh': 'Lục Hào', 'mh': 'Mai Hoa', 'tb': 'Thiết Bản',
+        'ln': 'Đại Lục Nhâm', 'ta': 'Thái Ất', 'xn': 'Xem Ngày', 'tv': 'Tử Vi'
+    }
+    PP_ICONS = {
+        'km': '🏯', 'lh': '📿', 'mh': '🌸', 'tb': '📜',
+        'ln': '🔮', 'ta': '⚔️', 'xn': '📅', 'tv': '🔯'
+    }
     
     parts = []
     cat_count = 0
     hung_count = 0
+    binh_count = 0
     
     for pp_key, pp_name in PP_NAMES.items():
+        if pp_key not in verdicts_dict:
+            continue
         v = str(verdicts_dict.get(pp_key, '?')).upper()
         icon = PP_ICONS.get(pp_key, '📍')
         
@@ -377,11 +386,7 @@ def _build_consensus(verdicts_dict):
             hung_count += 1
         else:
             parts.append(f"{icon} {pp_name}: <b style='color:#eab308'>BÌNH</b>")
+            binh_count += 1
     
-    total = cat_count + hung_count
-    if total > 0:
-        ratio = f" → <b>{cat_count} CÁT / {hung_count} HUNG</b>"
-    else:
-        ratio = " → Chưa rõ ràng"
-    
+    ratio = f" → <b>{cat_count} CÁT · {binh_count} BÌNH · {hung_count} HUNG</b>"
     return " | ".join(parts) + ratio
