@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V42.9.43"
+APP_VERSION = "V6886"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Cross-Reference 📊 + Unleashed Intelligence 🧠 + Deep Forensic 🕵️‍♂️ + Internet 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -19,11 +19,9 @@ import os
 import traceback
 import re
 
-# V42.9.9i: Force reload free_ai_helper to avoid Streamlit cache serving old .pyc
-import importlib
+# Performance Optimization: Load free_ai_helper once in memory instead of reloading 18k lines every rerun
 try:
     import free_ai_helper as _fah_mod
-    importlib.reload(_fah_mod)
 except Exception:
     pass
 
@@ -235,6 +233,48 @@ st.markdown(f"""
     body {{
         font-size: 1rem; 
     }}
+
+    /* === RESPONSIVE UI/UX OPTIMIZATION (DESKTOP & MOBILE) === */
+    .block-container {{
+        padding-top: 1.5rem !important;
+        padding-bottom: 2.5rem !important;
+        max-width: 1400px !important;
+    }}
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {{
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+    }}
+    [data-testid="stTabs"] [data-baseweb="tab"] {{
+        border-radius: 8px 8px 0 0 !important;
+        padding: 8px 14px !important;
+        font-weight: 700 !important;
+    }}
+    table {{
+        width: 100% !important;
+    }}
+    @media (max-width: 768px) {{
+        .block-container {{
+            padding-left: 0.65rem !important;
+            padding-right: 0.65rem !important;
+            padding-top: 1rem !important;
+        }}
+        h1 {{
+            font-size: 1.45rem !important;
+        }}
+        h2 {{
+            font-size: 1.25rem !important;
+        }}
+        h3 {{
+            font-size: 1.1rem !important;
+        }}
+        [data-testid="stVerticalBlock"] > div {{
+            word-break: break-word !important;
+        }}
+        table td, table th {{
+            padding: 5px 6px !important;
+            font-size: 0.85rem !important;
+        }}
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -317,13 +357,10 @@ for path in [root_path, dist_path, ai_modules_path]:
     if path not in sys.path:
         sys.path.insert(0, path)
 
-# FORCE RELOAD CUSTOM MODULES
-import importlib
+# Performance Optimization: Import custom modules once without forced disk reload on every UI click
 try:
     import mai_hoa_dich_so
-    importlib.reload(mai_hoa_dich_so)
     import luc_hao_kinh_dich
-    importlib.reload(luc_hao_kinh_dich)
 except Exception:
     pass
 
@@ -1527,6 +1564,11 @@ with col_header3:
 st.markdown("---")
 # DEPLOYMENT VERIFICATION BANNER
 st.success(f"✅ SYSTEM ONLINE: {APP_VERSION_FULL}")
+try:
+    from lich_van_nien_thien_van import render_compact_today_banner
+    render_compact_today_banner()
+except Exception:
+    pass
 
 # ======================================================================
 # SIDEBAR - CONTROLS
@@ -1537,12 +1579,14 @@ with st.sidebar:
     # View selection
     view_option = st.radio(
         "Chọn Phương Pháp:",
-        ["🔮 Kỳ Môn Độn Giáp", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "📊 Vạn Vật Loại Tượng", "🌊 Đại Lục Nhâm", "⭐ Thái Ất Thần Số", "📅 Xem Ngày Đẹp", "🔯 Tử Vi Đẩu Số", "🤖 Hỏi Gemini AI"],
+        ["🔮 Kỳ Môn Độn Giáp", "🗓️ Lịch Vạn Niên & Thiên Văn", "🏭 Nhà Máy AI", "🌟 40 Chuyên Gia AI", "📖 Mai Hoa 64 Quẻ", "☯️ Lục Hào Kinh Dịch", "📜 Thiết Bản Thần Toán", "📊 Vạn Vật Loại Tượng", "🌊 Đại Lục Nhâm", "⭐ Thái Ất Thần Số", "📅 Xem Ngày Đẹp", "🔯 Tử Vi Đẩu Số", "🤖 Hỏi Gemini AI"],
         index=0
     )
     
     if view_option == "🔮 Kỳ Môn Độn Giáp":
         st.session_state.current_view = "ky_mon"
+    elif view_option == "🗓️ Lịch Vạn Niên & Thiên Văn":
+        st.session_state.current_view = "lich_van_nien"
     elif view_option == "🏭 Nhà Máy AI":
         st.session_state.current_view = "ai_factory"
     elif view_option == "🌟 40 Chuyên Gia AI":
@@ -4790,6 +4834,16 @@ elif st.session_state.current_view == "thai_at":
         st.error(f"⚠️ Lỗi Thái Ất Thần Số: {e}")
 
 # ======================================================================
+# LỊCH VẠN NIÊN & ĐỔI NGÀY ÂM - DƯƠNG THIÊN VĂN VIEW
+# ======================================================================
+elif st.session_state.current_view == "lich_van_nien":
+    try:
+        from lich_van_nien_thien_van import render_lich_van_nien_view
+        render_lich_van_nien_view()
+    except Exception as e:
+        st.error(f"⚠️ Lỗi Lịch Vạn Niên & Thiên Văn: {e}")
+
+# ======================================================================
 # XEM NGÀY ĐẸP VIEW (V42.4)
 # ======================================================================
 elif st.session_state.current_view == "xem_ngay":
@@ -4812,7 +4866,13 @@ elif st.session_state.current_view == "xem_ngay":
         import datetime
 
         # ── TABS ──
-        tab_xn, tab_tt, tab_ref = st.tabs(["📅 Xem Ngày", "⚰️ Tra Trùng Tang", "📚 Bảng Tra Cứu"])
+        tab_xn, tab_lvn, tab_tt, tab_ref = st.tabs(["📅 Xem Ngày", "🗓️ Lịch Vạn Niên & Đổi Ngày Âm-Dương", "⚰️ Tra Trùng Tang", "📚 Bảng Tra Cứu"])
+        with tab_lvn:
+            try:
+                from lich_van_nien_thien_van import render_lich_van_nien_view
+                render_lich_van_nien_view()
+            except Exception as _lvn_e:
+                st.error(f"⚠️ Lỗi tải Lịch Vạn Niên: {_lvn_e}")
 
         # ════════════════ TAB 1: XEM NGÀY ════════════════
         with tab_xn:

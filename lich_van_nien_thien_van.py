@@ -7,7 +7,14 @@ và Lịch Âm - Dương Việt Nam (múi giờ UTC+7).
 import math
 import datetime
 import calendar
-import streamlit as st
+
+try:
+    import streamlit as st
+    _cache_data = st.cache_data(ttl=3600, show_spinner=False)
+except ImportError:
+    st = None
+    def _cache_data(func):
+        return func
 
 from xem_ngay_dep import _jdn, solar2lunar, CAN_10, CHI_12
 
@@ -58,7 +65,7 @@ GIO_DIA_CHI_INFO = [
 ]
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@_cache_data
 def calc_solar_longitude_deg(d: int, m: int, y: int, hour: float = 12.0, tz: float = 7.0) -> float:
     """
     Tính kinh độ Hoàng Đạo thực tế của Mặt Trời (0° – 360°) theo thuật toán thiên văn Jean Meeus.
@@ -85,7 +92,7 @@ def calc_solar_longitude_deg(d: int, m: int, y: int, hour: float = 12.0, tz: flo
     return round(lambda_sun, 2)
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@_cache_data
 def get_tiet_khi_astronomical(d: int, m: int, y: int) -> dict:
     """Xác định Tiết Khí hiện tại, Kinh độ Mặt Trời và ngày sang Tiết Khí tiếp theo."""
     lon = calc_solar_longitude_deg(d, m, y)
@@ -111,7 +118,7 @@ def get_tiet_khi_astronomical(d: int, m: int, y: int) -> dict:
     }
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@_cache_data
 def get_full_day_calendar_info(d: int, m: int, y: int) -> dict:
     """Tính toàn bộ thông tin Lịch Vạn Niên của một ngày Dương lịch."""
     dt = datetime.date(y, m, d)
@@ -162,7 +169,7 @@ def get_full_day_calendar_info(d: int, m: int, y: int) -> dict:
     }
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@_cache_data
 def lunar_to_solar_search(ld_target: int, lm_target: int, ly_target: int, leap_target: bool = False):
     """
     Đổi ngược từ Ngày/Tháng/Năm Âm lịch sang Ngày/Tháng/Năm Dương lịch chính xác.
