@@ -5607,17 +5607,16 @@ class FreeAIHelper:
                 f"</verdict_block>\n\n"
                 
                 f"<output_format>\n"
-                f"BẮT BUỘC TRÌNH BÀY ĐÚNG CẤU TRÚC SAU (MỖI MỤC TRÊN 1 DÒNG RIÊNG, KHÔNG VIẾT GỘP DÒNG):\n\n"
+                f"BẮT BUỘC TRÌNH BÀY BẰNG VĂN XUÔI MẠCH LẠC, DỄ ĐỌC, DỄ HIỂU (TUYỆT ĐỐI KHÔNG LIỆT KÊ MÃ ĐIỂM SỐ +8, -10 HAY GẠCH ĐẦU DÒNG RỜI RẠC):\n\n"
                 f"### 🏆 KẾT LUẬN\n"
                 f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Kèm Phán Quyết {_vb_label} ({_vb_pct_int}%)]\n"
-                f"**📋 VÌ SAO:** [Giải thích rõ ràng nguyên nhân cốt lõi từ Dụng Thần, Kỳ Môn, Lục Hào, Mai Hoa & Hội Đồng Chuyên Gia AI tác động trực tiếp đến '{question}']\n"
+                f"**📋 VÌ SAO:** [Viết thành 1 đoạn văn ngắn gọn, mượt mà, dễ hiểu giải thích nguyên nhân cốt lõi từ quẻ tác động trực tiếp đến '{question}']\n"
                 f"**⏳ ỨNG KỲ:** [Ghi rõ mốc thời gian ứng nghiệm hoặc chuyển biến dựa trên Ứng Kỳ trong verdict_block]\n"
-                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động thực tế, sát hoàn cảnh câu hỏi '{question}']\n\n"
-                f"### 🔮 PHÂN TÍCH CHUYÊN SÂU ĐA HỆ THỐNG & HỘI ĐỒNG CHUYÊN GIA\n"
-                f"- **1. Giải Mã Trực Diện Trọng Tâm Câu Hỏi:** [Đi sâu phân tích bản chất thực tế của sự việc/tâm lý đối phương/tài chính/sức khỏe đang hỏi dựa trên quẻ]\n"
-                f"- **2. Tam Thức Hợp Tham (Kỳ Môn · Lục Hào · Mai Hoa):** [Luận giải chi tiết Cung Dụng Thần, Cửa, Sao, Bát Thần trong Kỳ Môn; Hào Thế - Ứng - Dụng Thần - Hào Động trong Lục Hào; Quẻ Thể - Dụng trong Mai Hoa]\n"
-                f"- **3. Đối Chiếu Đa Hệ Thống & Hội Đồng Chuyên Gia:** [Tổng hợp nhận định từ Thiết Bản, Đại Lục Nhâm, Thái Ất, Tử Vi, Xem Ngày và các Chuyên Gia AI chuyên ngành]\n"
-                f"- **4. Cẩm Nang Hành Động & Hóa Giải Thực Tế:** [Hướng dẫn cách ứng xử, phương hướng hoặc thời điểm tốt nhất để đạt kết quả mỹ mãn]\n"
+                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động thực tế, gần gũi, sát hoàn cảnh câu hỏi '{question}']\n\n"
+                f"### 🔮 BÀI LUẬN GIẢI CHUYÊN SÂU (VIẾT THÀNH 3 ĐOẠN VĂN LIỀN MẠCH, DỄ ĐỌC, DỄ HIỂU)\n"
+                f"**Đoạn 1 — Bản chất thực tế & Tâm lý/Tình thế trọng tâm:** [Viết 1 đoạn văn liền mạch phân tích sâu bản chất câu hỏi '{question}' dựa trên sự kết hợp giữa Kỳ Môn Độn Giáp, Lục Hào và Mai Hoa Dịch Số bằng ngôn ngữ đời thường, sâu sắc, dễ hiểu]\n\n"
+                f"**Đoạn 2 — Đối chiếu vận trình từ 10 Hệ Thống & Hội Đồng Chuyên Gia:** [Viết 1 đoạn văn liền mạch kết nối nhận định của Đại Lục Nhâm, Thái Ất, Thiết Bản, Tử Vi và Hội Đồng Chuyên Gia AI để làm rõ diễn biến từ hiện tại đến tương lai]\n\n"
+                f"**Đoạn 3 — Cẩm nang ứng xử, Thời điểm & Hóa giải:** [Viết 1 đoạn văn liền mạch đưa ra lời khuyên cụ thể, tinh tế giúp người hỏi đạt kết quả tốt đẹp nhất]\n"
                 f"</output_format>\n\n"
             )
             
@@ -15891,14 +15890,25 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === Ô NÂU TO — KẾT LUẬN AI ONLINE ===
+            # === Ô NÂU TO — KẾT LUẬN AI ONLINE (NỐI THÀNH ĐOẠN VĂN MẠCH LẠC DỄ ĐỌC) ===
+            _online_prose_parts = []
+            if _online_visao:
+                _online_prose_parts.append(f"<b>Nguyên nhân cốt lõi:</b> {_online_visao.rstrip('.')}.")
+            if _online_ungky:
+                _online_prose_parts.append(f"<b>Thời điểm chuyển biến (Ứng kỳ):</b> {_online_ungky.rstrip('.')}.")
+            if _online_giaiphap:
+                _online_prose_parts.append(f"<b>Lời khuyên hành động:</b> {_online_giaiphap.rstrip('.')}.")
+            _online_prose_html = (
+                f'<div style="font-size:1.06em;color:#fef3c7;line-height:1.72;text-align:justify;padding:14px 16px;background:rgba(0,0,0,0.28);border-radius:12px;border-left:4px solid #fbbf24;">'
+                + " ".join(_online_prose_parts)
+                + '</div>'
+            ) if _online_prose_parts else ''
+
             final_parts.append(
-                f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V99.9)</div>'
-                f'<div style="font-size:1.85em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
-                + (f'<div style="font-size:1.08em;color:#fef3c7;margin-bottom:8px;line-height:1.55;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
-                + (f'<div style="font-size:1.08em;color:#fde68a;margin-bottom:8px;line-height:1.55;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
-                + (f'<div style="font-size:1.08em;color:#fbbf24;line-height:1.55;">🔧 <b>Giải pháp:</b> {_online_giaiphap}</div>' if _online_giaiphap else '')
+                f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V99.9.7)</div>'
+                f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
+                + _online_prose_html
                 + f'</div>'
             )
             
@@ -16565,29 +16575,51 @@ class FreeAIHelper:
                 except Exception:
                     pass
                 
-                # ═══ ASSEMBLE: ĐẠI KHUNG HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI (V99.9) ═══
+                # ═══ ASSEMBLE: ĐẠI KHUNG VĂN XUÔI MẠCH LẠC DỄ ĐỌC (V99.9.7) ═══
+                _connected_prose_on = ''
+                try:
+                    from offline_brain import build_connected_prose_analysis
+                    _t3_ban_on = luc_hao_data.get('ban', {}) if (luc_hao_data and isinstance(luc_hao_data, dict)) else {}
+                    _t3_name_on = _t3_ban_on.get('name', '')
+                    _t3_info_on = (QUE_THOAN_64.get(_t3_name_on, {}) or QUE_THOAN_DAI_TUONG.get(_t3_ban_on.get('palace', ''), {})) if _t3_name_on else {}
+                    _ts_st_on = locals().get('ts_stage', '')
+                    _nk_st_on = locals().get('ngu_khi_state_v22', '')
+                    _connected_prose_on = build_connected_prose_analysis(
+                        question=question,
+                        dung_than=dung_than,
+                        weighted_pct=weighted_pct,
+                        category=detected_category,
+                        ky_mon_verdict=ky_mon_verdict, ky_mon_reason=ky_mon_reason,
+                        luc_hao_verdict=luc_hao_verdict, luc_hao_reason=luc_hao_reason,
+                        mai_hoa_verdict=mai_hoa_verdict, mai_hoa_reason=mai_hoa_reason,
+                        thiet_ban_verdict=thiet_ban_verdict, thiet_ban_reason=thiet_ban_reason,
+                        luc_nham_verdict=luc_nham_verdict, luc_nham_reason=luc_nham_reason,
+                        thai_at_verdict=thai_at_verdict, thai_at_reason=thai_at_reason,
+                        xem_ngay_verdict=xem_ngay_verdict, xem_ngay_reason=xem_ngay_reason,
+                        tu_vi_verdict=tu_vi_verdict, tu_vi_reason=tu_vi_reason,
+                        thien_van_reason=thien_van_reason,
+                        exp_html_items=locals().get('_exp_html_items', []),
+                        warn_parts=_warn_parts,
+                        thoan_name=_t3_name_on, thoan_info=_t3_info_on,
+                        ts_stage=_ts_st_on, ts_info=TRUONG_SINH_POWER.get(_ts_st_on, {}) if _ts_st_on else {},
+                        nk_stage=_nk_st_on, nk_info=NGU_KHI_POWER.get(_nk_st_on, {}) if _nk_st_on else {},
+                        hanh_dt=locals().get('hanh_dt_v22', '?'),
+                        ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
+                        advice_parts=_advice_parts,
+                    )
+                except Exception:
+                    _connected_prose_on = _off_summary_extra
+
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V99.9</div>'
-                    # TẦNG 1: Verdict lớn
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V99.9.7</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
-                    # TẦNG 1b: Trả lời trực tiếp đúng trọng tâm câu hỏi
-                    f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.65;">'
+                    f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
                     + '</div>'
-                    # TẦNG 2: Hồ sơ Tiên Tri Toàn Tri 360° (đã lọc đúng trọng tâm) + Hội Đồng 40 Chuyên Gia AI
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
-                    + (_chuyen_gia_html_box if '_chuyen_gia_html_box' in locals() else '')
-                    # TẦNG 3: Bỏ phiếu 10 Hệ Thống + Sơ đồ lực lượng Dụng Thần
+                    + _connected_prose_on
                     + _t7_html
-                    + _t2_html
-                    # TẦNG 4: Nguyên nhân 10 hệ thống + Thoán Từ + Ứng Kỳ + Cảnh báo
-                    + _off_summary_extra
-                    + _t3_thoan
-                    + _t4_html
-                    + _t5_html
-                    + _advice_html
-                    + _off_ev_html
                     + f'</div>'
                 )
             
@@ -17309,20 +17341,49 @@ class FreeAIHelper:
                     f'{_main_focus_reply}</div>'
                 )
 
+                _connected_prose_fb = ''
+                try:
+                    from offline_brain import build_connected_prose_analysis
+                    _t3_ban_fb = luc_hao_data.get('ban', {}) if (luc_hao_data and isinstance(luc_hao_data, dict)) else {}
+                    _t3_name_fb = _t3_ban_fb.get('name', '')
+                    _t3_info_fb = (QUE_THOAN_64.get(_t3_name_fb, {}) or QUE_THOAN_DAI_TUONG.get(_t3_ban_fb.get('palace', ''), {})) if _t3_name_fb else {}
+                    _ts_st_fb = locals().get('ts_stage', '')
+                    _nk_st_fb = locals().get('ngu_khi_state_v22', '')
+                    _connected_prose_fb = build_connected_prose_analysis(
+                        question=question,
+                        dung_than=dung_than,
+                        weighted_pct=weighted_pct,
+                        category=detected_category,
+                        ky_mon_verdict=ky_mon_verdict, ky_mon_reason=ky_mon_reason,
+                        luc_hao_verdict=luc_hao_verdict, luc_hao_reason=luc_hao_reason,
+                        mai_hoa_verdict=mai_hoa_verdict, mai_hoa_reason=mai_hoa_reason,
+                        thiet_ban_verdict=thiet_ban_verdict, thiet_ban_reason=thiet_ban_reason,
+                        luc_nham_verdict=luc_nham_verdict, luc_nham_reason=luc_nham_reason,
+                        thai_at_verdict=thai_at_verdict, thai_at_reason=thai_at_reason,
+                        xem_ngay_verdict=xem_ngay_verdict, xem_ngay_reason=xem_ngay_reason,
+                        tu_vi_verdict=tu_vi_verdict, tu_vi_reason=tu_vi_reason,
+                        thien_van_reason=thien_van_reason,
+                        exp_html_items=locals().get('_exp_html_items', []),
+                        warn_parts=_warn_fb,
+                        thoan_name=_t3_name_fb, thoan_info=_t3_info_fb,
+                        ts_stage=_ts_st_fb, ts_info=TRUONG_SINH_POWER.get(_ts_st_fb, {}) if _ts_st_fb else {},
+                        nk_stage=_nk_st_fb, nk_info=NGU_KHI_POWER.get(_nk_st_fb, {}) if _nk_st_fb else {},
+                        hanh_dt=locals().get('hanh_dt_v22', '?'),
+                        ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
+                        advice_parts=_adv_fb,
+                    )
+                except Exception:
+                    _connected_prose_fb = _off2_summary
+
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG — THIÊN CƠ ĐẠI SƯ V99.9</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V99.9.7</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
-                    + (_chuyen_gia_html_box if '_chuyen_gia_html_box' in locals() else '')
-                    + _adv_html_fb
-                    + _t7_fb_html
-                    + _t2_fb_html
+                    + _connected_prose_fb
                     + _comp_detail_html
-                    + _off2_summary
-                    + _t3_fb_thoan
-                    + _evidence_html
+                    + _t7_fb_html
                     + f'</div>'
                 )
             final_parts.append("")

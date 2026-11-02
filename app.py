@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V99.9.6"
+APP_VERSION = "V99.9.7"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Hợp Nhất 10 Hệ Thống Quẻ 🔮 + 40 Chuyên Gia AI 🧙 + Gemini Online Full Không Cắt Chữ 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V99.9.6: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V99.9.6"
+# V99.9.7: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V99.9.7"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2606,7 +2606,7 @@ def render_master_unified_qa_box(location_key="main"):
 
                     _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
                     _want_online = st.session_state.get('qa_use_cloud_llm', True)
-                    _cache_key = f"V9996|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
+                    _cache_key = f"V9997|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
                     if not _use_rnd and _cache_key in _cache_store:
                         combined_answer = _cache_store[_cache_key]
                     else:

@@ -495,8 +495,10 @@ def build_omniscient_prophecy(
             if is_noi_ban else
             "NGƯỜI LẠ / BÊN NGOÀI (Người ở xa, khách vãng lai, đối tác mới hoặc người ngoài khu vực)"
         )
-    if 'Huyền Vũ' in than_name or 'Thái Âm' in than_name:
-        motive_str = "Hành động lén lút, kín đáo, che giấu thông tin hoặc có mưu tính ngầm."
+    if 'Huyền Vũ' in than_name:
+        motive_str = "Có tâm lý giấu giếm thông tin hoặc còn điều khuất tất chưa nói rõ."
+    elif 'Thái Âm' in than_name:
+        motive_str = "Tính cách sâu sắc, kín đáo, hay suy tư và giữ tâm sự riêng trong lòng."
     elif 'Bạch Hổ' in than_name or 'Kinh' in cua_name or 'Thương' in cua_name:
         motive_str = "Tính khí quyết liệt, gây sức ép, nóng nảy hoặc liên quan đến tranh chấp/cơ quan chức năng."
     elif 'Trực Phù' in than_name or 'Cửu Thiên' in than_name or 'Khai' in cua_name or 'Sinh' in cua_name:
@@ -615,99 +617,52 @@ def build_omniscient_prophecy(
         'chìa khóa', 'sổ đỏ', 'giấy tờ', 'trang sức', 'bao nhiêu', 'có mấy', 'mấy cái', 'số lượng', 'con số', 'định giá'
     ]) and not _is_health_focus and not _is_love_focus
 
-    _sections_html = []
+    # V99.9.7: Nối toàn bộ diễn biến Quá khứ - Hiện tại - Tương lai, Trọng tâm câu hỏi & Ứng kỳ thành các đoạn văn liền mạch dễ đọc
+    _focus_prose = ""
+    if _is_love_focus:
+        _who_lbl = "người vợ" if "vợ" in _q_focus else ("người chồng" if "chồng" in _q_focus else "đối phương")
+        _focus_prose = (
+            f" Xét riêng về tâm lý và tình cảm của {_who_lbl} (ứng tại Cung {target_cung} {c_info['quai']}, hành {hanh_dt}, "
+            f"đi cùng Sao {sao_name}, Cửa {cua_name} và Thần {than_name}), {motive_str[0].lower() + motive_str[1:]}"
+        )
+    elif _is_health_focus:
+        _focus_prose = f" Về mặt Y Dịch và sức khỏe cơ thể: {health_str}"
+    elif _is_find_where_focus:
+        _focus_prose = f" Về phương vị và địa điểm thực tế: {where_summary} Đặc điểm hiện trường xung quanh: {where_scene}"
+    elif _is_person_focus:
+        _focus_prose = (
+            f" Về đặc điểm người liên quan trong quẻ: ứng vào giới tính <b>{primary_gender}</b> "
+            f"({age_tier}, khoảng năm sinh {', '.join(birth_years[:3])}), mối quan hệ thuộc nhóm <b>{familiar_str}</b>. "
+            f"{appearance_str} {motive_str}"
+        )
+    elif _is_object_count_focus:
+        _focus_prose = (
+            f" Về đặc điểm sự vật và định lượng: ứng với nhóm <b>{combined_objects}</b>, "
+            f"màu sắc chủ đạo là <b>{h_forensic['mau_sac']}</b>, chất liệu <b>{h_forensic['chat_lieu']}</b> "
+            f"({item_condition}). {quantity_str}"
+        )
 
-    # 1. Diễn biến sự việc 3 thời (Luôn hiển thị vì là cốt lõi của mọi quẻ)
-    _sections_html.append(
-        f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(255,255,255,0.05);border-radius:10px;border-left:4px solid #38bdf8;">'
-        f'<div style="color:#38bdf8;font-weight:800;font-size:0.96em;margin-bottom:4px;">📜 DIỄN BIẾN SỰ VIỆC 3 THỜI (NGUYÊN NHÂN – HIỆN TẠI – KẾT CỤC)</div>'
-        f'<div style="color:#e2e8f0;font-size:0.9em;line-height:1.55;">'
-        f'• <b>Khởi nguồn (Quá khứ):</b> {event_past}<br>'
-        f'• <b>Thực trạng (Hiện tại):</b> {event_present}<br>'
-        f'• <b>Xu hướng (Tương lai):</b> {event_future}'
-        f'</div></div>'
+    _para_story = (
+        f"Xét mạch vận động của sự việc từ gốc tới ngọn: <b>Về khởi nguồn</b>, {event_past[0].lower() + event_past[1:].rstrip('.') if event_past else ''}. "
+        f"<b>Bước sang thực trạng hiện tại</b>, {event_present[0].lower() + event_present[1:].rstrip('.') if event_present else ''}."
+        f"{_focus_prose} "
+        f"<b>Dự báo về xu hướng sắp tới</b>, {event_future[0].lower() + event_future[1:].rstrip('.') if event_future else ''}."
     )
 
-    # 2. Nếu là câu hỏi SỨC KHỎE / BỆNH TẬT → Đưa ngay Y Dịch & Cơ Thể lên vị trí ưu tiên số 2!
-    if _is_health_focus:
-        _sections_html.append(
-            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(59,130,246,0.12);border-radius:10px;border-left:4px solid #60a5fa;">'
-            f'<div style="color:#93c5fd;font-weight:800;font-size:0.96em;margin-bottom:4px;">🏥 CHẨN ĐOÁN Y DỊCH, BỘ PHẬN CƠ THỂ & PHÁP QUYẾT HÓA GIẢI</div>'
-            f'<div style="color:#dbeafe;font-size:0.9em;line-height:1.55;">'
-            f'• {health_str}<br>'
-            f'• {remedy_str}'
-            f'</div></div>'
-        )
-
-    # 3. Nếu hỏi TÌM ĐỒ / Ở ĐÂU / NHÀ ĐẤT / XUẤT HÀNH → Hiển thị Địa điểm & Phương hướng
-    if _is_find_where_focus:
-        _sections_html.append(
-            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(16,185,129,0.08);border-radius:10px;border-left:4px solid #34d399;">'
-            f'<div style="color:#34d399;font-weight:800;font-size:0.96em;margin-bottom:4px;">📍 ĐỊA ĐIỂM, PHƯƠNG HƯỚNG, KHOẢNG CÁCH & ĐỘ CAO HIỆN TRƯỜNG</div>'
-            f'<div style="color:#e2e8f0;font-size:0.9em;line-height:1.55;">'
-            f'• 🧭 {where_summary}<br>'
-            f'• 🏠 {where_scene}'
-            f'</div></div>'
-        )
-
-    # 3b. Nếu hỏi về TÌNH CẢM / VỢ CHỒNG / NGƯỜI YÊU → Hiển thị Chẩn đoán Tâm lý & Tình cảm Đối phương
-    if _is_love_focus:
-        _who_lbl = "Người vợ (Ất Kỳ / Thê Tài)" if "vợ" in _q_focus else ("Người chồng (Canh Kim / Quan Quỷ)" if "chồng" in _q_focus else "Đối phương (Ứng Hào / Lục Hợp)")
-        _sections_html.append(
-            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(244,63,94,0.12);border-radius:10px;border-left:4px solid #fb7185;">'
-            f'<div style="color:#fda4af;font-weight:800;font-size:0.96em;margin-bottom:4px;">❤️ CHẨN ĐOÁN TÂM LÝ, TÌNH CẢM & ĐỘ CHÂN THÀNH CỦA ĐỐI PHƯƠNG</div>'
-            f'<div style="color:#ffe4e6;font-size:0.9em;line-height:1.55;">'
-            f'• 💑 <b>Trục Dụng Thần ({_who_lbl}):</b> Ứng tại <b>Cung {target_cung} ({c_info["quai"]} – Hành {hanh_dt})</b>, đi cùng <b>Sao {sao_name}</b>, <b>Cửa {cua_name}</b> và <b>Thần {than_name}</b>.<br>'
-            f'• 🧠 <b>Tâm trạng & Thái độ hiện tại:</b> {door_desc} {motive_str}<br>'
-            f'• 🔮 <b>Ẩn tình sâu kín trong lòng:</b> <i>{deity_desc}</i>'
-            f'</div></div>'
-        )
-
-    # 4. Chỉ khi hỏi AI / TRAI HAY GÁI / BAO NHIÊU TUỔI / KẺ TRỘM → Hiển thị Hồ sơ nhận dạng Con người
-    if _is_person_focus:
-        _sections_html.append(
-            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(168,85,247,0.1);border-radius:10px;border-left:4px solid #c084fc;">'
-            f'<div style="color:#e9d5ff;font-weight:800;font-size:0.96em;margin-bottom:4px;">👤 HỒ SƠ CHỦ THỂ / NGƯỜI LIÊN QUAN TRONG QUẺ</div>'
-            f'<div style="color:#f3e8ff;font-size:0.9em;line-height:1.55;">'
-            f'• 🚻 <b>Giới tính & Chủ thể:</b> <span style="color:#fde047;font-weight:700;">{primary_gender}</span> '
-            f'<span style="color:#cbd5e1;font-size:0.88em;">[{", ".join(gender_reasons)}]</span><br>'
-            f'• 🎂 <b>Độ tuổi:</b> <b>{age_tier}</b> | 🎯 <b>Tuổi ứng quẻ:</b> <b>{", ".join(birth_years)}</b><br>'
-            f'• 🧑 <b>Thần thái & Tính cách:</b> {appearance_str} {motive_str}<br>'
-            f'• 🤝 <b>Mối quan hệ:</b> <b>{familiar_str}</b>'
-            f'</div></div>'
-        )
-
-    # 5. Chỉ khi hỏi TÌM ĐỒ / ĐỒ VẬT / BAO NHIÊU / TÀI SẢN CỤ THỂ (và KHÔNG phải hỏi bệnh) → Hiển thị Đồ vật & Con số
-    if _is_object_count_focus:
-        _sections_html.append(
-            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(236,72,153,0.08);border-radius:10px;border-left:4px solid #f472b6;">'
-            f'<div style="color:#fbcfe8;font-weight:800;font-size:0.96em;margin-bottom:4px;">📦 ĐẶC ĐIỂM ĐỒ VẬT, TÀI SẢN & CON SỐ ĐỊNH LƯỢNG</div>'
-            f'<div style="color:#fce7f3;font-size:0.9em;line-height:1.55;">'
-            f'• 🔮 <b>Biểu tượng vật chất ứng quẻ:</b> <b>{combined_objects}</b><br>'
-            f'• 🎨 <b>Màu sắc & Chất liệu:</b> Màu <b>{h_forensic["mau_sac"]}</b> | Chất liệu: <b>{h_forensic["chat_lieu"]}</b><br>'
-            f'• 📐 <b>Hình dáng & Trạng thái:</b> {h_forensic["hinh_dang"]} ({item_size}) — <b>{item_condition}</b><br>'
-            f'• 🔢 <b>Con số định lượng:</b> {quantity_str}'
-            f'</div></div>'
-        )
-
-    # 6. Thời điểm ứng kỳ (Luôn hiển thị để biết mốc thời gian xảy ra/chuyển biến)
-    _sections_html.append(
-        f'<div style="margin-bottom:4px;padding:10px 12px;background:rgba(245,158,11,0.1);border-radius:10px;border-left:4px solid #fbbf24;">'
-        f'<div style="color:#fde047;font-weight:800;font-size:0.96em;margin-bottom:4px;">⏰ THỜI ĐIỂM ỨNG KỲ & PHƯƠNG HƯỚNG HÓA GIẢI</div>'
-        f'<div style="color:#f8fafc;font-size:0.9em;line-height:1.55;">'
-        f'• 🎯 <b>Mốc thời gian hội tụ khí số:</b> <span style="color:#fef08a;font-weight:700;">{uk_exact}</span> ({uk_day} | {uk_month})<br>'
-        f'• 🕐 <b>Khung giờ & Khắc ứng nghiệm:</b> {uk_hour} — {uk_minute}<br>'
-        f'• 🧭 {remedy_str}'
-        f'</div></div>'
+    _para_timing = (
+        f"<b>Về thời điểm ứng nghiệm và hướng xử lý:</b> Mốc thời gian hội tụ khí số rõ nét nhất rơi vào khoảng "
+        f"<b style='color:#fef08a;'>{uk_exact}</b> (khung giờ thuận lợi: {uk_hour}). "
+        f"Để thúc đẩy cục diện chuyển biến theo chiều hướng tốt nhất, bạn nên áp dụng pháp quyết: {h_forensic['hoa_giai']}"
     )
 
     html_block = (
-        f'<div style="margin-top:14px;padding:16px;background:linear-gradient(135deg,rgba(15,23,42,0.92),rgba(30,27,75,0.92));'
-        f'border-radius:14px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.22);">'
-        f'<div style="font-size:1.08em;font-weight:900;color:#fbbf24;margin-bottom:8px;border-bottom:1px solid rgba(251,191,36,0.3);padding-bottom:6px;">'
-        f'🔮 LUẬN GIẢI CHUYÊN SÂU ĐÚNG TRỌNG TÂM CÂU HỎI</div>'
-        + "".join(_sections_html)
-        + f'</div>'
+        f'<div style="margin-top:14px;padding:18px 20px;background:linear-gradient(135deg,rgba(15,23,42,0.92),rgba(30,27,75,0.92));'
+        f'border-radius:14px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.22);line-height:1.75;font-size:0.98em;">'
+        f'<div style="font-size:1.08em;font-weight:900;color:#fbbf24;margin-bottom:10px;border-bottom:1px solid rgba(251,191,36,0.3);padding-bottom:6px;">'
+        f'🔮 DIỄN BIẾN SỰ VIỆC & CHẨN ĐOÁN CHUYÊN SÂU THEO TRỌNG TÂM CÂU HỎI</div>'
+        f'<p style="margin:0 0 12px 0;color:#e2e8f0;text-align:justify;">{_para_story}</p>'
+        f'<p style="margin:0;color:#fef3c7;text-align:justify;">{_para_timing}</p>'
+        f'</div>'
     )
 
     # V99.9: Lọc plain_text theo đúng trọng tâm câu hỏi để AI Online không bị nhiễu bởi dữ liệu đồ vật/giới tính không liên quan

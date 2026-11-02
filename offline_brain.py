@@ -30,72 +30,117 @@ def _md_to_html_bold(text):
 # ═══════════════════════════════════════════════════════════════
 # 1. FACTOR CONNECTOR — Phân loại chuẩn xác theo dấu điểm (+N/-N) & ngữ nghĩa
 # ═══════════════════════════════════════════════════════════════
+def _humanize_single_factor(f_raw: str) -> tuple:
+    """
+    Chuyển đổi 1 mã yếu tố kỹ thuật (VD: 'DT Vượng +10', 'PHỤC THẦN: DT ẩn -10')
+    thành (loại_tốt_xấu, cụm_từ_tiếng_Việt_tự_nhiên_dễ_hiểu).
+    """
+    s = str(f_raw or "").strip()
+    if not s:
+        return ("neutral", "")
+    up = s.upper()
+
+    # Nhận diện các yếu tố cốt lõi bằng ngôn ngữ đời thường dễ hiểu
+    if "PHỤC THẦN" in up:
+        return ("bad", "yếu tố chính đang ẩn mình (Phục Thần) nên tâm ý hoặc kết quả thật sự vẫn giấu kín bên trong, chưa bộc lộ rõ ra ngoài")
+    if "TUẦN KHÔNG" in up or "KHÔNG VONG" in up:
+        return ("bad", "cung quẻ tạm thời rơi vào khoảng lặng (Tuần Không), khiến sự việc có cảm giác chững lại hoặc còn khoảng cách vô hình")
+    if "NGUYỆT PHÁ" in up or "NHẬT PHÁ" in up:
+        return ("bad", "đang chịu lực xung phá trực tiếp từ thời vận hiện tại (Nguyệt/Nhật Phá), dễ phát sinh xáo trộn hoặc áp lực")
+    if "TAM HÌNH" in up:
+        return ("bad", "có thế Tam Hình gây ra sự gượng gạo, tự ái ngầm hoặc căng thẳng tâm lý cần khéo léo tháo gỡ")
+    if "NHẬP MỘ" in up:
+        return ("bad", "khí lực đang bị thu giữ (Nhập Mộ), làm cho tâm trạng hoặc tiến độ bị bó hẹp, bế tắc tạm thời")
+    if "PHẢN NGÂM" in up:
+        return ("bad", "quẻ gặp thế Phản Ngâm nên tình thế dễ thay đổi thất thường, lúc nóng lúc lạnh")
+    if "PHỤC NGÂM" in up:
+        return ("bad", "quẻ gặp thế Phục Ngâm khiến sự việc dây dưa kéo dài, khó giải quyết dứt điểm ngay một sớm một chiều")
+    if "CUNG BT SINH DT" in up or "CUNG DT TƯƠNG SINH BT" in up or "CUNG SV SINH BT" in up:
+        return ("good", "giữa bản thân bạn và đối phương/mục tiêu vẫn có sự tương sinh, quan tâm và nâng đỡ lẫn nhau")
+    if "CUNG BT KHẮC DT" in up or "CHỦ THẮNG" in up:
+        return ("good", "bạn đang nắm thế chủ động và có khả năng xoay chuyển tình thế")
+    if "CUNG DT KHẮC BT" in up:
+        return ("bad", "phía đối phương hoặc hoàn cảnh bên ngoài đang tạo sức ép ngược lại lên bạn")
+    if "NGUYÊN THẦN VƯỢNG" in up or "NGUYÊN THẦN ĐỘNG" in up or ("NGUYÊN THẦN" in up and ("+6" in s or "+8" in s or "+4" in s)):
+        return ("good", "có nguồn lực hậu thuẫn và quý nhân âm thầm tiếp sức ở phía sau (Nguyên Thần vượng)")
+    if "KỴ THẦN SUY" in up or ("KỴ THẦN" in up and ("+3" in s or "YẾU" in up)):
+        return ("good", "các tác nhân gây cản trở hoặc bất đồng đã suy yếu dần")
+    if "KỴ THẦN VƯỢNG" in up or "KỴ THẦN ĐỘNG" in up:
+        return ("bad", "yếu tố cản trở (Kỵ Thần) đang hoạt động mạnh gây thêm thử thách")
+    if "DT VƯỢNG" in up or "DT TƯỚNG" in up or "THỂ VƯỢNG" in up:
+        return ("good", "nội lực gốc của sự việc rất vượng và có nền tảng vững chắc")
+    if "DT TÙ" in up or "DT TỬ" in up or "DT SUY" in up or "CAN DT TỬ" in up:
+        return ("bad", "năng lượng ở thời điểm hiện tại đang hơi trầm lắng và suy giảm")
+    if "NGUYỆT" in up and "SINH DT" in up:
+        return ("good", "được thiên thời trong tháng ủng hộ thuận lợi")
+    if "NHẬT" in up and "SINH DT" in up:
+        return ("good", "được hoàn cảnh trong ngày tiếp thêm sinh khí")
+    if ("NGUYỆT" in up or "NHẬT" in up) and "KHẮC DT" in up:
+        return ("bad", "hoàn cảnh khách quan trước mắt đang có chút nghịch chiều, gây áp lực nhất định")
+    if "TỶ HÒA" in up:
+        return ("good", "hai bên có sự đồng điệu và tương thông về mặt bản chất")
+    if "THỂ SINH DỤNG" in up:
+        return ("bad", "bạn đang là người phải chủ động nhường nhịn, lo toan và tiêu hao nhiều tâm sức hơn")
+    if "DỤNG SINH THỂ" in up:
+        return ("good", "sự việc và đối phương có xu hướng thuận chiều, hướng về phía bạn")
+    if "KHÔNG HIỆN" in up and "KỴ THẦN" in up:
+        return ("good", "các tác nhân gây cản trở hoặc chia rẽ không xuất hiện trong quẻ")
+    if "CỪU THẦN" in up and ("RẤT YẾU" in up or "KHÔNG ĐỦ SỨC" in up):
+        return ("good", "các yếu tố gây nhiễu bên ngoài rất yếu, không đủ sức làm suy giảm phúc khí")
+    if "DT TĨNH" in up:
+        return ("bad", "hào Dụng Thần đang tĩnh nên sự việc cần thêm thời gian lắng đọng, chưa bứt phá ngay lập tức")
+    if "CỪU THẦN" in up and "VƯỢNG" in up:
+        return ("bad", "có chút tác động ngoại cảnh làm phân tán nguồn lực hỗ trợ")
+    if any(k in up for k in ["KHÔNG TÁC ĐỘNG", "NGUYÊN THẦN ẨN", "KỴ THẦN ẨN", "NT(ẨN)", "KT(ẨN)"]):
+        return ("neutral", "")
+
+    # Nếu là chuỗi khác, chỉ lấy khi điểm số khác 0 và không phải mã kỹ thuật thô
+    m_score = re.search(r'([+-]\d+)\s*$', s)
+    if m_score:
+        sc = int(m_score.group(1))
+        if sc == 0:
+            return ("neutral", "")
+        cleaned = _clean_factor(s)
+        cleaned = re.sub(r'[+-]\d+\b', '', cleaned)
+        cleaned = re.sub(r'\b(DT|BT|SV|NT|KT|TB-\d+|LH-B\d+|KM-B\d+)\b', '', cleaned).strip(' ,;:-')
+        if '(' in cleaned or '/' in cleaned or len(cleaned) < 8:
+            return ("neutral", "")
+        return ("good" if sc > 0 else "bad", cleaned.lower())
+    return ("neutral", "")
+
+
 def _connect_factors(factors_list):
     """
-    Biến danh sách factors thành đoạn văn có logic, không bị nhầm Kỵ Thần Suy thành yếu tố xấu.
+    V99.9.7: Biến danh sách factors thành câu văn xuôi tiếng Việt mượt mà, dễ đọc, dễ hiểu (không còn mã +10, -8 khô khan).
     """
     if not factors_list:
         return ""
 
-    good = []
-    bad = []
-    neutral = []
+    good_phrases = []
+    bad_phrases = []
 
     for f in factors_list:
-        f_str = str(f).strip()
-        if not f_str:
+        kind, phrase = _humanize_single_factor(f)
+        if not phrase or len(phrase) < 6:
             continue
-        cleaned = _clean_factor(f_str)
-        if not cleaned or len(cleaned) < 3:
-            continue
+        if kind == "good" and phrase not in good_phrases:
+            good_phrases.append(phrase)
+        elif kind == "bad" and phrase not in bad_phrases:
+            bad_phrases.append(phrase)
 
-        # Ưu tiên 1: Xét hệ sinh thái DT (Nguyên Thần / Kỵ Thần)
-        if 'HỆ SINH THÁI DT' in f_str or 'Kỵ Thần' in f_str or 'Nguyên Thần' in f_str:
-            if any(k in f_str for k in ['Sức khắc yếu', 'Không đủ sức khắc', 'ít ảnh hưởng', 'SINH DT', 'Nguyên Thần']):
-                if 'VƯỢNG' in f_str or 'SINH' in f_str or 'yếu' in f_str:
-                    good.append(cleaned)
-                    continue
-            if 'Kỵ Thần' in f_str and ('VƯỢNG' in f_str or 'MẠNH' in f_str or 'ĐỘNG' in f_str):
-                bad.append(cleaned)
-                continue
+    sentences = []
+    if good_phrases and bad_phrases:
+        g_txt = ", đồng thời ".join(good_phrases[:2])
+        b_txt = " và ".join(bad_phrases[:2])
+        sentences.append(f"Xét về mặt tích cực, quẻ cho thấy {g_txt}; tuy nhiên bạn cũng cần lưu ý rằng hiện tại {b_txt}")
+    elif good_phrases:
+        g_txt = ", kết hợp với việc ".join(good_phrases[:3])
+        sentences.append(f"Điểm sáng rất đáng mừng trong quẻ là {g_txt}")
+    elif bad_phrases:
+        b_txt = ", bên cạnh đó ".join(bad_phrases[:2])
+        sentences.append(f"Nguyên nhân chính gây ra trắc trở lúc này là do {b_txt}")
 
-        # Ưu tiên 2: Xét điểm số ở cuối chuỗi (+10, -8, v.v.)
-        m_score = re.search(r'([+-]\d+)\s*$', f_str)
-        if m_score:
-            sc_val = int(m_score.group(1))
-            if sc_val > 0:
-                good.append(cleaned)
-                continue
-            elif sc_val < 0:
-                bad.append(cleaned)
-                continue
-
-        # Ưu tiên 3: Ký hiệu rõ ràng
-        if any(x in f_str for x in ['⊕', '✅', '🟢', 'CÁT', 'Đắc lệnh']):
-            good.append(cleaned)
-        elif any(x in f_str for x in ['⊖', '🔴', '❌', '⚠️', 'HUNG', 'Nguyệt Phá', 'Nhật Phá', 'Tuần Không', 'Nhập Mộ', 'Phục Thần']):
-            bad.append(cleaned)
-        elif any(x in f_str.lower() for x in ['sinh dt', 'dt vượng', 'dt tướng', 'trường sinh', 'đế vượng', 'lâm quan', 'nhật sinh', 'nguyệt sinh']):
-            good.append(cleaned)
-        elif any(x in f_str.lower() for x in ['khắc dt', 'dt suy', 'dt tử', 'dt tuyệt', 'dt bệnh']):
-            bad.append(cleaned)
-        else:
-            neutral.append(cleaned)
-
-    # Khử trùng lặp
-    good = list(dict.fromkeys(good))
-    bad = list(dict.fromkeys(bad))
-
-    parts = []
-    if good:
-        parts.append("<b>Điểm sáng thuận lợi:</b> " + "; ".join(good[:3]))
-    if bad:
-        connector = " <b>Tuy nhiên cần lưu ý lực cản:</b> " if good else "<b>Lực cản chính trong quẻ:</b> "
-        parts.append(f"{connector}" + "; ".join(bad[:3]))
-    if not good and not bad and neutral:
-        parts.append("<b>Yếu tố nổi bật:</b> " + "; ".join(neutral[:2]))
-
-    return ". ".join(parts) + "." if parts else ""
+    return (". ".join(sentences) + ".") if sentences else ""
 
 
 def _clean_factor(f):
@@ -546,3 +591,175 @@ def _build_consensus(verdicts_dict):
 
     ratio = f" → <b>{cat_count} CÁT · {binh_count} BÌNH · {hung_count} HUNG</b>"
     return " | ".join(parts) + ratio
+
+
+def build_connected_prose_analysis(
+    question: str,
+    dung_than: str,
+    weighted_pct: int,
+    category: str = "CHUNG",
+    ky_mon_verdict: str = "BÌNH",
+    ky_mon_reason: str = "",
+    luc_hao_verdict: str = "BÌNH",
+    luc_hao_reason: str = "",
+    mai_hoa_verdict: str = "BÌNH",
+    mai_hoa_reason: str = "",
+    thiet_ban_verdict: str = "BÌNH",
+    thiet_ban_reason: str = "",
+    luc_nham_verdict: str = "BÌNH",
+    luc_nham_reason: str = "",
+    thai_at_verdict: str = "BÌNH",
+    thai_at_reason: str = "",
+    xem_ngay_verdict: str = "BÌNH",
+    xem_ngay_reason: str = "",
+    tu_vi_verdict: str = "BÌNH",
+    tu_vi_reason: str = "",
+    thien_van_reason: str = "",
+    exp_html_items: list = None,
+    warn_parts: list = None,
+    thoan_name: str = "",
+    thoan_info: dict = None,
+    ts_stage: str = "",
+    ts_info: dict = None,
+    nk_stage: str = "",
+    nk_info: dict = None,
+    hanh_dt: str = "",
+    ung_ky_str: str = "",
+    advice_parts: list = None,
+) -> str:
+    """
+    V99.9.7: Nối toàn bộ dữ liệu rời rạc của 10 Hệ Thống Quẻ, Sơ Đồ Lực Lượng, 40 Chuyên Gia AI,
+    Kinh Dịch Thoán Từ và Cảnh Báo thành 3 đoạn văn xuôi tiếng Việt mạch lạc, tự nhiên, dễ hiểu, dễ đọc.
+    """
+    q_low = (question or "").lower()
+    thoan_info = thoan_info if isinstance(thoan_info, dict) else {}
+    ts_info = ts_info if isinstance(ts_info, dict) else {}
+    nk_info = nk_info if isinstance(nk_info, dict) else {}
+    exp_html_items = exp_html_items or []
+    warn_parts = warn_parts or []
+    advice_parts = advice_parts or []
+
+    def _v_word(v_str):
+        vu = str(v_str or "").upper()
+        if "ĐẠI CÁT" in vu:
+            return "rất thuận lợi (Đại Cát)"
+        if "CÁT" in vu:
+            return "thuận lợi (Cát)"
+        if "ĐẠI HUNG" in vu:
+            return "nhiều bất lợi lớn (Đại Hung)"
+        if "HUNG" in vu:
+            return "đang có lực cản (Hung)"
+        return "ở thế cân bằng, giằng co (Bình hòa)"
+
+    # ── ĐOẠN 1: TAM THỨC HỢP GIẢI (KỲ MÔN · LỤC HÀO · MAI HOA) & LỰC LƯỢNG DỤNG THẦN ──
+    p1_parts = []
+    p1_parts.append(
+        f"Xét trên nền tảng cốt lõi của Tam Thức (gồm Kỳ Môn Độn Giáp {_v_word(ky_mon_verdict)}, "
+        f"Lục Hào Kinh Dịch {_v_word(luc_hao_verdict)} và Mai Hoa Dịch Số {_v_word(mai_hoa_verdict)}), "
+        f"chủ thể trọng tâm của câu hỏi ứng vào hào Dụng Thần <b>{dung_than}</b>"
+        + (f" (thuộc hành <b>{hanh_dt}</b>)" if hanh_dt and hanh_dt != "?" else "")
+        + "."
+    )
+
+    if ts_stage:
+        con_nguoi_ts = ts_info.get("con_nguoi", "đang vận động theo chu kỳ")
+        p1_parts.append(
+            f"Trong vòng 12 Trường Sinh, Dụng Thần đang ở trạng thái <b>{ts_stage}</b> "
+            f"(ví như <i>{con_nguoi_ts.lower()}</i>)"
+            + (f" và đạt trạng thái khí <b>{nk_stage}</b> theo mùa," if nk_stage else ",")
+            + " phản ánh rõ thực trạng nội lực hiện tại của sự việc."
+        )
+
+    # Giải nghĩa tự nhiên từ Kỳ Môn, Lục Hào, Mai Hoa
+    km_lh_mh_raw = f"{ky_mon_reason} | {luc_hao_reason} | {mai_hoa_reason}".upper()
+    nuances = []
+    if "PHỤC THẦN" in km_lh_mh_raw:
+        nuances.append("hào Dụng Thần đang ở thế <b>Phục Thần (ẩn tàng)</b>, nghĩa là tâm tư thật sự hoặc kết quả cốt lõi vẫn đang được giấu kín ở bên trong chứ chưa bộc lộ ra ngoài mặt")
+    if "KHÔNG VONG" in km_lh_mh_raw or "TUẦN KHÔNG" in km_lh_mh_raw:
+        nuances.append("cung quẻ tạm thời gặp <b>Tuần Không</b>, tạo ra cảm giác chững lại, trống trải hoặc đối phương đang giữ một khoảng lặng nhất định")
+    if "CUNG BT SINH DT" in km_lh_mh_raw or "CUNG DT TƯƠNG SINH BT" in km_lh_mh_raw or "TỶ HÒA" in km_lh_mh_raw:
+        nuances.append("giữa bản thân bạn và đối phương/mục tiêu vẫn có dòng khí tương sinh hoặc Tỷ Hòa nâng đỡ nhau, chứng tỏ sợi dây liên kết gốc rễ vẫn còn bền chặt")
+    if "NGUYÊN THẦN VƯỢNG" in km_lh_mh_raw or "DT VƯỢNG" in km_lh_mh_raw or "DT TƯỚNG" in km_lh_mh_raw:
+        nuances.append("khí lực gốc của Dụng Thần và Nguyên Thần (nguồn trợ lực) vẫn vượng, khẳng định nền tảng bên trong vẫn tốt đẹp")
+    if "TAM HÌNH" in km_lh_mh_raw:
+        nuances.append("trong quẻ xuất hiện thế <b>Tam Hình</b>, báo hiệu có sự tự ái ngầm, gượng gạo hoặc xung đột tâm lý cần được cư xử khéo léo")
+
+    if nuances:
+        p1_parts.append("Đi sâu vào chi tiết, quẻ chỉ rõ " + "; đồng thời ".join(nuances) + ".")
+
+    paragraph_1 = " ".join(p1_parts)
+
+    # ── ĐOẠN 2: ĐỐI CHIẾU ĐA HỆ THỐNG (ĐẠI LỤC NHÂM · THÁI ẤT · THIẾT BẢN · TỬ VI · XEM NGÀY) ──
+    p2_parts = []
+    ln_up = str(luc_nham_reason or "").upper()
+    ln_flow = ""
+    if "SƠ TRUYỀN" in ln_up or "MẠT TRUYỀN" in ln_up:
+        if "MẠT TRUYỀN SINH CAN" in ln_up or "TUONG LAI TOT" in ln_up or "KQ TỐT" in ln_up:
+            ln_flow = "mặc dù giai đoạn khởi đầu (Sơ Truyền) có thể vướng chút băn khoăn hoặc chậm trễ, nhưng càng về giai đoạn kết cục (Mạt Truyền) thì khí số lại tương sinh tốt đẹp"
+        else:
+            ln_flow = "diễn biến từ khởi đầu (Sơ Truyền) tới kết cục (Mạt Truyền) đòi hỏi sự kiên nhẫn điều tiết từng bước"
+        if "DỊCH MÃ" in ln_up:
+            ln_flow += " và có sao Dịch Mã thúc đẩy nên sự chuyển biến sẽ diễn ra khá nhanh"
+
+    p2_parts.append(
+        f"Khi đối chiếu mở rộng sang các hệ thống vận số lớn, Đại Lục Nhâm ({_v_word(luc_nham_verdict)}) và "
+        f"Thái Ất Thần Số ({_v_word(thai_at_verdict)}) cho thấy {ln_flow if ln_flow else 'thế trận giữa Chủ và Khách đang đòi hỏi sự điềm tĩnh và chủ động nắm bắt thời cơ'}."
+    )
+
+    # Tử Vi & Thiết Bản
+    tv_clean = str(tu_vi_reason or "").strip()
+    if tv_clean:
+        p2_parts.append(
+            f"Bên cạnh đó, kết quả Thiết Bản Thần Toán ({_v_word(thiet_ban_verdict)}) kết hợp cùng lá số Tử Vi ứng thời "
+            f"({tv_clean}) giúp làm rõ thêm bức tranh toàn cảnh về mặt nhân duyên và thời vận."
+        )
+    if xem_ngay_reason:
+        p2_parts.append(
+            f"Về mặt tiết khí và thời điểm hiện tại ({xem_ngay_reason}), bạn nên lưu ý chọn khung giờ hoàng đạo thuận lợi để mọi việc hanh thông hơn."
+        )
+
+    paragraph_2 = " ".join(p2_parts)
+
+    # ── ĐOẠN 3: ĐÚC KẾT TỪ HỘI ĐỒNG 40 CHUYÊN GIA AI, KINH DỊCH THOÁN TỪ & LỜI KHUYÊN ──
+    p3_parts = []
+    if exp_html_items:
+        # Chuyển các nhận định của Chuyên gia AI thành câu văn nối liền mạch, loại bỏ ký hiệu kỹ thuật thô
+        clean_exps = []
+        for item in exp_html_items:
+            txt = re.sub(r'<[^>]+>', '', str(item)).lstrip('• ').strip()
+            if 'Hiện tại đang có xung đột, cần giải quyết gấp' in txt:
+                continue
+            # Bỏ tiền tố tên tiếng Anh lặp lại để đọc mượt như văn nói
+            txt = re.sub(r'^[^\w]*(Chart Interpreter AI \(Đại sư Kỳ Môn\)|Chart Interpreter AI|Luc Hao Expert AI|Mai Hoa Expert AI|Relationship AI|Wealth Advisor AI|Career Advisor AI|Health Advisor AI|Direction Advisor AI|Feng Shui AI):\s*', '', txt)
+            txt = re.sub(r'\(Hào Thế \([^)]*\) và Hào Ứng \([^)]*\)\)', '', txt)
+            txt = txt.replace('→', ' cho thấy ').replace('—', ', ').replace('[', '').replace(']', '')
+            txt = re.sub(r'\s+', ' ', txt).strip(' .;,-')
+            if txt and len(clean_exps) < 3:
+                clean_exps.append(txt)
+        if clean_exps:
+            p3_parts.append(
+                "Tổng hợp nhận định chuyên sâu từ <b>Hội Đồng Chuyên Gia AI</b> cho thấy: "
+                + "; đồng thời ".join(clean_exps) + "."
+            )
+
+    if thoan_name and thoan_info.get("thoan"):
+        p3_parts.append(
+            f"Đặc biệt, lời <b>Thoán Từ Kinh Dịch</b> của quẻ <b>{thoan_name}</b> nhắn nhủ rằng: "
+            f"<i>«{thoan_info.get('thoan', '')}»</i> ({thoan_info.get('lk', thoan_info.get('dai_tuong', ''))})."
+        )
+
+    clean_advs = [re.sub(r'<[^>]+>', '', str(a)).strip() for a in advice_parts if str(a).strip()]
+    if clean_advs:
+        p3_parts.append("Từ tất cả các phân tích trên, lời khuyên thiết thực nhất dành cho bạn là: " + " ".join(clean_advs))
+
+    paragraph_3 = " ".join(p3_parts)
+
+    return (
+        f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.55);border-radius:14px;border:1px solid rgba(110,231,183,0.35);line-height:1.75;font-size:0.98em;color:#f1f5f9;">'
+        f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
+        f'📖 BÀI LUẬN GIẢI TỔNG HỢP CHI TIẾT (KẾT NỐI 10 HỆ THỐNG & 40 CHUYÊN GIA AI)</div>'
+        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Giải mã cốt lõi từ Tam Thức (Kỳ Môn · Lục Hào · Mai Hoa):</b> {paragraph_1}</p>'
+        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Đối chiếu chiều sâu vận số (Đại Lục Nhâm · Thái Ất · Thiết Bản · Tử Vi):</b> {paragraph_2}</p>'
+        + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng Chuyên Gia, Kinh Dịch & Cẩm nang hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
+        + f'</div>'
+    )
