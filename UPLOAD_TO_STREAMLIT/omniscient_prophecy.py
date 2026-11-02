@@ -432,8 +432,22 @@ def build_omniscient_prophecy(
         female_votes += 1
         gender_reasons.append(f"Hào {hao_so} Âm")
 
+    # V99.7: Nhận diện trực tiếp Chủ Thể / Người Thân trong câu hỏi để tránh đoán sai giới tính & tuổi
+    import re as _re_om
+    _q_low_om = (question or "").lower()
+    _MALE_KIN = ["ông nội", "ông ngoại", "ông tôi", "bố tôi", "cha tôi", "ba tôi", "bố", "cha", "chồng", "con trai", "anh trai", "em trai", "chú", "bác trai", "cậu", "dượng", "bạn trai"]
+    _FEMALE_KIN = ["bà nội", "bà ngoại", "bà tôi", "mẹ tôi", "má tôi", "mẹ", "má", "vợ", "con gái", "chị gái", "em gái", "cô", "dì", "bác gái", "mợ", "bạn gái"]
+    _matched_male_kin = next((w for w in _MALE_KIN if _re_om.search(r"(?:^|[\s,;.!?])" + _re_om.escape(w) + r"(?:[\s,;.!?]|$)", _q_low_om)), None)
+    _matched_female_kin = next((w for w in _FEMALE_KIN if _re_om.search(r"(?:^|[\s,;.!?])" + _re_om.escape(w) + r"(?:[\s,;.!?]|$)", _q_low_om)), None)
+
     total_votes = max(male_votes + female_votes, 1)
-    if male_votes >= female_votes:
+    if _matched_male_kin:
+        primary_gender = f"NAM GIỚI / ĐÀN ÔNG (Chủ thể: {_matched_male_kin.upper()} — 100%)"
+        secondary_gender = f"Ứng với hào Dụng Thần ({dung_than}) và Cung {c_info['quai']}"
+    elif _matched_female_kin:
+        primary_gender = f"NỮ GIỚI / PHỤ NỮ (Chủ thể: {_matched_female_kin.upper()} — 100%)"
+        secondary_gender = f"Ứng với hào Dụng Thần ({dung_than}) và Cung {c_info['quai']}"
+    elif male_votes >= female_votes:
         primary_gender = f"NAM GIỚI / ĐÀN ÔNG (Trai — độ hội tụ {int(round(male_votes * 100 / total_votes))}%)"
         secondary_gender = "Có thể có 1 Nữ giới hỗ trợ/đi kèm ở vòng ngoài" if female_votes >= 2 else "Chủ yếu là Nam giới"
     else:
@@ -441,8 +455,24 @@ def build_omniscient_prophecy(
         secondary_gender = "Có thể có 1 Nam giới liên đới/đứng sau" if male_votes >= 2 else "Chủ yếu là Nữ giới"
 
     # Độ tuổi (Già hay Trẻ, bao nhiêu tuổi cụ thể)
+    cur_year = datetime.date.today().year
     base_ages = list(c_info['base_ages'])
-    if ts_stage in ('Trường Sinh', 'Mộc Dục', 'Thai', 'Dưỡng'):
+    _yr_match = _re_om.search(r"(?:sinh năm|tuổi|sn|năm)\s*(19\d\d|20[0-2]\d)", _q_low_om)
+    if _yr_match:
+        _by = int(_yr_match.group(1))
+        _exact_age = max(1, cur_year - _by)
+        age_tier = f"XÁC ĐỊNH THEO NĂM SINH ({_by} — {_exact_age} tuổi)"
+        est_ages = [_exact_age]
+    elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["ông", "bà"]):
+        age_tier = "CAO NIÊN / LÃO NIÊN (68 – 90+ tuổi)"
+        est_ages = [68 + (base_ages[0] % 7), 75 + (base_ages[1] % 7), 82 + (base_ages[2] % 7)]
+    elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["bố", "mẹ", "cha", "má", "ba", "chú", "bác", "cô", "dì", "cậu", "mợ"]):
+        age_tier = "TRUNG NIÊN CAO / LỚN TUỔI (50 – 78 tuổi)"
+        est_ages = [52 + (base_ages[0] % 6), 60 + (base_ages[1] % 6), 68 + (base_ages[2] % 7)]
+    elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["con trai", "con gái", "con"]): 
+        age_tier = "THANH THIẾU NIÊN / TRẺ TUỔI (5 – 30 tuổi)"
+        est_ages = [8 + (base_ages[0] % 6), 16 + (base_ages[1] % 6), 24 + (base_ages[2] % 6)]
+    elif ts_stage in ('Trường Sinh', 'Mộc Dục', 'Thai', 'Dưỡng'):
         age_tier = "NGƯỜI TRẺ TUỔI / THANH THIẾU NIÊN"
         est_ages = [max(16, a - 12) for a in base_ages[:3]]
     elif ts_stage in ('Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt'):
@@ -452,16 +482,19 @@ def build_omniscient_prophecy(
         age_tier = c_info['age_group'].upper()
         est_ages = base_ages[:3]
 
-    cur_year = datetime.date.today().year
     birth_years = [f"{cur_year - a} ({a} tuổi)" for a in est_ages]
 
     # Ngoại hình, Tính cách, Nghề nghiệp, Quen hay Lạ
     appearance_str = f"{can_g_info[1]}; thần thái mang nét {star_g_matched[1].lower()}."
-    familiar_str = (
-        "NGƯỜI QUEN / NỘI BỘ (Người trong nhà, đồng nghiệp, bạn bè hoặc người từng tiếp xúc)"
-        if is_noi_ban else
-        "NGƯỜI LẠ / BÊN NGOÀI (Người ở xa, khách vãng lai, đối tác mới hoặc người ngoài khu vực)"
-    )
+    if _matched_male_kin or _matched_female_kin:
+        _kin_lbl = (_matched_male_kin or _matched_female_kin).upper()
+        familiar_str = f"NGƯỜI THÂN RUỘT THỊT TRONG GIA ĐÌNH (Chủ thể: {_kin_lbl})"
+    else:
+        familiar_str = (
+            "NGƯỜI QUEN / NỘI BỘ (Người trong nhà, đồng nghiệp, bạn bè hoặc người từng tiếp xúc)"
+            if is_noi_ban else
+            "NGƯỜI LẠ / BÊN NGOÀI (Người ở xa, khách vãng lai, đối tác mới hoặc người ngoài khu vực)"
+        )
     if 'Huyền Vũ' in than_name or 'Thái Âm' in than_name:
         motive_str = "Hành động lén lút, kín đáo, che giấu thông tin hoặc có mưu tính ngầm."
     elif 'Bạch Hổ' in than_name or 'Kinh' in cua_name or 'Thương' in cua_name:
@@ -556,73 +589,108 @@ def build_omniscient_prophecy(
     plain_text = "\n".join(text_lines)
 
     # ═════════════════════════════════════════════════════════════════════════
-    # BUILD GIAO DIỆN HTML (HIỂN THỊ TRỰC TIẾP TRONG CARD KẾT LUẬN CHÍNH)
+    # BUILD GIAO DIỆN HTML — V99.7: CHỈ HIỂN THỊ ĐÚNG TRỌNG TÂM CÂU HỎI
+    # (Hỏi gì trả lời đúng trọng tâm đó, không hiện mục lan man không liên quan)
     # ═════════════════════════════════════════════════════════════════════════
-    html_block = (
-        f'<div style="margin-top:14px;padding:18px;background:linear-gradient(135deg,rgba(15,23,42,0.92),rgba(30,27,75,0.92));'
-        f'border-radius:14px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.25);">'
-        f'<div style="font-size:1.15em;font-weight:900;color:#fbbf24;margin-bottom:6px;border-bottom:1px solid rgba(251,191,36,0.3);padding-bottom:8px;">'
-        f'🔮 TỔNG HỢP LUẬN GIẢI CHI TIẾT 360° — SỰ VIỆC · THỜI GIAN · ĐỊA ĐIỂM · CON NGƯỜI · ĐỒ VẬT</div>'
-        f'<div style="font-size:0.82em;color:#cbd5e1;margin-bottom:10px;font-style:italic;">'
-        f'ℹ️ Lưu ý: Các thông tin dưới đây được suy diễn từ quy tắc biểu tượng cổ học truyền thống (Kinh Dịch, Kỳ Môn, Lục Hào, Mai Hoa), chỉ mang tính chất tham khảo văn hóa và chiêm nghiệm.</div>'
+    _q_focus = (question or '').lower()
+    _is_health_focus = any(w in _q_focus for w in [
+        'bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'qua khỏi', 'qua được', 'sống', 'chết',
+        'viện', 'thuốc', 'mổ', 'phẫu thuật', 'ung thư', 'tai nạn', 'hồi phục', 'nguy kịch', 'khám'
+    ])
+    _is_find_where_focus = any(w in _q_focus for w in [
+        'tìm', 'mất', 'thất lạc', 'trộm', 'ở đâu', 'chỗ nào', 'hướng nào', 'để đâu', 'cất đâu',
+        'nhà', 'đất', 'mộ', 'phong thủy', 'xuất hành', 'đi xa', 'du lịch', 'chuyển nhà'
+    ])
+    _is_person_focus = any(w in _q_focus for w in [
+        'ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'tuổi', 'bố', 'mẹ', 'cha', 'má',
+        'ông', 'bà', 'vợ', 'chồng', 'con', 'người yêu', 'bạn trai', 'bạn gái', 'đối tác',
+        'sếp', 'khách hàng', 'trộm', 'kẻ', 'tình cảm', 'hôn nhân', 'cưới'
+    ])
+    _is_object_count_focus = any(w in _q_focus for w in [
+        'cái gì', 'đồ gì', 'vật gì', 'trong hộp', 'mất', 'tìm', 'thất lạc', 'ví', 'điện thoại',
+        'chìa khóa', 'sổ đỏ', 'giấy tờ', 'trang sức', 'bao nhiêu', 'có mấy', 'mấy cái', 'số lượng', 'con số', 'định giá'
+    ]) and not _is_health_focus
 
-        # 1. SỰ VIỆC CHI TIẾT
+    _sections_html = []
+
+    # 1. Diễn biến sự việc 3 thời (Luôn hiển thị vì là cốt lõi của mọi quẻ)
+    _sections_html.append(
         f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(255,255,255,0.05);border-radius:10px;border-left:4px solid #38bdf8;">'
-        f'<div style="color:#38bdf8;font-weight:800;font-size:0.98em;margin-bottom:4px;">📜 1. SỰ VIỆC CHI TIẾT & DIỄN BIẾN 3 THỜI (QUÁ KHỨ – HIỆN TẠI – TƯƠNG LAI)</div>'
+        f'<div style="color:#38bdf8;font-weight:800;font-size:0.96em;margin-bottom:4px;">📜 DIỄN BIẾN SỰ VIỆC 3 THỜI (NGUYÊN NHÂN – HIỆN TẠI – KẾT CỤC)</div>'
         f'<div style="color:#e2e8f0;font-size:0.9em;line-height:1.55;">'
         f'• <b>Khởi nguồn (Quá khứ):</b> {event_past}<br>'
-        f'• <b>Diễn biến thật (Hiện tại):</b> {event_present}<br>'
-        f'• <b>Kết cục (Tương lai):</b> {event_future}'
+        f'• <b>Thực trạng (Hiện tại):</b> {event_present}<br>'
+        f'• <b>Xu hướng (Tương lai):</b> {event_future}'
         f'</div></div>'
+    )
 
-        # 2. THỜI ĐIỂM CHÍNH XÁC (NĂM - THÁNG - NGÀY - GIỜ - KHẮC - PHÚT)
-        f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(245,158,11,0.1);border-radius:10px;border-left:4px solid #fbbf24;">'
-        f'<div style="color:#fde047;font-weight:800;font-size:0.98em;margin-bottom:4px;">⏰ 2. XẢY RA LÚC NÀO? (NĂM – THÁNG – NGÀY – GIỜ – KHẮC – PHÚT CHÍNH XÁC)</div>'
+    # 2. Nếu là câu hỏi SỨC KHỎE / BỆNH TẬT → Đưa ngay Y Dịch & Cơ Thể lên vị trí ưu tiên số 2!
+    if _is_health_focus:
+        _sections_html.append(
+            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(59,130,246,0.12);border-radius:10px;border-left:4px solid #60a5fa;">'
+            f'<div style="color:#93c5fd;font-weight:800;font-size:0.96em;margin-bottom:4px;">🏥 CHẨN ĐOÁN Y DỊCH, BỘ PHẬN CƠ THỂ & PHÁP QUYẾT HÓA GIẢI</div>'
+            f'<div style="color:#dbeafe;font-size:0.9em;line-height:1.55;">'
+            f'• {health_str}<br>'
+            f'• {remedy_str}'
+            f'</div></div>'
+        )
+
+    # 3. Nếu hỏi TÌM ĐỒ / Ở ĐÂU / NHÀ ĐẤT / XUẤT HÀNH → Hiển thị Địa điểm & Phương hướng
+    if _is_find_where_focus:
+        _sections_html.append(
+            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(16,185,129,0.08);border-radius:10px;border-left:4px solid #34d399;">'
+            f'<div style="color:#34d399;font-weight:800;font-size:0.96em;margin-bottom:4px;">📍 ĐỊA ĐIỂM, PHƯƠNG HƯỚNG, KHOẢNG CÁCH & ĐỘ CAO HIỆN TRƯỜNG</div>'
+            f'<div style="color:#e2e8f0;font-size:0.9em;line-height:1.55;">'
+            f'• 🧭 {where_summary}<br>'
+            f'• 🏠 {where_scene}'
+            f'</div></div>'
+        )
+
+    # 4. Nếu hỏi về CON NGƯỜI / NGƯỜI THÂN / ĐỐI TÁC → Hiển thị Hồ sơ Con người
+    if _is_person_focus:
+        _sections_html.append(
+            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(168,85,247,0.1);border-radius:10px;border-left:4px solid #c084fc;">'
+            f'<div style="color:#e9d5ff;font-weight:800;font-size:0.96em;margin-bottom:4px;">👤 HỒ SƠ CHỦ THỂ / NGƯỜI LIÊN QUAN TRONG QUẺ</div>'
+            f'<div style="color:#f3e8ff;font-size:0.9em;line-height:1.55;">'
+            f'• 🚻 <b>Giới tính & Chủ thể:</b> <span style="color:#fde047;font-weight:700;">{primary_gender}</span> '
+            f'<span style="color:#cbd5e1;font-size:0.88em;">[{", ".join(gender_reasons)}]</span><br>'
+            f'• 🎂 <b>Độ tuổi:</b> <b>{age_tier}</b> | 🎯 <b>Tuổi ứng quẻ:</b> <b>{", ".join(birth_years)}</b><br>'
+            f'• 🧑 <b>Thần thái & Tính cách:</b> {appearance_str} {motive_str}<br>'
+            f'• 🤝 <b>Mối quan hệ:</b> <b>{familiar_str}</b>'
+            f'</div></div>'
+        )
+
+    # 5. Chỉ khi hỏi TÌM ĐỒ / ĐỒ VẬT / BAO NHIÊU / TÀI SẢN CỤ THỂ (và KHÔNG phải hỏi bệnh) → Hiển thị Đồ vật & Con số
+    if _is_object_count_focus:
+        _sections_html.append(
+            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(236,72,153,0.08);border-radius:10px;border-left:4px solid #f472b6;">'
+            f'<div style="color:#fbcfe8;font-weight:800;font-size:0.96em;margin-bottom:4px;">📦 ĐẶC ĐIỂM ĐỒ VẬT, TÀI SẢN & CON SỐ ĐỊNH LƯỢNG</div>'
+            f'<div style="color:#fce7f3;font-size:0.9em;line-height:1.55;">'
+            f'• 🔮 <b>Biểu tượng vật chất ứng quẻ:</b> <b>{combined_objects}</b><br>'
+            f'• 🎨 <b>Màu sắc & Chất liệu:</b> Màu <b>{h_forensic["mau_sac"]}</b> | Chất liệu: <b>{h_forensic["chat_lieu"]}</b><br>'
+            f'• 📐 <b>Hình dáng & Trạng thái:</b> {h_forensic["hinh_dang"]} ({item_size}) — <b>{item_condition}</b><br>'
+            f'• 🔢 <b>Con số định lượng:</b> {quantity_str}'
+            f'</div></div>'
+        )
+
+    # 6. Thời điểm ứng kỳ (Luôn hiển thị để biết mốc thời gian xảy ra/chuyển biến)
+    _sections_html.append(
+        f'<div style="margin-bottom:4px;padding:10px 12px;background:rgba(245,158,11,0.1);border-radius:10px;border-left:4px solid #fbbf24;">'
+        f'<div style="color:#fde047;font-weight:800;font-size:0.96em;margin-bottom:4px;">⏰ THỜI ĐIỂM ỨNG KỲ & PHƯƠNG HƯỚNG HÓA GIẢI</div>'
         f'<div style="color:#f8fafc;font-size:0.9em;line-height:1.55;">'
-        f'• 🎯 <b>Chốt thời điểm hội tụ:</b> <span style="color:#fef08a;font-weight:700;">{uk_exact}</span><br>'
-        f'• ⏱️ <b>Phút & Khắc ứng nghiệm:</b> {uk_minute}<br>'
-        f'• 🕐 <b>Giờ Địa Chi:</b> {uk_hour}<br>'
-        f'• 📅 <b>Ngày Dương / Âm lịch:</b> {uk_day}<br>'
-        f'• 🗓️ <b>Tháng & Năm:</b> {uk_month} | {uk_year} — <i>{uk_speed}</i>'
+        f'• 🎯 <b>Mốc thời gian hội tụ khí số:</b> <span style="color:#fef08a;font-weight:700;">{uk_exact}</span> ({uk_day} | {uk_month})<br>'
+        f'• 🕐 <b>Khung giờ & Khắc ứng nghiệm:</b> {uk_hour} — {uk_minute}<br>'
+        f'• 🧭 {remedy_str}'
         f'</div></div>'
+    )
 
-        # 3. Ở ĐÂU (ĐỊA ĐIỂM, PHƯƠNG HƯỚNG, KHOẢNG CÁCH, ĐỘ CAO)
-        f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(16,185,129,0.08);border-radius:10px;border-left:4px solid #34d399;">'
-        f'<div style="color:#34d399;font-weight:800;font-size:0.98em;margin-bottom:4px;">📍 3. Ở ĐÂU? (PHƯƠNG HƯỚNG – KHOẢNG CÁCH – ĐỘ CAO – MÔ TẢ HIỆN TRƯỜNG)</div>'
-        f'<div style="color:#e2e8f0;font-size:0.9em;line-height:1.55;">'
-        f'• 🧭 {where_summary}<br>'
-        f'• 🏠 {where_scene}'
-        f'</div></div>'
-
-        # 4. CON NGƯỜI (TRAI HAY GÁI, GIÀ HAY TRẺ, TUỔI, NGOẠI HÌNH, QUEN HAY LẠ)
-        f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(168,85,247,0.1);border-radius:10px;border-left:4px solid #c084fc;">'
-        f'<div style="color:#e9d5ff;font-weight:800;font-size:0.98em;margin-bottom:4px;">👤 4. CON NGƯỜI LIÊN QUAN (TRAI HAY GÁI · GIÀ HAY TRẺ · TUỔI · NGOẠI HÌNH · QUEN HAY LẠ)</div>'
-        f'<div style="color:#f3e8ff;font-size:0.9em;line-height:1.55;">'
-        f'• 🚻 <b>Giới tính (Trai hay Gái):</b> <span style="color:#fde047;font-weight:700;">{primary_gender}</span> '
-        f'<span style="color:#cbd5e1;font-size:0.88em;">[{", ".join(gender_reasons)}] — {secondary_gender}</span><br>'
-        f'• 🎂 <b>Độ tuổi (Già hay Trẻ):</b> <b>{age_tier}</b> | 🎯 <b>Tuổi dự báo sát nhất:</b> <b>{", ".join(birth_years)}</b><br>'
-        f'• 🧑 <b>Ngoại hình & Tính cách:</b> {appearance_str} {motive_str}<br>'
-        f'• 💼 <b>Nghề nghiệp & Quan hệ:</b> Lĩnh vực {h_forensic["nghe_nghiep"]} | <b>{familiar_str}</b>'
-        f'</div></div>'
-
-        # 5. ĐỒ VẬT, MÀU SẮC, CHẤT LIỆU, SỐ LƯỢNG
-        f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(236,72,153,0.08);border-radius:10px;border-left:4px solid #f472b6;">'
-        f'<div style="color:#fbcfe8;font-weight:800;font-size:0.98em;margin-bottom:4px;">📦 5. ĐỒ VẬT & TÀI SẢN (ĐỒ VẬT GÌ · MÀU SẮC · CHẤT LIỆU · HÌNH DÁNG · MỚI/CŨ · SỐ LƯỢNG)</div>'
-        f'<div style="color:#fce7f3;font-size:0.9em;line-height:1.55;">'
-        f'• 🔮 <b>Đồ vật / Sự vật cụ thể:</b> <b>{combined_objects}</b><br>'
-        f'• 🎨 <b>Màu sắc & Chất liệu:</b> Màu <b>{h_forensic["mau_sac"]}</b> | Chất liệu: <b>{h_forensic["chat_lieu"]}</b><br>'
-        f'• 📐 <b>Hình dáng & Tình trạng:</b> {h_forensic["hinh_dang"]} ({item_size}) — <b>{item_condition}</b><br>'
-        f'• 🔢 <b>Số lượng & Giá trị:</b> {quantity_str}'
-        f'</div></div>'
-
-        # 6. CƠ THỂ & HÓA GIẢI
-        f'<div style="padding:10px 12px;background:rgba(59,130,246,0.08);border-radius:10px;border-left:4px solid #60a5fa;">'
-        f'<div style="color:#93c5fd;font-weight:800;font-size:0.98em;margin-bottom:4px;">🏥 6. CƠ THỂ, SỨC KHỎE & PHÁP QUYẾT HÓA GIẢI</div>'
-        f'<div style="color:#dbeafe;font-size:0.9em;line-height:1.55;">'
-        f'• {health_str}<br>'
-        f'• {remedy_str}'
-        f'</div></div>'
-        f'</div>'
+    html_block = (
+        f'<div style="margin-top:14px;padding:16px;background:linear-gradient(135deg,rgba(15,23,42,0.92),rgba(30,27,75,0.92));'
+        f'border-radius:14px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.22);">'
+        f'<div style="font-size:1.08em;font-weight:900;color:#fbbf24;margin-bottom:8px;border-bottom:1px solid rgba(251,191,36,0.3);padding-bottom:6px;">'
+        f'🔮 LUẬN GIẢI CHUYÊN SÂU ĐÚNG TRỌNG TÂM CÂU HỎI</div>'
+        + "".join(_sections_html)
+        + f'</div>'
     )
 
     return {
@@ -644,5 +712,11 @@ def build_omniscient_prophecy(
             'quantity': quantity_str,
             'exact_timestamp': uk_exact,
             'minute': uk_minute,
+            'co_the': h_forensic['co_the'],
+            'hoa_giai': h_forensic['hoa_giai'],
+            'huong': c_info['huong'],
+            'quai_name': c_info['quai'],
+            'places': c_info['places'],
+            'height_desc': height_desc,
         },
     }

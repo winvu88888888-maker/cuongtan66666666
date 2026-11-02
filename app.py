@@ -2543,30 +2543,12 @@ def render_master_unified_qa_box(location_key="main"):
                         except Exception:
                             pass
 
-                    # 2. Tự động chuẩn bị Xem Ngày Đẹp & Tử Vi Đẩu Số (luôn chạy 100%)
-                    _tv_data_q = st.session_state.get('tv_la_so')
-                    if not _tv_data_q:
-                        try:
-                            from tu_vi import lap_la_so as _auto_lap_tv
-                            from xem_ngay_dep import solar2lunar as _auto_s2l
-                            _d_tv, _m_tv, _y_tv, _ = _auto_s2l(dt_now.day, dt_now.month, dt_now.year)
-                            _tv_data_q = _auto_lap_tv(_y_tv, _m_tv, _d_tv, (dt_now.hour // 2) % 12, 'nam')
-                        except Exception:
-                            _tv_data_q = None
-
-                    _xn_data_q = st.session_state.get('xn_result')
-                    if not _xn_data_q:
-                        try:
-                            from xem_ngay_dep import danh_gia_ngay_duong_lich as _auto_dg_dl
-                            _chart_q = st.session_state.get('chart_data', {})
-                            _xn_data_q = _auto_dg_dl(
-                                dt_now.day, dt_now.month, dt_now.year,
-                                _chart_q.get('can_ngay', 'Giáp') if _chart_q else 'Giáp',
-                                _chart_q.get('chi_ngay', 'Tý') if _chart_q else 'Tý',
-                                'cau_tai'
-                            )
-                        except Exception:
-                            _xn_data_q = None
+                    # 2. Chỉ truyền lá số Tử Vi / Xem Ngày tùy chỉnh nếu người dùng chủ động bật;
+                    #    còn lại để FreeAIHelper tự động tính theo đúng ngữ cảnh câu hỏi (chữa bệnh, cưới hỏi, năm sinh trong câu hỏi...)
+                    _has_personal_tv = bool(st.session_state.get('qa_use_tu_vi', False))
+                    _tv_data_q = st.session_state.get('tv_la_so') if _has_personal_tv else None
+                    _has_custom_xn = bool(st.session_state.get('qa_use_xem_ngay', False))
+                    _xn_data_q = st.session_state.get('xn_result') if _has_custom_xn else None
 
                     # 3. Gọi answer_question hợp nhất toàn bộ 10 Hệ thống
                     _q_to_send = user_question.strip()
@@ -2575,7 +2557,7 @@ def render_master_unified_qa_box(location_key="main"):
                         _q_to_send = f"[{_exp_tag}] {_q_to_send}"
 
                     _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
-                    _cache_key = f"{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{st.session_state.get('qa_use_cloud_llm',False)}"
+                    _cache_key = f"V997|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{st.session_state.get('qa_use_cloud_llm',False)}"
                     if not _use_rnd and _cache_key in _cache_store:
                         combined_answer = _cache_store[_cache_key]
                     else:
@@ -2588,6 +2570,8 @@ def render_master_unified_qa_box(location_key="main"):
                             luc_hao_data=luc_hao_for_q,
                             tu_vi_data=_tv_data_q,
                             xem_ngay_data=_xn_data_q,
+                            has_personal_tv=_has_personal_tv,
+                            has_custom_xn=_has_custom_xn,
                             use_online_api=st.session_state.get('qa_use_cloud_llm', False),
                         )
                         if not _use_rnd:

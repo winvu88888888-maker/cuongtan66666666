@@ -2001,9 +2001,9 @@ def _check_phan_phuc_ngam(can_thien, can_dia):
         return 'PHỤC NGÂM'
     # Phản Ngâm: Can xung nhau (cùng hành đối lập)
     # Check Thiên Can xung: Giáp-Canh, Ất-Tân, Bính-Nhâm, Đinh-Quý, Mậu-Giáp (đặc biệt)
-    THIEN_CAN_XUNG = {'Giáp': 'Canh', 'Canh': 'Giáp', 'Ất': 'Tân', 'Tân': 'Ất',
-                      'Bính': 'Nhâm', 'Nhâm': 'Bính', 'Đinh': 'Quý', 'Quý': 'Đinh',
-                      'Mậu': 'Giáp', 'Kỷ': 'Ất'}
+    # V99.7 FIX: Trong Kỳ Môn, Thiên Bàn Phản Ngâm chuẩn là Giáp(Mậu) <-> Canh
+    # (Ất-Tân, Bính-Nhâm, Đinh-Quý là Thập Can Khắc Ứng riêng, không phải Phản Ngâm toàn cục)
+    THIEN_CAN_XUNG = {'Giáp': 'Canh', 'Canh': 'Mậu', 'Mậu': 'Canh'}
     if THIEN_CAN_XUNG.get(can_thien) == can_dia:
         return 'PHẢN NGÂM'
     return None
@@ -12764,43 +12764,7 @@ class FreeAIHelper:
             except Exception as e:
                 self.log_step("V32.4 AutoCast", "MH_ERR", str(e)[:60])
         
-        # 2. Lục Hào: gieo theo thời gian
-        if not luc_hao_data:
-            try:
-                from luc_hao_kinh_dich import lap_qua_luc_hao
-                _can_ngay = 'Giáp'
-                _chi_ngay = 'Tý'
-                if chart_data and isinstance(chart_data, dict):
-                    _can_ngay = chart_data.get('can_ngay', 'Giáp')
-                    _chi_ngay = chart_data.get('chi_ngay', 'Tý')
-                else:
-                    # Tính Can Ngày từ thời gian
-                    _cans = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
-                    _chis = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
-                    # V42.8f FIX: Dùng _jdn chuẩn thay vì formula sai (lệch 11-13 ngày!)
-                    try:
-                        from xem_ngay_dep import _jdn as _jdn_func
-                        _jdn_val = _jdn_func(_d, _m, _y)
-                    except ImportError:
-                        # Fallback: accurate Gregorian JDN
-                        _a = (14 - _m) // 12
-                        _yy = _y + 4800 - _a
-                        _mm = _m + 12 * _a - 3
-                        _jdn_val = _d + (153 * _mm + 2) // 5 + 365 * _yy + _yy // 4 - _yy // 100 + _yy // 400 - 32045
-                    _can_ngay = _cans[(_jdn_val + 9) % 10]
-                    _chi_ngay = _chis[(_jdn_val + 1) % 12]
-                
-                luc_hao_data = lap_qua_luc_hao(
-                    _y, _m, _d, _h,
-                    topic=topic or 'Chung',
-                    can_ngay=_can_ngay,
-                    chi_ngay=_chi_ngay
-                )
-                self.log_step("V32.4 AutoCast", "LUC_HAO", f"Can={_can_ngay}, Chi={_chi_ngay}")
-            except Exception as e:
-                self.log_step("V32.4 AutoCast", "LH_ERR", str(e)[:60])
-        
-        # 3. Chart Data (Kỳ Môn ĐẦY ĐỦ 9 CUNG): gọi hàm thật từ qmdg_calc + qmdg_data
+        # 2. Chart Data (Kỳ Môn ĐẦY ĐỦ 9 CUNG): chạy TRƯỚC Lục Hào để có chuẩn Tứ Trụ (Can/Chi Ngày & Tháng)
         if not chart_data or not isinstance(chart_data, dict) or not chart_data.get('thien_ban'):
             try:
                 from qmdg_calc import calculate_qmdg_params
@@ -12873,7 +12837,28 @@ class FreeAIHelper:
                 except:
                     pass
 
-        # ====== V8.2: SMART CATEGORY DETECTION ======
+        
+        # 3. Lục Hào: gieo theo thời gian (dùng chuẩn Can/Chi Ngày & Tháng từ chart_data)
+        if not luc_hao_data:
+            try:
+                from luc_hao_kinh_dich import lap_qua_luc_hao
+                _can_ngay = chart_data.get('can_ngay', 'Giáp') if isinstance(chart_data, dict) else 'Giáp'
+                _chi_ngay = chart_data.get('chi_ngay', 'Tý') if isinstance(chart_data, dict) else 'Tý'
+                _can_thang = chart_data.get('can_thang') if isinstance(chart_data, dict) else None
+                _chi_thang = chart_data.get('chi_thang') if isinstance(chart_data, dict) else None
+                luc_hao_data = lap_qua_luc_hao(
+                    _y, _m, _d, _h,
+                    topic=topic or 'Chung',
+                    can_ngay=_can_ngay,
+                    chi_ngay=_chi_ngay,
+                    can_thang=_can_thang,
+                    chi_thang=_chi_thang,
+                )
+                self.log_step("V99.7 AutoCast", "LUC_HAO", f"Can={_can_ngay} {_chi_ngay}, Thang={_can_thang} {_chi_thang}")
+            except Exception as e:
+                self.log_step("V99.7 AutoCast", "LH_ERR", str(e)[:60])
+
+# ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
         q_lower = question.lower()
         
@@ -13183,14 +13168,9 @@ class FreeAIHelper:
         
         for cat_key, cat_info in CATEGORIES.items():
             if cat_key == "CHUNG":
-                # CHUNG: chỉ match nếu không category nào khác match
-                score = 0
-                for kw in cat_info["keywords"]:
-                    if kw in q_lower:
-                        score += len(kw)
-                if score > max_score:
-                    max_score = score
-                    detected_category = cat_key
+                # V99.7 FIX: CHUNG chỉ match khi chưa có category chuyên biệt nào match (max_score == 0)
+                if max_score == 0:
+                    detected_category = "CHUNG"
                 continue
             
             score = 0
@@ -13318,15 +13298,14 @@ class FreeAIHelper:
         # V35.8: Dropdown CHỈ override khi user chủ động chọn (không phải default "Bản thân")
         # Default "👤 Bản thân" → để V35.8 PERSON+TOPIC tự detect
         _DROPDOWN_DEFAULTS = {"Không Rõ", "👤 Bản thân", "Bản thân", "Bản Thân", ""}
-        if selected_subject and selected_subject not in _DROPDOWN_DEFAULTS:
-            # User chủ động chọn: "👴👵 Bố mẹ", "👶 Con cái", etc.
-            _DROPDOWN_DT_MAP = {
-                "👨‍👩‍👧 Anh chị em": "Huynh Đệ",
-                "👴👵 Bố mẹ": "Phụ Mẫu",
-                "👶 Con cái": "Tử Tôn",
-                "🤝 Người lạ (theo Can sinh)": "Quan Quỷ",
-            }
-            dung_than = _DROPDOWN_DT_MAP.get(selected_subject, dung_than)
+        if selected_subject and selected_subject not in _DROPDOWN_DEFAULTS and not _detected_person:
+            _ss_str = str(selected_subject)
+            if 'Bố mẹ' in _ss_str or 'Ông bà' in _ss_str: dung_than = 'Phụ Mẫu'
+            elif 'Vợ' in _ss_str or 'Tiền bạc' in _ss_str: dung_than = 'Thê Tài'
+            elif 'Chồng' in _ss_str or 'Cấp trên' in _ss_str: dung_than = 'Quan Quỷ'
+            elif 'Con cái' in _ss_str or 'Cháu' in _ss_str: dung_than = 'Tử Tôn'
+            elif 'Anh chị em' in _ss_str or 'Bạn bè' in _ss_str: dung_than = 'Huynh Đệ'
+            elif 'Người lạ' in _ss_str or 'Đối phương' in _ss_str: dung_than = 'Quan Quỷ'
         
         is_age = _is_age_question(question)
         is_find = _is_find_question(question) and detected_category == "TÌM_ĐỒ"
@@ -13377,6 +13356,9 @@ class FreeAIHelper:
                         # PERSON đã detect → giữ nguyên, KHÔNG cho parser override
                         self.log_step("V6886 DT Guard", "BLOCK_PARSER",
                                       f"Person={_detected_person}({dung_than}) — Parser muốn: {parser_dt} → BỊ CHẶN")
+                    elif dung_than != 'Bản Thân' and (parser_dt == 'Bản Thân' or detected_category in ('TÀI_CHÍNH', 'CÔNG_VIỆC', 'TÌNH_CẢM', 'TÌM_ĐỒ')):
+                        # V99.7 FIX: Khi đã xác định rõ Dụng Thần chuyên biệt (Thê Tài/Quan Quỷ/Phụ Mẫu/Tử Tôn), không cho Parser ghi đè ngược
+                        self.log_step("V99.7 DT Guard", "KEEP_SPECIFIC_DT", f"Keep DT={dung_than} (Category={detected_category}), ignore parser_dt={parser_dt}")
                     elif parser_dt != dung_than:
                         self.log_step("V42.9.29 DT Fix", "OVERRIDE", f"Regex DT: {dung_than} -> Parser DT: {parser_dt} ({reason[:60]})")
                         dung_than = parser_dt
@@ -13736,13 +13718,23 @@ class FreeAIHelper:
         try:
             from tu_vi import lap_la_so
             from xem_ngay_dep import solar2lunar as _tv_s2l
-            _tv_data = kwargs.get('tu_vi_data')
+            import re as _re_tv_yr
+            _tv_data = kwargs.get('tu_vi_data') if kwargs.get('has_personal_tv') else None
+            _has_personal_tv = bool(_tv_data and isinstance(_tv_data, dict))
             _tv_mode_label = "Lá số Cá nhân"
-            if not _tv_data or not isinstance(_tv_data, dict):
-                _d_tv, _m_tv, _y_tv, _ = _tv_s2l(_d, _m, _y)
-                _gio_idx_tv = (_h // 2) % 12
-                _tv_data = lap_la_so(_y_tv, _m_tv, _d_tv, _gio_idx_tv, 'nam')
-                _tv_mode_label = "Lá số Thời Thần / Lưu Niên lúc động tâm"
+            if not _has_personal_tv:
+                _yr_m_tv = _re_tv_yr.search(r'(?:sinh năm|tuổi|sn|năm)\s*(19\d\d|20[0-2]\d)', q_lower)
+                if _yr_m_tv:
+                    _by_tv = int(_yr_m_tv.group(1))
+                    _gt_tv = 'nu' if any(w in q_lower for w in ['mẹ', 'bà', 'vợ', 'chị', 'con gái', 'cô', 'dì', 'nữ']) else 'nam'
+                    _tv_data = lap_la_so(_by_tv, 6, 15, (_h // 2) % 12, _gt_tv)
+                    _tv_mode_label = f"Lá số Cá nhân (Sinh năm {_by_tv})"
+                    _has_personal_tv = True
+                else:
+                    _d_tv, _m_tv, _y_tv, _ = _tv_s2l(_d, _m, _y)
+                    _gio_idx_tv = (_h // 2) % 12
+                    _tv_data = lap_la_so(_y_tv, _m_tv, _d_tv, _gio_idx_tv, 'nam')
+                    _tv_mode_label = "Lá số Thời Thần / Lưu Niên lúc động tâm"
             
             _cat_to_cung_tv = {
                 'TÀI_CHÍNH': 'Tài Bạch', 'CÔNG_VIỆC': 'Quan Lộc',
@@ -13860,14 +13852,19 @@ class FreeAIHelper:
         v24_ln_factors = []
         v24_ta_factors = []
         
+        def _score_to_canonical_verdict(sc):
+            if sc >= 15: return 'ĐẠI CÁT'
+            if sc >= 5: return 'CÁT'
+            if sc <= -15: return 'ĐẠI HUNG'
+            if sc <= -5: return 'HUNG'
+            return 'BÌNH'
+
         try:
             km_s, km_sum, v24_km_factors = self._ky_mon_scoring(chart_data, dung_than)
             v16_km_raw = km_s
-            # Override km_verdict_to_score from raw calculation
-            if km_sum:
-                ky_mon_verdict = km_sum
+            ky_mon_verdict = _score_to_canonical_verdict(km_s)
             if v24_km_factors:
-                ky_mon_reason = ", ".join([str(f).replace("KM ", "").replace("  ", "") for f in v24_km_factors])
+                ky_mon_reason = f"Điểm {km_s:+d} ({ky_mon_verdict}): " + ", ".join([str(f).replace("KM ", "").replace("  ", "") for f in v24_km_factors])
         except Exception:
             pass
             
@@ -13875,50 +13872,45 @@ class FreeAIHelper:
             lh_s, lh_sum, v23_lh_factors = self._luc_hao_scoring(luc_hao_data, dung_than)
             v16_lh_score_str = lh_sum
             v16_lh_raw = lh_s
-            if lh_sum:
-                luc_hao_verdict = lh_sum
+            luc_hao_verdict = _score_to_canonical_verdict(lh_s)
             if v23_lh_factors:
-                luc_hao_reason = ", ".join([str(f).replace("LH ", "").replace("  ", "") for f in v23_lh_factors])
+                luc_hao_reason = f"Điểm {lh_s:+d} ({luc_hao_verdict}): " + ", ".join([str(f).replace("LH ", "").replace("  ", "") for f in v23_lh_factors])
         except Exception:
             pass
         try:
             mh_s, mh_sum, v24_mh_factors = self._mai_hoa_scoring(mai_hoa_data, chart_data)
             v16_mh_score_str = mh_sum
             v16_mh_raw = mh_s
-            if mh_sum:
-                mai_hoa_verdict = mh_sum
+            mai_hoa_verdict = _score_to_canonical_verdict(mh_s)
             if v24_mh_factors:
-                mai_hoa_reason = ", ".join([str(f).replace("MH ", "").replace("  ", "") for f in v24_mh_factors])
+                mai_hoa_reason = f"Điểm {mh_s:+d} ({mai_hoa_verdict}): " + ", ".join([str(f).replace("MH ", "").replace("  ", "") for f in v24_mh_factors])
         except Exception:
             pass
         try:
             tb_s, tb_sum, v24_tb_factors = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data)
             v16_tb_score_str = tb_sum
             v16_tb_raw = tb_s
-            if tb_sum:
-                thiet_ban_verdict = tb_sum
+            thiet_ban_verdict = _score_to_canonical_verdict(tb_s)
             if v24_tb_factors:
-                thiet_ban_reason = ", ".join([str(f).replace("TB ", "").replace("  ", "") for f in v24_tb_factors])
+                thiet_ban_reason = f"Điểm {tb_s:+d} ({thiet_ban_verdict}): " + ", ".join([str(f).replace("TB ", "").replace("  ", "") for f in v24_tb_factors])
         except Exception:
             pass
         try:
             ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data)
             v16_ln_score_str = ln_sum
             v16_ln_raw = ln_s
-            if ln_sum:
-                luc_nham_verdict = ln_sum
+            luc_nham_verdict = _score_to_canonical_verdict(ln_s)
             if v24_ln_factors:
-                luc_nham_reason = ", ".join([str(f).replace("LN ", "").replace("  ", "") for f in v24_ln_factors])
+                luc_nham_reason = f"Điểm {ln_s:+d} ({luc_nham_verdict}): " + ", ".join([str(f).replace("LN ", "").replace("  ", "") for f in v24_ln_factors])
         except Exception:
             pass
         try:
             ta_s, ta_sum, v24_ta_factors = self._thai_at_scoring(chart_data)
             v16_ta_score_str = ta_sum
             v16_ta_raw = ta_s
-            if ta_sum:
-                thai_at_verdict = ta_sum
+            thai_at_verdict = _score_to_canonical_verdict(ta_s)
             if v24_ta_factors:
-                thai_at_reason = ", ".join([str(f).replace("TA ", "").replace("  ", "") for f in v24_ta_factors])
+                thai_at_reason = f"Điểm {ta_s:+d} ({thai_at_verdict}): " + ", ".join([str(f).replace("TA ", "").replace("  ", "") for f in v24_ta_factors])
         except Exception:
             pass
         
@@ -13958,6 +13950,13 @@ class FreeAIHelper:
         }
         strength_key_w = _CAT_TO_STRENGTH_DIRECT.get(detected_category, CATEGORY_TO_STRENGTH.get(detected_category, 'tổng_quát'))
         method_w = METHOD_STRENGTH_MAP.get(strength_key_w, METHOD_STRENGTH_MAP.get('tổng_quát', {}))
+        # V99.7 FIX: Trọng số thông minh theo ngữ cảnh câu hỏi (tránh ngày Hoàng Đạo làm lệch quẻ Bệnh tật/Tìm đồ)
+        _is_date_action_q = bool(kwargs.get('has_custom_xn')) or any(
+            k in q_lower for k in [
+                'ngày nào', 'hôm nay', 'ngày mai', 'khai trương', 'động thổ', 'cưới',
+                'nhập trạch', 'xuất hành', 'ký hợp đồng', 'ký kết', 'chọn ngày', 'giờ nào', 'mở hàng', 'khởi công'
+            ]
+        )
         weights = {
             'KM': method_w.get('ky_mon', 55),
             'LH': method_w.get('luc_hao', 100),
@@ -13965,8 +13964,8 @@ class FreeAIHelper:
             'TB': method_w.get('thiet_ban', 40),
             'LN': method_w.get('luc_nham', 50),
             'TA': method_w.get('thai_at', 35),
-            'XN': method_w.get('xem_ngay', 40),
-            'TV': method_w.get('tu_vi', 45),
+            'XN': method_w.get('xem_ngay', 45) if _is_date_action_q else 8,
+            'TV': method_w.get('tu_vi', 50) if locals().get('_has_personal_tv') else 8,
         }
         
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
@@ -14084,14 +14083,17 @@ class FreeAIHelper:
             _conflict_penalty -= 8  # Negative = bonus
             _conflict_warnings.append(f"⚡ ĐA SỐ CÁT ({len(_v_cat)}/6) nhưng điểm {weighted_pct}% — tăng bù")
         
-        # Apply conflict penalty/bonus
+        # Apply conflict penalty/bonus (V99.7 FIX: kéo nhẹ về 50% trung tính khi 2 PP chính mâu thuẫn, tuyệt đối không đảo chiều CÁT thành HUNG)
         if _conflict_penalty != 0:
             _old_pct = weighted_pct
-            # Penalty: kéo về 50% (trung tính), không đảo chiều
             if _conflict_penalty > 0:
-                weighted_pct = max(30, weighted_pct - _conflict_penalty)
+                if ('KM' in _v_cat and 'LH' in _v_cat) or len(_v_cat) > len(_v_hung):
+                    # Khi cả KM & LH cùng CÁT hoặc đa số CÁT → giữ nguyên trên 50%, chỉ giảm nhẹ tối đa 3%
+                    weighted_pct = max(52, weighted_pct - min(3, _conflict_penalty // 3))
+                elif weighted_pct > 50:
+                    weighted_pct = max(48, int(50 + (weighted_pct - 50) * 0.7))
             else:
-                weighted_pct = min(75, weighted_pct - _conflict_penalty)  # bonus
+                weighted_pct = min(75, weighted_pct - _conflict_penalty)
             weighted_pct = max(5, min(95, weighted_pct))
             sections.append(f"\n**⚠️ PHÁT HIỆN XUNG ĐỘT GIỮA CÁC PHƯƠNG PHÁP:**")
             for _cw in _conflict_warnings:
@@ -15070,11 +15072,9 @@ class FreeAIHelper:
                 )
                 _conflict_penalty += 2  # PP phụ trừ ít hơn
         
-        # Áp dụng penalty
+        # V99.7 FIX: Không trừ trùng lặp _conflict_penalty lần 2 (đã xử lý tại BƯỚC 6)
         if _conflict_penalty > 0:
-            weighted_pct = max(15, weighted_pct - _conflict_penalty)
-            self.log_step("V42.9.29", "CONFLICT", 
-                f"{len(_conflicts)} conflicts, penalty=-{_conflict_penalty}% → pct={weighted_pct}%")
+            self.log_step("V99.7", "CONFLICT_LOG_ONLY", f"{len(_conflicts)} conflicts logged, pct={weighted_pct}%")
         
         # Build Hub
         _hub = {
@@ -15189,13 +15189,10 @@ class FreeAIHelper:
                                 if 'Phục Ngâm' in _lh_str: _bt.append('Phục Ngâm')
                                 if 'Phản Ngâm' in _lh_str: _bt.append('Phản Ngâm')
                                 _step_res = f"Phát hiện: {', '.join(_bt)}" if _bt else "Không có dấu hiệu Tuần Không/Phục Ngâm/Phản Ngâm."
-                                # V42.9.5 PATCH: BẤT THƯỜNG PHẢI GIẢM ĐIỂM THỰC SỰ
+                                # V99.7 FIX: Tuần Không / Nguyệt Phá đã được trừ trực tiếp trong _luc_hao_scoring, không trừ trùng lần 2
                                 if _bt:
-                                    _bt_penalty = len(_bt) * 8  # Mỗi bất thường trừ 8%
-                                    weighted_pct = max(15, weighted_pct - _bt_penalty)
-                                    _hub['synthesis']['bt_penalty'] = _bt_penalty
                                     _hub['synthesis']['bt_detected'] = _bt
-                                    self.log_step("V42.9.5", "BT_PENALTY", f"Trừ {_bt_penalty}% do {_bt} → pct={weighted_pct}%")
+                                    self.log_step("V99.7", "BT_LOG_ONLY", f"Detected {_bt}, pct={weighted_pct}%")
                             elif 'Cát Hung' in _v['name']: _step_res = f"Kết luận: {_hub['methods']['LH']['verdict']}."
                         elif _pm_code == 'MH' and mai_hoa_data:
                             if 'Thể/Dụng' in _v['name']:
@@ -15575,13 +15572,8 @@ class FreeAIHelper:
                 offline_analysis_data=offline_analysis_data
             )
         
-        # V6886: Xác định xem có thực sự là nhiều câu hỏi không từ Parser V32
+        # V99.7: Luôn dùng 1 Đại Khung Kết Luận 7 Tầng Hợp Nhất 10 Hệ Thống + Tiên Tri 360°
         _real_multi = False
-        try:
-            if v31_parsed_questions and len(v31_parsed_questions) > 1:
-                _real_multi = True
-        except NameError:
-            pass
             
         if online_result:
             # V31.0: AI Online + Sơ Đồ Tương Tác
@@ -16678,7 +16670,11 @@ class FreeAIHelper:
                                 'ta': locals().get('thai_at_verdict', ''),
                             }
                             _brain_all_factors = list(locals().get('v23_lh_factors') or []) + list(locals().get('v24_km_factors') or []) + list(locals().get('v24_mh_factors') or [])
-                            _brain_ung_ky = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
+                            _brain_ung_ky = (
+                        (_omniscient_res.get('data', {}).get('exact_timestamp', '') if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else '')
+                        or (_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '')
+                        or (v15_timing if locals().get('v15_timing') else '')
+                    )
                             _brain_ans = generate_smart_offline_answer(
                                 question=_c.get('text', ''),
                                 dung_than=_c.get('dt', locals().get('dung_than', '')),
@@ -16950,44 +16946,120 @@ class FreeAIHelper:
                     )
                 
                 
-                # ═══ V6886: OFFLINE BRAIN — Câu trả lời thông minh ═══
-                _brain_answer = ''
+                # ═══ V99.7: HỢP NHẤT 1 ĐẠI KHUNG KẾT LUẬN 7 TẦNG DUY NHẤT (KHÔNG TRÙNG LẶP CARD) ═══
+                _narrative_fb = ''
                 try:
-                    _brain_verdicts = {
-                        'km': ky_mon_verdict, 'lh': luc_hao_verdict,
-                        'mh': mai_hoa_verdict, 'tb': thiet_ban_verdict,
-                        'ln': luc_nham_verdict, 'ta': thai_at_verdict,
-                        'xn': xem_ngay_verdict, 'tv': tu_vi_verdict,
-                    }
+                    from offline_brain import build_narrative_summary_text
                     _brain_all_factors = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
                     _brain_ung_ky = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
-                    _brain_answer = generate_smart_offline_answer(
+                    _omni_data_fb = _omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {}
+                    _narrative_fb = build_narrative_summary_text(
                         question=question,
                         dung_than=dung_than,
                         weighted_pct=weighted_pct,
                         category=detected_category,
-                        verdicts_dict=_brain_verdicts,
                         all_factors=_brain_all_factors,
                         ung_ky_str=_brain_ung_ky,
                         chart_data=chart_data,
-                        v38_conclusion=v38_conclusion,
+                        omni_data=_omni_data_fb,
+                        kc_detail=_kc_detail_fb,
+                        ev_str=_ev_str_fb,
                     )
                 except Exception as _brain_err:
-                    self.log_step("V6886 Brain", "ERROR", str(_brain_err)[:80])
-                
-                if _brain_answer:
-                    final_parts.append(_brain_answer)
-                
+                    self.log_step("V99.7 Brain", "ERROR", str(_brain_err)[:80])
+
+                # --- TẦNG 2: SƠ ĐỒ LỰC LƯỢNG (Trường Sinh + Ngũ Khí + Vạn Vật) ---
+                _t2_fb_html = ''
+                try:
+                    _t2_ts = locals().get('ts_stage', '')
+                    _t2_ts_info = TRUONG_SINH_POWER.get(_t2_ts, {}) if _t2_ts else {}
+                    _t2_nk = locals().get('ngu_khi_state_v22', '')
+                    _t2_nk_info = NGU_KHI_POWER.get(_t2_nk, {}) if _t2_nk else {}
+                    _t2_hanh = locals().get('hanh_dt_v22', '?')
+                    _t2_parts = [f'⚡ <b>Dụng Thần Trọng Tâm:</b> {dung_than} (Ngũ hành: <b>{_t2_hanh}</b>)']
+                    if _t2_ts:
+                        _t2_parts.append(f'🔄 <b>Vòng 12 Trường Sinh:</b> {_t2_ts} — {_t2_ts_info.get("cap", "?")} ({_t2_ts_info.get("power", "?")}%) — <i>{_t2_ts_info.get("con_nguoi", "")}</i>')
+                    if _t2_nk:
+                        _t2_parts.append(f'🌊 <b>Ngũ Khí Theo Mùa:</b> {_t2_nk} — {_t2_nk_info.get("label", "?")} ({_t2_nk_info.get("power", "?")}%)')
+                    _t2_inner = ''.join(f'<div style="color:#d1fae5;margin:3px 0;font-size:0.93em;line-height:1.5;">{p}</div>' for p in _t2_parts)
+                    _t2_fb_html = (
+                        f'<div style="margin-top:12px;padding:12px 14px;background:rgba(0,0,0,0.25);border-radius:12px;border:1px solid rgba(110,231,183,0.25);">'
+                        f'<div style="font-size:1.02em;font-weight:800;color:#6ee7b7;margin-bottom:4px;">📐 SƠ ĐỒ LỰC LƯỢNG DỤNG THẦN</div>'
+                        + _t2_inner + '</div>'
+                    )
+                except Exception:
+                    pass
+
+                # --- TẦNG 3b: THOÁN TỪ KINH DỊCH ---
+                _t3_fb_thoan = ''
+                try:
+                    if luc_hao_data and isinstance(luc_hao_data, dict):
+                        _t3_ban = luc_hao_data.get('ban', {})
+                        _t3_name = _t3_ban.get('name', '')
+                        if _t3_name:
+                            _t3_info = QUE_THOAN_64.get(_t3_name, {}) or QUE_THOAN_DAI_TUONG.get(_t3_ban.get('palace', ''), {})
+                            if _t3_info:
+                                _t3_fb_thoan = (
+                                    f'<div style="margin-top:10px;padding:12px;background:rgba(139,92,246,0.15);border-radius:10px;border-left:4px solid #8b5cf6;">'
+                                    f'<div style="font-size:0.95em;font-weight:700;color:#c4b5fd;">📜 KINH DỊCH THOÁN TỪ — {_t3_name}</div>'
+                                    f'<div style="color:#e9d5ff;font-size:0.9em;margin:4px 0;font-style:italic;">"{_t3_info.get("thoan", "")}"</div>'
+                                    f'<div style="color:#ddd6fe;font-size:0.88em;">🏔️ Đại Tượng: {_t3_info.get("dai_tuong", "")} | 💡 {_t3_info.get("lk", "")}</div>'
+                                    f'</div>'
+                                )
+                except Exception:
+                    pass
+
+                # --- TẦNG 7: BẢNG BỎ PHIẾU HỢP NHẤT 8 PHƯƠNG PHÁP CHẤM ĐIỂM ---
+                _t7_fb_html = ''
+                try:
+                    _verdicts_fb = [
+                        ('🏯', 'KỲ MÔN', ky_mon_verdict),
+                        ('📿', 'LỤC HÀO', luc_hao_verdict),
+                        ('🌸', 'MAI HOA', mai_hoa_verdict),
+                        ('📜', 'THIẾT BẢN', thiet_ban_verdict),
+                        ('🔮', 'Đ.L.NHÂM', luc_nham_verdict),
+                        ('⚔️', 'THÁI ẤT', thai_at_verdict),
+                        ('📅', 'XEM NGÀY', xem_ngay_verdict),
+                        ('🔯', 'TỬ VI', tu_vi_verdict),
+                    ]
+                    _cat_c = sum(1 for _, _, v in _verdicts_fb if v and 'CÁT' in str(v).upper())
+                    _hung_c = sum(1 for _, _, v in _verdicts_fb if v and 'HUNG' in str(v).upper())
+                    _binh_c = len(_verdicts_fb) - _cat_c - _hung_c
+                    _chips = ''
+                    for _vi, _vn, _vv in _verdicts_fb:
+                        _vu = str(_vv).upper() if _vv else ''
+                        _vc = '#22c55e' if 'CÁT' in _vu else ('#ef4444' if 'HUNG' in _vu else '#eab308')
+                        _chips += f'<span style="display:inline-block;margin:3px;padding:4px 10px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid {_vc};font-size:0.86em;">{_vi} {_vn}: <b style="color:{_vc};">{_vv}</b></span>'
+                    _t7_fb_html = (
+                        f'<div style="margin-top:12px;padding:12px;background:rgba(0,0,0,0.22);border-radius:10px;">'
+                        f'<div style="font-size:0.95em;font-weight:700;color:#a7f3d0;margin-bottom:6px;">📊 HỘI ĐỒNG THẨM ĐỊNH 10 HỆ THỐNG (8 PP Chấm Điểm + Thiên Văn + 40 Chuyên Gia): '
+                        f'<span style="color:#22c55e;">{_cat_c} CÁT</span> · '
+                        f'<span style="color:#eab308;">{_binh_c} BÌNH</span> · '
+                        f'<span style="color:#ef4444;">{_hung_c} HUNG</span></div>'
+                        + _chips + '</div>'
+                    )
+                except Exception:
+                    pass
+
+                _main_focus_reply = _narrative_fb if _narrative_fb else f'📢 {_dr_fb}'
+                _combined_direct_html = (
+                    f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:10px;padding:15px 18px;'
+                    f'background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off2_v_color};line-height:1.65;">'
+                    f'{_main_focus_reply}</div>'
+                )
+
                 final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ KẾT LUẬN AI OFFLINE — THIÊN CƠ ĐẠI SƯ V6886</div>'
-                    f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:8px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
-                    f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off2_v_color};line-height:1.6;">📢 {_dr_fb}</div>'
-                    f'<div style="font-size:1.05em;color:#a7f3d0;">📊 Điểm Hợp Nhất 10 Hệ Thống: <b>{weighted_pct}%</b> | DT: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict} | TB: {thiet_ban_verdict} | ĐLN: {luc_nham_verdict} | TA: {thai_at_verdict} | XN: {xem_ngay_verdict} | TV: {tu_vi_verdict}</div>'
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG — THIÊN CƠ ĐẠI SƯ V99.7</div>'
+                    f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
+                    + _combined_direct_html
+                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + _adv_html_fb
+                    + _t7_fb_html
+                    + _t2_fb_html
                     + _comp_detail_html
                     + _off2_summary
-                    + _adv_html_fb
-                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + _t3_fb_thoan
                     + _evidence_html
                     + f'</div>'
                 )
