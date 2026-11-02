@@ -2575,7 +2575,7 @@ def render_master_unified_qa_box(location_key="main"):
 
                     _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
                     _want_online = st.session_state.get('qa_use_cloud_llm', True)
-                    _cache_key = f"V998|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
+                    _cache_key = f"V999|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
                     if not _use_rnd and _cache_key in _cache_store:
                         combined_answer = _cache_store[_cache_key]
                     else:

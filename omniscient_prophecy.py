@@ -589,27 +589,31 @@ def build_omniscient_prophecy(
     plain_text = "\n".join(text_lines)
 
     # ═════════════════════════════════════════════════════════════════════════
-    # BUILD GIAO DIỆN HTML — V99.7: CHỈ HIỂN THỊ ĐÚNG TRỌNG TÂM CÂU HỎI
-    # (Hỏi gì trả lời đúng trọng tâm đó, không hiện mục lan man không liên quan)
+    # BUILD GIAO DIỆN HTML — V99.9: CHỈ HIỂN THỊ ĐÚNG TRỌNG TÂM CÂU HỎI
+    # (Hỏi gì trả lời đúng trọng tâm đó, tuyệt đối không hiện mục lan man không liên quan)
     # ═════════════════════════════════════════════════════════════════════════
     _q_focus = (question or '').lower()
     _is_health_focus = any(w in _q_focus for w in [
         'bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'qua khỏi', 'qua được', 'sống', 'chết',
         'viện', 'thuốc', 'mổ', 'phẫu thuật', 'ung thư', 'tai nạn', 'hồi phục', 'nguy kịch', 'khám'
     ])
+    _is_love_focus = any(w in _q_focus for w in [
+        'yêu', 'tình cảm', 'hôn nhân', 'vợ', 'chồng', 'người yêu', 'bạn trai', 'bạn gái',
+        'cưới', 'chia tay', 'ly hôn', 'quay lại', 'thật lòng', 'ngoại tình', 'duyên'
+    ]) and not _is_health_focus
     _is_find_where_focus = any(w in _q_focus for w in [
         'tìm', 'mất', 'thất lạc', 'trộm', 'ở đâu', 'chỗ nào', 'hướng nào', 'để đâu', 'cất đâu',
         'nhà', 'đất', 'mộ', 'phong thủy', 'xuất hành', 'đi xa', 'du lịch', 'chuyển nhà'
-    ])
+    ]) and not _is_love_focus
+    # Chỉ đoán Giới tính (Trai/Gái) & Tuổi khi câu hỏi thực sự hỏi AI / TRAI HAY GÁI / BAO NHIÊU TUỔI / KẺ GIAN
     _is_person_focus = any(w in _q_focus for w in [
-        'ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'tuổi', 'bố', 'mẹ', 'cha', 'má',
-        'ông', 'bà', 'vợ', 'chồng', 'con', 'người yêu', 'bạn trai', 'bạn gái', 'đối tác',
-        'sếp', 'khách hàng', 'trộm', 'kẻ', 'tình cảm', 'hôn nhân', 'cưới'
+        'là ai', 'ai lấy', 'ai làm', 'người nào', 'trai hay gái', 'nam hay nữ',
+        'bao nhiêu tuổi', 'mấy tuổi', 'già hay trẻ', 'trộm', 'kẻ gian', 'người lạ'
     ])
     _is_object_count_focus = any(w in _q_focus for w in [
-        'cái gì', 'đồ gì', 'vật gì', 'trong hộp', 'mất', 'tìm', 'thất lạc', 'ví', 'điện thoại',
+        'cái gì', 'đồ gì', 'vật gì', 'trong hộp', 'mất ví', 'mất đồ', 'thất lạc', 'điện thoại',
         'chìa khóa', 'sổ đỏ', 'giấy tờ', 'trang sức', 'bao nhiêu', 'có mấy', 'mấy cái', 'số lượng', 'con số', 'định giá'
-    ]) and not _is_health_focus
+    ]) and not _is_health_focus and not _is_love_focus
 
     _sections_html = []
 
@@ -646,7 +650,20 @@ def build_omniscient_prophecy(
             f'</div></div>'
         )
 
-    # 4. Nếu hỏi về CON NGƯỜI / NGƯỜI THÂN / ĐỐI TÁC → Hiển thị Hồ sơ Con người
+    # 3b. Nếu hỏi về TÌNH CẢM / VỢ CHỒNG / NGƯỜI YÊU → Hiển thị Chẩn đoán Tâm lý & Tình cảm Đối phương
+    if _is_love_focus:
+        _who_lbl = "Người vợ (Ất Kỳ / Thê Tài)" if "vợ" in _q_focus else ("Người chồng (Canh Kim / Quan Quỷ)" if "chồng" in _q_focus else "Đối phương (Ứng Hào / Lục Hợp)")
+        _sections_html.append(
+            f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(244,63,94,0.12);border-radius:10px;border-left:4px solid #fb7185;">'
+            f'<div style="color:#fda4af;font-weight:800;font-size:0.96em;margin-bottom:4px;">❤️ CHẨN ĐOÁN TÂM LÝ, TÌNH CẢM & ĐỘ CHÂN THÀNH CỦA ĐỐI PHƯƠNG</div>'
+            f'<div style="color:#ffe4e6;font-size:0.9em;line-height:1.55;">'
+            f'• 💑 <b>Trục Dụng Thần ({_who_lbl}):</b> Ứng tại <b>Cung {target_cung} ({c_info["quai"]} – Hành {hanh_dt})</b>, đi cùng <b>Sao {sao_name}</b>, <b>Cửa {cua_name}</b> và <b>Thần {than_name}</b>.<br>'
+            f'• 🧠 <b>Tâm trạng & Thái độ hiện tại:</b> {door_desc} {motive_str}<br>'
+            f'• 🔮 <b>Ẩn tình sâu kín trong lòng:</b> <i>{deity_desc}</i>'
+            f'</div></div>'
+        )
+
+    # 4. Chỉ khi hỏi AI / TRAI HAY GÁI / BAO NHIÊU TUỔI / KẺ TRỘM → Hiển thị Hồ sơ nhận dạng Con người
     if _is_person_focus:
         _sections_html.append(
             f'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(168,85,247,0.1);border-radius:10px;border-left:4px solid #c084fc;">'
@@ -692,6 +709,28 @@ def build_omniscient_prophecy(
         + "".join(_sections_html)
         + f'</div>'
     )
+
+    # V99.9: Lọc plain_text theo đúng trọng tâm câu hỏi để AI Online không bị nhiễu bởi dữ liệu đồ vật/giới tính không liên quan
+    _filtered_lines = [
+        "### 🔮 HỒ SƠ CHUYÊN SÂU ĐÚNG TRỌNG TÂM CÂU HỎI (V99.9)",
+        f"1. **📜 DIỄN BIẾN SỰ VIỆC 3 THỜI (QUÁ KHỨ - HIỆN TẠI - TƯƠNG LAI):**",
+        f"   - **Quá khứ (Nguyên nhân):** {event_past}",
+        f"   - **Hiện tại (Ẩn tình & Thực tế):** {event_present}",
+        f"   - **Tương lai (Kết cục):** {event_future}",
+        f"2. **⏰ THỜI ĐIỂM ỨNG KỲ CHÍNH XÁC:** {uk_exact} ({uk_day} | {uk_hour} | {uk_minute})",
+    ]
+    if _is_love_focus:
+        _filtered_lines.append(f"3. **❤️ TÂM LÝ & TÌNH CẢM ĐỐI PHƯƠNG:** Cung {target_cung} ({c_info['quai']}), Sao {sao_name}, Cửa {cua_name}, Thần {than_name} — {door_desc} {motive_str} ({deity_desc})")
+    if _is_health_focus:
+        _filtered_lines.append(f"3. **🏥 CHẨN ĐOÁN Y DỊCH & CƠ THỂ:** {health_str}")
+    if _is_find_where_focus:
+        _filtered_lines.append(f"3. **📍 ĐỊA ĐIỂM & HIỆN TRƯỜNG:** {where_summary} | {where_scene}")
+    if _is_person_focus:
+        _filtered_lines.append(f"4. **👤 NHẬN DẠNG NGƯỜI LIÊN QUAN:** Giới tính {primary_gender}, Độ tuổi {age_tier} ({', '.join(birth_years)}), Ngoại hình: {appearance_str}")
+    if _is_object_count_focus:
+        _filtered_lines.append(f"5. **📦 ĐẶC ĐIỂM ĐỒ VẬT & ĐỊNH LƯỢNG:** {combined_objects} | Màu {h_forensic['mau_sac']} | {item_condition} | {quantity_str}")
+    _filtered_lines.append(f"6. **🧭 PHÁP QUYẾT HÓA GIẢI:** {remedy_str}")
+    plain_text = "\n".join(_filtered_lines)
 
     return {
         'html': html_block,

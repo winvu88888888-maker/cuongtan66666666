@@ -175,16 +175,21 @@ class ChartInterpreterAI:
         return 1
     
     def _get_palace_info(self, chart_data, palace_num):
-        """Lấy thông tin đầy đủ của một cung"""
+        """Lấy thông tin đầy đủ của một cung (hỗ trợ cả key int và str)"""
+        tb = chart_data.get('thien_ban', {}) or {}
+        nb = chart_data.get('nhan_ban', {}) or {}
+        sb = chart_data.get('than_ban', {}) or {}
+        ctb = chart_data.get('can_thien_ban', {}) or {}
+        cdb = chart_data.get('dia_ban') or chart_data.get('dia_can', {}) or {}
         return {
             "num": palace_num,
-            "sao": chart_data.get('thien_ban', {}).get(palace_num, 'N/A'),
-            "mon": chart_data.get('nhan_ban', {}).get(palace_num, 'N/A'),
-            "than": chart_data.get('than_ban', {}).get(palace_num, 'N/A'),
-            "can_thien": chart_data.get('can_thien_ban', {}).get(palace_num, 'N/A'),
-            "can_dia": chart_data.get('dia_can', {}).get(palace_num, 'N/A'),
+            "sao": str(tb.get(palace_num, tb.get(str(palace_num), 'Thiên Cầm'))),
+            "mon": str(nb.get(palace_num, nb.get(str(palace_num), 'Đỗ Môn'))),
+            "than": str(sb.get(palace_num, sb.get(str(palace_num), 'Trực Phù'))),
+            "can_thien": str(ctb.get(palace_num, ctb.get(str(palace_num), 'Mậu'))),
+            "can_dia": str(cdb.get(palace_num, cdb.get(str(palace_num), 'Mậu'))),
             "hanh": CUNG_HANH.get(palace_num, 'Thổ'),
-            "khong_vong": palace_num in chart_data.get('khong_vong', []),
+            "khong_vong": palace_num in (chart_data.get('khong_vong') or []),
             "dich_ma": palace_num == chart_data.get('dich_ma', 0)
         }
     

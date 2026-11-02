@@ -201,19 +201,39 @@ class GeminiQMDGHelper:
                         _prompt = _prompt[:60000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-55000:]
 
                     text = ""
+                    # V99.9: Cấp phát max_output_tokens chuẩn cho mọi model (8192 cho 2.0/1.5, 16384 cho 2.5/3.0)
+                    # và giới hạn thinking_budget=1024 để Gemini 2.5 KHÔNG BAO GIỜ bị cắn hết token suy nghĩ dẫn đến ngắt câu giữa chừng!
+                    _max_out = 16384 if any(x in model_name for x in ['2.5', '3.0', '3.1']) else 8192
                     if client is not None and genai_types is not None:
-                        gen_config = genai_types.GenerateContentConfig(
+                        _cfg_kwargs = dict(
                             temperature=0.15,
                             top_p=0.7,
                             top_k=20,
-                            max_output_tokens=65536,
+                            max_output_tokens=_max_out,
                             safety_settings=safety_settings
                         )
-                        resp = client.models.generate_content(
-                            model=model_name,
-                            contents=_prompt,
-                            config=gen_config,
-                        )
+                        if hasattr(genai_types, 'ThinkingConfig') and any(x in model_name for x in ['2.5-flash', '2.5-pro', '3.0-flash']):
+                            try:
+                                _cfg_kwargs['thinking_config'] = genai_types.ThinkingConfig(thinking_budget=1024)
+                            except Exception:
+                                pass
+                        try:
+                            gen_config = genai_types.GenerateContentConfig(**_cfg_kwargs)
+                            resp = client.models.generate_content(
+                                model=model_name,
+                                contents=_prompt,
+                                config=gen_config,
+                            )
+                        except Exception:
+                            # Fallback nếu model không hỗ trợ thinking_config
+                            _cfg_kwargs.pop('thinking_config', None)
+                            _cfg_kwargs['max_output_tokens'] = 8192
+                            gen_config = genai_types.GenerateContentConfig(**_cfg_kwargs)
+                            resp = client.models.generate_content(
+                                model=model_name,
+                                contents=_prompt,
+                                config=gen_config,
+                            )
                         try:
                             text = resp.text
                         except Exception:
@@ -263,7 +283,7 @@ class GeminiQMDGHelper:
                     elif "404" in error_str or "not found" in error_str.lower():
                         error_log.append(f"{model_name}: ❌ Model không khả dụng.")
                         break
-                    elif "API_KEY_INVALID" in error_str or "expired" in error_str.lower() or "400" in error_str or "403" in error_str:
+                    elif "API_KEY_INVALID" in error_str or "key not valid" in error_str.lower() or "expired" in error_str.lower() or "403" in error_str:
                         error_log.append(f"{model_name} (Key {key_suffix}): 🔑 Key không hợp lệ!")
                         bad_keys.add(current_api_key)
                         continue

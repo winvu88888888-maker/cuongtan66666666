@@ -5515,58 +5515,51 @@ class FreeAIHelper:
             # V42.9.4: KHÔNG CẮT — giữ full data, cấu trúc cây giúp Gemini đọc hiệu quả
             self.log_step("Online AI", "DATA_SIZE", f"raw_data={len(raw_data_section)} chars — FULL, NO TRUNCATION")
             
-            # V42.9.29: Build verdict label from pct for Gemini
-            _vb_pct = v22.get('unified_pct', od.get('weighted_pct', 50))
+            # V99.9: Build verdict label from pct for Gemini — ĐỒNG BỘ 100% VỚI OFFLINE AI
+            _vb_pct = od.get('weighted_pct', v22.get('unified_pct', 50))
             try:
                 _vb_pct_int = int(_vb_pct)
             except (ValueError, TypeError):
                 _vb_pct_int = 50
-            if _vb_pct_int >= 65:
-                _vb_label = 'ĐẠI CÁT — RẤT TỐT'
+            if _vb_pct_int >= 70:
+                _vb_label = 'ĐẠI CÁT — RẤT THUẬN LỢI'
             elif _vb_pct_int >= 55:
-                _vb_label = 'CÁT — TỐT'
-            elif _vb_pct_int >= 50:
-                _vb_label = 'TIỂU CÁT — CÓ nhưng CẦN NỖ LỰC'
+                _vb_label = 'CÁT — THUẬN LỢI'
             elif _vb_pct_int >= 45:
-                _vb_label = 'BÌNH — CÂN NHẮC KỸ'
-            elif _vb_pct_int >= 35:
-                _vb_label = 'HUNG — XẤU'
+                _vb_label = 'CẦN CÂN NHẮC — BÌNH (CÓ THỂ NHƯNG CẦN NỖ LỰC)'
+            elif _vb_pct_int >= 30:
+                _vb_label = 'HUNG — BẤT LỢI'
             else:
-                _vb_label = 'ĐẠI HUNG — RẤT XẤU'
+                _vb_label = 'ĐẠI HUNG — RẤT BẤT LỢI'
             
             offline_verdict_block = (
                 f"═══════════════════════════════════════════\n"
-                f"   ⚖️ PHÁN QUYẾT CHÍNH THỨC (BẮT BUỘC)\n"
+                f"   ⚖️ PHÁN QUYẾT CHÍNH THỨC (BẮT BUỘC ĐỒNG BỘ 100%)\n"
                 f"═══════════════════════════════════════════\n"
                 f"🏆 KẾT QUẢ: {_vb_label} ({_vb_pct_int}%)\n"
-                f"→ BẠN PHẢI dùng ĐÚNG kết quả này. KHÔNG ĐƯỢC nói khác.\n\n"
+                f"→ BẠN PHẢI dùng ĐÚNG kết quả và tỷ lệ {_vb_pct_int}% này. KHÔNG ĐƯỢC nói khác.\n\n"
                 f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:200]}\n"
                 f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:200]}\n"
                 f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:200]}\n"
                 f"ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?')} — {od.get('luc_nham_reason','')[:200]}\n"
                 f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:200]}\n"
-                f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {v22.get('tier_cap', '?')}\n"
+                f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {_vb_label}\n"
             )
-            # V42.9.5 + V99 PATCH: Inject Ứng Kỳ Chi Tiết (đến Phút/Khắc) + Tiên Tri Toàn Tri 360° vào prompt cho Gemini
             _hub_synth = od.get('hub', {}).get('synthesis', {})
             _ung_ky_for_gemini = _hub_synth.get('ung_ky_detail') or _hub_synth.get('ung_ky', '')
             _bt_for_gemini = _hub_synth.get('bt_detected', [])
             _omni_for_gemini = _hub_synth.get('omniscient_prophecy', '')
             if _ung_ky_for_gemini:
-                offline_verdict_block += f"\n⏱ ỨNG KỲ CHI TIẾT ĐẾN PHÚT/KHẮC (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
-                offline_verdict_block += f"→ BẠN PHẢI dùng CHÍNH XÁC Năm, Tháng, Ngày, Giờ, Khắc, Phút này khi trả lời. KHÔNG ĐƯỢC tự bịa thời gian khác.\n"
+                offline_verdict_block += f"\n⏱ ỨNG KỲ CHI TIẾT (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
             if _omni_for_gemini:
-                offline_verdict_block += f"\n🔮 HỒ SƠ TIÊN TRI TOÀN TRI 360° (ĐÃ GIẢI MÃ TỪ QUẺ — BẮT BUỘC TRÌNH BÀY ĐẦY ĐỦ):\n{_omni_for_gemini}\n"
+                offline_verdict_block += f"\n🔮 HỒ SƠ CHẨN ĐOÁN CHUYÊN SÂU THEO ĐÚNG TRỌNG TÂM CÂU HỎI:\n{_omni_for_gemini}\n"
             if _bt_for_gemini:
                 offline_verdict_block += f"\n🚨 BẤT THƯỜNG NGHIÊM TRỌNG: {', '.join(_bt_for_gemini)}\n"
-                offline_verdict_block += f"→ Yếu tố này ĐÃ BỊ TRỪ ĐIỂM. BẠN PHẢI đề cập trong phần phân tích.\n"
-            # V42.9.3 P0-B: Thêm conflict warnings cho AI Online
             _od_conflicts = od.get('conflict_warnings', [])
             if _od_conflicts:
                 offline_verdict_block += "\n⚠️ CẢNH BÁO XUNG ĐỘT:\n"
                 for _cw in _od_conflicts:
                     offline_verdict_block += f"  {_cw}\n"
-                offline_verdict_block += "→ PHẢI phân tích kỹ sự khác biệt giữa các PP khi XUNG ĐỘT.\n"
             
             # ═══ PHẦN 3: PHÂN LOẠI CÂU HỎI ═══
             q_lower_online = question.lower()
@@ -5587,43 +5580,22 @@ class FreeAIHelper:
                 question_type_label = 'CÂU HỎI VỀ SỐ LƯỢNG'
             else:
                 question_type = 'YESNO'
-                question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc TỔNG QUÁT'
+                question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc PHÂN TÍCH TRỌNG TÂM'
             
-            # ═══ PHẦN 4: V42.9.29 GEMINI PROMPT — TINH GỌN ═══
-            # Gemini = NGƯỜI DIỄN GIẢI verdict đã tính sẵn, KHÔNG PHẢI người quyết định
+            # ═══ PHẦN 4: V99.9 GEMINI PROMPT — TRỰC DIỆN, ĐÚNG TRỌNG TÂM 100%, KHÔNG BỊ CẮT CÂU ═══
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V6886 — CHUYÊN GIA DIỄN GIẢI KẾT QUẢ HUYỀN HỌC CẤP ĐỘ CAO NHẤT.\n"
-                f"BẠN LÀ MỘT ĐẠI SƯ THẬT SỰ, không phải máy tính. BẠN phải suy luận như một chuyên gia 30 năm kinh nghiệm với lượng kiến thức sâu rộng về Huyền Học.\n"
-                f"VERDICT + ĐIỂM % + ỨNG KỲ đã được tính CHÍNH XÁC bởi Python Engine (100+ yếu tố, 8 PP, 3 tầng consensus).\n\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V99.9 — CHUYÊN GIA LUẬN GIẢI HUYỀN HỌC ĐA HỆ THỐNG CẤP ĐỘ CAO NHẤT.\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
-                f"① BẠN KHÔNG ĐƯỢC thay đổi verdict. Verdict trong <verdict_block> là CHÍNH THỨC.\n"
-                f"② Nếu verdict = BÌNH/HUNG → BẠN PHẢI nói BÌNH/HUNG. KHÔNG ĐƯỢC nói CÁT.\n"
-                f"③ Nếu verdict = CÁT → BẠN PHẢI nói CÁT. KHÔNG ĐƯỢC nói HUNG.\n"
-                f"④ Mỗi nhận định PHẢI trích dẫn yếu tố quẻ cụ thể. KHÔNG bịa đặt.\n"
-                f"⑤ Hỏi gì trả lời đó — KHÔNG lan man sang chủ đề khác.\n"
-                f"⑥ Phần KẾT LUẬN phải NHẮC LẠI ĐÚNG verdict + điểm % từ verdict_block.\n"
-                f"⑦ QUY TRÌNH SUY LUẬN 5 BƯỚC (BẮT BUỘC):\n"
-                f"   - Bước 1 (QUÉT QUẺ): Quét TẤT CẢ yếu tố trong quẻ (Lục Thần, Sao, Cửa, Quẻ Dịch, Tuần Không, 12 Trường Sinh, Ngũ Khí, Vượng/Suy...) tác động trực tiếp đến DỤNG THẦN.\n"
-                f"   - Bước 2 (TRA CỨU INTERNET): Dùng Google Search tra cứu TỪNG YẾU TỐ quan trọng nhất. Ví dụ: 'Bạch Hổ lâm Dụng Thần trong Lục Hào ý nghĩa gì', 'Cửa Tử trong Kỳ Môn Độn Giáp', 'Quan Quỷ hành Kim Đế Vượng nghề nghiệp'. Hãy tra CỤ THỂ từng yếu tố, KHÔNG tra chung chung.\n"
-                f"   - Bước 3 (ĐỐI CHIẾU): SO SÁNH kết quả tra cứu Internet với dữ liệu quẻ có sẵn (Vạn Vật, Bát Quái Loại Tượng, Kinh Dịch). Ghi rõ: Điểm TRÙNG KHỚP (Internet nói gì + Quẻ nói gì → khớp nhau). Điểm KHÁC BIỆT nếu có.\n"
-                f"   - Bước 4 (TỔNG HỢP CHỨNG CỨ): Xâu chuỗi tất cả bằng chứng (quẻ + internet) thành 1 chuỗi nhân quả logic. Mỗi luận điểm PHẢI có nguồn (từ quẻ hay từ internet).\n"
-                f"   - Bước 5 (CHỐT KẾT LUẬN): Dựa trên bằng chứng đã đối chiếu, đưa ra MỘT KẾT LUẬN DUY NHẤT, CỤ THỂ NHẤT.\n"
-                f"⑧ TRÍ TUỆ SUY LUẬN ĐỘC LẬP & TỐI ĐA HOÁ ĐỘ SÂU: BẠN KHÔNG sao chép máy móc từ Chủ đề có sẵn. Hãy khai thác triệt để Ngũ Hành, Bát Quái, Vượng/Suy, 12 Trường Sinh để HỘI TỤ ra MỘT KẾT LUẬN DUY NHẤT và CHI TIẾT NHẤT.\n"
-                f"⑨ ĐIỀU TRA CHI TIẾT HIỆN TRƯỜNG (DEEP FORENSIC): Hãy hoạt động như thám tử! Dựa MỌI LUẬN ĐIỂM vào bằng chứng thực tế từ quẻ VÀ internet.\n"
-                f"⑪ PHÂN TÍCH CHUYÊN SÂU CAO CẤP (MASTER-LEVEL):\n"
-                f"   - HÀO TỪ: Nếu trong quẻ có tên quẻ (VD: Thiên Hỏa Đồng Nhân, Thuần Phong...), HÃY tra Internet để đọc HÀO TỪ của các hào ĐỘNG. Hào Từ chứa thông điệp sâu của Kiênh Dịch!\n"
-                f"   - NGUYÊN/KỴ/CỪU THẦN: Phân tích chuỗi tác động Nguyên Thần (SINH Dụng Thần) → Kỵ Thần (KHẮC Dụng Thần) → Cừu Thần (KHẮC Nguyên Thần). Xem cái nào mạnh hơn cái nào.\n"
-                f"   - LỤC THẦN TƯƠNG TÁC: Khi Bạch Hổ + Quan Quỷ → bệnh nặng/tai họa. Đằng Xà + Quan Quỷ → sợ hãi/ác mộng. Huyền Vũ + Thê Tài → mất cắp/gian lận. Hãy dùng Internet tra kỹ từng tổ hợp!\n"
-                f"   - TƯỢNG SINH KHẮC ĐA TẦNG: Xem không chỉ hành DT, mà các hào khác tương tác với DT như thế nào (hào động sinh/khắc DT, hào biến có tốt cho DT không).\n\n"
-                f"VẠN VẬT: Kim=kim loại | Mộc=gỗ,vải | Thủy=nước,lỏng | Hỏa=điện,lửa | Thổ=đất,gốm\n"
-                f"SỐ: Hà Đồ Thủy=1,6 | Hỏa=2,7 | Mộc=3,8 | Kim=4,9 | Thổ=5,10\n"
-                f"HƯỚNG: Kim=TÂY | Mộc=ĐÔNG | Thủy=BẮC | Hỏa=NAM | Thổ=TRUNG TÂM\n"
+                f"1. TRẢ LỜI TRỰC DIỆN 100% VÀO ĐÚNG TRỌNG TÂM CÂU HỎI '{question}'. Hỏi chuyện tình cảm/vợ chồng thì chỉ phân tích tâm lý, tình cảm, sự gắn kết vợ chồng; hỏi tài lộc thì chỉ phân tích tiền bạc/đầu tư; hỏi bệnh tật thì chỉ phân tích bệnh lý/y dịch; hỏi tìm đồ thì chỉ phân tích vị trí/phương hướng. TUYỆT ĐỐI KHÔNG nói lan man sang đồ vật, tuổi tác hay bệnh tật nếu người dùng không hỏi!\n"
+                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT & TỶ LỆ %: Bắt buộc giữ nguyên kết quả '{_vb_label} ({_vb_pct_int}%)' trong <verdict_block>.\n"
+                f"3. CẤM MỞ ĐẦU RƯỜM RÀ: Không chào hỏi ('Kính chào quý vị...'), bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
+                f"4. VIẾT TRỌN VẸN, SÂU SẮC, MẠCH LẠC: Mỗi mục xuống dòng rõ ràng, giải thích thấu đáo căn cứ từ Kỳ Môn, Lục Hào, Mai Hoa, Tử Vi và Hội Đồng Chuyên Gia AI.\n"
                 f"</system_role>\n\n"
                 
                 f"<question>\n"
                 f"LOẠI: {question_type_label}\n"
-                f"CÂU HỎI: {question}\n"
+                f"CÂU HỎI TRỌNG TÂM: {question}\n"
                 f"</question>\n\n"
                 
                 f"<raw_chart_data>\n"
@@ -5635,29 +5607,17 @@ class FreeAIHelper:
                 f"</verdict_block>\n\n"
                 
                 f"<output_format>\n"
-                f"FORMAT BẮT BUỘC — Lập luận SẮC BÉN, CHUYÊN MÔN CAO:\n\n"
+                f"BẮT BUỘC TRÌNH BÀY ĐÚNG CẤU TRÚC SAU (MỖI MỤC TRÊN 1 DÒNG RIÊNG, KHÔNG VIẾT GỘP DÒNG):\n\n"
                 f"### 🏆 KẾT LUẬN\n"
-                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' + Kèm Phán Quyết từ verdict_block và Tỷ lệ %]\n"
-                f"**📋 VÌ SAO:** [Tóm tắt sắc bén nguyên nhân cốt lõi từ Dụng Thần, Kỳ Môn, Lục Hào, Mai Hoa, Tử Vi & 40 Chuyên Gia AI]\n"
-                f"**⏳ ỨNG KỲ:** [Ghi rõ mốc thời gian Năm - Tháng - Ngày - Giờ ứng nghiệm chính xác]\n"
-                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động & phương hướng/pháp quyết hóa giải cụ thể]\n" +
-                f"\n### 🔍 TRA CỨU ĐẠI SƯ (INTERNET & HUYỀN HỌC)\n"
-                f"- **Dụng Thần:** [Là gì? Hành gì? Trạng thái Vượng/Suy?]\n"
-                f"- **Yếu Tố Tác Động:** [Liệt kê các yếu tố tác động. Với MỖI yếu tố quan trọng: ghi rõ (a) Quẻ nói gì, (b) Internet nói gì, (c) Kết luận khớp hay không].\n"
-                f"\n### 📊 ĐỐI CHIẾU DỮ LIỆU (QUẺ vs INTERNET)\n"
-                f"| Yếu tố | Quẻ nói | Internet nói | Kết luận |\n"
-                f"|---|---|---|---|\n"
-                f"| [Tên yếu tố 1] | [Dữ liệu từ quẻ] | [Dữ liệu tra mạng] | [Khớp/Không khớp] |\n"
-                f"| [Tên yếu tố 2] | ... | ... | ... |\n"
-                f"\n### 🔮 TỔNG HỢP LOGIC & HỒ SƠ TIÊN TRI TOÀN TRI 360°\n"
-                f"**CHỨNG CỨ:** [Xâu chuỗi dữ liệu đối chiếu (quẻ + internet) để ra kết luận cuối cùng]\n"
-                f"**📜 SỰ VIỆC CHI TIẾT (Quá khứ - Hiện tại - Tương lai):** [Mô tả rõ chuyện gì đã khởi phát, ẩn tình hiện tại và kết cục]\n"
-                f"**⏳ THỜI ĐIỂM CHÍNH XÁC (Năm - Tháng - Ngày - Giờ - Khắc - Phút):** [Ghi rõ Năm, Tháng, Ngày Dương/Âm, Giờ Địa Chi, Khắc 15 phút và Phút đuôi chính xác]\n"
-                f"**📍 ĐỊA ĐIỂM & HIỆN TRƯỜNG (Ở đâu):** [Phương hướng Bát Quái + 24 Sơn La Kinh, khoảng cách mét/km, độ cao/tầng, cảnh vật xung quanh]\n"
-                f"**👤 HỒ SƠ CON NGƯỜI:** [Trai hay Gái, Già hay Trẻ, Bao nhiêu tuổi cụ thể, Ngoại hình, Tính cách, Nghề nghiệp, Người quen hay lạ]\n"
-                f"**📦 HỒ SƠ ĐỒ VẬT & ĐỊNH LƯỢNG:** [Đồ vật gì cụ thể, Màu sắc, Chất liệu, Hình dáng, Kích thước, Tình trạng Mới hay Cũ, Số lượng/Giá trị]\n"
-                f"**🔧 LỜI KHUYÊN & PHÁP QUYẾT HÓA GIẢI:** [Hành động cụ thể]\n\n"
-                f"GIỚI HẠN: KHÔNG GIỚI HẠN TỪ. Hãy diễn giải chi tiết, sâu sắc như một Đại Sư thực thụ. ⛔ CẤM thay đổi verdict gốc.\n"
+                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Kèm Phán Quyết {_vb_label} ({_vb_pct_int}%)]\n"
+                f"**📋 VÌ SAO:** [Giải thích rõ ràng nguyên nhân cốt lõi từ Dụng Thần, Kỳ Môn, Lục Hào, Mai Hoa & Hội Đồng Chuyên Gia AI tác động trực tiếp đến '{question}']\n"
+                f"**⏳ ỨNG KỲ:** [Ghi rõ mốc thời gian ứng nghiệm hoặc chuyển biến dựa trên Ứng Kỳ trong verdict_block]\n"
+                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động thực tế, sát hoàn cảnh câu hỏi '{question}']\n\n"
+                f"### 🔮 PHÂN TÍCH CHUYÊN SÂU ĐA HỆ THỐNG & HỘI ĐỒNG CHUYÊN GIA\n"
+                f"- **1. Giải Mã Trực Diện Trọng Tâm Câu Hỏi:** [Đi sâu phân tích bản chất thực tế của sự việc/tâm lý đối phương/tài chính/sức khỏe đang hỏi dựa trên quẻ]\n"
+                f"- **2. Tam Thức Hợp Tham (Kỳ Môn · Lục Hào · Mai Hoa):** [Luận giải chi tiết Cung Dụng Thần, Cửa, Sao, Bát Thần trong Kỳ Môn; Hào Thế - Ứng - Dụng Thần - Hào Động trong Lục Hào; Quẻ Thể - Dụng trong Mai Hoa]\n"
+                f"- **3. Đối Chiếu Đa Hệ Thống & Hội Đồng Chuyên Gia:** [Tổng hợp nhận định từ Thiết Bản, Đại Lục Nhâm, Thái Ất, Tử Vi, Xem Ngày và các Chuyên Gia AI chuyên ngành]\n"
+                f"- **4. Cẩm Nang Hành Động & Hóa Giải Thực Tế:** [Hướng dẫn cách ứng xử, phương hướng hoặc thời điểm tốt nhất để đạt kết quả mỹ mãn]\n"
                 f"</output_format>\n\n"
             )
             
@@ -13848,9 +13808,17 @@ class FreeAIHelper:
                     _ci_res = ChartInterpreterAI().analyze_timeline(chart_data, question)
                     if _ci_res:
                         _active_names.append("Chart Interpreter AI")
-                        _ci_line = f"🏯 **Chart Interpreter AI (Đại sư Kỳ Môn):** Hiện tại: {_ci_res.get('hien_tai','')} | Tương lai: {_ci_res.get('tuong_lai','')} | Tốc độ ứng kỳ: {_ci_res.get('thoi_gian',{}).get('speed','?')} ({_ci_res.get('thoi_gian',{}).get('days','?')})"
+                        _ht_ci = _ci_res.get('hien_tai', '')
+                        if isinstance(_ht_ci, dict):
+                            _ht_ci = "; ".join(_ht_ci.get('chi_tiet', [])[:2]) or _ht_ci.get('tom_tat', '')
+                        _tl_ci = _ci_res.get('tuong_lai', '')
+                        if isinstance(_tl_ci, dict):
+                            _tl_ci = "; ".join([c for c in _tl_ci.get('chi_tiet', []) if not str(c).startswith('📅')][:2]) or _tl_ci.get('tom_tat', '')
+                        _spd_ci = _ci_res.get('thoi_gian', {}).get('speed', 'trung bình')
+                        _days_ci = _ci_res.get('thoi_gian', {}).get('days', '7-14 ngày')
+                        _ci_line = f"🏯 **Chart Interpreter AI (Đại sư Kỳ Môn):** Hiện tại: {_ht_ci} | Xu hướng: {_tl_ci} | Nhịp độ: {_spd_ci} ({_days_ci})"
                         _exp_findings.append(_ci_line)
-                        _exp_html_items.append(f"• 🏯 <b>Chart Interpreter AI:</b> {_ci_res.get('tuong_lai','')} (Ứng kỳ: {_ci_res.get('thoi_gian',{}).get('days','?')})")
+                        _exp_html_items.append(f"• 🏯 <b>Chart Interpreter AI (Đại sư Kỳ Môn):</b> Hiện tại: {_ht_ci} — Nhịp độ ứng kỳ: {_spd_ci} ({_days_ci})")
                 except Exception:
                     pass
 
@@ -13858,7 +13826,7 @@ class FreeAIHelper:
             if luc_hao_data and isinstance(luc_hao_data, dict):
                 try:
                     from luc_hao_expert_ai import LucHaoExpertAI
-                    _lhe_res = LucHaoExpertAI().analyze_luc_hao(luc_hao_data, question)
+                    _lhe_res = LucHaoExpertAI().analyze_luc_hao(luc_hao_data, question, dung_than_override=dung_than)
                     if _lhe_res:
                         _active_names.append("Luc Hao Expert AI")
                         _kl_lh = _lhe_res.get('ket_luan', {})
@@ -13992,17 +13960,18 @@ class FreeAIHelper:
                 except Exception:
                     pass
 
-            # 11. SchedulerAI (Chuyên gia Chọn Giờ Hoàng Đạo hành sự)
-            try:
-                from scheduler_ai import SchedulerAI
-                _sch_res = SchedulerAI().find_best_hours_for_topic(question)
-                if _sch_res and _sch_res.get('tong_hop'):
-                    _active_names.append("Scheduler AI")
-                    _top_hrs = ", ".join([f"Giờ {h['chi']} ({h['gio']})" for h in _sch_res['tong_hop'][:3]])
-                    _exp_findings.append(f"⏰ **Scheduler AI (Chuyên gia Giờ Hoàng Đạo):** Khung giờ đẹp nhất để hành sự: {_top_hrs}")
-                    _exp_html_items.append(f"• ⏰ <b>Scheduler AI (Giờ đẹp hành sự):</b> {_top_hrs}")
-            except Exception:
-                pass
+            # 11. SchedulerAI (Chuyên gia Chọn Giờ Hoàng Đạo hành sự — chỉ kích hoạt khi hỏi giờ/ngày khởi sự)
+            if any(w in _q_low_cg for w in ['giờ nào', 'ngày nào', 'khởi sự', 'khai trương', 'động thổ', 'xuất hành', 'mấy giờ', 'chọn giờ', 'giờ đẹp', 'ký hợp đồng']):
+                try:
+                    from scheduler_ai import SchedulerAI
+                    _sch_res = SchedulerAI().find_best_hours_for_topic(question)
+                    if _sch_res and _sch_res.get('tong_hop'):
+                        _active_names.append("Scheduler AI")
+                        _top_hrs = ", ".join([f"Giờ {h['chi']} ({h['gio']})" for h in _sch_res['tong_hop'][:3]])
+                        _exp_findings.append(f"⏰ **Scheduler AI (Chuyên gia Giờ Hoàng Đạo):** Khung giờ đẹp nhất để hành sự: {_top_hrs}")
+                        _exp_html_items.append(f"• ⏰ <b>Scheduler AI (Giờ đẹp hành sự):</b> {_top_hrs}")
+                except Exception:
+                    pass
 
             # 12. CaseStudyAI (Chuyên gia Đối chiếu Tiền lệ cổ kim)
             try:
@@ -15770,7 +15739,68 @@ class FreeAIHelper:
         except Exception as e:
             self.log_step("V38.1", "ERROR", str(e)[:80])
         
-        # V99.8: Mặc định LUÔN BẬT AI Online (use_online_api=True) kết hợp 10 Hệ Thống + 40 Chuyên Gia AI
+        # V99.9 FIX: ĐỒNG BỘ weighted_pct SAU 27-STEP VÀO offline_analysis_data ĐỂ AI ONLINE & OFFLINE KHỚP 100%
+        if isinstance(offline_analysis_data, dict):
+            offline_analysis_data['weighted_pct'] = weighted_pct
+            if isinstance(offline_analysis_data.get('v22_unified_strength'), dict):
+                offline_analysis_data['v22_unified_strength']['unified_pct'] = weighted_pct
+        
+        # V99.9: Khởi tạo sẵn Bộ Não Chuyên Sâu (_narrative_main) dùng chung cho cả nhánh Online và Offline
+        _narrative_main = ''
+        try:
+            from offline_brain import build_narrative_summary_text
+            _brain_all_facs = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
+            _brain_uk = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
+            _omni_d_main = _omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {}
+            _narrative_main = build_narrative_summary_text(
+                question=question,
+                dung_than=dung_than,
+                weighted_pct=weighted_pct,
+                category=detected_category,
+                all_factors=_brain_all_facs,
+                ung_ky_str=_brain_uk,
+                chart_data=chart_data,
+                omni_data=_omni_d_main,
+            )
+        except Exception as _e_nb:
+            self.log_step("V99.9 Brain", "ERROR", str(_e_nb)[:80])
+
+        def _format_md_for_html_details(_md_text: str) -> str:
+            if not _md_text:
+                return ""
+            import re as _re_md
+            _norm = str(_md_text)
+            # Tách dòng nếu nhiều icon mục bị dính trên cùng 1 dòng
+            for _ic in ['📢', '📋', '⏳', '🔧', '### ', '## ']:
+                _norm = _norm.replace(f" {_ic}", f"\n{_ic}").replace(f"**{_ic}", f"\n**{_ic}")
+            _out_lines = []
+            for _raw_l in _norm.split('\n'):
+                _s = _raw_l.strip()
+                if not _s:
+                    continue
+                if _s.startswith(('<div', '</div', '<table', '</table', '<tr', '</tr', '<td', '<th', '<ul', '<li', '<hr', '<details', '</details', '<summary')):
+                    _out_lines.append(_s)
+                    continue
+                if _s in ('---', '***', '___'):
+                    _out_lines.append('<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:10px 0;">')
+                    continue
+                # Convert **bold** -> <b>bold</b>
+                _s_html = _re_md.sub(r'\*\*(.+?)\*\*', r'<b style="color:#fde68a;">\1</b>', _s)
+                if _s_html.startswith('#### '):
+                    _out_lines.append(f'<div style="font-size:1.02em;font-weight:800;color:#93c5fd;margin:10px 0 4px 0;">{_s_html[5:]}</div>')
+                elif _s_html.startswith('### '):
+                    _out_lines.append(f'<div style="font-size:1.12em;font-weight:800;color:#fbbf24;margin:14px 0 6px 0;border-bottom:1px solid rgba(251,191,36,0.25);padding-bottom:4px;">{_s_html[4:]}</div>')
+                elif _s_html.startswith('## '):
+                    _out_lines.append(f'<div style="font-size:1.18em;font-weight:900;color:#34d399;margin:14px 0 6px 0;">{_s_html[3:]}</div>')
+                elif _s_html.startswith('# '):
+                    _out_lines.append(f'<div style="font-size:1.22em;font-weight:900;color:#f59e0b;margin:14px 0 6px 0;">{_s_html[2:]}</div>')
+                elif _s_html.startswith(('- ', '• ', '* ')):
+                    _out_lines.append(f'<div style="margin:5px 0 5px 12px;line-height:1.65;color:#f1f5f9;">• {_s_html[2:]}</div>')
+                else:
+                    _out_lines.append(f'<div style="margin:6px 0;line-height:1.65;color:#f8fafc;">{_s_html}</div>')
+            return "\n".join(_out_lines)
+
+        # V99.9: Mặc định LUÔN BẬT AI Online (use_online_api=True) kết hợp 10 Hệ Thống + 40 Chuyên Gia AI
         online_result = None
         if kwargs.get('use_online_api', True):
             online_result = self._try_online_ai(
@@ -15782,19 +15812,22 @@ class FreeAIHelper:
                 offline_analysis_data=offline_analysis_data
             )
         
-        # V99.8: Luôn dùng Đại Khung Kết Luận Hợp Nhất 10 Hệ Thống + 40 Chuyên Gia + Tiên Tri 360°
         _real_multi = False
             
         if online_result:
-            # V99.8: AI Online + 10 Hệ Thống + 40 Chuyên Gia AI
+            # V99.9: AI Online + 10 Hệ Thống + 40 Chuyên Gia AI
             final_parts = []
             
-            # Extract verdict, reason, timing, and remedy from online_result
+            # Chuẩn hóa xuống dòng trước khi bóc tách 4 trường kết luận
+            _norm_online = str(online_result)
+            for _mk in ['📢', '📋', '⏳', '🔧', '### ']:
+                _norm_online = _norm_online.replace(f" {_mk}", f"\n{_mk}").replace(f"**{_mk}", f"\n**{_mk}")
+            
             _online_verdict_line = ""
             _online_visao = ""
             _online_ungky = ""
             _online_giaiphap = ""
-            for _line in online_result.split('\n'):
+            for _line in _norm_online.split('\n'):
                 _stripped = _line.strip()
                 _up = _stripped.upper()
                 if not _online_verdict_line and ('📢' in _stripped or 'CÂU TRẢ LỜI:' in _up or 'VERDICT:' in _up):
@@ -15819,13 +15852,14 @@ class FreeAIHelper:
                     _online_giaiphap = _cleaned_gp.strip(' :-•*')
             
             if not _online_verdict_line:
-                for _line in online_result.split('\n'):
+                for _line in _norm_online.split('\n'):
                     _s_l = _line.strip().replace('**', '').replace('###', '').strip()
                     if len(_s_l) > 15 and not _s_l.startswith(('🏆', '🔍', '📊', '🔮', '|', '---')):
-                        _online_verdict_line = _s_l[:220]
+                        _online_verdict_line = _s_l[:240]
                         break
-            if not _online_verdict_line:
-                _online_verdict_line = "Xem chi tiết phân tích bên dưới"
+            if not _online_verdict_line or 'xem chi tiết' in _online_verdict_line.lower():
+                _v_lbl_fallback = 'ĐẠI CÁT' if weighted_pct >= 70 else 'CÁT' if weighted_pct >= 55 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 30 else 'ĐẠI HUNG'
+                _online_verdict_line = f"{_v_lbl_fallback} ({weighted_pct}%)"
             
             # === V42.0: CẢNH BÁO PHẢN/PHỤC NGÂM — Hiển thị TRƯỚC kết luận ===
             try:
@@ -15857,21 +15891,21 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === ÔÔ NÂU TO — KẾT LUẬN AI ONLINE ===
+            # === Ô NÂU TO — KẾT LUẬN AI ONLINE ===
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V6886)</div>'
-                f'<div style="font-size:2.2em;font-weight:900;color:#ffffff;line-height:1.3;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
-                + (f'<div style="font-size:1.1em;color:#fef3c7;margin-bottom:6px;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
-                + (f'<div style="font-size:1.1em;color:#fde68a;margin-bottom:6px;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
-                + (f'<div style="font-size:1.1em;color:#fbbf24;">🔧 <b>Giải pháp:</b> {_online_giaiphap}</div>' if _online_giaiphap else '')
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V99.9)</div>'
+                f'<div style="font-size:1.85em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
+                + (f'<div style="font-size:1.08em;color:#fef3c7;margin-bottom:8px;line-height:1.55;">📋 <b>Vì sao:</b> {_online_visao}</div>' if _online_visao else '')
+                + (f'<div style="font-size:1.08em;color:#fde68a;margin-bottom:8px;line-height:1.55;">⏳ <b>Ứng kỳ:</b> {_online_ungky}</div>' if _online_ungky else '')
+                + (f'<div style="font-size:1.08em;color:#fbbf24;line-height:1.55;">🔧 <b>Giải pháp:</b> {_online_giaiphap}</div>' if _online_giaiphap else '')
                 + f'</div>'
             )
             
-            # Chi tiết phân tích Online → collapse
-            final_parts.append("\n<details>")
-            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI ONLINE (nhấn để mở)</b></summary>\n")
-            final_parts.append(online_result)
+            # Chi tiết phân tích Online → collapse (HTML formatted để không bao giờ bị gộp dòng)
+            final_parts.append("\n<details open>")
+            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI ONLINE (nhấn để đóng/mở)</b></summary>\n")
+            final_parts.append(_format_md_for_html_details(online_result))
             final_parts.append("\n</details>")
             final_parts.append("")
             
@@ -16280,6 +16314,11 @@ class FreeAIHelper:
                 elif any(k in _q_norm for k in ['tìm', 'mất', 'đâu']):
                     if _kc_detail: _advice_parts.append(f'📍 {_kc_detail}')
                     if _huong_tot: _advice_parts.append(f'🧭 Tìm hướng {_huong_tot}.')
+                elif any(k in _q_norm for k in ['yêu', 'vợ', 'chồng', 'tình cảm', 'hôn nhân', 'người yêu', 'chia tay', 'quay lại']):
+                    if weighted_pct >= 55:
+                        _advice_parts.append('💝 Lời khuyên tình cảm: Tình nghĩa đang thuận hòa, hãy dành sự quan tâm ấm áp để gắn kết bền chặt.')
+                    else:
+                        _advice_parts.append('💝 Lời khuyên tình cảm: Chủ động lắng nghe, trò chuyện nhẹ nhàng để tháo gỡ nút thắt tâm lý, tránh tự ái hay trách móc.')
                 else:
                     if weighted_pct >= 60:
                         _advice_parts.append('✅ Thuận lợi, nên tiến hành.')
@@ -16328,13 +16367,7 @@ class FreeAIHelper:
                         _t2_parts.append(f'👤 <b>Ví như:</b> {_t2_ts_info.get("con_nguoi", "?")}')
                     if _t2_nk:
                         _t2_parts.append(f'🌊 <b>Ngũ Khí:</b> {_t2_nk} — {_t2_nk_info.get("label", "?")} ({_t2_nk_info.get("power", "?")}%)')
-                    if _t2_vv:
-                        _vv_items = []
-                        if _t2_vv.get('do_vat'): _vv_items.append(f'Đồ vật: {_t2_vv["do_vat"]}')
-                        if _t2_vv.get('nguoi'): _vv_items.append(f'Người: {_t2_vv["nguoi"]}')
-                        if _t2_vv.get('benh'): _vv_items.append(f'Bệnh: {_t2_vv["benh"]}')
-                        if _vv_items:
-                            _t2_parts.append(f'🏷️ <b>Vạn Vật:</b> {" | ".join(_vv_items)}')
+                    # V99.9: Không chèn Vạn Vật (bóng đèn, bếp cũ...) vào Sơ đồ lực lượng để tránh lạc đề
                     
                     if _t2_parts:
                         _t2_inner = ''.join(f'<div style="color:#d1fae5;margin:3px 0;font-size:0.93em;line-height:1.5;">{p}</div>' for p in _t2_parts)
@@ -16532,58 +16565,40 @@ class FreeAIHelper:
                 except Exception:
                     pass
                 
-                # ═══ ASSEMBLE: 7 TẦNG LUẬN GIẢI ═══
+                # ═══ ASSEMBLE: ĐẠI KHUNG HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI (V99.9) ═══
                 final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:28px;border-radius:16px;margin:16px 0;border:3px solid #34d399;box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ THIÊN CƠ ĐẠI SƯ — AI OFFLINE V6886</div>'
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V99.9</div>'
                     # TẦNG 1: Verdict lớn
-                    f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
+                    f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     # TẦNG 1b: Trả lời trực tiếp đúng trọng tâm câu hỏi
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.65;">'
-                    + (build_narrative_summary_text(
-                        question=question,
-                        dung_than=dung_than,
-                        weighted_pct=weighted_pct,
-                        category=detected_category,
-                        all_factors=list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or []),
-                        ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
-                        chart_data=chart_data,
-                        omni_data=_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {},
-                    ) if 'build_narrative_summary_text' in globals() else f'📢 {_direct_reply}')
+                    + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
                     + '</div>'
-                    # TẦNG 2: Sơ đồ lực lượng
-                    + _t2_html
-                    # TẦNG 3: Nguyên nhân + Thoán Từ
-                    + _off_summary_extra
-                    + _t3_thoan
-                    # TẦNG 4: Ứng Kỳ
-                    + _t4_html
-                    # TẦNG 5: Cảnh báo + Tương tác
-                    + _t5_html
-                    # TẦNG 6: Suy luận chuyên sâu
-                    + _t6b_html
-                    # TẦNG 6b: Lời khuyên
-                    + _advice_html
-                    # TẦNG 6c: Hồ sơ Tiên Tri Toàn Tri 360° (V99) + 40 Chuyên Gia AI
+                    # TẦNG 2: Hồ sơ Tiên Tri Toàn Tri 360° (đã lọc đúng trọng tâm) + Hội Đồng 40 Chuyên Gia AI
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
                     + (_chuyen_gia_html_box if '_chuyen_gia_html_box' in locals() else '')
-                    # TẦNG 7: Consensus
+                    # TẦNG 3: Bỏ phiếu 10 Hệ Thống + Sơ đồ lực lượng Dụng Thần
                     + _t7_html
+                    + _t2_html
+                    # TẦNG 4: Nguyên nhân 10 hệ thống + Thoán Từ + Ứng Kỳ + Cảnh báo
+                    + _off_summary_extra
+                    + _t3_thoan
+                    + _t4_html
+                    + _t5_html
+                    + _advice_html
                     + _off_ev_html
                     + f'</div>'
                 )
             
-            # V42.9: Chi tiết Offline → 1 collapse DUY NHẤT (LUÔN có offline_full_output)
+            # V99.9: Chi tiết Offline → 1 collapse DUY NHẤT (HTML formatted)
             final_parts.append("\n<details>")
             final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
             if v38_protocol_text:
-                final_parts.append(v38_protocol_text)
-            # V42.9: THÁM TỬ đã nằm trong offline_full_output → không append riêng
-            # V42.9 FIX: LUÔN include offline_full_output — chứa Ứng Kỳ Chuyên Sâu,
-            # Ám Động, Thần Sát, Không Vong, Tam Hợp, Lục Xung/Hợp, Dịch Mã, Thoán Từ...
+                final_parts.append(_format_md_for_html_details(v38_protocol_text))
             if offline_full_output:
-                final_parts.append("\n---")
-                final_parts.append(offline_full_output)
+                final_parts.append('<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:10px 0;">')
+                final_parts.append(_format_md_for_html_details(offline_full_output))
             final_parts.append("\n</details>")
             final_parts.append("")
             
@@ -17164,6 +17179,11 @@ class FreeAIHelper:
                 elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu']):
                     if _kc_detail_fb: _adv_fb.append(f'📍 {_kc_detail_fb}')
                     if _huong_tot: _adv_fb.append(f'🧭 Tìm hướng {_huong_tot}.')
+                elif any(k in _q_lower_fb for k in ['yêu', 'vợ', 'chồng', 'tình cảm', 'hôn nhân', 'người yêu', 'chia tay', 'quay lại']):
+                    if weighted_pct >= 55:
+                        _adv_fb.append('💝 Lời khuyên tình cảm: Tình nghĩa đang thuận hòa, hãy dành sự quan tâm ấm áp để gắn kết bền chặt.')
+                    else:
+                        _adv_fb.append('💝 Lời khuyên tình cảm: Chủ động lắng nghe, trò chuyện nhẹ nhàng để tháo gỡ nút thắt tâm lý, tránh tự ái hay trách móc.')
                 else:
                     if weighted_pct >= 60: _adv_fb.append('✅ Thuận lợi, nên tiến hành.')
                     elif weighted_pct >= 50: _adv_fb.append('⚠️ Cần xác minh thêm trước khi cam kết.')
@@ -17291,7 +17311,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG — THIÊN CƠ ĐẠI SƯ V99.7</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG — THIÊN CƠ ĐẠI SƯ V99.9</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')

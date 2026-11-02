@@ -404,15 +404,35 @@ def build_narrative_summary_text(
             body = f"Dụng Thần (<b>{dung_than}</b>) đang gặp lực cản mạnh, nếu vội vàng thay đổi hoặc quyết định lớn lúc này sẽ bất lợi. {factors_text} Nên củng cố vị trí hiện tại và chờ tới <b>{uk_clean}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 8. TRỌNG TÂM: TÌNH CẢM / HÔN NHÂN / GIA ĐẠO
-    if category == 'TÌNH_CẢM' or any(w in q_low for w in ['yêu', 'cưới', 'hôn nhân', 'vợ chồng', 'chia tay', 'quay lại', 'tình cảm']):
-        if pct >= 55:
-            head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM THUẬN HÒA & GẮN KẾT TỐT ({pct}% — CÁT)</b>."
-        elif pct >= 45:
-            head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÒN DÙNG DẰNG / CẦN THẤU HIỂU & NHƯỜNG NHỊN ({pct}% — BÌNH)</b>."
+    # 8. TRỌNG TÂM: TÌNH CẢM / HÔN NHÂN / VỢ CHỒNG / NGƯỜI YÊU
+    if category == 'TÌNH_CẢM' or any(w in q_low for w in ['yêu', 'cưới', 'hôn nhân', 'vợ chồng', 'chia tay', 'quay lại', 'tình cảm', 'thật lòng', 'ngoại tình', 'vợ tôi', 'chồng tôi', 'người yêu']):
+        _target_p = 'Vợ bạn' if 'vợ' in q_low else ('Chồng bạn' if 'chồng' in q_low else ('Người ấy' if any(x in q_low for x in ['người yêu', 'bạn trai', 'bạn gái']) else 'Đối phương'))
+        if any(w in q_low for w in ['còn yêu', 'yêu tôi không', 'thật lòng', 'còn thương', 'tình cảm']):
+            if pct >= 55:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{_target_p.upper()} VẪN CÒN YÊU THƯƠNG & GẮN BÓ CHÂN THÀNH VỚI BẠN ({pct}% — CÁT)</b>."
+                body = f"Xét hào Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng, tình cảm {_target_p.lower()} dành cho bạn vẫn sâu đậm, hướng về gia đình/mối quan hệ. {factors_text} Mốc tình cảm thêm nồng ấm: <b>{uk_clean}</b>."
+            elif pct >= 45:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{_target_p.upper()} VẪN CÒN TÌNH NGHĨA NHƯNG ĐANG CÓ KHOẢNG CÁCH / TÂM SỰ GIỮ KÍN TRONG LÒNG ({pct}% — BÌNH)</b>."
+                body = f"Dụng Thần (<b>{dung_than}</b>) đạt <b>{pct}%</b> cho thấy {_target_p.lower()} <b>chưa hết yêu bạn</b>, nhưng do cung quẻ đang gặp lực cản/khép kín nên bề ngoài tỏ ra trầm lắng, ít chia sẻ hoặc còn tự ái ngầm. {factors_text} Hãy chủ động quan tâm nhẹ nhàng, tháo gỡ khúc mắc quanh mốc <b>{uk_clean}</b>."
+            else:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM CỦA {_target_p.upper()} ĐANG NGUỘI LẠNH / RẠN NỨT LỚN ({pct}% — HUNG)</b>."
+                body = f"Hào Dụng Thần (<b>{dung_than}</b>) và trục Thế – Ứng đang xung khắc/suy yếu mạnh, báo hiệu {_target_p.lower()} đang rất mệt mỏi, bất mãn hoặc xa cách về cảm xúc. {factors_text} Cần kiên nhẫn hóa giải, tránh tranh cãi gay gắt trước mốc <b>{uk_clean}</b>."
+        elif any(w in q_low for w in ['quay lại', 'hàn gắn', 'làm lành']):
+            if pct >= 55:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÓ KHẢ NĂNG QUAY LẠI & HÀN GẮN THÀNH CÔNG ({pct}% — CÁT)</b>."
+            elif pct >= 45:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÒN DUYÊN NỢ DÙNG DẰNG — CẦN CHỦ ĐỘNG MỀM MỎNG MỚI HÀN GẮN ĐƯỢC ({pct}% — BÌNH)</b>."
+            else:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>RẤT KHÓ QUAY LẠI — DUYÊN KHÍ ĐANG BẾ TẮC ({pct}% — HUNG)</b>."
+            body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
         else:
-            head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐANG CÓ XUNG KHẮC / TRỞ NGẠI LỚN ({pct}% — HUNG)</b>."
-        body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
+            if pct >= 55:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM THUẬN HÒA & GẮN KẾT TỐT ({pct}% — CÁT)</b>."
+            elif pct >= 45:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÒN TÌNH NGHĨA NHƯNG ĐANG DÙNG DẰNG — CẦN THẤU HIỂU & NHƯỜNG NHỊN ({pct}% — BÌNH)</b>."
+            else:
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐANG CÓ XUNG KHẮC / TRỞ NGẠI LỚN TRONG TÌNH CẢM ({pct}% — HUNG)</b>."
+            body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
     # 9. CÁC CÂU HỎI KHÁC (ĐỐI KHÁNG / XUẤT HÀNH / TỔNG QUÁT)
