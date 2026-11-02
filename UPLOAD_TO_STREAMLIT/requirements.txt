@@ -18,4 +18,4 @@ lunardate>=0.2.0
 
 streamlit-autorefresh>=1.0.1
 extra-streamlit-components>=0.1.71
-# Force Rebuild: 2026-03-03-V2.6
+# Force Rebuild: 2026-11-02-V99.9.6

@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V6886"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Cross-Reference 📊 + Unleashed Intelligence 🧠 + Deep Forensic 🕵️‍♂️ + Internet 🌐)"
+APP_VERSION = "V99.9.6"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Hợp Nhất 10 Hệ Thống Quẻ 🔮 + 40 Chuyên Gia AI 🧙 + Gemini Online Full Không Cắt Chữ 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,9 +19,40 @@ import os
 import traceback
 import re
 
-# Performance Optimization: Load free_ai_helper once in memory instead of reloading 18k lines every rerun
+# V99.9.6: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V99.9.6"
+import importlib as _imp_hot
+if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
+    for _m_name in [
+        "offline_brain",
+        "omniscient_prophecy",
+        "ai_modules.luc_hao_expert_ai", "luc_hao_expert_ai",
+        "ai_modules.mai_hoa_expert_ai", "mai_hoa_expert_ai",
+        "ai_modules.relationship_ai", "relationship_ai",
+        "ai_modules.wealth_advisor_ai", "wealth_advisor_ai",
+        "ai_modules.career_advisor_ai", "career_advisor_ai",
+        "ai_modules.health_advisor_ai", "health_advisor_ai",
+        "ai_modules.chart_interpreter_ai", "chart_interpreter_ai",
+        "gemini_helper",
+        "free_ai_helper",
+    ]:
+        if _m_name in sys.modules and sys.modules[_m_name] is not None:
+            try:
+                _imp_hot.reload(sys.modules[_m_name])
+            except Exception:
+                pass
+    sys._qmdg_loaded_build_version = _CODE_BUILD_VERSION
+
 try:
     import free_ai_helper as _fah_mod
+except Exception:
+    pass
+
+try:
+    if st.session_state.get("_session_build_version") != _CODE_BUILD_VERSION:
+        for _stale_k in ["_cached_free_ai_helper", "gemini_helper", "ai_orchestrator", "_qa_fast_cache", "master_qa_last_result"]:
+            st.session_state.pop(_stale_k, None)
+        st.session_state["_session_build_version"] = _CODE_BUILD_VERSION
 except Exception:
     pass
 
@@ -2575,7 +2606,7 @@ def render_master_unified_qa_box(location_key="main"):
 
                     _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
                     _want_online = st.session_state.get('qa_use_cloud_llm', True)
-                    _cache_key = f"V999|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
+                    _cache_key = f"V9996|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
                     if not _use_rnd and _cache_key in _cache_store:
                         combined_answer = _cache_store[_cache_key]
                     else:

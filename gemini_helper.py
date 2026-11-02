@@ -155,29 +155,80 @@ class GeminiQMDGHelper:
     def set_n8n_url(self, url):
         self.n8n_url = url
 
-    # --- CORE: CALL AI RAW ---
+    # --- CORE: CALL AI RAW (V99.9.6: ANTI-TRUNCATION + DIRECT REST THINKING BUDGET) ---
     def _call_ai_raw(self, prompt):
-        safety_settings = None
-        if genai_types is not None:
-            safety_settings = [
-                genai_types.SafetySetting(category='HARM_CATEGORY_HARASSMENT', threshold='BLOCK_NONE'),
-                genai_types.SafetySetting(category='HARM_CATEGORY_HATE_SPEECH', threshold='BLOCK_NONE'),
-                genai_types.SafetySetting(category='HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold='BLOCK_NONE'),
-                genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
-            ]
+        safety_settings_rest = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
 
-        # V99.8: Full Model Cascade — Suy luận sâu + Nhanh + Đa tầng dự phòng
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-2.5-flash',                # FREE — Nhanh + Suy luận sâu + Quota cao
-                'gemini-2.5-pro',                  # FREE/PRO — Suy luận sâu nhất
-                'gemini-3.0-flash',                # Gemini 3 Flash
-                'gemini-2.5-flash-lite',           # FREE — Nhẹ, tốc độ cao
-                'gemini-2.0-flash',                # Dự phòng ổn định
-                'gemini-1.5-flash',                # Legacy FREE
-                'gemini-3.1-pro-preview',          # PAID — Khi có billing
-                'gemini-1.5-pro',                  # PAID — Legacy Pro
+                'gemini-2.5-flash',                # Nhanh + Sâu (với thinkingBudget=0 không cắt câu)
+                'gemini-2.0-flash',                # Siêu tốc, 0 tốn thinking token, không bao giờ cắt câu
+                'gemini-2.5-pro',                  # Suy luận sâu
+                'gemini-2.5-flash-lite',           # Nhẹ, tốc độ cao
+                'gemini-1.5-flash',                # Dự phòng ổn định
             ]
+
+        _END_CHARS = set('.!?*)]"”»…:;0123456789%')
+
+        def _is_complete_text(t: str, finish_reason: str = "") -> bool:
+            s = (t or "").strip()
+            if len(s) < 420:
+                return False
+            if finish_reason == "MAX_TOKENS" and len(s) < 900:
+                return False
+            last_ch = s[-1]
+            if last_ch not in _END_CHARS and len(s) < 1200:
+                return False
+            return True
+
+        def _clean_trailing_cutoff(t: str) -> str:
+            s = (t or "").strip()
+            if not s:
+                return s
+            if s[-1] in _END_CHARS:
+                return s
+            for idx in range(len(s) - 1, max(0, len(s) - 280), -1):
+                if s[idx] in '.!?…\n':
+                    return s[:idx + 1].strip()
+            return s + "."
+
+        def _call_rest_endpoint(api_key: str, model_name: str, prompt_text: str, thinking_budget=None) -> tuple:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+            max_out = 16384 if any(x in model_name for x in ['2.5', '3.0', '3.1']) else 8192
+            gen_cfg = {
+                "temperature": 0.2,
+                "topP": 0.8,
+                "topK": 30,
+                "maxOutputTokens": max_out,
+            }
+            if thinking_budget is not None:
+                gen_cfg["thinkingConfig"] = {"thinkingBudget": int(thinking_budget)}
+            payload = {
+                "contents": [{"parts": [{"text": str(prompt_text)}]}],
+                "generationConfig": gen_cfg,
+                "safetySettings": safety_settings_rest,
+            }
+            r = requests.post(url, json=payload, timeout=40)
+            if r.status_code == 400 and "thinkingConfig" in gen_cfg:
+                gen_cfg.pop("thinkingConfig", None)
+                r = requests.post(url, json=payload, timeout=40)
+            if r.status_code != 200:
+                raise RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
+            j = r.json()
+            cands = j.get("candidates", [])
+            if not cands:
+                return "", "NO_CANDIDATES"
+            finish_reason = str(cands[0].get("finishReason", ""))
+            out_txt = ""
+            for pt in cands[0].get("content", {}).get("parts", []):
+                if not pt.get("thought", False) and pt.get("text"):
+                    out_txt += pt["text"]
+            return out_txt, finish_reason
 
         error_log = []
         bad_keys = set()
@@ -185,94 +236,31 @@ class GeminiQMDGHelper:
         for current_api_key in self.api_keys:
             if current_api_key in bad_keys:
                 continue
-            client = None
-            if genai is not None:
-                try:
-                    client = genai.Client(api_key=current_api_key)
-                except Exception:
-                    client = None
 
             for model_name in self.cascade_models:
                 if current_api_key in bad_keys:
                     break
                 try:
                     _prompt = prompt
-                    if isinstance(_prompt, str) and len(_prompt) > 120000:
-                        _prompt = _prompt[:60000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-55000:]
+                    if isinstance(_prompt, str) and len(_prompt) > 90000:
+                        _prompt = _prompt[:45000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-40000:]
 
-                    text = ""
-                    # V99.9: Cấp phát max_output_tokens chuẩn cho mọi model (8192 cho 2.0/1.5, 16384 cho 2.5/3.0)
-                    # và giới hạn thinking_budget=1024 để Gemini 2.5 KHÔNG BAO GIỜ bị cắn hết token suy nghĩ dẫn đến ngắt câu giữa chừng!
-                    _max_out = 16384 if any(x in model_name for x in ['2.5', '3.0', '3.1']) else 8192
-                    if client is not None and genai_types is not None:
-                        _cfg_kwargs = dict(
-                            temperature=0.15,
-                            top_p=0.7,
-                            top_k=20,
-                            max_output_tokens=_max_out,
-                            safety_settings=safety_settings
-                        )
-                        if hasattr(genai_types, 'ThinkingConfig') and any(x in model_name for x in ['2.5-flash', '2.5-pro', '3.0-flash']):
-                            try:
-                                _cfg_kwargs['thinking_config'] = genai_types.ThinkingConfig(thinking_budget=1024)
-                            except Exception:
-                                pass
-                        try:
-                            gen_config = genai_types.GenerateContentConfig(**_cfg_kwargs)
-                            resp = client.models.generate_content(
-                                model=model_name,
-                                contents=_prompt,
-                                config=gen_config,
-                            )
-                        except Exception:
-                            # Fallback nếu model không hỗ trợ thinking_config
-                            _cfg_kwargs.pop('thinking_config', None)
-                            _cfg_kwargs['max_output_tokens'] = 8192
-                            gen_config = genai_types.GenerateContentConfig(**_cfg_kwargs)
-                            resp = client.models.generate_content(
-                                model=model_name,
-                                contents=_prompt,
-                                config=gen_config,
-                            )
-                        try:
-                            text = resp.text
-                        except Exception:
-                            pass
-                        if not text and getattr(resp, 'candidates', None):
-                            parts = resp.candidates[0].content.parts if resp.candidates[0].content else []
-                            for p in parts:
-                                is_thought = getattr(p, 'thought', False)
-                                if not is_thought and hasattr(p, 'text') and p.text:
-                                    text += p.text
-                    else:
-                        # Direct HTTP REST API Fallback (when google-genai SDK is not installed)
-                        _url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={current_api_key}"
-                        _payload = {
-                            "contents": [{"parts": [{"text": str(_prompt)}]}],
-                            "generationConfig": {
-                                "temperature": 0.15,
-                                "topP": 0.7,
-                                "topK": 20,
-                                "maxOutputTokens": 16384
-                            }
-                        }
-                        _r = requests.post(_url, json=_payload, timeout=45)
-                        if _r.status_code == 200:
-                            _j = _r.json()
-                            _cands = _j.get("candidates", [])
-                            if _cands:
-                                for _pt in _cands[0].get("content", {}).get("parts", []):
-                                    if not _pt.get("thought", False) and _pt.get("text"):
-                                        text += _pt["text"]
-                        else:
-                            raise RuntimeError(f"HTTP {_r.status_code}: {_r.text[:200]}")
+                    _tb = 0 if '2.5-flash' in model_name else (512 if '2.5-pro' in model_name else None)
+                    text, finish_reason = _call_rest_endpoint(current_api_key, model_name, _prompt, thinking_budget=_tb)
 
-                    if text and len(text.strip()) > 1:
-                        self.model_name = model_name
-                        self.api_key = current_api_key
-                        return text
+                    if text and not _is_complete_text(text, finish_reason) and _tb not in (0, None):
+                        text2, fr2 = _call_rest_endpoint(current_api_key, model_name, _prompt, thinking_budget=0)
+                        if len((text2 or "").strip()) > len((text or "").strip()):
+                            text, finish_reason = text2, fr2
 
-                    error_log.append(f"{model_name}: Phản hồi rỗng/bị chặn")
+                    if not text or len(text.strip()) < 380:
+                        error_log.append(f"{model_name}: Phản hồi ngắn ({len((text or '').strip())} ký tự, reason={finish_reason}) -> chuyển model")
+                        continue
+
+                    text = _clean_trailing_cutoff(text)
+                    self.model_name = model_name
+                    self.api_key = current_api_key
+                    return text
 
                 except Exception as e:
                     error_str = str(e)
@@ -282,11 +270,11 @@ class GeminiQMDGHelper:
                         continue
                     elif "404" in error_str or "not found" in error_str.lower():
                         error_log.append(f"{model_name}: ❌ Model không khả dụng.")
-                        break
+                        continue
                     elif "API_KEY_INVALID" in error_str or "key not valid" in error_str.lower() or "expired" in error_str.lower() or "403" in error_str:
                         error_log.append(f"{model_name} (Key {key_suffix}): 🔑 Key không hợp lệ!")
                         bad_keys.add(current_api_key)
-                        continue
+                        break
                     elif "timeout" in error_str.lower() or "deadline" in error_str.lower():
                         error_log.append(f"{model_name} (Key {key_suffix}): ⏰ Timeout")
                         continue
