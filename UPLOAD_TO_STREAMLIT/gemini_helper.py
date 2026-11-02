@@ -4,8 +4,12 @@ Python Pre-Analysis Engine + 12-Step CoT + Deep Reasoning + Tam Tài + Contradic
 Lục Thuật Hợp Nhất: Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản + Đại Lục Nhâm + Thái Ất + Mang Đoán + Vạn Vật
 """
 
-from google import genai
-from google.genai import types as genai_types
+try:
+    from google import genai
+    from google.genai import types as genai_types
+except ImportError:
+    genai = None
+    genai_types = None
 import os
 import requests
 import json
@@ -54,8 +58,11 @@ class GeminiQMDGHelper:
         self.version = "V42.9.38-GenAI-SDK"
         # V21.0: Khởi tạo Client mới (google-genai SDK)
         self._client = None
-        if self.api_key:
-            self._client = genai.Client(api_key=self.api_key)
+        if self.api_key and genai is not None:
+            try:
+                self._client = genai.Client(api_key=self.api_key)
+            except Exception:
+                self._client = None
         
         self._failed_models = set()
         self._hashlib = hashlib
@@ -150,68 +157,99 @@ class GeminiQMDGHelper:
 
     # --- CORE: CALL AI RAW ---
     def _call_ai_raw(self, prompt):
-        # V21.0: google-genai SDK — safety settings via types
-        safety_settings = [
-            genai_types.SafetySetting(category='HARM_CATEGORY_HARASSMENT', threshold='BLOCK_NONE'),
-            genai_types.SafetySetting(category='HARM_CATEGORY_HATE_SPEECH', threshold='BLOCK_NONE'),
-            genai_types.SafetySetting(category='HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold='BLOCK_NONE'),
-            genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
-        ]
+        safety_settings = None
+        if genai_types is not None:
+            safety_settings = [
+                genai_types.SafetySetting(category='HARM_CATEGORY_HARASSMENT', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_HATE_SPEECH', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+            ]
 
-        # V99.6: Model cascade — Ưu tiên tốc độ siêu nhanh (Flash models trước)
+        # V99.8: Full Model Cascade — Suy luận sâu + Nhanh + Đa tầng dự phòng
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-2.5-flash',
-                'gemini-2.5-flash-lite',
-                'gemini-2.0-flash',
+                'gemini-2.5-flash',                # FREE — Nhanh + Suy luận sâu + Quota cao
+                'gemini-2.5-pro',                  # FREE/PRO — Suy luận sâu nhất
+                'gemini-3.0-flash',                # Gemini 3 Flash
+                'gemini-2.5-flash-lite',           # FREE — Nhẹ, tốc độ cao
+                'gemini-2.0-flash',                # Dự phòng ổn định
+                'gemini-1.5-flash',                # Legacy FREE
+                'gemini-3.1-pro-preview',          # PAID — Khi có billing
+                'gemini-1.5-pro',                  # PAID — Legacy Pro
             ]
 
         error_log = []
         bad_keys = set()
 
-        for model_name in self.cascade_models:
-            for current_api_key in self.api_keys:
-                if current_api_key in bad_keys:
-                    continue
+        for current_api_key in self.api_keys:
+            if current_api_key in bad_keys:
+                continue
+            client = None
+            if genai is not None:
                 try:
                     client = genai.Client(api_key=current_api_key)
                 except Exception:
-                    bad_keys.add(current_api_key)
-                    continue
+                    client = None
 
+            for model_name in self.cascade_models:
+                if current_api_key in bad_keys:
+                    break
                 try:
                     _prompt = prompt
-                    if isinstance(_prompt, str) and len(_prompt) > 24000:
-                        _prompt = _prompt[:14000] + "\n\n[...TÓM LƯỢC TỐI ƯU TỐC ĐỘ...]\n\n" + _prompt[-10000:]
-                    
-                    gen_config = genai_types.GenerateContentConfig(
-                        temperature=0.15,
-                        top_p=0.7,
-                        top_k=20,
-                        max_output_tokens=3072,
-                        safety_settings=safety_settings
-                    )
-                    resp = client.models.generate_content(
-                        model=model_name,
-                        contents=_prompt,
-                        config=gen_config,
-                    )
+                    if isinstance(_prompt, str) and len(_prompt) > 120000:
+                        _prompt = _prompt[:60000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-55000:]
 
                     text = ""
-                    try:
-                        text = resp.text
-                    except Exception:
-                        pass
-                    
-                    if not text and resp.candidates:
-                        parts = resp.candidates[0].content.parts if resp.candidates[0].content else []
-                        for p in parts:
-                            is_thought = getattr(p, 'thought', False)
-                            if not is_thought and hasattr(p, 'text') and p.text:
-                                text += p.text
+                    if client is not None and genai_types is not None:
+                        gen_config = genai_types.GenerateContentConfig(
+                            temperature=0.15,
+                            top_p=0.7,
+                            top_k=20,
+                            max_output_tokens=65536,
+                            safety_settings=safety_settings
+                        )
+                        resp = client.models.generate_content(
+                            model=model_name,
+                            contents=_prompt,
+                            config=gen_config,
+                        )
+                        try:
+                            text = resp.text
+                        except Exception:
+                            pass
+                        if not text and getattr(resp, 'candidates', None):
+                            parts = resp.candidates[0].content.parts if resp.candidates[0].content else []
+                            for p in parts:
+                                is_thought = getattr(p, 'thought', False)
+                                if not is_thought and hasattr(p, 'text') and p.text:
+                                    text += p.text
+                    else:
+                        # Direct HTTP REST API Fallback (when google-genai SDK is not installed)
+                        _url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={current_api_key}"
+                        _payload = {
+                            "contents": [{"parts": [{"text": str(_prompt)}]}],
+                            "generationConfig": {
+                                "temperature": 0.15,
+                                "topP": 0.7,
+                                "topK": 20,
+                                "maxOutputTokens": 16384
+                            }
+                        }
+                        _r = requests.post(_url, json=_payload, timeout=45)
+                        if _r.status_code == 200:
+                            _j = _r.json()
+                            _cands = _j.get("candidates", [])
+                            if _cands:
+                                for _pt in _cands[0].get("content", {}).get("parts", []):
+                                    if not _pt.get("thought", False) and _pt.get("text"):
+                                        text += _pt["text"]
+                        else:
+                            raise RuntimeError(f"HTTP {_r.status_code}: {_r.text[:200]}")
 
                     if text and len(text.strip()) > 1:
                         self.model_name = model_name
+                        self.api_key = current_api_key
                         return text
 
                     error_log.append(f"{model_name}: Phản hồi rỗng/bị chặn")

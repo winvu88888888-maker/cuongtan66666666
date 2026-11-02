@@ -4997,37 +4997,51 @@ class FreeAIHelper:
         Nhận raw data từ 3 phương pháp + offline analysis → phân tích sâu, loại bỏ vô lý."""
         try:
             import streamlit as st
-            # V35.8-FIX: AGGRESSIVE KEY RESOLUTION — tìm key từ TẤT CẢ nguồn
-            api_key = self._api_key
-            
-            # Source 2: session_state.gemini_key (set bởi app.py khi activate)
-            if not api_key:
-                api_key = getattr(st, 'session_state', {}).get('gemini_key')
-            
-            # Source 3: session_state._resolved_api_key (set bởi auto-init)
-            if not api_key:
-                api_key = getattr(st, 'session_state', {}).get('_resolved_api_key')
-            
-            # Source 4: Lấy từ gemini_helper object trong session (nếu GeminiQMDGHelper đã init)
-            if not api_key:
-                _gh = getattr(st, 'session_state', {}).get('gemini_helper')
-                if _gh and hasattr(_gh, 'api_key') and _gh.api_key:
-                    api_key = _gh.api_key
-                elif _gh and hasattr(_gh, 'api_keys') and _gh.api_keys:
-                    api_key = _gh.api_keys[0]
-            
-            # Source 5: st.secrets (Streamlit Cloud secrets.toml)
-            if not api_key:
-                try:
-                    api_key = st.secrets.get('GEMINI_API_KEY', '')
-                except Exception:
-                    pass
-            
+            # V99.8: MULTI-SOURCE KEY AGGREGATION — Gom TẤT CẢ các nguồn Key để tự động xoay vòng nếu 1 key hết hạn/429
+            _cand_keys = []
+            _ss = getattr(st, 'session_state', {})
+            for _src_k in [
+                _ss.get('gemini_key'),
+                self._api_key,
+                _ss.get('_resolved_api_key'),
+                _ss.get('api_key'),
+            ]:
+                if _src_k and str(_src_k).strip():
+                    _cand_keys.append(str(_src_k).strip())
+
+            _gh = _ss.get('gemini_helper')
+            if _gh:
+                if hasattr(_gh, 'api_keys') and _gh.api_keys:
+                    _cand_keys.extend([str(k).strip() for k in _gh.api_keys if k])
+                elif hasattr(_gh, 'api_key') and _gh.api_key:
+                    _cand_keys.append(str(_gh.api_key).strip())
+
+            # Source: custom_data.json & data_hub/factory_config.json
+            try:
+                _root_d = os.path.dirname(os.path.abspath(__file__))
+                for _cfg_rel, _cfg_k in [("custom_data.json", "GEMINI_API_KEY"), ("data_hub/factory_config.json", "api_key")]:
+                    _cfg_p = os.path.join(_root_d, _cfg_rel)
+                    if os.path.exists(_cfg_p):
+                        with open(_cfg_p, "r", encoding="utf-8") as _cf:
+                            _cd = json.load(_cf)
+                            if _cd.get(_cfg_k):
+                                _cand_keys.append(str(_cd[_cfg_k]).strip())
+            except Exception:
+                pass
+
+            # Source: st.secrets (Streamlit Cloud secrets.toml)
+            try:
+                _sec_k = st.secrets.get('GEMINI_API_KEY', '')
+                if _sec_k:
+                    _cand_keys.append(str(_sec_k).strip())
+            except Exception:
+                pass
+
+            api_key = ",".join(list(dict.fromkeys([k for k in _cand_keys if k])))
             if not api_key:
                 self.log_step("Online AI", "SKIP", "Không tìm thấy API Key từ bất kỳ nguồn nào")
                 return None  # Không có key → fallback về Python
-            
-            # V35.8-FIX: Cache key cho lần gọi sau
+
             self._api_key = api_key
             
             from gemini_helper import GeminiQMDGHelper
@@ -5385,6 +5399,11 @@ class FreeAIHelper:
                     raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
                 raw_data_section += "\n"
             
+            # ═══ V99.8: BÁO CÁO THẨM ĐỊNH TỪ HỘI ĐỒNG 40 CHUYÊN GIA AI ═══
+            if od.get('chuyen_gia_report'):
+                raw_data_section += f"═══ [CG] HỘI ĐỒNG 40 CHUYÊN GIA AI THẨM ĐỊNH CHUYÊN SÂU ═══\n"
+                raw_data_section += od['chuyen_gia_report'] + "\n\n"
+
             # ═══ V42.9.29: BLIND READING (MANG ĐOÁN) ═══
             try:
                 from blind_reading import blind_read, format_blind_reading
@@ -5618,12 +5637,10 @@ class FreeAIHelper:
                 f"<output_format>\n"
                 f"FORMAT BẮT BUỘC — Lập luận SẮC BÉN, CHUYÊN MÔN CAO:\n\n"
                 f"### 🏆 KẾT LUẬN\n"
-                + (
-                    f"**📢 CÂU TRẢ LỜI:** [Mô tả CỤ THỂ dựa trên Vạn Vật Loại Tượng]\n"
-                    if question_type in ('WHAT', 'WHERE', 'WHEN') else
-                    f"**📢 VERDICT:** [Dùng ĐÚNG verdict từ verdict_block] ([XX]%)\n"
-                    f"**📋 TÓM TẮT SỰ KIỆN:** [Mô tả dứt khoát 1 KẾT LUẬN DUY NHẤT + Chỉ rõ CỤ THỂ CÁI GÌ/AI đang gây ra sự kiện đó, diễn biến ra sao]\n"
-                ) +
+                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' + Kèm Phán Quyết từ verdict_block và Tỷ lệ %]\n"
+                f"**📋 VÌ SAO:** [Tóm tắt sắc bén nguyên nhân cốt lõi từ Dụng Thần, Kỳ Môn, Lục Hào, Mai Hoa, Tử Vi & 40 Chuyên Gia AI]\n"
+                f"**⏳ ỨNG KỲ:** [Ghi rõ mốc thời gian Năm - Tháng - Ngày - Giờ ứng nghiệm chính xác]\n"
+                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động & phương hướng/pháp quyết hóa giải cụ thể]\n" +
                 f"\n### 🔍 TRA CỨU ĐẠI SƯ (INTERNET & HUYỀN HỌC)\n"
                 f"- **Dụng Thần:** [Là gì? Hành gì? Trạng thái Vượng/Suy?]\n"
                 f"- **Yếu Tố Tác Động:** [Liệt kê các yếu tố tác động. Với MỖI yếu tố quan trọng: ghi rõ (a) Quẻ nói gì, (b) Internet nói gì, (c) Kết luận khớp hay không].\n"
@@ -13069,8 +13086,9 @@ class FreeAIHelper:
             },
             "TÀI_CHÍNH": {
                 "keywords": ["tiền", "tài chính", "mua bán", "đầu tư", "giàu", "nghèo", "lương", "thu nhập", "nợ", 
-                             "vay", "cho vay", "kinh doanh", "buôn bán", "lãi", "lỗ", "cổ phiếu", "crypto",
-                             "bitcoin", "nhà đất", "mua nhà", "bất động sản", "vốn", "hùn vốn", "trúng số",
+                             "vay", "cho vay", "kinh doanh", "buôn bán", "lãi", "lỗ", "lời", "có lời", "sinh lời",
+                             "chốt lời", "cắt lỗ", "cổ phiếu", "crypto",
+                             "bitcoin", "nhà đất", "mua nhà", "mua đất", "bán đất", "bất động sản", "vốn", "hùn vốn", "trúng số",
                              "tài sản", "vàng", "bạc", "kim cương", "trang sức", "lương tháng",
                              "bán hàng", "lợi nhuận", "doanh thu", "thu lời", "lời lãi", "hoa hồng",
                              "làm ăn", "khai trương", "góp vốn", "hợp tác", "thua lỗ", "thu hồi vốn"],
@@ -13095,10 +13113,10 @@ class FreeAIHelper:
                 "hint": "Phân tích công việc, thi cử. Quan Quỷ = sếp/cơ quan. Khai Môn = khởi đầu."
             },
             "TÌNH_CẢM": {
-                "keywords": ["yêu", "người yêu", "vợ", "chồng", "hôn nhân", "cưới", "ly hôn", "tình", 
+                "keywords": ["yêu", "người yêu", "vợ", "chồng", "hôn nhân", "cưới", "ly hôn", "tình duyên", 
                              "hẹn hò", "chia tay", "ngoại tình", "duyên", "vợ chồng", "đám cưới",
                              "bạn trai", "bạn gái", "tình cảm", "hạnh phúc", "ghen",
-                             "lấy vợ", "lấy chồng", "kết hôn", "thật lòng", "tình yêu", "hôn"],
+                             "lấy vợ", "lấy chồng", "kết hôn", "thật lòng", "tình yêu", "cầu hôn", "đính hôn", "quay lại"],
                 "dung_than": "Thê Tài",
                 "dung_than_detail": {"vợ chồng": "Thê Tài", "vợ": "Thê Tài", "chồng": "Quan Quỷ", 
                                      "bạn gái": "Thê Tài", "bạn trai": "Quan Quỷ"},
@@ -13173,9 +13191,10 @@ class FreeAIHelper:
                     detected_category = "CHUNG"
                 continue
             
+            import re as _re_cat
             score = 0
             for kw in cat_info["keywords"]:
-                if kw in q_lower:
+                if _re_cat.search(r'(?:^|[\s,;.!?/()\-])' + _re_cat.escape(kw) + r'(?:[\s,;.!?/()\-]|$)', q_lower):
                     score += len(kw)
             
             # V21.0: TÌM ĐỒ penalty khi có người (chỉ khi KHÔNG hỏi ở đâu)
@@ -13805,30 +13824,220 @@ class FreeAIHelper:
             sections.append(f"- ⚠️ Lỗi tính Tử Vi Đẩu Số: {str(_tv_e)[:80]}\n")
 
         # ========================================
-        # V99.5: BƯỚC 5.68 — HỘI ĐỒNG 40 CHUYÊN GIA AI (ĐỒNG HỢP LUẬN)
+        # V99.8: BƯỚC 5.68 — HỘI ĐỒNG 40 CHUYÊN GIA AI (KÍCH HOẠT THẬT 100% PYTHON OFFLINE — 0 TỐN API)
         # ========================================
-        sections.append(f"### BƯỚC 5.68 — HỘI ĐỒNG 40 CHUYÊN GIA AI (Tư Vấn Đa Chiều)")
+        sections.append(f"### BƯỚC 5.68 — HỘI ĐỒNG 40 CHUYÊN GIA AI (Thẩm Định Thực Chiến Đa Chiều)")
+        _chuyen_gia_report_str = ""
+        _chuyen_gia_html_box = ""
         try:
-            _EXP_MAP = {
-                'TÀI_CHÍNH': ["Wealth Advisor (Chuyên gia Tài lộc & Đầu tư)", "Direction Advisor (Chuyên gia Phương hướng Kinh doanh)", "Chart Interpreter AI (Đại sư Kỳ Môn)"],
-                'CÔNG_VIỆC': ["Career Advisor AI (Chuyên gia Sự nghiệp & Công danh)", "Scheduler AI (Chuyên gia Thời vận)", "Luc Hao Expert (Bậc thầy Lục Hào)"],
-                'TÌNH_CẢM': ["Relationship AI (Chuyên gia Tình duyên & Hôn nhân)", "Mai Hoa Expert (Chuyên gia Dịch số)", "Fortune Calendar (Chuyên gia Lưu niên)"],
-                'SỨC_KHỎE_GIA_ĐÌNH': ["Health Advisor (Chuyên gia Y Dịch & Sức khỏe)", "Date Selector (Chuyên gia Trạch cát)", "Luc Hao Expert (Bậc thầy Lục Hào)"],
-                'TÌM_ĐỒ': ["Chart Interpreter AI (Chuyên gia Định vị Kỳ Môn)", "Mai Hoa Expert (Chuyên gia Ngoại ứng)", "Direction Advisor (Chuyên gia Phương vị La Kinh)"],
-                'NHÀ_CỬA': ["Direction Advisor (Chuyên gia Phong thủy & Dương trạch)", "Date Selector (Chuyên gia Động thổ & Nhập trạch)", "Wealth Advisor (Chuyên gia Điền sản)"],
-                'XUẤT_HÀNH': ["Direction Advisor (Chuyên gia Xuất hành & Phương vị)", "Scheduler AI (Chuyên gia Giờ Cát Tường)", "Notification AI (Chuyên gia Cảnh báo An toàn)"],
-                'THẮNG_THUA': ["Comparison AI (Chuyên gia Đối kháng Chủ - Khách)", "Prediction Validator (Chuyên gia Kiểm chứng)", "Chart Interpreter AI (Đại sư Kỳ Môn)"],
-                'CHUNG': ["Chart Interpreter AI (Đại sư Kỳ Môn)", "Luc Hao Expert (Bậc thầy Lục Hào)", "Prediction Validator (Chuyên gia Kiểm chứng)"],
-            }
-            _active_experts = _EXP_MAP.get(detected_category, _EXP_MAP['CHUNG'])
-            chuyen_gia_reason = f"Hội đồng {', '.join([e.split('(')[0].strip() for e in _active_experts])} đồng thẩm định Dụng Thần {dung_than}"
+            import sys, os
+            _ai_mod_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai_modules")
+            if _ai_mod_dir not in sys.path:
+                sys.path.insert(0, _ai_mod_dir)
+
+            _exp_findings = []
+            _exp_html_items = []
+            _active_names = []
+            _q_low_cg = question.lower()
+            _can_ngay_cg = chart_data.get('can_ngay', 'Giáp') if chart_data and isinstance(chart_data, dict) else 'Giáp'
+
+            # 1. ChartInterpreterAI (Đại sư Bàn Kỳ Môn)
+            if chart_data and isinstance(chart_data, dict):
+                try:
+                    from chart_interpreter_ai import ChartInterpreterAI
+                    _ci_res = ChartInterpreterAI().analyze_timeline(chart_data, question)
+                    if _ci_res:
+                        _active_names.append("Chart Interpreter AI")
+                        _ci_line = f"🏯 **Chart Interpreter AI (Đại sư Kỳ Môn):** Hiện tại: {_ci_res.get('hien_tai','')} | Tương lai: {_ci_res.get('tuong_lai','')} | Tốc độ ứng kỳ: {_ci_res.get('thoi_gian',{}).get('speed','?')} ({_ci_res.get('thoi_gian',{}).get('days','?')})"
+                        _exp_findings.append(_ci_line)
+                        _exp_html_items.append(f"• 🏯 <b>Chart Interpreter AI:</b> {_ci_res.get('tuong_lai','')} (Ứng kỳ: {_ci_res.get('thoi_gian',{}).get('days','?')})")
+                except Exception:
+                    pass
+
+            # 2. LucHaoExpertAI (Bậc thầy Lục Hào)
+            if luc_hao_data and isinstance(luc_hao_data, dict):
+                try:
+                    from luc_hao_expert_ai import LucHaoExpertAI
+                    _lhe_res = LucHaoExpertAI().analyze_luc_hao(luc_hao_data, question)
+                    if _lhe_res:
+                        _active_names.append("Luc Hao Expert AI")
+                        _kl_lh = _lhe_res.get('ket_luan', {})
+                        _tu_lh = _lhe_res.get('the_ung', {})
+                        _lhe_line = f"📿 **Luc Hao Expert AI (Bậc thầy Lục Hào):** {_kl_lh.get('verdict','?')} — {_kl_lh.get('summary','')} | Thế-Ứng: {_tu_lh.get('relation','')}"
+                        _exp_findings.append(_lhe_line)
+                        if _kl_lh.get('summary'):
+                            _exp_html_items.append(f"• 📿 <b>Luc Hao Expert AI:</b> {_kl_lh.get('summary','')} ({_tu_lh.get('relation','')})")
+                except Exception:
+                    pass
+
+            # 3. MaiHoaExpertAI (Chuyên gia Mai Hoa Dịch Số)
+            if mai_hoa_data and isinstance(mai_hoa_data, dict):
+                try:
+                    from mai_hoa_expert_ai import MaiHoaExpertAI
+                    _mhe_res = MaiHoaExpertAI().analyze_mai_hoa(mai_hoa_data, question)
+                    if _mhe_res:
+                        _active_names.append("Mai Hoa Expert AI")
+                        _qh_mh = _mhe_res.get('quan_he', {})
+                        _mhe_line = f"🌸 **Mai Hoa Expert AI:** {_qh_mh.get('verdict','?')} — {_qh_mh.get('giai_thich','')}"
+                        _exp_findings.append(_mhe_line)
+                        if _qh_mh.get('giai_thich'):
+                            _exp_html_items.append(f"• 🌸 <b>Mai Hoa Expert AI:</b> {_qh_mh.get('giai_thich','')}")
+                except Exception:
+                    pass
+
+            # 4. WealthAdvisorAI (Chuyên gia Tài lộc & Đầu tư)
+            if detected_category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in _q_low_cg for w in ['tiền', 'tài', 'đầu tư', 'mua', 'bán', 'lời', 'lỗ', 'vốn', 'vay', 'nợ', 'giá', 'đất', 'nhà']):
+                try:
+                    from wealth_advisor_ai import WealthAdvisorAI
+                    _wa_res = WealthAdvisorAI().analyze_wealth(chart_data or {}, question)
+                    if _wa_res:
+                        _active_names.append("Wealth Advisor AI")
+                        _wa_adv = "; ".join(_wa_res.get('loi_khuyen', [])[:2])
+                        _wa_det = "; ".join(_wa_res.get('chi_tiet', [])[:2])
+                        _exp_findings.append(f"💰 **Wealth Advisor AI (Tài Lộc & Đầu Tư):** {_wa_res.get('danh_gia','')} (Điểm: {_wa_res.get('diem',50)}/100, Rủi ro: {_wa_res.get('rui_ro','?')}) — {_wa_det} | Khuyên: {_wa_adv}")
+                        _exp_html_items.append(f"• 💰 <b>Wealth Advisor AI:</b> {_wa_res.get('danh_gia','')} (Rủi ro: {_wa_res.get('rui_ro','?')}) — {_wa_det}")
+                except Exception:
+                    pass
+
+            # 5. CareerAdvisorAI (Chuyên gia Sự nghiệp & Công danh)
+            if detected_category == 'CÔNG_VIỆC' or any(w in _q_low_cg for w in ['việc', 'sự nghiệp', 'thăng', 'chức', 'thi', 'đỗ', 'phỏng vấn', 'công ty', 'kinh doanh', 'nghề']):
+                try:
+                    from career_advisor_ai import CareerAdvisorAI
+                    _ca_res = CareerAdvisorAI().analyze_career_question(chart_data or {}, question)
+                    if _ca_res:
+                        _active_names.append("Career Advisor AI")
+                        _ca_det = "; ".join(_ca_res.get('chi_tiet', [])[:2])
+                        _ca_adv = "; ".join(_ca_res.get('loi_khuyen', [])[:2])
+                        _exp_findings.append(f"💼 **Career Advisor AI (Sự Nghiệp & Công Danh):** {_ca_res.get('danh_gia','')} ({_ca_res.get('diem',50)}/100) — {_ca_det} | {_ca_adv}")
+                        _exp_html_items.append(f"• 💼 <b>Career Advisor AI:</b> {_ca_res.get('danh_gia','')} — {_ca_det}")
+                except Exception:
+                    pass
+
+            # 6. HealthAdvisorAI (Chuyên gia Y Dịch & Sức khỏe)
+            if detected_category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in _q_low_cg for w in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'thuốc', 'khám', 'chữa', 'mổ', 'viện', 'qua khỏi']):
+                try:
+                    from health_advisor_ai import HealthAdvisorAI
+                    _ha_res = HealthAdvisorAI().analyze_health(chart_data or {}, question)
+                    if _ha_res:
+                        _active_names.append("Health Advisor AI")
+                        _ha_det = "; ".join(_ha_res.get('chi_tiet', [])[:2])
+                        _ha_adv = "; ".join(_ha_res.get('loi_khuyen', [])[:2])
+                        _exp_findings.append(f"🏥 **Health Advisor AI (Y Dịch & Sức Khỏe):** Tiên lượng {_ha_res.get('tien_luong','')} ({_ha_res.get('diem',50)}/100) — {_ha_det} | {_ha_adv}")
+                        _exp_html_items.append(f"• 🏥 <b>Health Advisor AI:</b> Tiên lượng {_ha_res.get('tien_luong','')} — {_ha_det}")
+                except Exception:
+                    pass
+
+            # 7. RelationshipAI (Chuyên gia Tình duyên & Nhân duyên)
+            if detected_category == 'TÌNH_CẢM' or any(w in _q_low_cg for w in ['yêu', 'vợ', 'chồng', 'cưới', 'hôn nhân', 'tình', 'chia tay', 'hợp tác', 'đối tác']):
+                try:
+                    from relationship_ai import RelationshipAI
+                    _ra_res = RelationshipAI().analyze_relationship(chart_data or {}, question)
+                    if _ra_res:
+                        _active_names.append("Relationship AI")
+                        _ra_det = "; ".join(_ra_res.get('chi_tiet', [])[:2])
+                        _ra_adv = "; ".join(_ra_res.get('loi_khuyen', [])[:2])
+                        _exp_findings.append(f"❤️ **Relationship AI (Tình Duyên & Tương Hợp):** {_ra_res.get('tuong_hop','')} ({_ra_res.get('diem',50)}/100) — {_ra_det} | {_ra_adv}")
+                        _exp_html_items.append(f"• ❤️ <b>Relationship AI:</b> {_ra_res.get('tuong_hop','')} — {_ra_det}")
+                except Exception:
+                    pass
+
+            # 8. DirectionAdvisorAI & FengShuiAI (Chuyên gia Phương hướng & Phong thủy)
+            if detected_category in ('TÌM_ĐỒ', 'XUẤT_HÀNH', 'NHÀ_CỬA') or any(w in _q_low_cg for w in ['hướng', 'ở đâu', 'tìm', 'mất', 'đi', 'xuất hành', 'nhà', 'đất', 'phong thủy', 'mộ']):
+                try:
+                    from direction_advisor_ai import DirectionAdvisorAI
+                    _da_res = DirectionAdvisorAI().recommend_travel_direction(chart_data or {}, _can_ngay_cg)
+                    if _da_res:
+                        _active_names.append("Direction Advisor AI")
+                        _good_dirs = ", ".join([f"{d['huong']} (Cung {d['cung']}, {d['hanh']})" for d in _da_res.get('khuyen_nghi', [])[:2]])
+                        _bad_dirs = ", ".join([f"{d['huong']}" for d in _da_res.get('nen_tranh', [])[:2]])
+                        if _good_dirs:
+                            _exp_findings.append(f"🧭 **Direction Advisor AI (Phương Vị La Kinh):** Hướng đại lợi theo Can Ngày {_can_ngay_cg}: {_good_dirs} | Hướng kỵ: {_bad_dirs}")
+                            _exp_html_items.append(f"• 🧭 <b>Direction Advisor AI:</b> Hướng thuận: <b>{_good_dirs}</b> | Tránh: {_bad_dirs}")
+                except Exception:
+                    pass
+                try:
+                    from feng_shui_ai import FengShuiAI
+                    _fs_ai = FengShuiAI()
+                    for _h_name in ["Đông Nam", "Tây Bắc", "Đông Bắc", "Tây Nam", "Đông", "Tây", "Nam", "Bắc"]:
+                        if _h_name.lower() in _q_low_cg:
+                            _fs_info = _fs_ai.phan_tich_huong(_h_name)
+                            _active_names.append("Feng Shui AI")
+                            _exp_findings.append(f"🏠 **Feng Shui AI (Phong Thủy):** Hướng {_h_name} thuộc hành {_fs_info.get('hanh','?')}, màu hợp: {', '.join(_fs_info.get('mau_tot',[]))}, kỵ màu: {_fs_info.get('mau_tranh','')}")
+                            _exp_html_items.append(f"• 🏠 <b>Feng Shui AI:</b> Hướng {_h_name} (Hành {_fs_info.get('hanh','?')}) — Hợp màu {', '.join(_fs_info.get('mau_tot',[]))}")
+                            break
+                except Exception:
+                    pass
+
+            # 9. DreamInterpreterAI (Chuyên gia Giải mộng)
+            if any(w in _q_low_cg for w in ['mơ ', 'giấc mơ', 'chiêm bao', 'nằm mê', 'mơ thấy']):
+                try:
+                    from dream_interpreter_ai import DreamInterpreterAI
+                    _dr_res = DreamInterpreterAI().interpret(question)
+                    if _dr_res and 'chu_de' in _dr_res:
+                        _active_names.append("Dream Interpreter AI")
+                        _exp_findings.append(f"🌙 **Dream Interpreter AI (Giải Mộng):** Tượng {_dr_res['tuong']} — Điềm tốt: {_dr_res['tot']} | Điềm xấu: {_dr_res['xau']} | Số ứng: {_dr_res['so']}")
+                        _exp_html_items.append(f"• 🌙 <b>Dream Interpreter AI:</b> Tượng {_dr_res['tuong']} — Điềm tốt: {_dr_res['tot']} (Số ứng: {_dr_res['so']})")
+                except Exception:
+                    pass
+
+            # 10. NameAnalyzerAI (Chuyên gia Danh tính & Ngũ hành tên)
+            if any(w in _q_low_cg for w in ['tên ', 'đặt tên', 'tên là']):
+                try:
+                    from name_analyzer_ai import NameAnalyzerAI
+                    _na_res = NameAnalyzerAI().analyze(question)
+                    if _na_res:
+                        _active_names.append("Name Analyzer AI")
+                        _exp_findings.append(f"📛 **Name Analyzer AI:** Ngũ hành {_na_res.get('ngu_hanh','?')}, Số linh {_na_res.get('so_linh','?')}, Ý nghĩa: {', '.join(_na_res.get('y_nghia',[]))}")
+                        _exp_html_items.append(f"• 📛 <b>Name Analyzer AI:</b> Hành {_na_res.get('ngu_hanh','?')}, Số linh {_na_res.get('so_linh','?')}")
+                except Exception:
+                    pass
+
+            # 11. SchedulerAI (Chuyên gia Chọn Giờ Hoàng Đạo hành sự)
+            try:
+                from scheduler_ai import SchedulerAI
+                _sch_res = SchedulerAI().find_best_hours_for_topic(question)
+                if _sch_res and _sch_res.get('tong_hop'):
+                    _active_names.append("Scheduler AI")
+                    _top_hrs = ", ".join([f"Giờ {h['chi']} ({h['gio']})" for h in _sch_res['tong_hop'][:3]])
+                    _exp_findings.append(f"⏰ **Scheduler AI (Chuyên gia Giờ Hoàng Đạo):** Khung giờ đẹp nhất để hành sự: {_top_hrs}")
+                    _exp_html_items.append(f"• ⏰ <b>Scheduler AI (Giờ đẹp hành sự):</b> {_top_hrs}")
+            except Exception:
+                pass
+
+            # 12. CaseStudyAI (Chuyên gia Đối chiếu Tiền lệ cổ kim)
+            try:
+                from case_study_ai import CaseStudyAI
+                _cs_res = CaseStudyAI().get_similar_case(question)
+                if _cs_res and isinstance(_cs_res, dict) and _cs_res.get('title'):
+                    _active_names.append("Case Study AI")
+                    _exp_findings.append(f"📚 **Case Study AI (Tiền lệ thực chứng):** Tương đồng án lệ '{_cs_res.get('title','')}' → Kết quả thực tế: {_cs_res.get('outcome', _cs_res.get('lesson',''))}")
+            except Exception:
+                pass
+
+            if not _active_names:
+                _active_names = ["Chart Interpreter AI", "Luc Hao Expert AI", "Mai Hoa Expert AI"]
+
+            chuyen_gia_reason = (
+                f"Đã kích hoạt {len(_active_names)} Chuyên Gia AI ({', '.join(_active_names[:4])}) "
+                f"thẩm định trực tiếp trên Dụng Thần {dung_than}"
+            )
+            _chuyen_gia_report_str = "\n".join([f"- {line}" for line in _exp_findings])
             _exp_lines = [
-                f"- **Ban Cố Vấn Chuyên Gia kích hoạt tự động ({len(_active_experts)}/40 Đại Sư chủ chốt):** " + " · ".join([f"**{e}**" for e in _active_experts]),
-                f"- **Trọng tâm thẩm định:** Đối chiếu chéo toàn bộ hệ thống trên trục Dụng Thần **{dung_than}**.",
+                f"- **Chuyên Gia AI tham gia thẩm định thực chiến ({len(_active_names)} Chuyên gia — Chạy 100% nội bộ, 0 tốn API):** " + " · ".join([f"**{n}**" for n in _active_names]),
+                _chuyen_gia_report_str
             ]
             sections.append("\n".join(_exp_lines))
-        except Exception:
-            pass
+
+            if _exp_html_items:
+                _chuyen_gia_html_box = (
+                    f'<div style="margin-top:12px;padding:12px 14px;background:rgba(139,92,246,0.12);border-radius:10px;border-left:4px solid #a78bfa;">'
+                    f'<div style="color:#ddd6fe;font-weight:800;font-size:0.95em;margin-bottom:5px;">🧙 HỘI ĐỒNG CHUYÊN GIA AI THẨM ĐỊNH ({len(_active_names)} Chuyên Gia Chuyên Biệt — 0 Tốn API)</div>'
+                    f'<div style="color:#f3e8ff;font-size:0.89em;line-height:1.55;">'
+                    + "<br>".join(_exp_html_items[:6])
+                    + f'</div></div>'
+                )
+        except Exception as _cg_err:
+            self.log_step("V99.8", "40_EXPERTS_ERR", str(_cg_err)[:80])
         
         # Đóng </details>
         sections.append("\n</details>\n")
@@ -15438,6 +15647,7 @@ class FreeAIHelper:
             # V42.9.3 P0-B: Conflict Detection data
             'conflict_warnings': _conflict_warnings + _conflicts,  # V42.9.29: Merge old + new conflicts
             'conflict_penalty': _conflict_penalty,
+            'chuyen_gia_report': _chuyen_gia_report_str if '_chuyen_gia_report_str' in locals() else '',
         }
         
         # V42.9.29: THÁC QUÁI — Tính quẻ đảo (Invert all Yin/Yang lines)
@@ -15560,9 +15770,9 @@ class FreeAIHelper:
         except Exception as e:
             self.log_step("V38.1", "ERROR", str(e)[:80])
         
-        # V99.6: Chế độ Siêu Tốc Mặc Định (< 0.05s) — Chỉ gọi Gemini Cloud khi use_online_api=True
+        # V99.8: Mặc định LUÔN BẬT AI Online (use_online_api=True) kết hợp 10 Hệ Thống + 40 Chuyên Gia AI
         online_result = None
-        if kwargs.get('use_online_api', False):
+        if kwargs.get('use_online_api', True):
             online_result = self._try_online_ai(
                 question=question,
                 chart_data=chart_data,
@@ -15572,31 +15782,50 @@ class FreeAIHelper:
                 offline_analysis_data=offline_analysis_data
             )
         
-        # V99.7: Luôn dùng 1 Đại Khung Kết Luận 7 Tầng Hợp Nhất 10 Hệ Thống + Tiên Tri 360°
+        # V99.8: Luôn dùng Đại Khung Kết Luận Hợp Nhất 10 Hệ Thống + 40 Chuyên Gia + Tiên Tri 360°
         _real_multi = False
             
         if online_result:
-            # V31.0: AI Online + Sơ Đồ Tương Tác
+            # V99.8: AI Online + 10 Hệ Thống + 40 Chuyên Gia AI
             final_parts = []
             
-            # V40.9: Extract verdict line from online_result for header display
+            # Extract verdict, reason, timing, and remedy from online_result
             _online_verdict_line = ""
             _online_visao = ""
             _online_ungky = ""
             _online_giaiphap = ""
             for _line in online_result.split('\n'):
                 _stripped = _line.strip()
-                if '📢' in _stripped and 'CÂU TRẢ LỜI' in _stripped.upper():
-                    _online_verdict_line = _stripped.replace('**', '').replace('📢', '').replace('CÂU TRẢ LỜI:', '').replace('CÂU TRẢ LỜI', '').strip()
-                elif '📋' in _stripped and 'VÌ SAO' in _stripped.upper():
-                    _online_visao = _stripped.replace('**', '').replace('📋', '').replace('VÌ SAO:', '').strip()
-                elif '⏳' in _stripped and 'ỨNG KỲ' in _stripped.upper():
-                    _online_ungky = _stripped.replace('**', '').replace('⏳', '').replace('ỨNG KỲ:', '').strip()
-                elif '🔧' in _stripped and 'GIẢI PHÁP' in _stripped.upper():
-                    _online_giaiphap = _stripped.replace('**', '').replace('🔧', '').replace('GIẢI PHÁP:', '').strip()
+                _up = _stripped.upper()
+                if not _online_verdict_line and ('📢' in _stripped or 'CÂU TRẢ LỜI:' in _up or 'VERDICT:' in _up):
+                    _cleaned_v = _stripped.replace('**', '').replace('📢', '')
+                    for _lbl in ['CÂU TRẢ LỜI:', 'CÂU TRẢ LỜI', 'VERDICT:', 'VERDICT', 'PHÁN QUYẾT:']:
+                        _cleaned_v = _cleaned_v.replace(_lbl, '').replace(_lbl.lower(), '')
+                    _online_verdict_line = _cleaned_v.strip(' :-•*')
+                elif not _online_visao and ('📋' in _stripped or 'VÌ SAO:' in _up or 'TÓM TẮT SỰ KIỆN:' in _up):
+                    _cleaned_vs = _stripped.replace('**', '').replace('📋', '')
+                    for _lbl in ['VÌ SAO:', 'VÌ SAO', 'TÓM TẮT SỰ KIỆN:', 'TÓM TẮT SỰ KIỆN']:
+                        _cleaned_vs = _cleaned_vs.replace(_lbl, '')
+                    _online_visao = _cleaned_vs.strip(' :-•*')
+                elif not _online_ungky and ('⏳' in _stripped or 'ỨNG KỲ:' in _up or 'THỜI ĐIỂM CHÍNH XÁC' in _up):
+                    _cleaned_uk = _stripped.replace('**', '').replace('⏳', '')
+                    for _lbl in ['ỨNG KỲ:', 'ỨNG KỲ', 'THỜI ĐIỂM CHÍNH XÁC (Năm - Tháng - Ngày - Giờ - Khắc - Phút):', 'THỜI ĐIỂM CHÍNH XÁC:']:
+                        _cleaned_uk = _cleaned_uk.replace(_lbl, '')
+                    _online_ungky = _cleaned_uk.strip(' :-•*')
+                elif not _online_giaiphap and ('🔧' in _stripped or 'GIẢI PHÁP:' in _up or 'LỜI KHUYÊN & PHÁP QUYẾT HÓA GIẢI:' in _up):
+                    _cleaned_gp = _stripped.replace('**', '').replace('🔧', '')
+                    for _lbl in ['GIẢI PHÁP:', 'GIẢI PHÁP', 'LỜI KHUYÊN & PHÁP QUYẾT HÓA GIẢI:', 'LỜI KHUYÊN:']:
+                        _cleaned_gp = _cleaned_gp.replace(_lbl, '')
+                    _online_giaiphap = _cleaned_gp.strip(' :-•*')
             
             if not _online_verdict_line:
-                _online_verdict_line = "Xem chi tiết bên dưới"
+                for _line in online_result.split('\n'):
+                    _s_l = _line.strip().replace('**', '').replace('###', '').strip()
+                    if len(_s_l) > 15 and not _s_l.startswith(('🏆', '🔍', '📊', '🔮', '|', '---')):
+                        _online_verdict_line = _s_l[:220]
+                        break
+            if not _online_verdict_line:
+                _online_verdict_line = "Xem chi tiết phân tích bên dưới"
             
             # === V42.0: CẢNH BÁO PHẢN/PHỤC NGÂM — Hiển thị TRƯỚC kết luận ===
             try:
@@ -16309,8 +16538,19 @@ class FreeAIHelper:
                     f'<div style="font-size:1.2em;font-weight:700;color:#6ee7b7;margin-bottom:10px;">🖥️ THIÊN CƠ ĐẠI SƯ — AI OFFLINE V6886</div>'
                     # TẦNG 1: Verdict lớn
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:8px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
-                    # TẦNG 1b: Trả lời trực tiếp
-                    f'<div style="font-size:1.15em;color:#ffffff;margin-bottom:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:4px solid {_off_v_color};line-height:1.6;">📢 {_direct_reply}</div>'
+                    # TẦNG 1b: Trả lời trực tiếp đúng trọng tâm câu hỏi
+                    f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.65;">'
+                    + (build_narrative_summary_text(
+                        question=question,
+                        dung_than=dung_than,
+                        weighted_pct=weighted_pct,
+                        category=detected_category,
+                        all_factors=list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or []),
+                        ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
+                        chart_data=chart_data,
+                        omni_data=_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {},
+                    ) if 'build_narrative_summary_text' in globals() else f'📢 {_direct_reply}')
+                    + '</div>'
                     # TẦNG 2: Sơ đồ lực lượng
                     + _t2_html
                     # TẦNG 3: Nguyên nhân + Thoán Từ
@@ -16324,8 +16564,9 @@ class FreeAIHelper:
                     + _t6b_html
                     # TẦNG 6b: Lời khuyên
                     + _advice_html
-                    # TẦNG 6c: Hồ sơ Tiên Tri Toàn Tri 360° (V99)
+                    # TẦNG 6c: Hồ sơ Tiên Tri Toàn Tri 360° (V99) + 40 Chuyên Gia AI
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + (_chuyen_gia_html_box if '_chuyen_gia_html_box' in locals() else '')
                     # TẦNG 7: Consensus
                     + _t7_html
                     + _off_ev_html
@@ -17054,6 +17295,7 @@ class FreeAIHelper:
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + (_chuyen_gia_html_box if '_chuyen_gia_html_box' in locals() else '')
                     + _adv_html_fb
                     + _t7_fb_html
                     + _t2_fb_html

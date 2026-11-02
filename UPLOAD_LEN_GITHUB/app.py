@@ -1694,8 +1694,10 @@ with st.sidebar:
     # ƯU TIÊN 0: User Manual Input (Session State) - QUAN TRỌNG NHẤT
     manual_key = st.session_state.get("gemini_key")
     
-    # Tổng hợp: Ưu tiên Manual > Streamlit Secrets > Saved Key > Factory Key
-    secret_api_key = manual_key or st_secret or saved_key or factory_key
+    # V99.8: Tổng hợp TẤT CẢ các nguồn Key (Manual > Saved Cookie/Custom > Factory > Streamlit Secrets)
+    # để GeminiQMDGHelper tự động xoay vòng nếu 1 key hết hạn hoặc hết quota!
+    _all_key_sources = [k for k in [manual_key, saved_key, factory_key, st_secret] if k and str(k).strip()]
+    secret_api_key = ",".join(list(dict.fromkeys(_all_key_sources))) if _all_key_sources else None
     
     st.session_state._resolved_api_key = secret_api_key
     
@@ -2400,10 +2402,10 @@ def render_master_unified_qa_box(location_key="main"):
             )
             st.session_state['random_hexagram_mode'] = _rnd_mode
             _use_cloud_llm = st.toggle(
-                "🌐 Gọi thêm Gemini Cloud (2-4s)",
-                value=st.session_state.get('qa_use_cloud_llm', False),
+                "🌐 Chạy AI Online Gemini + 40 Chuyên Gia (Mặc định: BẬT)",
+                value=st.session_state.get('qa_use_cloud_llm', True),
                 key=f"qa_cloud_{location_key}",
-                help="TẮT (Mặc định Siêu Tốc < 0.05 giây): Giải mã tức thì bằng Siêu Máy Tính 10 Hệ Thống Nội Bộ. BẬT: Gọi thêm Gemini Cloud API."
+                help="BẬT (Mặc định): Kết hợp đồng thời AI Online Gemini + 10 Hệ Thống Quẻ + 40 Chuyên Gia AI để luận giải sâu và chuẩn xác nhất."
             )
             st.session_state['qa_use_cloud_llm'] = _use_cloud_llm
 
@@ -2477,12 +2479,27 @@ def render_master_unified_qa_box(location_key="main"):
             st.session_state['master_qa_prefill'] = ''
             try:
                 from free_ai_helper import FreeAIHelper
-                _api_key = st.session_state.get('api_key', '') or st.session_state.get('_resolved_api_key', '')
-                if not _api_key and st.session_state.get('qa_use_cloud_llm', False):
-                    try:
-                        _api_key = st.secrets.get('GEMINI_API_KEY', '')
-                    except Exception:
-                        _api_key = ''
+                _cand_keys = []
+                for _k_src in [
+                    st.session_state.get('gemini_key', ''),
+                    st.session_state.get('api_key', ''),
+                    st.session_state.get('_resolved_api_key', ''),
+                ]:
+                    if _k_src and str(_k_src).strip():
+                        _cand_keys.append(str(_k_src).strip())
+                _gh_obj = st.session_state.get('gemini_helper')
+                if _gh_obj:
+                    if getattr(_gh_obj, 'api_keys', None):
+                        _cand_keys.extend([str(k).strip() for k in _gh_obj.api_keys if k])
+                    elif getattr(_gh_obj, 'api_key', None):
+                        _cand_keys.append(str(_gh_obj.api_key).strip())
+                try:
+                    _sec_k = st.secrets.get('GEMINI_API_KEY', '')
+                    if _sec_k:
+                        _cand_keys.append(str(_sec_k).strip())
+                except Exception:
+                    pass
+                _api_key = ",".join(list(dict.fromkeys([k for k in _cand_keys if k])))
                 if '_cached_free_ai_helper' not in st.session_state or st.session_state['_cached_free_ai_helper'] is None:
                     st.session_state['_cached_free_ai_helper'] = FreeAIHelper(api_key=_api_key)
                 offline_ai = st.session_state['_cached_free_ai_helper']
@@ -2557,7 +2574,8 @@ def render_master_unified_qa_box(location_key="main"):
                         _q_to_send = f"[{_exp_tag}] {_q_to_send}"
 
                     _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
-                    _cache_key = f"V997|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{st.session_state.get('qa_use_cloud_llm',False)}"
+                    _want_online = st.session_state.get('qa_use_cloud_llm', True)
+                    _cache_key = f"V998|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
                     if not _use_rnd and _cache_key in _cache_store:
                         combined_answer = _cache_store[_cache_key]
                     else:
@@ -2572,9 +2590,10 @@ def render_master_unified_qa_box(location_key="main"):
                             xem_ngay_data=_xn_data_q,
                             has_personal_tv=_has_personal_tv,
                             has_custom_xn=_has_custom_xn,
-                            use_online_api=st.session_state.get('qa_use_cloud_llm', False),
+                            use_online_api=_want_online,
                         )
-                        if not _use_rnd:
+                        # Chỉ cache khi kết quả đã có Online (nếu bật Online) hoặc khi chạy chế độ Offline
+                        if not _use_rnd and (not _want_online or 'KẾT LUẬN AI ONLINE' in str(combined_answer)):
                             if len(_cache_store) > 30:
                                 _cache_store.clear()
                             _cache_store[_cache_key] = combined_answer
