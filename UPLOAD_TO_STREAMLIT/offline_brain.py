@@ -1128,7 +1128,7 @@ def build_connected_prose_analysis(
     return (
         f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.58);border-radius:14px;border:1px solid rgba(110,231,183,0.4);line-height:1.78;font-size:0.98em;color:#f1f5f9;">'
         f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
-        f'📖 BÀI LUẬN GIẢI THẦN ĐOÁN CỔ THƯ HỢP NHẤT V100.0 (10 HỆ THỐNG · 19 CỔ THƯ · 40 CHUYÊN GIA AI)</div>'
+        f'📖 BÀI LUẬN GIẢI THẦN ĐOÁN CỔ THƯ HỢP NHẤT V100.1 (10 HỆ THỐNG · 19 CỔ THƯ · 40 CHUYÊN GIA AI)</div>'
         f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Bản chất hiện tại & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
         f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Giải mã tâm lý, hoàn cảnh & nguyên nhân qua Bàn Kỳ Môn Độn Giáp:</b> {paragraph_2}</p>'
         + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
