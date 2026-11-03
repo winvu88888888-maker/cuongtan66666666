@@ -346,9 +346,13 @@ def _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than):
         return None
     ban = luc_hao_data.get('ban', {})
     haos = ban.get('haos', []) or ban.get('details', [])
+    if dung_than == 'Bản Thân':
+        for hao in haos:
+            if 'Thế' in str(hao.get('the_ung', '')) or hao.get('the') or hao.get('is_the'):
+                return hao.get('ngu_hanh') or hao.get('hanh')
     for hao in haos:
         if dung_than in hao.get('luc_than', ''):
-            return hao.get('ngu_hanh')
+            return hao.get('ngu_hanh') or hao.get('hanh')
     phuc_than = luc_hao_data.get('phuc_than')
     if phuc_than and isinstance(phuc_than, list):
         for pt in phuc_than:
@@ -1430,12 +1434,12 @@ def _get_truong_sinh(hanh, chi):
 
 # === V21.0: LƯỢNG HÓA LỰC LƯỢNG — POWER SCORE 12 TRƯỜNG SINH ===
 TRUONG_SINH_POWER = {
-    # V32.6: Chia đều 0-100 tuổi theo 12 Trường Sinh
-    'Trường Sinh': {'power': 70, 'cap': '🟢 MẠNH',      'con_nguoi': 'Trẻ sơ sinh khỏe mạnh (0-5 tuổi)', 'vat': 'MỚI, SẠCH, BẮT ĐẦU', 'tuoi_min': 0, 'tuoi_max': 5},
-    'Mộc Dục':     {'power': 50, 'cap': '🟡 TRUNG',      'con_nguoi': 'Trẻ nhỏ chưa tự lập (6-12 tuổi)', 'vat': 'CHƯA HOÀN CHỈNH, DAO ĐỘNG', 'tuoi_min': 6, 'tuoi_max': 12},
-    'Quan Đới':    {'power': 65, 'cap': '🔵 KHÁ',        'con_nguoi': 'Thiếu niên chuẩn bị trưởng thành (13-18 tuổi)', 'vat': 'GẦN MỚI, ĐANG CHUẨN BỊ', 'tuoi_min': 13, 'tuoi_max': 18},
-    'Lâm Quan':    {'power': 85, 'cap': '🟢 CỰC MẠNH',  'con_nguoi': 'Thanh niên sung sức (19-32 tuổi)', 'vat': 'LỚN, MỚI, TỐT, NHIỀU', 'tuoi_min': 19, 'tuoi_max': 32},
-    'Đế Vượng':    {'power': 100,'cap': '🟢 ĐỈNH CAO',  'con_nguoi': 'Trung niên cường thịnh đỉnh cao (33-45 tuổi)', 'vat': 'LỚN NHẤT, MỚI NHẤT, NHIỀU NHẤT', 'tuoi_min': 33, 'tuoi_max': 45},
+    # V100.2: Chuẩn hóa độ tuổi thực tế của người hỏi theo 12 Trường Sinh (Thanh niên / Trung niên trẻ dưới 45 tuổi cho nhóm Sinh-Vượng)
+    'Trường Sinh': {'power': 70, 'cap': '🟢 MẠNH',      'con_nguoi': 'Thanh niên / Trung niên trẻ giàu sinh khí (20-35 tuổi, dưới 45 tuổi)', 'vat': 'MỚI, SẠCH, BẮT ĐẦU', 'tuoi_min': 20, 'tuoi_max': 35},
+    'Mộc Dục':     {'power': 50, 'cap': '🟡 TRUNG',      'con_nguoi': 'Người trẻ tuổi năng động (18-30 tuổi, dưới 40 tuổi)', 'vat': 'CHƯA HOÀN CHỈNH, DAO ĐỘNG', 'tuoi_min': 18, 'tuoi_max': 30},
+    'Quan Đới':    {'power': 65, 'cap': '🔵 KHÁ',        'con_nguoi': 'Thanh niên trưởng thành lập nghiệp (22-34 tuổi, dưới 45 tuổi)', 'vat': 'GẦN MỚI, ĐANG CHUẨN BỊ', 'tuoi_min': 22, 'tuoi_max': 34},
+    'Lâm Quan':    {'power': 85, 'cap': '🟢 CỰC MẠNH',  'con_nguoi': 'Thanh niên - Trung niên trẻ sung sức (24-38 tuổi, dưới 45 tuổi)', 'vat': 'LỚN, MỚI, TỐT, NHIỀU', 'tuoi_min': 24, 'tuoi_max': 38},
+    'Đế Vượng':    {'power': 100,'cap': '🟢 ĐỈNH CAO',  'con_nguoi': 'Trung niên độ chín cường thịnh (28-44 tuổi, dưới 50 tuổi)', 'vat': 'LỚN NHẤT, MỚI NHẤT, NHIỀU NHẤT', 'tuoi_min': 28, 'tuoi_max': 44},
     'Suy':         {'power': 40, 'cap': '🟠 YẾU',        'con_nguoi': 'Người bắt đầu suy giảm (46-55 tuổi)', 'vat': 'CŨ, NHỎ HƠN, GIẢM SÚT', 'tuoi_min': 46, 'tuoi_max': 55},
     'Bệnh':        {'power': 25, 'cap': '🟠 RẤT YẾU',   'con_nguoi': 'Người già yếu bệnh (56-65 tuổi)', 'vat': 'HƯ HỎNG, THIẾU, CẦN SỬA', 'tuoi_min': 56, 'tuoi_max': 65},
     'Tử':          {'power': 10, 'cap': '🔴 CHẾT',       'con_nguoi': 'Người rất già hoặc đã mất (66-75 tuổi)', 'vat': 'NHỎ NHẤT, HƯ HỎNG, VỠ NÁT', 'tuoi_min': 66, 'tuoi_max': 75},
@@ -1472,7 +1476,7 @@ STRENGTH_TO_VAN_VAT = {
     },
     'TRUNG_BÌNH': {
         'range': (50, 69), 'cap': '🟡 TRUNG BÌNH',
-        'con_nguoi': 'Thiếu niên hoặc người trung niên (13-18 / 46-55 tuổi)',
+        'con_nguoi': 'Thanh niên hoặc trung niên trẻ (22-38 tuổi, dưới 45 tuổi)',
         'kich_thuoc': 'Trung bình, vừa phải', 'tinh_trang': 'Bình thường, dùng được',
         'so_luong': 'Vừa phải, đủ', 'chat_luong': 'Trung bình, tạm',
         'mau_sac': 'Bình thường', 'toc_do': 'Trung bình, chờ đợi', 'so': '5-6',
@@ -5062,6 +5066,8 @@ class FreeAIHelper:
             _is_comp_online = _is_competition_question(question)
             if _is_comp_online:
                 _qtype = 'COMPETITION'
+            elif any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'đàn ông hay phụ nữ', 'tôi là ai', 'là ai']):
+                _qtype = 'WHO'
             elif any(kw in q_lower_online for kw in ['cái gì','loại gì','sản xuất gì','làm gì','mặt hàng','sản phẩm gì','buôn bán gì','kinh doanh gì','nghề gì','ngành gì','là gì','thuộc loại','hình dạng','màu gì','chất liệu','tên gì','ai vậy','người nào']):
                 _qtype = 'WHAT'
             elif any(kw in q_lower_online for kw in ['ở đâu','hướng nào','phương nào','tìm đâu','chỗ nào','nơi nào']):
@@ -5515,19 +5521,39 @@ class FreeAIHelper:
             else:
                 _vb_label = 'ĐẠI HUNG — RẤT BẤT LỢI'
             
-            offline_verdict_block = (
-                f"═══════════════════════════════════════════\n"
-                f"   ⚖️ PHÁN QUYẾT CHÍNH THỨC (BẮT BUỘC ĐỒNG BỘ 100%)\n"
-                f"═══════════════════════════════════════════\n"
-                f"🏆 KẾT QUẢ: {_vb_label} ({_vb_pct_int}%)\n"
-                f"→ BẠN PHẢI dùng ĐÚNG kết quả và tỷ lệ {_vb_pct_int}% này. KHÔNG ĐƯỢC nói khác.\n\n"
-                f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:200]}\n"
-                f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:200]}\n"
-                f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:200]}\n"
-                f"ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?')} — {od.get('luc_nham_reason','')[:200]}\n"
-                f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:200]}\n"
-                f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {_vb_label}\n"
-            )
+            _is_factual_who_age = (_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi'])
+            _omni_dict_on = od.get('hub', {}).get('synthesis', {}).get('omniscient_data', {}) or {}
+            if _is_factual_who_age:
+                _om_g = _omni_dict_on.get('gender', 'NAM GIỚI / ĐÀN ÔNG (Trai)')
+                _om_gr = _omni_dict_on.get('gender_reasons', 'Dụng Thần mang khí Dương Cương')
+                _om_a = _omni_dict_on.get('age_tier', 'THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)')
+                _om_by = ', '.join(_omni_dict_on.get('birth_years', [])[:3])
+                offline_verdict_block = (
+                    f"═══════════════════════════════════════════\n"
+                    f"   ⚖️ KẾT LUẬN ĐỊNH DANH CON NGƯỜI / ĐỘ TUỔI (BẮT BUỘC ĐỒNG BỘ 100%)\n"
+                    f"═══════════════════════════════════════════\n"
+                    f"👤 GIỚI TÍNH XÁC ĐỊNH TỪ QUẺ: {_om_g} (Căn cứ: {_om_gr})\n"
+                    f"🎂 ĐỘ TUỔI XÁC ĐỊNH TỪ QUẺ: {_om_a} (Ước tính năm sinh & tuổi: {_om_by})\n"
+                    f"→ BẠN BẮT BUỘC PHẢI KHẲNG ĐỊNH ĐÚNG GIỚI TÍNH ({_om_g}) VÀ ĐỘ TUỔI ({_om_a}) NÀY.\n"
+                    f"→ CẤM TUYỆT ĐỐI viết các cụm từ Cát/Hung đóng mở như 'CẦN CÂN NHẮC — BÌNH (CÓ THỂ NHƯNG CẦN NỖ LỰC)' vào câu trả lời giới tính/tuổi!\n\n"
+                    f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:200]}\n"
+                    f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:200]}\n"
+                    f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:200]}\n"
+                )
+            else:
+                offline_verdict_block = (
+                    f"═══════════════════════════════════════════\n"
+                    f"   ⚖️ PHÁN QUYẾT CHÍNH THỨC (BẮT BUỘC ĐỒNG BỘ 100%)\n"
+                    f"═══════════════════════════════════════════\n"
+                    f"🏆 KẾT QUẢ: {_vb_label} ({_vb_pct_int}%)\n"
+                    f"→ BẠN PHẢI dùng ĐÚNG kết quả và tỷ lệ {_vb_pct_int}% này. KHÔNG ĐƯỢC nói khác.\n\n"
+                    f"KỲ MÔN: {od.get('ky_mon_verdict','?')} — {od.get('ky_mon_reason','')[:200]}\n"
+                    f"LỤC HÀO: {od.get('luc_hao_verdict','?')} — {od.get('luc_hao_reason','')[:200]}\n"
+                    f"MAI HOA: {od.get('mai_hoa_verdict','?')} — {od.get('mai_hoa_reason','')[:200]}\n"
+                    f"ĐẠI LỤC NHÂM: {od.get('luc_nham_verdict','?')} — {od.get('luc_nham_reason','')[:200]}\n"
+                    f"THÁI ẤT: {od.get('thai_at_verdict','?')} — {od.get('thai_at_reason','')[:200]}\n"
+                    f"TỔNG: Điểm = {_vb_pct_int}% | Mức = {_vb_label}\n"
+                )
             _hub_synth = od.get('hub', {}).get('synthesis', {})
             _ung_ky_for_gemini = _hub_synth.get('ung_ky_detail') or _hub_synth.get('ung_ky', '')
             _bt_for_gemini = _hub_synth.get('bt_detected', [])
@@ -11884,8 +11910,10 @@ class FreeAIHelper:
                     'Tử Tôn': 'Con cái/Phúc', 'Phụ Mẫu': 'Bố mẹ/Nhà/Giấy tờ',
                     'Huynh Đệ': 'Anh em/Bạn', 'Bản Thân': 'Bản thân',
                 }
+                _real_hanh_main = locals().get('hanh_dt_v22') or _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than) or locals().get('bt_hanh') or 'Kim'
+                if _real_hanh_main == '?': _real_hanh_main = 'Kim'
                 _LT_H = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 
-                         'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                         'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': _real_hanh_main}
                 _SINH_V = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
                 _HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
                 _NGHE = {'Kim': 'Kỹ thuật/Ngân hàng/Quân đội', 'Mộc': 'Giáo dục/Y tế/Nông nghiệp',
@@ -11939,8 +11967,14 @@ class FreeAIHelper:
                         nghe = _NGHE.get(sq_hanh, '?')
                         return f"🔮 Hành {sq_hanh} → {nghe} ({sq_pct}%)", "🔮"
                     elif qtype == 'AGE':
-                        age = _hd[1] * 5 if sq_pct >= 55 else _hd[0] * 5
-                        return f"🎂 Khoảng {age} tuổi (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "🎂"
+                        _ts_cur = locals().get('ts_stage', 'Trường Sinh')
+                        if _ts_cur in ('Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Thai', 'Dưỡng'):
+                            return f"🎂 Dưới 45 tuổi — Khoảng 22–38 tuổi (Vòng Trường Sinh: {_ts_cur})", "🎂"
+                        elif _ts_cur == 'Đế Vượng':
+                            return f"🎂 Dưới 50 tuổi — Khoảng 28–45 tuổi (Vòng Trường Sinh: {_ts_cur})", "🎂"
+                        else:
+                            age = 25 + (_hd[0] * 2)
+                            return f"🎂 Khoảng {age} tuổi (Hành {sq_hanh})", "🎂"
                     elif qtype == 'COUNT':
                         so = _hd[1] if sq_pct >= 55 else _hd[0]
                         return f"👥 Số lượng: {so} (Hà Đồ Số {sq_hanh}: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "👥"
@@ -12023,7 +12057,7 @@ class FreeAIHelper:
                 for _sq_idx, _sq in enumerate(_parsed_qs[1:], start=2):
                     _sq_dt = _sq.get('dung_than', _all_dts_verdict[min(_sq_idx-1, len(_all_dts_verdict)-1)] if _sq_idx-1 < len(_all_dts_verdict) else 'Bản Thân')
                     _sq_text = _sq.get('text', '')[:60]
-                    _sq_hanh = _LT_H.get(_sq_dt, 'Thổ')
+                    _sq_hanh = _get_hanh_dt_from_luc_hao(luc_hao_data, _sq_dt) or (_real_hanh_main if _sq_dt == dung_than else _LT_H.get(_sq_dt, _real_hanh_main))
                     
                     # V42.9.29: Multi-factor scoring cho sub-question
                     _sq_pct = 50  # Base
@@ -14598,8 +14632,11 @@ class FreeAIHelper:
                     'Tử Tôn': 'Con cái/Phúc', 'Phụ Mẫu': 'Bố mẹ/Nhà/Giấy tờ',
                     'Huynh Đệ': 'Anh em/Bạn', 'Bản Thân': 'Bản thân',
                 }
+                _mi_real_hanh_bt = locals().get('hanh_dt_v22') or _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than) or locals().get('bt_hanh') or 'Kim'
+                if not _mi_real_hanh_bt or _mi_real_hanh_bt == '?':
+                    _mi_real_hanh_bt = 'Kim'
                 _MI_LT_H = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa',
-                             'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': 'Thổ'}
+                             'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc', 'Bản Thân': _mi_real_hanh_bt}
                 _MI_SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
                 _MI_HUONG = {'Kim': 'TÂY', 'Mộc': 'ĐÔNG', 'Thủy': 'BẮC', 'Hỏa': 'NAM', 'Thổ': 'TRUNG TÂM'}
                 _MI_NGHE = {'Kim': 'Kỹ thuật/Ngân hàng', 'Mộc': 'Giáo dục/Y tế',
@@ -14675,8 +14712,15 @@ class FreeAIHelper:
                         nghe = _MI_NGHE.get(sq_hanh, '?')
                         return f"🔮 Hành {sq_hanh} → {nghe} ({sq_pct}%)", "🔮"
                     elif qtype == 'AGE':
-                        age = _hd[1] * 5 if sq_pct >= 55 else _hd[0] * 5
-                        return f"🎂 Khoảng {age} tuổi (Hà Đồ: {_hd[0]},{_hd[1]}) ({sq_pct}%)", "🎂"
+                        _ts_mi = locals().get('ts_stage', 'Trường Sinh')
+                        if _ts_mi in ('Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Thai', 'Dưỡng'):
+                            return f"🎂 Độ tuổi: Dưới 45 tuổi — Thanh niên / Trung niên trẻ (Khoảng 22–38 tuổi, Trường Sinh: {_ts_mi})", "🎂"
+                        elif _ts_mi == 'Đế Vượng':
+                            return f"🎂 Độ tuổi: Dưới 50 tuổi — Trung niên độ chín (Khoảng 28–45 tuổi, Trường Sinh: {_ts_mi})", "🎂"
+                        elif _ts_mi in ('Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt'):
+                            return f"🎂 Độ tuổi: Trung niên / Lớn tuổi (Trên 48 tuổi, Trường Sinh: {_ts_mi})", "🎂"
+                        else:
+                            return f"🎂 Độ tuổi: Dưới 45 tuổi — Khoảng 24–38 tuổi (Hành {sq_hanh})", "🎂"
                     elif qtype == 'COUNT':
                         so = _hd[1] if sq_pct >= 55 else _hd[0]
                         prefix = "💰 Số lượng/Tiền" if any(k in sq_text.lower() for k in ['tiền', 'giá']) else "👥 Số lượng"
@@ -14723,13 +14767,13 @@ class FreeAIHelper:
                         elif sq_pct >= 45: return f"✈️ ĐI ĐƯỢC ({sq_pct}%)", "🟡"
                         else: return f"✈️ KHÔNG NÊN ĐI ({sq_pct}%)", "🔴"
                     elif qtype == 'WHO':
-                        _MI_GIOI = {'Kim': 'Nam (Cương quyết)', 'Hỏa': 'Nam (Nhiệt tình)', 'Mộc': 'Nam (Ôn hòa)', 'Thủy': 'Nữ (Mềm mỏng)', 'Thổ': 'Nữ (Trầm tĩnh)'}
+                        _MI_GIOI = {'Kim': 'Nam giới / Con trai (Cương quyết, trọng nghĩa)', 'Hỏa': 'Nam giới / Con trai (Nhiệt huyết, sáng suốt)', 'Mộc': 'Nam giới / Con trai (Điềm đạm, nhân hậu)', 'Thủy': 'Nữ giới (Mềm mỏng, linh hoạt)', 'Thổ': 'Nữ giới (Trầm ổn, chu đáo)'}
                         nghe = _MI_NGHE.get(sq_hanh, '?')
-                        gioi = _MI_GIOI.get(sq_hanh, '?')
+                        gioi = _MI_GIOI.get(sq_hanh, 'Nam giới (Khí Dương)')
                         if any(k in sq_text.lower() for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tên', 'vị']):
                             return f"👻 Xem tên cụ thể tại phần VẠN VẬT LOẠI TƯỢNG (Tâm Linh) bên dưới!", "👻"
-                        if any(k in sq_text.lower() for k in ['nam', 'nữ', 'giới tính', 'con trai', 'con gái']):
-                            return f"👤 Giới tính: {gioi} — Hành {sq_hanh} ({sq_pct}%)", "👤"
+                        if any(k in sq_text.lower() for k in ['nam', 'nữ', 'trai', 'gái', 'giới tính', 'con trai', 'con gái']):
+                            return f"👤 Giới tính: {gioi} — Dụng Thần hành {sq_hanh}", "👤"
                         return f"👤 Người hành {sq_hanh} — {nghe} ({sq_pct}%)", "👤"
                     elif qtype == 'WHY':
                         return f"🔎 Nguyên nhân thuộc hành {sq_hanh} — xem yếu tố xung khắc ({sq_pct}%)", "🔎"
@@ -14771,7 +14815,7 @@ class FreeAIHelper:
                 _pq1_padded = f" {_mi_pq1_text.lower()} "
                 if any(f" {k} " in _pq1_padded or f" {k}?" in _pq1_padded or f" {k}." in _pq1_padded for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh', 'phong thủy', 'bùa']):
                     _mi_pq1_dt = 'Tâm Linh'
-                _mi_pq1_hanh = _MI_LT_H.get(_mi_pq1_dt, 'Thổ')
+                _mi_pq1_hanh = _get_hanh_dt_from_luc_hao(luc_hao_data, _mi_pq1_dt) or (_mi_real_hanh_bt if _mi_pq1_dt == dung_than else _MI_LT_H.get(_mi_pq1_dt, _mi_real_hanh_bt))
                 _mi_pq1_qtype = _mi_detect_qtype(_mi_pq1_text)
                 
                 _mi_pq1_vtext, _mi_pq1_icon = _mi_gen_verdict(_mi_pq1_qtype, weighted_pct, _mi_pq1_hanh, _mi_pq1_dt, _mi_pq1_text)
@@ -14799,7 +14843,7 @@ class FreeAIHelper:
                     _sq_padded = f" {_mi_sq_text.lower()} "
                     if any(f" {k} " in _sq_padded or f" {k}?" in _sq_padded or f" {k}." in _sq_padded for k in ['thần', 'thánh', 'ma', 'quỷ', 'vong', 'tâm linh', 'phong thủy', 'bùa']):
                         _mi_sq_dt = 'Tâm Linh'
-                    _mi_sq_hanh = _MI_LT_H.get(_mi_sq_dt, 'Thổ')
+                    _mi_sq_hanh = _get_hanh_dt_from_luc_hao(luc_hao_data, _mi_sq_dt) or (_mi_real_hanh_bt if _mi_sq_dt == dung_than else _MI_LT_H.get(_mi_sq_dt, _mi_real_hanh_bt))
                     
                     # ═══ V42.9.29: PHÂN TÍCH ĐA YẾU TỐ cho câu phụ ═══
                     # 6 yếu tố: Nguyệt Lệnh + Nhật Thần + 12TS + Ngũ Khí + DKT + Consensus
@@ -15511,6 +15555,16 @@ class FreeAIHelper:
             if _omniscient_res.get('text'):
                 offline_full_output += f"\n\n{_omniscient_res['text']}"
                 _hub['synthesis']['omniscient_prophecy'] = _omniscient_res['text']
+                _hub['synthesis']['omniscient_data'] = _omniscient_res.get('data', {})
+                # V100.2: Đồng bộ kết quả Giới tính & Độ tuổi từ Omniscient 360 vào _mi_cards để AI Online & Offline khớp 100%
+                _om_d_sync = _omniscient_res.get('data', {}) or {}
+                if '_mi_cards' in locals() and isinstance(_mi_cards, list) and _om_d_sync:
+                    for _mc in _mi_cards:
+                        if _mc.get('qtype') == 'WHO' and any(k in _mc.get('text', '').lower() for k in ['nam', 'nữ', 'trai', 'gái', 'giới tính']):
+                            _mc['verdict_text'] = f"👤 Giới tính: {_om_d_sync.get('gender', '')} (Căn cứ: {_om_d_sync.get('gender_reasons', '')})"
+                        elif _mc.get('qtype') == 'AGE':
+                            _by_s = ', '.join(_om_d_sync.get('birth_years', [])[:3])
+                            _mc['verdict_text'] = f"🎂 Độ tuổi: {_om_d_sync.get('age_tier', '')} (Ước tính: {_by_s})"
                 self.log_step("V99.0", "OMNISCIENT_360", "Full 6-dimension prophecy generated")
         except Exception as _omni_err:
             self.log_step("V99.0", "OMNISCIENT_ERR", str(_omni_err)[:80])
@@ -15894,9 +15948,12 @@ class FreeAIHelper:
                 + '</div>'
             ) if _online_prose_parts else ''
 
+            import re as _re_clean_v100
+            if any(w in question.lower() for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
+                _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?CÂN NHẮC\s*[—\-]\s*BÌNH[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.0)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.2)</div>'
                 f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16138,8 +16195,9 @@ class FreeAIHelper:
                                 if _cv == _db2: _sv_c = int(_cn) if _cn else None; break
                     
                     _target_c = _dt_c if _dt_c else _sv_c
-                    # Nếu Dụng Thần là Bản Thân (Day Can) và Cung Sự Việc (Can Giờ) khác, ưu tiên xem Cửa của Sự Việc.
-                    if dung_than == 'Bản Thân' and _sv_c and _sv_c != _dt_c:
+                    # Nếu Dụng Thần là Bản Thân (Day Can) và Cung Sự Việc (Can Giờ) khác, ưu tiên xem Cửa của Sự Việc (trừ khi hỏi trực tiếp về bản thân/giới tính/tuổi).
+                    _is_self_q1 = any(w in question.lower() for w in ['tôi là', 'nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi'])
+                    if dung_than == 'Bản Thân' and not _is_self_q1 and _sv_c and _sv_c != _dt_c:
                         _target_c = _sv_c
                         
                     _bt_c = _dt_c # For backward compatibility with _kc_detail below
@@ -16604,7 +16662,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.1</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.2</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17067,7 +17125,8 @@ class FreeAIHelper:
                                 if _cv == _db2: _sv_c = int(_cn) if _cn else None; break
                             
                     _target_c = _dt_c if _dt_c else _sv_c
-                    if dung_than == 'Bản Thân' and _sv_c and _sv_c != _dt_c:
+                    _is_self_q2 = any(w in question.lower() for w in ['tôi là', 'nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi'])
+                    if dung_than == 'Bản Thân' and not _is_self_q2 and _sv_c and _sv_c != _dt_c:
                         _target_c = _sv_c
                         
                     _bt_c = _dt_c
@@ -17377,7 +17436,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.1</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.2</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + ''

@@ -379,7 +379,9 @@ def _resolve_authentic_km_palace(chart_data: dict, dung_than: str = 'Bản Thân
     }
     dt_can = dt_can_map.get(dung_than, can_gio) or can_gio
     dt_cung = _find_can(dt_can) or sv_cung or bt_cung
-    if dung_than == "Bản Thân" and sv_cung and sv_cung != bt_cung:
+    _q_self_chk = (question or '').lower()
+    _is_self_identity = any(w in _q_self_chk for w in ['tôi là', 'nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi', 'tuổi của tôi', 'bản thân tôi'])
+    if dung_than == "Bản Thân" and not _is_self_identity and sv_cung and sv_cung != bt_cung:
         dt_cung = sv_cung
     return (dt_cung, bt_cung, f"Cung Sự Việc / Dụng Thần ({dung_than})")
 
@@ -503,12 +505,13 @@ def build_narrative_summary_text(
         return _md_to_html_bold(f"{head}<br>{body}")
 
     # 5. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
-    if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'bao nhiêu tuổi', 'mấy tuổi']):
-        g_str = omni_data.get('gender', 'Nam/Nữ theo quẻ')
-        a_str = omni_data.get('age_tier', '')
+    if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
+        g_str = omni_data.get('gender', 'Nam giới (Khí Dương)')
+        g_reasons = omni_data.get('gender_reasons', '')
+        a_str = omni_data.get('age_tier', 'THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)')
         by_str = ", ".join(omni_data.get('birth_years', [])[:3])
-        head = f"👤 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{g_str} — {a_str} (Khoảng năm sinh: {by_str})</b>."
-        body = f"Người này ứng vào Dụng Thần <b>{dung_than}</b> tại hướng <b>{direction}</b>. {factors_text}"
+        head = f"👤 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{g_str} — {a_str} (Ước tính năm sinh & độ tuổi: {by_str})</b>."
+        body = f"Luận cứ Dịch học hội tụ từ Dụng Thần <b>{dung_than}</b> ({g_reasons}) tại hướng <b>{direction}</b>. {factors_text}"
         return _md_to_html_bold(f"{head}<br>{body}")
 
     # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / BAO NHIÊU / MẤY

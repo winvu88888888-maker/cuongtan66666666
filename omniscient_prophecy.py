@@ -254,7 +254,9 @@ def build_omniscient_prophecy(
     ung_ky_detail = ung_ky_detail if isinstance(ung_ky_detail, dict) else {}
 
     cung_dt, cung_sv, dt_can, can_gio = _find_target_palace(dung_than, chart_data)
-    target_cung = cung_sv if (dung_than == 'Bản Thân' and cung_sv != cung_dt) else cung_dt
+    _q_self_chk = (question or '').lower()
+    _is_self_identity = any(w in _q_self_chk for w in ['tôi là', 'nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi', 'tuổi của tôi', 'bản thân tôi'])
+    target_cung = cung_dt if (dung_than == 'Bản Thân' and _is_self_identity) else (cung_sv if (dung_than == 'Bản Thân' and cung_sv != cung_dt) else cung_dt)
     c_info = CUNG_INFO.get(target_cung, CUNG_INFO[1])
 
     if not hanh_dt or hanh_dt == '?':
@@ -432,6 +434,23 @@ def build_omniscient_prophecy(
         female_votes += 1
         gender_reasons.append(f"Hào {hao_so} Âm")
 
+    # Nguồn 5 (V100.2): Ngũ Hành Dụng Thần thực tế (Kim/Mộc/Hỏa thuộc khí Cương/Dương -> Nam; Thủy/Thổ thuộc khí Nhu/Âm -> Nữ) & Nhật Can Bản Mệnh
+    if hanh_dt in ('Kim', 'Mộc', 'Hỏa'):
+        male_votes += 2
+        gender_reasons.append(f"Dụng Thần hành {hanh_dt} (Khí Cương Dương — Nam)")
+    elif hanh_dt in ('Thủy', 'Thổ'):
+        female_votes += 1
+        gender_reasons.append(f"Dụng Thần hành {hanh_dt} (Khí Nhu Âm)")
+
+    if dt_can and dt_can != can_thien:
+        _dt_can_g = CAN_GENDER_TRAIT.get(dt_can, ('Dương (Nam)', ''))
+        if 'Dương' in _dt_can_g[0]:
+            male_votes += 1
+            gender_reasons.append(f"Nhật Can {dt_can} Dương")
+        else:
+            female_votes += 1
+            gender_reasons.append(f"Nhật Can {dt_can} Âm")
+
     # V99.7: Nhận diện trực tiếp Chủ Thể / Người Thân trong câu hỏi để tránh đoán sai giới tính & tuổi
     import re as _re_om
     _q_low_om = (question or "").lower()
@@ -472,9 +491,12 @@ def build_omniscient_prophecy(
     elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["con trai", "con gái", "con"]): 
         age_tier = "THANH THIẾU NIÊN / TRẺ TUỔI (5 – 30 tuổi)"
         est_ages = [8 + (base_ages[0] % 6), 16 + (base_ages[1] % 6), 24 + (base_ages[2] % 6)]
-    elif ts_stage in ('Trường Sinh', 'Mộc Dục', 'Thai', 'Dưỡng'):
-        age_tier = "NGƯỜI TRẺ TUỔI / THANH THIẾU NIÊN"
-        est_ages = [max(16, a - 12) for a in base_ages[:3]]
+    elif ts_stage in ('Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Thai', 'Dưỡng'):
+        age_tier = "THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)"
+        est_ages = [22 + (base_ages[0] % 5), 29 + (base_ages[1] % 5), 36 + (base_ages[2] % 5)]
+    elif ts_stage in ('Đế Vượng',):
+        age_tier = "TRUNG NIÊN ĐỘ CHÍN (DƯỚI 50 TUỔI — Khoảng 28 – 45 tuổi)"
+        est_ages = [28 + (base_ages[0] % 5), 35 + (base_ages[1] % 5), 42 + (base_ages[2] % 4)]
     elif ts_stage in ('Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt'):
         age_tier = "NGƯỜI LỚN TUỔI / TRUNG NIÊN CAO (GIÀ DẶN)"
         est_ages = [min(78, a + 12) for a in base_ages[:3]]
@@ -615,7 +637,7 @@ def build_omniscient_prophecy(
     _is_object_count_focus = any(w in _q_focus for w in [
         'cái gì', 'đồ gì', 'vật gì', 'trong hộp', 'mất ví', 'mất đồ', 'thất lạc', 'điện thoại',
         'chìa khóa', 'sổ đỏ', 'giấy tờ', 'trang sức', 'bao nhiêu', 'có mấy', 'mấy cái', 'số lượng', 'con số', 'định giá'
-    ]) and not _is_health_focus and not _is_love_focus
+    ]) and not _is_health_focus and not _is_love_focus and not _is_person_focus
 
     # V99.9.7: Nối toàn bộ diễn biến Quá khứ - Hiện tại - Tương lai, Trọng tâm câu hỏi & Ứng kỳ thành các đoạn văn liền mạch dễ đọc
     _focus_prose = ""
@@ -695,6 +717,7 @@ def build_omniscient_prophecy(
             'quai': c_info['quai'],
             'hanh_dt': hanh_dt,
             'gender': primary_gender,
+            'gender_reasons': ', '.join(gender_reasons),
             'age_tier': age_tier,
             'birth_years': birth_years,
             'where_summary': where_summary,
