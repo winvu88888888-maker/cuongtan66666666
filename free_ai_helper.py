@@ -5382,43 +5382,26 @@ class FreeAIHelper:
                         raw_data_section += f"• Bệnh: {_vv_cu_the.get('benh', '?')}\n"
                     raw_data_section += "\n"
             
-            # --- V40.4: 12 TRƯỜNG SINH — TRỰC TIẾP (chi tiết đầy đủ) ---
+            # --- V100.1: 12 TRƯỜNG SINH — CHỈ GIỮ KHÍ LỰC (KHÔNG Bơm từ điển tuổi/đồ vật lạc đề) ---
             _ts_stage = v22.get('ts_stage', '')
             _ts_info = TRUONG_SINH_POWER.get(_ts_stage, {}) if _ts_stage else {}
             if _ts_stage:
-                raw_data_section += f"═══ 12 TRƯỜNG SINH — TRỰC TIẾP ═══\n"
-                raw_data_section += f"• Giai đoạn hiện tại: {_ts_stage}\n"
-                raw_data_section += f"• Power: {_ts_info.get('power', '?')}% | Cấp: {_ts_info.get('cap', '?')}\n"
-                raw_data_section += f"• Con người: {_ts_info.get('con_nguoi', '?')}\n"
-                raw_data_section += f"• Tình trạng vật: {_ts_info.get('vat', '?')}\n"
-                raw_data_section += f"• Tuổi ước lượng: {_ts_info.get('tuoi_min', '?')}-{_ts_info.get('tuoi_max', '?')}\n"
-                # Ngũ Khí bổ sung
+                raw_data_section += f"═══ 12 TRƯỜNG SINH CỦA DỤNG THẦN ═══\n"
+                raw_data_section += f"• Giai đoạn hiện tại: {_ts_stage} (Khí lực: {_ts_info.get('power', '?')}% — {_ts_info.get('cap', '?')})\n"
+                if _qtype == 'AGE':
+                    raw_data_section += f"• Tuổi ước lượng: {_ts_info.get('tuoi_min', '?')}-{_ts_info.get('tuoi_max', '?')}\n"
+                elif _qtype in ('WHAT', 'WHERE'):
+                    raw_data_section += f"• Tình trạng vật: {_ts_info.get('vat', '?')}\n"
                 _nk = v22.get('ngu_khi', '')
                 _nk_info = NGU_KHI_POWER.get(_nk, {})
                 if _nk:
-                    raw_data_section += f"• Ngũ Khí: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
+                    raw_data_section += f"• Ngũ Khí theo mùa: {_nk} — {_nk_info.get('label', '?')} (power={_nk_info.get('power', '?')}%)\n"
                 raw_data_section += "\n"
             
             # ═══ V99.8: BÁO CÁO THẨM ĐỊNH TỪ HỘI ĐỒNG 40 CHUYÊN GIA AI ═══
             if od.get('chuyen_gia_report'):
                 raw_data_section += f"═══ [CG] HỘI ĐỒNG 40 CHUYÊN GIA AI THẨM ĐỊNH CHUYÊN SÂU ═══\n"
-                raw_data_section += od['chuyen_gia_report'] + "\n\n"
-
-            # ═══ V42.9.29: BLIND READING (MANG ĐOÁN) ═══
-            try:
-                from blind_reading import blind_read, format_blind_reading
-                _br_result = blind_read(
-                    chart_data=chart_data,
-                    mai_hoa_data=mai_hoa_data,
-                    luc_hao_data=luc_hao_data
-                )
-                if _br_result and 'error' not in _br_result:
-                    _br_text = format_blind_reading(_br_result)
-                    if _br_text:
-                        raw_data_section += f"═══ [BR] MANG ĐOÁN — DỮ LIỆU THÔ ═══\n"
-                        raw_data_section += _br_text + "\n\n"
-            except Exception:
-                pass
+                raw_data_section += od['chuyen_gia_report'] + "\n\n" 
             
             # ═══ V42.9.29: DATABASE TƯƠNG TÁC SAO-MÔN ═══
             try:
@@ -6982,8 +6965,8 @@ class FreeAIHelper:
     # V16.0 / V26.2: ĐẠI THỐNG NHẤT SCORING ĐA PHƯƠNG PHÁP
     # ═══════════════════════════════════════════════════════════
     
-    def _ky_mon_scoring(self, chart_data, dung_than):
-        """V26.2: Chấm điểm Kỳ Môn Độn Giáp — 10 tầng scoring."""
+    def _ky_mon_scoring(self, chart_data, dung_than, question=''):
+        """V100.1: Chấm điểm Kỳ Môn Độn Giáp chuẩn cổ thư theo đúng Cung Dụng Thần của chủ đề câu hỏi"""
         if not chart_data or not isinstance(chart_data, dict):
             return 0, "Không có dữ liệu Kỳ Môn", []
             
@@ -6997,7 +6980,7 @@ class FreeAIHelper:
         nhan_ban = chart_data.get('nhan_ban', {})
         than_ban = chart_data.get('than_ban', {})
         
-        # 1. Xác định Can của Dụng Thần
+        # 1. Xác định Can & Cung Dụng Thần chuẩn theo chủ đề câu hỏi
         dt_can_map = {
             'Quan Quỷ': chart_data.get('can_gio', ''),
             'Thê Tài': chart_data.get('can_gio', ''),
@@ -7008,19 +6991,25 @@ class FreeAIHelper:
         }
         dt_can = dt_can_map.get(dung_than, chart_data.get('can_gio', ''))
         
-        # Cung BT và DT
         bt_cung = None
         dt_cung = None
-        for cung_num, can_val in can_thien_ban.items():
-            if can_val == can_ngay: bt_cung = int(cung_num) if cung_num else None
-            # V40.2: Giáp ẩn duới Mậu HOẶC Kỷ
-            if not bt_cung and can_ngay == 'Giáp' and can_val in ('Mậu', 'Kỷ'):
-                bt_cung = int(cung_num) if cung_num else None
-                
-        for cung_num, can_val in can_thien_ban.items():
-            if can_val == dt_can: dt_cung = int(cung_num) if cung_num else None
-            if not dt_cung and dt_can == 'Giáp' and can_val in ('Mậu', 'Kỷ'):
-                dt_cung = int(cung_num) if cung_num else None
+        try:
+            from offline_brain import _resolve_authentic_km_palace
+            dt_cung, bt_cung, _ = _resolve_authentic_km_palace(chart_data, dung_than, question or getattr(self, '_last_question', ''))
+        except Exception:
+            pass
+        if not bt_cung:
+            for cung_num, can_val in can_thien_ban.items():
+                if can_val == can_ngay: bt_cung = int(cung_num) if str(cung_num).isdigit() else None
+                if not bt_cung and can_ngay == 'Giáp' and can_val in ('Mậu', 'Kỷ'):
+                    bt_cung = int(cung_num) if str(cung_num).isdigit() else None
+        if not dt_cung:
+            for cung_num, can_val in can_thien_ban.items():
+                if can_val == dt_can: dt_cung = int(cung_num) if str(cung_num).isdigit() else None
+                if not dt_cung and dt_can == 'Giáp' and can_val in ('Mậu', 'Kỷ'):
+                    dt_cung = int(cung_num) if str(cung_num).isdigit() else None
+        if dt_cung:
+            dt_can = str(can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), dt_can)) or dt_can)
         
         if not dt_cung:
             return 0, "Không tìm thấy Cung Dụng Thần KM", []
@@ -9602,9 +9591,12 @@ class FreeAIHelper:
             'ong ngoai': 'ông ngoại', 'ba ngoai': 'bà ngoại',
             'ong noi': 'ông nội', 'ba noi': 'bà nội', 'ong': 'ông', 'ba': 'bà',
         }
+        _has_vn_diac_tt = any(ord(c) > 127 for c in q)
         for _nd, _cd in sorted(_THAMTU_NORM.items(), key=lambda x: len(x[0]), reverse=True):
+            if _has_vn_diac_tt and ' ' not in _nd:
+                continue
             if _nd in q:
-                q = q.replace(_nd, _cd)
+                q = re.sub(r'(?<![\wÀ-ỹ])' + re.escape(_nd) + r'(?![\wÀ-ỹ])', _cd, q)
         lines = []
         # V40.3: Derive hanh_dt
         hanh_dt = _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than)
@@ -13020,12 +13012,14 @@ class FreeAIHelper:
             'tuoi': 'tuổi',
         }
         
-        # Tạo q_lower_normalized: thay thế ALL từ không dấu → có dấu
+        # Tạo q_lower_normalized: chỉ thay thế từ không dấu nguyên từ (tránh biến 'quay lại' thành 'quay lãi')
         q_normalized = q_lower
-        # Sort by length descending → match cụm dài trước (VD: "nguoi yeu" trước "yeu")
+        _has_vn_diac = any(ord(c) > 127 for c in q_lower)
         for _nd, _cd in sorted(_VN_NO_DIAC_MAP.items(), key=lambda x: len(x[0]), reverse=True):
+            if _has_vn_diac and ' ' not in _nd:
+                continue
             if _nd in q_normalized:
-                q_normalized = q_normalized.replace(_nd, _cd)
+                q_normalized = re.sub(r'(?<![\wÀ-ỹ])' + re.escape(_nd) + r'(?![\wÀ-ỹ])', _cd, q_normalized)
         
         # Dùng q_normalized cho category detection thay vì q_lower
         q_lower = q_normalized
@@ -13856,7 +13850,7 @@ class FreeAIHelper:
                     pass
 
             # 4. WealthAdvisorAI (Chuyên gia Tài lộc & Đầu tư)
-            if detected_category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in _q_low_cg for w in ['tiền', 'tài', 'đầu tư', 'mua', 'bán', 'lời', 'lỗ', 'vốn', 'vay', 'nợ', 'giá', 'đất', 'nhà']):
+            if not is_find and detected_category != 'TÌM_ĐỒ' and not any(w in _q_low_cg for w in ['bị mất', 'mất ví', 'thất lạc', 'ở đâu', 'tìm thấy']) and (detected_category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in _q_low_cg for w in ['tiền', 'tài', 'đầu tư', 'mua', 'bán', 'lời', 'lỗ', 'vốn', 'vay', 'nợ', 'giá', 'đất', 'nhà'])):
                 try:
                     from wealth_advisor_ai import WealthAdvisorAI
                     _wa_res = WealthAdvisorAI().analyze_wealth(chart_data or {}, question)
@@ -14040,7 +14034,7 @@ class FreeAIHelper:
             return 'BÌNH'
 
         try:
-            km_s, km_sum, v24_km_factors = self._ky_mon_scoring(chart_data, dung_than)
+            km_s, km_sum, v24_km_factors = self._ky_mon_scoring(chart_data, dung_than, question)
             v16_km_raw = km_s
             ky_mon_verdict = _score_to_canonical_verdict(km_s)
             if v24_km_factors:
@@ -14151,15 +14145,26 @@ class FreeAIHelper:
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
         weighted_pct = max(5, min(95, int(weighted_pct)))
         
-        # V21.0: 12 Trường Sinh bonus/penalty
+        # V100.1 FIX: Tính 12 Trường Sinh từ ĐÚNG Ngũ Hành của Dụng Thần và Địa Chi hào Dụng Thần (hoặc Chi Ngày)
         ts_bonus = 0
         ts_stage = None
         if chart_data and isinstance(chart_data, dict):
-            can_dt = chart_data.get('can_ngay', '')
-            chi_dt = chart_data.get('chi_ngay', '')
-            hanh_dt = CAN_NGU_HANH.get(can_dt, '')
-            if hanh_dt and chi_dt:
-                ts_stage, _ = _get_truong_sinh(hanh_dt, chi_dt)
+            _can_ng_ts = chart_data.get('can_ngay', '')
+            _chi_dt_ts = chart_data.get('chi_ngay', '')
+            _hanh_bt_ts = CAN_NGU_HANH.get(_can_ng_ts, 'Thổ')
+            _DT_HANH_TS = {
+                'Mộc': {'Bản Thân': 'Mộc', 'Huynh Đệ': 'Mộc', 'Phụ Mẫu': 'Thủy', 'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa'},
+                'Hỏa': {'Bản Thân': 'Hỏa', 'Huynh Đệ': 'Hỏa', 'Phụ Mẫu': 'Mộc', 'Quan Quỷ': 'Thủy', 'Thê Tài': 'Kim', 'Tử Tôn': 'Thổ'},
+                'Thổ': {'Bản Thân': 'Thổ', 'Huynh Đệ': 'Thổ', 'Phụ Mẫu': 'Hỏa', 'Quan Quỷ': 'Mộc', 'Thê Tài': 'Thủy', 'Tử Tôn': 'Kim'},
+                'Kim': {'Bản Thân': 'Kim', 'Huynh Đệ': 'Kim', 'Phụ Mẫu': 'Thổ', 'Quan Quỷ': 'Hỏa', 'Thê Tài': 'Mộc', 'Tử Tôn': 'Thủy'},
+                'Thủy': {'Bản Thân': 'Thủy', 'Huynh Đệ': 'Thủy', 'Phụ Mẫu': 'Kim', 'Quan Quỷ': 'Thổ', 'Thê Tài': 'Hỏa', 'Tử Tôn': 'Mộc'},
+            }
+            _hanh_dt_true = _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than) or _DT_HANH_TS.get(_hanh_bt_ts, {}).get(dung_than, _hanh_bt_ts)
+            # Trong Lục Hào chính tông: Nguyệt Lệnh chủ Vượng/Suy, Nhật Thần (chi_ngay) chủ 12 Trường Sinh (Sinh/Vượng/Mộ/Tuyệt)
+            if not _chi_dt_ts and luc_hao_data and isinstance(luc_hao_data, dict):
+                _chi_dt_ts = luc_hao_data.get('chi_ngay', '')
+            if _hanh_dt_true and _chi_dt_ts:
+                ts_stage, _ = _get_truong_sinh(_hanh_dt_true, _chi_dt_ts)
                 if ts_stage:
                     ts_power = TRUONG_SINH_POWER.get(ts_stage, {}).get('power', 50)
                     ts_bonus = int((ts_power - 50) * 0.15)  # ±7.5 max
@@ -14438,50 +14443,16 @@ class FreeAIHelper:
                 for f in doi_nghich:
                     sections.append(f"- ⚠️ {f}")
         
-        # B. Ngũ Hành vật chất từ unified
-        hv = unified_v22.get('hanh_vat', {})
-        if hv:
-            sections.append(f"\n**B. NGŨ HÀNH VẬT CHẤT ({hanh_dt_v22}):**")
-            sections.append(f"| Thuộc tính | Giá trị |")
-            sections.append(f"|---|---|")
-            sections.append(f"| 📐 Hình dáng | {hv.get('hinh', '?')} |")
-            sections.append(f"| 🔧 Chất liệu | {hv.get('chat_lieu', '?')} |")
-            sections.append(f"| 🎨 Màu sắc | {hv.get('mau', '?')} |")
-            sections.append(f"| 🧭 Hướng | {hv.get('huong', '?')} |")
-            sections.append(f"| 👅 Vị | {hv.get('vi', '?')} |")
-            sections.append(f"| 🏥 Cơ thể | {hv.get('co_the', '?')} |")
-        
-        # C. Mapping vạn vật từ weighted_pct
-        sections.append(f"\n**C. MAPPING VẠN VẬT ({vv_data['cap']}):**")
-        sections.append(f"| Tiêu chí | Giá trị |")
-        sections.append(f"|---|---|")
-        sections.append(f"| 🎯 % Lực lượng (5PP) | **{weighted_pct}%** — {vv_data['cap']} |")
-        sections.append(f"| 🎯 % Lực lượng (3 tầng) | **{unified_v22['unified_pct']}%** — {unified_v22['tier_data']['cap']} |")
-        sections.append(f"| 🧑 Vòng đời con người | {vv_data['con_nguoi']} |")
-        sections.append(f"| 📐 Kích thước | {vv_data['kich_thuoc']} |")
-        sections.append(f"| 🆕 Tình trạng | {vv_data['tinh_trang']} |")
-        sections.append(f"| 🔢 Số lượng | {vv_data['so_luong']} |")
-        sections.append(f"| 💎 Chất lượng | {vv_data['chat_luong']} |")
-        sections.append(f"| 🎨 Màu sắc | {vv_data['mau_sac']} |")
-        sections.append(f"| ⏱️ Tốc độ | {vv_data['toc_do']} |")
-        sections.append(f"| 🔢 Con số | {vv_data['so']} |")
-        
-        # D. 12 Trường Sinh chi tiết
+        # B. 12 Trường Sinh chi tiết (chỉ ghi trạng thái lực lượng, không ghi từ điển con người/đồ vật lạc đề)
         if ts_stage:
             ts_info = TRUONG_SINH_POWER.get(ts_stage, {})
-            sections.append(f"\n**D. 12 TRƯỜNG SINH:** {ts_stage} ({ts_info.get('cap', '?')}) — Power={ts_info.get('power', 50)}%")
-            sections.append(f"→ Con người: {ts_info.get('con_nguoi', '?')} | Vật: {ts_info.get('vat', '?')}")
+            sections.append(f"\n**B. 12 TRƯỜNG SINH TRÊN NHẬT THẦN:** {ts_stage} ({ts_info.get('cap', '?')}) — Lực lượng: {ts_info.get('power', 50)}%")
         
-        # E. V26.2: VẠN VẬT CỤ THỂ = Ngũ Hành × Tầng Vượng Suy
-        vv_cu_the = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH'))
-        if vv_cu_the:
-            sections.append(f"\n**E. 🎯 VẠN VẬT CỤ THỂ ({hanh_dt_v22} × {unified_v22['tier_data']['cap']}):**")
-            sections.append(f"| Loại | Mô tả cụ thể |")
-            sections.append(f"|---|---|")
-            sections.append(f"| 🔮 Đồ vật | {vv_cu_the.get('do_vat', '?')} |")
-            sections.append(f"| 🏠 Nhà cửa | {vv_cu_the.get('nha_cua', '?')} |")
-            sections.append(f"| 🧑 Người | {vv_cu_the.get('nguoi', '?')} |")
-            sections.append(f"| 🏥 Bệnh | {vv_cu_the.get('benh', '?')} |")
+        # C. Chỉ hiển thị Bảng Vạn Vật Loại Tượng khi câu hỏi tìm đồ vật / đếm số lượng
+        hv = unified_v22.get('hanh_vat', {})
+        if is_find or is_count:
+            if hv:
+                sections.append(f"\n**C. ĐẶC ĐIỂM VẬT CHẤT ({hanh_dt_v22}):** Hình dáng: {hv.get('hinh', '?')} | Chất liệu: {hv.get('chat_lieu', '?')} | Màu sắc: {hv.get('mau', '?')} | Hướng: {hv.get('huong', '?')}")
         
         # Đếm số lượng (V41.0 — ENHANCED: Tự động tính số từ Ngũ Hành + Quái + Vạn Vật)
         if is_count or is_age:
@@ -16105,7 +16076,7 @@ class FreeAIHelper:
                     f'<div style="font-size:0.95em;color:#a7f3d0;margin-bottom:14px;">🔄 Phát hiện <b>{len(_off_answer_list)} câu hỏi</b> — phân tích riêng từng câu:</div>'
                     + _multi_cards
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
-                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + ''
                     + _off_ev_html
                     + f'</div>'
                 )
@@ -16208,7 +16179,7 @@ class FreeAIHelper:
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
-                            if any(k in _q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua']):
+                            if any(k in _q_lower for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua khỏi', 'qua được']):
                                 _bp = _kc.get('Than_The', '')
                                 if _bp: _kc_detail = f'Bệnh vùng {_bp}'
                             elif any(k in _q_lower for k in ['tìm', 'mất', 'đâu', 'ở đâu']):
@@ -16322,7 +16293,7 @@ class FreeAIHelper:
                 _hanh_dt_adv = locals().get('hanh_dt_v22', '?')
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
-                if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua']):
+                if any(k in _q_norm for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua khỏi', 'qua được']):
                     if weighted_pct >= 55:
                         _advice_parts.append('💊 Tích cực chữa trị, tiên lượng tốt.')
                     else:
@@ -16393,7 +16364,6 @@ class FreeAIHelper:
                     _t2_parts.append(f'⚡ <b>Dụng Thần:</b> {dung_than} (Hành {_t2_hanh})')
                     if _t2_ts:
                         _t2_parts.append(f'🔄 <b>12 Trường Sinh:</b> {_t2_ts} — {_t2_ts_info.get("cap", "?")} ({_t2_ts_info.get("power", "?")}%)')
-                        _t2_parts.append(f'👤 <b>Ví như:</b> {_t2_ts_info.get("con_nguoi", "?")}')
                     if _t2_nk:
                         _t2_parts.append(f'🌊 <b>Ngũ Khí:</b> {_t2_nk} — {_t2_nk_info.get("label", "?")} ({_t2_nk_info.get("power", "?")}%)')
                     # V99.9: Không chèn Vạn Vật (bóng đèn, bếp cũ...) vào Sơ đồ lực lượng để tránh lạc đề
@@ -16639,7 +16609,7 @@ class FreeAIHelper:
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
                     + '</div>'
-                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + ''
                     + _connected_prose_on
                     + _t7_html
                     + f'</div>'
@@ -16650,9 +16620,12 @@ class FreeAIHelper:
             final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
             if v38_protocol_text:
                 final_parts.append(_format_md_for_html_details(v38_protocol_text))
-            if offline_full_output:
-                final_parts.append('<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:10px 0;">')
-                final_parts.append(_format_md_for_html_details(offline_full_output))
+            if _off_summary_extra:
+                final_parts.append(_off_summary_extra)
+            if _t2_html:
+                final_parts.append(_t2_html)
+            if _t3_thoan:
+                final_parts.append(_t3_thoan)
             final_parts.append("\n</details>")
             final_parts.append("")
             
@@ -17040,7 +17013,7 @@ class FreeAIHelper:
                     + _multi_cards_off
                     + f'<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:1.05em;color:#a7f3d0;">📊 Điểm tổng: <b>{weighted_pct}%</b> | DT chính: <b>{dung_than}</b> | KM: {ky_mon_verdict} | LH: {luc_hao_verdict} | MH: {mai_hoa_verdict}</div>'
                     + _comp_detail_html
-                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + ''
                     + _evidence_html
                     + f'</div>'
                 )
@@ -17131,7 +17104,7 @@ class FreeAIHelper:
                     try:
                         _kc = tra_cuu_cung(_bt_c)
                         if _kc:
-                            if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua']):
+                            if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'đau', 'khỏe', 'sức khỏe', 'chết', 'sống', 'qua khỏi', 'qua được']):
                                 _bp = _kc.get('Than_The', '')
                                 if _bp: _kc_detail_fb = f'Bệnh vùng {_bp}'
                             elif any(k in _q_lower_fb for k in ['tìm', 'mất', 'đâu', 'ở đâu']):
@@ -17218,7 +17191,7 @@ class FreeAIHelper:
                 _huong_tot = _HANH_HUONG.get(_hanh_dt_adv, '')
                 
                 _adv_fb = []
-                if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua']):
+                if any(k in _q_lower_fb for k in ['bệnh', 'ốm', 'khỏe', 'chết', 'sống', 'qua khỏi', 'qua được']):
                     if weighted_pct >= 55: _adv_fb.append('💊 Tích cực chữa trị, tiên lượng tốt.')
                     else: _adv_fb.append('💊 Cần chuyển viện/đổi phác đồ điều trị.')
                     if _kc_detail_fb: _adv_fb.append(f'🏥 {_kc_detail_fb} — chú ý vùng này.')
@@ -17295,7 +17268,7 @@ class FreeAIHelper:
                     _t2_hanh = locals().get('hanh_dt_v22', '?')
                     _t2_parts = [f'⚡ <b>Dụng Thần Trọng Tâm:</b> {dung_than} (Ngũ hành: <b>{_t2_hanh}</b>)']
                     if _t2_ts:
-                        _t2_parts.append(f'🔄 <b>Vòng 12 Trường Sinh:</b> {_t2_ts} — {_t2_ts_info.get("cap", "?")} ({_t2_ts_info.get("power", "?")}%) — <i>{_t2_ts_info.get("con_nguoi", "")}</i>')
+                        _t2_parts.append(f'🔄 <b>Vòng 12 Trường Sinh:</b> {_t2_ts} — {_t2_ts_info.get("cap", "?")} ({_t2_ts_info.get("power", "?")}%)')
                     if _t2_nk:
                         _t2_parts.append(f'🌊 <b>Ngũ Khí Theo Mùa:</b> {_t2_nk} — {_t2_nk_info.get("label", "?")} ({_t2_nk_info.get("power", "?")}%)')
                     _t2_inner = ''.join(f'<div style="color:#d1fae5;margin:3px 0;font-size:0.93em;line-height:1.5;">{p}</div>' for p in _t2_parts)
@@ -17407,7 +17380,7 @@ class FreeAIHelper:
                     f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.0</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
-                    + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
+                    + ''
                     + _connected_prose_fb
                     + _comp_detail_html
                     + _t7_fb_html
@@ -17431,71 +17404,13 @@ class FreeAIHelper:
             # V42.9: THÁM TỬ đã nằm trong offline_full_output
             # KHÔNG append direct_answer riêng → tránh trùng lặp
             
-            # 3. VẠN VẬT CỤ THỂ (CHỈ cho câu hỏi KHÔNG PHẢI competition)
-            if not _is_comp_final:
-                vv_cu_the_kl = _get_van_vat_cu_the(hanh_dt_v22, unified_v22.get('tier_key', 'TRUNG_BÌNH') if unified_v22 else 'TRUNG_BÌNH')
-                if vv_cu_the_kl and hanh_dt_v22:
-                    final_parts.append(f"\n### 🎯 VẠN VẬT CỤ THỂ ({hanh_dt_v22} × {unified_v22['tier_data']['cap'] if unified_v22 else '?'})")
-                    final_parts.append(f"- 🔮 **Đồ vật:** {vv_cu_the_kl.get('do_vat', '?')}")
-                    final_parts.append(f"- 🏠 **Nhà cửa:** {vv_cu_the_kl.get('nha_cua', '?')}")
-                    final_parts.append(f"- 🧑 **Người:** {vv_cu_the_kl.get('nguoi', '?')}")
-                    final_parts.append(f"- 🏥 **Bệnh:** {vv_cu_the_kl.get('benh', '?')}")
-            
-            # 4. V31 Sơ đồ Master
-            if v31_master_diagram:
-                final_parts.append(f"\n### 🏆 SĐ MASTER: DỤNG THẦN → SUY VƯỢNG → VẠN VẬT")
-                final_parts.append(f"```")
-                final_parts.append(v31_master_diagram)
-                final_parts.append(f"```")
-                final_parts.append(f"**📊 CÔNG THỨC:** {v31_master_info.get('formula_detail', '?')}")
-                final_parts.append(f"**🎯 KẾT LUẬN MASTER:** {v31_master_info.get('conclusion', '?')}")
-            
-            # 5. V31 Sơ đồ câu hỏi
-            if v31_question_diagram and v31_diagram_id != 'SD0':
-                final_parts.append(f"\n### 📐 CHÚ GIẢI: {v31_question_info.get('diagram_name', 'Sơ Đồ')}")
-                final_parts.append(f"```")
-                final_parts.append(v31_question_diagram)
-                final_parts.append(f"```")
-                final_parts.append(f"**📊 CÔNG THỨC:** {v31_question_info.get('formula', '?')}")
-                final_parts.append(f"**🎯 KẾT LUẬN:** {v31_question_info.get('conclusion', '?')}")
-            
-            # 6. V32.5: Sơ đồ tương tác 6PP
-            try:
-                v325_interaction = self._build_factor_interaction_map(
-                    chart_data=chart_data,
-                    luc_hao_data=luc_hao_data,
-                    mai_hoa_data=mai_hoa_data,
-                    dung_than=dung_than,
-                    hanh_dt=hanh_dt_v22,
-                    question=question,
-                    km_verdict=ky_mon_verdict or 'BÌNH',
-                    lh_verdict=luc_hao_verdict or 'BÌNH',
-                    mh_verdict=mai_hoa_verdict or 'BÌNH',
-                    ln_verdict=luc_nham_verdict or 'BÌNH',
-                    ta_verdict=thai_at_verdict or 'BÌNH'
-                )
-                if v325_interaction:
-                    final_parts.append("\n### 🔮 SƠ ĐỒ TƯƠNG TÁC 6PP CHI TIẾT")
-                    final_parts.append(v325_interaction)
-            except Exception as e:
-                self.log_step("V32.5", "INTERACTION_ERR", str(e)[:100])
-            
-            # 7. Thống kê yếu tố
-            all_factors = v24_km_factors + v23_lh_factors + v24_mh_factors + v24_tb_factors + v24_ln_factors + v24_ta_factors
-            if all_factors:
-                final_parts.append(f"\n### 📋 THỐNG KÊ CHI TIẾT CÁC YẾU TỐ ({len(all_factors)})")
-                for f in all_factors:
-                    if '+' in f:
-                        final_parts.append(f"- ✅ **TỐT:** {f}")
-                    elif '-' in f:
-                        final_parts.append(f"- ⚠️ **XẤU:** {f}")
-                    else:
-                        final_parts.append(f"- ℹ️ **THÔNG TIN:** {f}")
-            
-            # 8. V26.2: Full offline output (gốc)
-            if offline_full_output:
-                final_parts.append("\n---")
-                final_parts.append(offline_full_output)
+            # 3. Hồ sơ đối chiếu học thuật các phương pháp (đã lọc sạch bảng nháp vô nghĩa)
+            if _off2_summary:
+                final_parts.append(_off2_summary)
+            if _t2_fb_html:
+                final_parts.append(_t2_fb_html)
+            if _t3_fb_thoan:
+                final_parts.append(_t3_fb_thoan)
             
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")

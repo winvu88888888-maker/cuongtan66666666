@@ -36,8 +36,15 @@ class RelationshipAI:
 
     def _find_can_cung(self, chart_data, target_can):
         ctb = chart_data.get("can_thien_ban", {}) or {}
+        cdb = chart_data.get("can_dia_ban") or chart_data.get("dia_ban") or chart_data.get("dia_can") or {}
         search_c = "Mậu" if target_can == "Giáp" else target_can
         for k, v in ctb.items():
+            if str(v) == str(search_c):
+                try:
+                    return int(k)
+                except Exception:
+                    pass
+        for k, v in cdb.items():
             if str(v) == str(search_c):
                 try:
                     return int(k)

@@ -1,6 +1,6 @@
 """
-LUC HAO EXPERT AI - Chuyên Gia Lục Hào Kinh Dịch (V99.9 Deep Focus)
-Luận giải quẻ Lục Hào thực chiến từ đúng hào Dụng Thần, Hào Thế, Hào Ứng, Lục Thú & Hào Động.
+LUC HAO EXPERT AI - Chuyên Gia Lục Hào Kinh Dịch (V100.1 Deep Focus)
+Luận giải quẻ Lục Hào thực chiến từ đúng hào Dụng Thần (kể cả Phục Thần ẩn tàng), Hào Thế, Hào Ứng, Lục Thú & Hào Động.
 """
 
 LUC_THAN = {
@@ -73,19 +73,39 @@ class LucHaoExpertAI:
             if dt_name != "Bản Thân" and lt_str == dt_name and dt_hao is None:
                 dt_hao = h_copy
 
+        is_phuc_than = False
         if dt_hao is None:
-            dt_hao = the_hao or (haos[0] if haos and isinstance(haos[0], dict) else {})
+            if dt_name == "Bản Thân" and the_hao:
+                dt_hao = the_hao
+            else:
+                is_phuc_than = True
+                phuc_list = data.get("phuc_than") or ban.get("phuc_than") or []
+                phuc_match = None
+                if isinstance(phuc_list, list):
+                    for pt in phuc_list:
+                        if isinstance(pt, dict) and str(pt.get("luc_than", "")) == dt_name:
+                            phuc_match = pt
+                            break
+                dt_hao = phuc_match or {
+                    "hao": "Ẩn (Phục Thần)",
+                    "chi": "?",
+                    "ngu_hanh": "?",
+                    "vuong_suy": "Phục Thần (Ẩn)",
+                    "luc_thu": ""
+                }
 
         hao_num = dt_hao.get("hao", 1)
         chi = dt_hao.get("chi", dt_hao.get("can_chi", "?"))
         hanh_dt = dt_hao.get("ngu_hanh") or dt_hao.get("hanh") or "?"
-        vs = str(dt_hao.get("vuong_suy", "Bình"))
+        vs = str(dt_hao.get("vuong_suy", "Phục Thần (Ẩn)" if is_phuc_than else "Bình"))
         luc_thu = dt_hao.get("luc_thu", dt_hao.get("luc_than_kd", ""))
-        is_dong = (hao_num in dong_hao_list) or bool(dt_hao.get("is_moving") or dt_hao.get("dong"))
+        is_dong = (not is_phuc_than) and ((hao_num in dong_hao_list) or bool(dt_hao.get("is_moving") or dt_hao.get("dong")))
 
         # Tính điểm từ Vượng/Suy thực tế của hào Dụng Thần
         vs_up = vs.upper()
-        if "VƯỢNG" in vs_up:
+        if is_phuc_than:
+            score = 38
+        elif "VƯỢNG" in vs_up:
             score = 82
         elif "TƯỚNG" in vs_up:
             score = 72
@@ -109,17 +129,17 @@ class LucHaoExpertAI:
         rel_str = f"Hào Thế ({the_chi}-{the_hanh}) và Hào Ứng ({ung_chi}-{ung_hanh})"
         if the_hanh != "?" and ung_hanh != "?":
             if NGU_HANH_SINH.get(ung_hanh) == the_hanh:
-                rel_str += f": Ứng sinh Thế ({ung_hanh} sinh {the_hanh}) → Đối phương/hoàn cảnh vẫn hướng về và nâng đỡ bạn (+10đ)"
+                rel_str += f": Ứng sinh Thế ({ung_hanh} sinh {the_hanh}) → Đối phương/hoàn cảnh vẫn hướng về và nâng đỡ bạn"
                 score += 10
             elif NGU_HANH_SINH.get(the_hanh) == ung_hanh:
                 rel_str += f": Thế sinh Ứng ({the_hanh} sinh {ung_hanh}) → Bạn là người nặng lòng, chủ động cho đi/nhường nhịn nhiều hơn"
             elif the_hanh == ung_hanh:
-                rel_str += f": Thế Ứng Tỷ Hòa (cùng hành {the_hanh}) → Hai bên đồng điệu, dễ tìm tiếng nói chung (+6đ)"
+                rel_str += f": Thế Ứng Tỷ Hòa (cùng hành {the_hanh}) → Hai bên đồng điệu, dễ tìm tiếng nói chung"
                 score += 6
             elif NGU_HANH_KHAC.get(the_hanh) == ung_hanh:
                 rel_str += f": Thế khắc Ứng ({the_hanh} khắc {ung_hanh}) → Bạn nắm quyền chủ động nhưng dễ gây áp lực cho đối phương"
             elif NGU_HANH_KHAC.get(ung_hanh) == the_hanh:
-                rel_str += f": Ứng khắc Thế ({ung_hanh} khắc {the_hanh}) → Đối phương đang bất mãn, lạnh nhạt hoặc tạo áp lực lên bạn (-10đ)"
+                rel_str += f": Ứng khắc Thế ({ung_hanh} khắc {the_hanh}) → Đối phương đang bất mãn, lạnh nhạt hoặc tạo áp lực lên bạn"
                 score -= 10
 
         score = max(15, min(95, score))
@@ -127,11 +147,17 @@ class LucHaoExpertAI:
         thu_desc = LUC_THU_MEANING.get(luc_thu, "")
         dong_txt = "ĐỘNG (đang có biến chuyển rõ rệt)" if is_dong else "TĨNH (trạng thái đang giữ nguyên, ít bộc lộ)"
 
-        summary = (
-            f"Quẻ {ban.get('name', '?')} → {bien.get('name', 'Tĩnh')}: "
-            f"Dụng Thần {dt_name} tại Hào {hao_num} ({chi} - hành {hanh_dt}), khí lực [{vs}], {dong_txt}"
-            + (f", lâm {luc_thu} ({thu_desc})" if luc_thu else "")
-        )
+        if is_phuc_than:
+            summary = (
+                f"Quẻ {ban.get('name', '?')} → {bien.get('name', 'Tĩnh')}: "
+                f"Dụng Thần {dt_name} đang ẩn phục (Phục Thần — chưa lộ diện trực tiếp trên 6 hào chính, tâm tư hoặc kết quả còn giấu kín)"
+            )
+        else:
+            summary = (
+                f"Quẻ {ban.get('name', '?')} → {bien.get('name', 'Tĩnh')}: "
+                f"Dụng Thần {dt_name} tại Hào {hao_num} ({chi} - hành {hanh_dt}), khí lực [{vs}], {dong_txt}"
+                + (f", lâm {luc_thu} ({thu_desc})" if luc_thu else "")
+            )
 
         return {
             "dung_than": {"ten": dt_name, "tuong": LUC_THAN.get(dt_name, {}).get("tuong", ""), "ly_do": f"Trọng tâm '{topic}' quy về {dt_name}"},
@@ -152,7 +178,7 @@ class LucHaoExpertAI:
                 "y_nghia": f"Thế lâm {the_lt or '?'} | Ứng lâm {ung_lt or '?'}"
             },
             "bien": {"ten": bien.get("name", "Không đổi"), "y_nghia": f"Xu hướng biến chuyển sang quẻ {bien.get('name', 'Tĩnh')}", "giai_doan": "Kết cục"},
-            "thoi_gian": {"so_ngay": hao_num, "khoang": f"Ứng vào ngày/tháng Địa Chi {chi}", "toc_do": "nhanh" if is_dong else "từ từ", "mo_ta": f"Ứng kỳ tại chi {chi} (Hào {hao_num})"},
+            "thoi_gian": {"so_ngay": hao_num if isinstance(hao_num, int) else 7, "khoang": f"Ứng vào ngày/tháng Địa Chi {chi}", "toc_do": "nhanh" if is_dong else "từ từ", "mo_ta": f"Ứng kỳ tại chi {chi} (Hào {hao_num})"},
             "ket_luan": {
                 "diem": score,
                 "verdict": verdict,

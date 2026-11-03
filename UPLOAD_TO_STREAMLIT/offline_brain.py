@@ -1,7 +1,7 @@
 """
-offline_brain.py — V99.7: Não Suy Luận Ngôn Ngữ Tự Nhiên AI Nội Bộ
-Biến dữ liệu thô (verdicts, factors, %) thành câu trả lời ngôn ngữ tự nhiên chuẩn xác,
-nhất quán 100% với phân tích học thuật và không lộ ký tự Markdown thô trong HTML.
+offline_brain.py — V100.1: Siêu Não Suy Luận Ngôn Ngữ Tự Nhiên & Cổ Thư Hợp Nhất
+Biến dữ liệu thực tế của Quẻ (Lục Hào, Kỳ Môn, Mai Hoa, Đại Lục Nhâm, 40 Chuyên Gia AI)
+thành bài luận giải tiếng Việt sâu sắc, đúng trọng tâm câu hỏi 100%, không sáo rỗng, không mâu thuẫn.
 """
 import re
 
@@ -28,38 +28,36 @@ def _md_to_html_bold(text):
 
 
 # ═══════════════════════════════════════════════════════════════
-# 1. FACTOR CONNECTOR — Phân loại chuẩn xác theo dấu điểm (+N/-N) & ngữ nghĩa
+# 1. FACTOR CONNECTOR — Chuyển mã kỹ thuật thành lời giải thích có ý nghĩa thực tế, không mâu thuẫn
 # ═══════════════════════════════════════════════════════════════
 def _humanize_single_factor(f_raw: str) -> tuple:
     """
-    Chuyển đổi 1 mã yếu tố kỹ thuật (VD: 'DT Vượng +10', 'PHỤC THẦN: DT ẩn -10')
-    thành (loại_tốt_xấu, cụm_từ_tiếng_Việt_tự_nhiên_dễ_hiểu).
+    Chuyển đổi 1 mã yếu tố kỹ thuật thành (loại_tốt_xấu, cụm_từ_tiếng_Việt_dễ_hiểu).
     """
     s = str(f_raw or "").strip()
     if not s:
         return ("neutral", "")
     up = s.upper()
 
-    # Nhận diện các yếu tố cốt lõi bằng ngôn ngữ đời thường dễ hiểu
     if "PHỤC THẦN" in up:
-        return ("bad", "yếu tố chính đang ẩn mình (Phục Thần) nên tâm ý hoặc kết quả thật sự vẫn giấu kín bên trong, chưa bộc lộ rõ ra ngoài")
+        return ("bad", "hào Dụng Thần đang ẩn mình (Phục Thần) nên tâm ý thật sự hoặc kết quả cốt lõi vẫn giấu kín bên trong, chưa bộc lộ rõ ra ngoài")
     if "TUẦN KHÔNG" in up or "KHÔNG VONG" in up:
-        return ("bad", "cung quẻ tạm thời rơi vào khoảng lặng (Tuần Không), khiến sự việc có cảm giác chững lại hoặc còn khoảng cách vô hình")
+        return ("bad", "cung quẻ tạm thời rơi vào khoảng lặng (Tuần Không), khiến sự việc chững lại hoặc còn khoảng cách vô hình cần chờ ngày Xuất Không")
     if "NGUYỆT PHÁ" in up or "NHẬT PHÁ" in up:
-        return ("bad", "đang chịu lực xung phá trực tiếp từ thời vận hiện tại (Nguyệt/Nhật Phá), dễ phát sinh xáo trộn hoặc áp lực")
+        return ("bad", "đang chịu lực xung phá trực tiếp từ thời vận hiện tại (Nguyệt/Nhật Phá), dễ phát sinh áp lực hoặc xáo trộn")
     if "TAM HÌNH" in up:
-        return ("bad", "có thế Tam Hình gây ra sự gượng gạo, tự ái ngầm hoặc căng thẳng tâm lý cần khéo léo tháo gỡ")
+        return ("bad", "có thế Tam Hình gây ra sự gượng gạo, tự ái ngầm hoặc căng thẳng cần khéo léo tháo gỡ")
     if "NHẬP MỘ" in up:
-        return ("bad", "khí lực đang bị thu giữ (Nhập Mộ), làm cho tâm trạng hoặc tiến độ bị bó hẹp, bế tắc tạm thời")
+        return ("bad", "khí lực đang bị thu giữ (Nhập Mộ), làm cho tâm trạng hoặc tiến độ tạm thời bị bó hẹp, chờ ngày Xung Mộ mới khai thông")
     if "PHẢN NGÂM" in up:
-        return ("bad", "quẻ gặp thế Phản Ngâm nên tình thế dễ thay đổi thất thường, lúc nóng lúc lạnh")
+        return ("bad", "quẻ gặp thế Phản Ngâm nên tình thế dễ thay đổi thất thường, lúc thuận lúc nghịch")
     if "PHỤC NGÂM" in up:
         return ("bad", "quẻ gặp thế Phục Ngâm khiến sự việc dây dưa kéo dài, khó giải quyết dứt điểm ngay một sớm một chiều")
     if "CUNG BT SINH DT" in up or "CUNG DT TƯƠNG SINH BT" in up or "CUNG SV SINH BT" in up:
         return ("good", "giữa bản thân bạn và đối phương/mục tiêu vẫn có sự tương sinh, quan tâm và nâng đỡ lẫn nhau")
     if "CUNG BT KHẮC DT" in up or "CHỦ THẮNG" in up:
-        return ("good", "bạn đang nắm thế chủ động và có khả năng xoay chuyển tình thế")
-    if "CUNG DT KHẮC BT" in up:
+        return ("good", "bạn đang nắm thế chủ động và có khả năng kiểm soát, xoay chuyển tình thế")
+    if "CUNG DT KHẮC BT" in up or "CUNG BT BỊ KHẮC" in up:
         return ("bad", "phía đối phương hoặc hoàn cảnh bên ngoài đang tạo sức ép ngược lại lên bạn")
     if "NGUYÊN THẦN VƯỢNG" in up or "NGUYÊN THẦN ĐỘNG" in up or ("NGUYÊN THẦN" in up and ("+6" in s or "+8" in s or "+4" in s)):
         return ("good", "có nguồn lực hậu thuẫn và quý nhân âm thầm tiếp sức ở phía sau (Nguyên Thần vượng)")
@@ -67,61 +65,52 @@ def _humanize_single_factor(f_raw: str) -> tuple:
         return ("good", "các tác nhân gây cản trở hoặc bất đồng đã suy yếu dần")
     if "KỴ THẦN VƯỢNG" in up or "KỴ THẦN ĐỘNG" in up:
         return ("bad", "yếu tố cản trở (Kỵ Thần) đang hoạt động mạnh gây thêm thử thách")
-    if "DT VƯỢNG" in up or "DT TƯỚNG" in up or "THỂ VƯỢNG" in up:
-        return ("good", "nội lực gốc của sự việc rất vượng và có nền tảng vững chắc")
+    if "THỂ VƯỢNG" in up:
+        return ("good", "bản thân bạn (Quẻ Thể) vẫn giữ được ý chí và vị thế vững vàng")
+    if "DT VƯỢNG" in up or "DT TƯỚNG" in up:
+        return ("good", "nội lực gốc của Dụng Thần rất vượng và có nền tảng vững chắc")
     if "DT TÙ" in up or "DT TỬ" in up or "DT SUY" in up or "CAN DT TỬ" in up:
-        return ("bad", "năng lượng ở thời điểm hiện tại đang hơi trầm lắng và suy giảm")
+        return ("bad", "năng lượng của Dụng Thần ở thời điểm hiện tại đang trầm lắng và suy giảm")
     if "NGUYỆT" in up and "SINH DT" in up:
         return ("good", "được thiên thời trong tháng ủng hộ thuận lợi")
     if "NHẬT" in up and "SINH DT" in up:
         return ("good", "được hoàn cảnh trong ngày tiếp thêm sinh khí")
     if ("NGUYỆT" in up or "NHẬT" in up) and "KHẮC DT" in up:
-        return ("bad", "hoàn cảnh khách quan trước mắt đang có chút nghịch chiều, gây áp lực nhất định")
+        return ("bad", "hoàn cảnh khách quan trước mắt đang có phần nghịch chiều, gây áp lực nhất định")
     if "TỶ HÒA" in up:
         return ("good", "hai bên có sự đồng điệu và tương thông về mặt bản chất")
     if "THỂ SINH DỤNG" in up:
         return ("bad", "bạn đang là người phải chủ động nhường nhịn, lo toan và tiêu hao nhiều tâm sức hơn")
+    if "DỤNG KHẮC THỂ" in up:
+        return ("bad", "ngoại cảnh hoặc đối phương đang tạo áp lực lớn lên bản thân bạn (Dụng khắc Thể)")
     if "DỤNG SINH THỂ" in up:
         return ("good", "sự việc và đối phương có xu hướng thuận chiều, hướng về phía bạn")
     if "KHÔNG HIỆN" in up and "KỴ THẦN" in up:
         return ("good", "các tác nhân gây cản trở hoặc chia rẽ không xuất hiện trong quẻ")
-    if "CỪU THẦN" in up and ("RẤT YẾU" in up or "KHÔNG ĐỦ SỨC" in up):
-        return ("good", "các yếu tố gây nhiễu bên ngoài rất yếu, không đủ sức làm suy giảm phúc khí")
     if "DT TĨNH" in up:
         return ("bad", "hào Dụng Thần đang tĩnh nên sự việc cần thêm thời gian lắng đọng, chưa bứt phá ngay lập tức")
     if "CỪU THẦN" in up and "VƯỢNG" in up:
-        return ("bad", "có chút tác động ngoại cảnh làm phân tán nguồn lực hỗ trợ")
-    if any(k in up for k in ["KHÔNG TÁC ĐỘNG", "NGUYÊN THẦN ẨN", "KỴ THẦN ẨN", "NT(ẨN)", "KT(ẨN)"]):
-        return ("neutral", "")
-
-    # Nếu là chuỗi khác, chỉ lấy khi điểm số khác 0 và không phải mã kỹ thuật thô
-    m_score = re.search(r'([+-]\d+)\s*$', s)
-    if m_score:
-        sc = int(m_score.group(1))
-        if sc == 0:
-            return ("neutral", "")
-        cleaned = _clean_factor(s)
-        cleaned = re.sub(r'[+-]\d+\b', '', cleaned)
-        cleaned = re.sub(r'\b(DT|BT|SV|NT|KT|TB-\d+|LH-B\d+|KM-B\d+)\b', '', cleaned).strip(' ,;:-')
-        if '(' in cleaned or '/' in cleaned or len(cleaned) < 8:
-            return ("neutral", "")
-        return ("good" if sc > 0 else "bad", cleaned.lower())
+        return ("bad", "có tác động ngoại cảnh làm phân tán nguồn lực hỗ trợ")
     return ("neutral", "")
 
 
-def _connect_factors(factors_list):
+def _connect_factors(factors_list, pct=50):
     """
-    V99.9.7: Biến danh sách factors thành câu văn xuôi tiếng Việt mượt mà, dễ đọc, dễ hiểu (không còn mã +10, -8 khô khan).
+    Biến danh sách factors thành câu văn xuôi tiếng Việt mượt mà, dễ đọc, nhất quán 100% với điểm số (không tự mâu thuẫn).
     """
     if not factors_list:
         return ""
 
     good_phrases = []
     bad_phrases = []
+    has_phuc_or_suy = any(any(w in str(f).upper() for w in ["PHỤC THẦN", "DT TỬ", "DT TÙ", "DT SUY", "CAN DT TỬ"]) for f in factors_list)
 
     for f in factors_list:
         kind, phrase = _humanize_single_factor(f)
         if not phrase or len(phrase) < 6:
+            continue
+        # Tránh mâu thuẫn: nếu Dụng Thần đang Phục Thần hoặc Suy/Tử thì không nói "nội lực gốc của Dụng Thần rất vượng"
+        if has_phuc_or_suy and "nội lực gốc của Dụng Thần rất vượng" in phrase:
             continue
         if kind == "good" and phrase not in good_phrases:
             good_phrases.append(phrase)
@@ -129,13 +118,25 @@ def _connect_factors(factors_list):
             bad_phrases.append(phrase)
 
     sentences = []
-    if good_phrases and bad_phrases:
+    if pct < 45 and bad_phrases:
+        b_txt = ", đồng thời ".join(bad_phrases[:2])
+        if good_phrases:
+            sentences.append(f"Nguyên nhân chính khiến cục diện gặp khó khăn là do {b_txt} (dù điểm tích cực là {good_phrases[0]})")
+        else:
+            sentences.append(f"Nguyên nhân chính khiến cục diện gặp khó khăn là do {b_txt}")
+    elif pct >= 55 and good_phrases:
+        g_txt = ", đồng thời ".join(good_phrases[:2])
+        if bad_phrases:
+            sentences.append(f"Điểm sáng thuận lợi của quẻ là {g_txt}; chỉ cần lưu ý nhỏ rằng {bad_phrases[0]}")
+        else:
+            sentences.append(f"Điểm sáng rất đáng mừng trong quẻ là {g_txt}")
+    elif good_phrases and bad_phrases:
         g_txt = ", đồng thời ".join(good_phrases[:2])
         b_txt = " và ".join(bad_phrases[:2])
-        sentences.append(f"Xét về mặt tích cực, quẻ cho thấy {g_txt}; tuy nhiên bạn cũng cần lưu ý rằng hiện tại {b_txt}")
+        sentences.append(f"Xét về mặt tích cực, quẻ cho thấy {g_txt}; tuy nhiên hiện tại {b_txt}")
     elif good_phrases:
-        g_txt = ", kết hợp với việc ".join(good_phrases[:3])
-        sentences.append(f"Điểm sáng rất đáng mừng trong quẻ là {g_txt}")
+        g_txt = ", kết hợp với việc ".join(good_phrases[:2])
+        sentences.append(f"Điểm sáng đáng mừng trong quẻ là {g_txt}")
     elif bad_phrases:
         b_txt = ", bên cạnh đó ".join(bad_phrases[:2])
         sentences.append(f"Nguyên nhân chính gây ra trắc trở lúc này là do {b_txt}")
@@ -144,7 +145,6 @@ def _connect_factors(factors_list):
 
 
 def _clean_factor(f):
-    """Bỏ emoji thừa và ký hiệu nội bộ, giữ nội dung sạch"""
     f = str(f).replace('[HỆ SINH THÁI DT]', '').strip()
     for ch in ['⊕', '⊖', '✅', '🔴', '🟢', '🟡', '⚡', '💥', '⭕', '🔄', '☯', '△', '↗', '👻', '🔥', '⚠️']:
         f = f.replace(ch, '')
@@ -152,7 +152,7 @@ def _clean_factor(f):
 
 
 # ═══════════════════════════════════════════════════════════════
-# 2. CATEGORY-SPECIFIC TEMPLATES
+# 2. CATEGORY-SPECIFIC TEMPLATES & HELPERS
 # ═══════════════════════════════════════════════════════════════
 CATEGORY_TEMPLATES = {
     'TÀI_CHÍNH': {
@@ -173,7 +173,7 @@ CATEGORY_TEMPLATES = {
     'CÔNG_VIỆC': {
         'high': "Công danh sự nghiệp <b>đắc thời, có quý nhân hoặc cơ hội mở rộng</b>. {factors} Nên chủ động nắm bắt.",
         'mid': "Công việc <b>tạm ổn định nhưng cần vượt qua thử thách trước mắt</b>. {factors} Kết quả sẽ rõ nét hơn vào <b>{ung_ky}</b>.",
-        'low': "Công việc <b>đang có lực cản hoặc tiểu nhân/áp lực</b>. {factors} Nên xử lý thận trọng từng bước, tránh quyết định nóng vội.",
+        'low': "Công việc <b>đang có lực cản hoặc áp lực khách quan</b>. {factors} Nên xử lý thận trọng từng bước, tránh quyết định nóng vội.",
     },
     'TÌM_ĐỒ': {
         'high': "Khả năng tìm thấy <b>rất khả quan</b>. {factors} Hãy tập trung rà soát hướng <b>{direction}</b> trong khoảng <b>{ung_ky}</b>.",
@@ -188,7 +188,7 @@ CATEGORY_TEMPLATES = {
     'XUẤT_HÀNH': {
         'high': "Chuyến đi / xuất hành <b>thuận buồm xuôi gió, bình an và đạt mục đích</b>. {factors}",
         'mid': "Xuất hành <b>cần chuẩn bị kỹ lịch trình và giấy tờ/phương tiện</b> để tránh chậm trễ nhỏ. {factors}",
-        'low': "Xuất hành <b>gặp nhiều cản trở hoặc thời tiết/lịch trình bất lợi</b>. {factors} Nên kiểm tra kỹ an toàn hoặc điều chỉnh giờ đi.",
+        'low': "Xuất hành <b>gặp nhiều cản trở hoặc lịch trình bất lợi</b>. {factors} Nên kiểm tra kỹ an toàn hoặc điều chỉnh giờ đi.",
     },
     'THẮNG_THUA': {
         'high': "Tương quan lực lượng nghiêng về <b>bên Chủ (Thế/Chủ đắc lợi)</b>. {factors} Khả năng giành phần thắng cao.",
@@ -209,26 +209,20 @@ def _get_tier(pct):
     return 'low'
 
 
-# ═══════════════════════════════════════════════════════════════
-# 3. QUESTION-TYPE SPECIFIC OPENERS
-# ═══════════════════════════════════════════════════════════════
 def _get_qtype_opener(question, pct, category='CHUNG'):
-    """Sinh câu mở đầu đúng ngữ pháp và sát bản chất câu hỏi"""
     q = (question or '').lower()
     emoji = _verdict_emoji(pct)
     label = _verdict_label(pct)
 
-    # Nhóm 1: Câu hỏi SỨC KHỎE / BỆNH TẬT / QUA KHỎI KHÔNG
     if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(kw in q for kw in ['qua khỏi', 'qua được', 'khỏi bệnh', 'khỏi không', 'ốm', 'bệnh', 'nguy kịch', 'sống không']):
         if pct >= 55:
             return f"{emoji} <b>TIÊN LƯỢNG KHẢ QUAN — CÓ KHẢ NĂNG QUA KHỎI & HỒI PHỤC ({pct}%)</b>. "
         elif pct >= 45:
             return f"{emoji} <b>TIÊN LƯỢNG GIẰNG CO — CẦN TÍCH CỰC CHỮA TRỊ & THEO DÕI SÁT ({pct}%)</b>. "
         else:
-            return f"{emoji} <b>TIÊN LƯỢNG NẶNG — NHIỀU DẤU HIỆU BẤT LỢI, CẦN CẤP CỨU/CHUYÊN KHOA NGAY ({pct}%)</b>. "
+            return f"{emoji} <b>TIÊN LƯỢNG NẶNG — NHIỀU DẤU HIỆU BẤT LỢI, CẦN CHUYÊN KHOA NGAY ({pct}%)</b>. "
 
-    # Nhóm 2: Câu hỏi TÌM ĐỒ / Ở ĐÂU
-    if category == 'TÌM_ĐỒ' or any(kw in q for kw in ['ở đâu', 'chỗ nào', 'hướng nào', 'tìm đâu', 'tìm thấy']):
+    if category == 'TÌM_ĐỒ' or any(kw in q for kw in ['ở đâu', 'chỗ nào', 'hướng nào', 'tìm đâu', 'tìm thấy', 'bị mất']):
         if pct >= 55:
             return f"📍 <b>CÓ THỂ TÌM THẤY ({pct}%)</b> — "
         elif pct >= 45:
@@ -236,11 +230,9 @@ def _get_qtype_opener(question, pct, category='CHUNG'):
         else:
             return f"📍 <b>KHÓ TÌM LẠI / ĐÃ DI CHUYỂN XA ({pct}%)</b> — "
 
-    # Nhóm 3: Câu hỏi KHI NÀO / BAO GIỜ
     if any(kw in q for kw in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'ngày nào']):
         return f"⏳ <b>LUẬN THỜI ĐIỂM ỨNG KỲ ({pct}% — {label}):</b> "
 
-    # Nhóm 4: Câu hỏi CÓ NÊN HAY KHÔNG (Lời khuyên hành động)
     if any(kw in q for kw in ['có nên', 'nên không', 'nên hay']):
         if pct >= 55:
             return f"{emoji} <b>NÊN TIẾN HÀNH — {label} ({pct}%)</b>. "
@@ -249,7 +241,6 @@ def _get_qtype_opener(question, pct, category='CHUNG'):
         else:
             return f"{emoji} <b>CHƯA NÊN TIẾN HÀNH LÚC NÀY — {label} ({pct}%)</b>. "
 
-    # Nhóm 5: Câu hỏi CÓ ĐƯỢC KHÔNG / THÀNH BẠI
     if any(kw in q for kw in ['có được', 'được không', 'có không', 'liệu có', 'không?', 'có lãi', 'thành công']):
         if pct >= 55:
             return f"{emoji} <b>CÓ / ĐẠT ĐƯỢC — {label} ({pct}%)</b>. "
@@ -261,9 +252,6 @@ def _get_qtype_opener(question, pct, category='CHUNG'):
     return f"{emoji} <b>{label} ({pct}%)</b>. "
 
 
-# ═══════════════════════════════════════════════════════════════
-# 4. CONTEXT INJECTOR
-# ═══════════════════════════════════════════════════════════════
 PERSON_KEYWORDS = {
     'ông nội': 'ông nội', 'bà nội': 'bà nội', 'ông ngoại': 'ông ngoại', 'bà ngoại': 'bà ngoại',
     'con trai': 'con trai', 'con gái': 'con gái', 'người yêu': 'người yêu',
@@ -279,6 +267,10 @@ DIRECTION_MAP = {
     5: 'Trung Tâm', 6: 'Tây Bắc (Càn)', 7: 'Chính Tây (Đoài)', 8: 'Đông Bắc (Cấn)', 9: 'Chính Nam (Ly)',
 }
 
+CUNG_HANH = {1: "Thủy", 2: "Thổ", 3: "Mộc", 4: "Mộc", 5: "Thổ", 6: "Kim", 7: "Kim", 8: "Thổ", 9: "Hỏa"}
+NGU_HANH_SINH = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+NGU_HANH_KHAC = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+
 
 def _extract_person(question):
     q = (question or '').lower()
@@ -288,29 +280,119 @@ def _extract_person(question):
     return 'bạn'
 
 
-def _extract_direction(chart_data, dung_than='Bản Thân'):
+def _resolve_authentic_km_palace(chart_data: dict, dung_than: str = 'Bản Thân', question: str = '', category: str = 'CHUNG') -> tuple:
+    """
+    Xác định đúng Cung Dụng Thần Kỳ Môn theo chuẩn cổ thư cho từng loại câu hỏi:
+    Trả về (target_cung, bt_cung, palace_role_label).
+    """
+    if not chart_data or not isinstance(chart_data, dict):
+        return (1, 1, "Cung Dụng Thần")
+    ctb = chart_data.get("can_thien_ban", {}) or {}
+    tb = chart_data.get("thien_ban", {}) or {}
+    nb = chart_data.get("nhan_ban", {}) or {}
+    sb = chart_data.get("than_ban", {}) or {}
+    can_ngay = chart_data.get("can_ngay", "")
+    can_gio = chart_data.get("can_gio", "")
+    q_low = (question or "").lower()
+
+    cdb = chart_data.get("can_dia_ban") or chart_data.get("dia_ban") or chart_data.get("dia_can") or {}
+    def _find_can(c_name):
+        if not c_name:
+            return None
+        search_c = "Mậu" if c_name == "Giáp" else c_name
+        for k, v in ctb.items():
+            if str(v) == str(search_c) and str(k).isdigit():
+                return int(k)
+        for k, v in cdb.items():
+            if str(v) == str(search_c) and str(k).isdigit():
+                return int(k)
+        return None
+
+    def _find_in_board(board, keyword):
+        for k, v in board.items():
+            if keyword in str(v) and str(k).isdigit():
+                return int(k)
+        return None
+
+    bt_cung = _find_can(can_ngay) or 1
+    sv_cung = _find_can(can_gio) or bt_cung
+
+    # Ưu tiên 1: Tìm đồ / Mất đồ (kiểm tra TRƯỚC tài chính để 'mất ví tiền' không bị nhầm sang đầu tư Sinh Môn)
+    if category == "TÌM_ĐỒ" or any(w in q_low for w in ["bị mất", "mất đồ", "mất ví", "mất xe", "mất tiền", "thất lạc", "tìm lại", "ở đâu", "để đâu", "rơi ở đâu"]):
+        return (sv_cung, bt_cung, f"Cung Thời Can ({can_gio or 'Giờ'} — Đồ vật thất lạc & Phương vị tìm kiếm)")
+
+    # Ưu tiên 2: Đối kháng / Kiện tụng / Tranh chấp thắng thua
+    if category == "THẮNG_THUA" or any(w in q_low for w in ["ai thắng", "đối phương thắng", "thắng hay thua", "tranh chấp", "kiện tụng", "vụ kiện"]):
+        c_khai = _find_in_board(nb, "Khai") or _find_in_board(nb, "Kinh") or sv_cung
+        return (c_khai, bt_cung, "Cung Đối Kháng / Phân Xử (Tương quan Chủ – Khách)")
+
+    # Ưu tiên 3: Tình cảm / Hôn nhân
+    if category == "TÌNH_CẢM" or any(w in q_low for w in ["yêu", "vợ", "chồng", "hôn nhân", "bạn gái", "bạn trai", "chia tay", "quay lại", "tình cảm"]):
+        if "vợ" in q_low or "bạn gái" in q_low:
+            c_at = _find_can("Ất")
+            if c_at:
+                return (c_at, _find_can("Canh") or bt_cung, "Cung Ất Kỳ (Người vợ / Nữ giới)")
+        elif "chồng" in q_low or "bạn trai" in q_low:
+            c_canh = _find_can("Canh")
+            if c_canh:
+                return (c_canh, _find_can("Ất") or bt_cung, "Cung Canh Kim (Người chồng / Nam giới)")
+        c_lh = _find_in_board(sb, "Lục Hợp")
+        if c_lh:
+            return (c_lh, bt_cung, "Cung Lục Hợp (Nhân duyên & Tình cảm)")
+
+    # Ưu tiên 4: Sức khỏe / Bệnh tật
+    if category == "SỨC_KHỎE_GIA_ĐÌNH" or any(w in q_low for w in ["bệnh", "ốm", "đau", "khỏe", "qua khỏi", "qua được", "viện", "mổ", "thuốc"]):
+        if any(w in q_low for w in ["bố", "mẹ", "cha", "ông", "bà"]):
+            c_nam = _find_can(chart_data.get("can_nam", ""))
+            if c_nam:
+                return (c_nam, bt_cung, "Cung Niên Can (Bậc trưởng bối / Cha mẹ)")
+        c_nhue = _find_in_board(tb, "Nhuế")
+        if c_nhue:
+            return (c_nhue, bt_cung, "Cung Sao Thiên Nhuế (Bệnh tinh)")
+
+    # Ưu tiên 5: Tài chính / Đầu tư / Mua bán / Đòi nợ
+    if category in ("TÀI_CHÍNH", "NHÀ_CỬA") or any(w in q_low for w in ["tiền", "đầu tư", "lãi", "lời", "lỗ", "mua", "bán", "kinh doanh", "vốn", "đất", "nhà", "nợ"]):
+        if "nợ" in q_low or "vay" in q_low:
+            c_thuong = _find_in_board(nb, "Thương") or sv_cung
+            return (c_thuong, bt_cung, "Cung Thương Môn / Thời Can (Thu hồi công nợ)")
+        c_sinh = _find_in_board(nb, "Sinh")
+        if c_sinh:
+            return (c_sinh, bt_cung, "Cung Sinh Môn (Tài lộc & Lợi nhuận)")
+
+    # Ưu tiên 6: Công việc / Sự nghiệp / Thi cử
+    if category == "CÔNG_VIỆC" or any(w in q_low for w in ["việc", "sự nghiệp", "thăng chức", "công ty", "bổ nhiệm"]):
+        c_khai = _find_in_board(nb, "Khai")
+        if c_khai:
+            return (c_khai, bt_cung, "Cung Khai Môn (Công danh & Sự nghiệp)")
+    if any(w in q_low for w in ["thi", "đỗ", "học", "điểm", "bằng cấp"]):
+        c_canh_mon = _find_in_board(nb, "Cảnh") or _find_in_board(tb, "Phụ")
+        if c_canh_mon:
+            return (c_canh_mon, bt_cung, "Cung Cảnh Môn / Thiên Phụ (Thi cử & Khoa bảng)")
+
+    dt_can_map = {
+        "Quan Quỷ": can_gio,
+        "Thê Tài": can_gio,
+        "Tử Tôn": can_gio,
+        "Phụ Mẫu": chart_data.get("can_nam", "") or can_gio,
+        "Huynh Đệ": chart_data.get("can_thang", "") or can_gio,
+        "Bản Thân": can_ngay,
+    }
+    dt_can = dt_can_map.get(dung_than, can_gio) or can_gio
+    dt_cung = _find_can(dt_can) or sv_cung or bt_cung
+    if dung_than == "Bản Thân" and sv_cung and sv_cung != bt_cung:
+        dt_cung = sv_cung
+    return (dt_cung, bt_cung, f"Cung Sự Việc / Dụng Thần ({dung_than})")
+
+
+def _extract_direction(chart_data, dung_than='Bản Thân', question='', category='CHUNG'):
     if not chart_data or not isinstance(chart_data, dict):
         return 'Chính Bắc (Khảm)'
-    cung = chart_data.get('cung_dung_than') or chart_data.get('cung_dt')
-    if not cung:
-        try:
-            from omniscient_prophecy import _find_target_palace
-            c_dt, c_sv, _, _ = _find_target_palace(dung_than, chart_data)
-            cung = c_sv if (dung_than == 'Bản Thân' and c_sv != c_dt) else c_dt
-        except Exception:
-            cung = 1
-    try:
-        return DIRECTION_MAP.get(int(cung), 'Chính Bắc (Khảm)')
-    except (ValueError, TypeError):
-        return 'Chính Bắc (Khảm)'
+    cung, _, _ = _resolve_authentic_km_palace(chart_data, dung_than, question, category)
+    return DIRECTION_MAP.get(int(cung), 'Chính Bắc (Khảm)')
 
 
-# ═══════════════════════════════════════════════════════════════
-# 5. ACTIONABLE ADVICE — Sinh lời khuyên chuẩn theo từng lĩnh vực
-# ═══════════════════════════════════════════════════════════════
 def _generate_advice(pct, category, ung_ky_str, factors_text):
     advice = []
-
     if category == 'SỨC_KHỎE_GIA_ĐÌNH':
         if pct >= 55:
             advice.append("💊 <b>Hướng điều trị:</b> Tiên lượng khả quan, kiên trì phác đồ điều trị hiện tại kết hợp dinh dưỡng và nghỉ ngơi.")
@@ -319,12 +401,12 @@ def _generate_advice(pct, category, ung_ky_str, factors_text):
         else:
             advice.append("🚑 <b>Khuyến nghị y tế khẩn:</b> Dụng Thần đang chịu xung khắc mạnh, cần đưa tới bệnh viện tuyến trên/bác sĩ đầu ngành và theo dõi sát sao.")
     elif category == 'TÌM_ĐỒ':
-        advice.append("🔍 <b>Hành động ngay:</b> Tìm kiếm ngay theo phương hướng và vị trí mô tả trong Hồ sơ 360° trước khi đồ vật bị xê dịch.")
+        advice.append("🔍 <b>Hành động ngay:</b> Tìm kiếm ngay theo phương hướng và vị trí mô tả trước khi đồ vật bị xê dịch.")
     elif category == 'TÀI_CHÍNH':
         if pct >= 55:
-            advice.append("💰 <b>Chiến lược tài chính:</b> Thời điểm thuận lợi để triển khai giao dịch/đầu tư, ưu tiên lĩnh vực hợp Hành Dụng Thần.")
+            advice.append("💰 <b>Chiến lược tài chính:</b> Thời điểm thuận lợi để triển khai giao dịch/đầu tư, ưu tiên kiểm tra kỹ điều khoản hợp đồng.")
         elif pct >= 45:
-            advice.append("⚖️ <b>Chiến lược tài chính:</b> Chỉ nên đầu tư thăm dò tỷ trọng nhỏ, kiểm tra kỹ hợp đồng và dòng tiền.")
+            advice.append("⚖️ <b>Chiến lược tài chính:</b> Chỉ nên đầu tư thăm dò tỷ trọng nhỏ, kiểm soát chặt dòng tiền.")
         else:
             advice.append("🛡️ <b>Bảo toàn vốn:</b> Tạm hoãn giải ngân lớn, tránh cho vay hoặc đầu tư mạo hiểm trong lúc Kỵ Thần đang vượng.")
     else:
@@ -337,7 +419,6 @@ def _generate_advice(pct, category, ung_ky_str, factors_text):
 
     if ung_ky_str and ung_ky_str != '?' and 'N/A' not in ung_ky_str:
         advice.append(f"⏰ <b>Mốc ứng kỳ then chốt:</b> {_md_to_html_bold(ung_ky_str)}")
-
     return "\n".join(advice)
 
 
@@ -356,81 +437,81 @@ def build_narrative_summary_text(
     mai_hoa_data=None,
 ):
     """
-    V99.7: Sinh câu trả lời TRỰC TIẾP – ĐÚNG TRỌNG TÂM CÂU HỎI (Hỏi gì đáp nấy, không chung chung).
+    V100.1: Sinh câu trả lời TRỰC DIỆN – ĐÚNG TRỌNG TÂM CÂU HỎI, rõ ràng, dễ hiểu và nhất quán 100% với điểm số.
     """
     pct = weighted_pct or 50
     q = (question or '').strip()
     q_low = q.lower()
     person = _extract_person(q)
-    direction = _extract_direction(chart_data, dung_than)
+    direction = _extract_direction(chart_data, dung_than, q, category)
     omni_data = omni_data if isinstance(omni_data, dict) else {}
-    factors_text = _connect_factors(all_factors or [])
-    try:
-        _dos_short = extract_deep_divination_dossier(
-            question=q, dung_than=dung_than, weighted_pct=pct, category=category,
-            chart_data=chart_data, luc_hao_data=luc_hao_data, mai_hoa_data=mai_hoa_data
-        )
-        _extra_badges = []
-        if _dos_short.get('short_classical_badge'):
-            _extra_badges.append(_dos_short['short_classical_badge'])
-        if _dos_short.get('lh_luc_thu_prose'):
-            _extra_badges.append(_dos_short['lh_luc_thu_prose'])
-        if _extra_badges:
-            factors_text = factors_text.rstrip('.') + '. Đặc biệt theo cổ thư, quẻ hiện ' + ' kết hợp cùng '.join(_extra_badges) + '.'
-    except Exception:
-        pass
+    factors_text = _connect_factors(all_factors or [], pct=pct)
+
     uk_clean = ung_ky_str if (ung_ky_str and ung_ky_str != '?' and 'xem mục' not in ung_ky_str.lower()) else omni_data.get('exact_timestamp', 'trong chu kỳ Can Chi gần nhất')
 
     # 1. TRỌNG TÂM: BỆNH TẬT / SỨC KHỎE / QUA KHỎI KHÔNG
-    if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in q_low for w in ['ốm', 'bệnh', 'đau', 'khỏe', 'qua khỏi', 'qua được', 'sống', 'nguy kịch', 'viện', 'mổ']):
+    if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in q_low for w in ['ốm', 'bệnh', 'đau', 'khỏe', 'qua khỏi', 'qua được', 'sống không', 'nguy kịch', 'nằm viện', 'mổ']):
         subj_lbl = person.capitalize() if person != 'bạn' else 'Người bệnh'
         co_the = omni_data.get('co_the', '') or kc_detail
-        co_the_str = f" Trọng điểm cơ thể cần lưu ý: <b>{co_the}</b>." if co_the else ""
+        co_the_str = f" Vùng cơ thể/triệu chứng cần lưu tâm: <b>{co_the}</b>." if co_the else ""
         if pct >= 55:
-            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl} CÓ KHẢ NĂNG QUA KHỎI & HỒI PHỤC TỐT ({pct}% — CÁT)</b>."
-            body = f"Hào Dụng Thần (<b>{dung_than}</b>) và sinh khí còn vững, gặp thầy gặp thuốc cứu giải.{co_the_str} {factors_text} Dự kiến chuyển biến tích cực rõ rệt vào khoảng <b>{uk_clean}</b>."
+            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl.upper()} CÓ KHẢ NĂNG QUA KHỎI & HỒI PHỤC TỐT ({pct}% — CÁT)</b>."
+            body = f"Hào Dụng Thần (<b>{dung_than}</b>) và sinh khí còn vững, có lực cứu giải của thầy thuốc.{co_the_str} {factors_text} Dự kiến sức khỏe chuyển biến tích cực rõ rệt vào khoảng <b>{uk_clean}</b>."
         elif pct >= 45:
             head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH TRẠNG CỦA {subj_lbl.upper()} ĐANG GIẰNG CO — CẦN TÍCH CỰC ĐIỀU TRỊ ({pct}% — BÌNH)</b>."
-            body = f"Chính khí của Dụng Thần (<b>{dung_than}</b>) và tà khí đang giằng co mạnh.{co_the_str} {factors_text} Nếu được can thiệp y tế đúng phác đồ và vượt qua mốc <b>{uk_clean}</b> thì sẽ chuyển nguy thành an."
+            body = f"Chính khí của Dụng Thần (<b>{dung_than}</b>) và bệnh khí đang giằng co.{co_the_str} {factors_text} Cần tuân thủ sát phác đồ chuyên khoa; nếu vượt qua mốc <b>{uk_clean}</b> thì sẽ chuyển nguy thành an."
         else:
-            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl.upper()} ĐANG RẤT NGUY KỊCH / TIÊN LƯỢNG NẶNG ({pct}% — HUNG)</b>."
-            body = f"Quẻ báo Dụng Thần (<b>{dung_than}</b>) suy yếu hoặc lâm Tuần Không/xung khắc mạnh.{co_the_str} {factors_text} Cần lập tức ưu tiên cấp cứu/chuyên khoa tuyến trên và theo dõi đặc biệt sát sao quanh mốc <b>{uk_clean}</b>."
+            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl.upper()} ĐANG GẶP NHIỀU BẤT LỢI / TIÊN LƯỢNG NẶNG ({pct}% — HUNG)</b>."
+            body = f"Quẻ báo Dụng Thần (<b>{dung_than}</b>) suy yếu hoặc chịu xung khắc mạnh.{co_the_str} {factors_text} Cần lập tức ưu tiên điều trị chuyên sâu tuyến trên và theo dõi đặc biệt sát sao quanh mốc <b>{uk_clean}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 2. TRỌNG TÂM: TÌM ĐỒ / MẤT ĐỒ / Ở ĐÂU
-    if category == 'TÌM_ĐỒ' or any(w in q_low for w in ['tìm', 'mất', 'thất lạc', 'ở đâu', 'chỗ nào', 'để đâu', 'cất đâu']):
+    # 2. TRỌNG TÂM: TÌM ĐỒ / MẤT ĐỒ / Ở ĐÂU (Kiểm tra TRƯỚC Tài Chính)
+    if category == 'TÌM_ĐỒ' or any(w in q_low for w in ['tìm lại', 'bị mất', 'mất chiếc', 'mất đồ', 'mất ví', 'thất lạc', 'ở đâu', 'chỗ nào', 'để đâu', 'cất đâu']):
         where_sum = omni_data.get('where_summary', f'Hướng <b>{direction}</b>')
         height_d = omni_data.get('height_desc', '')
         places_d = omni_data.get('places', '')
-        loc_detail = f" Vị trí cụ thể: <b>{places_d}</b> ({height_d})." if places_d else ""
+        loc_detail = f" Gợi ý vị trí: <b>{places_d}</b> ({height_d})." if places_d else ""
         if pct >= 55:
-            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÓ THỂ TÌM LẠI ĐƯỢC ({pct}% — CÁT) — ĐANG Ở {direction.upper()}</b>."
-            body = f"Đồ vật chưa mất hẳn, hiện nằm tại: {where_sum}.{loc_detail} {factors_text} Hãy tìm ngay trong khoảng <b>{uk_clean}</b>."
+            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÓ THỂ TÌM LẠI ĐƯỢC ({pct}% — CÁT) — HƯỚNG {direction.upper()}</b>."
+            body = f"Đồ vật chưa mất hẳn, hiện nằm tại khu vực: {where_sum}.{loc_detail} {factors_text} Hãy tìm ngay trong khoảng <b>{uk_clean}</b>."
         elif pct >= 45:
             head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CƠ HỘI TÌM LẠI 50/50 ({pct}% — BÌNH) — HƯỚNG {direction.upper()}</b>."
             body = f"Đồ vật đang bị che khuất hoặc để lẫn tại: {where_sum}.{loc_detail} {factors_text} Cần tìm kỹ các ngăn/góc khuất theo hướng này quanh mốc <b>{uk_clean}</b>."
         else:
-            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>KHÓ TÌM LẠI / ĐÃ BỊ DI CHUYỂN XA ({pct}% — HUNG) — MANH MỐI HƯỚNG {direction.upper()}</b>."
-            body = f"Quẻ báo hào Tài/Dụng Thần suy hoặc bị khắc, khả năng tìm lại thấp. Phương vị manh mối cuối cùng: {where_sum}.{loc_detail} {factors_text}"
+            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>KHÓ TÌM LẠI / ĐÃ DI CHUYỂN XA ({pct}% — HUNG) — MANH MỐI HƯỚNG {direction.upper()}</b>."
+            body = f"Quẻ báo hào Tài/Dụng Thần đang ẩn phục hoặc bị khắc, khả năng tìm lại thấp. Phương vị manh mối cuối cùng: {where_sum}.{loc_detail} {factors_text}"
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 3. TRỌNG TÂM: KHI NÀO / BAO GIỜ / THÁNG MẤY / NGÀY NÀO
+    # 3. TRỌNG TÂM: ĐỐI KHÁNG / TRANH CHẤP / KIỆN TỤNG / AI THẮNG
+    if category == 'THẮNG_THUA' or any(w in q_low for w in ['ai thắng', 'đối phương thắng', 'thắng hay thua', 'tranh chấp', 'vụ kiện', 'kiện tụng']):
+        if pct >= 55:
+            head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>BÊN BẠN (CHỦ/HÀO THẾ) ĐANG CHIẾM ƯU THẾ & KHẢ NĂNG THẮNG CAO ({pct}% — CÁT)</b>."
+            body = f"Xét tương quan Chủ – Khách và trục Hào Thế – Hào Ứng, khí lực và lý lẽ đang nghiêng về phía bên bạn. {factors_text} Thời điểm phân định kết quả rõ nét: <b>{uk_clean}</b>."
+        elif pct >= 45:
+            head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THẾ TRẬN GIẰNG CO NGANG NGỬA — NÊN ƯU TIÊN ĐÀM PHÁN HÒA GIẢI ({pct}% — BÌNH)</b>."
+            body = f"Tương quan lực lượng giữa bên bạn (Hào Thế/Cung Chủ) và đối phương (Hào Ứng/Cung Khách) đang giằng co quyết liệt, chưa bên nào áp đảo hoàn toàn. {factors_text} Nếu củng cố chặt chứng cứ pháp lý và khéo léo đàm phán quanh mốc <b>{uk_clean}</b> thì bên bạn sẽ giữ được quyền lợi."
+        else:
+            head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐỐI PHƯƠNG ĐANG LẤN LƯỚT — BÊN BẠN BẤT LỢI NẾU ĐỐI ĐẦU TRỰC DIỆN ({pct}% — HUNG)</b>."
+            body = f"Trục Hào Ứng / Cung Khách đang vượng và chế khắc bên Chủ, đối đầu căng thẳng lúc này dễ thiệt thòi. {factors_text} Nên chuyển sang thế phòng thủ, củng cố hồ sơ pháp lý và chờ thời cơ chuyển cục vào <b>{uk_clean}</b>."
+        return _md_to_html_bold(f"{head}<br>{body}")
+
+    # 4. TRỌNG TÂM: KHI NÀO / BAO GIỜ / THÁNG MẤY / NGÀY NÀO
     if any(w in q_low for w in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'ngày nào', 'mấy giờ', 'năm nào']):
-        status_w = "THUẬN LỢI ỨNG NGHIỆM" if pct >= 55 else ("ỨNG NGHIỆM NHƯNG CHẬM TRỄ" if pct >= 45 else "BỊ TRÌ HOÃN / KHÓ ỨNG NGHIỆM SỚM")
+        status_w = "THUẬN LỢI ỨNG NGHIỆM" if pct >= 55 else ("ỨNG NGHIỆM NHƯNG CẦN KIÊN NHẪN" if pct >= 45 else "ĐANG BỊ TRÌ HOÃN, CẦN CHỜ XUNG KHAI")
         head = f"⏳ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THỜI ĐIỂM ỨNG KỲ LÀ {uk_clean.upper()} ({pct}% — {status_w})</b>."
         body = f"Dựa trên sự hội tụ của Dụng Thần (<b>{dung_than}</b>) và vòng Can Chi: {factors_text} Phương hướng thuận lợi hỗ trợ: <b>{direction}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 4. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
+    # 5. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
     if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'bao nhiêu tuổi', 'mấy tuổi']):
         g_str = omni_data.get('gender', 'Nam/Nữ theo quẻ')
         a_str = omni_data.get('age_tier', '')
         by_str = ", ".join(omni_data.get('birth_years', [])[:3])
-        head = f"👤 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{g_str} — {a_str} (Khoảng: {by_str})</b>."
+        head = f"👤 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{g_str} — {a_str} (Khoảng năm sinh: {by_str})</b>."
         body = f"Người này ứng vào Dụng Thần <b>{dung_than}</b> tại hướng <b>{direction}</b>. {factors_text}"
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 5. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / BAO NHIÊU / MẤY
+    # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / BAO NHIÊU / MẤY
     if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'bao nhiêu', 'có mấy', 'số lượng']):
         obj_str = omni_data.get('objects', '')
         qty_str = omni_data.get('quantity', '')
@@ -439,7 +520,7 @@ def build_narrative_summary_text(
         body = f"Màu sắc đặc trưng: <b>{col_str}</b> | {qty_str}. {factors_text}"
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 6. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
+    # 7. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
     if category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền']):
         if pct >= 55:
             head = f"💰 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THUẬN LỢI — CÓ LÃI & KHẢ QUAN ({pct}% — CÁT)</b>."
@@ -449,10 +530,10 @@ def build_narrative_summary_text(
             body = f"Dụng Thần (<b>{dung_than}</b>) ở thế giằng co, có thể thực hiện nhưng phải đàm phán kỹ giá cả và pháp lý, tránh dùng đòn bẩy quá sức. {factors_text} Mốc ứng kỳ: <b>{uk_clean}</b>."
         else:
             head = f"💰 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CHƯA NÊN ĐẦU TƯ / KHÓ CÓ LÃI NGAY, DỄ ĐỌNG VỐN ({pct}% — HUNG)</b>."
-            body = f"Dụng Thần (<b>{dung_than}</b>) đang suy yếu hoặc chịu xung khắc/Tuần Không, xuống tiền lúc này dễ bị kẹt thanh khoản hoặc hao hụt. {factors_text} Nên giữ tiền mặt và chờ qua mốc <b>{uk_clean}</b>."
+            body = f"Dụng Thần (<b>{dung_than}</b>) đang ẩn phục hoặc suy yếu, xuống tiền lúc này dễ bị kẹt thanh khoản hoặc hao hụt. {factors_text} Nên giữ tiền mặt và chờ qua mốc <b>{uk_clean}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 7. TRỌNG TÂM: CÔNG VIỆC / CHUYỂN VIỆC / XIN VIỆC / THI CỬ / SỰ NGHIỆP
+    # 8. TRỌNG TÂM: CÔNG VIỆC / CHUYỂN VIỆC / XIN VIỆC / THI CỬ / SỰ NGHIỆP
     if category == 'CÔNG_VIỆC' or any(w in q_low for w in ['chuyển việc', 'xin việc', 'nhảy việc', 'công việc', 'thăng chức', 'thi', 'đỗ', 'phỏng vấn', 'sự nghiệp']):
         if pct >= 55:
             head = f"💼 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TỐT / THUẬN LỢI TIẾN HÀNH ({pct}% — CÁT)</b>."
@@ -465,7 +546,7 @@ def build_narrative_summary_text(
             body = f"Dụng Thần (<b>{dung_than}</b>) đang gặp lực cản mạnh, nếu vội vàng thay đổi hoặc quyết định lớn lúc này sẽ bất lợi. {factors_text} Nên củng cố vị trí hiện tại và chờ tới <b>{uk_clean}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 8. TRỌNG TÂM: TÌNH CẢM / HÔN NHÂN / VỢ CHỒNG / NGƯỜI YÊU
+    # 9. TRỌNG TÂM: TÌNH CẢM / HÔN NHÂN / VỢ CHỒNG / NGƯỜI YÊU
     if category == 'TÌNH_CẢM' or any(w in q_low for w in ['yêu', 'cưới', 'hôn nhân', 'vợ chồng', 'chia tay', 'quay lại', 'tình cảm', 'thật lòng', 'ngoại tình', 'vợ tôi', 'chồng tôi', 'người yêu']):
         _target_p = 'Vợ bạn' if 'vợ' in q_low else ('Chồng bạn' if 'chồng' in q_low else ('Người ấy' if any(x in q_low for x in ['người yêu', 'bạn trai', 'bạn gái']) else 'Đối phương'))
         if any(w in q_low for w in ['còn yêu', 'yêu tôi không', 'thật lòng', 'còn thương', 'tình cảm']):
@@ -476,15 +557,15 @@ def build_narrative_summary_text(
                 head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{_target_p.upper()} VẪN CÒN TÌNH NGHĨA NHƯNG ĐANG CÓ KHOẢNG CÁCH / TÂM SỰ GIỮ KÍN TRONG LÒNG ({pct}% — BÌNH)</b>."
                 body = f"Dụng Thần (<b>{dung_than}</b>) đạt <b>{pct}%</b> cho thấy {_target_p.lower()} <b>chưa hết yêu bạn</b>, nhưng do cung quẻ đang gặp lực cản/khép kín nên bề ngoài tỏ ra trầm lắng, ít chia sẻ hoặc còn tự ái ngầm. {factors_text} Hãy chủ động quan tâm nhẹ nhàng, tháo gỡ khúc mắc quanh mốc <b>{uk_clean}</b>."
             else:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM CỦA {_target_p.upper()} ĐANG NGUỘI LẠNH / RẠN NỨT LỚN ({pct}% — HUNG)</b>."
-                body = f"Hào Dụng Thần (<b>{dung_than}</b>) và trục Thế – Ứng đang xung khắc/suy yếu mạnh, báo hiệu {_target_p.lower()} đang rất mệt mỏi, bất mãn hoặc xa cách về cảm xúc. {factors_text} Cần kiên nhẫn hóa giải, tránh tranh cãi gay gắt trước mốc <b>{uk_clean}</b>."
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM CỦA {_target_p.upper()} ĐANG BỊ DỒN NÉN / CÓ KHOẢNG CÁCH LỚN ({pct}% — HUNG)</b>."
+                body = f"Hào Dụng Thần (<b>{dung_than}</b>) đang ẩn phục/chịu xung khắc, báo hiệu {_target_p.lower()} đang rất mệt mỏi, giận dỗi ngầm hoặc khép kín cảm xúc. {factors_text} Cần kiên nhẫn lắng nghe và hóa giải từ từ, tránh tranh cãi gay gắt trước mốc <b>{uk_clean}</b>."
         elif any(w in q_low for w in ['quay lại', 'hàn gắn', 'làm lành']):
             if pct >= 55:
                 head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÓ KHẢ NĂNG QUAY LẠI & HÀN GẮN THÀNH CÔNG ({pct}% — CÁT)</b>."
             elif pct >= 45:
                 head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÒN DUYÊN NỢ DÙNG DẰNG — CẦN CHỦ ĐỘNG MỀM MỎNG MỚI HÀN GẮN ĐƯỢC ({pct}% — BÌNH)</b>."
             else:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>RẤT KHÓ QUAY LẠI — DUYÊN KHÍ ĐANG BẾ TẮC ({pct}% — HUNG)</b>."
+                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>RẤT KHÓ QUAY LẠI NGAY — DUYÊN KHÍ ĐANG BẾ TẮC ({pct}% — HUNG)</b>."
             body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
         else:
             if pct >= 55:
@@ -496,7 +577,7 @@ def build_narrative_summary_text(
             body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
         return _md_to_html_bold(f"{head}<br>{body}")
 
-    # 9. CÁC CÂU HỎI KHÁC (ĐỐI KHÁNG / XUẤT HÀNH / TỔNG QUÁT)
+    # 10. CÁC CÂU HỎI KHÁC
     opener = _get_qtype_opener(q, pct, category)
     tier = _get_tier(pct)
     cat_key = category if category in CATEGORY_TEMPLATES else 'CHUNG'
@@ -538,7 +619,7 @@ def generate_smart_offline_answer(
         ung_ky_str=ung_ky_str,
         chart_data=chart_data,
     )
-    factors_text = _connect_factors(all_factors)
+    factors_text = _connect_factors(all_factors, pct=pct)
     advice = _md_to_html_bold(_generate_advice(pct, cat_key, ung_ky_str, factors_text))
     consensus = _build_consensus(verdicts_dict)
 
@@ -609,6 +690,47 @@ def _build_consensus(verdicts_dict):
     return " | ".join(parts) + ratio
 
 
+def _translate_door_for_topic(cua_name: str, category: str, q_low: str) -> str:
+    """Giải nghĩa Bát Môn sát với chủ đề thực tế của người hỏi (không dùng từ sáo rỗng)."""
+    c = str(cua_name or "")
+    is_love = category == "TÌNH_CẢM" or any(w in q_low for w in ["yêu", "vợ", "chồng", "hôn nhân", "bạn gái", "bạn trai", "chia tay", "quay lại", "tình cảm"])
+    is_health = category == "SỨC_KHỎE_GIA_ĐÌNH" or any(w in q_low for w in ["bệnh", "ốm", "đau", "khỏe", "qua khỏi", "viện"])
+    is_wealth = category in ("TÀI_CHÍNH", "NHÀ_CỬA") or any(w in q_low for w in ["tiền", "đầu tư", "mua", "bán", "lãi", "lỗ", "kinh doanh", "đất", "nhà"])
+
+    if "Hưu" in c:
+        if is_love: return "Cửa Hưu Môn (Cát) — báo hiệu tình cảm êm ấm, hai bên có xu hướng nhường nhịn, hòa giải và hướng về sự bình yên gia đình"
+        if is_health: return "Cửa Hưu Môn (Cát) — cơ thể được tĩnh dưỡng tốt, bệnh tình dần ổn định và phục hồi"
+        return "Cửa Hưu Môn (Cát) — có quý nhân nâng đỡ, công việc diễn ra êm thấm, thuận hòa"
+    if "Sinh" in c:
+        if is_love: return "Cửa Sinh Môn (Cát) — tình cảm vẫn đang có sinh khí, hai bên còn nhiều sự quan tâm và vun đắp thực tế"
+        if is_health: return "Cửa Sinh Môn (Đại Cát) — sinh khí dồi dào, sức sống mạnh mẽ, khả năng vượt qua bệnh tật và hồi phục rất cao"
+        if is_wealth: return "Cửa Sinh Môn (Đại Cát) — cung tài lộc vượng khí, giao dịch mua bán hoặc đầu tư có cơ hội sinh lời rõ rệt"
+        return "Cửa Sinh Môn (Đại Cát) — cơ hội mới đang nảy nở, mưu sự đắc lợi"
+    if "Khai" in c:
+        if is_love: return "Cửa Khai Môn (Cát) — tâm lý cởi mở, sẵn sàng trò chuyện thẳng thắn để tháo gỡ hiểu lầm"
+        return "Cửa Khai Môn (Đại Cát) — công việc, danh vị và cơ hội đang mở rộng hanh thông"
+    if "Đỗ" in c:
+        if is_love: return "Cửa Đỗ Môn — đối phương đang có tâm lý khép lòng, giữ kín suy nghĩ riêng hoặc chọn cách im lặng chứ chưa bộc lộ hết cảm xúc thật"
+        if is_health: return "Cửa Đỗ Môn — khí huyết hoặc tiến trình hồi phục đang hơi chững lại, cần khám kỹ các triệu chứng tiềm ẩn"
+        if is_wealth: return "Cửa Đỗ Môn — dòng tiền hoặc giao dịch đang tạm thời bị nghẽn, chưa thể thanh khoản nhanh ngay lập tức"
+        return "Cửa Đỗ Môn — sự việc đang tạm thời khép kín hoặc trì hoãn, cần kiên nhẫn tháo gỡ từng nút thắt"
+    if "Cảnh" in c:
+        if is_love: return "Cửa Cảnh Môn — bề ngoài dễ có lời nói nóng nảy hoặc sĩ diện nhất thời nhưng thực chất vẫn rất để tâm đến đối phương"
+        return "Cửa Cảnh Môn — thuận lợi về giấy tờ, thông tin, thi cử nhưng cần chú ý giữ lời ăn tiếng nói"
+    if "Thương" in c:
+        if is_love: return "Cửa Thương Môn — hai bên đang có sự tổn thương về lời nói, tự ái hoặc va chạm cảm xúc cần thời gian xoa dịu"
+        if is_health: return "Cửa Thương Môn — cơ thể đang chịu đau nhức hoặc suy giảm thể lực, cần nghỉ ngơi và điều trị sát sao"
+        return "Cửa Thương Môn — dễ có sự va chạm, cạnh tranh hoặc đòi nợ/thu hồi công nợ cần sự quyết liệt"
+    if "Kinh" in c:
+        if is_love: return "Cửa Kinh Môn — tâm lý đang lo âu, bất an, nghi ngờ hoặc vừa trải qua cuộc tranh luận căng thẳng"
+        return "Cửa Kinh Môn — có tâm lý lo lắng, hồi hộp hoặc tranh biện pháp lý cần giữ vững bản lĩnh"
+    if "Tử" in c:
+        if is_love: return "Cửa Tử Môn — cảm xúc đang bị dồn nén nặng nề, lạnh nhạt hoặc bế tắc, tuyệt đối không nên thúc ép lúc này"
+        if is_health: return "Cửa Tử Môn — sinh khí đang suy giảm mạnh, cần đặc biệt cẩn trọng và ưu tiên phác đồ y tế chuyên sâu"
+        return "Cửa Tử Môn — cục diện đang bế tắc, cần kiên nhẫn chờ qua giai đoạn trầm lắng"
+    return f"Cửa {c}"
+
+
 def extract_deep_divination_dossier(
     question: str,
     dung_than: str,
@@ -622,29 +744,18 @@ def extract_deep_divination_dossier(
     nk_stage: str = "",
 ) -> dict:
     """
-    V100.0 — SIÊU NÃO THẦN ĐOÁN CỔ THƯ HỢP NHẤT:
-    Khai thác trực tiếp 19 bộ cổ thư & thư viện quy tắc nâng cao trong GitHub:
-    1. luc_hao_ky_mon_rules (81 Cách Cục Lưu Bá Ôn, Bát Môn Bay Cung, Sao Cửa Tổ Hợp, Can Chi Tượng Ý, Lục Thú, Phục Thần, Hào Biến)
-    2. km_luan_nang_cao (4 Cách Nhìn Kỳ Môn, Nội/Ngoại Bàn Xa Gần, Vận Hạn Tứ Trụ)
-    3. qmdg_knowledge_complete (Tra cứu Cửu Cung, Cửu Tinh, Bát Môn, Bát Thần, Thiên Can)
-    4. qmdg_decoder & qmdg_inference_rules (Chẩn bệnh Y Dịch, Truy vết Mất Đồ, Phác họa Tướng Mạo/Tính Cách)
-    5. kinh_dich_64_que, thoan_tu_64, iching_integrated_data (64 Quẻ Bản/Biến, Lục Thân 6 Chủ Đề, Mai Hoa Thể Dụng, Thiết Bản 60 Hoa Giáp)
-    6. van_vat_chi_tiet & van_vat_mo_rong (60 Trạng Thái Ngũ Hành × 12 Trường Sinh, Thám Tử Mô Tả)
-    7. ai_tools & skill_library (Khổng Minh Lục Diệu Âm Lịch, Học Thuật Cổ Thư)
+    V100.1 — HỒ SƠ LUẬN GIẢI CHUYÊN SÂU SÁT CÂU HỎI:
+    Phân tích đúng Cung Dụng Thần Kỳ Môn theo chủ đề, đúng Hào Dụng Thần (hoặc Phục Thần) và Thế-Ứng Lục Hào,
+    cùng quan hệ Thể-Dụng Mai Hoa — hoàn toàn loại bỏ các câu từ điển rời rạc vô nghĩa.
     """
     res = {
+        "km_palace_prose": "",
         "km_cach_cuc_prose": "",
-        "km_mon_cung_prose": "",
-        "km_sao_cua_than_prose": "",
-        "km_xa_gan_prose": "",
         "km_topic_forensic": "",
         "lh_hexagram_prose": "",
         "lh_hao_dong_prose": "",
         "lh_luc_thu_prose": "",
         "mh_the_dung_prose": "",
-        "tb_nap_am_prose": "",
-        "km_luc_dieu_prose": "",
-        "van_vat_forensic": "",
         "short_classical_badge": "",
         "prompt_dossier": "",
     }
@@ -653,65 +764,27 @@ def extract_deep_divination_dossier(
     luc_hao_data = luc_hao_data if isinstance(luc_hao_data, dict) else {}
     mai_hoa_data = mai_hoa_data if isinstance(mai_hoa_data, dict) else {}
 
-    # ── 1. KỲ MÔN ĐỘN GIÁP CỔ THƯ (LƯU BÁ ÔN 81 CÁCH CỤC · BÁT MÔN BAY CUNG · 4 CÁCH NHÌN) ──
     try:
         from luc_hao_ky_mon_rules import (
-            THAP_CAN_KHAC_UNG, BAT_MON_BAY_CUNG, SAO_CUA_TO_HOP, SAO_CUA_TO_HOP_BS,
-            CAN_CHI_TUONG_Y, LUC_THAN_Y_NGHIA, PHUC_THAN_RULES, HAO_BIEN_RULES, tra_ban_cung
+            THAP_CAN_KHAC_UNG, BAT_MON_BAY_CUNG, LUC_THAN_Y_NGHIA, PHUC_THAN_RULES, tra_ban_cung
         )
     except Exception:
-        THAP_CAN_KHAC_UNG, BAT_MON_BAY_CUNG, SAO_CUA_TO_HOP, SAO_CUA_TO_HOP_BS = {}, {}, {}, {}
-        CAN_CHI_TUONG_Y, LUC_THAN_Y_NGHIA, PHUC_THAN_RULES, HAO_BIEN_RULES = {}, {}, {}, []
+        THAP_CAN_KHAC_UNG, BAT_MON_BAY_CUNG, LUC_THAN_Y_NGHIA, PHUC_THAN_RULES = {}, {}, {}, {}
         tra_ban_cung = lambda x: (None, None)
 
     try:
-        from km_luan_nang_cao import luan_nhin_xa_gan
+        from kinh_dich_64_que import tra_kinh_dich, tra_the_dung
     except Exception:
-        luan_nhin_xa_gan = None
+        tra_kinh_dich = lambda x: None
+        tra_the_dung = lambda x, y: None
 
-    try:
-        from qmdg_knowledge_complete import tra_cuu_cung, tra_cuu_sao, tra_cuu_mon, tra_cuu_than
-    except Exception:
-        tra_cuu_cung = tra_cuu_sao = tra_cuu_mon = tra_cuu_than = lambda x: {}
-
-    can_ngay = chart_data.get("can_ngay", "")
-    chi_ngay = chart_data.get("chi_ngay", "")
-    can_gio = chart_data.get("can_gio", "")
-    chi_gio = chart_data.get("chi_gio", "")
+    # ── 1. PHÂN TÍCH KỲ MÔN ĐỘN GIÁP THEO ĐÚNG CUNG CHỦ ĐỀ ──
+    target_cung, bt_cung, role_label = _resolve_authentic_km_palace(chart_data, dung_than, question, category)
     ctb = chart_data.get("can_thien_ban", {}) or {}
-    dia_ban = chart_data.get("dia_ban") or chart_data.get("dia_can") or {}
+    dia_ban = chart_data.get("can_dia_ban") or chart_data.get("dia_ban") or chart_data.get("dia_can") or {}
     thien_ban = chart_data.get("thien_ban", {}) or {}
     nhan_ban = chart_data.get("nhan_ban", {}) or {}
     than_ban = chart_data.get("than_ban", {}) or {}
-
-    dt_can_map = {
-        "Quan Quỷ": can_gio,
-        "Thê Tài": can_gio,
-        "Tử Tôn": can_gio,
-        "Phụ Mẫu": chart_data.get("can_nam", "") or can_gio,
-        "Huynh Đệ": chart_data.get("can_thang", "") or can_gio,
-        "Bản Thân": can_ngay,
-    }
-    dt_can = dt_can_map.get(dung_than, can_gio) or can_gio
-
-    def _find_cung_by_can(target_c):
-        if not target_c:
-            return None
-        for k, v in ctb.items():
-            if v == target_c and str(k).isdigit():
-                return int(k)
-        if target_c == "Giáp":
-            for k, v in ctb.items():
-                if v in ("Mậu", "Kỷ") and str(k).isdigit():
-                    return int(k)
-        return None
-
-    bt_cung = _find_cung_by_can(can_ngay)
-    dt_cung = _find_cung_by_can(dt_can)
-    sv_cung = _find_cung_by_can(can_gio)
-    target_cung = dt_cung or sv_cung or bt_cung
-    if dung_than == "Bản Thân" and sv_cung and sv_cung != bt_cung:
-        target_cung = sv_cung
 
     if target_cung:
         c_thien = str(ctb.get(target_cung, ctb.get(str(target_cung), "")) or "")
@@ -723,140 +796,48 @@ def extract_deep_divination_dossier(
         cua_dt = str(nhan_ban.get(target_cung, nhan_ban.get(str(target_cung), "")) or "")
         than_dt = str(than_ban.get(target_cung, than_ban.get(str(target_cung), "")) or "")
         cung_dir = DIRECTION_MAP.get(target_cung, f"Cung {target_cung}")
+        h_dt_cung = CUNG_HANH.get(target_cung, "Thổ")
+        h_bt_cung = CUNG_HANH.get(bt_cung, "Thổ")
 
-        # 1a. 81 Cách Cục Lưu Bá Ôn (Thập Can Khắc Ứng)
+        rel_cung_str = ""
+        if target_cung == bt_cung:
+            rel_cung_str = "đồng cung với Bản Mệnh của bạn, cho thấy sự việc gắn chặt trực tiếp với quyết định và tâm thế của chính bạn"
+        elif NGU_HANH_SINH.get(h_dt_cung) == h_bt_cung:
+            rel_cung_str = f"tương sinh cho Cung Bản Mệnh (Cung {bt_cung} hành {h_bt_cung}), báo hiệu hoàn cảnh hoặc đối phương vẫn đang hướng về và nâng đỡ bạn"
+        elif h_dt_cung == h_bt_cung:
+            rel_cung_str = f"tỷ hòa (cùng hành {h_dt_cung}) với Cung Bản Mệnh, phản ánh sự đồng điệu và khả năng tìm được tiếng nói chung"
+        elif NGU_HANH_SINH.get(h_bt_cung) == h_dt_cung:
+            rel_cung_str = f"được Cung Bản Mệnh của bạn ({h_bt_cung}) sinh xuất cho, nghĩa là bạn đang là người nặng lòng, chủ động vun đắp và bỏ nhiều tâm sức hơn"
+        elif NGU_HANH_KHAC.get(h_bt_cung) == h_dt_cung:
+            rel_cung_str = f"chịu sự chế khắc từ Cung Bản Mệnh của bạn ({h_bt_cung} khắc {h_dt_cung}), cho thấy bạn có quyền chủ động nhưng nếu nóng vội dễ tạo áp lực"
+        else:
+            rel_cung_str = f"đang khắc Cung Bản Mệnh của bạn ({h_dt_cung} khắc {h_bt_cung}), phản ánh sức ép, sự giận dỗi hoặc lực cản khách quan đang đè nặng"
+
+        door_meaning = _translate_door_for_topic(cua_dt, category, q_low) if cua_dt and cua_dt != "?" else ""
+        res["km_palace_prose"] = (
+            f"Trên bàn <b>Kỳ Môn Độn Giáp</b>, {role_label} tọa tại <b>Cung {target_cung} ({cung_dir} — hành {h_dt_cung})</b>, "
+            f"{rel_cung_str}. Tại cung này hiện diện sao <b>{sao_dt or 'Thiên Cầm'}</b>, thần <b>{than_dt or 'Trực Phù'}</b> "
+            + (f"và <b>{door_meaning}</b>." if door_meaning else ".")
+        )
+
         if c_thien and c_dia:
             cc_key = f"{c_thien}+{c_dia}"
             cc_info = THAP_CAN_KHAC_UNG.get(cc_key, {})
             if cc_info:
                 ten_cc = cc_info.get("ten", cc_key)
                 ch_cc = cc_info.get("cat_hung", "BÌNH")
-                luan_cc = cc_info.get("luan", "").rstrip(".")
-                res["km_cach_cuc_prose"] = (
-                    f"Tại <b>Cung {target_cung} ({cung_dir})</b> — nơi tọa đóng của Dụng Thần, "
-                    f"Thiên Bàn <b>{c_thien}</b> hội Địa Bàn <b>{c_dia}</b> lập thành cách cục cổ thư Lưu Bá Ôn "
-                    f"<b>«{ten_cc}» ({cc_key} — {ch_cc})</b>, sách dạy rằng: <i>«{luan_cc}»</i>."
-                )
                 res["short_classical_badge"] = f"cách cục Lưu Bá Ôn <b>«{ten_cc}» ({cc_key})</b> tại {cung_dir}"
-
-        # 1b. Bát Môn Bay Cung (Đắc Tướng / Hòa Nghĩa / Môn Chế / Môn Bức / Phục-Phản Ngâm / Nhập Mộ)
-        if cua_dt and cua_dt != "?":
-            cua_full = cua_dt if "Môn" in cua_dt else f"{cua_dt} Môn"
-            bm_info = BAT_MON_BAY_CUNG.get(cua_full, {})
-            if bm_info:
-                state_lbl = "bình hòa với cung vị"
-                if target_cung == bm_info.get("phuc_ngam"):
-                    state_lbl = "rơi vào thế <b>Môn Phục Ngâm</b> (cửa đứng yên tại bản cung, chủ về sự việc dùng dằng, nội tâm trăn trở, cần kiên nhẫn chờ thời)"
-                elif target_cung == bm_info.get("phan_ngam"):
-                    state_lbl = "rơi vào thế <b>Môn Phản Ngâm</b> (cửa xung đối cung, chủ về biến chuyển nhanh hoặc thay đổi kế hoạch bất ngờ)"
-                elif target_cung == bm_info.get("nhap_mo"):
-                    state_lbl = "lâm <b>Môn Nhập Mộ</b> (khí lực của cửa tạm thời thu liễm, bị che khuất hoặc chờ ngày Xung Mộ mới khai mở)"
-                elif target_cung in (bm_info.get("buc") or []):
-                    state_lbl = "phạm <b>Môn Bức (Cửa khắc Cung)</b>, báo hiệu sự việc có lực ép hoặc gượng gạo nếu cưỡng cầu"
-                elif target_cung in (bm_info.get("che") or []):
-                    state_lbl = "ở thế <b>Môn Chế (Cung khắc Cửa)</b>, hoàn cảnh khách quan đang kiềm chế bước tiến của hành động"
-                elif target_cung in (bm_info.get("nghia") or []):
-                    state_lbl = "đạt thế <b>Hòa Nghĩa (Cửa sinh Cung — Đại Cát)</b>, hành động và hoàn cảnh nâng đỡ nhau thuận lợi"
-                elif target_cung in (bm_info.get("tuong") or []):
-                    state_lbl = "đắc cách <b>Đắc Tướng (Cung sinh Cửa — Cát)</b>, môi trường xung quanh tiếp thêm sinh khí cho mục tiêu"
-                y_nghia_mon = bm_info.get("y_nghia", "").rstrip(".")
-                res["km_mon_cung_prose"] = (
-                    f"Xét Nhân Bàn hành động, <b>{cua_full}</b> ({y_nghia_mon.lower() if y_nghia_mon else 'chủ về nhân hòa'}) "
-                    f"bay vào Cung {target_cung} {state_lbl}."
+                if "CÁT" in ch_cc.upper():
+                    cc_explain = "mang năng lượng hanh thông, giúp hóa giải bế tắc và mở ra cơ hội thuận lợi"
+                elif "HUNG" in ch_cc.upper():
+                    cc_explain = "báo hiệu giai đoạn đầu có sự trì trệ, hiểu lầm hoặc vướng mắc cần kiên nhẫn tháo gỡ từng bước, tránh nóng vội"
+                else:
+                    cc_explain = "báo hiệu thế cuộc trước khó sau dễ, cần điềm tĩnh giải quyết từng khúc mắc thì cuối cùng mới êm đẹp"
+                res["km_cach_cuc_prose"] = (
+                    f"Sự kết hợp giữa Thiên Can <b>{c_thien}</b> và Địa Can <b>{c_dia}</b> lập thành cách cục Lưu Bá Ôn <b>«{ten_cc}» ({cc_key})</b>, {cc_explain}."
                 )
 
-        # 1c. Tổ Hợp Sao - Cửa - Thần & Can Chi Tượng Ý
-        sao_cua_parts = []
-        if sao_dt and cua_dt and sao_dt != "?" and cua_dt != "?":
-            cua_full = cua_dt if "Môn" in cua_dt else f"{cua_dt} Môn"
-            sc_info = SAO_CUA_TO_HOP.get((sao_dt, cua_full)) or SAO_CUA_TO_HOP_BS.get((sao_dt, cua_full)) or {}
-            if sc_info and sc_info.get("luan"):
-                sao_cua_parts.append(
-                    f"Sự hội tụ giữa Cửu Tinh <b>{sao_dt}</b> và <b>{cua_full}</b> tạo thành tổ hợp: "
-                    f"<i>{sc_info.get('luan', '').rstrip('.')}</i>"
-                    + (f" ({sc_info.get('ung_dung', '').rstrip('.')})" if sc_info.get("ung_dung") else "")
-                )
-            else:
-                s_kc = tra_cuu_sao(sao_dt) or {}
-                m_kc = tra_cuu_mon(cua_dt) or {}
-                s_tc = s_kc.get("Tinh_Chat", "")
-                m_ld = m_kc.get("Luan_Doan", "")
-                if s_tc or m_ld:
-                    sao_cua_parts.append(
-                        f"Trên Thiên Bàn có sao <b>{sao_dt}</b> ({s_tc[:90].rstrip('.') if s_tc else 'tinh tú chủ thời cơ'}) "
-                        f"đi cùng <b>{cua_full}</b> ({m_ld[:90].rstrip('.') if m_ld else 'nhân hòa'})"
-                    )
-        if than_dt and than_dt != "?":
-            t_kc = tra_cuu_than(than_dt) or {}
-            t_tc = t_kc.get("Tinh_Chat", "") or t_kc.get("Luan_Doan", "")
-            if t_tc:
-                sao_cua_parts.append(f"được Bát Thần <b>{than_dt}</b> ({t_tc[:100].rstrip('.')}) dẫn khí")
-        if c_thien and c_thien in CAN_CHI_TUONG_Y:
-            ct_info = CAN_CHI_TUONG_Y[c_thien]
-            if category == "TÌNH_CẢM" or any(w in q_low for w in ["yêu", "vợ", "chồng", "hôn nhân", "tình cảm", "người yêu"]):
-                sao_cua_parts.append(
-                    f"tượng Thiên Can <b>{c_thien}</b> phản ánh tính cách đối phương/mối quan hệ mang nét <i>{ct_info.get('tinh_cach', '').lower()}</i>, "
-                    f"trong tình cảm hôn nhân thì <i>{ct_info.get('hon_nhan', '').lower()}</i>"
-                )
-            elif category == "SỨC_KHỎE_GIA_ĐÌNH" or any(w in q_low for w in ["bệnh", "ốm", "đau", "khỏe", "viện"]):
-                sao_cua_parts.append(
-                    f"tượng Thiên Can <b>{c_thien}</b> ứng với cơ thể vùng <b>{ct_info.get('co_the', '')}</b> (tạng <b>{ct_info.get('an_tang', '')}</b>), "
-                    f"dễ phát sinh chứng <i>{ct_info.get('benh', '').lower()}</i>"
-                )
-        if sao_cua_parts:
-            res["km_sao_cua_than_prose"] = "; ".join(sao_cua_parts) + "."
-
-        # 1d. Nội Bàn / Ngoại Bàn (Xa gần, Nhanh chậm)
-        if luan_nhin_xa_gan and "is_duong_don" in chart_data:
-            try:
-                xg_raw = luan_nhin_xa_gan(bool(chart_data.get("is_duong_don", True)), target_cung, False, False)
-                if "NỘI BÀN" in str(xg_raw).upper():
-                    res["km_xa_gan_prose"] = "Cung Dụng Thần nằm ở <b>Nội Bàn</b>, báo hiệu sự việc diễn ra ở phạm vi gần, trong nội bộ gia đình/cơ quan và tốc độ chuyển biến tương đối nhanh."
-                elif "NGOẠI BÀN" in str(xg_raw).upper():
-                    res["km_xa_gan_prose"] = "Cung Dụng Thần nằm ở <b>Ngoại Bàn</b>, báo hiệu sự việc liên quan tới yếu tố bên ngoài, khoảng cách xa hoặc cần thêm thời gian để hoàn tất."
-            except Exception:
-                pass
-
-        # 1e. Chuyên gia giải mã cổ thư theo từng chủ đề (qmdg_decoder & qmdg_inference_rules)
-        try:
-            from qmdg_decoder import decode_illness, decode_lost_item, decode_appearance, decode_character
-            _cua_full_dec = (cua_dt if "Môn" in cua_dt else f"{cua_dt} Môn") if cua_dt and cua_dt != "?" else ""
-            if category == "SỨC_KHỎE_GIA_ĐÌNH" or any(w in q_low for w in ["bệnh", "ốm", "đau", "khỏe", "qua khỏi", "viện"]):
-                ill_str = decode_illness(sao_dt, c_thien, target_cung)
-                ill_clean = re.sub(r"\[[^\]]+\]:?\s*", "", str(ill_str or "")).replace("\n- ", "; ").replace("\n", " ").strip(" ;.")
-                if ill_clean:
-                    res["km_topic_forensic"] = f"Theo <b>Y Dịch Kỳ Môn</b>: {ill_clean}."
-            elif category == "TÌM_ĐỒ" or any(w in q_low for w in ["tìm", "mất", "thất lạc", "ở đâu", "để đâu"]):
-                lost_str = decode_lost_item(_cua_full_dec, target_cung)
-                lost_clean = re.sub(r"\[[^\]]+\]:?\s*", "", str(lost_str or "")).replace("\n- ", "; ").replace("\n", " ").strip(" ;.")
-                if lost_clean:
-                    res["km_topic_forensic"] = f"Theo <b>Pháp Quyết Truy Vết Kỳ Môn</b>: {lost_clean}."
-            elif category == "TÌNH_CẢM" or any(w in q_low for w in ["ai", "người yêu", "vợ", "chồng", "đối tác"]):
-                app_str = re.sub(r"\[[^\]]+\]:?\s*", "", str(decode_appearance(sao_dt) or "")).strip().rstrip(".")
-                char_str = re.sub(r"\[[^\]]+\]:?\s*", "", str(decode_character(_cua_full_dec) or "")).strip().rstrip(".")
-                if app_str and char_str:
-                    res["km_topic_forensic"] = (
-                        f"Phác họa thần thái qua Cửu Tinh & Bát Môn: người này có nét <i>{app_str.lower()}</i>, "
-                        f"tâm tính bên trong <i>{char_str.lower()}</i>."
-                    )
-                elif app_str or char_str:
-                    res["km_topic_forensic"] = f"Phác họa thần thái qua Cửu Tinh & Bát Môn: <i>{(app_str or char_str).lower()}</i>."
-        except Exception:
-            pass
-
-    # ── 2. LỤC HÀO KINH DỊCH CỔ THƯ (64 QUẺ BẢN/BIẾN · LỤC THÚ · HÀO ĐỘNG · PHỤC THẦN · LỤC THÂN 6 CHỦ ĐỀ) ──
-    try:
-        from kinh_dich_64_que import tra_kinh_dich, tra_nap_am, tra_the_dung, MAI_HOA_UNG_KY
-    except Exception:
-        tra_kinh_dich = tra_nap_am = lambda x: None
-        tra_the_dung = lambda x, y: None
-        MAI_HOA_UNG_KY = {}
-
-    try:
-        from iching_integrated_data import LUC_THAN_MEANINGS
-    except Exception:
-        LUC_THAN_MEANINGS = {}
-
+    # ── 2. PHÂN TÍCH LỤC HÀO KINH DỊCH & MAI HOA DỊCH SỐ ──
     if luc_hao_data:
         ban = luc_hao_data.get("ban", {}) or {}
         bien = luc_hao_data.get("bien", {}) or {}
@@ -872,25 +853,21 @@ def extract_deep_divination_dossier(
             bc_cung, bc_hanh = tra_ban_cung(ban_name)
             cung_txt = f" (thuộc cung <b>{bc_cung}</b> hành <b>{bc_hanh}</b>)" if bc_cung else ""
             yn_ban = kd_ban.get("y_nghia", "")
-            lk_ban = kd_ban.get("loi_khuyen", "")
             lh_parts.append(
-                f"Trên hệ thống <b>Lục Hào Kinh Dịch</b>, quẻ chủ lập được là <b>{ban_name}</b>{cung_txt}"
-                + (f", mang tượng <i>«{yn_ban.rstrip('.')}»</i>" if yn_ban else "")
-                + (f" ({lk_ban.rstrip('.')})" if lk_ban else "")
+                f"Xét theo <b>Lục Hào Kinh Dịch</b>, quẻ chủ lập được là <b>{ban_name}</b>{cung_txt}"
+                + (f" — mang ý tượng cốt lõi là <i>«{yn_ban.rstrip('.')}»</i>" if yn_ban else "")
             )
             if bien_name and bien_name != ban_name:
                 kd_bien = tra_kinh_dich(bien_name) or {}
                 yn_bien = kd_bien.get("y_nghia", "")
-                ch_bien = kd_bien.get("cat_hung", "")
                 lh_parts.append(
-                    f"biến sang quẻ <b>{bien_name}</b>"
-                    + (f" (tượng <i>«{yn_bien.rstrip('.')}»</i> — {ch_bien})" if yn_bien else "")
-                    + ", phản ánh xu hướng chuyển hóa từ hiện tại sang kết cục"
+                    f"chuyển biến sang quẻ <b>{bien_name}</b>"
+                    + (f" (ý tượng <i>«{yn_bien.rstrip('.')}»</i>)" if yn_bien else "")
+                    + ", cho thấy cục diện không đứng yên mà đang chuyển hóa sang giai đoạn mới"
                 )
         if lh_parts:
             res["lh_hexagram_prose"] = ", ".join(lh_parts) + "."
 
-        # Tìm Hào Thế, Hào Ứng, Hào Dụng Thần và Lục Thú
         the_hao, ung_hao, dt_hao = None, None, None
         the_idx, ung_idx, dt_idx = None, None, None
         for idx, h in enumerate(haos):
@@ -903,22 +880,6 @@ def extract_deep_divination_dossier(
             if lt == dung_than or (dung_than == "Bản Thân" and "Thế" in tu):
                 dt_hao, dt_idx = h, idx + 1
 
-        # Ý nghĩa chuyên sâu của Lục Thân theo đúng chủ đề câu hỏi (iching_integrated_data)
-        topic_lt_key = "career"
-        if category == "TÌNH_CẢM" or any(w in q_low for w in ["yêu", "vợ", "chồng", "hôn nhân", "tình cảm", "chia tay", "quay lại"]):
-            topic_lt_key = "love"
-        elif category in ("TÀI_CHÍNH", "NHÀ_CỬA") or any(w in q_low for w in ["tiền", "đầu tư", "mua đất", "bán đất", "lãi", "kinh doanh", "vốn"]):
-            topic_lt_key = "wealth"
-        elif category == "SỨC_KHỎE_GIA_ĐÌNH" or any(w in q_low for w in ["bệnh", "ốm", "đau", "khỏe", "viện", "thuốc"]):
-            topic_lt_key = "health"
-        elif category == "TÌM_ĐỒ" or any(w in q_low for w in ["tìm", "mất", "thất lạc", "ở đâu"]):
-            topic_lt_key = "lost_item"
-        elif any(w in q_low for w in ["kiện", "tòa", "tranh chấp", "pháp lý"]):
-            topic_lt_key = "legal"
-
-        lt_topic_desc = (LUC_THAN_MEANINGS.get(dung_than, {}) or {}).get(topic_lt_key, "")
-
-        # Phân tích Hào Dụng Thần + Lục Thú + Phục Thần + Hào Động
         hao_details = []
         if dt_hao:
             dt_cc = dt_hao.get("can_chi", "") or dt_hao.get("chi", "")
@@ -926,22 +887,19 @@ def extract_deep_divination_dossier(
             dt_vs = dt_hao.get("vuong_suy", "")
             dt_lthu = dt_hao.get("luc_thu") or dt_hao.get("luc_than_kd") or dt_hao.get("luc_than_td") or ""
             hao_details.append(
-                f"Hào Dụng Thần <b>{dung_than}</b> tọa tại <b>Hào {dt_idx} ({dt_cc} — hành {dt_nh})</b>"
-                + (f", đạt trạng thái <b>{dt_vs}</b>" if dt_vs else "")
-                + (f" — trong chủ đề này đại diện cho <i>{lt_topic_desc.lower().rstrip('.')}</i>" if lt_topic_desc else "")
+                f"Hào Dụng Thần <b>{dung_than}</b> hiện rõ tại <b>Hào {dt_idx} ({dt_cc} — hành {dt_nh})</b>"
+                + (f", so với Lệnh Tháng đạt trạng thái <b>{dt_vs}</b>" if dt_vs else "")
             )
             if dt_lthu and dt_lthu in LUC_THAN_Y_NGHIA:
                 lt_info = LUC_THAN_Y_NGHIA[dt_lthu]
                 hao_details.append(
-                    f"Hào Dụng Thần lâm Lục Thú <b>{dt_lthu}</b> ({lt_info.get('tinh_chat', '').lower()}), "
-                    f"mang hàm ý: <i>{lt_info.get('y_nghia', '').rstrip('.')}</i>"
+                    f"đi cùng Lục Thú <b>{dt_lthu}</b> ({lt_info.get('y_nghia', '').rstrip('.')})"
                 )
-                res["lh_luc_thu_prose"] = f"Lục Thú <b>{dt_lthu}</b> lâm Dụng Thần ({lt_info.get('y_nghia', '').rstrip('.')})"
+                res["lh_luc_thu_prose"] = f"Lục Thú <b>{dt_lthu}</b> lâm Dụng Thần"
         else:
-            pt_rule = PHUC_THAN_RULES.get("PT01", {})
             hao_details.append(
-                f"Hào Dụng Thần <b>{dung_than}</b> hiện không lộ diện trực tiếp trên 6 hào chính mà ẩn dưới dạng <b>Phục Thần</b> "
-                f"({pt_rule.get('ket_luan', 'sự việc hoặc tâm tư thật sự vẫn đang tiềm ẩn bên trong, chờ ngày Xung Phi hoặc Xuất Không mới bộc lộ rõ')})"
+                f"Đáng chú ý, hào Dụng Thần <b>{dung_than}</b> hiện không lộ diện trên 6 hào chính mà ẩn dưới dạng <b>Phục Thần</b> — "
+                f"điều này giải thích vì sao tâm tư thật sự của đối phương hoặc kết quả của sự việc vẫn đang giấu kín bên trong, phải chờ tới ngày Xung Phi hoặc Xuất Không mới bộc lộ rõ ràng"
             )
 
         if the_hao and ung_hao:
@@ -949,12 +907,20 @@ def extract_deep_divination_dossier(
             u_cc = ung_hao.get("chi", "") or ung_hao.get("can_chi", "")
             t_nh = the_hao.get("ngu_hanh", "")
             u_nh = ung_hao.get("ngu_hanh", "")
-            t_lthu = the_hao.get("luc_thu") or the_hao.get("luc_than_kd") or ""
-            u_lthu = ung_hao.get("luc_thu") or ung_hao.get("luc_than_kd") or ""
+            tu_rel_meaning = "phản ánh mối liên hệ trực tiếp giữa bạn và đối phương/mục tiêu"
+            if NGU_HANH_SINH.get(u_nh) == t_nh:
+                tu_rel_meaning = f"Ứng sinh Thế ({u_nh} sinh {t_nh}), chứng tỏ đối phương hoặc hoàn cảnh thực chất vẫn hướng về và có tình cảm/sự nâng đỡ dành cho bạn"
+            elif NGU_HANH_SINH.get(t_nh) == u_nh:
+                tu_rel_meaning = f"Thế sinh Ứng ({t_nh} sinh {u_nh}), cho thấy bạn là người nặng tình, quan tâm và chủ động hy sinh nhiều hơn trong việc này"
+            elif t_nh and t_nh == u_nh:
+                tu_rel_meaning = f"Thế và Ứng Tỷ Hòa (cùng hành {t_nh}), báo hiệu hai bên vẫn có sự đồng cảm và sợi dây gắn kết bền chặt"
+            elif NGU_HANH_KHAC.get(u_nh) == t_nh:
+                tu_rel_meaning = f"Ứng khắc Thế ({u_nh} khắc {t_nh}), báo hiệu phía đối phương đang có sự giận dỗi, bất mãn hoặc hoàn cảnh đang gây sức ép lên bạn"
+            elif NGU_HANH_KHAC.get(t_nh) == u_nh:
+                tu_rel_meaning = f"Thế khắc Ứng ({t_nh} khắc {u_nh}), cho thấy bạn đang nắm phần chủ động nhưng cần tránh thái độ áp đặt"
+
             hao_details.append(
-                f"Trục tương tác giữa <b>Hào Thế (Hào {the_idx} {t_cc}/{t_nh}{f' lâm {t_lthu}' if t_lthu else ''} — Bản thân)</b> "
-                f"và <b>Hào Ứng (Hào {ung_idx} {u_cc}/{u_nh}{f' lâm {u_lthu}' if u_lthu else ''} — Đối phương/Môi trường)</b> "
-                f"phản ánh trực tiếp sự gắn kết và thế chủ động của bạn trong tình huống này"
+                f"Xét trục <b>Hào Thế (Hào {the_idx} {t_cc}/{t_nh} — Bản thân)</b> và <b>Hào Ứng (Hào {ung_idx} {u_cc}/{u_nh} — Đối phương/Mục tiêu)</b>: {tu_rel_meaning}"
             )
 
         if dong_hao and haos:
@@ -974,12 +940,11 @@ def extract_deep_divination_dossier(
                         b_str = f" hóa sang <b>{b_lt} ({b_cc}/{b_nh})</b>"
                     dong_descs.append(f"Hào {d_idx} (<b>{d_lt} {d_cc}/{d_nh}</b>) phát động{b_str}")
             if dong_descs:
-                hao_details.append("Điểm chuyển dịch thiên cơ nằm ở " + ", cùng với ".join(dong_descs))
+                hao_details.append("Điểm chuyển động của quẻ nằm ở " + ", cùng với ".join(dong_descs))
 
         if hao_details:
             res["lh_hao_dong_prose"] = ". ".join(hao_details) + "."
 
-    # ── 3. MAI HOA DỊCH SỐ CỔ THƯ (THỂ DỤNG SINH KHẮC & ỨNG KỲ MAI HOA) ──
     if mai_hoa_data:
         the_hanh = mai_hoa_data.get("upper_element") or mai_hoa_data.get("hanh_thuong") or ""
         dung_hanh = mai_hoa_data.get("lower_element") or mai_hoa_data.get("hanh_ha") or ""
@@ -1004,84 +969,18 @@ def extract_deep_divination_dossier(
             if td_info:
                 qh_td = td_info.get("quan_he", "")
                 ct_td = td_info.get("chi_tiet", "").rstrip(".")
-                uk_mh = (MAI_HOA_UNG_KY.get(qh_td, {}) or {}).get("giai_thich", "").rstrip(".")
                 res["mh_the_dung_prose"] = (
-                    f"Theo <b>Mai Hoa Dịch Số</b>, quẻ Thể ({the_q_name + ' ' if the_q_name else ''}hành <b>{the_hanh}</b>) "
-                    f"và quẻ Dụng ({dung_q_name + ' ' if dung_q_name else ''}hành <b>{dung_hanh}</b>) lập thế <b>{qh_td}</b>: "
-                    f"<i>{ct_td}</i>"
-                    + (f" ({uk_mh})." if uk_mh else ".")
+                    f"Đồng thời theo <b>Mai Hoa Dịch Số</b>, quẻ Thể ({the_q_name + ' ' if the_q_name else ''}hành <b>{the_hanh}</b> — đại diện cho bạn) "
+                    f"và quẻ Dụng ({dung_q_name + ' ' if dung_q_name else ''}hành <b>{dung_hanh}</b> — đại diện cho sự việc) lập thế <b>{qh_td}</b> ({ct_td.lower()})."
                 )
 
-    # ── 4. THIẾT BẢN THẦN TOÁN (60 HOA GIÁP NẠP ÂM) & KHỔNG MINH LỤC DIỆU ──
-    if can_ngay and chi_ngay and tra_nap_am:
-        na_info = tra_nap_am(f"{can_ngay} {chi_ngay}") or {}
-        if na_info and na_info.get("nap_am"):
-            res["tb_nap_am_prose"] = (
-                f"Trong <b>Thiết Bản Thần Toán (60 Hoa Giáp)</b>, trụ ngày <b>{can_ngay} {chi_ngay}</b> "
-                f"ứng vào Nạp Âm <b>{na_info.get('nap_am')}</b> (hành {na_info.get('hanh', '')}), "
-                f"mang khí chất: <i>«{na_info.get('giai_thich', '').rstrip('.')}»</i>."
-            )
-
-    try:
-        import datetime as _dt
-        from ai_tools import get_lunar_date_offline, get_khong_minh_luc_dieu
-        _today = _dt.date.today()
-        lm, ld = get_lunar_date_offline(_today)
-        if lm and ld:
-            ld_summary, _ = get_khong_minh_luc_dieu(int(lm), int(ld))
-            chi_list = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
-            chi_val = (chi_list.index(chi_gio) + 1) if chi_gio in chi_list else 1
-            ld_names = {
-                1: "Đại An (Tốt — mọi việc yên tâm, hành sự hanh thông)",
-                2: "Lưu Niên (Chậm — việc dễ dây dưa, cần kiên nhẫn tháo gỡ)",
-                3: "Tốc Hỷ (Tốt — tin vui đến nhanh, mưu sự đắc lợi)",
-                4: "Xích Khẩu (Khẩu thiệt — đề phòng tranh cãi, thị phi)",
-                5: "Tiểu Cát (Tốt — may mắn, có quý nhân nâng đỡ)",
-                0: "Không Vong (Trống rỗng — tạm thời chưa nên nóng vội xuất kích)"
-            }
-            cur_ld = ld_names.get((int(lm) + int(ld) + chi_val - 2) % 6, "Đại An")
-            res["km_luc_dieu_prose"] = (
-                f"Kết hợp <b>Khổng Minh Lục Diệu</b> (ngày {ld}/{lm} Âm lịch, giờ {chi_gio or 'hiện tại'}), "
-                f"thời vận ứng vào cung <b>{cur_ld}</b> ({ld_summary})."
-            )
-    except Exception:
-        pass
-
-    # ── 5. VẠN VẬT LOẠI TƯỢNG CHUYÊN SÂU (60 TRẠNG THÁI NGŨ HÀNH × 12 TRƯỜNG SINH) ──
-    if hanh_dt and hanh_dt != "?" and ts_stage:
-        try:
-            from van_vat_chi_tiet import get_van_vat_chi_tiet
-            vv_info = get_van_vat_chi_tiet(hanh_dt, ts_stage) or {}
-            if vv_info:
-                if category == "TÌNH_CẢM" or any(w in q_low for w in ["yêu", "vợ", "chồng", "hôn nhân", "tình cảm"]):
-                    ng_desc = vv_info.get("con_nguoi", "")
-                    if ng_desc:
-                        res["van_vat_forensic"] = f"Theo <b>Vạn Vật Loại Tượng ({hanh_dt} ở {ts_stage})</b>, thần thái và tâm lý của đối tượng hiện tại như: <i>{ng_desc.rstrip('.')}</i>."
-                elif category == "SỨC_KHỎE_GIA_ĐÌNH" or any(w in q_low for w in ["bệnh", "ốm", "đau", "khỏe"]):
-                    b_desc = vv_info.get("benh_tat", "")
-                    if b_desc:
-                        res["van_vat_forensic"] = f"Theo <b>Vạn Vật Y Lý ({hanh_dt} ở {ts_stage})</b>, triệu chứng và thể trạng ứng với: <i>{b_desc.rstrip('.')}</i>."
-                elif category in ("TÀI_CHÍNH", "NHÀ_CỬA") or any(w in q_low for w in ["nhà", "đất", "mua", "bán", "đầu tư"]):
-                    nc_desc = vv_info.get("nha_cua", "")
-                    if nc_desc:
-                        res["van_vat_forensic"] = f"Theo <b>Vạn Vật Phong Thủy ({hanh_dt} ở {ts_stage})</b>, đặc điểm môi trường/tài sản ứng với: <i>{nc_desc.rstrip('.')}</i>."
-        except Exception:
-            pass
-
-    # Tổng hợp hồ sơ cổ thư thành văn bản chuẩn cho cả AI Online và AI Offline
     dossier_lines = []
     for k_name, label_name in [
-        ("km_cach_cuc_prose", "81 Cách Cục Lưu Bá Ôn"),
-        ("km_mon_cung_prose", "Bát Môn Bay Cung"),
-        ("km_sao_cua_than_prose", "Tổ Hợp Sao-Cửa-Thần & Tượng Ý"),
-        ("km_xa_gan_prose", "Nội/Ngoại Bàn Xa Gần"),
-        ("km_topic_forensic", "Giải Mã Chuyên Sâu Theo Chủ Đề"),
         ("lh_hexagram_prose", "Quẻ Chủ & Quẻ Biến Kinh Dịch"),
         ("lh_hao_dong_prose", "Chi Tiết Hào Dụng Thần, Thế/Ứng & Hào Động"),
+        ("km_palace_prose", "Cung Dụng Thần Kỳ Môn Độn Giáp"),
+        ("km_cach_cuc_prose", "Cách Cục Thiên Địa Bàn"),
         ("mh_the_dung_prose", "Mai Hoa Thể Dụng"),
-        ("tb_nap_am_prose", "Thiết Bản Nạp Âm 60 Hoa Giáp"),
-        ("km_luc_dieu_prose", "Khổng Minh Lục Diệu"),
-        ("van_vat_forensic", "Vạn Vật Loại Tượng Chuyên Sâu"),
     ]:
         val = res.get(k_name, "")
         if val:
@@ -1129,11 +1028,10 @@ def build_connected_prose_analysis(
     mai_hoa_data: dict = None,
 ) -> str:
     """
-    V100.0 — SIÊU NÃO THẦN ĐOÁN CỔ THƯ HỢP NHẤT:
-    Kết nối toàn bộ 10 Hệ Thống Quẻ, 19 Bộ Cổ Thư trong GitHub (81 Cách Cục Lưu Bá Ôn,
-    Bát Môn Bay Cung, Tổ Hợp Sao-Cửa-Thần, Lục Hào 64 Quẻ Bản/Biến, Lục Thú, Phục Thần,
-    Mai Hoa Thể Dụng, Thiết Bản 60 Hoa Giáp, Khổng Minh Lục Diệu, Vạn Vật 12 Trường Sinh)
-    và 40 Chuyên Gia AI thành 4 đoạn văn xuôi tiếng Việt sâu sắc, mạch lạc, chi tiết như thần.
+    V100.1 — BÀI LUẬN GIẢI CHUYÊN SÂU 3 ĐOẠN MẠCH LẠC, DỄ HIỂU, SÁT CÂU HỎI 100%:
+    1. Giải mã trực diện bản chất sự việc & Nội tình qua Lục Hào Kinh Dịch – Mai Hoa Dịch Số.
+    2. Phân tích tâm lý, hoàn cảnh & cơ hội/trở ngại qua Bàn Kỳ Môn Độn Giáp & Đại Lục Nhâm.
+    3. Dự báo thời điểm chuyển biến (Ứng Kỳ) & Lời khuyên hành động thực tế từ Hội Đồng 40 Chuyên Gia AI.
     """
     q_low = (question or "").lower()
     thoan_info = thoan_info if isinstance(thoan_info, dict) else {}
@@ -1156,165 +1054,83 @@ def build_connected_prose_analysis(
         nk_stage=nk_stage,
     )
 
-    def _v_word(v_str):
-        vu = str(v_str or "").upper()
-        if "ĐẠI CÁT" in vu:
-            return "rất thuận lợi (Đại Cát)"
-        if "CÁT" in vu:
-            return "thuận lợi (Cát)"
-        if "ĐẠI HUNG" in vu:
-            return "nhiều bất lợi lớn (Đại Hung)"
-        if "HUNG" in vu:
-            return "đang có lực cản (Hung)"
-        return "ở thế cân bằng, giằng co (Bình hòa)"
-
-    # ── ĐOẠN 1: THẤU THỊ TÂM CƠ & GIẢI MÃ BÀN KỲ MÔN ĐỘN GIÁP (81 CÁCH CỤC LƯU BÁ ÔN · BÁT MÔN · SAO THẦN) ──
+    # ── ĐOẠN 1: BẢN CHẤT HIỆN TẠI & NỘI TÌNH QUA QUẺ KINH DỊCH (LỤC HÀO & MAI HOA) ──
     p1_parts = []
-    p1_parts.append(
-        f"Xét trên nền tảng cốt lõi của Tam Thức (gồm Kỳ Môn Độn Giáp {_v_word(ky_mon_verdict)}, "
-        f"Lục Hào Kinh Dịch {_v_word(luc_hao_verdict)} và Mai Hoa Dịch Số {_v_word(mai_hoa_verdict)}), "
-        f"trọng tâm câu hỏi <i>«{question}»</i> ứng trực tiếp vào hào Dụng Thần <b>{dung_than}</b>"
-        + (f" (thuộc hành <b>{hanh_dt}</b>)" if hanh_dt and hanh_dt != "?" else "")
-        + "."
-    )
-
-    if ts_stage:
-        con_nguoi_ts = ts_info.get("con_nguoi", "đang vận động theo chu kỳ")
+    if dossier.get("lh_hexagram_prose"):
+        p1_parts.append(dossier["lh_hexagram_prose"])
+    if dossier.get("lh_hao_dong_prose"):
+        p1_parts.append(dossier["lh_hao_dong_prose"])
+    if dossier.get("mh_the_dung_prose"):
+        p1_parts.append(dossier["mh_the_dung_prose"])
+    if ts_stage and hanh_dt and hanh_dt != "?":
+        cap_ts = ts_info.get("cap", "")
+        power_ts = ts_info.get("power", 50)
+        ts_meaning = "đang có nội lực tích cực trên Nhật Thần" if int(power_ts or 50) >= 60 else ("đang ở thế cân bằng trên Nhật Thần" if int(power_ts or 50) >= 45 else "đang tạm thời suy giảm trên Nhật Thần, cần bồi đắp và kiên nhẫn")
         p1_parts.append(
-            f"Trong vòng 12 Trường Sinh, Dụng Thần đang ở trạng thái <b>{ts_stage}</b> "
-            f"(ví như <i>{con_nguoi_ts.lower()}</i>)"
-            + (f" và đạt trạng thái khí <b>{nk_stage}</b> theo mùa," if nk_stage else ",")
-            + " phản ánh chân thực nội lực hiện tại của sự việc."
+            f"Xét vòng 12 Trường Sinh, Dụng Thần <b>{dung_than}</b> (hành <b>{hanh_dt}</b>) đạt trạng thái <b>{ts_stage}</b> ({cap_ts}), cho thấy bản khí của hào {ts_meaning}."
         )
-
-    if dossier.get("km_cach_cuc_prose"):
-        p1_parts.append(dossier["km_cach_cuc_prose"])
-    if dossier.get("km_mon_cung_prose"):
-        p1_parts.append(dossier["km_mon_cung_prose"])
-    if dossier.get("km_sao_cua_than_prose"):
-        p1_parts.append(dossier["km_sao_cua_than_prose"])
-    if dossier.get("km_xa_gan_prose"):
-        p1_parts.append(dossier["km_xa_gan_prose"])
-    if dossier.get("km_topic_forensic"):
-        p1_parts.append(dossier["km_topic_forensic"])
-    if dossier.get("van_vat_forensic"):
-        p1_parts.append(dossier["van_vat_forensic"])
-
-    # Bổ sung giải nghĩa tự nhiên các yếu tố đặc biệt trên bàn quẻ
-    km_lh_mh_raw = f"{ky_mon_reason} | {luc_hao_reason} | {mai_hoa_reason}".upper()
-    nuances = []
-    if "PHỤC THẦN" in km_lh_mh_raw and not dossier.get("lh_hao_dong_prose"):
-        nuances.append("hào Dụng Thần đang ở thế <b>Phục Thần (ẩn tàng)</b>, nghĩa là tâm tư thật sự hoặc kết quả cốt lõi vẫn đang được giấu kín ở bên trong chứ chưa bộc lộ hết ra ngoài mặt")
-    if "KHÔNG VONG" in km_lh_mh_raw or "TUẦN KHÔNG" in km_lh_mh_raw:
-        nuances.append("cung quẻ tạm thời gặp <b>Tuần Không</b>, tạo ra cảm giác chững lại, trống trải hoặc đối phương đang giữ một khoảng lặng nhất định cần chờ đến ngày Xuất Không để sáng tỏ")
-    if "CUNG BT SINH DT" in km_lh_mh_raw or "CUNG DT TƯƠNG SINH BT" in km_lh_mh_raw or "TỶ HÒA" in km_lh_mh_raw:
-        nuances.append("giữa bản thân bạn và đối phương/mục tiêu vẫn có dòng khí tương sinh hoặc Tỷ Hòa nâng đỡ nhau, chứng tỏ sợi dây liên kết gốc rễ vẫn còn bền chặt")
-    if "NGUYÊN THẦN VƯỢNG" in km_lh_mh_raw or "DT VƯỢNG" in km_lh_mh_raw or "DT TƯỚNG" in km_lh_mh_raw:
-        nuances.append("khí lực gốc của Dụng Thần và Nguyên Thần (nguồn trợ lực) vẫn vượng, khẳng định nền tảng bên trong vẫn tốt đẹp")
-    if "TAM HÌNH" in km_lh_mh_raw:
-        nuances.append("trong quẻ xuất hiện thế <b>Tam Hình</b>, báo hiệu có sự tự ái ngầm, gượng gạo hoặc xung đột tâm lý cần được cư xử khéo léo, mềm mỏng")
-    if nuances:
-        p1_parts.append("Đồng thời, quẻ chỉ rõ " + "; bên cạnh đó ".join(nuances) + ".")
-
     paragraph_1 = " ".join(p1_parts)
 
-    # ── ĐOẠN 2: GIẢI MÃ THẦN CƠ LỤC HÀO KINH DỊCH & MAI HOA DỊCH SỐ (QUẺ BẢN/BIẾN · HÀO ĐỘNG · LỤC THÚ · THỂ DỤNG) ──
+    # ── ĐOẠN 2: THẤU THỊ HOÀN CẢNH & NGUYÊN NHÂN SÂU XA QUA KỲ MÔN ĐỘN GIÁP & ĐẠI LỤC NHÂM ──
     p2_parts = []
-    if dossier.get("lh_hexagram_prose"):
-        p2_parts.append(dossier["lh_hexagram_prose"])
-    if dossier.get("lh_hao_dong_prose"):
-        p2_parts.append(dossier["lh_hao_dong_prose"])
-    if dossier.get("mh_the_dung_prose"):
-        p2_parts.append(dossier["mh_the_dung_prose"])
-    if thoan_name and thoan_info.get("thoan"):
-        p2_parts.append(
-            f"Lời <b>Thoán Từ Kinh Dịch</b> của quẻ <b>{thoan_name}</b> cũng khẳng định: "
-            f"<i>«{thoan_info.get('thoan', '').rstrip('.')}»</i> "
-            f"({thoan_info.get('lk', thoan_info.get('dai_tuong', '')).rstrip('.')})."
-        )
-    if not p2_parts:
-        p2_parts.append(
-            f"Đối chiếu sang hệ thống Lục Hào Kinh Dịch ({_v_word(luc_hao_verdict)}) và Mai Hoa Dịch Số ({_v_word(mai_hoa_verdict)}), "
-            f"tương quan giữa Hào Thế – Hào Ứng và cặp quái Thể – Dụng cho thấy sự việc đang vận động đúng theo quy luật sinh khắc của Dụng Thần <b>{dung_than}</b>."
-        )
-    paragraph_2 = " ".join(p2_parts)
+    if dossier.get("km_palace_prose"):
+        p2_parts.append(dossier["km_palace_prose"])
+    if dossier.get("km_cach_cuc_prose"):
+        p2_parts.append(dossier["km_cach_cuc_prose"])
 
-    # ── ĐOẠN 3: ĐỐI CHIẾU ĐA HỆ THỐNG (ĐẠI LỤC NHÂM · THÁI ẤT · THIẾT BẢN 60 HOA GIÁP · TỬ VI · KHỔNG MINH LỤC DIỆU) ──
-    p3_parts = []
+    km_lh_mh_raw = f"{ky_mon_reason} | {luc_hao_reason} | {mai_hoa_reason}".upper()
+    nuances = []
+    if "KHÔNG VONG" in km_lh_mh_raw or "TUẦN KHÔNG" in km_lh_mh_raw:
+        nuances.append("cung quẻ gặp <b>Tuần Không</b>, tạo ra cảm giác chững lại hoặc đối phương đang giữ một khoảng lặng tâm lý cần chờ đến ngày Xuất Không mới sáng tỏ")
+    if "NHẬP MỘ" in km_lh_mh_raw:
+        nuances.append("khí lực tạm thời <b>Nhập Mộ</b> (bị thu giữ hoặc bó hẹp), cần chờ thời điểm Xung Mộ để khai thông")
+    if "TAM HÌNH" in km_lh_mh_raw:
+        nuances.append("xuất hiện thế <b>Tam Hình</b>, báo hiệu có sự tự ái ngầm hoặc căng thẳng tâm lý cần cư xử mềm mỏng, khéo léo")
+    if nuances:
+        p2_parts.append("Lưu ý thêm trên bàn quẻ: " + "; đồng thời ".join(nuances) + ".")
+
     ln_up = str(luc_nham_reason or "").upper()
-    ln_flow = ""
     if "SƠ TRUYỀN" in ln_up or "MẠT TRUYỀN" in ln_up:
         if "MẠT TRUYỀN SINH CAN" in ln_up or "TUONG LAI TOT" in ln_up or "KQ TỐT" in ln_up:
-            ln_flow = "mặc dù giai đoạn khởi đầu (Sơ Truyền) có thể vướng chút băn khoăn hoặc chậm trễ, nhưng càng về giai đoạn kết cục (Mạt Truyền) thì khí số lại tương sinh tốt đẹp"
+            p2_parts.append("Đối chiếu thêm <b>Tam Truyền Đại Lục Nhâm</b>, tuy giai đoạn đầu (Sơ Truyền) có chút băn khoăn, chậm trễ nhưng càng về kết cục (Mạt Truyền) thì khí số lại tương sinh thuận lợi.")
         else:
-            ln_flow = "diễn biến từ khởi đầu (Sơ Truyền) qua Trung Truyền tới kết cục (Mạt Truyền) đòi hỏi sự kiên nhẫn điều tiết từng bước"
-        if "DỊCH MÃ" in ln_up:
-            ln_flow += " và có sao Dịch Mã thúc đẩy nên sự chuyển biến sẽ diễn ra khá nhanh"
+            p2_parts.append("Đối chiếu thêm <b>Tam Truyền Đại Lục Nhâm</b>, diễn biến từ lúc khởi sự (Sơ Truyền) đến kết cục (Mạt Truyền) đòi hỏi sự bình tĩnh điều tiết từng bước, không nên đốt cháy giai đoạn.")
 
-    p3_parts.append(
-        f"Khi mở rộng tầm nhìn sang các hệ thống Thái Ất – Lục Nhâm – Thiết Bản – Tử Vi, "
-        f"<b>Đại Lục Nhâm</b> ({_v_word(luc_nham_verdict)}) và <b>Thái Ất Thần Số</b> ({_v_word(thai_at_verdict)}) "
-        f"cho thấy {ln_flow if ln_flow else 'thế trận giữa Chủ và Khách đang đòi hỏi sự điềm tĩnh, lấy nhu thắng cương và chủ động nắm bắt thời cơ'}."
-    )
+    paragraph_2 = " ".join(p2_parts)
 
-    if dossier.get("tb_nap_am_prose"):
-        p3_parts.append(dossier["tb_nap_am_prose"])
-
-    tv_clean = str(tu_vi_reason or "").strip()
-    if tv_clean:
-        p3_parts.append(
-            f"Bên cạnh đó, lá số <b>Tử Vi Đẩu Số</b> ứng thời ({tv_clean}) kết hợp cùng <b>Thiết Bản Thần Toán</b> ({_v_word(thiet_ban_verdict)}) "
-            f"giúp soi chiếu rõ thêm nhân duyên và phúc khí hỗ trợ cho bạn."
-        )
-    if dossier.get("km_luc_dieu_prose"):
-        p3_parts.append(dossier["km_luc_dieu_prose"])
-    if xem_ngay_reason:
-        p3_parts.append(
-            f"Xét thêm về tiết khí và thời điểm hiện tại ({xem_ngay_reason}), việc chọn đúng khung giờ hoàng đạo và phương vị cát lợi sẽ giúp kích hoạt tối đa cát khí."
-        )
-
-    paragraph_3 = " ".join(p3_parts)
-
-    # ── ĐOẠN 4: ĐÚC KẾT TỪ HỘI ĐỒNG 40 CHUYÊN GIA AI, ỨNG KỲ ĐỊNH LƯỢNG & PHÁP QUYẾT HÓA GIẢI ──
-    p4_parts = []
+    # ── ĐOẠN 3: ĐÚC KẾT TỪ HỘI ĐỒNG 40 CHUYÊN GIA AI, THỜI ĐIỂM ỨNG KỲ & PHÁP QUYẾT HÀNH ĐỘNG ──
+    p3_parts = []
+    is_lost_q = category == "TÌM_ĐỒ" or any(w in q_low for w in ["bị mất", "mất chiếc", "mất đồ", "mất ví", "thất lạc", "tìm lại", "ở đâu"])
     if exp_html_items:
         clean_exps = []
         for item in exp_html_items:
             txt = re.sub(r'<[^>]+>', '', str(item)).lstrip('• ').strip()
-            if 'Hiện tại đang có xung đột, cần giải quyết gấp' in txt:
+            if any(prefix in txt for prefix in ["Chart Interpreter AI", "Luc Hao Expert AI", "Mai Hoa Expert AI"]):
                 continue
-            _is_wealth_q = any(w in q_low for w in ['tiền', 'tài chính', 'đầu tư', 'lãi', 'lỗ', 'mua', 'bán', 'kinh doanh', 'vốn', 'lộc', 'giàu', 'nợ', 'tài sản', 'lương', 'thu nhập'])
-            if ('SINH LỜI TỐT' in txt or 'Đầu tư có lãi' in txt or 'Tài chính vững vàng' in txt) and not _is_wealth_q:
+            if is_lost_q and "Wealth Advisor AI" in txt:
                 continue
-            txt = re.sub(r'^[^\w]*(Chart Interpreter AI \(Đại sư Kỳ Môn\)|Chart Interpreter AI|Luc Hao Expert AI|Mai Hoa Expert AI|Relationship AI|Wealth Advisor AI|Career Advisor AI|Health Advisor AI|Direction Advisor AI|Feng Shui AI):\s*', '', txt)
-            txt = re.sub(r'\(Hào Thế\s*\([^)]*\)\s*và Hào Ứng\s*\([^)]*\):?\s*', '(', txt)
-            txt = re.sub(r'\(\s*[+-]?\d+\s*đ\s*\)', '', txt)
-            txt = txt.replace('Cứngỏi', 'Cứng cỏi').replace('→', ' cho thấy ').replace('—', ', ').replace('[', '').replace(']', '')
-            txt = re.sub(r'\(\s*\)', '', txt)
-            txt = re.sub(r'\s+', ' ', txt).strip(' .;,-')
-            if txt and len(clean_exps) < 4:
+            txt = re.sub(r'^[^\w]*(Relationship AI|Wealth Advisor AI|Career Advisor AI|Health Advisor AI|Direction Advisor AI|Feng Shui AI|Dream Interpreter AI|Scheduler AI):\s*', '', txt)
+            txt = txt.replace('→', ' cho thấy ').replace('—', ' — ').strip(' .;,-')
+            if txt and len(clean_exps) < 2:
                 clean_exps.append(txt)
         if clean_exps:
-            p4_parts.append(
-                "Tổng hợp hội chẩn từ <b>Hội Đồng 40 Chuyên Gia AI</b> khẳng định: "
-                + "; đồng thời ".join(clean_exps) + "."
-            )
+            p3_parts.append("Hội chẩn chuyên sâu từ <b>Hội Đồng 40 Chuyên Gia AI</b> cho thấy: " + "; ".join(clean_exps) + ".")
 
+    direction = _extract_direction(chart_data, dung_than, question, category)
     clean_advs = [re.sub(r'<[^>]+>', '', str(a)).strip() for a in advice_parts if str(a).strip()]
     if clean_advs:
-        p4_parts.append("Từ toàn bộ 19 bộ cổ thư và 10 hệ thống quẻ nêu trên, <b>pháp quyết hành động thiết thực nhất dành cho bạn</b> là: " + " ".join(clean_advs))
+        p3_parts.append("<b>Lời khuyên hành động thiết thực dành cho bạn:</b> " + " ".join(clean_advs))
     if ung_ky_str and ung_ky_str != "?" and "chưa rõ" not in ung_ky_str.lower():
-        p4_parts.append(f"Mốc thời gian <b>Ứng Kỳ</b> quan trọng cần đặc biệt lưu tâm là: <b>{ung_ky_str}</b>.")
+        p3_parts.append(f"<b>Mốc thời gian Ứng Kỳ quan trọng:</b> Dự báo sự việc sẽ có chuyển biến hoặc câu trả lời rõ nét nhất vào khoảng <b>{ung_ky_str}</b> (phương vị cát lợi hỗ trợ: <b>{direction}</b>).")
 
-    paragraph_4 = " ".join(p4_parts)
+    paragraph_3 = " ".join(p3_parts)
 
     return (
         f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.58);border-radius:14px;border:1px solid rgba(110,231,183,0.4);line-height:1.78;font-size:0.98em;color:#f1f5f9;">'
         f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
         f'📖 BÀI LUẬN GIẢI THẦN ĐOÁN CỔ THƯ HỢP NHẤT V100.0 (10 HỆ THỐNG · 19 CỔ THƯ · 40 CHUYÊN GIA AI)</div>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Thấu thị tâm cơ & Giải mã Kỳ Môn Độn Giáp (81 Cách Cục Lưu Bá Ôn · Bát Môn · Sao Thần):</b> {paragraph_1}</p>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Giải mã thần cơ Lục Hào Kinh Dịch & Mai Hoa Dịch Số (Quẻ Bản/Biến · Lục Thú · Thể Dụng):</b> {paragraph_2}</p>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>3. Đối chiếu vận số đa chiều (Đại Lục Nhâm · Thái Ất · Thiết Bản 60 Hoa Giáp · Tử Vi · Lục Diệu):</b> {paragraph_3}</p>'
-        + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>4. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_4}</p>' if paragraph_4 else '')
+        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Bản chất hiện tại & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
+        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Giải mã tâm lý, hoàn cảnh & nguyên nhân qua Bàn Kỳ Môn Độn Giáp:</b> {paragraph_2}</p>'
+        + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
         + f'</div>'
     )

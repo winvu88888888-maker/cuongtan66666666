@@ -147,30 +147,37 @@ class ChartInterpreterAI:
             if key in topic_lower:
                 target_elements.extend(elements)
         
-        # Tìm cung chứa yếu tố Dụng Thần
+        # Tìm cung chứa yếu tố Dụng Thần (hỗ trợ cả key int và str)
+        nb = chart_data.get('nhan_ban', {}) or {}
+        tb = chart_data.get('thien_ban', {}) or {}
+        sb = chart_data.get('than_ban', {}) or {}
+        ctb = chart_data.get('can_thien_ban', {}) or {}
         if target_elements:
             for palace_num in range(1, 10):
-                mon = chart_data.get('nhan_ban', {}).get(palace_num, '')
-                sao = chart_data.get('thien_ban', {}).get(palace_num, '')
-                than = chart_data.get('than_ban', {}).get(palace_num, '')
-                
+                mon = str(nb.get(palace_num, nb.get(str(palace_num), '')))
+                sao = str(tb.get(palace_num, tb.get(str(palace_num), '')))
+                than = str(sb.get(palace_num, sb.get(str(palace_num), '')))
                 for elem in target_elements:
-                    if elem in [mon, sao, than] or elem in mon:
+                    elem_short = elem.replace(" Môn", "")
+                    if elem in (mon, sao, than) or elem_short in mon or elem in sao or elem in than:
                         return palace_num
-        
-        # Mặc định: Cung có Can Giờ
+
+        # Mặc định: Cung có Can Giờ (ưu tiên Mậu nếu Can Giờ là Giáp)
         can_gio = chart_data.get('can_gio', '')
+        search_cg = 'Mậu' if can_gio == 'Giáp' else can_gio
         for palace_num in range(1, 10):
-            if chart_data.get('can_thien_ban', {}).get(palace_num) == can_gio:
+            if str(ctb.get(palace_num, ctb.get(str(palace_num), ''))) == str(search_cg):
                 return palace_num
-        
+
         return 5  # Trung cung mặc định
-    
+
     def _find_ban_than_palace(self, chart_data):
         """Tìm cung Bản Thân (Can Ngày)"""
         can_ngay = chart_data.get('can_ngay', '')
+        search_cn = 'Mậu' if can_ngay == 'Giáp' else can_ngay
+        ctb = chart_data.get('can_thien_ban', {}) or {}
         for palace_num in range(1, 10):
-            if chart_data.get('can_thien_ban', {}).get(palace_num) == can_ngay:
+            if str(ctb.get(palace_num, ctb.get(str(palace_num), ''))) == str(search_cn):
                 return palace_num
         return 1
     
