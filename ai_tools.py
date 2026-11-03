@@ -118,8 +118,10 @@ class MiniLunarCalendar:
     @classmethod
     def _days_in_lunar_year(cls, year):
         days = 348
-        for i in range(0x8000, 0x8, -1):
+        i = 0x8000
+        while i > 0x8:
             days += 1 if (cls.LUNAR_DATA[year - cls.BASE_YEAR] & i) else 0
+            i >>= 1
         days += cls._days_in_leap_month(year) if cls._get_leap_month(year) else 0
         return days
 
@@ -135,14 +137,22 @@ class MiniLunarCalendar:
     def _days_in_leap_month(cls, year):
         return 0 if not cls._get_leap_month(year) else (30 if (cls.LUNAR_DATA[year - cls.BASE_YEAR] & 0x10000) else 29)
 
-def get_lunar_date_offline(d):
+def get_lunar_date_offline(d=None):
     """
     Returns (month, day) using built-in algorithm.
     No 3rd party library required.
     """
+    if d is None:
+        d = datetime.date.today()
     try:
-        m, d, _ = MiniLunarCalendar.solar_to_lunar(d)
-        return m, d
+        from lich_van_nien import solar_to_lunar
+        ld, lm, ly, _ = solar_to_lunar(d.day, d.month, d.year)
+        return lm, ld
+    except Exception:
+        pass
+    try:
+        m, day_l, _ = MiniLunarCalendar.solar_to_lunar(d)
+        return m, day_l
     except Exception as e:
         print(f"Lunar Calc Error: {e}")
         return d.month, d.day

@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V99.9.7"
+APP_VERSION = "V100.0"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Hợp Nhất 10 Hệ Thống Quẻ 🔮 + 40 Chuyên Gia AI 🧙 + Gemini Online Full Không Cắt Chữ 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V99.9.7: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V99.9.7"
+# V100.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V100.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [

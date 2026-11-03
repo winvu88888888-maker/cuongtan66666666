@@ -5553,6 +5553,9 @@ class FreeAIHelper:
                 offline_verdict_block += f"\n⏱ ỨNG KỲ CHI TIẾT (BẮT BUỘC DÙNG): {_ung_ky_for_gemini}\n"
             if _omni_for_gemini:
                 offline_verdict_block += f"\n🔮 HỒ SƠ CHẨN ĐOÁN CHUYÊN SÂU THEO ĐÚNG TRỌNG TÂM CÂU HỎI:\n{_omni_for_gemini}\n"
+            _deep_dos_for_gemini = od.get('deep_classical_dossier', '')
+            if _deep_dos_for_gemini:
+                offline_verdict_block += f"\n📜 HỒ SƠ THẦN ĐOÁN 19 BỘ CỔ THƯ (81 CÁCH CỤC LƯU BÁ ÔN · BÁT MÔN · LỤC HÀO · MAI HOA · THIẾT BẢN · LỤC DIỆU):\n{_deep_dos_for_gemini}\n"
             if _bt_for_gemini:
                 offline_verdict_block += f"\n🚨 BẤT THƯỜNG NGHIÊM TRỌNG: {', '.join(_bt_for_gemini)}\n"
             _od_conflicts = od.get('conflict_warnings', [])
@@ -15744,10 +15747,10 @@ class FreeAIHelper:
             if isinstance(offline_analysis_data.get('v22_unified_strength'), dict):
                 offline_analysis_data['v22_unified_strength']['unified_pct'] = weighted_pct
         
-        # V99.9: Khởi tạo sẵn Bộ Não Chuyên Sâu (_narrative_main) dùng chung cho cả nhánh Online và Offline
+        # V100.0: Khởi tạo sẵn Bộ Não Chuyên Sâu (_narrative_main) & Hồ Sơ Cổ Thư dùng chung cho cả nhánh Online và Offline
         _narrative_main = ''
         try:
-            from offline_brain import build_narrative_summary_text
+            from offline_brain import build_narrative_summary_text, extract_deep_divination_dossier
             _brain_all_facs = list(v23_lh_factors or []) + list(v24_km_factors or []) + list(v24_mh_factors or [])
             _brain_uk = _hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else ''
             _omni_d_main = _omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {}
@@ -15760,9 +15763,25 @@ class FreeAIHelper:
                 ung_ky_str=_brain_uk,
                 chart_data=chart_data,
                 omni_data=_omni_d_main,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
             )
+            _deep_dos_obj = extract_deep_divination_dossier(
+                question=question,
+                dung_than=dung_than,
+                hanh_dt=locals().get('hanh_dt_v22', '?'),
+                weighted_pct=weighted_pct,
+                category=detected_category,
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                ts_stage=locals().get('ts_stage', ''),
+                nk_stage=locals().get('ngu_khi_state_v22', ''),
+            )
+            if isinstance(offline_analysis_data, dict):
+                offline_analysis_data['deep_classical_dossier'] = _deep_dos_obj.get('prompt_dossier', '')
         except Exception as _e_nb:
-            self.log_step("V99.9 Brain", "ERROR", str(_e_nb)[:80])
+            self.log_step("V100.0 Brain", "ERROR", str(_e_nb)[:80])
 
         def _format_md_for_html_details(_md_text: str) -> str:
             if not _md_text:
@@ -15906,7 +15925,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V99.9.7)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.0)</div>'
                 f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16575,7 +16594,7 @@ class FreeAIHelper:
                 except Exception:
                     pass
                 
-                # ═══ ASSEMBLE: ĐẠI KHUNG VĂN XUÔI MẠCH LẠC DỄ ĐỌC (V99.9.7) ═══
+                # ═══ ASSEMBLE: ĐẠI KHUNG VĂN XUÔI MẠCH LẠC DỄ ĐỌC (V100.0) ═══
                 _connected_prose_on = ''
                 try:
                     from offline_brain import build_connected_prose_analysis
@@ -16606,13 +16625,16 @@ class FreeAIHelper:
                         hanh_dt=locals().get('hanh_dt_v22', '?'),
                         ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
                         advice_parts=_advice_parts,
+                        chart_data=chart_data,
+                        luc_hao_data=luc_hao_data,
+                        mai_hoa_data=mai_hoa_data,
                     )
                 except Exception:
                     _connected_prose_on = _off_summary_extra
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V99.9.7</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.0</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17257,6 +17279,8 @@ class FreeAIHelper:
                         omni_data=_omni_data_fb,
                         kc_detail=_kc_detail_fb,
                         ev_str=_ev_str_fb,
+                        luc_hao_data=luc_hao_data,
+                        mai_hoa_data=mai_hoa_data,
                     )
                 except Exception as _brain_err:
                     self.log_step("V99.7 Brain", "ERROR", str(_brain_err)[:80])
@@ -17371,13 +17395,16 @@ class FreeAIHelper:
                         hanh_dt=locals().get('hanh_dt_v22', '?'),
                         ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
                         advice_parts=_adv_fb,
+                        chart_data=chart_data,
+                        luc_hao_data=luc_hao_data,
+                        mai_hoa_data=mai_hoa_data,
                     )
                 except Exception:
                     _connected_prose_fb = _off2_summary
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V99.9.7</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.0</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + (_omniscient_res.get('html', '') if '_omniscient_res' in locals() else '')
