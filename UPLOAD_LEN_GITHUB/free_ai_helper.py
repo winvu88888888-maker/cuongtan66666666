@@ -15922,6 +15922,9 @@ class FreeAIHelper:
                 verdict=ky_mon_verdict or '',
                 weighted_pct=weighted_pct,
                 dong_hao=_ukd_dong_hao,
+                question=question,
+                luc_hao_data=luc_hao_data,
+                chart_data=chart_data,
             )
             
             if _ung_ky_detail_result.get('html'):
@@ -16613,7 +16616,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V106.0 — 4 Phương Pháp Chuẩn Xác: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản | Tách Riêng: Tử Vi · Thái Ất · Xem Ngày)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V107.0 — Liên Kết Toàn Diện Mọi Yếu Tố Quẻ: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản | Phân Tích Chi Tiết Mọi Loại Quẻ)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17335,7 +17338,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT TỪ 4 PHƯƠNG PHÁP CHUẨN XÁC (V106.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | TÁCH RIÊNG CÁC MẢNG CHUYÊN BIỆT)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT LIÊN KẾT MỌI YẾU TỐ QUẺ (V107.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | ĐẦY ĐỦ MỌI LOẠI QUẺ)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'

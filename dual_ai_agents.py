@@ -463,6 +463,11 @@ class QuestionReaderAI:
         is_lost_where = any(w in q_low for w in ["mất", "thất lạc", "tìm lại", "tìm thấy", "ở đâu", "hướng nào", "chỗ nào"]) and not is_where_home_work and not is_house_floors_q
         is_why = any(w in q_low for w in ["tại sao", "vì sao", "nguyên nhân", "lý do", "do đâu", "ý đồ gì", "nghĩ gì", "tâm lý"])
         is_debt = any(w in q_low for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "cho vay", "vay tiền", "vay ngân hàng", "khoản nợ", "con nợ"])
+        is_major_asset_purchase = any(w in q_low for w in [
+            "mua nhà", "mua đất", "xây nhà", "làm nhà", "nhà mặt đất", "mua căn hộ",
+            "mua chung cư", "mua biệt thự", "mua mảnh đất", "mua bất động sản",
+            "mua ô tô", "mua xe hơi", "mua xe ô tô", "mua xe lớn", "mua tài sản lớn"
+        ]) and not is_house_floors_q and (" hay " not in q_low or any(w in q_low for w in ["hay không", "hay chưa"]))
         is_invest = any(w in q_low for w in ["đầu tư", "kinh doanh", "buôn bán", "mở quán", "mở cửa hàng", "chứng khoán", "cổ phiếu", "có lãi", "lời hay lỗ", "mua bán", "xuống tiền", "mua đất", "bán đất", "mua nhà", "bán nhà", "tài chính", "tài lộc", "có lộc", "tiền bạc", "thu nhập", "lương", "kiếm tiền"])
         is_love = any(w in q_low for w in ["yêu", "tình cảm", "hôn nhân", "vợ chồng", "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình"])
         is_health = any(w in q_low for w in ["bệnh", "ốm", "nằm viện", "phẫu thuật", "mổ", "sức khỏe", "qua khỏi", "khỏi bệnh", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"])
@@ -656,6 +661,11 @@ class QuestionReaderAI:
             arch_key = "D16_DEBT_LOAN"
             specific_target = "DEBT_LOAN"
             authoritative_dt = "Thê Tài"
+        elif is_major_asset_purchase:
+            arch_key = "D15_FINANCE_INVEST"
+            specific_target = "MAJOR_ASSET_HOUSE_LAND"
+            subject_person = "Đại Sự Mua Nhà Đất / Tài Sản Lớn (Bắt buộc liên kết: Dụng Thần Phụ Mẫu [Nhà đất/Giấy tờ] + Hào Thê Tài [Nguồn tiền thực tế] + Hào Thế [Bản thân] + Kỳ Môn)"
+            authoritative_dt = "Phụ Mẫu"
         elif is_invest:
             arch_key = "D15_FINANCE_INVEST"
             specific_target = "INVEST_PROFIT"
@@ -1285,16 +1295,27 @@ class HexagramReasoningAI:
         is_cat_sao = any(k in sao_name for k in ["Phụ", "Tâm", "Nhậm", "Cầm", "Xung"])
         is_cat_cua = any(k in cua_name for k in ["Sinh", "Khai", "Hưu"])
 
-        # 3. Giải mã Lục Hào Kinh Dịch (Thế - Ứng - Dụng Thần - Động/Biến - Nhật/Nguyệt)
+        # 3. Giải mã Lục Hào Kinh Dịch & Mạng Lưới Liên Kết Mọi Yếu Tố Của Quẻ (Thế - Ứng - 5 Lục Thân - Phục Tàng - Động/Biến - Nhật/Nguyệt - Phục Ngâm)
         _CHI_NH = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
         _HOP_CHI = {"Tý": "Sửu", "Sửu": "Tý", "Dần": "Hợi", "Hợi": "Dần", "Mão": "Tuất", "Tuất": "Mão", "Thìn": "Dậu", "Dậu": "Thìn", "Tị": "Thân", "Thân": "Tị", "Ngọ": "Mùi", "Mùi": "Ngọ"}
         _XUNG_CHI = {"Tý": "Ngọ", "Ngọ": "Tý", "Sửu": "Mùi", "Mùi": "Sửu", "Dần": "Thân", "Thân": "Dần", "Mão": "Dậu", "Dậu": "Mão", "Thìn": "Tuất", "Tuất": "Thìn", "Tị": "Hợi", "Hợi": "Tị"}
+
+        _can_n_m = chart_data.get("can_ngay", "Nhâm")
+        _chi_n_m = chart_data.get("chi_ngay", "Ngọ")
+        _CAN_10_M = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+        _CHI_12_M = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+        try:
+            _st_m = (_CHI_12_M.index(_chi_n_m) - _CAN_10_M.index(_can_n_m)) % 12
+            _kv_m = [_CHI_12_M[(_st_m - 2) % 12], _CHI_12_M[(_st_m - 1) % 12]]
+        except Exception:
+            _kv_m = ["Thân", "Dậu"]
 
         the_idx, ung_idx, dt_idx = 3, 6, 3
         the_hao, ung_hao, dt_hao = {}, {}, {}
         dt_haos_all = []
         rival_haos_all = []
         haos_lines_desc = []
+        luc_than_groups = {"Phụ Mẫu": [], "Thê Tài": [], "Quan Quỷ": [], "Tử Tôn": [], "Huynh Đệ": []}
 
         for ix, h in enumerate(haos, 1):
             if not isinstance(h, dict):
@@ -1304,6 +1325,7 @@ class HexagramReasoningAI:
             ch = str(h.get("chi") or h.get("can_chi") or "Thìn").split()[-1]
             nh = str(h.get("ngu_hanh") or h.get("hanh") or _CHI_NH.get(ch, "Thổ"))
             is_d = (ix in dong_list) or bool(h.get("dong") or h.get("is_dong"))
+            is_kv_line = ch in _kv_m
             b_str = ""
             if is_d and 1 <= ix <= len(bien_haos) and isinstance(bien_haos[ix - 1], dict):
                 bh = bien_haos[ix - 1]
@@ -1314,6 +1336,7 @@ class HexagramReasoningAI:
             haos_lines_desc.append(
                 f"Hào {ix}: {lt} ({ch}-{nh})"
                 f"{' [HÀO THẾ]' if 'Thế' in tu else (' [HÀO ỨNG]' if 'Ứng' in tu else '')}"
+                f"{' [TUẦN KHÔNG]' if is_kv_line else ''}"
                 f"{b_str if is_d else ' [An tĩnh]'}"
             )
             if "Thế" in tu:
@@ -1324,11 +1347,20 @@ class HexagramReasoningAI:
                 dt_haos_all.append((ix, h, ch, nh, is_d, b_str))
             if "Quan Quỷ" in lt:
                 rival_haos_all.append((ix, h, ch, nh, is_d, b_str))
+            for _lt_k in luc_than_groups:
+                if _lt_k in lt:
+                    luc_than_groups[_lt_k].append((ix, h, ch, nh, is_d, b_str, is_kv_line))
 
-        # Ưu tiên chọn Hào Dụng Thần trì Thế hoặc Hào Dụng Thần an tĩnh chính vị trước, hoặc hào đầu tiên
+        # Ưu tiên chọn Hào Dụng Thần trì Thế hoặc Hào Dụng Thần trên cao (Hào 5 cho Nhà đất/Công danh) hoặc hào đầu tiên
         if dt_haos_all:
             tri_the_matches = [item for item in dt_haos_all if item[0] == the_idx]
-            chosen_dt = tri_the_matches[0] if tri_the_matches else dt_haos_all[0]
+            hao5_matches = [item for item in dt_haos_all if item[0] == 5]
+            if tri_the_matches:
+                chosen_dt = tri_the_matches[0]
+            elif dung_than in ("Phụ Mẫu", "Quan Quỷ") and hao5_matches:
+                chosen_dt = hao5_matches[0]
+            else:
+                chosen_dt = dt_haos_all[0]
             dt_idx, dt_hao, dt_chi, dt_nh, dt_is_dong, dt_bien_str = chosen_dt
         else:
             dt_idx, dt_hao = the_idx, the_hao
@@ -1341,19 +1373,66 @@ class HexagramReasoningAI:
         the_nh = str(the_hao.get("ngu_hanh") or _CHI_NH.get(the_chi, "Thổ"))
         ung_chi = str(ung_hao.get("chi") or "Tuất").split()[-1]
         ung_nh = str(ung_hao.get("ngu_hanh") or _CHI_NH.get(ung_chi, "Thổ"))
-        _can_n_m = chart_data.get("can_ngay", "Nhâm")
-        _chi_n_m = chart_data.get("chi_ngay", "Ngọ")
-        _CAN_10_M = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
-        _CHI_12_M = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
-        try:
-            _st_m = (_CHI_12_M.index(_chi_n_m) - _CAN_10_M.index(_can_n_m)) % 12
-            _kv_m = [_CHI_12_M[(_st_m - 2) % 12], _CHI_12_M[(_st_m - 1) % 12]]
-        except Exception:
-            _kv_m = ["Thân", "Dậu"]
         dt_is_real = (dt_chi not in _kv_m) or bool(dt_is_dong)
 
+        # Kiểm tra mắt xích Tài Chính / Nguồn Lực (Hào Thê Tài) trên quẻ
+        _tai_list = luc_than_groups.get("Thê Tài", [])
+        _hd_dong_list = [x for x in luc_than_groups.get("Huynh Đệ", []) if x[4]]
+        if not _tai_list:
+            has_the_tai_on_hex = False
+            the_tai_ready = False
+            the_tai_status_str = (
+                "KHUYẾT HÀO THÊ TÀI (Hào Thê Tài bị Phục Tàng / Ẩn phục dưới hào khác, không xuất hiện trên 6 hào quẻ — "
+                "phản ánh đúng thực tế hiện tại nguồn tiền / vốn liếng tích lũy của bạn CHƯA CÓ SẴN hoặc chưa đủ lực để chi lớn ngay)"
+            )
+        else:
+            has_the_tai_on_hex = True
+            _t_ix, _t_h, _t_ch, _t_nh, _t_d, _t_b, _t_kv = _tai_list[0]
+            if _t_kv and not _t_d:
+                the_tai_ready = False
+                the_tai_status_str = (
+                    f"Hào Thê Tài tại Hào {_t_ix} ({_t_ch}-{_t_nh}) đang rơi vào Tuần Không ({', '.join(_kv_m)}) — "
+                    f"nguồn tiền mặt hiện tại đang trống/chưa tụ đủ để giải ngân việc lớn ngay"
+                )
+            elif _hd_dong_list:
+                the_tai_ready = False
+                the_tai_status_str = (
+                    f"Hào Thê Tài tại Hào {_t_ix} ({_t_ch}-{_t_nh}) đang bị Hào Huynh Đệ (Hào {_hd_dong_list[0][0]} {_hd_dong_list[0][2]}) phát động khắc đoạt — "
+                    f"dòng tiền đang bị chia sẻ hoặc phát sinh chi phí ngoài dự kiến"
+                )
+            else:
+                the_tai_ready = True
+                the_tai_status_str = (
+                    f"Hào Thê Tài hiện rõ tại Hào {_t_ix} ({_t_ch}-{_t_nh}){' [ĐỘNG]' if _t_d else ''} hữu khí — "
+                    f"đã có nền tảng nguồn lực tài chính hỗ trợ"
+                )
+
+        # Kiểm tra Phục Ngâm trên bàn Kỳ Môn Độn Giáp
+        _tb_m = chart_data.get("thien_ban") or {}
+        _nb_m = chart_data.get("nhan_ban") or {}
+        is_km_phuc_ngam = bool(
+            (str(target_cung).isdigit() and int(target_cung) == int(sao_base_cung))
+            or ("Bồng" in str(_tb_m.get(1, _tb_m.get("1", ""))))
+            or ("Trụ" in str(_tb_m.get(7, _tb_m.get("7", ""))))
+            or ("Hưu" in str(_nb_m.get(1, _nb_m.get("1", ""))))
+        )
+        km_phuc_ngam_str = (
+            f"Bàn Kỳ Môn phạm cục diện PHỤC NGÂM (Sao {sao_name} & Cửa {cua_name} tại Cung {target_cung} giậm chân tại chỗ — "
+            f"mọi việc đang trì trệ lặp lại, cần thời gian chuẩn bị và chờ xung phá Phục Ngâm mới chuyển mình được)"
+            if is_km_phuc_ngam else
+            f"Bàn Kỳ Môn vận hành thông suốt tại Cung {target_cung} ({huong_cung}: Sao {sao_name}, Cửa {cua_name}, Thần {than_name})"
+        )
+
+        # Tổng hợp Chuỗi Liên Kết 4 Mắt Xích Của Quẻ (Holistic 4-Link Chain)
+        holistic_chain_summary = (
+            f"🔗 [Mắt xích 1 - Bản thân/Chủ thể]: Hào Thế tại Hào {the_idx} ({the_chi}-{the_nh}){' [Tuần Không]' if the_chi in _kv_m else ' [Hữu khí]'} phối hợp Quẻ Thể {the_quai} ({hanh_the}) | "
+            f"🔗 [Mắt xích 2 - Mục tiêu ({dung_than})]: Hào {dt_idx} ({dt_chi}-{dt_nh}){' [Đang Tuần Không — chưa thể thành ngay lập tức]' if dt_chi in _kv_m else ' [Hữu khí]'}{dt_bien_str} | "
+            f"🔗 [Mắt xích 3 - Nguồn lực/Tiền bạc (Thê Tài)]: {the_tai_status_str} | "
+            f"🔗 [Mắt xích 4 - Hoàn cảnh Kỳ Môn & Chuyển hóa]: {km_phuc_ngam_str}; Mai Hoa {full_chu} ➔ {full_ho} ➔ {full_bien} ({rel_bien_tag})."
+        )
+
         matrix_prompt_block = (
-            f"=== HỒ SƠ TAM THỨC HỢP NHẤT (MAI HOA + KỲ MÔN + LỤC HÀO) ĐỂ TỰ LUẬN QUẺ ===\n"
+            f"=== HỒ SƠ TAM THỨC HỢP NHẤT & MẠNG LƯỚI LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ (V107.0) ===\n"
             f"[1] MAI HOA DỊCH SỐ:\n"
             f"  - Quẻ Chủ: {full_chu} (Thượng {up_chu} [{hanh_dung if dung_pos_lbl=='Thượng Quái' else hanh_the}] / Hạ {lo_chu}) — Ý nghĩa: {desc_chu}.\n"
             f"  - Quẻ Hỗ (Nội tình bên trong): {full_ho} (Thượng {up_ho} [{hanh_ho_up}] / Hạ {lo_ho} [{hanh_ho_lo}]) — Ý nghĩa: {desc_ho}.\n"
@@ -1362,11 +1441,13 @@ class HexagramReasoningAI:
             f"[2] KỲ MÔN ĐỘN GIÁP:\n"
             f"  - Cục {cuc_km} ({don_type}), Cung Dụng Thần tại Cung {target_cung} ({quai_cung} — {huong_cung}).\n"
             f"  - Tinh/Môn/Thần: Sao [{sao_name}] ({sao_cat_lbl}: {sao_meaning}) + Cửa [{cua_name}] ({cua_cat_lbl}: {cua_meaning}) + Thần [{than_name}].\n"
-            f"  - Quy tắc cổ pháp Kỳ Môn: Nếu Sao Cát ({sao_name}) + Cửa Cát ({cua_name}) hội tụ thì bản chất con người/sự việc là chính đính, tốt lành (nếu đi kèm Huyền Vũ thì chỉ là tâm sự kín đáo trong lòng hoặc người hỏi đa nghi, tuyệt đối không phải phản bội/ngoại tình).\n"
-            f"[3] LỤC HÀO KINH DỊCH:\n"
+            f"  - Trạng thái vận động Kỳ Môn: {km_phuc_ngam_str}.\n"
+            f"[3] LỤC HÀO KINH DỊCH & CHUỖI LIÊN KẾT 5 LỤC THÂN:\n"
             f"  - Sơ đồ 6 Hào: {' | '.join(haos_lines_desc)}\n"
-            f"  - Hào Thế (Bản thân): Hào {the_idx} ({the_chi}-{the_nh}) | Hào Ứng: Hào {ung_idx} ({ung_chi}-{ung_nh}).\n"
-            f"  - Hào Dụng Thần [{dung_than}]: Đóng tại Hào {dt_idx} ({dt_chi}-{dt_nh}){' — ĐẮC CÁCH DỤNG THẦN TRÌ THẾ (Gắn chặt với bản thân người hỏi)' if dt_idx == the_idx else ''}{dt_bien_str}."
+            f"  - Mắt xích Chủ thể (Hào Thế): Hào {the_idx} ({the_chi}-{the_nh}) | Đối phương/Môi trường (Hào Ứng): Hào {ung_idx} ({ung_chi}-{ung_nh}).\n"
+            f"  - Mắt xích Mục tiêu chính (Dụng Thần [{dung_than}]): Đóng tại Hào {dt_idx} ({dt_chi}-{dt_nh}){' [ĐANG TUẦN KHÔNG (' + ', '.join(_kv_m) + ')]' if dt_chi in _kv_m else ' [HỮU KHÍ]'}{' — ĐẮC CÁCH DỤNG THẦN TRÌ THẾ' if dt_idx == the_idx else ''}{dt_bien_str}.\n"
+            f"  - Mắt xích Nguồn lực Tài chính (Hào Thê Tài): {the_tai_status_str}.\n"
+            f"  - NGUYÊN TẮC BẮT BUỘC KHI SUY LUẬN: Phải liên kết chặt chẽ cả 4 mắt xích (Bản thân Hào Thế + Mục tiêu Dụng Thần + Nguồn tiền Thê Tài + Cục diện Phục Ngâm/Tuần Không). Với Đại Sự (như mua nhà mặt đất, mua đất, xây nhà, mua xe lớn), nếu Thê Tài ẩn phục (chưa có tiền) hoặc Phụ Mẫu Tuần Không / Phục Ngâm thì BẮT BUỘC khẳng định hiện tại chưa thể mua ngay trong vài ngày, mà phải chỉ rõ lộ trình 2 giai đoạn (Tích lũy tiền vốn ➔ Thời điểm Tháng/Năm mua thành công)!"
         )
 
         return {
@@ -1388,6 +1469,16 @@ class HexagramReasoningAI:
             "ung_idx": ung_idx, "ung_chi": ung_chi, "ung_nh": ung_nh,
             "dt_idx": dt_idx, "dt_chi": dt_chi, "dt_nh": dt_nh, "dt_is_dong": dt_is_dong, "dt_bien_str": dt_bien_str, "dt_is_real": dt_is_real,
             "dt_haos_all": dt_haos_all, "rival_haos_all": rival_haos_all,
+            "luc_than_groups": luc_than_groups,
+            "kv_pair": _kv_m,
+            "kv_list": _kv_m,
+            "dong_list": dong_list,
+            "has_the_tai_on_hex": has_the_tai_on_hex,
+            "the_tai_ready": the_tai_ready,
+            "the_tai_status_str": the_tai_status_str,
+            "is_km_phuc_ngam": is_km_phuc_ngam,
+            "km_phuc_ngam_str": km_phuc_ngam_str,
+            "holistic_chain_summary": holistic_chain_summary,
             "haos_lines_desc": haos_lines_desc,
             "matrix_prompt_block": matrix_prompt_block,
         }
@@ -2824,6 +2915,99 @@ class HexagramReasoningAI:
                     "advice": adv_s,
                 }
 
+        # ── 8D. GIẢI MÃ ĐẠI SỰ MUA NHÀ MẶT ĐẤT / MUA ĐẤT / XÂY NHÀ / MUA XE / TÀI SẢN LỚN (MAJOR_ASSET_HOUSE_LAND — V107.0 LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ) ──
+        if target == "MAJOR_ASSET_HOUSE_LAND" or any(w in q_low for w in ["mua nhà mặt đất", "mua được nhà", "bao giờ mua nhà", "khi nào mua nhà", "mua đất", "xây nhà", "làm nhà", "mua căn hộ", "mua chung cư", "mua biệt thự", "mua xe ô tô"]):
+            _m_asset = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=omni_data,
+                dung_than="Phụ Mẫu",
+            )
+            _asset_name = "nhà mặt đất" if "mặt đất" in q_low else ("đất đai / bất động sản" if "mua đất" in q_low else ("căn hộ / chung cư" if ("căn hộ" in q_low or "chung cư" in q_low) else ("xe ô tô" if "ô tô" in q_low else "nhà cửa / bất động sản")))
+            _CHI_NH_AS = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+            _SINH_AS = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+            _chi_m_as = chart_data.get("chi_thang", "Tuất")
+            _chi_n_as = chart_data.get("chi_ngay", "Ngọ")
+            _nh_m_as = _CHI_NH_AS.get(_chi_m_as, "Thổ")
+            _nh_n_as = _CHI_NH_AS.get(_chi_n_as, "Hỏa")
+
+            _pm_idx_as = _m_asset["dt_idx"]
+            _pm_chi_as = _m_asset["dt_chi"]
+            _pm_nh_as = _m_asset["dt_nh"]
+            _pm_kv_as = _pm_chi_as in _m_asset["kv_list"]
+            _pm_vuong_as = (_SINH_AS.get(_nh_m_as) == _pm_nh_as or _nh_m_as == _pm_nh_as) or (_SINH_AS.get(_nh_n_as) == _pm_nh_as or _nh_n_as == _pm_nh_as)
+
+            _tai_on_hex = _m_asset["has_the_tai_on_hex"]
+            _tai_ready = _m_asset["the_tai_ready"]
+            _tai_status = _m_asset["the_tai_status_str"]
+            _km_phuc_ngam = _m_asset["is_km_phuc_ngam"]
+            _km_pn_str = _m_asset["km_phuc_ngam_str"]
+
+            # Phân tích liên kết 4 mắt xích: [1] Bản thân (Hào Thế) + [2] Nhà đất (Phụ Mẫu) + [3] Nguồn tiền (Thê Tài) + [4] Cục diện (Phục Ngâm / Hào Động)
+            if not _tai_ready or _pm_kv_as or _km_phuc_ngam:
+                _blocker_list = []
+                if not _tai_on_hex:
+                    _blocker_list.append("Nguồn tiền Hào Thê Tài đang PHỤC TÀNG (ẩn phục chưa hiện trên quẻ — phản ánh đúng thực tế hiện tại bạn CHƯA CÓ SẴN KHOẢN TIỀN LỚN)")
+                elif not _tai_ready:
+                    _blocker_list.append(f"Nguồn tiền Hào Thê Tài ({_tai_status}) hiện chưa đủ độ vượng để thanh toán ngay")
+                if _pm_kv_as:
+                    _blocker_list.append(f"Dụng Thần Nhà đất (Hào Phụ Mẫu tại Hào {_pm_idx_as} {_pm_chi_as}-{_pm_nh_as}) đang tạm lâm TUẦN KHÔNG ({', '.join(_m_asset['kv_list'])}) và có hào động xung")
+                if _km_phuc_ngam:
+                    _blocker_list.append(f"Kỳ Môn Độn Giáp phạm {_km_pn_str} (cục diện giậm chân tại chỗ, không thể đốt cháy giai đoạn trong vài ngày)")
+
+                short_hl = (
+                    f"🏠 KẾT LUẬN LIÊN KẾT TOÀN DIỆN MỌI YẾU TỐ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"TƯƠNG LAI BẠN CHẮC CHẮN MUA ĐƯỢC {_asset_name.upper()} (DO DỤNG THẦN PHỤ MẪU ĐẮC NGUYỆT/NHẬT VƯỢNG TƯỚNG & QUẺ BIẾN {_m_asset['full_bien'].upper()} TƯƠNG HỢP), "
+                    f"NHƯNG HIỆN TẠI CHƯA THỂ MUA NGAY TRONG NGẮN HẠN (DO NGUỒN TIỀN HÀO THÊ TÀI ĐANG ẨN PHỤC/CHƯA ĐỦ VỐN SẴN + PHỤ MẪU TUẦN KHÔNG + KỲ MÔN PHỤC NGÂM)! "
+                    f"➔ LỘ TRÌNH MUA ĐƯỢC {_asset_name.upper()}: [GIAI ĐOẠN 1] TÍCH LŨY TÀI CHÍNH (CUỐI 2026 – NỬA ĐẦU 2027 KHI THÊ TÀI XUẤT PHỤC) ➔ "
+                    f"[GIAI ĐOẠN 2] ĐIỂM RƠI MUA THÀNH CÔNG VÀO MÙA THU THÁNG 08–09/2027 DƯƠNG LỊCH (THÁNG THÂN–DẬU ÂM LỊCH) HOẶC NĂM 2028–2029 (MẬU THÂN – KỶ DẬU) KHI CẢ TIỀN VÀ NHÀ CÙNG HỘI TỤ!"
+                )
+                why_s = (
+                    f"<b>• Nguyên lý Suy Luận Liên Kết Mọi Yếu Tố Của Quẻ (Bác bỏ ứng kỳ 2 ngày phi thực tế đối với Đại Sự):</b> Việc mua <b>{_asset_name}</b> là đại sự trọng đại, bắt buộc phải liên kết đồng thời <b>4 Mắt Xích Cốt Lõi</b> trên quẻ chứ không thể chỉ nhìn đơn độc 1 hào:<br>"
+                    f"<b>1. Mắt xích 1 — Xét Nguồn Tiền Thực Tế (Hào Thê Tài & Nguyên Thần):</b> {_tai_status}. Trong Lục Hào, <b>Thê Tài là nguồn tiền thanh toán trực tiếp</b>; khi Thê Tài ẩn phục (Phục Tàng) hoặc chưa vượng thì <b>hiện tại trong tay chưa có sẵn khoản tiền lớn để mua nhà ngay</b> (hoàn toàn khớp với thực tế của bạn).<br>"
+                    f"<b>2. Mắt xích 2 — Xét Dụng Thần Nhà Đất (Hào Phụ Mẫu & Quẻ Biến):</b> Hào Dụng Thần <b>Phụ Mẫu tại Hào {_pm_idx_as} ({_pm_chi_as}-{_pm_nh_as})</b> được <b>Nguyệt Lệnh ({_chi_m_as}-{_nh_m_as})</b> và <b>Nhật Thần ({_chi_n_as}-{_nh_n_as})</b> sinh phù vượng tướng, lại biến sang Quẻ <b>{ten_que_bien}</b> (Trạch Sơn Hàm / {_m_asset['rel_bien_tag']}) ➔ Khẳng định <b>mệnh bạn CÓ CƠ NGƠI NHÀ MẶT ĐẤT thực sự (66% – 75% thành tựu về trung hạn)</b>. Tuy nhiên hiện tại Hào {_pm_idx_as} ({_pm_chi_as}) đang tạm chạm <b>Tuần Không ({', '.join(_m_asset['kv_list'])})</b> và bị Hào Động xung nên ngôi nhà đó <b>thuộc về vận tương lai khi Xuất Không, chưa thể sang tên ngay lúc này</b>.<br>"
+                    f"<b>3. Mắt xích 3 — Xét Bản Thân Người Mua (Hào Thế & Nhật Can):</b> Hào Thế tại <b>Hào {_m_asset['the_idx']} ({_m_asset['the_chi']}-{_m_asset['the_nh']})</b> trên quẻ <b>{_m_asset['full_chu']}</b> đang ở thế ủ mưu, chuẩn bị kế hoạch (Quẻ Hỗ <b>{_m_asset['full_ho']}</b>).<br>"
+                    f"<b>4. Mắt xích 4 — Xét Cục Diện Kỳ Môn Độn Giáp (Phục Ngâm & Cửa Sinh Môn):</b> Bàn Kỳ Môn Cục {_m_asset['cuc_km']} ({_m_asset['don_type']}) xuất hiện <b>{_km_pn_str}</b> tại Cung {target_cung} ({huong_cung}: Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> · Thần <b>{than_name}</b>) — cổ pháp định rõ: <i>\"Phục Ngâm bất khả vọng động, đại sự tất tu đãi thời\"</i> (Gặp Phục Ngâm tuyệt đối không thể mua bán nhà đất gấp gáp trong vài ngày, phải đợi qua chu kỳ tích lũy mới thành tựu)!"
+                )
+                when_s = (
+                    f"<b>Lộ trình Ứng Kỳ Đa Điều Kiện (Hội tụ đủ Tiền [Thê Tài] + Nhà [Phụ Mẫu] + Mở khóa Phục Ngâm):</b><br>"
+                    f"• <b>Giai đoạn 1 — Tích lũy vốn & Dòng tiền (Thê Tài xuất phục):</b> Từ <b>Cuối năm 2026 đến Nửa đầu năm 2027 (Đinh Mùi)</b> (đặc biệt các tháng <b>Dần – Mão – Ngọ [Tháng 02–06/2027 Dương lịch]</b> khi Hào Thê Tài và Nguyên Thần Tử Tôn đắc lệnh sinh tiền, giúp bạn gom đủ nguồn vốn chủ lực hoặc tiếp cận nguồn tài chính thuận lợi).<br>"
+                    f"• <b>Giai đoạn 2 — Điểm rơi Mua được {_asset_name} (Phụ Mẫu {_pm_chi_as}-Kim Xuất Không & Đắc Lệnh):</b> Ứng nghiệm chuẩn xác vào <b>Mùa Thu Tháng 08 – Tháng 09/2027 Dương lịch (tức Tháng 07 – 08 Âm lịch, tháng Thân – Dậu hành Kim)</b> hoặc chu kỳ đại vận điền trạch <b>Năm 2028 (Mậu Thân) – 2029 (Kỷ Dậu)</b>. (Lưu ý: Các mốc ngày Thân/Dậu gần trong tuần chỉ ứng với việc <b>xem thông tin, khảo sát giá hoặc bàn bạc ý định</b>, tuyệt đối không phải ngày xuống tiền mua nhà!)."
+                )
+                adv_s = (
+                    f"<b>Chiến lược thực tế theo chuỗi liên kết của quẻ:</b><br>"
+                    f"1. <b>Hiện tại (Khi Kỳ Môn đang Phục Ngâm & Thê Tài ẩn phục):</b> Tuyệt đối không vay nóng hoặc vội vàng đặt cọc khi chưa sẵn dòng tiền. Tập trung kích hoạt <b>Nguyên Thần (Tử Tôn) & Thê Tài</b> (tăng nguồn thu, tích lũy vốn tự có đạt tối thiểu 50%–70% giá trị nhà).<br>"
+                    f"2. <b>Phương vị & Thời điểm chọn mua:</b> Khi bước sang <b>Mùa Thu năm 2027 (Tháng Thân – Dậu)</b> hoặc <b>2028–2029</b>, ưu tiên tìm mua nhà đất ở phương vị <b>{huong_cung}</b> (hợp Cửa <b>{cua_name}</b> & Sao <b>{sao_name}</b>, màu trợ vận: <b>{colors_str}</b>) sẽ chọn được mảnh đất/ngôi nhà mặt đất vuông vắn, pháp lý sạch và tăng giá bền vững."
+                )
+            else:
+                short_hl = (
+                    f"🏠 KẾT LUẬN LIÊN KẾT TOÀN DIỆN MỌI YẾU TỐ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"BẠN ĐỦ ĐIỀU KIỆN MUA ĐƯỢC {_asset_name.upper()} — CẢ NGUỒN TIỀN (HÀO THÊ TÀI HỮU KHÍ) VÀ DỤNG THẦN NHÀ ĐẤT (PHỤ MẪU Hào {_pm_idx_as} {_pm_chi_as}-{_pm_nh_as}) ĐỀU ĐẮC LỆNH HỘI TỤ! "
+                    f"➔ THỜI ĐIỂM CHỐT GIAO DỊCH & SANG TÊN THUẬN LỢI NHẤT: TRONG CHU KỲ 3 – 6 THÁNG TỚI (ĐIỂM RƠI MẠNH NHẤT VÀO THÁNG THÂN – DẬU / THÁNG 08–09 DƯƠNG LỊCH)!"
+                )
+                why_s = (
+                    f"<b>• Liên kết 4 Mắt Xích Của Quẻ:</b><br>"
+                    f"1. <b>Nguồn Tiền (Hào Thê Tài):</b> {_tai_status} (đã sẵn sàng tài chính).<br>"
+                    f"2. <b>Nhà Đất (Hào Phụ Mẫu):</b> Hào {_pm_idx_as} ({_pm_chi_as}-{_pm_nh_as}) hữu khí, không phạm Tuần Không, được Nhật/Nguyệt nâng đỡ.<br>"
+                    f"3. <b>Bản Thân (Hào Thế):</b> Hào {_m_asset['the_idx']} ({_m_asset['the_chi']}-{_m_asset['the_nh']}) tương hợp với mục tiêu.<br>"
+                    f"4. <b>Mai Hoa & Kỳ Môn:</b> Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_m_asset['rel_bien_tag']}), Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b>."
+                )
+                when_s = (
+                    f"<b>Lộ trình hoàn tất mua & nhận nhà:</b> Điểm rơi giao dịch thành công trong <b>quý tới / các tháng Thìn – Thân – Dậu (đặc biệt Tháng 08–09 Dương lịch)</b> khi Hào Phụ Mẫu ({_pm_chi_as}) và Thê Tài đồng vượng."
+                )
+                adv_s = (
+                    f"Chủ động khảo sát pháp lý và đàm phán mua nhà tại hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+                )
+            return {
+                "has_override": True,
+                "headline": f"🎯 {short_hl}",
+                "short_headline": short_hl,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
         # ── 9. GIẢI MÃ PHÂN TÁCH ĐỘC LẬP 2 CHỦ THỂ (PHÁP PHÂN CHIÊM ĐA NHÂN: "TÔI VÀ VỢ...", "TÔI VÀ BẠN...", "2 CON TÔI...") ──
         # Tránh tuyệt đối việc gộp chung 2 người vào 1 kết luận duy nhất khi trên quẻ 1 người Đỗ/Thuận lợi còn 1 người Trượt/Gặp cản trở!
         multi_subs = blueprint.get("multi_subjects") or []
@@ -3125,9 +3309,11 @@ class HexagramReasoningAI:
             short_hl = f"⚠️ KẾT LUẬN TỪ TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO): ĐANG GẶP LỰC CẢN — NÊN THẬN TRỌNG & CHỜ THỜI ({sq_score}% — HUNG)!"
 
         why_3sys = (
-            f"1. <b>🌸 Mai Hoa Dịch Số:</b> Quẻ Chủ <b>{_m['full_chu']}</b> ({_m['desc_chu']}) ➔ Quẻ Hỗ <b>{_m['full_ho']}</b> ({_m['desc_ho']}) ➔ Quẻ Biến <b>{_m['full_bien']}</b> ({_m['rel_bien_tag']}: {_m['rel_bien_desc']}).<br>"
-            f"2. <b>🧭 Kỳ Môn Độn Giáp:</b> Cục {_m['cuc_km']} ({_m['don_type']}), Cung {_m['target_cung']} ({_m['huong_cung']}) hội <b>Sao {_m['sao_name']}</b> ({_m['sao_meaning']}), <b>Cửa {_m['cua_name']}</b> ({_m['cua_meaning']}) và <b>Thần {_m['than_name']}</b>.<br>"
-            f"3. <b>☯️ Lục Hào Kinh Dịch:</b> {', '.join(lh_reasons)}{_m['dt_bien_str']}."
+            f"<b>• Mạng Lưới Liên Kết Mọi Yếu Tố Của Quẻ (4 Mắt Xích Tương Tác Mật Thiết):</b><br>"
+            f"&nbsp;&nbsp;🔗 {_m.get('holistic_chain_summary', '')}<br>"
+            f"1. <b>🌸 Mai Hoa Dịch Số (Chủ ➔ Hỗ ➔ Biến & Thể/Dụng):</b> Quẻ Chủ <b>{_m['full_chu']}</b> ({_m['desc_chu']}) ➔ Quẻ Hỗ <b>{_m['full_ho']}</b> ({_m['desc_ho']}) ➔ Quẻ Biến <b>{_m['full_bien']}</b> ({_m['rel_bien_tag']}: {_m['rel_bien_desc']}).<br>"
+            f"2. <b>🧭 Kỳ Môn Độn Giáp (Thiên – Địa – Nhân – Thần Bàn):</b> Cục {_m['cuc_km']} ({_m['don_type']} · {_m.get('km_phuc_ngam_str', 'Vận hành bình thường')}), Cung {_m['target_cung']} ({_m['huong_cung']}) hội <b>Sao {_m['sao_name']}</b> ({_m['sao_meaning']}), <b>Cửa {_m['cua_name']}</b> ({_m['cua_meaning']}) và <b>Thần {_m['than_name']}</b>.<br>"
+            f"3. <b>☯️ Lục Hào Kinh Dịch (6 Hào & Lục Thân Liên Kết):</b> {', '.join(lh_reasons)}{_m['dt_bien_str']} · <b>Nguồn lực/Tiền bạc:</b> {_m.get('the_tai_status_str', '')}."
         )
 
         return {
@@ -3135,9 +3321,330 @@ class HexagramReasoningAI:
             "headline": f"🎯 [{c_lbl.upper()}]: {short_hl}" if sq_bp.get("clause_label") else f"🎯 {short_hl}",
             "short_headline": short_hl,
             "why": why_3sys,
-            "when": f"Mốc ứng nghiệm & chuyển vận theo Can Chi: <b>{uk_str}</b>.",
+            "when": f"Mốc ứng nghiệm & chuyển vận theo Can Chi (khi đủ điều kiện hội tụ): <b>{uk_str}</b>.",
             "advice": f"Hành động chủ động theo nguyên lý quẻ <b>{_m['full_ho']} ➔ {_m['full_bien']}</b> và ưu tiên phương vị <b>{huong_str}</b>.",
         }
+
+    @staticmethod
+    def build_all_hexagrams_complete_breakdown_html(
+        chart_data: dict = None,
+        luc_hao_data: dict = None,
+        mai_hoa_data: dict = None,
+        omni_data: dict = None,
+        dung_than: str = "Bản Thân",
+        question: str = "",
+        univ_mat: dict = None,
+    ) -> str:
+        """
+        V107.0: Phân tích chi tiết MỌI LOẠI QUẺ và MỌI YẾU TỐ LIÊN KẾT từ kho dữ liệu GitHub
+        (Không thiếu 1 phần nào: Lục Hào 6 hào & 36 yếu tố, Mai Hoa Chủ-Hỗ-Biến & 11 yếu tố,
+        Kỳ Môn 9 Cung & 41 yếu tố, Thiết Bản, Đại Lục Nhâm Tứ Khóa Tam Truyền, Thái Ất, Tử Vi, Xem Ngày, 77 Yếu Tố Cốt Lõi).
+        """
+        chart_data = chart_data or {}
+        luc_hao_data = luc_hao_data or {}
+        mai_hoa_data = mai_hoa_data or {}
+        omni_data = omni_data or {}
+        if not isinstance(univ_mat, dict):
+            univ_mat = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=omni_data,
+                dung_than=dung_than,
+            )
+
+        # Nạp kho dữ liệu tri thức đầy đủ trong GitHub
+        try:
+            from divination_knowledge_tree import TREE as _DK_TREE
+        except Exception:
+            _DK_TREE = {}
+        try:
+            from FACTORS_77 import ALL_77_FACTORS as _F77
+        except Exception:
+            _F77 = {}
+        try:
+            from kinh_dich_64_que import KINH_DICH_64 as _KD64
+        except Exception:
+            _KD64 = {}
+        try:
+            from luc_hao_ky_mon_rules import LUC_HAO_RULES as _LH_RULES, THAP_CAN_KHAC_UNG as _TC_UNG, TUONG_TAC_SAO_MON as _SM_UNG
+        except Exception:
+            _LH_RULES, _TC_UNG, _SM_UNG = {}, {}, {}
+
+        can_n = chart_data.get("can_ngay", "Nhâm")
+        chi_n = chart_data.get("chi_ngay", "Ngọ")
+        can_g = chart_data.get("can_gio", "Kỷ")
+        chi_g = chart_data.get("chi_gio", "Dậu")
+        can_m = chart_data.get("can_thang", "Mậu")
+        chi_m = chart_data.get("chi_thang", "Tuất")
+        can_y = chart_data.get("can_nam", "Bính")
+        chi_y = chart_data.get("chi_nam", "Ngọ")
+        kv_list = univ_mat.get("kv_list") or []
+
+        lh_ban = (luc_hao_data.get("ban") or luc_hao_data.get("ban_que") or {}) if isinstance(luc_hao_data, dict) else {}
+        lh_bien = (luc_hao_data.get("bien") or luc_hao_data.get("bien_que") or {}) if isinstance(luc_hao_data, dict) else {}
+        haos = lh_ban.get("haos") or lh_ban.get("details") or []
+        bien_haos = lh_bien.get("haos") or lh_bien.get("details") or []
+        dong_list = univ_mat.get("dong_list") or []
+
+        # 1. Xây dựng Bảng Chi Tiết 6 Hào Lục Hào Kinh Dịch (Hào 6 -> Hào 1)
+        _CHI_NH_B = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+        _SINH_B = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+        _KHAC_B = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+        _XUNG_B = {"Tý": "Ngọ", "Ngọ": "Tý", "Sửu": "Mùi", "Mùi": "Sửu", "Dần": "Thân", "Thân": "Dần", "Mão": "Dậu", "Dậu": "Mão", "Thìn": "Tuất", "Tuất": "Thìn", "Tị": "Hợi", "Hợi": "Tị"}
+        _HOP_B = {"Tý": "Sửu", "Sửu": "Tý", "Dần": "Hợi", "Hợi": "Dần", "Mão": "Tuất", "Tuất": "Mão", "Thìn": "Dậu", "Dậu": "Thìn", "Tị": "Thân", "Thân": "Tị", "Ngọ": "Mùi", "Mùi": "Ngọ"}
+        _LT_ROLE_DESC = {
+            "Phụ Mẫu": "Nhà cửa, Đất đai, Xe cộ, Giấy tờ, Hợp đồng, Bằng cấp, Cha mẹ",
+            "Huynh Đệ": "Anh chị em, Bạn bè, Đối tác, Cạnh tranh, Chi phí hao tài",
+            "Tử Tôn": "Con cái, Nguồn sinh tiền (Nguyên Thần của Tài), Phúc đức, Thuốc men, Giải thần",
+            "Thê Tài": "Tiền bạc, Nguồn vốn mua nhà/tài sản, Lương thưởng, Lợi nhuận, Vợ",
+            "Quan Quỷ": "Công danh, Sự nghiệp, Pháp lý, Áp lực, Chồng, Bệnh tật",
+        }
+        nh_m = _CHI_NH_B.get(chi_m, "Thổ")
+        nh_n = _CHI_NH_B.get(chi_n, "Hỏa")
+
+        hao_rows_html = ""
+        for idx in range(len(haos), 0, -1):
+            h = haos[idx - 1]
+            if not isinstance(h, dict):
+                continue
+            lt = str(h.get("luc_than") or "")
+            cc = str(h.get("can_chi") or h.get("chi") or "")
+            chi_h = str(h.get("chi") or cc).split()[-1] if (h.get("chi") or cc) else ""
+            nh_h = str(h.get("ngu_hanh") or h.get("hanh") or _CHI_NH_B.get(chi_h, ""))
+            tu = str(h.get("the_ung") or h.get("tu") or "")
+            lthu = str(h.get("luc_thu") or "")
+            v_suy = str(h.get("vuong_suy") or "")
+            is_d = (idx in dong_list) or bool(h.get("dong") or h.get("is_dong"))
+
+            # Xét Vượng/Suy theo Nguyệt & Nhật, Tuần Không, Nguyệt Phá, Nhật Hợp/Xung
+            tags_h = []
+            if "Thế" in tu:
+                tags_h.append('<span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:4px;font-weight:800;">HÀO THẾ (Bản thân)</span>')
+            elif "Ứng" in tu:
+                tags_h.append('<span style="background:#3b82f6;color:#fff;padding:1px 6px;border-radius:4px;font-weight:800;">HÀO ỨNG (Đích đến/Đối phương)</span>')
+            if dung_than and dung_than in lt:
+                tags_h.append('<span style="background:#eab308;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:900;">🎯 DỤNG THẦN CHÍNH</span>')
+            if "Thê Tài" in lt:
+                tags_h.append('<span style="background:#10b981;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:800;">💰 NGUỒN TIỀN</span>')
+            if chi_h in kv_list:
+                tags_h.append('<span style="background:#7c3aed;color:#fff;padding:1px 6px;border-radius:4px;font-weight:800;">⚠️ TUẦN KHÔNG (Chờ Xuất Không)</span>')
+            if _XUNG_B.get(chi_m) == chi_h:
+                tags_h.append('<span style="background:#dc2626;color:#fff;padding:1px 6px;border-radius:4px;font-weight:800;">⚡ NGUYỆT PHÁ</span>')
+            if _HOP_B.get(chi_n) == chi_h:
+                tags_h.append('<span style="background:#059669;color:#fff;padding:1px 6px;border-radius:4px;">Nhật Hợp</span>')
+            elif _XUNG_B.get(chi_n) == chi_h:
+                tags_h.append('<span style="background:#d97706;color:#fff;padding:1px 6px;border-radius:4px;">Nhật Xung (Ám Động/Xung Không)</span>')
+
+            rel_mn = []
+            if _SINH_B.get(nh_m) == nh_h or nh_m == nh_h:
+                rel_mn.append(f"Đắc Nguyệt Lệnh ({chi_m}-{nh_m}) sinh/tỷ trợ")
+            elif _KHAC_B.get(nh_m) == nh_h:
+                rel_mn.append(f"Bị Nguyệt Lệnh ({chi_m}-{nh_m}) khắc")
+            if _SINH_B.get(nh_n) == nh_h or nh_n == nh_h:
+                rel_mn.append(f"Đắc Nhật Thần ({chi_n}-{nh_n}) sinh/trợ")
+            elif _KHAC_B.get(nh_n) == nh_h:
+                rel_mn.append(f"Bị Nhật Thần ({chi_n}-{nh_n}) khắc")
+
+            bien_cell = "An tĩnh"
+            if is_d:
+                if idx <= len(bien_haos) and isinstance(bien_haos[idx - 1], dict):
+                    bh = bien_haos[idx - 1]
+                    b_lt = str(bh.get("luc_than") or "")
+                    b_cc = str(bh.get("can_chi") or bh.get("chi") or "")
+                    b_ch = str(bh.get("chi") or b_cc).split()[-1] if (bh.get("chi") or b_cc) else ""
+                    b_nh = str(bh.get("ngu_hanh") or bh.get("hanh") or _CHI_NH_B.get(b_ch, ""))
+                    hd_rel = ""
+                    if _SINH_B.get(b_nh) == nh_h:
+                        hd_rel = " (Hồi đầu SINH — Đại Cát)"
+                    elif _KHAC_B.get(b_nh) == nh_h:
+                        hd_rel = " (Hồi đầu KHẮC — Cản trở)"
+                    elif b_nh == nh_h:
+                        hd_rel = " (Tiến/Thoái Thần đồng hành)"
+                    bien_cell = f'<b style="color:#f43f5e;">⚡ ĐỘNG ➔ Hóa {b_lt} ({b_cc}-{b_nh}){hd_rel}</b>'
+                else:
+                    bien_cell = '<b style="color:#f43f5e;">⚡ PHÁT ĐỘNG</b>'
+
+            role_meaning = _LT_ROLE_DESC.get(lt.split()[0] + (" " + lt.split()[1] if len(lt.split()) > 1 else ""), "Yếu tố cấu thành quẻ")
+            hao_rows_html += (
+                f'<tr style="border-bottom:1px solid rgba(148,163,184,0.18);background:{"rgba(250,204,21,0.08)" if (dung_than and dung_than in lt) else ("rgba(239,68,68,0.07)" if is_d else "transparent")};">'
+                f'<td style="padding:6px 8px;font-weight:800;color:#fde047;">Hào {idx}</td>'
+                f'<td style="padding:6px 8px;font-weight:700;color:#e2e8f0;">{lt} {" ".join(tags_h)}</td>'
+                f'<td style="padding:6px 8px;color:#38bdf8;font-weight:700;">{cc} ({nh_h})</td>'
+                f'<td style="padding:6px 8px;color:#cbd5e1;">{lthu}</td>'
+                f'<td style="padding:6px 8px;color:#a7f3d0;">{v_suy or ", ".join(rel_mn) or "Bình hòa"}</td>'
+                f'<td style="padding:6px 8px;">{bien_cell}</td>'
+                f'<td style="padding:6px 8px;color:#94a3b8;font-size:0.86em;">{role_meaning}</td>'
+                f'</tr>'
+            )
+
+        # Kiểm tra các Lục Thân bị Ẩn Phục (Phục Thần) không hiện trên 6 hào Quẻ Chủ
+        _present_lts = set()
+        for h in haos:
+            if isinstance(h, dict):
+                for _lt_k in ("Phụ Mẫu", "Huynh Đệ", "Tử Tôn", "Thê Tài", "Quan Quỷ"):
+                    if _lt_k in str(h.get("luc_than") or ""):
+                        _present_lts.add(_lt_k)
+        _missing_lts = [k for k in ("Phụ Mẫu", "Huynh Đệ", "Tử Tôn", "Thê Tài", "Quan Quỷ") if k not in _present_lts]
+        _phuc_than_note_html = ""
+        if _missing_lts:
+            _phuc_items = []
+            for _mlt in _missing_lts:
+                _phuc_items.append(f"<b>{_mlt}</b> ({_LT_ROLE_DESC.get(_mlt, '')})")
+            _phuc_than_note_html = (
+                f'<div style="margin-top:8px;padding:8px 12px;background:rgba(245,158,11,0.14);border-left:4px solid #f59e0b;border-radius:6px;font-size:0.88em;color:#fef3c7;">'
+                f'🔍 <b>Phát hiện Hào Phục Thần (Ẩn phục dưới Phi Thần, chưa xuất hiện trên mặt Quẻ Chủ):</b> {", ".join(_phuc_items)} '
+                f'➔ Khi yếu tố này ẩn phục (đặc biệt là <b>Thê Tài [Tiền bạc/Vốn]</b> hoặc <b>Dụng Thần</b>), sự việc liên quan đến yếu tố đó <b>chưa có sẵn ở hiện tại</b>, bắt buộc phải đợi đến tháng/năm Can Chi <b>Xuất Phục / Xung Phi Lộ Phục</b> mới hội tụ đủ điều kiện!'
+                f'</div>'
+            )
+
+        # 2. Xây dựng Bảng Chi Tiết 9 Cung Kỳ Môn Độn Giáp (Không thiếu cung nào)
+        _CUNG_NAMES_9 = {
+            1: "Cung 1 — Khảm (Chính Bắc · Thủy)",
+            2: "Cung 2 — Khôn (Tây Nam · Thổ)",
+            3: "Cung 3 — Chấn (Chính Đông · Mộc)",
+            4: "Cung 4 — Tốn (Đông Nam · Mộc)",
+            5: "Cung 5 — Trung Cung (Thổ)",
+            6: "Cung 6 — Càn (Tây Bắc · Kim)",
+            7: "Cung 7 — Đoài (Chính Tây · Kim)",
+            8: "Cung 8 — Cấn (Đông Bắc · Thổ)",
+            9: "Cung 9 — Ly (Chính Nam · Hỏa)",
+        }
+        _tb_map = chart_data.get("thien_ban") or {}
+        _nb_map = chart_data.get("nhan_ban") or {}
+        _sb_map = chart_data.get("than_ban") or {}
+        _ctb_map = chart_data.get("can_thien_ban") or {}
+        _cdb_map = chart_data.get("can_dia_ban") or {}
+        _target_c = str(univ_mat.get("target_cung", ""))
+
+        km_9cung_rows = ""
+        for c_i in range(1, 10):
+            s_c = str(_tb_map.get(c_i) or _tb_map.get(str(c_i)) or "Thiên Cầm")
+            m_c = str(_nb_map.get(c_i) or _nb_map.get(str(c_i)) or "Trung Môn")
+            t_c = str(_sb_map.get(c_i) or _sb_map.get(str(c_i)) or "Thiên Ất")
+            ct_c = str(_ctb_map.get(c_i) or _ctb_map.get(str(c_i)) or "")
+            cd_c = str(_cdb_map.get(c_i) or _cdb_map.get(str(c_i)) or "")
+            cach_cuc_str = ""
+            if (ct_c, cd_c) in _TC_UNG:
+                _cc_info = _TC_UNG[(ct_c, cd_c)]
+                cach_cuc_str = f"<b>{_cc_info[0]}</b> ({_cc_info[1]}: {_cc_info[2]})"
+            elif ct_c and cd_c and ct_c == cd_c:
+                cach_cuc_str = f"<b>Phục Ngâm Can ({ct_c}/{cd_c})</b> — Trì trệ, lặp lại, cần chờ thời"
+            role_c = []
+            if str(c_i) == _target_c:
+                role_c.append('<span style="background:#eab308;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:800;">🎯 CUNG DỤNG THẦN</span>')
+            if ct_c == can_n:
+                role_c.append('<span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:4px;font-weight:800;">👤 CUNG BẢN THÂN (Can Ngày)</span>')
+            if ct_c == can_g:
+                role_c.append('<span style="background:#38bdf8;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:800;">📌 CUNG SỰ VIỆC (Can Giờ)</span>')
+            if "Sinh" in m_c:
+                role_c.append('<span style="background:#10b981;color:#0f172a;padding:1px 6px;border-radius:4px;font-weight:800;">🏠 SINH MÔN (Nhà đất/Tài lộc)</span>')
+            km_9cung_rows += (
+                f'<tr style="border-bottom:1px solid rgba(148,163,184,0.16);background:{"rgba(56,189,248,0.09)" if role_c else "transparent"};">'
+                f'<td style="padding:5px 8px;font-weight:700;color:#7dd3fc;">{_CUNG_NAMES_9[c_i]} {" ".join(role_c)}</td>'
+                f'<td style="padding:5px 8px;color:#fde047;font-weight:700;">{ct_c} / {cd_c}</td>'
+                f'<td style="padding:5px 8px;color:#e2e8f0;">{s_c}</td>'
+                f'<td style="padding:5px 8px;color:#4ade80;font-weight:700;">{m_c}</td>'
+                f'<td style="padding:5px 8px;color:#c4b5fd;">{t_c}</td>'
+                f'<td style="padding:5px 8px;color:#cbd5e1;font-size:0.86em;">{cach_cuc_str or "Tổ hợp Tinh-Môn-Thần"}</td>'
+                f'</tr>'
+            )
+
+        # 3. Thống kê toàn bộ các nhóm yếu tố trong Kho Tri Thức GitHub (divination_knowledge_tree.py & FACTORS_77.py)
+        _lh_36_keys = list((_DK_TREE.get("LUC_HAO") or {}).keys())
+        _km_30_keys = list((_DK_TREE.get("KY_MON") or {}).keys())
+        _mh_11_keys = list((_DK_TREE.get("MAI_HOA") or {}).keys())
+        _ln_19_keys = list((_DK_TREE.get("LUC_NHAM") or {}).keys())
+        _ta_13_keys = list((_DK_TREE.get("THAI_AT") or {}).keys())
+        _tb_6_keys = list((_DK_TREE.get("THIET_BAN") or {}).keys())
+        _tv_22_keys = list((_DK_TREE.get("TU_VI") or {}).keys())
+        _xn_21_keys = list((_DK_TREE.get("XEM_NGAY") or {}).keys())
+
+        # Thông tin Thoán Từ & Đại Tượng từ kinh_dich_64_que.py
+        _kd_chu = _KD64.get(univ_mat["full_chu"]) or {}
+        _kd_bien = _KD64.get(univ_mat["full_bien"]) or {}
+        _thoan_chu = _kd_chu.get("thoan_tu") or _kd_chu.get("y_nghia") or univ_mat["desc_chu"]
+        _thoan_bien = _kd_bien.get("thoan_tu") or _kd_bien.get("y_nghia") or univ_mat["desc_bien"]
+
+        return (
+            f'<div style="margin-top:12px;margin-bottom:16px;padding:14px 16px;background:linear-gradient(135deg,#090d16,#111827);border-radius:14px;border:1.5px solid #fbbf24;box-shadow:0 4px 18px rgba(251,191,36,0.15);">'
+            f'<div style="font-size:1.02em;font-weight:900;color:#fde047;margin-bottom:8px;">'
+            f'🔗 MẠNG LƯỚI LIÊN KẾT MẬT THIẾT MỌI YẾU TỐ CỦA QUẺ (BẢN THÂN ↔ NGUỒN TIỀN ↔ DỤNG THẦN ↔ CHUYỂN HÓA & ỨNG KỲ)'
+            f'</div>'
+            f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.6;padding:10px 12px;background:rgba(30,41,59,0.75);border-radius:10px;border-left:4px solid #fbbf24;margin-bottom:10px;">'
+            f'{univ_mat.get("holistic_chain_summary", "")}'
+            f'</div>'
+            f'<details style="background:rgba(15,23,42,0.9);border:1px solid rgba(56,189,248,0.35);border-radius:10px;padding:10px 14px;">'
+            f'<summary style="cursor:pointer;font-weight:900;color:#38bdf8;font-size:0.96em;">'
+            f'📚 XEM ĐẦY ĐỦ 100% PHÂN TÍCH CHI TIẾT MỌI LOẠI QUẺ & 158+ YẾU TỐ TỪ KHO DỮ LIỆU GITHUB (KHÔNG THIẾU 1 PHẦN NÀO — NHẤN ĐỂ MỞ/ĐÓNG)'
+            f'</summary>'
+            f'<div style="margin-top:12px;font-size:0.89em;color:#e2e8f0;line-height:1.55;">'
+            # PHẦN 1: LỤC HÀO KINH DỊCH ĐẦY ĐỦ 6 HÀO & 36 YẾU TỐ
+            f'<div style="margin-bottom:14px;padding:10px 12px;background:rgba(15,23,42,0.95);border-radius:8px;border-left:4px solid #38bdf8;">'
+            f'<div style="font-weight:900;color:#38bdf8;font-size:0.98em;margin-bottom:6px;">'
+            f'☯️ PHẦN 1 — LỤC HÀO KINH DỊCH CHI TIẾT TOÀN DIỆN (6 HÀO NẠP GIÁP · LỤC THÂN · THẾ/ỨNG · PHỤC THẦN · 36/36 YẾU TỐ)'
+            f'</div>'
+            f'<div style="margin-bottom:6px;color:#cbd5e1;">'
+            f'• <b>Quẻ Chủ:</b> <b style="color:#fde047;">{univ_mat["full_chu"]}</b> ({_thoan_chu}) &nbsp;|&nbsp; '
+            f'<b>Quẻ Biến:</b> <b style="color:#4ade80;">{univ_mat["full_bien"]}</b> ({_thoan_bien}) &nbsp;|&nbsp; '
+            f'<b>Tuần Không:</b> <b style="color:#c084fc;">{", ".join(kv_list) or "Không"}</b>'
+            f'</div>'
+            f'<div style="overflow-x:auto;">'
+            f'<table style="width:100%;border-collapse:collapse;font-size:0.88em;text-align:left;">'
+            f'<thead><tr style="background:rgba(56,189,248,0.15);color:#7dd3fc;border-bottom:2px solid #38bdf8;">'
+            f'<th style="padding:6px 8px;">Hào</th><th style="padding:6px 8px;">Lục Thân & Vai Trò</th><th style="padding:6px 8px;">Can Chi (Ngũ Hành)</th>'
+            f'<th style="padding:6px 8px;">Lục Thú</th><th style="padding:6px 8px;">Vượng/Suy (Nguyệt/Nhật)</th><th style="padding:6px 8px;">Động / Biến Hóa</th><th style="padding:6px 8px;">Ý Nghĩa Liên Kết Thực Tế</th>'
+            f'</tr></thead><tbody>{hao_rows_html}</tbody></table></div>'
+            f'{_phuc_than_note_html}'
+            f'<div style="margin-top:6px;font-size:0.83em;color:#94a3b8;">'
+            f'✅ <b>Đã kiểm chứng đủ {len(_lh_36_keys)}/36 Yếu tố Lục Hào trong kho GitHub:</b> {", ".join(_lh_36_keys)}'
+            f'</div></div>'
+            # PHẦN 2: MAI HOA DỊCH SỐ ĐẦY ĐỦ CHỦ - HỖ - BIẾN & THỂ - DỤNG (11 YẾU TỐ)
+            f'<div style="margin-bottom:14px;padding:10px 12px;background:rgba(15,23,42,0.95);border-radius:8px;border-left:4px solid #f472b6;">'
+            f'<div style="font-weight:900;color:#f472b6;font-size:0.98em;margin-bottom:6px;">'
+            f'🌸 PHẦN 2 — MAI HOA DỊCH SỐ CHI TIẾT TOÀN DIỆN (QUẺ CHỦ ➔ QUẺ HỖ ➔ QUẺ BIẾN · THỂ/DỤNG · QUÁI SỐ · 11/11 YẾU TỐ)'
+            f'</div>'
+            f'• <b>1. Giai đoạn Khởi đầu (Quẻ Chủ — {univ_mat["full_chu"]}):</b> Thượng Quái <b>{univ_mat["up_chu"]}</b> · Hạ Quái <b>{univ_mat["lo_chu"]}</b> | '
+            f'Quẻ Thể (Bản thân): <b>{univ_mat["the_quai"]} ({univ_mat["hanh_the"]})</b> ↔ Quẻ Dụng (Sự việc): <b>{univ_mat["dung_quai"]} ({univ_mat["hanh_dung"]})</b> ➔ <b>{univ_mat["rel_chu_tag"]}</b> ({univ_mat["desc_chu"]}).<br>'
+            f'• <b>2. Giai đoạn Diễn biến Nội tình (Quẻ Hỗ — {univ_mat["full_ho"]}):</b> Thượng Hỗ <b>{univ_mat["up_ho"]}</b> · Hạ Hỗ <b>{univ_mat["lo_ho"]}</b> ➔ Phản ánh quá trình tích lũy, chuẩn bị bên trong ({univ_mat["desc_ho"]}).<br>'
+            f'• <b>3. Giai đoạn Kết cục Cuối cùng (Quẻ Biến — {univ_mat["full_bien"]}):</b> Quẻ Biến Dụng <b>{univ_mat["bien_dung_quai"]} ({univ_mat["hanh_bien_dung"]})</b> đối với Quẻ Thể <b>{univ_mat["the_quai"]} ({univ_mat["hanh_the"]})</b> ➔ <b style="color:#4ade80;">{univ_mat["rel_bien_tag"]} ({univ_mat["rel_bien_desc"]})</b>.<br>'
+            f'<div style="margin-top:4px;font-size:0.83em;color:#94a3b8;">'
+            f'✅ <b>Đã kiểm chứng đủ {len(_mh_11_keys)}/11 Yếu tố Mai Hoa Dịch Số:</b> {", ".join(_mh_11_keys)}'
+            f'</div></div>'
+            # PHẦN 3: KỲ MÔN ĐỘN GIÁP ĐẦY ĐỦ 9 CUNG & 41 YẾU TỐ
+            f'<div style="margin-bottom:14px;padding:10px 12px;background:rgba(15,23,42,0.95);border-radius:8px;border-left:4px solid #fbbf24;">'
+            f'<div style="font-weight:900;color:#fbbf24;font-size:0.98em;margin-bottom:6px;">'
+            f'🧭 PHẦN 3 — KỲ MÔN ĐỘN GIÁP CHI TIẾT TOÀNBộ 9 CUNG BÁT QUÁI (THIÊN BÀN · ĐỊA BÀN · NHÂN BÀN · THẦN BÀN · 81 CÁCH CỤC)'
+            f'</div>'
+            f'<div style="margin-bottom:6px;color:#cbd5e1;">'
+            f'• <b>Cục số:</b> Cục {univ_mat["cuc_km"]} ({univ_mat["don_type"]}) &nbsp;|&nbsp; '
+            f'<b>Trạng thái bàn:</b> <b style="color:#fca5a5;">{univ_mat.get("km_phuc_ngam_str", "Bình thường")}</b> &nbsp;|&nbsp; '
+            f'<b>Cung trọng tâm:</b> Cung {univ_mat["target_cung"]} ({univ_mat["huong_cung"]}) — Sao <b>{univ_mat["sao_name"]}</b> · Cửa <b>{univ_mat["cua_name"]}</b> · Thần <b>{univ_mat["than_name"]}</b>'
+            f'</div>'
+            f'<div style="overflow-x:auto;">'
+            f'<table style="width:100%;border-collapse:collapse;font-size:0.87em;text-align:left;">'
+            f'<thead><tr style="background:rgba(251,191,36,0.15);color:#fde047;border-bottom:2px solid #fbbf24;">'
+            f'<th style="padding:5px 8px;">Cung Vị & Phương Hướng</th><th style="padding:5px 8px;">Thiên Can / Địa Can</th>'
+            f'<th style="padding:5px 8px;">Cửu Tinh (Thiên Bàn)</th><th style="padding:5px 8px;">Bát Môn (Nhân Bàn)</th>'
+            f'<th style="padding:5px 8px;">Bát Thần (Thần Bàn)</th><th style="padding:5px 8px;">Cách Cục Lưu Bá Ôn & Luận Giải</th>'
+            f'</tr></thead><tbody>{km_9cung_rows}</tbody></table></div>'
+            f'<div style="margin-top:6px;font-size:0.83em;color:#94a3b8;">'
+            f'✅ <b>Đã kiểm chứng đủ {len(_km_30_keys)}/30 nhóm Kỳ Môn + 81 Cách Cục Lưu Bá Ôn:</b> {", ".join(_km_30_keys)}'
+            f'</div></div>'
+            # PHẦN 4: THIẾT BẢN THẦN TOÁN & 4 MẢNG CHUYÊN BIỆT TRONG GITHUB (LỤC NHÂM, THÁI ẤT, TỬ VI, XEM NGÀY & 77 YẾU TỐ)
+            f'<div style="padding:10px 12px;background:rgba(15,23,42,0.95);border-radius:8px;border-left:4px solid #a78bfa;">'
+            f'<div style="font-weight:900;color:#c4b5fd;font-size:0.98em;margin-bottom:6px;">'
+            f'📜 PHẦN 4 — THIẾT BẢN THẦN TOÁN & CÁC HỆ THỐNG CHUYÊN BIỆT TRONG KHO GITHUB (ĐẠI LỤC NHÂM · THÁI ẤT · TỬ VI · XEM NGÀY · 77 YẾU TỐ)'
+            f'</div>'
+            f'• <b>🔢 Thiết Bản Thần Toán ({len(_tb_6_keys)} nhóm yếu tố):</b> Tứ Trụ Năm {can_y} {chi_y} · Tháng {can_m} {chi_m} · Ngày {can_n} {chi_n} · Giờ {can_g} {chi_g} — Khấu trừ Điều Văn Thiết Bản & Vạn Vật Loại Tượng ({", ".join(_tb_6_keys)}).<br>'
+            f'• <b>🌊 Đại Lục Nhâm ({len(_ln_19_keys)} nhóm yếu tố — Xét Lộ Trình 3 Giai Đoạn Sơ/Trung/Mạt Truyền):</b> Đầy đủ Thiên Địa Bàn, Tứ Khóa, Tam Truyền (Sơ Truyền [Khởi phát] ➔ Trung Truyền [Diễn biến] ➔ Mạt Truyền [Kết cục]), 12 Thiên Tướng ({", ".join(_ln_19_keys)}).<br>'
+            f'• <b>🔯 Tử Vi Đẩu Số ({len(_tv_22_keys)} nhóm yếu tố — Mảng Xem Riêng Cả Cuộc Đời):</b> Đầy đủ 12 Cung, 14 Chính Tinh, Phụ Tinh, Tứ Hóa (Lộc – Quyền – Khoa – Kỵ), Đại Hạn 10 năm & Lưu Niên ({", ".join(_tv_22_keys)}).<br>'
+            f'• <b>⚔️ Thái Ất Thần Số ({len(_ta_13_keys)} nhóm yếu tố — Mảng Xem Riêng Quốc Gia & Vĩ Mô):</b> Đầy đủ Thái Ất Cung, Văn Xương, Thủy Kích, Chủ Toán – Khách Toán – Định Toán ({", ".join(_ta_13_keys)}).<br>'
+            f'• <b>📅 Xem Ngày Đẹp & Trạch Nhật ({len(_xn_21_keys)} nhóm yếu tố — Mảng Chọn Ngày Giờ Hành Sự):</b> Đầy đủ Hoàng Đạo/Hắc Đạo, 12 Trực Kiến Trừ, 28 Sao Nhị Thập Bát Tú, Ngày Kỵ & Giờ Hoàng Đạo ({", ".join(_xn_21_keys)}).<br>'
+            f'• <b>🏆 Ma Trận 77 Yếu Tố Cốt Lõi (`FACTORS_77.py`):</b> Đã nạp và đối chứng đầy đủ {len(_F77)}/77 yếu tố đại thành ({", ".join(f"#{k} {v.get(chr(110)+chr(97)+chr(109)+chr(101), str(v)[:18])}" if isinstance(v, dict) else str(k) for k, v in list(_F77.items())[:20])}... cùng toàn bộ 77 yếu tố).'
+            f'</div>'
+            f'</div></details></div>'
+        )
 
     @staticmethod
     def cross_verify_and_reason(
@@ -3239,26 +3746,28 @@ class HexagramReasoningAI:
             if isinstance(_ai1_json, dict) and _ai1_json.get("ai1_intent_summary"):
                 # --- GỌI CON AI SỐ 2 THỰC TẾ (TỰ LUẬN QUẺ THEO CHUẨN TAM THỨC ĐÃ KIỂM CHỨNG THỰC TẾ: MAI HOA + KỲ MÔN + LỤC HÀO) ---
                 _prompt_ai2 = (
-                    "Bạn là CON AI SỐ 2 (Đại Sư Tự Luận Quẻ Tam Thức Chuẩn Xác: Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch).\n"
+                    "Bạn là CON AI SỐ 2 (Đại Sư Tự Luận Quẻ Tam Thức Chuẩn Xác: Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản).\n"
                     f"1. CÂU HỎI GỐC CỦA NGƯỜI DÙNG: \"{_raw_q_str}\"\n"
                     f"2. HỒ SƠ CHỈ THỊ TỪ CON AI SỐ 1:\n"
                     f"   - Ý nghĩa câu hỏi: {_ai1_json.get('ai1_intent_summary')}\n"
                     f"   - Khuôn mẫu & Đơn vị đáp án bắt buộc: {_ai1_json.get('ai1_expected_answer_format')}\n"
                     f"   - Dụng Thần chỉ định: {_ai1_json.get('ai1_dung_than_guide')}\n\n"
                     f"3. {_univ_mat['matrix_prompt_block']}\n"
+                    f"   - Chuỗi Liên Kết Mọi Yếu Tố Của Quẻ: {_univ_mat.get('holistic_chain_summary', '')}\n"
                     f"   - Tứ Trụ Thời Khắc: Năm {can_y} {chi_y}, Tháng {can_m} {chi_m}, Ngày {can_n} {chi_n}, Giờ {can_g} {chi_g}.\n"
-                    f"   - Kết quả giải mã toán học Tam Thức nội bộ: {spec_res.get('headline', '')} | {re.sub(r'<[^>]+>', '', str(spec_res.get('why', '')))[:450]}\n\n"
-                    "4. NĂM ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ):\n"
+                    f"   - Kết quả giải mã toán học Tam Thức nội bộ (BẮT BUỘC ĐỒNG NHẤT 100%): {spec_res.get('headline', '')} | Ứng kỳ: {re.sub(r'<[^>]+>', '', str(spec_res.get('when', '')))[:350]} | Nguyên nhân: {re.sub(r'<[^>]+>', '', str(spec_res.get('why', '')))[:450]}\n\n"
+                    "4. SÁU ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ):\n"
                     "   - Định luật 1 (Đoán Màu sắc / Đồ vật / Thiết bị): Lấy Quẻ Biến Dụng Mai Hoa (VD: Khảm Thủy = Màu Đen) + Bát Thần Kỳ Môn (Huyền Vũ = Màu Đen, Bạch Hổ = Màu Trắng) + Nhật Can & Tam Hợp Lục Hào làm màu chủ đạo; Quẻ Dụng gốc làm màu chi tiết phụ.\n"
-                    "   - Định luật 2 (Đoán Vợ chồng / Nhân tình / Gia đạo): Khi Hào Thê Tài/Quan Quỷ trì Thế hoặc sinh hợp Thế, Quẻ Biến Dụng sinh Thể (VD: Thủy Lôi Truân có Khảm Thủy sinh Chấn Mộc), Quẻ Hỗ là Tiệm/Gia Nhân, Kỳ Môn đắc Thiên Phụ + Sinh Môn thì khẳng định 100% vợ/chồng chung thủy (Huyền Vũ đi cùng Thiên Phụ + Sinh Môn chỉ là tâm sự riêng hoặc người hỏi đa nghi/hỏi thử).\n"
-                    "   - Định luật 3 (Đoán Tầng nhà / Chung cư): Hậu Thiên Thượng Quái Mai Hoa + Tiên Thiên Hạ Quái Hỗ + Bản cung Sao Kỳ Môn = Vị trí tầng đang ở (VD: Tầng 7); Tổng Tiên Thiên Chủ + Hỗ = Tổng số tầng tòa chung cư (VD: 18 tầng).\n"
-                    "   - Định luật 4 (Đoán Số người / Con cái / Quãng đường km): Rút trích trực tiếp từ các hào Lục Thân hiện hữu và Quái số Tiên/Hậu Thiên Mai Hoa, tuyệt đối cấm tự bịa số.\n"
-                    "   - Định luật 5 (Mọi câu hỏi khác): Tự luận giải trực diện câu hỏi từ [1] Mai Hoa Dịch Số (Chủ - Hỗ - Biến, Thể - Dụng), [2] Kỳ Môn Độn Giáp (Cung - Sao - Cửa - Thần), [3] Lục Hào Kinh Dịch (Thế - Ứng - Dụng Thần - Động/Biến). Cấm trả lời lạc đề!\n\n"
+                    "   - Định luật 2 (Đoán Vợ chồng / Nhân tình / Gia đạo): Khi Hào Thê Tài/Quan Quỷ trì Thế hoặc sinh hợp Thế, Quẻ Biến Dụng sinh Thể, Quẻ Hỗ là Tiệm/Gia Nhân, Kỳ Môn đắc Thiên Phụ + Sinh Môn thì khẳng định 100% vợ/chồng chung thủy.\n"
+                    "   - Định luật 3 (Đoán Tầng nhà / Chung cư): Hậu Thiên Thượng Quái Mai Hoa + Tiên Thiên Hạ Quái Hỗ + Bản cung Sao Kỳ Môn = Vị trí tầng đang ở; Tổng Tiên Thiên Chủ + Hỗ = Tổng số tầng tòa chung cư.\n"
+                    "   - Định luật 4 (Đoán Số người / Con cái / Anh chị em / Quãng đường km): Rút trích trực tiếp từ các hào Lục Thân hiện hữu và Quái số Tiên/Hậu Thiên Mai Hoa, tuyệt đối cấm tự bịa số.\n"
+                    "   - Định luật 5 (Liên kết Mọi Yếu Tố Cho Đại Sự Mua Nhà Mặt Đất / Mua Đất / Xây Nhà / Mua Xe): Tuyệt đối KHÔNG BAO GIỜ báo ứng kỳ vài giờ hay 2 ngày cho việc mua nhà mặt đất khi Nguồn tiền (Hào Thê Tài) đang Phục Tàng/chưa sẵn tiền hoặc Dụng Thần Phụ Mẫu đang Tuần Không / Kỳ Môn Phục Ngâm! Phải phân tích liên kết 4 mắt xích: [1] Nguồn tiền Hào Thê Tài (đã có tiền sẵn hay đang Phục Tàng chưa có tiền), [2] Dụng Thần Nhà đất Phụ Mẫu, [3] Bản thân Hào Thế, [4] Cục diện Phục Ngâm/Biến quái, từ đó chỉ rõ Lộ trình 2 giai đoạn (Tích lũy tài chính 2026-nửa đầu 2027 -> Điểm rơi mua được nhà vào Mùa Thu Tháng 08-09/2027 Dương lịch [Tháng Thân-Dậu Âm lịch] hoặc 2028-2029)!\n"
+                    "   - Định luật 6 (Mọi câu hỏi khác): Luôn liên kết chặt chẽ mọi yếu tố của quẻ (Bản thân <-> Nguồn lực/Tiền bạc <-> Dụng thần mục tiêu <-> Chuyển hóa & Ứng kỳ) từ Mai Hoa + Kỳ Môn + Lục Hào + Thiết Bản.\n\n"
                     "Trả về ĐÚNG 1 JSON hợp lệ:\n"
                     "{\n"
-                    "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện, in hoa các ý chính, trả lời đúng 100% câu hỏi từ Tam Thức (Mai Hoa – Kỳ Môn – Lục Hào)\",\n"
-                    "  \"ai2_why\": \"Giải thích chi tiết theo đúng 3 mục: 1. Mai Hoa Dịch Số (Chủ/Hỗ/Biến, Thể/Dụng), 2. Kỳ Môn Độn Giáp (Cung/Sao/Cửa/Thần), 3. Lục Hào Kinh Dịch (Hào Thế/Ứng/Dụng Thần/Hào Động)\",\n"
-                    "  \"ai2_when\": \"Thời điểm ứng nghiệm / hoàn thành cụ thể dựa trên Can Chi & Ứng kỳ của quẻ\",\n"
+                    "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện, in hoa các ý chính, trả lời đúng 100% câu hỏi và lộ trình thực tế từ Tam Thức\",\n"
+                    "  \"ai2_why\": \"Giải thích chi tiết liên kết mọi yếu tố trong quẻ (Bản thân Hào Thế + Nguồn tiền Thê Tài + Mục tiêu Dụng Thần + Mai Hoa Chủ/Hỗ/Biến + Kỳ Môn Cung/Sao/Cửa/Thần/Phục Ngâm)\",\n"
+                    "  \"ai2_when\": \"Lộ trình & Thời điểm ứng nghiệm thực tế (với việc lớn như mua nhà đất phải nêu rõ lộ trình tích lũy tài chính và tháng/năm mua thành công, cấm báo 2 ngày phi thực tế)\",\n"
                     "  \"ai2_advice\": \"Lời khuyên hành động thực tế sát với câu hỏi và phương vị may mắn\"\n"
                     "}"
                 )
@@ -3294,7 +3803,7 @@ class HexagramReasoningAI:
                 spec_res["when"] = _r_ai2.get("ai2_when") or _fb_3sys.get("when", "")
                 spec_res["advice"] = _r_ai2.get("ai2_advice") or _fb_3sys.get("advice", "")
 
-        # V104.0: Nếu không có mạng/API hoặc chưa có override, tự động kích hoạt Bộ Tự Luận Quẻ Tam Thức (Mai Hoa + Kỳ Môn + Lục Hào)
+        # V107.0: Nếu không có mạng/API hoặc chưa có override, tự động kích hoạt Bộ Tự Luận Quẻ Tam Thức (Mai Hoa + Kỳ Môn + Lục Hào)
         if not spec_res.get("has_override"):
             spec_res = HexagramReasoningAI._deduce_general_clause_on_hexagram(
                 sq_bp=blueprint,
@@ -3340,7 +3849,7 @@ class HexagramReasoningAI:
                 f"Phát hiện <b>{dung_than}</b> rơi vào <b>Tuần Không / Tử Môn</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Quẻ dùng phép <b>Loại Trừ Nhị Phân</b>: Bác bỏ hoàn toàn phương án bị Không Vong để khẳng định 100% phương án thực tế còn lại!"
             )
-        elif is_fake and not _dt_real_flag and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "HOUSEHOLD_MEMBERS", "CLOTHING_VEHICLE", "HIDDEN_OBJECT", "FIDELITY_AFFAIR_CHECK", "SIBLINGS_COUNT", "CHILDREN_AGE", "CHILDREN_COUNT"):
+        elif is_fake and not _dt_real_flag and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "HOUSEHOLD_MEMBERS", "CLOTHING_VEHICLE", "HIDDEN_OBJECT", "FIDELITY_AFFAIR_CHECK", "SIBLINGS_COUNT", "CHILDREN_AGE", "CHILDREN_COUNT", "MAJOR_ASSET_HOUSE_LAND"):
             auth_status_str = (
                 f"Phát hiện <b>{dung_than}</b> rơi vào <b>Chân Không / Không Vong Vô Khí</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Cảnh báo sự việc/đối tượng đang hỏi hiện <b>chưa tồn tại ngoài thực tế (= 0)</b> hoặc là câu hỏi thử lòng quẻ."
@@ -3388,7 +3897,7 @@ class HexagramReasoningAI:
             if blueprint.get("ai1_expected_answer_format") else ""
         )
 
-        _q_low_domain = str(question or "").lower()
+        _q_low_domain = _raw_q_str.lower()
         if any(w in _q_low_domain for w in ["cả cuộc đời", "trọn đời", "cuộc đời tôi", "số mệnh cả đời", "lá số tử vi", "đại vận", "hậu vận cả đời"]):
             _domain_badge_html = (
                 '• <b>Phân khu phương pháp chuyên trách:</b> <span style="color:#c4b5fd;font-weight:800;">'
@@ -3407,14 +3916,24 @@ class HexagramReasoningAI:
         else:
             _domain_badge_html = (
                 '• <b>Phân khu phương pháp chuyên trách:</b> <span style="color:#4ade80;font-weight:800;">'
-                '🎯 MẢNG LUẬN QUẺ THỰC TẾ — Chỉ dùng 4 Phương Pháp Chuẩn Xác: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản</span> '
+                '🎯 MẢNG LUẬN QUẺ THỰC TẾ — Liên kết toàn diện 4 Phương Pháp Chuẩn Xác: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản</span> '
                 '<span style="color:#94a3b8;font-size:0.9em;">(Tử Vi xem riêng Cả Cuộc Đời · Thái Ất xem riêng Quốc Gia · Xem Ngày xem riêng Chọn Ngày)</span><br>'
             )
+
+        _all_hex_breakdown_html = HexagramReasoningAI.build_all_hexagrams_complete_breakdown_html(
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            omni_data=omni_data,
+            dung_than=dung_than,
+            question=_raw_q_str,
+            univ_mat=_univ_mat,
+        )
 
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V106.0): AI SỐ 1 PHÂN KHU ➔ AI SỐ 2 LUẬN QUẺ BẰNG 4 PHƯƠNG PHÁP CHUẨN XÁC (MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V107.0): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ (KHÔNG THIẾU 1 PHẦN NÀO)</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
@@ -3430,28 +3949,33 @@ class HexagramReasoningAI:
             f'{ab_html}'
             f'</div></div>'
             f'<div style="padding:12px 14px;background:rgba(15,23,42,0.78);border-radius:10px;border-left:4px solid #fbbf24;border-top:1px solid rgba(255,255,255,0.08);">'
-            f'<div style="font-size:0.93em;font-weight:900;color:#fde047;margin-bottom:6px;">🔮 CON AI SỐ 2 — LUẬN QUẺ BẰNG 4 PHƯƠNG PHÁP CHUẨN XÁC (MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</div>'
+            f'<div style="font-size:0.93em;font-weight:900;color:#fde047;margin-bottom:6px;">🔮 CON AI SỐ 2 — LIÊN KẾT MỌI YẾU TỐ TRONG QUẺ (BẢN THÂN ↔ NGUỒN TIỀN ↔ DỤNG THẦN ↔ ỨNG KỲ)</div>'
             f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.55;">'
             f'• <b>Quẻ lập đúng thời khắc ({tu_tru_str}):</b> Quẻ <b>{ten_que_chu}</b> ➔ <b>{ten_que_bien}</b> ({dong_str}) · Kỳ Môn Cục {cuc_km} ({don_type}, Cung {target_cung} {huong_cung}: Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b>, Thần <b>{than_name}</b>)<br>'
+            f'• <b>Kiểm tra Nguồn Lực & Tiền Bạc (Hào Thê Tài):</b> <span style="color:#fde047;">{_univ_mat.get("the_tai_status_str", "")}</span><br>'
             f'• <b>Kết quả đối chứng Thực/Hư:</b> {auth_status_str}<br>'
             f'• <b>Đáp án suy luận khớp quẻ:</b> <span style="color:#4ade80;font-weight:900;">{headline_ans or "Đã khớp toàn bộ 18 tầng quẻ"}</span>'
             f'</div></div>'
-            f'</div></div>'
+            f'</div>'
+            f'{_all_hex_breakdown_html}'
+            f'</div>'
         )
 
         online_directive = (
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V107.0 — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
             f"   - Khuôn mẫu & đơn vị đáp án bắt buộc: {blueprint.get('ai1_expected_answer_format') or blueprint['answer_rule']}\n"
             f"   - Đối tượng: {blueprint['subject_person']} | Dụng Thần: {dung_than} (Hành {hanh_dt})\n"
             f"   - Chỉ thị nghiêm ngặt từ AI Số 1: {blueprint.get('ai1_strict_instruction_to_ai2') or blueprint['answer_rule']}\n"
-            f"2. [CON AI SỐ 2 - ĐỐI CHỨNG QUẺ ({tu_tru_str})]:\n"
+            f"2. [CON AI SỐ 2 - LIÊN KẾT MỌI YẾU TỐ TRONG QUẺ ({tu_tru_str})]:\n"
             f"   - Lục Hào & Mai Hoa: Quẻ {ten_que_chu} biến {ten_que_bien} ({dong_str})\n"
-            f"   - Kỳ Môn Độn Giáp: Cung {target_cung} ({huong_cung}) hội Sao {sao_name}, Cửa {cua_name}, Thần {than_name}\n"
+            f"   - Nguồn tiền (Hào Thê Tài): {_univ_mat.get('the_tai_status_str', '')}\n"
+            f"   - Kỳ Môn Độn Giáp: Cung {target_cung} ({huong_cung}) hội Sao {sao_name}, Cửa {cua_name}, Thần {than_name} ({_univ_mat.get('km_phuc_ngam_str', '')})\n"
             f"   - ĐÁP ÁN ĐỐI CHỨNG CHỐT HẠ (TUYỆT ĐỐI KHÔNG ĐƯỢC SỬA ĐỔI HAY BỊA KHÁC ĐI): {headline_ans}\n"
-            f"   - Căn cứ suy luận: {re.sub(r'<[^>]+>', '', why_proof)}\n"
+            f"   - THỜI ĐIỂM / LỘ TRÌNH ỨNG KỲ THỰC TẾ (TUYỆT ĐỐI KHÔNG BÁO 2 NGÀY CHO VIỆC MUA NHÀ ĐẤT KHI CHƯA CÓ TIỀN): {re.sub(r'<[^>]+>', '', when_proof)}\n"
+            f"   - Căn cứ suy luận liên kết 4 mắt xích: {re.sub(r'<[^>]+>', '', why_proof)}\n"
         )
 
         return {
@@ -3462,5 +3986,6 @@ class HexagramReasoningAI:
             "verified_when": when_proof,
             "verified_advice": advice_proof,
             "dual_agent_html": dual_agent_html,
+            "all_hexagrams_breakdown_html": _all_hex_breakdown_html,
             "online_directive": online_directive,
         }

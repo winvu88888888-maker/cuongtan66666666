@@ -255,24 +255,20 @@ def calc_ung_ky_detail(
     weighted_pct=50,
     cung_dt=0,
     dong_hao=0,
+    question='',
+    luc_hao_data=None,
+    chart_data=None,
 ):
     """
-    MASTER FUNCTION: Tính Ứng Kỳ Tiên Tri Chi Tiết từ PHÚT / KHẮC → GIỜ → NGÀY → THÁNG → NĂM.
-
-    Returns: dict {
-        'summary': str,            # Tóm tắt 1 dòng đầy đủ Năm-Tháng-Ngày-Giờ-Phút
-        'minute': str,             # Phút / Khắc ứng nghiệm chính xác
-        'minute_data': dict,       # Chi tiết Khắc & Phút
-        'hour': str,               # Giờ ứng nghiệm
-        'day': str,                # Ngày ứng nghiệm (Thứ, Dương lịch, Âm lịch, Can Chi)
-        'month': str,              # Tháng ứng nghiệm
-        'year': str,               # Năm ứng nghiệm
-        'exact_timestamp': str,    # Mốc thời gian hội tụ chính xác nhất (Giờ:Phút - Ngày - Tháng - Năm)
-        'speed': str,              # Nhanh/Chậm
-        'confidence': str,         # Độ tin cậy
-        'method': str,             # Phương pháp tính
-        'html': str,               # HTML hiển thị
-    }
+    MASTER FUNCTION (V107.0): Tính Ứng Kỳ Tiên Tri Liên Kết Đa Yếu Tố & Phân Cấp Tầm Vóc Sự Việc:
+    - Tự động phân cấp tầm vóc sự việc:
+      + DAI_SU (Việc lớn đời người: Mua nhà mặt đất, mua đất, xây nhà, mua ô tô, kết hôn, sinh con, đổi vận lớn):
+        Bắt buộc kiểm tra chuỗi liên kết (Hào Thế + Hào Thê Tài [Nguồn vốn] + Hào Phụ Mẫu/Dụng Thần + Kỳ Môn Phục Ngâm).
+        Tuyệt đối không báo giờ/phút hay vài ngày tới cho việc mua nhà/đại sự khi chưa có sẵn tiền (Thê Tài ẩn phục) hoặc phạm Phục Ngâm!
+      + TRUNG_SU (Việc trung hạn: Xin việc, thăng chức, thi cử, mở cửa hàng, kinh doanh, đòi nợ, kiện tụng):
+        Ứng kỳ theo Ngày Can Chi & Tháng Âm/Dương lịch khi các mắt xích hội tụ.
+      + TIEU_SU (Việc nhỏ / Tức thời: Tin nhắn, gặp mặt, tìm đồ thất lạc, thời tiết, việc trong ngày):
+        Ứng kỳ chi tiết đến Khắc / Giờ / Ngày.
     """
     try:
         if isinstance(chart_data, dict) and chart_data.get('year') and chart_data.get('month') and chart_data.get('day'):
@@ -285,7 +281,78 @@ def calc_ung_ky_detail(
         'summary': '', 'minute': '', 'minute_data': {},
         'hour': '', 'day': '', 'month': '', 'year': '',
         'exact_timestamp': '', 'speed': '', 'confidence': '', 'method': '', 'html': '',
+        'event_scale': 'TIEU_SU',
+        'multi_factor_blockers': [],
     }
+
+    q_low = str(question or '').lower().strip()
+    _DAI_SU_KEYWORDS = [
+        'mua nhà', 'mua đất', 'xây nhà', 'làm nhà', 'mua căn hộ', 'mua chung cư', 'mua biệt thự',
+        'mua mảnh đất', 'nhà mặt đất', 'bất động sản', 'mua ô tô', 'mua xe hơi', 'mua xe ô tô',
+        'kết hôn', 'lấy vợ', 'lấy chồng', 'cưới vợ', 'cưới chồng', 'lập gia đình', 'sinh con',
+        'định cư', 'làm giàu', 'mua tài sản lớn', 'đổi đời', 'phát tài lớn',
+    ]
+    _TRUNG_SU_KEYWORDS = [
+        'xin việc', 'thăng chức', 'chuyển việc', 'nhảy việc', 'thi cử', 'thi đỗ', 'xin visa',
+        'du học', 'mở cửa hàng', 'khai trương', 'ký hợp đồng', 'đầu tư', 'kinh doanh',
+        'kiện tụng', 'vụ kiện', 'đòi nợ', 'trả nợ', 'chữa bệnh', 'khỏi bệnh', 'bán nhà', 'bán đất',
+    ]
+    if any(k in q_low for k in _DAI_SU_KEYWORDS):
+        event_scale = 'DAI_SU'
+    elif any(k in q_low for k in _TRUNG_SU_KEYWORDS):
+        event_scale = 'TRUNG_SU'
+    else:
+        event_scale = 'TIEU_SU'
+    result['event_scale'] = event_scale
+
+    # Quét chuỗi liên kết Lục Hào & Kỳ Môn (Hào Thê Tài / Nguồn vốn, Tuần Không, Phục Ngâm)
+    _has_the_tai_on_hex = True
+    _the_tai_weak_or_khong = False
+    _is_phuc_ngam = False
+    _dt_real_chi = chi_dt
+    _blockers = []
+
+    if isinstance(luc_hao_data, dict):
+        _lh_ban = luc_hao_data.get('ban') or luc_hao_data.get('ban_que') or {}
+        _haos = _lh_ban.get('haos') or _lh_ban.get('details') or luc_hao_data.get('haos') or []
+        if _haos:
+            _tai_haos = [h for h in _haos if isinstance(h, dict) and 'Thê Tài' in str(h.get('luc_than', ''))]
+            if not _tai_haos:
+                _has_the_tai_on_hex = False
+                _blockers.append("Hào Thê Tài (Nguồn tiền/vốn) đang Phục Tàng (ẩn dưới hào khác, chưa xuất hiện trên quẻ — phản ánh hiện tại chưa có sẵn nguồn tiền lớn)")
+            else:
+                for _th in _tai_haos:
+                    if _th.get('tuan_khong') or 'Không' in str(_th.get('tuan_khong', '')):
+                        _the_tai_weak_or_khong = True
+                        _blockers.append("Hào Thê Tài (Nguồn tiền) đang lâm Tuần Không (tài chính thực tế chưa tụ đủ)")
+            # Kiểm tra Hào Phụ Mẫu khi hỏi mua nhà/đất/xe
+            if any(k in q_low for k in ['mua nhà', 'mua đất', 'xây nhà', 'làm nhà', 'nhà mặt đất', 'mua căn hộ', 'mua chung cư', 'mua ô tô', 'mua xe']):
+                _pm_haos = [h for h in _haos if isinstance(h, dict) and 'Phụ Mẫu' in str(h.get('luc_than', ''))]
+                if _pm_haos:
+                    _pm_h0 = _pm_haos[-1]  # Ưu tiên hào Phụ Mẫu trên cao / Hào 5
+                    _pm_c = str(_pm_h0.get('chi') or '').split()[-1]
+                    if _pm_c:
+                        _dt_real_chi = _pm_c
+                        chi_dt = _pm_c
+                        hanh_dt = HANH_CHI and next((hk for hk, hv in HANH_CHI.items() if _pm_c in hv), hanh_dt)
+
+    if isinstance(chart_data, dict):
+        _can_n_uk = chart_data.get('can_ngay', '')
+        _chi_n_uk = chart_data.get('chi_ngay', '')
+        if _can_n_uk in THIEN_CAN and _chi_n_uk in DIA_CHI:
+            _st_uk = (DIA_CHI.index(_chi_n_uk) - THIEN_CAN.index(_can_n_uk)) % 12
+            _kv_pair_uk = [DIA_CHI[(_st_uk - 2) % 12], DIA_CHI[(_st_uk - 1) % 12]]
+            if chi_dt and chi_dt in _kv_pair_uk:
+                is_tuan_khong = True
+                _blockers.append(f"Dụng Thần ({chi_dt}) đang rơi vào Tuần Không ({', '.join(_kv_pair_uk)}) — mục tiêu chưa thể thành hiện thực ngay lập tức, phải chờ chu kỳ Xuất Không")
+        _tb_uk = chart_data.get('thien_ban') or {}
+        _nb_uk = chart_data.get('nhan_ban') or {}
+        # Phát hiện Phục Ngâm trên bàn Kỳ Môn (Sao Thiên Bồng ở Cung 1, Thiên Nhuế ở Cung 2, Thiên Trụ ở Cung 7, hoặc Khai Môn ở Cung 6, Hưu Môn ở Cung 1...)
+        if ('Bồng' in str(_tb_uk.get(1, _tb_uk.get('1', ''))) or 'Trụ' in str(_tb_uk.get(7, _tb_uk.get('7', ''))) or 'Hưu' in str(_nb_uk.get(1, _nb_uk.get('1', '')))):
+            _is_phuc_ngam = True
+            _blockers.append("Bàn Kỳ Môn phạm cục diện Phục Ngâm (Cung Bản Thân & Cung Sự Việc giậm chân tại chỗ, cần thời gian tích lũy và chờ xung phá Phục Ngâm)")
+
+    result['multi_factor_blockers'] = _blockers
 
     methods_used = []
 
@@ -343,7 +410,26 @@ def calc_ung_ky_detail(
     elif verdict in ('HUNG', 'ĐẠI HUNG') or weighted_pct < 35:
         speed_score -= 1
 
-    if speed_score >= 2:
+    if event_scale == 'DAI_SU':
+        speed_score -= 4
+        speed_reasons.append("Đại Sự Trọng Đại (Mua nhà đất / Xe cộ / Lập gia đình / Đổi vận lớn) → Cần hội tụ đủ Nguồn lực Tài chính (Thê Tài) & Pháp lý (Phụ Mẫu)")
+        if not _has_the_tai_on_hex or _the_tai_weak_or_khong:
+            speed_score -= 3
+            speed_reasons.append("Hào Thê Tài (Nguồn tiền) đang Phục Tàng/ẩn phục → Hiện tại chưa có sẵn tiền lớn, phải qua giai đoạn tích lũy vốn trước")
+        if _is_phuc_ngam:
+            speed_score -= 2
+            speed_reasons.append("Kỳ Môn Phục Ngâm → Hiện tại đang giậm chân tại chỗ, không thể xảy ra ngay trong ngắn hạn")
+        result['speed'] = (
+            '⏳ ĐẠI SỰ TÍCH LŨY DÀI HẠN (Hiện tại chưa đủ điều kiện mua/thực hiện ngay — '
+            'Cần qua 2 giai đoạn: [1] Tích lũy nguồn tiền Thê Tài ➔ [2] Điểm rơi thành tựu theo Tháng/Năm Can Chi)'
+        )
+        scope = 'year'
+    elif event_scale == 'TRUNG_SU':
+        if _is_phuc_ngam or is_tuan_khong or not _has_the_tai_on_hex:
+            speed_score -= 2
+        result['speed'] = '🗓️ TRUNG SỰ THEO QUY TRÌNH (Ứng nghiệm theo chu kỳ Ngày Can Chi & Tháng Âm/Dương lịch khi hội tụ đủ các mắt xích)'
+        scope = 'month'
+    elif speed_score >= 2:
         result['speed'] = '⚡ RẤT NHANH (ứng trong vài phút – vài giờ hoặc 1–3 ngày tới)'
         scope = 'day'
     elif speed_score >= 0:
@@ -377,38 +463,57 @@ def calc_ung_ky_detail(
 
         if target_chi_hour:
             alt_chi_hour = chi_dt if target_chi_hour != chi_dt else LUC_HOP.get(chi_dt, '')
-            result['hour'] = (
-                f"Giờ {target_chi_hour} ({CHI_HOUR_MAP.get(target_chi_hour, '?')}) — {hour_reason} "
-                f"[Phụ: Giờ {alt_chi_hour} ({CHI_HOUR_MAP.get(alt_chi_hour, '?')})]"
-            )
-            methods_used.append(f"Giờ: {target_chi_hour} ({hour_reason})")
+            if event_scale == 'DAI_SU':
+                result['hour'] = (
+                    f"Khi bước vào đúng Năm/Tháng ứng nghiệm bên dưới, chọn Giờ {target_chi_hour} ({CHI_HOUR_MAP.get(target_chi_hour, '?')}) "
+                    f"hoặc Giờ {alt_chi_hour} ({CHI_HOUR_MAP.get(alt_chi_hour, '?')}) để đặt cọc / ký hợp đồng / nhập trạch"
+                )
+                result['minute_data'] = {}
+                result['minute'] = (
+                    "Việc trọng đại (Mua nhà mặt đất / Tài sản lớn / Đại sự) bắt buộc xét theo Chu kỳ Năm & Tháng hội tụ đủ "
+                    "Tiền vốn (Thê Tài) + Nhà đất/Pháp lý (Phụ Mẫu) — tuyệt đối không tính theo phút/khắc hay vài ngày ngắn hạn"
+                )
+            else:
+                result['hour'] = (
+                    f"Giờ {target_chi_hour} ({CHI_HOUR_MAP.get(target_chi_hour, '?')}) — {hour_reason} "
+                    f"[Phụ: Giờ {alt_chi_hour} ({CHI_HOUR_MAP.get(alt_chi_hour, '?')})]"
+                )
+                methods_used.append(f"Giờ: {target_chi_hour} ({hour_reason})")
 
-            # Tính Phút & Khắc chính xác
-            min_data = _calc_minute_precision(
-                target_chi_hour=target_chi_hour,
-                hanh_dt=hanh_dt,
-                the_quai=the_quai,
-                dung_quai=dung_quai,
-                cung_dt=cung_dt,
-                dong_hao=dong_hao,
-            )
-            result['minute_data'] = min_data
-            result['minute'] = min_data['summary']
-            methods_used.append(f"Phút/Khắc: {min_data['window']} ({', '.join(min_data['exact_minutes'][:2])})")
+                # Tính Phút & Khắc chính xác
+                min_data = _calc_minute_precision(
+                    target_chi_hour=target_chi_hour,
+                    hanh_dt=hanh_dt,
+                    the_quai=the_quai,
+                    dung_quai=dung_quai,
+                    cung_dt=cung_dt,
+                    dong_hao=dong_hao,
+                )
+                result['minute_data'] = min_data
+                result['minute'] = min_data['summary']
+                methods_used.append(f"Phút/Khắc: {min_data['window']} ({', '.join(min_data['exact_minutes'][:2])})")
 
     # ═══ 3. TÍNH NGÀY ỨNG NGHIỆM (CHÍNH XÁC JDN + ÂM LỊCH) ═══
     target_chi_day = target_chi_hour or chi_dt
     primary_date_str = ''
     if target_chi_day:
-        dates = _chi_to_dates(target_chi_day, now, 'day')
-        if dates:
-            primary_date_str = dates[0]
-            result['day'] = f"🎯 Mốc 1: {dates[0]}"
-            if len(dates) > 1:
-                result['day'] += f" | 🎯 Mốc 2: {dates[1]}"
-            if len(dates) > 2:
-                result['day'] += f" | 🎯 Mốc 3: {dates[2]}"
-            methods_used.append(f"Ngày JDN: {target_chi_day}")
+        if event_scale == 'DAI_SU':
+            _alt_d = LUC_HOP.get(target_chi_day, 'Thìn')
+            result['day'] = (
+                f"Khi đã tích lũy đủ tài chính và vào đúng Tháng/Năm ứng kỳ, ưu tiên giao dịch vào "
+                f"Ngày {target_chi_day} (Điền thực Xuất Không) hoặc Ngày {_alt_d} (Lục Hợp thành sự)"
+            )
+            methods_used.append(f"Ngày Đại Sự: Ngày {target_chi_day} / {_alt_d} trong tháng ứng kỳ")
+        else:
+            dates = _chi_to_dates(target_chi_day, now, 'day')
+            if dates:
+                primary_date_str = dates[0]
+                result['day'] = f"🎯 Mốc 1: {dates[0]}"
+                if len(dates) > 1:
+                    result['day'] += f" | 🎯 Mốc 2: {dates[1]}"
+                if len(dates) > 2:
+                    result['day'] += f" | 🎯 Mốc 3: {dates[2]}"
+                methods_used.append(f"Ngày JDN: {target_chi_day}")
 
     # ═══ 4. TÍNH THÁNG ỨNG NGHIỆM ═══
     target_chi_month = ''
@@ -433,16 +538,43 @@ def calc_ung_ky_detail(
                 if 'Tháng' in md:
                     result['month'] = md
                     break
+        if event_scale == 'DAI_SU' and hanh_dt in HANH_CHI and len(HANH_CHI[hanh_dt]) >= 2:
+            _c1, _c2 = HANH_CHI[hanh_dt][0], HANH_CHI[hanh_dt][1]
+            _m1 = CHI_MONTH_MAP.get(_c1, 7)
+            _m2 = CHI_MONTH_MAP.get(_c2, 8)
+            _dl1 = _m1 + 1 if _m1 <= 11 else 1
+            _dl2 = _m2 + 1 if _m2 <= 11 else 1
+            _yr_m = now.year if _dl1 > now.month and _has_the_tai_on_hex and not _is_phuc_ngam else now.year + 1
+            result['month'] = (
+                f"Mùa vượng Dụng Thần: Tháng {_dl1:02d} – {_dl2:02d}/{_yr_m} Dương lịch "
+                f"(Tháng {_m1:02d} – {_m2:02d} Âm lịch, tức tháng {_c1} – {_c2} khi Dụng Thần Xuất Không & Đắc Lộc)"
+            )
         methods_used.append(f"Tháng: Chi {target_chi_month}")
 
     # ═══ 5. TÍNH NĂM ỨNG NGHIỆM ═══
     year_chi = target_chi_month or target_chi_day
+    _dai_su_year_target = ""
     if year_chi:
         year_dates = _chi_to_dates(year_chi, now, 'year')
         cur_can_y = THIEN_CAN[(now.year - 4) % 10]
         cur_chi_y = DIA_CHI[(now.year - 4) % 12]
         cur_year_str = f"Năm hiện tại {now.year} ({cur_can_y} {cur_chi_y})"
-        if year_dates:
+        if event_scale == 'DAI_SU':
+            _next_y = now.year + 1
+            _next_can = THIEN_CAN[(_next_y - 4) % 10]
+            _next_chi = DIA_CHI[(_next_y - 4) % 12]
+            _y2 = now.year + 2
+            _y2_can = THIEN_CAN[(_y2 - 4) % 10]
+            _y2_chi = DIA_CHI[(_y2 - 4) % 12]
+            _y3 = now.year + 3
+            _y3_can = THIEN_CAN[(_y3 - 4) % 10]
+            _y3_chi = DIA_CHI[(_y3 - 4) % 12]
+            result['year'] = (
+                f"[Giai đoạn 1 - Tích lũy Tài chính (Thê Tài xuất phục)]: Cuối năm {now.year} ({cur_can_y} {cur_chi_y}) – Năm {_next_y} ({_next_can} {_next_chi}) "
+                f"➔ [Giai đoạn 2 - Thành tựu Đại Sự (Mua nhà đất / Chốt mục tiêu)]: Cuối năm {_next_y} ({_next_can} {_next_chi}) hoặc Năm {_y2} – {_y3} ({_y2_can} {_y2_chi} – {_y3_can} {_y3_chi})"
+            )
+            _dai_su_year_target = f"Năm {_next_y} ({_next_can} {_next_chi}) hoặc Năm {_y2}–{_y3} ({_y2_can} {_y2_chi} – {_y3_can} {_y3_chi})"
+        elif year_dates:
             for yd in year_dates:
                 if 'Năm' in yd:
                     result['year'] = f"{cur_year_str} → Năm ứng điểm rơi: {yd}"
@@ -450,35 +582,69 @@ def calc_ung_ky_detail(
         else:
             result['year'] = cur_year_str
 
-    # ═══ 6. MAI HOA SỐ LƯỢNG NGÀY/GIỜ BỔ SUNG ═══
+    # ═══ 6. MAI HOA SỐ LƯỢNG NGÀY/GIỜ/THÁNG BỔ SUNG ═══
     if the_quai and dung_quai:
         the_so = QUAI_SO.get(the_quai, 0)
         dung_so = QUAI_SO.get(dung_quai, 0)
         if the_so and dung_so:
             tong = the_so + dung_so
-            future_day = now + datetime.timedelta(days=tong)
-            mh_date_str = _format_solar_lunar_date(future_day)
-            methods_used.append(f"Mai Hoa: Thể({the_so})+Dụng({dung_so})={tong} → {mh_date_str}")
-            if result['day']:
-                result['day'] += f" | 🌸 Kỳ Mai Hoa (+{tong} ngày): {mh_date_str}"
+            if event_scale == 'DAI_SU':
+                if _is_phuc_ngam or is_tuan_khong or not _has_the_tai_on_hex:
+                    _mh_months = max(9, tong * 2)
+                else:
+                    _mh_months = max(6, tong)
+                methods_used.append(f"Mai Hoa Đại Sự: Thể({the_so})+Dụng({dung_so})={tong} (Phục Ngâm/Khuyết Tài nhân đôi) → Chu kỳ ~{_mh_months}–{_mh_months+6} tháng tích lũy")
+                result['day'] += f" | 🌸 Chu kỳ Mai Hoa Đại Sự: Khoảng {_mh_months} – {_mh_months + 6} tháng tích lũy & chuẩn bị"
             else:
-                result['day'] = f"🌸 Kỳ Mai Hoa (+{tong} ngày): {mh_date_str}"
+                future_day = now + datetime.timedelta(days=tong)
+                mh_date_str = _format_solar_lunar_date(future_day)
+                methods_used.append(f"Mai Hoa: Thể({the_so})+Dụng({dung_so})={tong} → {mh_date_str}")
+                if result['day']:
+                    result['day'] += f" | 🌸 Kỳ Mai Hoa (+{tong} ngày): {mh_date_str}"
+                else:
+                    result['day'] = f"🌸 Kỳ Mai Hoa (+{tong} ngày): {mh_date_str}"
 
-    # ═══ 7. CHỐT MỐC THỜI GIAN HỘI TỤ CHÍNH XÁC (PHÚT - GIỜ - NGÀY - THÁNG - NĂM) ═══
-    pin_min = ''
-    if result.get('minute_data', {}).get('exact_minutes'):
-        pin_min = result['minute_data']['exact_minutes'][0]
-    elif result.get('minute_data', {}).get('window'):
-        pin_min = result['minute_data']['window']
+    # ═══ 7. CHỐT MỐC THỜI GIAN HỘI TỤ CHÍNH XÁC (PHÂN CẤP THEO TẦM VÓC SỰ VIỆC & CHUỖI LIÊN KẾT) ═══
+    if event_scale == 'DAI_SU':
+        _blocker_short = []
+        if not _has_the_tai_on_hex or _the_tai_weak_or_khong:
+            _blocker_short.append("Nguồn tiền (Hào Thê Tài) đang Ẩn Phục/chưa có sẵn tiền lớn")
+        if is_tuan_khong:
+            _blocker_short.append(f"Dụng Thần ({chi_dt}) đang Tuần Không")
+        if _is_phuc_ngam:
+            _blocker_short.append("Bàn Kỳ Môn phạm Phục Ngâm (giậm chân tại chỗ)")
+        _why_not_now = (
+            f"Hiện tại CHƯA THỂ diễn ra ngay trong ngắn hạn (vì {'; '.join(_blocker_short)})"
+            if _blocker_short else
+            "Việc trọng đại cần lộ trình chuẩn bị nguồn vốn & pháp lý kỹ lưỡng"
+        )
+        result['exact_timestamp'] = (
+            f"{_why_not_now} ➔ LỘ TRÌNH ỨNG NGHIỆM 2 GIAI ĐOẠN: "
+            f"[1] Tích lũy đủ tài chính (Thê Tài xuất phục): {now.year} – nửa đầu {now.year + 1}; "
+            f"[2] Thời điểm mua/thành tựu thực tế: {result['month']} hoặc {_dai_su_year_target}"
+        )
+    elif event_scale == 'TRUNG_SU' and (_is_phuc_ngam or is_tuan_khong or not _has_the_tai_on_hex):
+        result['exact_timestamp'] = (
+            f"Cần vượt qua giai đoạn Phục Ngâm / Xuất Không trước ➔ Điểm rơi ứng nghiệm: "
+            f"{primary_date_str or result['day']} — hoặc chắc chắn nhất vào {result['month']}"
+        )
+    else:
+        pin_min = ''
+        if result.get('minute_data', {}).get('exact_minutes'):
+            pin_min = result['minute_data']['exact_minutes'][0]
+        elif result.get('minute_data', {}).get('window'):
+            pin_min = result['minute_data']['window']
 
-    result['exact_timestamp'] = (
-        f"Lúc {pin_min or '?'} ({ 'Giờ ' + target_chi_hour if target_chi_hour else result['hour'] }) — "
-        f"{primary_date_str or result['day']} — {result['month']}"
-    )
+        result['exact_timestamp'] = (
+            f"Lúc {pin_min or '?'} ({ 'Giờ ' + target_chi_hour if target_chi_hour else result['hour'] }) — "
+            f"{primary_date_str or result['day']} — {result['month']}"
+        )
 
     # ═══ 8. ĐỘ TIN CẬY ═══
     conf_count = sum(1 for v in [result['minute'], result['hour'], result['day'], result['month']] if v)
-    if conf_count >= 4:
+    if event_scale == 'DAI_SU':
+        result['confidence'] = '🟢 RẤT CAO (Đã liên kết chặt chẽ 4 mắt xích: Bản Thân [Hào Thế] + Nguồn Tiền [Thê Tài] + Mục Tiêu [Phụ Mẫu/Dụng Thần] + Cục Diện Kỳ Môn)'
+    elif conf_count >= 4:
         result['confidence'] = '🟢 RẤT CAO (Hội tụ đủ 5 tầng: Năm – Tháng – Ngày – Giờ – Phút/Khắc)'
     elif conf_count >= 3:
         result['confidence'] = '🟢 CAO (3+ phương pháp đồng thuận)'
@@ -490,18 +656,21 @@ def calc_ung_ky_detail(
     result['method'] = ' | '.join(methods_used[:5])
 
     # ═══ 9. SUMMARY ═══
-    parts = []
-    if result['minute']:
-        parts.append(f"Phút/Khắc: {result['minute']}")
-    if result['hour']:
-        parts.append(result['hour'])
-    if result['day']:
-        parts.append(result['day'])
-    if result['month']:
-        parts.append(result['month'])
-    if result['year']:
-        parts.append(result['year'])
-    result['summary'] = ' → '.join(parts) if parts else 'Chưa xác định'
+    if event_scale == 'DAI_SU':
+        result['summary'] = result['exact_timestamp']
+    else:
+        parts = []
+        if result['minute']:
+            parts.append(f"Phút/Khắc: {result['minute']}")
+        if result['hour']:
+            parts.append(result['hour'])
+        if result['day']:
+            parts.append(result['day'])
+        if result['month']:
+            parts.append(result['month'])
+        if result['year']:
+            parts.append(result['year'])
+        result['summary'] = ' → '.join(parts) if parts else 'Chưa xác định'
 
     # ═══ 10. BUILD HTML ═══
     result['html'] = _build_ung_ky_html(result, speed_reasons)
