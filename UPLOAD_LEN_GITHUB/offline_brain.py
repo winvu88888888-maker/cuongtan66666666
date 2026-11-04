@@ -451,8 +451,47 @@ def build_narrative_summary_text(
 
     uk_clean = ung_ky_str if (ung_ky_str and ung_ky_str != '?' and 'xem mục' not in ung_ky_str.lower()) else omni_data.get('exact_timestamp', 'trong chu kỳ Can Chi gần nhất')
 
+    # Trích xuất bằng chứng thật từ Quẻ Lục Hào + Kỳ Môn + Mai Hoa để khóa chặt vào ô VÌ SAO (Chống nói chung chung)
+    _real_ban_nm = (luc_hao_data.get('ban', {}) if isinstance(luc_hao_data, dict) else {}).get('name') or (mai_hoa_data.get('ten_que') if isinstance(mai_hoa_data, dict) else '') or ''
+    _real_bien_nm = (luc_hao_data.get('bien', {}) if isinstance(luc_hao_data, dict) else {}).get('name') or (mai_hoa_data.get('bien_que') if isinstance(mai_hoa_data, dict) else '') or ''
+    _real_haos = ((luc_hao_data.get('ban', {}) if isinstance(luc_hao_data, dict) else {}).get('haos')
+                  or (luc_hao_data.get('ban', {}) if isinstance(luc_hao_data, dict) else {}).get('details')
+                  or (luc_hao_data.get('ban', {}) if isinstance(luc_hao_data, dict) else {}).get('lines')
+                  or [])
+    _real_dong_list = (luc_hao_data.get('dong_hao') if isinstance(luc_hao_data, dict) else None) or ((luc_hao_data.get('ban_main', {}) if isinstance(luc_hao_data, dict) else {}).get('dong_hao')) or []
+    _dt_hao_proof = ""
+    _dong_hao_proof = ""
+    for _idx_r, _hr in enumerate(_real_haos, 1):
+        if isinstance(_hr, dict):
+            _ltr = str(_hr.get('luc_than') or '')
+            _ccr = str(_hr.get('chi') or _hr.get('can_chi') or '').split()[-1] if (_hr.get('chi') or _hr.get('can_chi')) else ''
+            _idr = bool(_hr.get('is_dong') or _hr.get('dong') or _hr.get('is_moving') or (_idx_r in _real_dong_list))
+            if dung_than and (_ltr == dung_than or dung_than in _ltr) and not _dt_hao_proof:
+                _dt_hao_proof = f"Hào {dung_than} tại Hào {_idx_r} ({_ccr})"
+            if _idr:
+                _dong_hao_proof = f"Hào {_idx_r} {_ltr} ({_ccr}) phát động"
+    _c_num_r, _c_dir_r, _ = _resolve_authentic_km_palace(chart_data, dung_than, question, category)
+    _tb_r = (chart_data.get('thien_ban', {}) if isinstance(chart_data, dict) else {}) or {}
+    _nb_r = (chart_data.get('nhan_ban', {}) if isinstance(chart_data, dict) else {}) or {}
+    _sb_r = (chart_data.get('than_ban', {}) if isinstance(chart_data, dict) else {}) or {}
+    _sao_r = _tb_r.get(_c_num_r, _tb_r.get(str(_c_num_r), '')) if _c_num_r else ''
+    _cua_r = _nb_r.get(_c_num_r, _nb_r.get(str(_c_num_r), '')) if _c_num_r else ''
+    _than_r = _sb_r.get(_c_num_r, _sb_r.get(str(_c_num_r), '')) if _c_num_r else ''
+    _hex_proof_parts = []
+    if _real_ban_nm:
+        _hex_proof_parts.append(f"Quẻ <b>{_real_ban_nm}</b>" + (f" biến <b>{_real_bien_nm}</b>" if _real_bien_nm else ""))
+    if _dt_hao_proof:
+        _hex_proof_parts.append(_dt_hao_proof)
+    if _dong_hao_proof:
+        _hex_proof_parts.append(_dong_hao_proof)
+    if _c_num_r and (_sao_r or _cua_r):
+        _hex_proof_parts.append(f"Kỳ Môn Cung {_c_num_r} ({_sao_r} · {_cua_r} · {_than_r})")
+    _hex_proof_str = " [Căn cứ quẻ: " + " | ".join(_hex_proof_parts) + "]" if _hex_proof_parts else ""
+
     def _hero_ui(icon_em: str, verdict_headline: str, why_line: str, when_line: str, action_line: str) -> str:
-        # Thiết kế Hero Answer Card V100.6: Nhìn 1 giây thấy ngay câu trả lời + 3 ô mini-cards (Vì sao · Khi nào · Làm gì)
+        if _hex_proof_str and _real_ban_nm and (_real_ban_nm not in why_line) and ("Lục Hào" not in why_line):
+            why_line = why_line.rstrip(".") + "." + _hex_proof_str
+        # Thiết kế Hero Answer Card V101.2: Nhìn 1 giây thấy ngay câu trả lời + 3 ô mini-cards bám sát quẻ thực tế
         return _md_to_html_bold(
             f'<div style="padding:12px 16px;background:linear-gradient(90deg,rgba(245,158,11,0.25),rgba(16,185,129,0.18));'
             f'border-radius:10px;border:1px solid rgba(251,191,36,0.55);margin-bottom:10px;">'
@@ -472,6 +511,14 @@ def build_narrative_summary_text(
             f'<div style="color:#ecfdf5;">{action_line}</div></div>'
             f'</div>'
         )
+
+    # 0. TRỌNG TÂM ƯU TIÊN SỐ 1 (V101.2): CÂU HỎI LỰA CHỌN THỰC TẾ "A HAY B" (Ở NHÀ HAY CÔNG TY, ĐỨNG HAY NGỒI, THẬT HAY GIẢ, RỒI HAY CHƯA)
+    if omni_data.get('is_binary_factual_q') and omni_data.get('binary_verdict_headline'):
+        _b_head = omni_data['binary_verdict_headline']
+        _b_why = omni_data.get('binary_why_reasons', '')
+        _b_when = omni_data.get('binary_when_note', f'Hướng ứng nghiệm: <b>{direction}</b>')
+        _b_act = omni_data.get('binary_action_advice', '')
+        return _hero_ui("🎯", _b_head, _b_why, _b_when, _b_act)
 
     # 1. TRỌNG TÂM: BỆNH TẬT / SỨC KHỎE / QUA KHỎI KHÔNG
     if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in q_low for w in ['ốm', 'bệnh', 'đau', 'khỏe', 'qua khỏi', 'qua được', 'sống không', 'nguy kịch', 'nằm viện', 'mổ']):

@@ -723,6 +723,208 @@ def build_omniscient_prophecy(
         f"bố trí góc học tập/phòng ngủ của con ưu tiên hướng <b>{c_info['huong']}</b> và dùng các gam màu <b>{h_forensic['mau_sac']}</b>."
     )
 
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # CHIỀU 5C (V101.2): BỘ GIẢI MÃ DỨT KHOÁT CÂU HỎI LỰA CHỌN "A HAY B" & VỊ TRÍ/TRẠNG THÁI THỰC TẾ
+    # (Chấm dứt 100% lỗi trả lời "CẦN CÂN NHẮC — BÌNH / giằng co" hoặc tự bịa không bám sát quẻ)
+    # ═════════════════════════════════════════════════════════════════════════
+    _is_quit_work_q = any(w in _q_low_om for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở', 'ở lại hay'])
+    _is_who_age_q = any(w in _q_low_om for w in ['nam hay nữ', 'nữ hay nam', 'trai hay gái', 'gái hay trai', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi'])
+    _is_where_home_work_q = (
+        any(w in _q_low_om for w in ['ở nhà hay', 'hay ở nhà', 'ở công ty', 'ở cơ quan', 'ở văn phòng', 'ở quán', 'ngoài đường', 'trong nhà hay', 'ngoài sân'])
+        and ('nhà' in _q_low_om or 'công ty' in _q_low_om or 'cơ quan' in _q_low_om or 'văn phòng' in _q_low_om or 'ngoài' in _q_low_om or 'phòng' in _q_low_om)
+    )
+    _is_posture_state_q = any(w in _q_low_om for w in ['đứng hay ngồi', 'ngồi hay đứng', 'nằm hay ngồi', 'ngồi hay nằm', 'đang đứng hay', 'đang ngồi hay', 'đang nằm hay', 'ngủ hay thức', 'thức hay ngủ'])
+    _is_true_false_q = any(w in _q_low_om for w in ['thật hay giả', 'giả hay thật', 'nói thật hay', 'nói dối hay', 'có thật không', 'thật không'])
+    _is_done_yet_q = any(w in _q_low_om for w in ['rồi hay chưa', 'chưa hay rồi', 'ăn cơm chưa', 'ăn chưa', 'về chưa', 'đi chưa', 'xong chưa'])
+
+    is_binary_factual_q = False
+    binary_verdict_headline = ""
+    binary_why_reasons = ""
+    binary_when_note = ""
+    binary_action_advice = ""
+
+    _can_n_om = chart_data.get('can_ngay', 'Giáp')
+    _chi_n_om = chart_data.get('chi_ngay', 'Tý')
+    _can_g_om = chart_data.get('can_gio', 'Giáp')
+    _CAN_LIST_OM = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+    _CHI_LIST_OM = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+    try:
+        _ci_om = _CAN_LIST_OM.index(_can_n_om)
+        _chi_i_om = _CHI_LIST_OM.index(_chi_n_om)
+        _start_chi_om = (_chi_i_om - _ci_om) % 12
+        _kv_om = [_CHI_LIST_OM[(_start_chi_om - 2) % 12], _CHI_LIST_OM[(_start_chi_om - 1) % 12]]
+    except Exception:
+        _kv_om = []
+
+    _dong_list_om = (
+        luc_hao_data.get('dong_hao')
+        or lh_ban.get('dong_hao')
+        or (luc_hao_data.get('ban_main', {}) or {}).get('dong_hao')
+        or []
+    )
+
+    if _is_where_home_work_q:
+        is_binary_factual_q = True
+        _home_pts = 0
+        _work_pts = 0
+        _loc_evidences = []
+        for _idx_h, _h_it in enumerate(lh_haos, 1):
+            if not isinstance(_h_it, dict):
+                continue
+            _lt_h = str(_h_it.get('luc_than') or '')
+            _raw_cc_h = str(_h_it.get('chi') or _h_it.get('can_chi') or '')
+            _chi_h = _raw_cc_h.split()[-1] if _raw_cc_h else ''
+            _tu_h = str(_h_it.get('the_ung') or _h_it.get('tu') or '')
+            _is_d_h = bool(_h_it.get('is_dong') or _h_it.get('dong') or _h_it.get('is_moving') or (_idx_h in _dong_list_om))
+
+            if 'Quan Quỷ' in _lt_h:
+                if _chi_h in _kv_om:
+                    _home_pts += 4
+                    _loc_evidences.append(
+                        f"<b>Lục Hào (Hào Công ty bị Tuần Không):</b> Hào <b>Quan Quỷ</b> (đại diện cho Công ty/Cơ quan) tại Hào {_idx_h} (<b>{_chi_h}</b>) rơi vào <b>Tuần Không ({', '.join(_kv_om)})</b> — chứng tỏ vị trí ở công ty đang trống không, bạn <b>KHÔNG có mặt ở công ty</b>"
+                    )
+                elif _is_d_h:
+                    _work_pts += 3
+                    _loc_evidences.append(f"<b>Lục Hào:</b> Hào <b>Quan Quỷ</b> (Công ty) tại Hào {_idx_h} ({_chi_h}) phát động hữu khí")
+            if 'Tử Tôn' in _lt_h and _is_d_h:
+                _home_pts += 4
+                _loc_evidences.append(
+                    f"<b>Lục Hào (Hào Nghỉ ngơi ở nhà phát động):</b> Hào {_idx_h} <b>Tử Tôn ({_chi_h})</b> — đại diện cho sự nghỉ ngơi, thoải mái tại gia — phát động mạnh khắc trực tiếp hào <b>Quan Quỷ (Công ty)</b>"
+                )
+            if 'Phụ Mẫu' in _lt_h and ('Thế' in _tu_h or _is_d_h):
+                _home_pts += 2
+                _loc_evidences.append(f"<b>Lục Hào (Hào Gia trạch):</b> Hào <b>Phụ Mẫu ({_chi_h} — Nhà cửa/Mái ấm)</b> vượng khí che chở")
+            if 'Thế' in _tu_h:
+                if _idx_h in (1, 2, 3):
+                    _home_pts += 2
+                    _loc_evidences.append(f"<b>Vị trí Hào Thế:</b> Hào Thế đóng ở <b>Nội Quái (Hào {_idx_h})</b> — tượng người đang ở bên trong nhà (Tại gia)")
+                else:
+                    _work_pts += 1
+
+        _nhat_cung_om = target_cung
+        for _c_k, _c_v in ctb.items():
+            if str(_c_v) == str(_can_n_om):
+                _nhat_cung_om = int(_c_k)
+                break
+        _mon_nhat = str(nb.get(_nhat_cung_om, nb.get(str(_nhat_cung_om), cua_name)))
+        _than_nhat = str(sb.get(_nhat_cung_om, sb.get(str(_nhat_cung_om), than_name)))
+        _sao_nhat = str(tb.get(_nhat_cung_om, tb.get(str(_nhat_cung_om), sao_name)))
+
+        if any(m in _mon_nhat for m in ['Tử', 'Hưu', 'Đỗ', 'Sinh']):
+            _home_pts += 3
+            _loc_evidences.append(
+                f"<b>Kỳ Môn Độn Giáp (Nhật Can lâm {_mon_nhat}):</b> Nhật Can <b>{_can_n_om}</b> (bạn) tại Cung {_nhat_cung_om} lâm cửa tĩnh <b>{_mon_nhat}</b> (đóng cửa nghỉ ngơi/tĩnh tọa trong nhà, không phải Khai Môn công sở)"
+            )
+        elif any(m in _mon_nhat for m in ['Khai', 'Thương', 'Cảnh', 'Kinh']):
+            _work_pts += 3
+            _loc_evidences.append(
+                f"<b>Kỳ Môn Độn Giáp (Nhật Can lâm {_mon_nhat}):</b> Nhật Can <b>{_can_n_om}</b> (bạn) tại Cung {_nhat_cung_om} lâm cửa động <b>{_mon_nhat}</b> (môi trường công sở/bên ngoài)"
+            )
+
+        if is_fake:
+            _loc_evidences.append(
+                f"<b>Nghiệm Chứng Câu Hỏi Thử:</b> Nhật Can rơi vào <b>Tuần Không</b> cho thấy bạn biết rõ vị trí của mình và đang đặt câu hỏi này để <b>thử độ chuẩn xác của quẻ</b>"
+            )
+
+        if _home_pts >= _work_pts:
+            binary_verdict_headline = "🏠 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: HIỆN TẠI BẠN ĐANG Ở NHÀ (100% KHÔNG PHẢI Ở CÔNG TY)!"
+            binary_when_note = (
+                f"<b>Đặc điểm nơi bạn đang ngồi ({c_info['huong']}):</b> Không gian yên tĩnh trong nhà ({c_info['places']}), "
+                f"gần bạn có nhóm vật dụng <b>{h_forensic['do_vat'].split(',')[0]}</b> (Màu sắc quanh chỗ ngồi: <b>{h_forensic['mau_sac']}</b>)."
+            )
+            binary_action_advice = (
+                f"Quẻ đã bắt trúng 100% việc hào <b>Quan Quỷ (Công ty)</b> bị Tuần Không/khắc triệt và Nhật Can lâm <b>{_mon_nhat}</b> để khẳng định bạn <b>đang ở nhà</b> chứ không phải ở công ty."
+            )
+        else:
+            binary_verdict_headline = "🏢 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: HIỆN TẠI BẠN ĐANG Ở CÔNG TY / BÊN NGOÀI (KHÔNG PHẢI Ở NHÀ)!"
+            binary_when_note = (
+                f"<b>Đặc điểm không gian hiện tại ({c_info['huong']}):</b> Môi trường công sở/làm việc ({_mon_nhat} · Sao {_sao_nhat}), "
+                f"xung quanh có thiết bị làm việc, giấy tờ hoặc đồng nghiệp."
+            )
+            binary_action_advice = (
+                f"Quẻ xác định rõ hào <b>Quan Quỷ / {_mon_nhat}</b> đang hoạt động hữu khí, khẳng định bạn đang ở <b>công ty / bên ngoài</b>."
+            )
+        binary_why_reasons = "; ".join(_loc_evidences[:4]) + "."
+
+    elif _is_posture_state_q:
+        is_binary_factual_q = True
+        _static_posture = any(m in cua_name for m in ['Hưu', 'Đỗ', 'Tử', 'Sinh']) or ('Cửu Địa' in than_name) or ('Thái Âm' in than_name)
+        if _static_posture:
+            binary_verdict_headline = "🪑 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: BẠN ĐANG NGỒI HOẶC NẰM NGHỈ TẠI CHỖ (TRẠNG THÁI TĨNH — KHÔNG PHẢI ĐANG ĐỨNG/ĐI LẠI)!"
+            binary_why_reasons = f"Cung bản mệnh lâm cửa tĩnh <b>{cua_name}</b> đi cùng thần <b>{than_name}</b> và sao <b>{sao_name}</b> — biểu thị tư thế tĩnh tọa (đang ngồi trên ghế/giường hoặc tựa lưng nghỉ ngơi)."
+        else:
+            binary_verdict_headline = "🚶 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: BẠN ĐANG ĐỨNG HOẶC ĐANG DI CHUYỂN HOẠT ĐỘNG (TRẠNG THÁI ĐỘNG)!"
+            binary_why_reasons = f"Cung bản mệnh lâm cửa động <b>{cua_name}</b> đi cùng thần <b>{than_name}</b> — biểu thị cơ thể đang ở tư thế đứng hoặc vừa di chuyển."
+        binary_when_note = f"Hướng không gian trước mặt bạn ứng với hướng <b>{c_info['huong']}</b> ({c_info['places']})."
+        binary_action_advice = f"Dấu hiệu nghiệm chứng cơ thể đi kèm: vùng <b>{h_forensic['co_the']}</b>."
+
+    elif _is_true_false_q:
+        is_binary_factual_q = True
+        if is_fake or any(t in than_name for t in ['Huyền Vũ', 'Đằng Xà']):
+            binary_verdict_headline = "🚨 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: ĐÂY LÀ CHUYỆN GIẢ / LỜI NÓI DỐI — KHÔNG CÓ THẬT TRÊN THỰC TẾ!"
+            binary_why_reasons = "; ".join([w.replace('🔹 ', '') for w in (auth_warnings or [])[:3]]) or f"Quẻ lâm thần <b>{than_name}</b> và phạm <b>Tuần Không</b> — báo hiệu thông tin bịa đặt, hư cấu hoặc che giấu sự thật."
+            binary_when_note = "Sự thật sẽ phơi bày rõ ràng ngay khi bước sang ngày/giờ xung thực Tuần Không."
+            binary_action_advice = "Tuyệt đối không tin theo lời đồn hoặc thông tin chưa có chứng cứ xác thực này."
+        else:
+            binary_verdict_headline = "✅ KẾT LUẬN DỨT KHOÁT TỪ QUẺ: ĐÂY LÀ SỰ THẬT — THÔNG TIN ĐÁNG TIN CẬY!"
+            binary_why_reasons = f"Dụng Thần <b>{dung_than}</b> hữu khí (không phạm Tuần Không), hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> — khẳng định sự việc có thật và có căn cứ thực tế."
+            binary_when_note = f"Thời điểm xác nhận rõ nhất: <b>{uk_exact}</b>."
+            binary_action_advice = "Bạn có thể yên tâm căn cứ vào thông tin này để triển khai kế hoạch."
+
+    elif _is_done_yet_q:
+        is_binary_factual_q = True
+        if is_fake or ts_stage in ('Thai', 'Dưỡng', 'Tử', 'Mộ', 'Tuyệt') or any(m in cua_name for m in ['Đỗ', 'Tử']):
+            binary_verdict_headline = "⏳ KẾT LUẬN DỨT KHOÁT TỪ QUẺ: CHƯA THỰC HIỆN (SỰ VIỆC CHƯA DIỄN RA)!"
+            binary_why_reasons = f"Dụng Thần <b>{dung_than}</b> đang ở trạng thái tĩnh/Tuần Không ({ts_stage or 'Tĩnh'}) kèm Cửa <b>{cua_name}</b> — báo hiệu hành động đó <b>chưa diễn ra</b>."
+        else:
+            binary_verdict_headline = "✅ KẾT LUẬN DỨT KHOÁT TỪ QUẺ: ĐÃ THỰC HIỆN RỒI (SỰ VIỆC ĐÃ DIỄN RA)!"
+            binary_why_reasons = f"Hào Dụng Thần <b>{dung_than}</b> đã phát động/vượng khí ({ts_stage or 'Vượng'}) kèm Cửa <b>{cua_name}</b> — báo hiệu việc đó <b>đã được thực hiện xong</b>."
+        binary_when_note = f"Khung giờ ứng nghiệm liên quan: <b>{uk_hour}</b>."
+        binary_action_advice = f"Hướng không gian liên quan trực tiếp: <b>{c_info['huong']}</b>."
+
+    elif (" hay " in _q_low_om) and not _is_quit_work_q and not _is_who_age_q and not _is_children_q and not any(w in _q_low_om for w in ['hay không', 'có nên']):
+        # Bộ giải mã tổng quát cho MỌI câu hỏi lựa chọn "Phương án A hay Phương án B"
+        import re as _re_ab
+        _m_ab = _re_ab.search(r'(?:đang\s+|là\s+|nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', _q_low_om)
+        if _m_ab:
+            _opt_a = _m_ab.group(1).strip()
+            _opt_b = _m_ab.group(2).strip()
+            for _pfx in ['tôi đang ', 'tôi ', 'bạn đang ', 'nó đang ', 'hiện tại đang ', 'hiện tại ']:
+                if _opt_a.startswith(_pfx):
+                    _opt_a = _opt_a[len(_pfx):].strip()
+            if _opt_a and _opt_b and _opt_a != _opt_b:
+                is_binary_factual_q = True
+                # So sánh Trục 1 (Hào Thế / Nội Quái / Quẻ Chủ = Phương án A) và Trục 2 (Hào Ứng / Ngoại Quái / Quẻ Biến = Phương án B)
+                _ung_in_kv = False
+                _the_in_kv = False
+                for _h_it in lh_haos:
+                    if isinstance(_h_it, dict):
+                        _tu_h = str(_h_it.get('the_ung') or _h_it.get('tu') or '')
+                        _chi_h = str(_h_it.get('chi') or _h_it.get('can_chi') or '').split()[-1] if (_h_it.get('chi') or _h_it.get('can_chi')) else ''
+                        if 'Ứng' in _tu_h and _chi_h in _kv_om:
+                            _ung_in_kv = True
+                        if 'Thế' in _tu_h and _chi_h in _kv_om:
+                            _the_in_kv = True
+                if _ung_in_kv or (weighted_pct >= 50 and not _the_in_kv):
+                    _chosen_opt = _opt_a.upper()
+                    _rejected_opt = _opt_b.upper()
+                    _ab_reason = (
+                        f"Quẻ Chủ <b>{ten_que_ban}</b> (ứng với phương án 1: <b>{_opt_a}</b>) đang nắm chủ quyền tại Cung {target_cung} ({c_info['quai']} · Sao {sao_name} · Cửa {cua_name}), "
+                        f"trong khi phương án 2 (<b>{_opt_b}</b>) bị Tuần Không/suy khí trên trục Ứng/Biến ({ten_que_bien or 'Biến quái'})."
+                    )
+                else:
+                    _chosen_opt = _opt_b.upper()
+                    _rejected_opt = _opt_a.upper()
+                    _ab_reason = (
+                        f"Hào Động trên quẻ <b>{ten_que_ban}</b> chuyển hóa mạnh sang Quẻ Biến <b>{ten_que_bien or 'Biến cuộc'}</b> (ứng với phương án 2: <b>{_opt_b}</b>) "
+                        f"tại Cung {target_cung} ({c_info['quai']} · Sao {sao_name} · Cửa {cua_name}), vượt trội hơn phương án 1 (<b>{_opt_a}</b>)."
+                    )
+                binary_verdict_headline = f"🎯 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: {_chosen_opt} (LOẠI TRỪ PHƯƠNG ÁN: {_rejected_opt})!"
+                binary_why_reasons = _ab_reason
+                binary_when_note = f"Thời điểm & không gian ứng nghiệm: <b>{uk_exact}</b> tại hướng <b>{c_info['huong']}</b>."
+                binary_action_advice = f"Quẻ đã phân định dứt khoát nghiêng hẳn về <b>{_chosen_opt}</b> dựa trên hào Thế/Ứng, Tuần Không và bàn Kỳ Môn."
+
     # ═════════════════════════════════════════════════════════════════════════
     # CHIỀU 6: CƠ THỂ, SỨC KHỎE & PHÁP QUYẾT HÓA GIẢI
     # ═════════════════════════════════════════════════════════════════════════
@@ -858,7 +1060,12 @@ def build_omniscient_prophecy(
         _filtered_lines.append(f"3. **🏥 CHẨN ĐOÁN Y DỊCH & CƠ THỂ:** {health_str}")
     if _is_find_where_focus:
         _filtered_lines.append(f"3. **📍 ĐỊA ĐIỂM & HIỆN TRƯỜNG:** {where_summary} | {where_scene}")
-    if _is_children_q:
+    if is_binary_factual_q:
+        _filtered_lines.append(f"3. **🎯 KẾT LUẬN DỨT KHOÁT CÂU HỎI LỰA CHỌN / THỰC TẾ TỪ QUẺ:** {binary_verdict_headline}")
+        _filtered_lines.append(f"   - **Căn cứ bắt bài từ quẻ:** {binary_why_reasons}")
+        _filtered_lines.append(f"   - **Đặc điểm không gian/thời gian:** {binary_when_note}")
+        _filtered_lines.append(f"   - **Kết luận nghiệm chứng:** {binary_action_advice}")
+    elif _is_children_q:
         _filtered_lines.append(f"3. **👶 LUẬN ĐOÁN TỬ TỨC / CON CÁI SÁT TỪ QUẺ:** {children_summary}")
         _filtered_lines.append(f"   - **Căn cứ từ Quẻ Chủ/Hỗ/Biến, Hào Tử Tôn & Cung Kỳ Môn:** {children_reasons}")
         _filtered_lines.append(f"   - **Tính cách & Tương lai các con:** {children_traits}")
@@ -887,6 +1094,11 @@ def build_omniscient_prophecy(
                 "NGHIỆM CHỨNG TỪ QUẺ (PHÁT HIỆN TUẦN KHÔNG / KHÔNG VONG): SỰ VIỆC HOẶC ĐỐI TƯỢNG BẠN HỎI HIỆN KHÔNG CÓ THẬT NGOÀI ĐỜI (HOẶC CHƯA TỒN TẠI / BẠN ĐANG HỎI THỬ LÒNG QUẺ)!"
                 if is_fake else ""
             ),
+            'is_binary_factual_q': is_binary_factual_q,
+            'binary_verdict_headline': binary_verdict_headline,
+            'binary_why_reasons': binary_why_reasons,
+            'binary_when_note': binary_when_note,
+            'binary_action_advice': binary_action_advice,
             'is_children_question': _is_children_q,
             'children_summary': children_summary,
             'children_reasons': children_reasons,

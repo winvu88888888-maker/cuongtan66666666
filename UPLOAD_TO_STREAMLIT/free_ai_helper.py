@@ -5524,9 +5524,26 @@ class FreeAIHelper:
             _omni_dict_on = od.get('hub', {}).get('synthesis', {}).get('omniscient_data', {}) or {}
             _is_fake_on = bool(_omni_dict_on.get('is_fake'))
             _auth_warns_on = _omni_dict_on.get('auth_warnings') or []
-            _is_children_q_on = bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_lower_online and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
-            _is_factual_who_age = (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
-            if _is_children_q_on:
+            _is_bin_fact_on = bool(_omni_dict_on.get('is_binary_factual_q'))
+            _is_children_q_on = (not _is_bin_fact_on) and (bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_lower_online and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])))
+            _is_factual_who_age = (not _is_bin_fact_on) and (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
+            if _is_bin_fact_on:
+                _bf_head = _omni_dict_on.get('binary_verdict_headline', '')
+                _bf_why = _omni_dict_on.get('binary_why_reasons', '')
+                _bf_when = _omni_dict_on.get('binary_when_note', '')
+                _bf_act = _omni_dict_on.get('binary_action_advice', '')
+                offline_verdict_block = (
+                    f"═══════════════════════════════════════════\n"
+                    f"   🎯 KẾT LUẬN DỨT KHOÁT CÂU HỎI THỰC TẾ A HAY B (BẮT BUỘC ĐỒNG BỘ 100%)\n"
+                    f"═══════════════════════════════════════════\n"
+                    f"🎯 KẾT QUẢ CHỐT TỪ QUẺ: {_bf_head}\n"
+                    f"📜 CĂN CỨ BẮT BÀI TỪ QUẺ: {_bf_why}\n"
+                    f"📍 ĐẶC ĐIỂM KHÔNG GIAN / THỜI GIAN: {_bf_when}\n"
+                    f"🧭 KẾT LUẬN NGHIỆM CHỨNG: {_bf_act}\n"
+                    f"→ BẠN BẮT BUỘC PHẢI KHẲNG ĐỊNH ĐÚNG KẾT QUẢ '{_bf_head}' NÀY.\n"
+                    f"→ CẤM TUYỆT ĐỐI viết 'CẦN CÂN NHẮC — BÌNH' hay 'giằng co giữa ở nhà và ở công ty'!\n"
+                )
+            elif _is_children_q_on:
                 _ch_sum = _omni_dict_on.get('children_summary', 'KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
                 _ch_rea = _omni_dict_on.get('children_reasons', '')
                 _ch_trt = _omni_dict_on.get('children_traits', '')
@@ -5615,7 +5632,9 @@ class FreeAIHelper:
             
             # ═══ PHẦN 4: V100.8 GEMINI PROMPT — TRẢ LỜI DỨT KHOÁT TRỌNG TÂM & SÁT QUẺ THỰC TẾ ═══
             _is_quit_q_on = any(w in q_lower_online for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở', 'ở lại hay'])
-            if _is_children_q_on:
+            if _is_bin_fact_on:
+                _vb_prompt_str = _omni_dict_on.get('binary_verdict_headline', '')
+            elif _is_children_q_on:
                 _vb_prompt_str = _omni_dict_on.get('children_summary', 'KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
             elif _is_factual_who_age:
                 _vb_prompt_str = f"{_omni_dict_on.get('gender', 'NAM GIỚI')} — {_omni_dict_on.get('age_tier', 'DƯỚI 45 TUỔI')}"
@@ -5647,8 +5666,9 @@ class FreeAIHelper:
                 f"   - Vị trí 5 (Đồng hồ Điểm hẹn Ứng kỳ): Dùng Động cơ Ứng Kỳ + Chiêm Tinh Vệ Đà Ấn Độ KP Sub-Lord.\n"
                 f"   - Vị trí 6 (Thời thế Vĩ mô & Chiến lược Công/Thủ): Dùng Thái Ất Thần Số + Tử Vi Đẩu Số + Trạch Cát.\n"
                 f"   - Vị trí 7 (Chìa khóa Hóa giải & Xác suất Bayes): Dùng Bát Tự Điều Hầu Cùng Thông Bảo Giám + Toán học Hội tụ Bayes.\n"
-                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT: Bắt buộc giữ nguyên kết luận '{_vb_prompt_str}' trong <verdict_block>. Nếu là câu hỏi Giới tính / Độ tuổi thì trả lời thẳng Giới tính & Độ tuổi, CẤM ghi 'CẦN CÂN NHẮC — BÌNH'.\n"
-                f"3. CẤM MỞ ĐẦU RƯỜM RÀ: Bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
+                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT: Bắt buộc giữ nguyên kết luận '{_vb_prompt_str}' trong <verdict_block>. Nếu là câu hỏi Thực tế (A hay B, ở nhà hay ở công ty, Giới tính, Độ tuổi, Con cái) thì trả lời DỨT KHOÁT kết quả thực tế từ quẻ, CẤM TUYỆT ĐỐI ghi 'CẦN CÂN NHẮC — BÌNH' hay 'giằng co giữa A và B'.\n"
+                f"3. CHỐNG AI BỊA ĐẶT 100% (BÁM SÁT TỪNG HÀO QUẺ & CUNG KỲ MÔN): Tuyệt đối KHÔNG ĐƯỢC tự bịa lý do chung chung thoát ly khỏi quẻ. Trong mục 📋 VÌ SAO và 4 Thẻ Giải Mã, BẮT BUỘC phải trích dẫn đích danh tên Quẻ Chủ ➔ Quẻ Biến, Hào Thế/Ứng/Dụng Thần (ở hào mấy, can chi gì, vượng/suy/Tuần Không ra sao) và Cung Kỳ Môn (Sao, Cửa, Thần) từ <raw_chart_data>, đồng thời giải thích dễ hiểu bằng tiếng Việt đời thường.\n"
+                f"4. CẤM MỞ ĐẦU RƯỜM RÀ: Bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
                 f"</system_role>\n\n"
                 
                 f"<question>\n"
@@ -15733,6 +15753,17 @@ class FreeAIHelper:
                 _hub['synthesis']['omniscient_data'] = _omniscient_res.get('data', {})
                 # V100.2: Đồng bộ kết quả Giới tính & Độ tuổi từ Omniscient 360 vào _mi_cards để AI Online & Offline khớp 100%
                 _om_d_sync = _omniscient_res.get('data', {}) or {}
+                if _om_d_sync.get('is_binary_factual_q') and _om_d_sync.get('binary_verdict_headline') and locals().get('auth_warnings'):
+                    _bf_headline_top = _om_d_sync.get('binary_verdict_headline', '')
+                    auth_html = (
+                        f'<div style="background:linear-gradient(135deg,#064e3b,#0f766e);padding:18px 20px;border-radius:14px;margin-bottom:16px;border:2.5px solid #fbbf24;box-shadow:0 6px 24px rgba(251,191,36,0.38);">'
+                        f'<div style="font-size:1.15em;font-weight:900;color:#fde047;margin-bottom:8px;">🎯 NGHIỆM CHỨNG THỰC TẾ TỪ QUẺ — LOẠI TRỪ PHƯƠNG ÁN SAI & CHỐT ĐÁP ÁN ĐÚNG 100% ({len(auth_warnings)} BẰNG CHỨNG TỪ QUẺ)</div>'
+                        f'<div style="font-size:1.1em;font-weight:900;color:#ffffff;margin-bottom:8px;padding:10px 14px;background:rgba(0,0,0,0.35);border-radius:10px;border-left:4px solid #fbbf24;">{_bf_headline_top}</div>'
+                        f'<div style="font-size:0.95em;color:#d1fae5;margin-bottom:8px;line-height:1.55;">Vì bạn hỏi câu hỏi lựa chọn thực tế (<b>A hay B</b>), việc <b>Dụng Thần {dung_than} rơi vào Tuần Không / bị Tử Tôn động khắc / lâm Tử Môn</b> chính là bằng chứng quẻ <b>BÁC BỎ HOÀN TOÀN phương án thuộc về {dung_than} (= 0% Không có thật lúc này)</b> để khẳng định 100% phương án thực tế còn lại:</div>'
+                    )
+                    for _w_bf in auth_warnings:
+                        auth_html += f'<div style="font-size:0.95em;color:#ffffff;margin-bottom:5px;padding:6px 10px;background:rgba(0,0,0,0.28);border-radius:8px;border-left:3px solid #fbbf24;">{_w_bf}</div>'
+                    auth_html += '</div>'
                 if '_mi_cards' in locals() and isinstance(_mi_cards, list) and _om_d_sync:
                     for _mc in _mi_cards:
                         if _mc.get('qtype') == 'WHO' and any(k in _mc.get('text', '').lower() for k in ['nam', 'nữ', 'trai', 'gái', 'giới tính']):
@@ -16189,13 +16220,21 @@ class FreeAIHelper:
             _q_low_on_box = question.lower() if question else ''
             _is_child_box = any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in _q_low_on_box and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
             _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
-            if _is_child_box:
+            _is_bin_fact_box = bool(_omni_ch_data.get('is_binary_factual_q'))
+            if _is_bin_fact_box and _omni_ch_data.get('binary_verdict_headline'):
+                _online_verdict_line = _omni_ch_data['binary_verdict_headline']
+                _online_visao = _omni_ch_data.get('binary_why_reasons') or _online_visao
+                _online_ungky = _omni_ch_data.get('binary_when_note') or _online_ungky
+                _online_giaiphap = _omni_ch_data.get('binary_action_advice') or _online_giaiphap
+            elif _is_child_box:
                 if _omni_ch_data.get('children_summary'):
                     _online_verdict_line = f"{'🚨' if _omni_ch_data.get('is_fake') else '👶'} {_omni_ch_data['children_summary']}"
-                if _omni_ch_data.get('is_fake') and _omni_ch_data.get('children_reasons'):
-                    _online_why_line = _omni_ch_data.get('children_reasons')
-                else:
-                    _online_verdict_line = _re_clean_v100.sub(r'[,;]?\s*(?:nhưng\s*)?(?:tình hình chung là\s*)?(?:ĐẠI CÁT|CÁT|CẦN CÂN NHẮC|BÌNH|HUNG|ĐẠI HUNG)[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
+                if _omni_ch_data.get('children_reasons'):
+                    _online_visao = _omni_ch_data.get('children_reasons')
+                if _omni_ch_data.get('children_traits'):
+                    _online_ungky = _omni_ch_data.get('children_traits')
+                if _omni_ch_data.get('children_advice'):
+                    _online_giaiphap = _omni_ch_data.get('children_advice')
             elif any(w in _q_low_on_box for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
                 _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?(?:CÂN NHẮC|BÌNH|HUNG|CÁT)[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             elif any(w in _q_low_on_box for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở']):
@@ -16206,6 +16245,33 @@ class FreeAIHelper:
                         _online_verdict_line = f"👉 CHƯA NÊN NGHỈ VIỆC LÚC NÀY — NÊN GIỮ CÔNG VIỆC HIỆN TẠI ({weighted_pct}%)"
                     else:
                         _online_verdict_line = f"👉 TUYỆT ĐỐI KHÔNG NÊN NGHỈ VIỆC TỰ PHÁT LÚC NÀY ({weighted_pct}%)"
+
+            # V101.2: KHÓA CHỐNG AI ONLINE BỊA ĐẶT (BẮT BUỘC MỌI CÂU TRẢ LỜI ĐỀU CÓ CĂN CỨ QUẺ THẬT)
+            try:
+                _lh_ban_on = (luc_hao_data or {}).get('ban', {}) if isinstance(luc_hao_data, dict) else {}
+                _lh_bien_on = (luc_hao_data or {}).get('bien', {}) if isinstance(luc_hao_data, dict) else {}
+                _q_chu_on = _lh_ban_on.get('name') or (mai_hoa_data or {}).get('ten_qua_chu', '')
+                _q_bien_on = _lh_bien_on.get('name') or (mai_hoa_data or {}).get('ten_qua_bien', '')
+                _dt_hao_on = ''
+                for _idx_o, _h_o in enumerate(_lh_ban_on.get('haos', []) or [], 1):
+                    if isinstance(_h_o, dict) and str(_h_o.get('luc_than', '')) == str(dung_than):
+                        _dt_hao_on = f"Hào {_idx_o} {dung_than} ({_h_o.get('chi', '')}-{_h_o.get('hanh', '')})"
+                        break
+                _tc_on = _omni_ch_data.get('target_cung', '')
+                _km_cite_on = ''
+                if _tc_on and isinstance(chart_data, dict):
+                    _s_o = (chart_data.get('thien_ban') or {}).get(_tc_on, (chart_data.get('thien_ban') or {}).get(str(_tc_on), ''))
+                    _c_o = (chart_data.get('nhan_ban') or {}).get(_tc_on, (chart_data.get('nhan_ban') or {}).get(str(_tc_on), ''))
+                    _t_o = (chart_data.get('than_ban') or {}).get(_tc_on, (chart_data.get('than_ban') or {}).get(str(_tc_on), ''))
+                    _km_cite_on = f"Kỳ Môn Cung {_tc_on} (Sao {_s_o}, Cửa {_c_o}, Thần {_t_o})"
+                _hex_cite_parts = [p for p in [f"Quẻ {_q_chu_on}" + (f" ➔ {_q_bien_on}" if _q_bien_on else "") if _q_chu_on else "", _dt_hao_on, _km_cite_on] if p]
+                _hex_cite_str = " · ".join(_hex_cite_parts)
+                if _online_visao and _hex_cite_str:
+                    _vs_low = _online_visao.lower()
+                    if not any(k in _vs_low for k in ['quẻ ', 'hào ', 'cung ', 'môn', 'tuần không', 'dụng thần']):
+                        _online_visao = f"{_online_visao.rstrip('.')} (📌 Căn cứ sát quẻ: {_hex_cite_str})."
+            except Exception:
+                pass
 
             _on_cards = []
             if _online_visao:
@@ -16234,7 +16300,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.1 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.2 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16946,8 +17012,8 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.1)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.2)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17720,7 +17786,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.1)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.2)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html

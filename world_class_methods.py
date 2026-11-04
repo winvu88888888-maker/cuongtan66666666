@@ -739,7 +739,12 @@ def build_holographic_7_position_picture(
     ho_display = _TRIGRAM_PAIR_MAP.get(ho_name, ho_name or "Giai đoạn chuyển tiếp")
 
     # VỊ TRÍ 1: Tâm Điểm Quẻ Kinh Dịch Lục Hào + Chiêm Tinh Horary
-    if is_children_q:
+    if omni_data.get("is_binary_factual_q") and omni_data.get("binary_verdict_headline"):
+        pos1_what = f"<b>{omni_data['binary_verdict_headline']}</b>"
+        pos1_opp = f"<b>Bằng chứng sát từ quẻ:</b> {omni_data.get('binary_why_reasons', '')}"
+        pos1_adv = omni_data.get("binary_action_advice", "Quẻ đã phân định dứt khoát giữa 2 phương án dựa trên Tuần Không và Hào Động thực tế.")
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary Nhà 1/4/10"
+    elif is_children_q:
         pos1_what = f"<b>Kết quả từ Quẻ:</b> <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái (Đủ nếp đủ tẻ)')}</b>."
         pos1_opp = f"<b>Luận cứ sát quẻ:</b> {omni_data.get('children_reasons', f'Quẻ {ban_name} biến {bien_name} và Hào Tử Tôn hành {hanh_dt} hội đủ cả khí Dương (Trai) và Âm (Gái).')}"
         pos1_adv = "Lộc con cái (hào Tử Tôn) là phúc phần lớn của gia đình; các con tuy mỗi đứa một cá tính nhưng đều có duyên gắn bó sâu sắc với cha mẹ."
