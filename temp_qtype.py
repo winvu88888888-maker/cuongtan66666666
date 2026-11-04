@@ -1,4 +1,4 @@
-﻿
+
 import sys, codecs
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
 from question_parser import QTYPE_RULES

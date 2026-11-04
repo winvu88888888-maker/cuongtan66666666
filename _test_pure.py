@@ -1,4 +1,4 @@
-﻿
+
 from free_ai_helper import FreeAIHelper
 import json
 

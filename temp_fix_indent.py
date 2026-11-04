@@ -1,4 +1,4 @@
-﻿import sys, codecs
+import sys, codecs
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
 with open('free_ai_helper.py', 'r', encoding='utf-8') as f:
     text = f.read()

@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 sys.path.append('.')
 from free_ai_helper import FreeAIHelper
 

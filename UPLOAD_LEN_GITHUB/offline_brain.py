@@ -977,6 +977,23 @@ def extract_deep_divination_dossier(
                     f"và quẻ Dụng ({dung_q_name + ' ' if dung_q_name else ''}hành <b>{dung_hanh}</b> — đại diện cho sự việc) lập thế <b>{qh_td}</b> ({ct_td.lower()})."
                 )
 
+    try:
+        from world_class_methods import build_world_class_synthesis_prose
+        _wc_res = build_world_class_synthesis_prose(
+            question=question,
+            category=category,
+            dung_than=dung_than,
+            hanh_dt=hanh_dt,
+            target_cung=dt_cung if 'dt_cung' in locals() and dt_cung else 1,
+            chart_data=chart_data,
+            weighted_pct=weighted_pct,
+        )
+        res["world_class_prose"] = _wc_res.get("prose_html", "")
+        res["world_class_prompt"] = _wc_res.get("prompt_text", "")
+    except Exception:
+        res["world_class_prose"] = ""
+        res["world_class_prompt"] = ""
+
     dossier_lines = []
     for k_name, label_name in [
         ("lh_hexagram_prose", "Quẻ Chủ & Quẻ Biến Kinh Dịch"),
@@ -984,6 +1001,7 @@ def extract_deep_divination_dossier(
         ("km_palace_prose", "Cung Dụng Thần Kỳ Môn Độn Giáp"),
         ("km_cach_cuc_prose", "Cách Cục Thiên Địa Bàn"),
         ("mh_the_dung_prose", "Mai Hoa Thể Dụng"),
+        ("world_class_prose", "Đối Chiếu Tinh Hoa Thế Giới (Horary + Vedic KP + Huyền Không Vận 9 + Bayes)"),
     ]:
         val = res.get(k_name, "")
         if val:
@@ -1127,13 +1145,15 @@ def build_connected_prose_analysis(
         p3_parts.append(f"<b>Mốc thời gian Ứng Kỳ quan trọng:</b> Dự báo sự việc sẽ có chuyển biến hoặc câu trả lời rõ nét nhất vào khoảng <b>{ung_ky_str}</b> (phương vị cát lợi hỗ trợ: <b>{direction}</b>).")
 
     paragraph_3 = " ".join(p3_parts)
+    paragraph_world = dossier.get("world_class_prose", "")
 
     return (
         f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.58);border-radius:14px;border:1px solid rgba(110,231,183,0.4);line-height:1.78;font-size:0.98em;color:#f1f5f9;">'
         f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
-        f'📖 BÀI LUẬN GIẢI THẦN ĐOÁN CỔ THƯ HỢP NHẤT V100.1 (10 HỆ THỐNG · 19 CỔ THƯ · 40 CHUYÊN GIA AI)</div>'
+        f'📖 BÀI LUẬN GIẢI THẦN ĐOÁN ĐÔNG - TÂY HỢP NHẤT V100.3 (14 HỆ THỐNG ĐÔNG TÂY · 19 CỔ THƯ · HỘI TỤ BAYES)</div>'
         f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Bản chất hiện tại & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
         f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Giải mã tâm lý, hoàn cảnh & nguyên nhân qua Bàn Kỳ Môn Độn Giáp:</b> {paragraph_2}</p>'
+        + (f'<p style="margin:0 0 12px 0;text-align:justify;color:#bae6fd;">{paragraph_world}</p>' if paragraph_world else '')
         + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
         + f'</div>'
     )

@@ -15953,7 +15953,7 @@ class FreeAIHelper:
                 _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?CÂN NHẮC\s*[—\-]\s*BÌNH[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.2)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.3)</div>'
                 f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16044,7 +16044,8 @@ class FreeAIHelper:
                 _q_lower_off = question.lower()
                 _fb_on = []
                 _LT_HANH_ON = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                _hanh_on = _LT_HANH_ON.get(dung_than, 'Thổ')
+                _hanh_on = locals().get('hanh_dt_v22') or _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than) or _LT_HANH_ON.get(dung_than, 'Kim')
+                if _hanh_on == '?': _hanh_on = 'Kim'
                 _HANH_SP_ON = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
                              'Thủy': 'Nước/Chất lỏng/Hải sản/Hóa chất', 'Hỏa': 'Điện tử/Năng lượng/Thực phẩm', 
                              'Thổ': 'Gạch/Gốm sứ/Vật liệu XD/Nông sản'}
@@ -16055,14 +16056,15 @@ class FreeAIHelper:
                     _fb_on.append(f"🔮 Nghề/Ngành: Hành {_hanh_on} → {_HANH_SP_ON.get(_hanh_on, '?')}")
                 # TUỔI
                 if any(k in _q_lower_off for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
-                    if age_numbers:
+                    _om_d_on = _omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {}
+                    if _om_d_on.get('age_tier'):
+                        _fb_on.append(f"🎂 Tuổi: {_om_d_on['age_tier']}")
+                    elif age_numbers:
                         _age_n = [n for _, n in age_numbers]
                         _age_a = int(sum(_age_n) / len(_age_n)) if _age_n else 0
                         _fb_on.append(f"🎂 Tuổi: Khoảng {_age_a} tuổi")
                     else:
-                        _HD_A = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
-                        _hda = _HD_A.get(_hanh_on, (5, 10))
-                        _fb_on.append(f"🎂 Tuổi: Khoảng {_hda[1] * 5 if weighted_pct >= 55 else _hda[0] * 5} tuổi")
+                        _fb_on.append(f"🎂 Tuổi: Dưới 45 tuổi (Khoảng 22–38 tuổi)")
                 # BAO NHIÊU / MẤY
                 if any(k in _q_lower_off for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'mấy']):
                     if count_numbers:
@@ -16662,7 +16664,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.2</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG TÂY & 40 CHUYÊN GIA AI — V100.3</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -16831,7 +16833,8 @@ class FreeAIHelper:
                 _fb_parts = []  # Collect ALL matching intent answers
                 
                 _LT_HANH_FB = {'Quan Quỷ': 'Kim', 'Thê Tài': 'Thổ', 'Tử Tôn': 'Hỏa', 'Phụ Mẫu': 'Thủy', 'Huynh Đệ': 'Mộc'}
-                _hanh_fb = _LT_HANH_FB.get(dung_than, 'Thổ')
+                _hanh_fb = locals().get('hanh_dt_v22') or _get_hanh_dt_from_luc_hao(luc_hao_data, dung_than) or _LT_HANH_FB.get(dung_than, 'Kim')
+                if _hanh_fb == '?': _hanh_fb = 'Kim'
                 _HANH_SP_FB = {'Kim': 'Kim loại/Máy móc/Linh kiện', 'Mộc': 'Gỗ/Vải/Nông sản/Giấy', 
                              'Thủy': 'Nước/Chất lỏng/Hải sản/Hóa chất', 'Hỏa': 'Điện tử/Năng lượng/Thực phẩm', 
                              'Thổ': 'Gạch/Gốm sứ/Vật liệu XD/Nông sản'}
@@ -16870,17 +16873,15 @@ class FreeAIHelper:
                 
                 # TUỔI — independent
                 if any(k in _q_lower_off2 for k in ['bao nhiêu tuổi', 'tuổi', 'năm tuổi']):
-                    # Tính tuổi từ age_numbers nếu có
-                    if age_numbers:
+                    _om_d_fb2 = _omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {}
+                    if _om_d_fb2.get('age_tier'):
+                        _fb_parts.append(f"🎂 Tuổi: {_om_d_fb2['age_tier']}")
+                    elif age_numbers:
                         _age_nums = [n for _, n in age_numbers]
                         _age_avg = int(sum(_age_nums) / len(_age_nums)) if _age_nums else 0
                         _fb_parts.append(f"🎂 Tuổi: Khoảng {_age_avg} tuổi")
                     else:
-                        # Ước tính từ Ngũ Hành
-                        _HD_AGE = {'Thủy': (1, 6), 'Hỏa': (2, 7), 'Mộc': (3, 8), 'Kim': (4, 9), 'Thổ': (5, 10)}
-                        _hd_age = _HD_AGE.get(_hanh_fb, (5, 10))
-                        _age_est = _hd_age[1] * 5 if weighted_pct >= 55 else _hd_age[0] * 5
-                        _fb_parts.append(f"🎂 Tuổi: Khoảng {_age_est} tuổi")
+                        _fb_parts.append(f"🎂 Tuổi: Dưới 45 tuổi (Khoảng 22–38 tuổi)")
                 
                 # BAO NHIÊU / MẤY — independent
                 if any(k in _q_lower_off2 for k in ['bao nhiêu', 'mấy người', 'mấy cái', 'mấy đứa', 'mấy anh', 'mấy chị', 'số lượng', 'mấy tầng', 'mấy con', 'mấy']):
@@ -17436,7 +17437,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 10 HỆ THỐNG & 40 CHUYÊN GIA AI — V100.2</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG TÂY & 40 CHUYÊN GIA AI — V100.3</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + ''
