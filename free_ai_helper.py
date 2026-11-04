@@ -5594,12 +5594,26 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc PHÂN TÍCH TRỌNG TÂM'
             
-            # ═══ PHẦN 4: V100.5 GEMINI PROMPT — GHÉP 14 HỆ THỐNG ĐÔNG-TÂY THÀNH 1 BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ ═══
-            _vb_prompt_str = (
-                f"{_omni_dict_on.get('gender', 'NAM GIỚI')} — {_omni_dict_on.get('age_tier', 'DƯỚI 45 TUỔI')}"
-                if _is_factual_who_age
-                else f"{_vb_label} ({_vb_pct_int}%)"
-            )
+            # ═══ PHẦN 4: V100.6 GEMINI PROMPT — TRẢ LỜI DỨT KHOÁT TRỌNG TÂM & GHÉP 7 VỊ TRÍ ═══
+            _is_quit_q_on = any(w in q_lower_online for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở', 'ở lại hay'])
+            if _is_factual_who_age:
+                _vb_prompt_str = f"{_omni_dict_on.get('gender', 'NAM GIỚI')} — {_omni_dict_on.get('age_tier', 'DƯỚI 45 TUỔI')}"
+            elif _is_quit_q_on:
+                if _vb_pct_int >= 55:
+                    _vb_prompt_str = f"NÊN NGHỈ / CHUYỂN ĐỔI CÔNG VIỆC ĐỂ ĐÓN CƠ HỘI MỚI ({_vb_pct_int}% — CÁT)"
+                elif _vb_pct_int >= 45:
+                    _vb_prompt_str = f"CHƯA NÊN NGHỈ VIỆC LÚC NÀY — NÊN GIỮ CÔNG VIỆC HIỆN TẠI ({_vb_pct_int}% — CẦN ỔN ĐỊNH)"
+                else:
+                    _vb_prompt_str = f"TUYỆT ĐỐI KHÔNG NÊN NGHỈ VIỆC TỰ PHÁT LÚC NÀY ({_vb_pct_int}% — HUNG)"
+            elif any(w in q_lower_online for w in ['có nên', 'nên không', 'hay không']):
+                if _vb_pct_int >= 55:
+                    _vb_prompt_str = f"NÊN THỰC HIỆN ({_vb_pct_int}% — CÁT)"
+                elif _vb_pct_int >= 45:
+                    _vb_prompt_str = f"CHƯA NÊN VỘI THAY ĐỔI LÚC NÀY — NÊN GIỮ ỔN ĐỊNH & CHUẨN BỊ KỸ ({_vb_pct_int}% — BÌNH)"
+                else:
+                    _vb_prompt_str = f"KHÔNG NÊN THỰC HIỆN LÚC NÀY ({_vb_pct_int}% — HUNG)"
+            else:
+                _vb_prompt_str = f"{_vb_label} ({_vb_pct_int}%)" 
             deep_prompt = (
                 f"<system_role>\n"
                 f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V100.5 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY.\n"
@@ -15975,33 +15989,55 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === Ô NÂU TO — KẾT LUẬN AI ONLINE (NỐI THÀNH ĐOẠN VĂN MẠCH LẠC DỄ ĐỌC) ===
-            _online_prose_parts = []
-            if _online_visao:
-                _online_prose_parts.append(f"<b>Nguyên nhân cốt lõi:</b> {_online_visao.rstrip('.')}.")
-            if _online_ungky:
-                _online_prose_parts.append(f"<b>Thời điểm chuyển biến (Ứng kỳ):</b> {_online_ungky.rstrip('.')}.")
-            if _online_giaiphap:
-                _online_prose_parts.append(f"<b>Lời khuyên hành động:</b> {_online_giaiphap.rstrip('.')}.")
-            _online_prose_html = (
-                f'<div style="font-size:1.06em;color:#fef3c7;line-height:1.72;text-align:justify;padding:14px 16px;background:rgba(0,0,0,0.28);border-radius:12px;border-left:4px solid #fbbf24;">'
-                + " ".join(_online_prose_parts)
-                + '</div>'
-            ) if _online_prose_parts else ''
-
+            # === Ô NÂU TO — KẾT LUẬN AI ONLINE V100.6 (BỐ CỤC 3 THẺ TRỰC QUAN — NHÌN PHÁT BIẾT NGAY CÂU TRẢ LỜI) ===
             import re as _re_clean_v100
-            if any(w in question.lower() for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
+            _q_low_on_box = question.lower() if question else ''
+            if any(w in _q_low_on_box for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
                 _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?CÂN NHẮC\s*[—\-]\s*BÌNH[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
+            elif any(w in _q_low_on_box for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở']):
+                if 'CÂN NHẮC' in _online_verdict_line.upper() or 'để quyết định' in _online_verdict_line.lower():
+                    if weighted_pct >= 55:
+                        _online_verdict_line = f"👉 NÊN NGHỈ / CHUYỂN ĐỔI CÔNG VIỆC ĐỂ ĐÓN CƠ HỘI MỚI ({weighted_pct}%)"
+                    elif weighted_pct >= 45:
+                        _online_verdict_line = f"👉 CHƯA NÊN NGHỈ VIỆC LÚC NÀY — NÊN GIỮ CÔNG VIỆC HIỆN TẠI ({weighted_pct}%)"
+                    else:
+                        _online_verdict_line = f"👉 TUYỆT ĐỐI KHÔNG NÊN NGHỈ VIỆC TỰ PHÁT LÚC NÀY ({weighted_pct}%)"
+
+            _on_cards = []
+            if _online_visao:
+                _on_cards.append(
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.72);border-radius:10px;border-left:4px solid #38bdf8;">'
+                    f'<div style="font-weight:800;color:#38bdf8;font-size:0.9em;margin-bottom:4px;">🔍 VÌ SAO (NGUYÊN NHÂN CỐT LÕI)</div>'
+                    f'<div style="color:#f1f5f9;font-size:0.96em;line-height:1.55;">{_online_visao.rstrip(".")}.</div></div>'
+                )
+            if _online_ungky:
+                _on_cards.append(
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.72);border-radius:10px;border-left:4px solid #fbbf24;">'
+                    f'<div style="font-weight:800;color:#fbbf24;font-size:0.9em;margin-bottom:4px;">⏰ KHI NÀO (THỜI ĐIỂM ỨNG KỲ)</div>'
+                    f'<div style="color:#fef3c7;font-size:0.96em;line-height:1.55;">{_online_ungky.rstrip(".")}.</div></div>'
+                )
+            if _online_giaiphap:
+                _on_cards.append(
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.72);border-radius:10px;border-left:4px solid #34d399;">'
+                    f'<div style="font-weight:800;color:#34d399;font-size:0.9em;margin-bottom:4px;">🧭 LÀM GÌ (PHÁP QUYẾT HÀNH ĐỘNG)</div>'
+                    f'<div style="color:#ecfdf5;font-size:0.96em;line-height:1.55;">{_online_giaiphap.rstrip(".")}.</div></div>'
+                )
+            _online_prose_html = (
+                f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px;">'
+                + "".join(_on_cards)
+                + '</div>'
+            ) if _on_cards else ''
+
             final_parts.append(
-                f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.5)</div>'
-                f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
+                f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.6 — Thiết Kế Trực Quan)</div>'
+                f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
             )
             
-            # Chi tiết phân tích Online → collapse (HTML formatted để không bao giờ bị gộp dòng)
-            final_parts.append("\n<details open>")
+            # Chi tiết phân tích Online → đóng mặc định để màn hình chính cực kỳ gọn đẹp
+            final_parts.append("\n<details>")
             final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI ONLINE (nhấn để đóng/mở)</b></summary>\n")
             final_parts.append(_format_md_for_html_details(online_result))
             final_parts.append("\n</details>")
@@ -16704,13 +16740,14 @@ class FreeAIHelper:
                     _connected_prose_on = _off_summary_extra
 
                 final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.5</div>'
-                    f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
-                    f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
+                    f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.6)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{_off_v_color};border-radius:20px;border:1px solid {_off_v_color};">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</span>'
+                    f'</div>'
+                    f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
                     + '</div>'
-                    + ''
                     + _connected_prose_on
                     + _t7_html
                     + f'</div>'
@@ -17477,11 +17514,12 @@ class FreeAIHelper:
                     _connected_prose_fb = _off2_summary
 
                 final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.5</div>'
-                    f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
+                    f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.6)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{_off2_v_color};border-radius:20px;border:1px solid {_off2_v_color};">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</span>'
+                    f'</div>'
                     + _combined_direct_html
-                    + ''
                     + _connected_prose_fb
                     + _comp_detail_html
                     + _t7_fb_html

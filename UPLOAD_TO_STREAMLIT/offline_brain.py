@@ -449,169 +449,195 @@ def build_narrative_summary_text(
     omni_data = omni_data if isinstance(omni_data, dict) else {}
     factors_text = _connect_factors(all_factors or [], pct=pct)
 
-    uk_clean = ung_ky_str if (ung_ky_str and ung_ky_str != '?' and 'xem mục' not in ung_ky_str.lower()) else omni_data.get('exact_timestamp', 'trong chu kỳ Can Chi gần nhất')
-    _syn_tail = ""
-    try:
-        from world_class_methods import compute_7_link_synergy_chain
-        _c_syn, _, _ = _resolve_authentic_km_palace(chart_data, dung_than, q, category)
-        _syn_obj = compute_7_link_synergy_chain(
-            question=q,
-            category=category,
-            dung_than=dung_than,
-            hanh_dt=omni_data.get('hanh_dt', 'Kim'),
-            weighted_pct=pct,
-            target_cung=_c_syn or 1,
-            direction=direction,
-            ung_ky_str=uk_clean,
-            chart_data=chart_data,
-            luc_hao_data=luc_hao_data,
-            mai_hoa_data=mai_hoa_data,
-        )
-        _syn_tail = f"<br><span style='color:#a7f3d0;font-size:0.95em;'>{_syn_obj.get('synergy_summary_sentence', '')}</span>"
-    except Exception:
-        _syn_tail = "" 
+    uk_clean = ung_ky_str if (ung_ky_str and ung_ky_str != '?' and 'xem mục' not in ung_ky_str.lower()) else omni_data.get('exact_timestamp', 'trong chu kỳ Can Chi gần nhất')
+
+    def _hero_ui(icon_em: str, verdict_headline: str, why_line: str, when_line: str, action_line: str) -> str:
+        # Thiết kế Hero Answer Card V100.6: Nhìn 1 giây thấy ngay câu trả lời + 3 ô mini-cards (Vì sao · Khi nào · Làm gì)
+        return _md_to_html_bold(
+            f'<div style="padding:12px 16px;background:linear-gradient(90deg,rgba(245,158,11,0.25),rgba(16,185,129,0.18));'
+            f'border-radius:10px;border:1px solid rgba(251,191,36,0.55);margin-bottom:10px;">'
+            f'<div style="font-size:0.85em;font-weight:700;color:#fde68a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">'
+            f'{icon_em} CÂU TRẢ LỜI TRỌNG TÂM CHO: "{q}"</div>'
+            f'<div style="font-size:1.32em;font-weight:900;color:#ffffff;line-height:1.35;">👉 {verdict_headline}</div>'
+            f'</div>'
+            f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;font-size:0.95em;line-height:1.5;">'
+            f'<div style="padding:9px 12px;background:rgba(15,23,42,0.68);border-radius:8px;border-left:3px solid #38bdf8;">'
+            f'<div style="font-weight:800;color:#38bdf8;font-size:0.88em;margin-bottom:2px;">🔍 NGUYÊN NHÂN CỐT LÕI</div>'
+            f'<div style="color:#f1f5f9;">{why_line}</div></div>'
+            f'<div style="padding:9px 12px;background:rgba(15,23,42,0.68);border-radius:8px;border-left:3px solid #fbbf24;">'
+            f'<div style="font-weight:800;color:#fbbf24;font-size:0.88em;margin-bottom:2px;">⏰ THỜI ĐIỂM CHUYỂN BIẾN (ỨNG KỲ)</div>'
+            f'<div style="color:#fef3c7;">{when_line}</div></div>'
+            f'<div style="padding:9px 12px;background:rgba(15,23,42,0.68);border-radius:8px;border-left:3px solid #34d399;">'
+            f'<div style="font-weight:800;color:#34d399;font-size:0.88em;margin-bottom:2px;">🧭 LỜI KHUYÊN & HƯỚNG HÀNH ĐỘNG</div>'
+            f'<div style="color:#ecfdf5;">{action_line}</div></div>'
+            f'</div>'
+        )
 
     # 1. TRỌNG TÂM: BỆNH TẬT / SỨC KHỎE / QUA KHỎI KHÔNG
     if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in q_low for w in ['ốm', 'bệnh', 'đau', 'khỏe', 'qua khỏi', 'qua được', 'sống không', 'nguy kịch', 'nằm viện', 'mổ']):
         subj_lbl = person.capitalize() if person != 'bạn' else 'Người bệnh'
         co_the = omni_data.get('co_the', '') or kc_detail
-        co_the_str = f" Vùng cơ thể/triệu chứng cần lưu tâm: <b>{co_the}</b>." if co_the else ""
+        co_the_str = f" Lưu ý vùng: <b>{co_the}</b>." if co_the else ""
         if pct >= 55:
-            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl.upper()} CÓ KHẢ NĂNG QUA KHỎI & HỒI PHỤC TỐT ({pct}% — CÁT)</b>."
-            body = f"Hào Dụng Thần (<b>{dung_than}</b>) và sinh khí còn vững, có lực cứu giải của thầy thuốc.{co_the_str} {factors_text} Dự kiến sức khỏe chuyển biến tích cực rõ rệt vào khoảng <b>{uk_clean}</b>."
+            vh = f"{subj_lbl.upper()} CÓ KHẢ NĂNG QUA KHỎI & HỒI PHỤC TỐT ({pct}% — CÁT)"
+            why_s = f"Dụng Thần <b>{dung_than}</b> sinh khí vững, gặp lực cứu giải của thầy thuốc.{co_the_str}"
+            act_s = f"Tích cực điều trị theo phác đồ hiện tại (Hướng cát: <b>{direction}</b>)."
         elif pct >= 45:
-            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH TRẠNG CỦA {subj_lbl.upper()} ĐANG GIẰNG CO — CẦN TÍCH CỰC ĐIỀU TRỊ ({pct}% — BÌNH)</b>."
-            body = f"Chính khí của Dụng Thần (<b>{dung_than}</b>) và bệnh khí đang giằng co.{co_the_str} {factors_text} Cần tuân thủ sát phác đồ chuyên khoa; nếu vượt qua mốc <b>{uk_clean}</b> thì sẽ chuyển nguy thành an."
+            vh = f"TÌNH TRẠNG CỦA {subj_lbl.upper()} ĐANG GIẰNG CO — CẦN TÍCH CỰC ĐIỀU TRỊ ({pct}% — BÌNH)"
+            why_s = f"Chính khí của Dụng Thần <b>{dung_than}</b> và bệnh khí đang giằng co.{co_the_str}"
+            act_s = f"Bám sát phác đồ chuyên khoa, bồi bổ sức lực (Hướng hỗ trợ: <b>{direction}</b>)."
         else:
-            head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl.upper()} ĐANG GẶP NHIỀU BẤT LỢI / TIÊN LƯỢNG NẶNG ({pct}% — HUNG)</b>."
-            body = f"Quẻ báo Dụng Thần (<b>{dung_than}</b>) suy yếu hoặc chịu xung khắc mạnh.{co_the_str} {factors_text} Cần lập tức ưu tiên điều trị chuyên sâu tuyến trên và theo dõi đặc biệt sát sao quanh mốc <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+            vh = f"{subj_lbl.upper()} ĐANG GẶP BẤT LỢI / TIÊN LƯỢNG NẶNG ({pct}% — HUNG)"
+            why_s = f"Dụng Thần <b>{dung_than}</b> suy yếu hoặc chịu xung khắc mạnh.{co_the_str}"
+            act_s = f"Ưu tiên hội chẩn tuyến trên và theo dõi đặc biệt sát sao (Hướng cứu giải: <b>{direction}</b>)."
+        return _hero_ui("🏥", vh, why_s, f"Mốc chuyển biến: <b>{uk_clean}</b>", act_s)
 
     # 2. TRỌNG TÂM: TÌM ĐỒ / MẤT ĐỒ / Ở ĐÂU (Kiểm tra TRƯỚC Tài Chính)
     if category == 'TÌM_ĐỒ' or any(w in q_low for w in ['tìm lại', 'bị mất', 'mất chiếc', 'mất đồ', 'mất ví', 'thất lạc', 'ở đâu', 'chỗ nào', 'để đâu', 'cất đâu']):
         where_sum = omni_data.get('where_summary', f'Hướng <b>{direction}</b>')
-        height_d = omni_data.get('height_desc', '')
         places_d = omni_data.get('places', '')
-        loc_detail = f" Gợi ý vị trí: <b>{places_d}</b> ({height_d})." if places_d else ""
+        loc_detail = f" ({places_d})" if places_d else ""
         if pct >= 55:
-            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÓ THỂ TÌM LẠI ĐƯỢC ({pct}% — CÁT) — HƯỚNG {direction.upper()}</b>."
-            body = f"Đồ vật chưa mất hẳn, hiện nằm tại khu vực: {where_sum}.{loc_detail} {factors_text} Hãy tìm ngay trong khoảng <b>{uk_clean}</b>."
+            vh = f"CÓ THỂ TÌM LẠI ĐƯỢC ({pct}% — CÁT) — TÌM TẠI HƯỚNG {direction.upper()}"
+            why_s = f"Đồ vật chưa mất hẳn, nằm tại: {where_sum}{loc_detail}."
         elif pct >= 45:
-            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CƠ HỘI TÌM LẠI 50/50 ({pct}% — BÌNH) — HƯỚNG {direction.upper()}</b>."
-            body = f"Đồ vật đang bị che khuất hoặc để lẫn tại: {where_sum}.{loc_detail} {factors_text} Cần tìm kỹ các ngăn/góc khuất theo hướng này quanh mốc <b>{uk_clean}</b>."
+            vh = f"CƠ HỘI TÌM LẠI 50/50 ({pct}% — BÌNH) — TÌM KỸ HƯỚNG {direction.upper()}"
+            why_s = f"Đồ vật bị che khuất hoặc để lẫn tại: {where_sum}{loc_detail}."
         else:
-            head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>KHÓ TÌM LẠI / ĐÃ DI CHUYỂN XA ({pct}% — HUNG) — MANH MỐI HƯỚNG {direction.upper()}</b>."
-            body = f"Quẻ báo hào Tài/Dụng Thần đang ẩn phục hoặc bị khắc, khả năng tìm lại thấp. Phương vị manh mối cuối cùng: {where_sum}.{loc_detail} {factors_text}"
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+            vh = f"KHÓ TÌM LẠI / ĐÃ DI CHUYỂN XA ({pct}% — HUNG) — MANH MỐI HƯỚNG {direction.upper()}"
+            why_s = f"Hào Dụng Thần ẩn phục/bị khắc; manh mối cuối cùng ở: {where_sum}{loc_detail}."
+        return _hero_ui("📍", vh, why_s, f"Khung giờ tìm tốt nhất: <b>{uk_clean}</b>", f"Rà soát kỹ hướng <b>{direction}</b> và các góc khuất.")
 
     # 3. TRỌNG TÂM: ĐỐI KHÁNG / TRANH CHẤP / KIỆN TỤNG / AI THẮNG
     if category == 'THẮNG_THUA' or any(w in q_low for w in ['ai thắng', 'đối phương thắng', 'thắng hay thua', 'tranh chấp', 'vụ kiện', 'kiện tụng']):
         if pct >= 55:
-            head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>BÊN BẠN (CHỦ/HÀO THẾ) ĐANG CHIẾM ƯU THẾ & KHẢ NĂNG THẮNG CAO ({pct}% — CÁT)</b>."
-            body = f"Xét tương quan Chủ – Khách và trục Hào Thế – Hào Ứng, khí lực và lý lẽ đang nghiêng về phía bên bạn. {factors_text} Thời điểm phân định kết quả rõ nét: <b>{uk_clean}</b>."
+            vh = f"BÊN BẠN (HÀO THẾ) CHIẾM ƯU THẾ & KHẢ NĂNG THẮNG CAO ({pct}% — CÁT)"
+            why_s = "Khí lực Hào Thế / Cung Chủ đang vượng và lấn lướt đối phương."
+            act_s = f"Chủ động đưa ra chứng cứ, giữ vững lập trường (Hướng lợi: <b>{direction}</b>)."
         elif pct >= 45:
-            head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THẾ TRẬN GIẰNG CO NGANG NGỬA — NÊN ƯU TIÊN ĐÀM PHÁN HÒA GIẢI ({pct}% — BÌNH)</b>."
-            body = f"Tương quan lực lượng giữa bên bạn (Hào Thế/Cung Chủ) và đối phương (Hào Ứng/Cung Khách) đang giằng co quyết liệt, chưa bên nào áp đảo hoàn toàn. {factors_text} Nếu củng cố chặt chứng cứ pháp lý và khéo léo đàm phán quanh mốc <b>{uk_clean}</b> thì bên bạn sẽ giữ được quyền lợi."
+            vh = f"THẾ TRẬN GIẰNG CO NGANG NGỬA — NÊN ƯU TIÊN ĐÀM PHÁN HÒA GIẢI ({pct}% — BÌNH)"
+            why_s = "Lực lượng Chủ – Khách cân bằng, chưa bên nào áp đảo hoàn toàn."
+            act_s = f"Củng cố hồ sơ pháp lý và khéo léo thương lượng hòa giải (Hướng lợi: <b>{direction}</b>)."
         else:
-            head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐỐI PHƯƠNG ĐANG LẤN LƯỚT — BÊN BẠN BẤT LỢI NẾU ĐỐI ĐẦU TRỰC DIỆN ({pct}% — HUNG)</b>."
-            body = f"Trục Hào Ứng / Cung Khách đang vượng và chế khắc bên Chủ, đối đầu căng thẳng lúc này dễ thiệt thòi. {factors_text} Nên chuyển sang thế phòng thủ, củng cố hồ sơ pháp lý và chờ thời cơ chuyển cục vào <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+            vh = f"ĐỐI PHƯƠNG ĐANG LẤN LƯỚT — KHÔNG NÊN ĐỐI ĐẦU TRỰC DIỆN ({pct}% — HUNG)"
+            why_s = "Hào Ứng / Cung Khách đang vượng và khắc chế bên Chủ."
+            act_s = f"Chuyển sang phòng thủ, tránh va chạm trực diện và chờ chuyển cục (Hướng: <b>{direction}</b>)."
+        return _hero_ui("⚔️", vh, why_s, f"Mốc phân định kết quả: <b>{uk_clean}</b>", act_s)
 
     # 4. TRỌNG TÂM: KHI NÀO / BAO GIỜ / THÁNG MẤY / NGÀY NÀO
     if any(w in q_low for w in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'ngày nào', 'mấy giờ', 'năm nào']):
         status_w = "THUẬN LỢI ỨNG NGHIỆM" if pct >= 55 else ("ỨNG NGHIỆM NHƯNG CẦN KIÊN NHẪN" if pct >= 45 else "ĐANG BỊ TRÌ HOÃN, CẦN CHỜ XUNG KHAI")
-        head = f"⏳ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THỜI ĐIỂM ỨNG KỲ LÀ {uk_clean.upper()} ({pct}% — {status_w})</b>."
-        body = f"Dựa trên sự hội tụ của Dụng Thần (<b>{dung_than}</b>) và vòng Can Chi: {factors_text} Phương hướng thuận lợi hỗ trợ: <b>{direction}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+        vh = f"THỜI ĐIỂM ỨNG NGHIỆM: {uk_clean.upper()} ({pct}% — {status_w})"
+        return _hero_ui("⏳", vh, f"Dụng Thần <b>{dung_than}</b> hội tụ khí số theo chu kỳ Can Chi.", f"Điểm rơi chính xác: <b>{uk_clean}</b>", f"Chuẩn bị sẵn sàng và hành động theo hướng <b>{direction}</b>.")
 
     # 5. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
     if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
         g_str = omni_data.get('gender', 'Nam giới (Khí Dương)')
-        g_reasons = omni_data.get('gender_reasons', '')
+        g_reasons = omni_data.get('gender_reasons', 'Dụng Thần mang khí Dương')
         a_str = omni_data.get('age_tier', 'THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)')
         by_str = ", ".join(omni_data.get('birth_years', [])[:3])
-        head = f"👤 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{g_str} — {a_str} (Ước tính năm sinh & độ tuổi: {by_str})</b>."
-        body = f"Luận cứ Dịch học hội tụ từ Dụng Thần <b>{dung_than}</b> ({g_reasons}) tại hướng <b>{direction}</b>. {factors_text}"
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+        vh = f"{g_str} — {a_str}"
+        return _hero_ui("👤", vh, f"Xác định từ Dụng Thần <b>{dung_than}</b> ({g_reasons}).", f"Ước tính năm sinh & độ tuổi: <b>{by_str}</b>", f"Phương vị tương ứng: <b>{direction}</b> | Màu hợp: <b>{omni_data.get('colors', 'Trắng, Vàng')}</b>.")
 
     # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / BAO NHIÊU / MẤY
     if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'bao nhiêu', 'có mấy', 'số lượng']):
-        obj_str = omni_data.get('objects', '')
-        qty_str = omni_data.get('quantity', '')
-        col_str = omni_data.get('colors', '')
-        head = f"📦 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{obj_str[:120]}</b>."
-        body = f"Màu sắc đặc trưng: <b>{col_str}</b> | {qty_str}. {factors_text}"
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+        obj_str = omni_data.get('objects', 'Vật phẩm thuộc hành Dụng Thần')
+        qty_str = omni_data.get('quantity', 'Theo số Hà Đồ - Lạc Thư')
+        col_str = omni_data.get('colors', 'Sáng rõ')
+        vh = f"{obj_str[:110]} ({qty_str})"
+        return _hero_ui("📦", vh, f"Loại tượng hành của Dụng Thần <b>{dung_than}</b>.", f"Định lượng/Số lượng: <b>{qty_str}</b>", f"Màu sắc đặc trưng: <b>{col_str}</b> | Hướng: <b>{direction}</b>.")
 
     # 7. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
     if category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền']):
         if pct >= 55:
-            head = f"💰 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THUẬN LỢI — CÓ LÃI & KHẢ QUAN ({pct}% — CÁT)</b>."
-            body = f"Dụng Thần (<b>{dung_than}</b>) đắc khí, dòng tiền và cơ hội sinh lời tốt. {factors_text} Hướng cát lợi: <b>{direction}</b> | Mốc thời gian vượng khí: <b>{uk_clean}</b>."
+            vh = f"NÊN ĐẦU TƯ / GIAO DỊCH — CÓ LÃI & KHẢ QUAN ({pct}% — CÁT)"
+            why_s = f"Dụng Thần <b>{dung_than}</b> đắc khí, dòng tiền và cơ hội sinh lời thuận lợi."
+            act_s = f"Có thể chốt giao dịch/xuống vốn theo hướng <b>{direction}</b>."
         elif pct >= 45:
-            head = f"💰 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CƠ HỘI TRUNG BÌNH — LỢI NHUẬN MỎNG, CẦN THẬN TRỌNG ({pct}% — BÌNH)</b>."
-            body = f"Dụng Thần (<b>{dung_than}</b>) ở thế giằng co, có thể thực hiện nhưng phải đàm phán kỹ giá cả và pháp lý, tránh dùng đòn bẩy quá sức. {factors_text} Mốc ứng kỳ: <b>{uk_clean}</b>."
+            vh = f"CHƯA NÊN VỘI XUỐNG TIỀN LỚN — LỢI NHUẬN MỎNG, CẦN ĐÀM PHÁN KỸ ({pct}% — BÌNH)"
+            why_s = f"Dụng Thần <b>{dung_than}</b> ở thế giằng co, dễ phát sinh chi phí hoặc chậm thanh khoản."
+            act_s = f"Thương lượng giảm giá, kiểm tra kỹ pháp lý, không dùng đòn bẩy quá sức (Hướng: <b>{direction}</b>)."
         else:
-            head = f"💰 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CHƯA NÊN ĐẦU TƯ / KHÓ CÓ LÃI NGAY, DỄ ĐỌNG VỐN ({pct}% — HUNG)</b>."
-            body = f"Dụng Thần (<b>{dung_than}</b>) đang ẩn phục hoặc suy yếu, xuống tiền lúc này dễ bị kẹt thanh khoản hoặc hao hụt. {factors_text} Nên giữ tiền mặt và chờ qua mốc <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+            vh = f"KHÔNG NÊN ĐẦU TƯ LÚC NÀY — DỄ ĐỌNG VỐN HOẶC HAO HỤT ({pct}% — HUNG)"
+            why_s = f"Dụng Thần <b>{dung_than}</b> suy yếu/bị khắc, xuống tiền lúc này rủi ro cao."
+            act_s = f"Giữ tiền mặt bảo toàn vốn, chờ qua mốc ứng kỳ mới xét lại."
+        return _hero_ui("💰", vh, why_s, f"Mốc chuyển biến tài chính: <b>{uk_clean}</b>", act_s)
 
-    # 8. TRỌNG TÂM: CÔNG VIỆC / CHUYỂN VIỆC / XIN VIỆC / THI CỬ / SỰ NGHIỆP
-    if category == 'CÔNG_VIỆC' or any(w in q_low for w in ['chuyển việc', 'xin việc', 'nhảy việc', 'công việc', 'thăng chức', 'thi', 'đỗ', 'phỏng vấn', 'sự nghiệp']):
-        if pct >= 55:
-            head = f"💼 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TỐT / THUẬN LỢI TIẾN HÀNH ({pct}% — CÁT)</b>."
-            body = f"Quan vận và Dụng Thần (<b>{dung_than}</b>) sáng sủa, có quý nhân hoặc cơ hội phát triển đúng kỳ vọng. {factors_text} Thời điểm ứng nghiệm: <b>{uk_clean}</b>."
-        elif pct >= 45:
-            head = f"💼 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TẠM ỔN NHƯNG CẦN CHUẨN BỊ KỸ ({pct}% — BÌNH)</b>."
-            body = f"Dụng Thần (<b>{dung_than}</b>) ở mức trung bình, bước đầu có thử thách nhỏ nhưng kiên trì sẽ đạt kết quả vào khoảng <b>{uk_clean}</b>. {factors_text}"
+    # 8. TRỌNG TÂM: CÔNG VIỆC / NGHỈ HAY KHÔNG NGHỈ / CHUYỂN VIỆC / XIN VIỆC / SỰ NGHIỆP
+    if category == 'CÔNG_VIỆC' or any(w in q_low for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'chuyển việc', 'xin việc', 'nhảy việc', 'công việc', 'thăng chức', 'thi', 'đỗ', 'phỏng vấn', 'sự nghiệp']):
+        is_quit_question = any(w in q_low for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở', 'ở lại hay'])
+        if is_quit_question:
+            if pct >= 55:
+                vh = f"NÊN NGHỈ / CHUYỂN ĐỔI CÔNG VIỆC ĐỂ ĐÓN CƠ HỘI MỚI TỐT HƠN ({pct}% — CÁT)"
+                why_s = f"Dụng Thần <b>{dung_than}</b> và cung Dịch Mã/Cửa Mở đang vượng, báo hiệu bước ngoặt mới sáng sủa hơn chỗ cũ."
+                act_s = f"Chủ động hoàn tất bàn giao và tiến về môi trường mới tại hướng <b>{direction}</b>."
+            elif pct >= 45:
+                vh = f"CHƯA NÊN NGHỈ VIỆC LÚC NÀY — NÊN GIỮ CÔNG VIỆC HIỆN TẠI ({pct}% — CẦN ỔN ĐỊNH)"
+                why_s = f"Dụng Thần <b>{dung_than}</b> ({pct}%) cho thấy chỗ làm hiện tại tuy có áp lực và mệt mỏi nhưng nguồn thu và vị trí vẫn giữ được; nếu nghỉ ngay sẽ gặp khoảng trống chưa có nơi tốt hơn thay thế."
+                act_s = f"Giữ vững công việc hiện tại, âm thầm tìm kiếm/chuẩn bị phương án dự phòng và chờ tới mốc ứng kỳ mới tính chuyện thay đổi (Hướng cát: <b>{direction}</b>)."
+            else:
+                vh = f"TUYỆT ĐỐI KHÔNG NÊN NGHỈ VIỆC TỰ PHÁT LÚC NÀY ({pct}% — ĐANG CÓ VẬN CẢN)"
+                why_s = f"Dụng Thần <b>{dung_than}</b> đang chịu lực cản lớn, tự ý bỏ việc lúc này dễ rơi vào thế bế tắc hoặc thiệt thòi tài chính."
+                act_s = f"Án binh bất động, kiên nhẫn giữ vị trí hiện tại để bảo toàn thu nhập (Hướng hóa giải: <b>{direction}</b>)."
+            return _hero_ui("💼", vh, why_s, f"Thời điểm mở vận chuyển biến: <b>{uk_clean}</b>", act_s)
         else:
-            head = f"💼 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CHƯA THUẬN LỢI / NHIỀU ÁP LỰC & CẢN TRỞ ({pct}% — HUNG)</b>."
-            body = f"Dụng Thần (<b>{dung_than}</b>) đang gặp lực cản mạnh, nếu vội vàng thay đổi hoặc quyết định lớn lúc này sẽ bất lợi. {factors_text} Nên củng cố vị trí hiện tại và chờ tới <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+            if pct >= 55:
+                vh = f"CÔNG VIỆC THUẬN LỢI — NÊN CHỦ ĐỘNG TIẾN HÀNH ({pct}% — CÁT)"
+                why_s = f"Quan vận và Dụng Thần <b>{dung_than}</b> đắc khí, có quý nhân nâng đỡ."
+                act_s = f"Tự tin triển khai kế hoạch theo hướng <b>{direction}</b>."
+            elif pct >= 45:
+                vh = f"CÔNG VIỆC ĐANG Ở THẾ GIẰNG CO — NÊN GIỮ ỔN ĐỊNH & CHUẨN BỊ KỸ ({pct}% — BÌNH)"
+                why_s = f"Dụng Thần <b>{dung_than}</b> ở mức trung bình ({pct}%), có cơ hội nhưng kèm áp lực cạnh tranh."
+                act_s = f"Làm chắc từng bước, tránh nóng vội thay đổi lớn trước mốc ứng kỳ (Hướng: <b>{direction}</b>)."
+            else:
+                vh = f"CÔNG VIỆC ĐANG GẶP LỰC CẢN — CHƯA NÊN THAY ĐỔI LỚN ({pct}% — HUNG)"
+                why_s = f"Dụng Thần <b>{dung_than}</b> đang bị khắc chế, dễ gặp tiểu nhân hoặc trì trệ."
+                act_s = f"Phòng thủ, giữ vững vị trí hiện tại và chờ qua mốc ứng kỳ (Hướng: <b>{direction}</b>)."
+            return _hero_ui("💼", vh, why_s, f"Mốc chuyển biến sự nghiệp: <b>{uk_clean}</b>", act_s)
 
     # 9. TRỌNG TÂM: TÌNH CẢM / HÔN NHÂN / VỢ CHỒNG / NGƯỜI YÊU
     if category == 'TÌNH_CẢM' or any(w in q_low for w in ['yêu', 'cưới', 'hôn nhân', 'vợ chồng', 'chia tay', 'quay lại', 'tình cảm', 'thật lòng', 'ngoại tình', 'vợ tôi', 'chồng tôi', 'người yêu']):
         _target_p = 'Vợ bạn' if 'vợ' in q_low else ('Chồng bạn' if 'chồng' in q_low else ('Người ấy' if any(x in q_low for x in ['người yêu', 'bạn trai', 'bạn gái']) else 'Đối phương'))
         if any(w in q_low for w in ['còn yêu', 'yêu tôi không', 'thật lòng', 'còn thương', 'tình cảm']):
             if pct >= 55:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{_target_p.upper()} VẪN CÒN YÊU THƯƠNG & GẮN BÓ CHÂN THÀNH VỚI BẠN ({pct}% — CÁT)</b>."
-                body = f"Xét hào Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng, tình cảm {_target_p.lower()} dành cho bạn vẫn sâu đậm, hướng về gia đình/mối quan hệ. {factors_text} Mốc tình cảm thêm nồng ấm: <b>{uk_clean}</b>."
+                vh = f"{_target_p.upper()} VẪN CÒN YÊU THƯƠNG & GẮN BÓ CHÂN THÀNH VỚI BẠN ({pct}% — CÁT)"
+                why_s = f"Trục Dụng Thần <b>{dung_than}</b> và Thế – Ứng tương sinh, tình cảm {_target_p.lower()} vẫn sâu đậm."
             elif pct >= 45:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{_target_p.upper()} VẪN CÒN TÌNH NGHĨA NHƯNG ĐANG CÓ KHOẢNG CÁCH / TÂM SỰ GIỮ KÍN TRONG LÒNG ({pct}% — BÌNH)</b>."
-                body = f"Dụng Thần (<b>{dung_than}</b>) đạt <b>{pct}%</b> cho thấy {_target_p.lower()} <b>chưa hết yêu bạn</b>, nhưng do cung quẻ đang gặp lực cản/khép kín nên bề ngoài tỏ ra trầm lắng, ít chia sẻ hoặc còn tự ái ngầm. {factors_text} Hãy chủ động quan tâm nhẹ nhàng, tháo gỡ khúc mắc quanh mốc <b>{uk_clean}</b>."
+                vh = f"{_target_p.upper()} VẪN CÒN TÌNH NGHĨA NHƯNG ĐANG GIỮ TÂM SỰ RIÊNG ({pct}% — BÌNH)"
+                why_s = f"{_target_p} chưa hết yêu bạn nhưng đang chịu áp lực tâm lý hoặc tự ái ngầm nên ít chia sẻ."
             else:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM CỦA {_target_p.upper()} ĐANG BỊ DỒN NÉN / CÓ KHOẢNG CÁCH LỚN ({pct}% — HUNG)</b>."
-                body = f"Hào Dụng Thần (<b>{dung_than}</b>) đang ẩn phục/chịu xung khắc, báo hiệu {_target_p.lower()} đang rất mệt mỏi, giận dỗi ngầm hoặc khép kín cảm xúc. {factors_text} Cần kiên nhẫn lắng nghe và hóa giải từ từ, tránh tranh cãi gay gắt trước mốc <b>{uk_clean}</b>."
+                vh = f"TÌNH CẢM CỦA {_target_p.upper()} ĐANG BỊ DỒN NÉN / CÓ KHOẢNG CÁCH LỚN ({pct}% — HUNG)"
+                why_s = f"Dụng Thần <b>{dung_than}</b> chịu xung khắc, báo hiệu sự mệt mỏi và khép kín cảm xúc."
         elif any(w in q_low for w in ['quay lại', 'hàn gắn', 'làm lành']):
-            if pct >= 55:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÓ KHẢ NĂNG QUAY LẠI & HÀN GẮN THÀNH CÔNG ({pct}% — CÁT)</b>."
-            elif pct >= 45:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÒN DUYÊN NỢ DÙNG DẰNG — CẦN CHỦ ĐỘNG MỀM MỎNG MỚI HÀN GẮN ĐƯỢC ({pct}% — BÌNH)</b>."
-            else:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>RẤT KHÓ QUAY LẠI NGAY — DUYÊN KHÍ ĐANG BẾ TẮC ({pct}% — HUNG)</b>."
-            body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
+            vh = (
+                f"CÓ KHẢ NĂNG QUAY LẠI & HÀN GẮN THÀNH CÔNG ({pct}% — CÁT)" if pct >= 55 else
+                f"CÒN DUYÊN NỢ DÙNG DẰNG — CẦN CHỦ ĐỘNG MỀM MỎNG MỚI HÀN GẮN ĐƯỢC ({pct}% — BÌNH)" if pct >= 45 else
+                f"RẤT KHÓ QUAY LẠI NGAY — DUYÊN KHÍ ĐANG BẾ TẮC ({pct}% — HUNG)"
+            )
+            why_s = f"Xét trên trục Dụng Thần <b>{dung_than}</b> và tương quan Thế – Ứng ({pct}%)."
         else:
-            if pct >= 55:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>TÌNH CẢM THUẬN HÒA & GẮN KẾT TỐT ({pct}% — CÁT)</b>."
-            elif pct >= 45:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CÒN TÌNH NGHĨA NHƯNG ĐANG DÙNG DẰNG — CẦN THẤU HIỂU & NHƯỜNG NHỊN ({pct}% — BÌNH)</b>."
-            else:
-                head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐANG CÓ XUNG KHẮC / TRỞ NGẠI LỚN TRONG TÌNH CẢM ({pct}% — HUNG)</b>."
-            body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
+            vh = (
+                f"TÌNH CẢM THUẬN HÒA & GẮN KẾT TỐT ({pct}% — CÁT)" if pct >= 55 else
+                f"CÒN TÌNH NGHĨA NHƯNG ĐANG DÙNG DẰNG — CẦN THẤU HIỂU & NHƯỜNG NHỊN ({pct}% — BÌNH)" if pct >= 45 else
+                f"ĐANG CÓ XUNG KHẮC / TRỞ NGẠI LỚN TRONG TÌNH CẢM ({pct}% — HUNG)"
+            )
+            why_s = f"Xét trên trục Dụng Thần <b>{dung_than}</b> và tương quan Thế – Ứng ({pct}%)."
+        return _hero_ui("❤️", vh, why_s, f"Mốc chuyển biến tình cảm: <b>{uk_clean}</b>", f"Chủ động lắng nghe, chia sẻ nhẹ nhàng (Hướng hòa hợp: <b>{direction}</b>).")
 
-    # 10. CÁC CÂU HỎI KHÁC
-    opener = _get_qtype_opener(q, pct, category)
-    tier = _get_tier(pct)
-    cat_key = category if category in CATEGORY_TEMPLATES else 'CHUNG'
-    template = CATEGORY_TEMPLATES[cat_key].get(tier, CATEGORY_TEMPLATES['CHUNG'][tier])
-    filled = template.format(
-        factors=factors_text,
-        person=person,
-        direction=direction,
-        ung_ky=uk_clean,
-    )
-    return _md_to_html_bold(f"🎯 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> {opener}{filled}{_syn_tail}")
+    # 10. CÁC CÂU HỎI KHÁC (Bao gồm "có nên ... không", "nên ... hay không")
+    if any(w in q_low for w in ['có nên', 'nên không', 'hay không']):
+        vh = (
+            f"NÊN THỰC HIỆN — CỤC DIỆN ĐANG THUẬN LỢI ({pct}% — CÁT)" if pct >= 55 else
+            f"CHƯA NÊN VỘI THAY ĐỔI LÚC NÀY — NÊN GIỮ ỔN ĐỊNH & CHUẨN BỊ KỸ ({pct}% — BÌNH)" if pct >= 45 else
+            f"KHÔNG NÊN THỰC HIỆN LÚC NÀY — ĐANG CÓ NHIỀU TRỞ NGẠI ({pct}% — HUNG)"
+        )
+    else:
+        vh = (
+            f"THUẬN LỢI & KHẢ QUAN ({pct}% — CÁT)" if pct >= 55 else
+            f"TRUNG BÌNH — CẦN THẬN TRỌNG & KIÊN TRÌ ({pct}% — BÌNH)" if pct >= 45 else
+            f"BẤT LỢI — NÊN PHÒNG THỦ & CHỜ THỜI ({pct}% — HUNG)"
+        )
+    return _hero_ui("🎯", vh, f"Dụng Thần <b>{dung_than}</b> đạt <b>{pct}%</b>; {factors_text[:180]}", f"Mốc ứng nghiệm: <b>{uk_clean}</b>", f"Ưu tiên hướng <b>{direction}</b> và hành động thận trọng theo đúng thời cơ.")
 
 
 def generate_smart_offline_answer(
@@ -1211,13 +1237,13 @@ def build_connected_prose_analysis(
         _holo_grid_html = ""
 
     return (
-        f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.58);border-radius:14px;border:1px solid rgba(110,231,183,0.4);line-height:1.78;font-size:0.98em;color:#f1f5f9;">'
-        f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
-        f'📖 BỨC TRANH TOÀN CẢNH ĐÔNG - TÂY HỢP NHẤT V100.5 (14 HỆ THỐNG · 7 VỊ TRÍ TỌA ĐỘ · HỘI TỤ BAYES)</div>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Tâm điểm Con người & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Không gian hiện trường, Tâm lý & Diễn biến 3 thời qua Kỳ Môn – Đại Lục Nhâm:</b> {paragraph_2}</p>'
-        + (f'<p style="margin:0 0 12px 0;text-align:justify;color:#bae6fd;">{paragraph_world}</p>' if paragraph_world else '')
-        + (f'<p style="margin:0 0 12px 0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
-        + _holo_grid_html
-        + f'</div>'
+        _holo_grid_html
+        + f'<details style="margin-top:12px;padding:12px 16px;background:rgba(15,23,42,0.55);border-radius:12px;border:1px solid rgba(110,231,183,0.3);color:#f1f5f9;">'
+        + f'<summary style="cursor:pointer;font-size:0.98em;font-weight:800;color:#6ee7b7;">📖 XEM DIỄN GIẢI HỌC THUẬT CHUYÊN SÂU 14 HỆ THỐNG & CỔ THƯ (Nhấn để mở)</summary>'
+        + f'<div style="margin-top:12px;line-height:1.75;font-size:0.95em;">'
+        + f'<p style="margin:0 0 10px 0;text-align:justify;color:#e2e8f0;"><b>1. Tâm điểm Con người & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
+        + f'<p style="margin:0 0 10px 0;text-align:justify;color:#e2e8f0;"><b>2. Không gian hiện trường, Tâm lý & Diễn biến 3 thời qua Kỳ Môn – Đại Lục Nhâm:</b> {paragraph_2}</p>'
+        + (f'<p style="margin:0 0 10px 0;text-align:justify;color:#bae6fd;">{paragraph_world}</p>' if paragraph_world else '')
+        + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
+        + f'</div></details>'
     )
