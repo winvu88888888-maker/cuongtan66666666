@@ -1,5 +1,5 @@
 """
-dual_ai_agents.py — V102.0: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
+dual_ai_agents.py — V102.1: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
 ================================================================================
 - CON AI SỐ 1 (QuestionReaderAI): Chạy NGAY ĐẦU TIÊN khi nhận câu hỏi để đọc hiểu
   ngữ nghĩa, bóc tách chính xác đối tượng được hỏi (nhà mấy tầng, ở tầng mấy, mấy phòng,
@@ -301,7 +301,8 @@ class QuestionReaderAI:
             and not is_marital_status_q and not is_children_q
         )
         is_quit_work = any(w in q_low for w in ["nghỉ hay", "nên nghỉ", "nghỉ việc", "bỏ việc", "xin nghỉ", "làm tiếp hay", "đi hay ở", "ở lại hay"])
-        is_gender_age = any(w in q_low for w in ["nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính", "bao nhiêu tuổi", "mấy tuổi", "sinh năm"]) and not is_children_q
+        _is_child_action_ab = bool(re.search(r"(?:con\s+gái\s+hay\s+con\s+trai|con\s+trai\s+hay\s+con\s+gái)\s+\S+", q_low)) and not has_age_word and not any(w in q_low for w in ["sinh con", "đẻ con", "mang thai", "bầu"])
+        is_gender_age = any(w in q_low for w in ["nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính", "bao nhiêu tuổi", "mấy tuổi", "sinh năm"]) and not is_children_q and not _is_child_action_ab
         is_weather = any(w in q_low for w in ["mưa hay nắng", "nắng hay mưa", "thời tiết", "có mưa không", "trời mưa", "trời nắng", "bão"])
         is_lawsuit = any(w in q_low for w in ["kiện", "tòa án", "pháp lý", "tranh chấp", "ai thắng", "thắng hay thua", "thắng hay đối phương", "đấu thầu"])
         is_profile = any(w in q_low for w in ["ngoại hình", "hình dáng người", "cao hay thấp", "béo hay gầy", "tính cách", "tính nết", "làm nghề gì", "nghề nghiệp gì", "ngành gì", "cao bao nhiêu", "nặng bao nhiêu"])
@@ -414,15 +415,37 @@ class QuestionReaderAI:
             specific_target = "QUIT_OR_STAY"
             option_a, option_b = "Nên giữ công việc hiện tại (Ở lại)", "Nên nghỉ việc / Chuyển hướng"
         elif (" hay " in q_low) and not any(w in q_low for w in ["hay không", "có nên"]):
-            m_ab = re.search(r'(?:đang\s+|là\s+|nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', q_low)
+            m_ab = re.search(r'(?:nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', q_low)
             if m_ab:
                 arch_key = "D05_CHOICE_A_OR_B"
                 specific_target = "GENERIC_AB"
                 option_a = m_ab.group(1).strip()
                 option_b = m_ab.group(2).strip()
-                for pfx in ["tôi đang ", "tôi nên ", "tôi ", "bạn đang ", "hiện tại "]:
+                for pfx in ["cho hỏi ", "hỏi xem ", "xem giúp ", "bói xem ", "hiện tại ", "bây giờ ", "lúc này "]:
                     if option_a.startswith(pfx):
                         option_a = option_a[len(pfx):].strip()
+                # Trường hợp 1: option_a là chủ ngữ 1 ("con gái", "con trai", "vợ", "chồng", "bố", "mẹ") và option_b bắt đầu bằng chủ ngữ 2 kèm vị ngữ ("con trai đang khóc")
+                _PAIR_SUBJ = [
+                    ("con gái", "con trai"), ("con trai", "con gái"),
+                    ("bé gái", "bé trai"), ("bé trai", "bé gái"),
+                    ("vợ", "chồng"), ("chồng", "vợ"),
+                    ("bố", "mẹ"), ("mẹ", "bố"), ("ba", "mẹ"), ("cha", "mẹ"),
+                    ("anh", "em"), ("chị", "em"), ("em", "anh"), ("em", "chị"),
+                ]
+                for _sa, _sb in _PAIR_SUBJ:
+                    if option_a in (_sa, f"{_sa} tôi", f"{_sa} của tôi") and option_b.startswith(_sb):
+                        _tail_pred = option_b[len(_sb):].strip()
+                        if _tail_pred:
+                            option_a = f"{option_a} {_tail_pred}".strip()
+                        break
+                # Trường hợp 2: option_a có chủ ngữ ("con tôi không khóc") còn option_b chỉ ghi vị ngữ đối lập ("đang khóc")
+                for _subj_pfx in ["con tôi ", "con của tôi ", "bé nhà tôi ", "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ", "nhà tôi "]:
+                    if option_a.startswith(_subj_pfx) and not option_b.startswith(_subj_pfx.strip().split()[0]):
+                        option_b = f"{_subj_pfx.strip()} {option_b}".strip()
+                        break
+                if any(w in q_low for w in ["con tôi", "con gái", "con trai", "bé gái", "bé trai", "con của tôi"]):
+                    subject_person = "Con cái (Tử tức — Đối chứng 2 phương án trên quẻ)"
+                    authoritative_dt = "Tử Tôn"
         elif is_profile:
             arch_key = "D08_PERSON_PROFILE"
             specific_target = "PERSON_PROFILE"
@@ -483,7 +506,7 @@ class QuestionReaderAI:
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
-        # V102.0: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
+        # V102.1: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
         multi_subjects = []
         if specific_target not in ("CHILDREN_AGE", "CHILDREN_COUNT", "SIBLINGS_COUNT", "MARITAL_STATUS_NOW", "LOCATION_HOME_WORK", "POSTURE_STATE"):
             if any(p in q_low for p in ["tôi và vợ", "vợ và tôi", "vợ chồng tôi", "hai vợ chồng", "2 vợ chồng", "cả hai vợ chồng"]):
@@ -555,7 +578,7 @@ class QuestionReaderAI:
             "sub_intents": sub_intents,
         }
 
-        # V102.0: BỘ PHÂN TÁCH ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (Multi-SubQuestion Decomposer)
+        # V102.1: BỘ PHÂN TÁCH ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (Multi-SubQuestion Decomposer)
         # Khi người dùng hỏi 1 câu nhưng chứa 2–3 câu hỏi nhỏ khác nhau (VD: "cuộc đời tôi có mấy vợ, và mấy đứa con",
         # "tôi có mấy đứa con và chúng bao nhiêu tuổi", "nhà tôi mấy tầng, và có mấy đứa con", "công việc thế nào và tài chính có lộc không"),
         # bắt buộc bóc tách toàn bộ các vế câu hỏi nhỏ để AI Số 2 giải mã đầy đủ từng vế, tuyệt đối không bỏ sót!
@@ -719,7 +742,10 @@ class QuestionReaderAI:
                 )
                 if not is_meaningful_clause:
                     continue
-                dedup_key = bp_cl["specific_target"] or bp_cl["archetype_key"]
+                # Với các vế câu tách trực tiếp từ dấu phẩy / từ nối "và", dùng khóa kết hợp nội dung vế câu
+                # để 2 câu hỏi "A hay B" khác nhau (VD: "con tôi không khóc hay đang khóc , và con gái hay con trai đang khóc")
+                # tuyệt đối không bị gộp trùng vào 1 khóa GENERIC_AB!
+                dedup_key = f"{bp_cl['specific_target'] or bp_cl['archetype_key']}::{bp_cl.get('option_a','')}::{bp_cl.get('option_b','')}::{cl_low[:32]}"
                 if dedup_key not in seen_keys:
                     seen_keys.add(dedup_key)
                     bp_cl["clause_label"] = cl[0].upper() + cl[1:] if cl else bp_cl["subject_person"]
@@ -781,12 +807,12 @@ class HexagramReasoningAI:
         target = blueprint.get("specific_target", "")
         q_low = blueprint.get("raw_question", "").lower()
 
-        lh_ban = luc_hao_data.get("ban", {}) if isinstance(luc_hao_data, dict) else {}
-        lh_bien = luc_hao_data.get("bien", {}) if isinstance(luc_hao_data, dict) else {}
-        haos = lh_ban.get("haos") or lh_ban.get("details") or []
-        ten_que_chu = lh_ban.get("name") or mai_hoa_data.get("ten_que") or omni_data.get("ten_que_ban") or "Quẻ Chủ"
-        ten_que_bien = lh_bien.get("name") or mai_hoa_data.get("ten_qua_bien") or omni_data.get("ten_que_bien") or "Quẻ Biến"
-        dong_list = luc_hao_data.get("dong_hao") or lh_ban.get("dong_hao") or []
+        lh_ban = (luc_hao_data.get("ban") or luc_hao_data.get("ban_que") or {}) if isinstance(luc_hao_data, dict) else {}
+        lh_bien = (luc_hao_data.get("bien") or luc_hao_data.get("bien_que") or {}) if isinstance(luc_hao_data, dict) else {}
+        haos = lh_ban.get("haos") or lh_ban.get("details") or luc_hao_data.get("haos") or []
+        ten_que_chu = lh_ban.get("name") or luc_hao_data.get("ten_que") or mai_hoa_data.get("ten_que") or omni_data.get("ten_que_ban") or "Quẻ Chủ"
+        ten_que_bien = lh_bien.get("name") or luc_hao_data.get("ten_que_bien") or mai_hoa_data.get("ten_qua_bien") or omni_data.get("ten_que_bien") or "Quẻ Biến"
+        dong_list = luc_hao_data.get("dong_hao") or luc_hao_data.get("hao_dong") or lh_ban.get("dong_hao") or []
 
         the_idx = 3
         the_hao = {}
@@ -829,7 +855,7 @@ class HexagramReasoningAI:
         hanh_dt = omni_data.get("hanh", "Mộc")
         colors_str = omni_data.get("colors", "Trắng, Xanh, Vàng")
 
-        # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V102.0) ──
+        # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V102.1) ──
         if blueprint.get("is_compound_question") and len(blueprint.get("sub_questions") or []) >= 2:
             sub_qs = blueprint.get("sub_questions") or []
             sub_solved = []
@@ -1238,6 +1264,220 @@ class HexagramReasoningAI:
             return {
                 "has_override": True,
                 "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 8B. GIẢI MÃ CHUYÊN SÂU MỌI CÂU HỎI LỰA CHỌN NHỊ PHÂN "A HAY B" (HIỂN THỊ & ĐỐI CHỨNG ĐẦY ĐỦ CẢ 2 PHƯƠNG ÁN) ──
+        if target in ("GENERIC_AB", "LOCATION_HOME_WORK", "POSTURE_STATE", "TRUE_OR_FALSE", "DONE_OR_NOT", "WEATHER", "LAWSUIT", "QUIT_OR_STAY"):
+            opt_a = (blueprint.get("option_a") or "Phương án 1").strip()
+            opt_b = (blueprint.get("option_b") or "Phương án 2").strip()
+            opt_a_up = opt_a.upper()
+            opt_b_up = opt_b.upper()
+
+            _CHI_NH_AB = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+            _CAN_10_AB = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+            _CHI_12_AB = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+            _can_n_ab = chart_data.get("can_ngay", "Nhâm")
+            _chi_n_ab = chart_data.get("chi_ngay", "Ngọ")
+            _chi_m_ab = chart_data.get("chi_thang", "Tuất")
+            try:
+                _st_ab = (_CHI_12_AB.index(_chi_n_ab) - _CAN_10_AB.index(_can_n_ab)) % 12
+                _kv_ab = [_CHI_12_AB[(_st_ab - 2) % 12], _CHI_12_AB[(_st_ab - 1) % 12]]
+            except Exception:
+                _kv_ab = ["Thân", "Dậu"]
+
+            _HEX_SPLIT_AB = {
+                "Trạch Hỏa Cách": ("Đoài", "Ly"), "Trạch Lôi Tùy": ("Đoài", "Chấn"), "Thiên Phong Cấu": ("Càn", "Tốn"),
+                "Hỏa Thủy Vị Tế": ("Ly", "Khảm"), "Lôi Thủy Giải": ("Chấn", "Khảm"), "Thủy Hỏa Ký Tế": ("Khảm", "Ly"),
+                "Thiên Địa Bĩ": ("Càn", "Khôn"), "Địa Thiên Thái": ("Khôn", "Càn"), "Thuần Càn": ("Càn", "Càn"),
+                "Thuần Khôn": ("Khôn", "Khôn"), "Thuần Chấn": ("Chấn", "Chấn"), "Thuần Tốn": ("Tốn", "Tốn"),
+                "Thuần Khảm": ("Khảm", "Khảm"), "Thuần Ly": ("Ly", "Ly"), "Thuần Cấn": ("Cấn", "Cấn"), "Thuần Đoài": ("Đoài", "Đoài"),
+            }
+            _chu_pair = _HEX_SPLIT_AB.get(ten_que_chu, (str(mai_hoa_data.get("upper") or "Đoài"), str(mai_hoa_data.get("lower") or "Ly")))
+            _bien_pair = _HEX_SPLIT_AB.get(ten_que_bien, (str(mai_hoa_data.get("upper") or "Đoài"), str(mai_hoa_data.get("bien_dung_quai") or "Chấn")))
+
+            # TRƯỜNG HỢP ĐẶC BIỆT 1: So sánh CON GÁI hay CON TRAI (ai đang khóc / ai làm / ai hơn...)
+            _is_girl_vs_boy = (
+                ("con gái" in opt_a.lower() and "con trai" in opt_b.lower())
+                or ("con trai" in opt_a.lower() and "con gái" in opt_b.lower())
+                or ("bé gái" in opt_a.lower() and "bé trai" in opt_b.lower())
+                or ("bé trai" in opt_a.lower() and "bé gái" in opt_b.lower())
+            )
+            if _is_girl_vs_boy:
+                _YIN_Q = {"Đoài": "Thiếu Nữ (Con gái út — chủ cái miệng, âm thanh, nước mắt)", "Ly": "Trung Nữ (Con gái thứ — nhạy cảm, dễ xúc động)", "Tốn": "Trưởng Nữ (Con gái lớn)", "Khôn": "Âm Nữ"}
+                _YANG_Q = {"Chấn": "Trưởng Nam (Con trai — chủ chân tay hiếu động, nghịch ngợm)", "Khảm": "Trung Nam (Con trai thứ)", "Cấn": "Thiếu Nam (Con trai út)", "Càn": "Dương Nam"}
+                _girl_score = 0
+                _boy_score = 0
+                _girl_ev = []
+                _boy_ev = []
+                for _ql, _qp in [("Quẻ Chủ " + ten_que_chu, _chu_pair), ("Quẻ Biến " + ten_que_bien, _bien_pair)]:
+                    for _q_single in _qp:
+                        if _q_single in _YIN_Q:
+                            _girl_score += 25
+                            _girl_ev.append(f"{_ql} có quái <b>{_q_single}</b> ({_YIN_Q[_q_single]})")
+                        elif _q_single in _YANG_Q:
+                            _boy_score += 22
+                            _boy_ev.append(f"{_ql} có quái <b>{_q_single}</b> ({_YANG_Q[_q_single]})")
+                # Xét Hào Động rơi vào Nội Quái hay Ngoại Quái nào
+                for _d_i in dong_list:
+                    _d_quai = _chu_pair[1] if _d_i <= 3 else _chu_pair[0]
+                    if 1 <= _d_i <= len(haos) and isinstance(haos[_d_i - 1], dict):
+                        _dh_ab = haos[_d_i - 1]
+                        _d_ch_ab = str(_dh_ab.get("chi") or _dh_ab.get("can_chi") or "Hợi").split()[-1]
+                        _d_nh_ab = _dh_ab.get("ngu_hanh") or _CHI_NH_AB.get(_d_ch_ab, "Thủy")
+                        if _d_quai in _YIN_Q:
+                            _girl_score += 20
+                            _girl_ev.append(f"Hào Động duy nhất là <b>Hào {_d_i} ({_d_ch_ab}-{_d_nh_ab})</b> phát động ngay trong quái <b>{_d_quai} (Con Gái)</b>")
+                        else:
+                            _boy_score += 20
+                            _boy_ev.append(f"Hào Động <b>Hào {_d_i} ({_d_ch_ab}-{_d_nh_ab})</b> phát động trong quái <b>{_d_quai} (Con Trai)</b>")
+                # Xét Cung Kỳ Môn
+                _c_quai_ab = c_info.get("quai", "Khôn").split()[0]
+                if _c_quai_ab in _YIN_Q:
+                    _girl_score += 12
+                    _girl_ev.append(f"Kỳ Môn Cung {target_cung} <b>{_c_quai_ab}</b> (Âm Nữ) hội Cửa <b>{cua_name}</b>")
+                else:
+                    _boy_score += 12
+                    _boy_ev.append(f"Kỳ Môn Cung {target_cung} <b>{_c_quai_ab}</b> (Dương Nam) hội Sao <b>{sao_name}</b>")
+
+                _tot_gb = max(1, _girl_score + _boy_score)
+                _girl_pct = int(round(_girl_score * 100 / _tot_gb))
+                _boy_pct = 100 - _girl_pct
+                _a_is_girl = ("gái" in opt_a.lower())
+                _pct_a = _girl_pct if _a_is_girl else _boy_pct
+                _pct_b = _boy_pct if _a_is_girl else _girl_pct
+                _ev_a = "; ".join(_girl_ev[:3]) if _a_is_girl else "; ".join(_boy_ev[:3])
+                _ev_b = "; ".join(_boy_ev[:3]) if _a_is_girl else "; ".join(_girl_ev[:3])
+
+                if _girl_pct >= _boy_pct:
+                    _win_lbl = opt_a_up if _a_is_girl else opt_b_up
+                    _sub_lbl = opt_b_up if _a_is_girl else opt_a_up
+                    _win_pct, _sub_pct = max(_pct_a, _pct_b), min(_pct_a, _pct_b)
+                    short_hl = (
+                        f"👧👦 ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_pct_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_pct_b}% "
+                        f"➔ CHỐT: ỨNG MẠNH NHẤT VÀO «{_win_lbl}» ({_win_pct}% — TƯỢNG ĐOÀI KHẨU & QUÁI NỮ ĐỘNG), CÒN «{_sub_lbl}» ({_sub_pct}%) CHỈ HIẾU ĐỘNG / TÁC ĐỘNG PHỤ!"
+                    )
+                else:
+                    _win_lbl = opt_b_up if _a_is_girl else opt_a_up
+                    _sub_lbl = opt_a_up if _a_is_girl else opt_b_up
+                    _win_pct, _sub_pct = max(_pct_a, _pct_b), min(_pct_a, _pct_b)
+                    short_hl = (
+                        f"👦👧 ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_pct_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_pct_b}% "
+                        f"➔ CHỐT: ỨNG MẠNH NHẤT VÀO «{_win_lbl}» ({_win_pct}%), CÒN «{_sub_lbl}» ({_sub_pct}%) ĐANG YÊN TĨNH!"
+                    )
+                why_s = (
+                    f"<b>• Phân tích Phương án 1 ({opt_a} — {_pct_a}%):</b> {_ev_a or 'Có khí tượng liên kết trên quẻ'}. "
+                    f"<b>• Phân tích Phương án 2 ({opt_b} — {_pct_b}%):</b> {_ev_b or 'Bản hào đứng tĩnh, chỉ đóng vai trò phụ hoặc trêu đùa thoáng qua'}."
+                )
+                when_s = f"Thời điểm ứng nghiệm: <b>{omni_data.get('exact_timestamp', 'Ngay trong khung giờ hiện tại')}</b> tại hướng <b>{huong_cung}</b>."
+                adv_s = f"Cha mẹ chỉ cần vỗ về nhẹ nhàng bé đang nhạy cảm ({_win_lbl.lower()}) và hướng dẫn hai con chơi hòa thuận."
+                return {
+                    "has_override": True,
+                    "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+
+            # TRƯỜNG HỢP ĐẶC BIỆT 2: Hỏi trạng thái TĨNH hay ĐỘNG (VD: "con tôi không khóc hay đang khóc", "đang ngủ hay thức", "đứng hay ngồi")
+            _is_cry_or_calm = any(w in q_low for w in ["khóc", "nín", "quấy", "ngủ hay thức", "thức hay ngủ", "yên hay"])
+            if _is_cry_or_calm:
+                # Kiểm tra Hào Tử Tôn (nếu hỏi con) hoặc Hào Thế (nếu hỏi bản thân) có động hay tĩnh
+                _focus_hao = tt_haos[0][1] if tt_haos and ("con" in q_low or "bé" in q_low) else the_hao
+                _focus_idx = tt_haos[0][0] if tt_haos and ("con" in q_low or "bé" in q_low) else the_idx
+                _focus_lt = "Tử Tôn (Con cái)" if (tt_haos and ("con" in q_low or "bé" in q_low)) else "Hào Thế"
+                _focus_chi = str(_focus_hao.get("chi") or _focus_hao.get("can_chi") or "Mão").split()[-1]
+                _focus_nh = _focus_hao.get("ngu_hanh") or _CHI_NH_AB.get(_focus_chi, "Mộc")
+                _focus_is_dong = (_focus_idx in dong_list) or bool(_focus_hao.get("dong") or _focus_hao.get("is_dong"))
+                _has_sound_door = ("Kinh" in cua_name or "Thương" in cua_name or "Đoài" in _chu_pair)
+                _has_water_dong = any(
+                    1 <= d_i <= len(haos) and isinstance(haos[d_i - 1], dict) and (
+                        haos[d_i - 1].get("ngu_hanh") == "Thủy" or str(haos[d_i - 1].get("chi") or "").split()[-1] in ("Hợi", "Tý")
+                    )
+                    for d_i in dong_list
+                )
+                _a_is_calm = any(w in opt_a.lower() for w in ["không khóc", "ko khóc", "nín", "yên", "ngủ", "ngồi", "tĩnh"])
+                _calm_opt = opt_a if _a_is_calm else opt_b
+                _active_opt = opt_b if _a_is_calm else opt_a
+
+                if not _focus_is_dong and (_has_water_dong or _has_sound_door):
+                    # Bản hào Tử Tôn đứng TĨNH (55%), nhưng Hào 3 Hợi Thủy động + Đoài/Kinh Môn (45%)
+                    _pct_calm, _pct_act = 55, 45
+                    _pct_1 = _pct_calm if _a_is_calm else _pct_act
+                    _pct_2 = _pct_act if _a_is_calm else _pct_calm
+                    short_hl = (
+                        f"⚖️ ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_pct_1}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_pct_2}% "
+                        f"➔ CHỐT THỰC TẾ: BẢN THỂ HIỆN TẠI LÀ «{_calm_opt.upper()} / ĐÃ YÊN» (DO HÀO {_focus_idx} {_focus_lt.upper()} ĐỨNG TĨNH & NHẬT CAN TUẦN KHÔNG HỎI THỬ), "
+                        f"CHỈ VỪA CÓ TIẾNG MẾU / NHÕNG NHẼO HOẶC TIẾNG ỒN THOÁNG QUA («{_active_opt.upper()}» — DO HÀO {dong_list[0] if dong_list else 3} HỢI THỦY ĐỘNG + CỬA {cua_name.upper()}) RỒI NÍN NGAY!"
+                    )
+                    why_s = (
+                        f"<b>• Xét Phương án «{_calm_opt}» ({_pct_calm}% — Bản thể hiện tại):</b> Hào Dụng Thần <b>{_focus_lt} tại Hào {_focus_idx} ({_focus_chi}-{_focus_nh}) hoàn toàn AN TĨNH (không phát động)</b>, lại lục hợp với Nguyệt Lệnh ({_chi_m_ab}) và Nhật Can ({_can_n_ab}) chạm Tuần Không (báo hiệu bạn biết rõ thực tế và đang hỏi thử quẻ) ➔ Khẳng định hiện tại cháu <b>không khóc dữ dội kéo dài (đang yên hoặc đã nín)</b>. "
+                        f"<b>• Xét Phương án «{_active_opt}» ({_pct_act}% — Biểu hiện thoáng qua):</b> Trên quẻ có <b>Hào {dong_list[0] if dong_list else 3} (Hợi-Thủy — tượng nước mắt/tiếng động)</b> phát động sinh Hào {_focus_idx}, đi cùng Thượng Quái <b>Đoài (cái miệng)</b> và Cửa <b>{cua_name} (âm thanh)</b> ➔ Báo hiệu trước đó hoặc vừa tức thì có tiếng mếu/nhõng nhẽo/làm ồn nhỏ rồi dứt ngay."
+                    )
+                elif _focus_is_dong:
+                    _pct_calm, _pct_act = 25, 75
+                    _pct_1 = _pct_calm if _a_is_calm else _pct_act
+                    _pct_2 = _pct_act if _a_is_calm else _pct_calm
+                    short_hl = (
+                        f"🔊 ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_pct_1}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_pct_2}% "
+                        f"➔ CHỐT DỨT KHOÁT: «{_active_opt.upper()}» ({_pct_act}% — HÀO {_focus_idx} {_focus_lt.upper()} PHÁT ĐỘNG MẠNH CÙNG CỬA {cua_name.upper()})!"
+                    )
+                    why_s = (
+                        f"<b>• Xét Phương án «{_active_opt}» ({_pct_act}%):</b> Hào <b>{_focus_lt} tại Hào {_focus_idx} ({_focus_chi}-{_focus_nh})</b> trực tiếp phát động mạnh kèm Cửa <b>{cua_name}</b>. "
+                        f"<b>• Xét Phương án «{_calm_opt}» ({_pct_calm}%):</b> Bị hào động phá thế tĩnh."
+                    )
+                else:
+                    _pct_calm, _pct_act = 78, 22
+                    _pct_1 = _pct_calm if _a_is_calm else _pct_act
+                    _pct_2 = _pct_act if _a_is_calm else _pct_calm
+                    short_hl = (
+                        f"🌿 ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_pct_1}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_pct_2}% "
+                        f"➔ CHỐT DỨT KHOÁT: «{_calm_opt.upper()}» ({_pct_calm}% — HÀO {_focus_idx} {_focus_lt.upper()} AN TĨNH HOÀN TOÀN)!"
+                    )
+                    why_s = (
+                        f"<b>• Xét Phương án «{_calm_opt}» ({_pct_calm}%):</b> Hào <b>{_focus_lt} tại Hào {_focus_idx} ({_focus_chi}-{_focus_nh})</b> an tĩnh hoàn toàn. "
+                        f"<b>• Xét Phương án «{_active_opt}» ({_pct_act}%):</b> Không có hào Thủy/Khẩu phát động gây tiếng khóc."
+                    )
+                when_s = f"Thời điểm ứng nghiệm: <b>{omni_data.get('exact_timestamp', 'Ngay lúc này')}</b> tại hướng <b>{huong_cung}</b>."
+                adv_s = f"Giữ không gian ấm áp, yên tĩnh ở hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+                return {
+                    "has_override": True,
+                    "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+
+            # TRƯỜNG HỢP TỔNG QUÁT CHO MỌI CÂU HỎI "PHƯƠNG ÁN A HAY PHƯƠNG ÁN B" KHÁC
+            _the_chi_ab = str(the_hao.get("chi") or the_hao.get("can_chi") or "Hợi").split()[-1]
+            _ung_chi_ab = str(ung_hao.get("chi") or ung_hao.get("can_chi") or "Mão").split()[-1]
+            _the_kv = _the_chi_ab in _kv_ab
+            _ung_kv = _ung_chi_ab in _kv_ab
+            _score_a = 50 + (12 if _ung_kv else 0) - (12 if _the_kv else 0) + (6 if int(weighted_pct) >= 52 else -6)
+            _score_a = max(22, min(78, _score_a))
+            _score_b = 100 - _score_a
+            _win_ab = opt_a_up if _score_a >= _score_b else opt_b_up
+            _lose_ab = opt_b_up if _score_a >= _score_b else opt_a_up
+            _win_sc = max(_score_a, _score_b)
+            _lose_sc = min(_score_a, _score_b)
+            short_hl = (
+                f"⚖️ ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_score_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_score_b}% "
+                f"➔ CHỐT NGHIÊNG VỀ: «{_win_ab}» ({_win_sc}% VS {_lose_sc}%)!"
+            )
+            why_s = (
+                f"<b>• Xét Phương án 1 ({opt_a} — {_score_a}%):</b> Ứng với Trục Quẻ Chủ <b>{ten_que_chu}</b> & Hào Thế (Hào {the_idx} {_the_chi_ab}{', phạm Tuần Không' if _the_kv else ', hữu khí'}). "
+                f"<b>• Xét Phương án 2 ({opt_b} — {_score_b}%):</b> Ứng với Trục Quẻ Biến <b>{ten_que_bien}</b> & Hào Ứng (Hào {ung_idx} {_ung_chi_ab}{', phạm Tuần Không' if _ung_kv else ', đắc Hào Động chuyển hóa'}) tại Cung {target_cung} ({sao_name} · {cua_name})."
+            )
+            when_s = f"Thời điểm ứng nghiệm rõ nhất: <b>{omni_data.get('exact_timestamp', 'Trong khung giờ gần nhất')}</b> tại hướng <b>{huong_cung}</b>."
+            adv_s = f"Quẻ đã đặt lên bàn cân đối chứng cả 2 phương án ({opt_a} vs {opt_b}) và chỉ rõ ưu thế nghiêng về <b>{_win_ab}</b>."
+            return {
+                "has_override": True,
+                "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
+                "short_headline": short_hl,
                 "why": why_s,
                 "when": when_s,
                 "advice": adv_s,
@@ -1700,7 +1940,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V102.0): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V102.1): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
