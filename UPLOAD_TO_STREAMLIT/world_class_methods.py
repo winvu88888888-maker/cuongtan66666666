@@ -538,6 +538,117 @@ def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dic
     }
 
 
+
+def build_18_layer_conflict_arbiter_and_instant_check(
+    question: str,
+    dung_than: str,
+    hanh_dt: str,
+    weighted_pct: int,
+    target_cung: int,
+    direction: str,
+    chart_data: dict,
+    luc_hao_data: dict,
+    mai_hoa_data: dict,
+    omni_data: dict,
+    verdicts_list: list,
+    thai_at_verdict: str = "BÌNH",
+    tu_vi_verdict: str = "BÌNH",
+    xem_ngay_verdict: str = "BÌNH",
+) -> str:
+    """
+    V101.1: BỘ TRỌNG TÀI HÓA GIẢI XUNG ĐỘT 18 TẦNG & THƯỚC ĐO KIỂM CHỨNG ĐÚNG/SAI TỨC THỜI
+    1. Giải thích vì sao một số tầng báo CÁT còn tầng khác báo HUNG (Phân quyền Chủ - Phụ & Trục Thời Gian).
+    2. Đưa ra 3 Phép Kiểm Chứng Tức Thời ngay tại thời điểm hỏi để người dùng tự biết ngay quẻ Đúng hay Sai.
+    """
+    chart_data = chart_data if isinstance(chart_data, dict) else {}
+    luc_hao_data = luc_hao_data if isinstance(luc_hao_data, dict) else {}
+    mai_hoa_data = mai_hoa_data if isinstance(mai_hoa_data, dict) else {}
+    omni_data = omni_data if isinstance(omni_data, dict) else {}
+    verdicts_list = verdicts_list or []
+
+    ban_name = (luc_hao_data.get("ban", {}) or {}).get("name") or mai_hoa_data.get("ten_que", "Quẻ Chủ")
+    bien_name = (luc_hao_data.get("bien", {}) or {}).get("name") or mai_hoa_data.get("ten_qua_bien", "Quẻ Biến")
+    tb = chart_data.get("thien_ban", {}) or {}
+    nb = chart_data.get("nhan_ban", {}) or {}
+    sb = chart_data.get("than_ban", {}) or {}
+    sao_km = str(tb.get(target_cung, tb.get(str(target_cung), "Thiên Tâm")))
+    cua_km = str(nb.get(target_cung, nb.get(str(target_cung), "Khai Môn")))
+    than_km = str(sb.get(target_cung, sb.get(str(target_cung), "Trực Phù")))
+
+    cat_cnt = sum(1 for v in verdicts_list if v and "CÁT" in str(v).upper())
+    hung_cnt = sum(1 for v in verdicts_list if v and "HUNG" in str(v).upper())
+    binh_cnt = max(0, len(verdicts_list) - cat_cnt - hung_cnt)
+
+    # 1. Giải thích & Hóa giải Xung đột giữa các tầng (Conflict Resolution)
+    if omni_data.get("is_fake"):
+        conflict_explanation = (
+            "🚨 <b>Luật Phủ Quyết Tối Thượng (Tầng Nghiệm Chứng Chân Thực):</b> Dù trên bàn quẻ có một vài sao tốt (như Tử Vi/Trạch Cát báo CÁT), "
+            "nhưng vì <b>Trục Lõi (Kỳ Môn Thời Can + Lục Hào Thế/Ứng/Dụng Thần)</b> phạm <b>Tuần Không / Không Vong / Kỵ Thần Độc Phát</b>, "
+            "nên cổ pháp quy định: <i>'Vượng gặp Không Vong thì Cát cũng hóa Không'</i> — Phủ quyết hoàn toàn các sao tốt bề nổi để kết luận <b>sự việc hiện chưa có thật ngoài đời (hoặc đang hỏi thử)</b>."
+        )
+    elif cat_cnt > 0 and hung_cnt > 0:
+        if "CÁT" in str(tu_vi_verdict).upper() and weighted_pct < 50:
+            conflict_explanation = (
+                f"⚖️ <b>Vì sao Tử Vi báo {tu_vi_verdict} nhưng Kết luận chung là HUNG/BÌNH ({weighted_pct}%)? (Không hề mâu thuẫn):</b> "
+                f"Trong 18 tầng, <b>Tử Vi & Nạp Âm</b> đo <i>nền tảng bản mệnh và phúc đức cá nhân của bạn</i> (đang rất tốt: {tu_vi_verdict}), "
+                f"còn <b>Lục Hào ({ban_name} ➔ {bien_name}) & Kỳ Môn ({cua_km})</b> đo <i>trực tiếp sự việc bạn đang hỏi lúc này</i> (đang gặp lực cản). "
+                f"Theo <b>Luật Phân Quyền</b>: Hỏi việc cụ thể thì <b>Lục Hào + Kỳ Môn + Đại Lục Nhâm quyết định 70%</b> — nghĩa là năng lực bạn tốt nhưng hoàn cảnh việc này chưa thuận, không nên mạo hiểm!"
+            )
+        elif "Bĩ" in str(bien_name) or "Bác" in str(bien_name):
+            conflict_explanation = (
+                f"⚖️ <b>Vì sao có tầng báo CÁT ({cat_cnt} hệ thống) và tầng báo HUNG ({hung_cnt} hệ thống)? (Quy luật Trước – Sau):</b> "
+                f"Các hệ thống báo <b>CÁT</b> ứng với <b>Quẻ Chủ ({ban_name} — Hiện tại bạn vẫn có vị thế và nguồn lực)</b>; "
+                f"còn các hệ thống báo <b>HUNG</b> ứng với <b>Quẻ Biến ({bien_name} — Kết cục sẽ bế tắc nếu nóng vội thay đổi)</b>. "
+                f"Ghép lại thành 1 câu: <b>Giữ nguyên hiện tại thì Tốt (Cát), tự ý xáo trộn lúc này sẽ Xấu (Hung)!</b>"
+            )
+        else:
+            conflict_explanation = (
+                f"⚖️ <b>Giải mã sự phân hóa ({cat_cnt} CÁT · {binh_cnt} BÌNH · {hung_cnt} HUNG):</b> "
+                f"Không phải các phương pháp mâu thuẫn nhau, mà <b>nhóm CÁT</b> chỉ ra <i>điểm tựa và quý nhân bạn đang có</i>, "
+                f"còn <b>nhóm HUNG</b> chỉ ra <i>rủi ro và tiểu nhân cần tránh</i>. Kết hợp cả hai giúp bạn <b>lấy điểm mạnh (Cát) để chế ngự điểm yếu (Hung)</b>."
+            )
+    else:
+        conflict_explanation = (
+            f"🟢 <b>Đồng Thuận Cao Giữa 18 Hệ Thống:</b> Cả nhóm Tam Thức (Kỳ Môn, Lục Nhâm, Thái Ất), Kinh Dịch (Lục Hào, Mai Hoa) "
+            f"và Chiêm Tinh Đông – Tây đều chỉ về cùng một xu hướng thống nhất ({weighted_pct}%), không có xung đột nghịch chiều."
+        )
+
+    # 2. Thước đo Kiểm chứng Đúng/Sai NGAY LẬP TỨC tại thời điểm hỏi (Tiên Nghiệm Hậu Đoán)
+    body_symptom = omni_data.get("co_the", "vùng đầu, vai gáy hoặc tiêu hóa")
+    scene_objects = omni_data.get("places", "khu vực bàn làm việc, kệ tủ hoặc gần cửa")
+    obj_verify = str(omni_data.get("objects", "đồ kim loại, giấy tờ hoặc thiết bị điện tử")).split(";")[0]
+
+    _THAN_MIND_VERIFY = {
+        "Đằng Xà": "Gần đây bạn hay suy nghĩ trằn trọc, giấc ngủ chập chờn hoặc trong lòng đang có một mối nghi ngờ/lo âu chưa giải tỏa",
+        "Bạch Hổ": "Bạn đang chịu áp lực công việc/tài chính khá căng, tính khí dễ sốt ruột hoặc cơ thể hơi mỏi mệt",
+        "Huyền Vũ": "Trong lòng bạn đang giữ một chuyện kín đáo khó nói ra hết, hoặc đang muốn thử nghiệm chứng độ chuẩn của quẻ",
+        "Thái Âm": "Bạn đang âm thầm tính toán một kế hoạch riêng trong đầu mà chưa muốn công bố rộng rãi",
+        "Lục Hợp": "Vừa qua bạn mới có cuộc trò chuyện, bàn bạc hoặc trao đổi thông tin với người thân/đối tác",
+        "Chu Tước": "Gần đây có chuyện lời qua tiếng lại, tin tức dồn dập hoặc giấy tờ/thông báo cần xử lý",
+        "Cửu Địa": "Mọi thứ quanh bạn đang có cảm giác hơi chững lại, chờ đợi lâu khiến bạn muốn tìm hướng đi rõ ràng",
+        "Cửu Thiên": "Bạn đang ấp ủ mong muốn thay đổi, đi xa hoặc bứt phá khỏi khuôn khổ hiện tại",
+        "Trực Phù": "Bạn là người có trách nhiệm chính, đang phải đứng ra lo liệu hoặc quyết định việc quan trọng",
+    }
+    mind_verify = _THAN_MIND_VERIFY.get(than_km, "Trong lòng bạn đang có sự cân nhắc giữa hai lựa chọn và cần một lời khẳng định dứt khoát")
+
+    instant_verify_html = (
+        f'<div style="margin-top:10px;padding:12px 15px;background:linear-gradient(135deg,rgba(30,27,75,0.88),rgba(15,23,42,0.92));'
+        f'border-radius:11px;border-left:4px solid #fbbf24;border-top:1px solid rgba(251,191,36,0.28);">'
+        f'<div style="font-size:0.94em;font-weight:900;color:#fde047;margin-bottom:6px;">'
+        f'⚖️ TRỌNG TÀI HÓA GIẢI XUNG ĐỘT 18 TẦNG & CÁCH TỰ KIỂM CHỨNG ĐÚNG/SAI NGAY LẬP TỨC</div>'
+        f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.55;">'
+        f'<div style="margin-bottom:6px;">{conflict_explanation}</div>'
+        f'<div style="padding:8px 11px;background:rgba(0,0,0,0.32);border-radius:8px;border:1px dashed rgba(52,211,153,0.45);">'
+        f'<div style="color:#6ee7b7;font-weight:800;margin-bottom:4px;">✅ 3 DẤU HIỆU NGHIỆM QUẺ TỨC THỜI (Đối chiếu ngay lúc này để biết quẻ Đúng hay Sai mà không cần chờ tương lai):</div>'
+        f'<div><b>1. Nghiệm Tâm Lý & Hiện Trạng ({than_km} · {cua_km}):</b> {mind_verify}.</div>'
+        f'<div style="margin-top:3px;"><b>2. Nghiệm Cơ Thể & Sức Khỏe ({sao_km} · Hành {hanh_dt}):</b> Gần đây bạn hoặc người liên quan dễ có cảm giác mỏi/nhạy cảm ở <b>{body_symptom}</b>.</div>'
+        f'<div style="margin-top:3px;"><b>3. Nghiệm Không Gian Thực Tế (Hướng {direction}):</b> Nhìn về hướng <b>{direction}</b> nơi bạn ở/làm việc sẽ thấy <b>{scene_objects}</b> hoặc nhóm vật dụng <b>{obj_verify}</b>. '
+        f'<i>👉 Nếu các dấu hiệu hiện trạng này (hoặc cảnh báo Tuần Không khi bạn hỏi thử) khớp với thực tế của bạn ngay lúc này, tức là 18 tầng đã <b>BẮT TRÚNG MẠCH QUẺ 100%</b>!</i></div>'
+        f'</div></div></div>'
+    )
+    return instant_verify_html
+
+
 def build_holographic_7_position_picture(
     question: str,
     category: str,
@@ -888,6 +999,22 @@ def build_holographic_7_position_picture(
         + f'<div style="margin-top:10px;">'
         + _card7(7, "🔑", _t7, "Bát Tự Điều Hầu + 40 Chuyên Gia AI", pos7_result, "#34d399")
         + f'</div>'
+        + build_18_layer_conflict_arbiter_and_instant_check(
+            question=question,
+            dung_than=dung_than,
+            hanh_dt=hanh_dt,
+            weighted_pct=weighted_pct,
+            target_cung=target_cung,
+            direction=direction,
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            omni_data=omni_data,
+            verdicts_list=verdicts_list,
+            thai_at_verdict=thai_at_verdict,
+            tu_vi_verdict=tu_vi_verdict,
+            xem_ngay_verdict=xem_ngay_verdict,
+        )
         + f'</div>'
     )
 
