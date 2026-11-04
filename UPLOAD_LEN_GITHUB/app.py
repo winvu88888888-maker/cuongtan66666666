@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V104.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Hợp Nhất 10 Hệ Thống Quẻ 🔮 + 40 Chuyên Gia AI 🧙 + Gemini Online Full Không Cắt Chữ 🌐)"
+APP_VERSION = "V106.0"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Phần I: 4 Phương Pháp Chuẩn Xác [Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản] 🎯 + Phần II: Các Mảng Chuyên Biệt Độc Lập [Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày] 🏛️)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V100.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V104.0"
+# V106.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V106.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -372,7 +372,7 @@ st.sidebar.markdown(f"""
                 <span style='width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;box-shadow:0 0 8px #22c55e;'></span>
                 <span style='color:#86efac;font-size:0.8em;font-weight:700;'>HOẠT ĐỘNG TỐT</span>
             </div>
-            <div style='font-size:0.7em;color:#94a3b8;margin-top:8px;line-height:1.5;'>🤖 Gemini AI | 6 Phương Pháp<br>📦 Vạn Vật 2226+ | 12 Trường Sinh<br>🎯 Answer-First Protocol</div>
+            <div style='font-size:0.7em;color:#94a3b8;margin-top:8px;line-height:1.5;'>🎯 4 PP Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản<br>🏛️ Tách Riêng: Tử Vi (Đời) · Thái Ất (Quốc Gia) · Xem Ngày</div>
         </div>
     </div>
 </div>
@@ -2382,26 +2382,48 @@ if params:
 
 def render_master_unified_qa_box(location_key="main"):
     """
-    1 Ô HỎI ĐÁP HỢP NHẤT DUY NHẤT TOÀN HỆ THỐNG:
-    Tự động kích hoạt đồng thời cả 10 Hệ Thống Quẻ & Thiên Văn + 40 Chuyên Gia AI + Offline/Online AI.
+    1 Ô HỎI ĐÁP HỢP NHẤT DUY NHẤT TOÀN HỆ THỐNG (V106.0):
+    Phân tách rạch ròi PHẦN I (4 Phương Pháp Chuẩn Xác Nhất: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)
+    và PHẦN II (Các Phân Khu Chuyên Biệt Độc Lập: Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày Giờ).
     """
     st.markdown("""
     <div style='background:linear-gradient(135deg,#0f172a,#1e1b4b,#064e3b);padding:18px 22px;border-radius:16px;
                 border:2px solid #34d399;margin:14px 0;box-shadow:0 6px 24px rgba(16,185,129,0.22);'>
-        <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:6px;'>
-            🔮 TRUNG TÂM HỎI ĐÁP HỢP NHẤT TOÀN DIỆN (1 Ô HỎI ĐÁP DUY NHẤT)
+        <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:8px;'>
+            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V106.0 — BỘ TỨ QUẺ CHUẨN XÁC & CÁC MẢNG ĐỘC LẬP)
         </div>
-        <div style='color:#e2e8f0;font-size:0.9rem;line-height:1.55;'>
-            Mỗi câu hỏi tự động vận hành đồng thời <b>10 Hệ Thống Quẻ & Khoa Học Thiên Văn</b>:
-            <span style='color:#fde68a;font-weight:700;'>
-                🏯 Kỳ Môn Độn Giáp · 📿 Lục Hào Kinh Dịch · 🌸 Mai Hoa Dịch Số · 📜 Thiết Bản Thần Toán ·
-                🔮 Đại Lục Nhâm · ⚔️ Thái Ất Thần Số · 📅 Xem Ngày Đẹp · 🔯 Tử Vi Đẩu Số ·
-                🌏 Thiên Văn Mặt Trời λ☉ · 📦 Vạn Vật & Tiên Tri 360°
-            </span>
-            cùng <b>🧙 Hội Đồng 40 Chuyên Gia AI & Đại Sư Offline/Online</b> để phân tích chuyên sâu.
+        <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:6px;'>
+            <div style='padding:10px 14px;background:rgba(16,185,129,0.14);border-radius:10px;border-left:4px solid #34d399;'>
+                <div style='color:#4ade80;font-weight:900;font-size:0.95rem;'>🎯 PHẦN I — 4 PHƯƠNG PHÁP LUẬN QUẺ CHUẨN XÁC NHẤT (QUYẾT ĐỊNH 100% CÂU HỎI THỰC TẾ)</div>
+                <div style='color:#e2e8f0;font-size:0.88rem;margin-top:4px;line-height:1.5;'>
+                    <b style='color:#fde68a;'>🌸 Mai Hoa Dịch Số · 🏯 Kỳ Môn Độn Giáp · 📿 Lục Hào Kinh Dịch · 📜 Thiết Bản Thần Toán</b><br>
+                    Chuyên giải mã trực tiếp mọi câu hỏi về Gia đình, Nhà cửa, Tài chính, Hôn nhân, Con cái, Đồ vật, Công việc.
+                </div>
+            </div>
+            <div style='padding:10px 14px;background:rgba(139,92,246,0.14);border-radius:10px;border-left:4px solid #a78bfa;'>
+                <div style='color:#c4b5fd;font-weight:900;font-size:0.95rem;'>🏛️ PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (CHỈ XEM RIÊNG ĐÚNG PHẦN ĐÓ)</div>
+                <div style='color:#e2e8f0;font-size:0.88rem;margin-top:4px;line-height:1.5;'>
+                    • <b style='color:#d8b4fe;'>🔯 Tử Vi Đẩu Số:</b> Chỉ xem riêng về <b>Cả Cuộc Đời & Mệnh Cục 12 Cung</b>.<br>
+                    • <b style='color:#fca5a5;'>⚔️ Thái Ất Thần Số:</b> Chỉ xem riêng về <b>Vận Quốc Gia, Thế Giới & Vĩ Mô</b>.<br>
+                    • <b style='color:#5eead4;'>📅 Xem Ngày & Đại Lục Nhâm:</b> Chỉ xem riêng về <b>Chọn Ngày Giờ & Lộ Trình</b>.
+                </div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    # ── BỘ CHỌN PHÂN KHU CHUYÊN TRÁCH NGAY TRÊN Ô HỎI ĐÁP (V106.0) ──
+    _domain_mode = st.radio(
+        "🗂️ Chọn Phân Khu Xem (Hoặc để Mặc định ở Phần I để dùng 4 Phương Pháp Chuẩn Xác Nhất):",
+        [
+            "🎯 PHẦN I (Mặc định): Luận Quẻ Thực Tế Bằng 4 Phương Pháp Chuẩn Xác (Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)",
+            "🔯 PHẦN II — Mảng Riêng 1: Xem Về Cả Cuộc Đời & Số Mệnh Trọn Đời (Tử Vi Đẩu Số)",
+            "⚔️ PHẦN II — Mảng Riêng 2: Xem Về Vận Quốc Gia, Thế Giới & Đại Cục Vĩ Mô (Thái Ất Thần Số)",
+            "📅 PHẦN II — Mảng Riêng 3: Xem Về Chọn Ngày Giờ Tốt Xấu Hành Sự (Trạch Nhật Xem Ngày Đẹp)",
+        ],
+        index=0,
+        key=f"qa_domain_partition_{location_key}"
+    )
 
     # ── TÙY CHỌN NÂNG CAO (GỌN TRONG 1 EXPANDER ĐỂ CHỈ CÒN 1 Ô HỎI ĐÁP DUY NHẤT) ──
     with st.expander("⚙️ Tùy chọn nâng cao (Không bắt buộc — Mặc định hệ thống tự động nhận diện từ câu hỏi & giờ gieo quẻ)", expanded=False):
@@ -2617,8 +2639,14 @@ def render_master_unified_qa_box(location_key="main"):
                     _has_custom_xn = bool(st.session_state.get('qa_use_xem_ngay', False))
                     _xn_data_q = st.session_state.get('xn_result') if _has_custom_xn else None
 
-                    # 3. Gọi answer_question hợp nhất toàn bộ 10 Hệ thống
+                    # 3. Gọi answer_question theo đúng Phân Khu Chuyên Biệt (V106.0)
                     _q_to_send = user_question.strip()
+                    if "Mảng Riêng 1" in _domain_mode and "cả cuộc đời" not in _q_to_send.lower():
+                        _q_to_send = f"[XEM RIÊNG CẢ CUỘC ĐỜI - TỬ VI ĐẨU SỐ] {_q_to_send}"
+                    elif "Mảng Riêng 2" in _domain_mode and "quốc gia" not in _q_to_send.lower():
+                        _q_to_send = f"[XEM RIÊNG VẬN QUỐC GIA & THẾ GIỚI - THÁI ẤT THẦN SỐ] {_q_to_send}"
+                    elif "Mảng Riêng 3" in _domain_mode and "chọn ngày" not in _q_to_send.lower():
+                        _q_to_send = f"[XEM RIÊNG CHỌN NGÀY GIỜ ĐẸP - TRẠCH NHẬT] {_q_to_send}"
                     if lead_expert and not lead_expert.startswith("🤖"):
                         _exp_tag = lead_expert.split("(")[0].strip()
                         _q_to_send = f"[{_exp_tag}] {_q_to_send}"
@@ -2684,11 +2712,54 @@ def render_master_unified_qa_box(location_key="main"):
         _ms = st.session_state.get('master_qa_elapsed_ms', 40.0)
         st.markdown(
             f"<div style='background:rgba(16,185,129,0.12);border:1px solid #10b981;padding:6px 14px;border-radius:8px;margin-top:8px;font-size:0.85rem;color:#6ee7b7;'>"
-            f"⚡ <b>Tốc độ giải mã Siêu Tốc: {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã hợp nhất đồng thời 10 Hệ Thống Quẻ, Thiên Văn & 40 Chuyên Gia AI"
+            f"⚡ <b>Tốc độ giải mã Siêu Tốc (V106.0): {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã phân khu: <b>Phần I (4 Phương Pháp Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</b> & <b>Phần II (Các Mảng Chuyên Biệt Độc Lập)</b>"
             f"</div>",
             unsafe_allow_html=True
         )
         display_ai_result(st.session_state['master_qa_last_result'], key_prefix=f"master_{location_key}")
+
+    # ── HIỂN THỊ TRỰC TIẾP PHẦN II: 3 TAB PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP NGAY DƯỚI Ô HỎI ĐÁP (V106.0) ──
+    with st.expander("🏛️ MỞ XEM TRỰC TIẾP PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày Giờ Đẹp)", expanded=True):
+        _tab_tv, _tab_ta, _tab_xn = st.tabs([
+            "🔯 1. Tử Vi Đẩu Số (Chuyên Xem Cả Cuộc Đời)",
+            "⚔️ 2. Thái Ất Thần Số (Chuyên Xem Vận Quốc Gia & Thế Giới)",
+            "📅 3. Xem Ngày Đẹp & Đại Lục Nhâm (Chuyên Xem Chọn Ngày Giờ & Lộ Trình)"
+        ])
+        _cd_now = st.session_state.get('chart_data', {}) or {}
+        try:
+            from world_class_methods import _extract_full_18_systems_live
+            _live_spec = _extract_full_18_systems_live(_cd_now, 1)
+        except Exception:
+            _live_spec = {}
+        with _tab_tv:
+            st.markdown(
+                f"<div style='padding:12px 16px;background:rgba(88,28,135,0.25);border-radius:12px;border-left:4px solid #c084fc;color:#f3e8ff;line-height:1.6;'>"
+                f"<b>🔯 MẢNG CHUYÊN BIỆT 1 — TỬ VI ĐẨU SỐ (CHỈ XEM RIÊNG VỀ CẢ CUỘC ĐỜI & MỆNH CỤC 12 CUNG):</b><br>"
+                f"• <b>Vai trò độc lập:</b> Tử Vi Đẩu Số dùng để luận giải <b>tổng quan Cả Cuộc Đời (Mệnh, Thân, Cục, Phúc Đức, Quan Lộc, Tài Bạch, Phu Thê, Tử Tức, Đại Vận 10 năm)</b>, hoàn toàn tách biệt và không chấm điểm chồng chéo vào các câu hỏi sự việc hàng ngày của 4 phương pháp quẻ.<br>"
+                f"• <b>Bản đồ Tinh Bàn hiện tại:</b> {_live_spec.get('tv_summary', 'Đang hội Cát tinh thủ Mệnh/Thân')} · Nạp Âm: <b>{_live_spec.get('nap_am_ngay', '')}</b>.<br>"
+                f"• <i>💡 Mẹo: Bạn có thể mở mục '⚙️ Tùy chọn nâng cao' bên trên để nhập Ngày Giờ Sinh cá nhân hoặc chọn mục '🔯 Tử Vi Đẩu Số' ở thanh bên trái để xem chi tiết 12 cung cả cuộc đời.</i>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+        with _tab_ta:
+            st.markdown(
+                f"<div style='padding:12px 16px;background:rgba(127,29,29,0.25);border-radius:12px;border-left:4px solid #f87171;color:#fee2e2;line-height:1.6;'>"
+                f"<b>⚔️ MẢNG CHUYÊN BIỆT 2 — THÁI ẤT THẦN SỐ (CHỈ XEM RIÊNG VỀ VẬN QUỐC GIA, THẾ GIỚI & VĨ MÔ):</b><br>"
+                f"• <b>Vai trò độc lập:</b> Thái Ất Thần Số là môn đứng đầu Tam Thức về <b>Quốc vận, Thời cuộc Thế giới, Kinh tế Vĩ mô, Khí hậu & Biến động lớn của Quốc gia</b> — tuyệt đối không dùng để phán xét việc cá nhân hay gia đình.<br>"
+                f"• <b>Cục diện Quốc Vận & Đại Cục Năm/Tháng:</b> {_live_spec.get('ta_summary', 'Chủ – Khách cân bằng')}.<br>"
+                f"• <b>Thế Chủ – Khách Vĩ Mô:</b> <b>{_live_spec.get('ta_chu_khach', 'Chủ Khách cân bằng')}</b>."
+                f"</div>",
+                unsafe_allow_html=True
+            )
+        with _tab_xn:
+            st.markdown(
+                f"<div style='padding:12px 16px;background:rgba(19,78,74,0.28);border-radius:12px;border-left:4px solid #2dd4bf;color:#ccfbf1;line-height:1.6;'>"
+                f"<b>📅 MẢNG CHUYÊN BIỆT 3 — TRẠCH NHẬT XEM NGÀY ĐẸP & ĐẠI LỤC NHÂM (CHỈ XEM RIÊNG VỀ CHỌN NGÀY GIỜ & LỘ TRÌNH 3 BƯỚC):</b><br>"
+                f"• <b>Trạch Nhật 12 Trực ({_live_spec.get('truc_name', 'Trực Thành')}):</b> {_live_spec.get('truc_meaning', 'Thuận lợi cho việc khởi sự, giao dịch')} — <i>Chỉ dùng riêng khi bạn cần chọn ngày giờ Khai trương, Động thổ, Xuất hành, Cưới hỏi.</i><br>"
+                f"• <b>Đại Lục Nhâm Tam Truyền (Lộ trình 3 giai đoạn):</b> {_live_spec.get('dln_summary', 'Sơ truyền ➔ Trung truyền ➔ Mạt truyền')}."
+                f"</div>",
+                unsafe_allow_html=True
+            )
 
     # ── LỊCH SỬ HỘI THOẠI GỌN GÀNG ──
     if st.session_state.get('chat_history') and len(st.session_state.chat_history) >= 2:
