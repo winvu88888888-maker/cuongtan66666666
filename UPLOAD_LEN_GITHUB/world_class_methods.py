@@ -740,10 +740,11 @@ def build_holographic_7_position_picture(
 
     # ── TỪ ĐIỂN DỊCH NGHĨA SÁT QUẺ THỰC TẾ & DỄ HIỂU CHO MỌI CÂU HỎI (V100.8) ──
     q_low = (question or "").lower()
-    is_children_q = bool(omni_data.get("is_children_question")) or any(w in q_low for w in [
+    is_children_age_wc = bool(omni_data.get("is_children_age_question")) or (any(ag in q_low for ag in ["tuổi", "mấy tuổi", "bao nhiêu tuổi", "năm sinh", "sinh năm"]) and any(w in q_low for w in ["con gái", "con trai", "con của tôi", "con tôi", "mấy đứa con", "2 đứa con", "các con", "con cái"]))
+    is_children_q = (not is_children_age_wc) and (bool(omni_data.get("is_children_question")) or any(w in q_low for w in [
         "người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái",
         "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con"
-    ]) or ("con" in q_low and any(w in q_low for w in ["bao nhiêu", "mấy trai", "mấy gái", "có mấy"]))
+    ]) or ("con" in q_low and any(w in q_low for w in ["bao nhiêu", "mấy trai", "mấy gái", "có mấy"])))
     is_identity_q = (not is_children_q) and any(w in q_low for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])
 
     # Trích xuất chi tiết Hào Dụng Thần & Hào Động thực tế từ luc_hao_data / dossier
@@ -769,6 +770,11 @@ def build_holographic_7_position_picture(
         pos1_opp = f"<b>Bằng chứng sát từ quẻ:</b> {omni_data.get('binary_why_reasons', '')}"
         pos1_adv = omni_data.get("binary_action_advice", "Quẻ đã phân định dứt khoát giữa 2 phương án dựa trên Tuần Không và Hào Động thực tế.")
         pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary Nhà 1/4/10"
+    elif is_children_age_wc:
+        pos1_what = f"<b>{omni_data.get('children_age_headline', 'Xác định độ tuổi Con Gái & Con Trai từ liên kết Đa Hệ Thống')}</b>"
+        pos1_opp = f"<b>Luận cứ liên kết sâu:</b> {omni_data.get('children_age_why', '')}"
+        pos1_adv = omni_data.get('children_age_when', 'Các con thông minh, lanh lợi, có duyên phúc gắn bó sâu sắc với cha mẹ.')
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · Hào Tử Tôn ({hanh_dt}) · Quái số Tiên/Hậu Thiên"
     elif is_children_q:
         pos1_what = f"<b>Kết quả từ Quẻ:</b> <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái (Đủ nếp đủ tẻ)')}</b>."
         pos1_opp = f"<b>Luận cứ sát quẻ:</b> {omni_data.get('children_reasons', f'Quẻ {ban_name} biến {bien_name} và Hào Tử Tôn hành {hanh_dt} hội đủ cả khí Dương (Trai) và Âm (Gái).')}"

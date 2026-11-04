@@ -5546,8 +5546,9 @@ class FreeAIHelper:
             _is_fake_on = bool(_omni_dict_on.get('is_fake'))
             _auth_warns_on = _omni_dict_on.get('auth_warnings') or []
             _is_bin_fact_on = bool(_omni_dict_on.get('is_binary_factual_q'))
-            _is_children_q_on = (not _is_bin_fact_on) and (bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_lower_online and not any(bad in q_lower_online for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])))
-            _is_factual_who_age = (not _is_bin_fact_on) and (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
+            _has_age_kw_on = any(ag in q_lower_online for ag in ['tuổi', 'mấy tuổi', 'bao nhiêu tuổi', 'năm sinh', 'sinh năm'])
+            _is_children_q_on = (not _is_bin_fact_on) and (not _has_age_kw_on) and (bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_lower_online and not any(bad in q_lower_online for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])))
+            _is_factual_who_age = (not _is_bin_fact_on) and (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or _has_age_kw_on or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
             if _is_bin_fact_on:
                 _bf_head = _omni_dict_on.get('binary_verdict_headline', '')
                 _bf_why = _omni_dict_on.get('binary_why_reasons', '')
@@ -5581,9 +5582,9 @@ class FreeAIHelper:
                     f"→ CẤM TUYỆT ĐỐI viết các cụm từ 'HUNG — BẤT LỢI' hay 'CẦN CÂN NHẮC — BÌNH' vào câu trả lời về con cái!\n"
                 )
             elif _is_factual_who_age:
-                _om_g = _omni_dict_on.get('gender', 'NAM GIỚI / ĐÀN ÔNG (Trai)')
-                _om_gr = _omni_dict_on.get('gender_reasons', 'Dụng Thần mang khí Dương Cương')
-                _om_a = _omni_dict_on.get('age_tier', 'THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)')
+                _om_g = _omni_dict_on.get('children_age_headline') or _omni_dict_on.get('gender', 'NAM GIỚI / ĐÀN ÔNG (Trai)')
+                _om_gr = _omni_dict_on.get('children_age_why') or _omni_dict_on.get('gender_reasons', 'Dụng Thần mang khí Dương Cương')
+                _om_a = _omni_dict_on.get('children_age_when') or _omni_dict_on.get('age_tier', 'THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)')
                 _om_by = ', '.join(_omni_dict_on.get('birth_years', [])[:3])
                 offline_verdict_block = (
                     f"═══════════════════════════════════════════\n"
@@ -12824,12 +12825,12 @@ class FreeAIHelper:
                         dt_is_dong = True
                     if chi in kv:
                         warnings.append(
-                            f"🔹 <b>Dạng 1 [Lục Hào — Dụng Thần Tuần Không]:</b> Hào Dụng Thần <b>{dung_than}</b> tại Hào {idx_h} (<b>{chi}</b>) rơi vào <b>Tuần Không ({', '.join(kv)})</b>: Đối tượng hoặc sự việc được hỏi hiện đang <b>trống rỗng, CHƯA TỒN TẠI hoặc KHÔNG CÓ THẬT</b> (Con số thực tế hiện tại = 0)."
+                            f"🔹 <b>Dạng 1 [Lục Hào — Dụng Thần Tuần Không]:</b> Hào Dụng Thần <b>{dung_than}</b> tại Hào {idx_h} (<b>{chi}</b>) rơi vào <b>Tuần Không ({', '.join(kv)})</b>: Cần xét tiếp có Hào Động hoặc Nhật Nguyệt sinh trợ hay không để phân định Chân Không hay Giả Không."
                         )
                         is_fake = True
-                    if 'Huyền Vũ' in luc_thu:
+                    elif 'Huyền Vũ' in luc_thu and chi in kv:
                         warnings.append(
-                            f"🔹 <b>Dạng 5B [Lục Hào — Dụng Thần Lâm Huyền Vũ]:</b> Hào Dụng Thần <b>{dung_than}</b> (Hào {idx_h}) lâm <b>Huyền Vũ</b>: Đối tượng/sự việc được hỏi có yếu tố giả tạo, không có thật như lời hỏi."
+                            f"🔹 <b>Dạng 5B [Lục Hào — Dụng Thần Tuần Không Lâm Huyền Vũ]:</b> Hào Dụng Thần <b>{dung_than}</b> (Hào {idx_h}) vừa Không Vong vừa lâm <b>Huyền Vũ</b>: Đối tượng/sự việc được hỏi có yếu tố giả tạo, không có thật như lời hỏi."
                         )
                         is_fake = True
 
@@ -12958,6 +12959,91 @@ class FreeAIHelper:
                     f"🔹 <b>Dạng 11B [Đại Lục Nhâm — Sơ Truyền Lâm {_so_chk.get('thien_tuong')} & Mạt Truyền Không Vong]:</b> Báo hiệu câu hỏi mang tính chất thử lòng hoặc sự việc hư ảo không thành."
                 )
                 is_fake = True
+        except Exception:
+            pass
+
+        # ── PHẦN E (V101.8): LIÊN KẾT SÂU ĐA HỆ THỐNG (LỤC HÀO + MAI HOA + KỲ MÔN) PHÂN ĐỊNH CHÂN KHÔNG VS GIẢ KHÔNG VS TÂM THẾ HỎI THỬ ──
+        # Không phải cứ có Tuần Không ở Nhật Can/Hào Thế là đối tượng không tồn tại (= 0)!
+        # Theo Tăng San Bốc Dịch (Tuần Không Chương):
+        # 1. Nếu Hào Dụng Thần KHÔNG phạm Tuần Không (hoặc tuy lâm Không nhưng Động / được Hào Động sinh hợp / đắc Nhật Nguyệt sinh phù - xung thực = GIẢ KHÔNG),
+        #    thì ĐỐI TƯỢNG / CON CÁI ĐƯỢC HỎI LÀ CÓ THẬT 100% NGOÀI ĐỜI!
+        # 2. Khi Dụng Thần hữu khí có thật mà Nhật Can / Hào Thế lâm Tuần Không hoặc Huyền Vũ, đó là dấu hiệu NGƯỜI HỎI ĐANG HỎI THỬ NGHIỆM QUẺ (đã có thật ngoài đời và hỏi để kiểm chứng quẻ)!
+        self._last_testing_linkage = {}
+        try:
+            _ql_e = (question or '').lower()
+            _is_bin_choice_e = (' hay ' in _ql_e) and not any(w in _ql_e for w in ['hay không', 'có nên', 'trai hay gái', 'nam hay nữ'])
+            _is_true_false_e = any(w in _ql_e for w in ['thật hay giả', 'giả hay thật', 'nói thật hay', 'nói dối', 'lừa dối'])
+            _CHI_NH_E = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc', 'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ', 'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
+            _SINH_NH_E = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
+            _HOP_CHI_E = {'Tý': 'Sửu', 'Sửu': 'Tý', 'Dần': 'Hợi', 'Hợi': 'Dần', 'Mão': 'Tuất', 'Tuất': 'Mão', 'Thìn': 'Dậu', 'Dậu': 'Thìn', 'Tị': 'Thân', 'Thân': 'Tị', 'Ngọ': 'Mùi', 'Mùi': 'Ngọ'}
+            _XUNG_CHI_E = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu', 'Dần': 'Thân', 'Thân': 'Dần', 'Mão': 'Dậu', 'Dậu': 'Mão', 'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
+            _TAM_HOP_E = [{'Thân', 'Tý', 'Thìn'}, {'Dần', 'Ngọ', 'Tuất'}, {'Hợi', 'Mão', 'Mùi'}, {'Tị', 'Dậu', 'Sửu'}]
+
+            _ban_e = (luc_hao_data.get('ban', {}) if isinstance(luc_hao_data, dict) else {}) or {}
+            _bien_e = (luc_hao_data.get('bien', {}) if isinstance(luc_hao_data, dict) else {}) or {}
+            _haos_e = _ban_e.get('haos') or _ban_e.get('details') or (luc_hao_data.get('haos') if isinstance(luc_hao_data, dict) else []) or []
+            _dong_e = (luc_hao_data.get('dong_hao') if isinstance(luc_hao_data, dict) else None) or _ban_e.get('dong_hao') or []
+            _q_chu_nm_e = _ban_e.get('name') or (mai_hoa_data.get('ten_que') if isinstance(mai_hoa_data, dict) else '') or ''
+            _q_bien_nm_e = _bien_e.get('name') or (mai_hoa_data.get('ten_qua_bien') if isinstance(mai_hoa_data, dict) else '') or ''
+
+            _dt_lines_e = []
+            _moving_lines_e = []
+            for _ix_e, _h_e in enumerate(_haos_e, 1):
+                if not isinstance(_h_e, dict):
+                    continue
+                _lt_e = str(_h_e.get('luc_than') or '')
+                _cc_e = str(_h_e.get('chi') or _h_e.get('can_chi') or '')
+                _ch_e = _cc_e.split()[-1] if _cc_e else ''
+                _nh_e = _h_e.get('ngu_hanh') or _h_e.get('hanh') or _CHI_NH_E.get(_ch_e, '')
+                _id_e = bool(_h_e.get('is_dong') or _h_e.get('dong') or _h_e.get('is_moving') or (_ix_e in _dong_e))
+                if _id_e:
+                    _moving_lines_e.append((_ix_e, _lt_e, _ch_e, _nh_e))
+                if dung_than and (_lt_e == dung_than or dung_than in _lt_e):
+                    _dt_lines_e.append((_ix_e, _lt_e, _ch_e, _nh_e, _id_e))
+                elif (not dung_than or dung_than == 'Bản Thân') and ('Thế' in str(_h_e.get('the_ung') or _h_e.get('tu') or '')):
+                    _dt_lines_e.append((_ix_e, 'Hào Thế (Bản Thân)', _ch_e, _nh_e, _id_e))
+
+            if _dt_lines_e and not _is_bin_choice_e and not _is_true_false_e:
+                _dt_ix0, _dt_lt0, _dt_ch0, _dt_nh0, _dt_dong0 = _dt_lines_e[0]
+                _dt_in_kv0 = (_dt_ch0 in kv)
+                _support_proofs = []
+                if not _dt_in_kv0:
+                    _support_proofs.append(f"Hào Dụng Thần <b>{_dt_lt0}</b> tại Hào {_dt_ix0} (<b>{_dt_ch0}-{_dt_nh0}</b>) hoàn toàn <b>KHÔNG phạm Tuần Không ({', '.join(kv)})</b>")
+                elif _dt_dong0:
+                    _support_proofs.append(f"Hào Dụng Thần <b>{_dt_lt0}</b> tại Hào {_dt_ix0} ({_dt_ch0}) phát động mạnh (<i>'Động bất vi Không'</i> — Hào động không phải là Chân Không)")
+
+                # Kiểm tra Hào Động sinh trợ / tam hợp / lục hợp với Hào Dụng Thần
+                for _m_ix, _m_lt, _m_ch, _m_nh in _moving_lines_e:
+                    if _m_ix == _dt_ix0:
+                        continue
+                    _is_sinh_m = (_SINH_NH_E.get(_m_nh) == _dt_nh0) or (_m_nh == _dt_nh0 and _m_nh != '')
+                    _is_hop_m = (_HOP_CHI_E.get(_m_ch) == _dt_ch0) or any({_m_ch, _dt_ch0}.issubset(_s) for _s in _TAM_HOP_E)
+                    if _is_sinh_m or _is_hop_m:
+                        _rel_lbl = "phát động sinh trợ & bán hợp cục" if (_is_sinh_m and _is_hop_m) else ("phát động sinh trợ trực tiếp" if _is_sinh_m else "phát động hợp trợ")
+                        _support_proofs.append(f"Hào Động <b>Hào {_m_ix} {_m_lt} ({_m_ch}-{_m_nh})</b> {_rel_lbl} cho Hào {_dt_ix0} <b>{_dt_lt0} ({_dt_ch0}-{_dt_nh0})</b> (<i>'Hữu động hào sinh phù giả bất vi Không'</i>)")
+
+                # Kiểm tra Nhật Thần / Nguyệt Lệnh sinh hợp hoặc Xung thực Tuần Không
+                _nh_ngay_e = _CHI_NH_E.get(chi_ngay or '', '')
+                _chi_thang_e = chart_data.get('chi_thang', '')
+                _nh_thang_e = _CHI_NH_E.get(_chi_thang_e or '', '')
+                if _SINH_NH_E.get(_nh_ngay_e) == _dt_nh0 or _nh_ngay_e == _dt_nh0 or _HOP_CHI_E.get(chi_ngay or '') == _dt_ch0:
+                    _support_proofs.append(f"Nhật Thần <b>{chi_ngay} ({_nh_ngay_e})</b> sinh hợp/tỷ trợ trực tiếp cho Dụng Thần ({_dt_ch0}-{_dt_nh0})")
+                elif _dt_in_kv0 and _XUNG_CHI_E.get(chi_ngay or '') == _dt_ch0:
+                    _support_proofs.append(f"Nhật Thần <b>{chi_ngay}</b> xung khởi Hào {_dt_ch0} đang Tuần Không (<i>'Xung Không tắc thực'</i> — Hóa Không thành Thực)")
+                if _SINH_NH_E.get(_nh_thang_e) == _dt_nh0 or _nh_thang_e == _dt_nh0 or _HOP_CHI_E.get(_chi_thang_e or '') == _dt_ch0:
+                    _support_proofs.append(f"Nguyệt Lệnh <b>{_chi_thang_e}</b> tương trợ/hợp khí với Dụng Thần ({_dt_ch0}-{_dt_nh0})")
+
+                # Nếu Dụng Thần KHÔNG phạm Tuần Không, hoặc tuy lâm Không nhưng có Hào Động / Nhật Nguyệt cứu ứng -> ĐỐI TƯỢNG CÓ THẬT 100% NGOÀI ĐỜI!
+                _has_active_rescue = any('Hào Động' in p or 'Nhật Thần' in p or 'Nguyệt Lệnh' in p or 'phát động' in p for p in _support_proofs)
+                if (not _dt_in_kv0 and not (ky_dong_Desc and not _dt_dong0 and not _has_active_rescue)) or (_dt_in_kv0 and _has_active_rescue):
+                    is_fake = False
+                    if warnings:
+                        self._last_testing_linkage = {
+                            'is_testing_mindset': True,
+                            'dt_proof': "; cộng thêm ".join(_support_proofs),
+                            'hex_pair': f"Quẻ <b>{_q_chu_nm_e}</b>" + (f" biến <b>{_q_bien_nm_e}</b>" if _q_bien_nm_e else ""),
+                            'testing_warnings': list(warnings),
+                        }
         except Exception:
             pass
 
@@ -13624,15 +13710,31 @@ class FreeAIHelper:
 
             # V100.9: Nghiệm Chứng Tính Chân Thực 10 Dạng (Phát hiện câu hỏi không có thật / chưa tồn tại / hỏi thử)
             auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data, dung_than, mai_hoa_data, question)
+            _test_link_info = getattr(self, '_last_testing_linkage', {}) or {}
             if is_fake:
                 auth_html = (
                     f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:18px 20px;border-radius:14px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 18px rgba(239,68,68,0.45);">'
-                    f'<div style="font-size:1.12em;font-weight:900;color:#fef08a;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC — PHÁT HIỆN CÂU HỎI KHÔNG CÓ THẬT / CHƯA TỒN TẠI HOẶC HỎI THỬ ({len(auth_warnings)} DẤU HIỆU TỪ QUẺ)</div>'
-                    f'<div style="font-size:0.95em;color:#fecaca;margin-bottom:8px;">Hệ thống chống câu hỏi giả/lừa dối phát hiện quẻ phạm <b>Tuần Không / Không Vong / Khuyết Dụng Thần / Huyền Vũ - Đằng Xà</b>: Sự việc hoặc đối tượng bạn hỏi <b>hiện KHÔNG CÓ THẬT ngoài đời thực</b> (hoặc chưa từng xảy ra / bạn đang hỏi thử lòng quẻ):</div>'
+                    f'<div style="font-size:1.12em;font-weight:900;color:#fef08a;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC — PHÁT HIỆN CHÂN KHÔNG / SỰ VIỆC CHƯA TỒN TẠI HOẶC HỎI THỬ ({len(auth_warnings)} DẤU HIỆU TỪ QUẺ)</div>'
+                    f'<div style="font-size:0.95em;color:#fecaca;margin-bottom:8px;">Hệ thống đối chứng Đa Tầng phát hiện Dụng Thần rơi vào <b>Chân Không / Không Vong Vô Khí / Khuyết Dụng Thần</b>: Sự việc hoặc đối tượng bạn hỏi <b>hiện CHƯA TỒN TẠI ngoài đời thực</b> (hoặc bạn đang đặt câu hỏi thử lòng quẻ):</div>'
                 )
                 for w in auth_warnings:
                     auth_html += f'<div style="font-size:0.95em;color:#ffffff;margin-bottom:5px;padding:6px 10px;background:rgba(0,0,0,0.28);border-radius:8px;border-left:3px solid #fbbf24;">{w}</div>'
                 auth_html += '</div>'
+            elif _test_link_info.get('is_testing_mindset'):
+                _dt_prf_s = _test_link_info.get('dt_proof', '')
+                _hx_pair_s = _test_link_info.get('hex_pair', 'Quẻ Kinh Dịch')
+                _t_warns = _test_link_info.get('testing_warnings', [])
+                auth_html = (
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#0f172a);padding:16px 20px;border-radius:14px;margin-bottom:16px;border:2px solid #34d399;box-shadow:0 4px 20px rgba(52,211,153,0.3);">'
+                    f'<div style="font-size:1.08em;font-weight:900;color:#6ee7b7;margin-bottom:8px;">🔍 NGHIỆM CHỨNG LIÊN KẾT SÂU ĐA TẦNG: ĐỐI TƯỢNG BẠN HỎI LÀ CÓ THẬT NGOÀI ĐỜI (KHÔNG PHẢI CHÂN KHÔNG) — ĐỒNG THỜI BẮT BÀI TÂM THẾ HỎI THỬ QUẺ!</div>'
+                    f'<div style="font-size:0.95em;color:#ecfdf5;margin-bottom:7px;padding:8px 12px;background:rgba(16,185,129,0.16);border-radius:8px;border-left:4px solid #34d399;">'
+                    f'✅ <b>Xác nhận Thực Tế Có Thật từ {_hx_pair_s} (Bác bỏ Chân Không):</b> {_dt_prf_s} ➔ Khẳng định đối tượng / con cái / sự việc bạn hỏi <b>ĐANG TỒN TẠI THỰC TẾ NGOÀI ĐỜI (100% có thật, tuyệt đối không phải bằng 0)</b>!'
+                    f'</div>'
+                    f'<div style="font-size:0.93em;color:#fde68a;margin-bottom:4px;padding:7px 12px;background:rgba(245,158,11,0.14);border-radius:8px;border-left:4px solid #fbbf24;">'
+                    f'🎯 <b>Bắt bài Tâm Thế Hỏi Thử / Kiểm Chứng Quẻ:</b> Tuy Dụng Thần (đối tượng được hỏi) hoàn toàn hữu khí và có thật, nhưng <b>Nhật Can / Hào Thế (đại diện cho Người hỏi)</b> lại chạm <b>Tuần Không</b> — báo hiệu bạn đã biết rõ thực tế ngoài đời và đang đặt câu hỏi này để <b>thử độ nhạy bén và chính xác của quẻ</b>!'
+                    f'</div>'
+                    f'</div>'
+                )
 
             if v31_parsed_questions and len(v31_parsed_questions) >= 1:
                 # Hiển thị bảng phân tách
@@ -16309,7 +16411,8 @@ class FreeAIHelper:
             # === Ô NÂU TO — KẾT LUẬN AI ONLINE V100.6 (BỐ CỤC 3 THẺ TRỰC QUAN — NHÌN PHÁT BIẾT NGAY CÂU TRẢ LỜI) ===
             import re as _re_clean_v100
             _q_low_on_box = question.lower() if question else ''
-            _is_child_box = any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in _q_low_on_box and not any(bad in _q_low_on_box for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+            _has_age_box = any(ag in _q_low_on_box for ag in ['tuổi', 'mấy tuổi', 'bao nhiêu tuổi', 'năm sinh', 'sinh năm'])
+            _is_child_box = (not _has_age_box) and (any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in _q_low_on_box and not any(bad in _q_low_on_box for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])))
             _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
             _is_spec_override_box = bool(locals().get('_dual_verified', {}).get('has_specialized_override'))
             _is_bin_fact_box = bool(_omni_ch_data.get('is_binary_factual_q'))
@@ -18968,7 +19071,7 @@ class FreeAIHelper:
                         if _luc_thu and _luc_thu in LUC_THAN_DEEP:
                             _ltd = LUC_THAN_DEEP[_luc_thu]
                             # Xét vượng/suy dựa trên Ngũ Hành Lục Thần vs lệnh tháng
-                            _lenh_tup = _get_lenh_thang_hanh(chi_thang)
+                            _lenh_tup = _get_lenh_thang_hanh((luc_hao_data or {}).get('chi_thang'))
                             _lenh = _lenh_tup[0] if isinstance(_lenh_tup, tuple) else _lenh_tup
                             _ltd_hanh = _ltd['hanh']
                             if _lenh == _ltd_hanh or SINH.get(_lenh) == _ltd_hanh:

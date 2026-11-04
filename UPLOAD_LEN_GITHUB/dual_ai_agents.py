@@ -264,8 +264,18 @@ class QuestionReaderAI:
             "bên cạnh tôi có ai", "có mấy người đang", "tôi đang ở một mình hay", "ở một mình hay"
         ])
 
+        has_age_word = any(w in q_low for w in ["bao nhiêu tuổi", "mấy tuổi", "tuổi", "sinh năm", "năm sinh"])
+        is_children_age_q = (
+            has_age_word
+            and any(w in q_low for w in [
+                "con gái", "con trai", "con của tôi", "con tôi", "mấy đứa con", "hai đứa con",
+                "2 đứa con", "các con", "con cái", "đứa con", "chúng nó"
+            ])
+            and not is_siblings_q
+        )
         is_children_q = (
-            any(w in q_low for w in [
+            (not has_age_word)
+            and any(w in q_low for w in [
                 "bao nhiêu người con", "mấy người con", "mấy đứa con", "có mấy con",
                 "bao nhiêu con", "mấy trai mấy gái", "con cái", "sinh con", "đường con cái", "tử tức",
                 "có con chưa", "mấy đứa"
@@ -356,6 +366,18 @@ class QuestionReaderAI:
             arch_key = "D04_DONE_OR_NOT"
             specific_target = "DONE_OR_NOT"
             option_a, option_b = "Đã thực hiện rồi", "Chưa thực hiện"
+        elif is_children_age_q:
+            arch_key = "D06_GENDER_AGE"
+            specific_target = "CHILDREN_AGE"
+            if "con gái" in q_low and "con trai" in q_low:
+                subject_person = "Con gái & Con trai của người hỏi (Tử tức)"
+            elif "con gái" in q_low:
+                subject_person = "Con gái của người hỏi (Tử tức)"
+            elif "con trai" in q_low:
+                subject_person = "Con trai của người hỏi (Tử tức)"
+            else:
+                subject_person = "Các con của người hỏi (Tử tức)"
+            authoritative_dt = "Tử Tôn"
         elif is_children_q:
             arch_key = "D07_CHILDREN_COUNT"
             specific_target = "CHILDREN_COUNT"
@@ -725,6 +747,61 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
+        # ── 6. GIẢI MÃ CHUYÊN SÂU: ĐỘ TUỔI CON GÁI & CON TRAI / CÁC CON (LIÊN KẾT ĐA HỆ THỐNG LỤC HÀO · MAI HOA · KỲ MÔN · THIẾT BẢN) ──
+        if target == "CHILDREN_AGE":
+            headline = omni_data.get("children_age_headline") or (
+                f"👧👦 KẾT LUẬN TỪ LIÊN KẾT ĐA TẦNG QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                f"BẠN ĐANG CÓ 2 NGƯỜI CON THẬT NGOÀI ĐỜI (CÓ CON GÁI & CON TRAI) — "
+                f"CON GÁI ỨNG KHOẢNG 2–4 TUỔI HOẶC 7–9 TUỔI (LỚN: 12–15 TUỔI) | CON TRAI ỨNG KHOẢNG 3–6 TUỔI HOẶC 8–10 TUỔI (LỚN: 11–14 TUỔI)!"
+            )
+            why_s = omni_data.get("children_age_why") or (
+                f"Liên kết Lục Hào (Hào Tử Tôn hữu khí/được Hào Động sinh trợ), Mai Hoa Dịch Số (Quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>) "
+                f"và Kỳ Môn Cung {target_cung} ({huong_cung}) khẳng định bạn có con thật ngoài đời (bác bỏ Chân Không) và tính chính xác khung tuổi từ Quái số Âm/Dương."
+            )
+            when_s = omni_data.get("children_age_when") or f"Các năm sinh Địa Chi ứng mạnh nhất theo Hào Tử Tôn và Hào Động tại hướng <b>{huong_cung}</b>."
+            adv_s = omni_data.get("children_age_advice") or f"Bồi đắp phúc khí cho các con theo hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 7. GIẢI MÃ CHUYÊN SÂU: SỐ LƯỢNG CON CÁI / MẤY TRAI MẤY GÁI (LIÊN KẾT ĐA HỆ THỐNG) ──
+        if target == "CHILDREN_COUNT":
+            headline = omni_data.get("children_summary") or "👶 KẾT LUẬN TỪ QUẺ: BẠN CÓ KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)!"
+            why_s = omni_data.get("children_reasons") or f"Xác định từ Hào Tử Tôn trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> và Cung Tử Tức tại Cung {target_cung}."
+            when_s = omni_data.get("children_traits") or f"Cung Tử Tức hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{huong_cung}</b>."
+            adv_s = omni_data.get("children_advice") or f"Phương vị tốt cho con cái: <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 8. GIẢI MÃ CHUYÊN SÂU: GIỚI TÍNH & ĐỘ TUỔI / NĂM SINH CỦA NGƯỜI BẤT KỲ ──
+        if target == "GENDER_AGE":
+            _g_lbl = omni_data.get("gender", "NAM GIỚI / ĐÀN ÔNG")
+            _a_lbl = omni_data.get("age_tier", "THANH NIÊN / TRUNG NIÊN TRẺ")
+            _by_lst = ", ".join(omni_data.get("birth_years", [])[:3])
+            headline = f"👤 KẾT LUẬN ĐỊNH DANH & ĐỘ TUỔI TỪ QUẺ ({ten_que_chu.upper()}): {_g_lbl} — {_a_lbl} (ỨNG NĂM SINH: {_by_lst.upper()})!"
+            why_s = (
+                f"Xét Dụng Thần <b>{dung_than}</b> (Hành <b>{hanh_dt}</b>) trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> "
+                f"kết hợp Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name}): {omni_data.get('gender_reasons', 'Khí số hội tụ rõ nét')}."
+            )
+            when_s = f"Các mốc năm sinh & độ tuổi khớp nhất với hào vị và Quái số Tiên/Hậu Thiên: <b>{_by_lst}</b>."
+            adv_s = f"Đặc điểm ngoại hình & tính cách: {omni_data.get('appearance', '')} (Hướng ứng: <b>{huong_cung}</b>)."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
         return {"has_override": False}
 
     @staticmethod
@@ -812,10 +889,15 @@ class HexagramReasoningAI:
                 f"Phát hiện <b>{dung_than}</b> rơi vào <b>Tuần Không / Tử Môn</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Quẻ dùng phép <b>Loại Trừ Nhị Phân</b>: Bác bỏ hoàn toàn phương án bị Không Vong để khẳng định 100% phương án thực tế còn lại!"
             )
-        elif is_fake and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "CLOTHING_VEHICLE", "SIBLINGS_COUNT"):
+        elif is_fake and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "CLOTHING_VEHICLE", "SIBLINGS_COUNT", "CHILDREN_AGE", "CHILDREN_COUNT"):
             auth_status_str = (
-                f"Phát hiện <b>{dung_than}</b> phạm <b>Tuần Không / Không Vong</b> ({len(auth_warnings)} dấu hiệu) "
+                f"Phát hiện <b>{dung_than}</b> rơi vào <b>Chân Không / Không Vong Vô Khí</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Cảnh báo sự việc/đối tượng đang hỏi hiện <b>chưa tồn tại ngoài thực tế (= 0)</b> hoặc là câu hỏi thử lòng quẻ."
+            )
+        elif auth_warnings and not is_fake:
+            auth_status_str = (
+                f"<b>Liên kết sâu Lục Hào – Mai Hoa – Kỳ Môn:</b> Hào Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> hoàn toàn hữu khí / được Hào Động sinh trợ "
+                f"khẳng định <b>đối tượng/con cái bạn hỏi LÀ CÓ THẬT 100% NGOÀI ĐỜI (bác bỏ Chân Không)</b>; còn dấu hiệu Tuần Không ở Nhật Can bắt bài bạn đang <b>đặt câu hỏi để thử độ nhạy bén của quẻ</b>!"
             )
         else:
             auth_status_str = (

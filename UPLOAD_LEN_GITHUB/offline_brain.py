@@ -732,8 +732,9 @@ def build_narrative_summary_text(
         vh = f"THỜI ĐIỂM ỨNG NGHIỆM: {uk_clean.upper()} ({pct}% — {status_w})"
         return _hero_ui("⏳", vh, f"Dụng Thần <b>{dung_than}</b> hội tụ khí số theo chu kỳ Can Chi.", f"Điểm rơi chính xác: <b>{uk_clean}</b>", f"Chuẩn bị sẵn sàng và hành động theo hướng <b>{direction}</b>.")
 
-    # 5A. TRỌNG TÂM: CON CÁI / TỬ TỨC (BAO NHIÊU NGƯỜI CON, MẤY TRAI MẤY GÁI, SINH TRAI HAY GÁI)
-    if omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_low and not any(bad in q_low for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con', 'con thứ mấy', 'con trưởng', 'con út', 'con đầu'])) and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])):
+    # 5A. TRỌNG TÂM: CON CÁI / TỬ TỨC (BAO NHIÊU NGƯỜI CON, MẤY TRAI MẤY GÁI, SINH TRAI HAY GÁI - KHÔNG PHẢI HỎI TUỔI)
+    _has_age_ob = any(ag in q_low for ag in ['tuổi', 'mấy tuổi', 'bao nhiêu tuổi', 'năm sinh', 'sinh năm'])
+    if (not _has_age_ob) and (omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_low and not any(bad in q_low for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con', 'con thứ mấy', 'con trưởng', 'con út', 'con đầu'])) and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))):
         c_sum = omni_data.get('children_summary', 'QUẺ BÁO TỬ TỨC: KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
         c_rea = omni_data.get('children_reasons', f'Xác định trực tiếp từ Hào Tử Tôn ({dung_than}) và tổ hợp Quẻ Chủ – Hỗ – Biến.')
         c_trt = omni_data.get('children_traits', 'Các con thông minh, tự lập, trưởng thành vững vàng và hiếu thuận.')
@@ -1477,12 +1478,13 @@ def build_connected_prose_analysis(
     _km_pal_p = dossier.get("km_palace_prose", f"Cung trọng tâm tọa tại hướng <b>{direction}</b>.")
     _km_cc_p = dossier.get("km_cach_cuc_prose", "Cần điềm tĩnh tháo gỡ từng bước.")
     _wc_p = dossier.get("world_class_prose", "Chiêm tinh Horary, Ấn Độ Vệ Đà KP và Huyền Không Vận 9 đồng thuận với kết quả quẻ.")
-    _is_child_deep = any(w in q_low for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con"]) or ("con" in q_low and any(w in q_low for w in ["bao nhiêu", "mấy trai", "mấy gái", "có mấy"]))
+    _is_child_age_deep = any(ag in q_low for ag in ["tuổi", "mấy tuổi", "bao nhiêu tuổi", "năm sinh", "sinh năm"]) and any(w in q_low for w in ["con gái", "con trai", "con của tôi", "con tôi", "mấy đứa con", "2 đứa con", "các con", "con cái"])
+    _is_child_deep = _is_child_age_deep or any(w in q_low for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con"]) or ("con" in q_low and any(w in q_low for w in ["bao nhiêu", "mấy trai", "mấy gái", "có mấy"]))
     if _is_child_deep:
-        _ch_sum_d = _omni_for_holo.get("children_summary", "KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI")
-        _ch_rea_d = _omni_for_holo.get("children_reasons", "")
-        _ch_trt_d = _omni_for_holo.get("children_traits", "")
-        _ch_adv_d = _omni_for_holo.get("children_advice", "")
+        _ch_sum_d = _omni_for_holo.get("children_age_headline" if _is_child_age_deep else "children_summary", "KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI")
+        _ch_rea_d = _omni_for_holo.get("children_age_why" if _is_child_age_deep else "children_reasons", "")
+        _ch_trt_d = _omni_for_holo.get("children_age_when" if _is_child_age_deep else "children_traits", "")
+        _ch_adv_d = _omni_for_holo.get("children_age_advice" if _is_child_age_deep else "children_advice", "")
         _dc1 = _deep_card(
             "📿", "Thẻ 1 — Gốc Rễ Quẻ Kinh Dịch & Hào Tử Tôn (Lục Hào · Mai Hoa)", "#fbbf24",
             f"<b>{_ch_sum_d}</b>. {_lh_hex_p}",
