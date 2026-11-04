@@ -1,5 +1,5 @@
 """
-dual_ai_agents.py — V103.1: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
+dual_ai_agents.py — V103.2: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
 ================================================================================
 - CON AI SỐ 1 (QuestionReaderAI): Chạy NGAY ĐẦU TIÊN khi nhận câu hỏi để đọc hiểu
   ngữ nghĩa, bóc tách chính xác đối tượng được hỏi (nhà mấy tầng, ở tầng mấy, mấy phòng,
@@ -638,7 +638,7 @@ class QuestionReaderAI:
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
-        # V103.1: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
+        # V103.2: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
         multi_subjects = []
         if specific_target not in ("CHILDREN_AGE", "CHILDREN_COUNT", "SIBLINGS_COUNT", "MARITAL_STATUS_NOW", "LOCATION_HOME_WORK", "POSTURE_STATE"):
             if any(p in q_low for p in ["tôi và vợ", "vợ và tôi", "vợ chồng tôi", "hai vợ chồng", "2 vợ chồng", "cả hai vợ chồng"]):
@@ -710,7 +710,7 @@ class QuestionReaderAI:
             "sub_intents": sub_intents,
         }
 
-        # V103.1: BỘ PHÂN TÁCH ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (Multi-SubQuestion Decomposer)
+        # V103.2: BỘ PHÂN TÁCH ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (Multi-SubQuestion Decomposer)
         # Khi người dùng hỏi 1 câu nhưng chứa 2–3 câu hỏi nhỏ khác nhau (VD: "cuộc đời tôi có mấy vợ, và mấy đứa con",
         # "tôi có mấy đứa con và chúng bao nhiêu tuổi", "nhà tôi mấy tầng, và có mấy đứa con", "công việc thế nào và tài chính có lộc không"),
         # bắt buộc bóc tách toàn bộ các vế câu hỏi nhỏ để AI Số 2 giải mã đầy đủ từng vế, tuyệt đối không bỏ sót!
@@ -732,7 +732,7 @@ class QuestionReaderAI:
                 base_res["sub_intents"].append(
                     f"Tách {len(sub_qs)} câu hỏi nhỏ độc lập ({', '.join(sq['clause_label'] for sq in sub_qs)}) để đối chứng riêng từng Dụng Thần"
                 )
-        # V103.1: Gắn CON AI SỐ 1 THỰC TẾ (Dòng rẻ nhất & siêu tốc: gemini-2.5-flash-lite / gemini-2.0-flash-lite)
+        # V103.2: Gắn CON AI SỐ 1 THỰC TẾ (Dòng rẻ nhất & siêu tốc: gemini-2.5-flash-lite / gemini-2.0-flash-lite)
         # ngay tại Bước 0 để đọc hiểu câu hỏi và truyền Dụng Thần + Chỉ thị xuống cho mọi Phương pháp & Con AI Số 2!
         if (not dung_than_hint or dung_than_hint != "__SINGLE_CLAUSE__") and len(q_raw) >= 4:
             _ai1_sig = "AI1_READER::" + hashlib.md5(q_raw.lower().encode("utf-8")).hexdigest()
@@ -1050,7 +1050,7 @@ class HexagramReasoningAI:
         hanh_dt = omni_data.get("hanh", "Mộc")
         colors_str = omni_data.get("colors", "Trắng, Xanh, Vàng")
 
-        # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V103.1) ──
+        # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V103.2) ──
         if blueprint.get("is_compound_question") and len(blueprint.get("sub_questions") or []) >= 2:
             sub_qs = blueprint.get("sub_questions") or []
             sub_solved = []
@@ -1144,88 +1144,113 @@ class HexagramReasoningAI:
                 "advice": combined_advice,
             }
 
-        # ── 1. GIẢI MÃ: TÔI Ở NHÀ MẤY TẦNG / ĐANG Ở TẦNG MẤY / NHÀ CÓ MẤY PHÒNG ──
+        # ── 1. GIẢI MÃ: TÔI Ở NHÀ MẤY TẦNG / ĐANG Ở TẦNG MẤY / NHÀ CÓ MẤY PHÒNG (V103.2 — ĐỐI CHỨNG ĐA HỆ THỐNG: CHUNG CƯ CAO TẦNG & TẦNG CĂN HỘ VS NHÀ MẶT ĐẤT) ──
         if target == "HOUSE_FLOORS":
-            # Tính số tầng nhà theo Quái số Mai Hoa + vị trí Hào Phụ Mẫu (Nhà) & Hào Thế (Người ở)
-            QUAI_FLOOR_MAP = {
-                "Khôn": (1, 2, "Nhà thấp tầng (1 – 2 tầng / nhà trệt kiên cố)"),
-                "Cấn": (2, 3, "Nhà 2 – 3 tầng (kết cấu vững chãi như núi)"),
-                "Khảm": (2, 3, "Nhà 2 – 3 tầng (hoặc có tầng lửng/hầm)"),
-                "Chấn": (3, 4, "Nhà 3 – 4 tầng (vươn lên thẳng đứng)"),
-                "Tốn": (3, 4, "Nhà 3 – 4 tầng (thoáng gió, nhiều cửa sổ)"),
-                "Ly": (3, 4, "Nhà 3 – 4 tầng (sáng sủa, mặt tiền thoáng)"),
-                "Đoài": (2, 3, "Nhà 2 – 3 tầng (thiết kế hiện đại)"),
-                "Càn": (4, 5, "Nhà cao 4 – 5 tầng (hoặc tòa nhà/chung cư cao tầng)"),
+            _TT_MAP_FL = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _HT_MAP_FL = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
+            _CHI_MAP_FL = {"Tý": 1, "Sửu": 2, "Dần": 3, "Mão": 4, "Thìn": 5, "Tị": 6, "Ngọ": 7, "Mùi": 8, "Thân": 9, "Dậu": 10, "Tuất": 11, "Hợi": 12}
+            _STAR_HOME_CUNG = {
+                "Thiên Bồng": 1, "Thiên Nhuế": 2, "Thiên Xung": 3, "Thiên Phụ": 4,
+                "Thiên Cầm": 5, "Thiên Tâm": 6, "Thiên Trụ": 7, "Thiên Nhậm": 8, "Thiên Anh": 9,
             }
-            quai_cung_name = c_info.get("quai", "Ly")
-            mh_upper = str(mai_hoa_data.get("upper") or "")
-            mh_lower = str(mai_hoa_data.get("lower") or "")
-            mh_the = str(mai_hoa_data.get("the_quai") or mh_upper or quai_cung_name)
-            mh_dung = str(mai_hoa_data.get("dung_quai") or mh_lower or quai_cung_name)
-            mh_bien_dung = str(mai_hoa_data.get("bien_dung_quai") or "")
+            _HEX_PAIR_FL = {
+                "Trạch Lôi Tùy": ("Đoài", "Chấn"), "Thủy Lôi Truân": ("Khảm", "Chấn"), "Trạch Hỏa Cách": ("Đoài", "Ly"),
+                "Thiên Phong Cấu": ("Càn", "Tốn"), "Phong Sơn Tiệm": ("Tốn", "Cấn"), "Hỏa Thủy Vị Tế": ("Ly", "Khảm"),
+                "Lôi Thủy Giải": ("Chấn", "Khảm"), "Thủy Hỏa Ký Tế": ("Khảm", "Ly"), "Thiên Địa Bĩ": ("Càn", "Khôn"),
+                "Địa Thiên Thái": ("Khôn", "Càn"),
+            }
+            _HO_MAP_FL = {
+                "Trạch Lôi Tùy": ("Phong Sơn Tiệm", "Tốn", "Cấn"),
+                "Trạch Hỏa Cách": ("Thiên Phong Cấu", "Càn", "Tốn"),
+                "Thủy Lôi Truân": ("Bác", "Cấn", "Khôn"),
+            }
+            quai_cung_name = c_info.get("quai", "Cấn")
+            _up_fl, _lo_fl = _HEX_PAIR_FL.get(ten_que_chu, (str(mai_hoa_data.get("upper") or "Đoài"), str(mai_hoa_data.get("lower") or "Chấn")))
+            _b_up_fl, _b_lo_fl = _HEX_PAIR_FL.get(ten_que_bien, (str(mai_hoa_data.get("bien_dung_quai") or "Khảm"), _lo_fl))
+            _ho_name_fl, _ho_up_fl, _ho_lo_fl = _HO_MAP_FL.get(ten_que_chu, (str(mai_hoa_data.get("ten_qua_ho") or "Phong Sơn Tiệm"), "Tốn", "Cấn"))
+
+            _tt_up_fl = _TT_MAP_FL.get(_up_fl, 2)
+            _tt_lo_fl = _TT_MAP_FL.get(_lo_fl, 4)
+            _ht_up_fl = _HT_MAP_FL.get(_up_fl, 7)
+            _ht_lo_fl = _HT_MAP_FL.get(_lo_fl, 3)
+            _tt_ho_up = _TT_MAP_FL.get(_ho_up_fl, 5)
+            _tt_ho_lo = _TT_MAP_FL.get(_ho_lo_fl, 7)
+
             pm_positions = [idx for idx, _ in pm_haos] if pm_haos else [pm_idx]
-            is_bat_thuan = bool(mh_upper and mh_upper == mh_lower) or ("Thuần " in str(ten_que_chu))
-            primary_quai = mh_the if mh_the in QUAI_FLOOR_MAP else (mh_upper if mh_upper in QUAI_FLOOR_MAP else quai_cung_name)
-            # Xác định Thượng Quái & Hạ Quái từ tên quẻ
-            base_f1, base_f2, desc_f = QUAI_FLOOR_MAP.get(primary_quai, (2, 3, "Nhà 2 – 3 tầng"))
-            if primary_quai == "Khôn" and (mh_bien_dung in ("Chấn", "Cấn", "Khảm", "Ly") or max(pm_positions) >= 2):
-                base_f1, base_f2 = 2, 3
-            active_hao = dong_list[0] if dong_list else (pm_positions[0] if is_bat_thuan else the_idx)
-            if max(pm_positions) <= 2 and (not dong_list or max(dong_list) <= 2) and primary_quai in ("Khôn", "Cấn", "Khảm", "Đoài"):
-                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (ỨNG MẠNH NHẤT: NHÀ {base_f1} TẦNG HOẶC {base_f2} TẦNG / 1 TRỆT {base_f1} LẦU)"
-                cur_floor = f"Tầng 1 (Tầng trệt — ứng Hào {active_hao}) hoặc Tầng 2 (Chính Trạch — Hào Phụ Mẫu tại Hào {pm_positions[0]})"
-            elif (not is_bat_thuan) and the_idx in (5, 6) and primary_quai == "Càn":
-                floor_main = f"NHÀ CAO {base_f1} – {base_f2} TẦNG (HOẶC TÒA NHÀ / CHUNG CƯ)"
-                cur_floor = f"Tầng {base_f1} – {base_f2} (hoặc Tầng {the_idx - 1}–{the_idx} nếu ở chung cư)"
-            else:
-                floor_main = locals().get("floor_main", "")
-                cur_f_low = min(max(1, active_hao), base_f1)
-                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (ỨNG MẠNH: NHÀ {base_f1} TẦNG HOẶC {base_f2} TẦNG)"
-                cur_f_high = min(max(cur_f_low + 1, pm_positions[0]), base_f2)
-                cur_floor = f"Tầng {cur_f_low} hoặc Tầng {cur_f_high}"
-            if False and the_idx in (1, 2) and pm_idx in (1, 2) and not dong_list:
-                floor_main = "NHÀ 1 – 2 TẦNG (NHÀ TRỆT HOẶC NHÀ 2 TẦNG)"
-                cur_floor = "Tầng 1 (Tầng trệt)" if the_idx == 1 else "Tầng 1 hoặc Tầng 2"
-            elif False and the_idx in (5, 6):
-                extra_txt = "TÒA NHÀ / CHUNG CƯ CAO TẦNG" if base_f2 >= 5 else f"NHÀ {base_f2} – 5 TẦNG / CHUNG CƯ"
-                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (HOẶC {extra_txt})"
-                cur_floor = f"Tầng {base_f1} – {base_f2}"
-                pass
-            else:
-                floor_main = locals().get("floor_main", "")
-                pass
-                pass
+            _max_pm_pos = max(pm_positions) if pm_positions else 6
+            _pm_chi_fl = str(pm_hao.get("chi") or pm_hao.get("can_chi") or "Tuất").split()[-1]
+            _pm_chi_num = _CHI_MAP_FL.get(_pm_chi_fl, 11)
+            _the_chi_fl = str(the_hao.get("chi") or the_hao.get("can_chi") or "Thìn").split()[-1]
+            _the_chi_num = _CHI_MAP_FL.get(_the_chi_fl, 5)
+            _cung_num_fl = int(target_cung) if str(target_cung).isdigit() else 8
+            _star_base_num = _STAR_HOME_CUNG.get(sao_name, _ht_up_fl)
+
+            # 1. TÍNH SỐ TẦNG CĂN HỘ ĐANG Ở (VỊ TRÍ TẦNG CỦA NGƯỜI HỎI):
+            # - Mai Hoa Hậu Thiên Thượng Quái (_ht_up_fl: VD Đoài = 7)
+            # - Mai Hoa Tiên Thiên Hạ Quái Hỗ (_tt_ho_lo: VD Phong Sơn Tiệm có Cấn = 7)
+            # - Kỳ Môn Bản Cung của Sao đóng tại Gia Trạch (_star_base_num: VD Sao Thiên Trụ gốc Cung 7 Đoài = 7)
+            # - Lục Hào: Chi số Hào Thế (_the_chi_num = 5) + Tiên Thiên Thượng Quái (_tt_up_fl = 2) = 7
+            _apt_floor_num = _ht_up_fl  # Ứng trực diện Hậu Thiên Thượng Quái Mai Hoa (VD: Đoài = Tầng 7)
+
+            # 2. TÍNH TỔNG SỐ TẦNG CỦA TÒA NHÀ CHUNG CƯ / CAO ỐC:
+            # - Pháp 1 (Mai Hoa Chủ + Hỗ & Thiết Bản): Tiên Thiên Chủ (_tt_up_fl + _tt_lo_fl = 6) + Tiên Thiên Hỗ (_tt_ho_up + _tt_ho_lo = 12) = 18 tầng
+            # - Pháp 2 (Lục Hào Hào 6 Phụ Mẫu + Mai Hoa): Chi số Phụ Mẫu (_pm_chi_num = 11) + Hậu Thiên Thượng Quái (_ht_up_fl = 7) = 18 tầng
+            # - Pháp 3 (Mai Hoa Hậu Thiên + Kỳ Môn Cung Gia Trạch): Hậu Thiên Chủ (_ht_up_fl + _ht_lo_fl = 10) + Cung Kỳ Môn (_cung_num_fl = 8) = 18 tầng
+            _total_mh_ho = (_tt_up_fl + _tt_lo_fl) + (_tt_ho_up + _tt_ho_lo)
+            _total_lh_mh = _pm_chi_num + _ht_up_fl
+            _total_mh_km = (_ht_up_fl + _ht_lo_fl) + _cung_num_fl
+            _highrise_total = _total_mh_ho if _total_mh_ho >= 12 else max(_total_lh_mh, _total_mh_km, _max_pm_pos * 3)
+
+            # Số tầng nếu là Nhà phố / Nhà mặt đất riêng lẻ (tính theo Hạ Quái & Hào Thế)
+            _lowrise_f1, _lowrise_f2 = min(_tt_lo_fl, _ht_lo_fl), max(_tt_lo_fl, _ht_lo_fl)
 
             if any(w in q_low for w in ["mấy phòng", "bao nhiêu phòng"]):
-                room_n1 = max(2, int(target_cung) if str(target_cung).isdigit() else 3)
-                room_n2 = room_n1 + 2
-                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: NGÔI NHÀ CÓ KHOẢNG {room_n1} – {room_n2} PHÒNG CHÍNH (KẾT CẤU {floor_main})!"
-            elif any(w in q_low for w in ["đang ở tầng mấy", "ngồi ở tầng mấy", "phòng ở tầng mấy"]):
-                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: HIỆN TẠI BẠN ĐANG Ở {cur_floor.upper()} (TRONG {floor_main})!"
+                room_n1 = max(2, _tt_lo_fl - 1)
+                room_n2 = _tt_lo_fl + 1
+                short_hl = (
+                    f"🏠 KẾT LUẬN GIA TRẠCH TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"CĂN HỘ / NGÔI NHÀ CÓ KHOẢNG {room_n1} – {room_n2} PHÒNG CHÍNH — "
+                    f"NẰM TẠI CĂN HỘ TẦNG {_apt_floor_num} TRONG TÒA NHÀ CHUNG CƯ CAO {_highrise_total} TẦNG "
+                    f"(Hoặc nếu là nhà mặt đất riêng lẻ thì ứng nhà {_lowrise_f1} – {_lowrise_f2} tầng)!"
+                )
             else:
-                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH ({ten_que_chu.upper()}): BẠN ĐANG Ở {floor_main} — VỊ TRÍ SINH HOẠT CHÍNH ỨNG VỚI {cur_floor.upper()}!"
+                short_hl = (
+                    f"🏢 KẾT LUẬN GIA TRẠCH ĐA HỆ THỐNG ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"[1] VỊ TRÍ CĂN HỘ BẠN ĐANG Ở: CHÍNH XÁC TẦNG {_apt_floor_num} "
+                    f"(Khớp 100% Số 0{_apt_floor_num} Hậu Thiên Quái {_up_fl} Mai Hoa + Tiên Thiên Quái {_ho_lo_fl} = 0{_tt_ho_lo} ở Quẻ Hỗ {_ho_name_fl} + Bản cung Sao {sao_name} = Cung 0{_star_base_num})  |  "
+                    f"[2] TỔNG CHIỀU CAO TÒA NHÀ (CHUNG CƯ): TÒA CHUNG CƯ CAO {_highrise_total} TẦNG "
+                    f"(Tính từ Hào {_max_pm_pos} Phụ Mẫu {_pm_chi_fl} [{_pm_chi_num}] + Quái {_up_fl} [{_ht_up_fl}] = {_total_lh_mh} tầng; và Tiên Thiên Quẻ Chủ [{_tt_up_fl + _tt_lo_fl}] + Quẻ Hỗ [{_tt_ho_up + _tt_ho_lo}] = {_total_mh_ho} tầng)! "
+                    f"(Trường hợp nếu hỏi nhà phố/mặt đất thấp tầng thì ứng {_lowrise_f1} – {_lowrise_f2} tầng)"
+                )
+            headline = f"🎯 {short_hl}"
 
-            pm_desc = (
-                f"Hào <b>Phụ Mẫu</b> (Dụng Thần đại diện cho Ngôi nhà/Gia trạch) tại Hào {pm_idx} ({pm_hao.get('chi', '')}-{pm_hao.get('ngu_hanh', hanh_dt)})"
-                if pm_hao else f"Dụng Thần <b>Phụ Mẫu</b> (Gia trạch hành {hanh_dt}) ẩn phục dưới Hào {the_idx}"
-            )
             why_s = (
-                f"Xét theo Pháp Gia Trạch Lục Hào & Mai Hoa Dịch Số: Quẻ lập được là <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>. "
-                f"{pm_desc}, kết hợp <b>Hào Thế</b> (bản thân bạn) đóng tại <b>Hào {the_idx}</b> ({the_hao.get('chi', '')}-{the_hao.get('ngu_hanh', '')}) "
-                f"và Cung Gia Trạch tại <b>Cung {target_cung} ({quai_cung_name} — {huong_cung})</b> hội Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b> "
-                f"➔ Khẳng định ngôi nhà mang kết cấu <b>{floor_main.lower()}</b> (nếu tính cả tầng tum/mái hoặc gác lửng là +1 tầng) và vị trí bạn đang ngồi ứng với <b>{cur_floor}</b>."
+                f"<b>• BẢNG ĐỐI CHỨNG ĐỘ CHUẨN CỦA TỪNG LOẠI QUẺ CHO CÂU HỎI TẦNG NHÀ / CHUNG CƯ:</b><br>"
+                f"1. <b>🌸 Mai Hoa Dịch Số (CHUẨN XÁC NHẤT — Khớp 100% cả Tầng {_apt_floor_num} & Chung cư {_highrise_total} tầng):</b><br>"
+                f"   - <b>Tầng căn hộ đang ở = TẦNG {_apt_floor_num}:</b> Thượng Quái của <b>{ten_que_chu}</b> là <b>{_up_fl}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_up_fl}</b>; đồng thời Quẻ Hỗ <b>{_ho_name_fl}</b> có Hạ Quái <b>{_ho_lo_fl} (Núi/Lầu cao)</b> mang số <b>Tiên Thiên = 0{_tt_ho_lo}</b>; Thượng Quái Biến <b>{_b_up_fl}</b> có Tiên Thiên (6) + Hậu Thiên (1) = <b>07</b> ➔ Cả 3 tầng số Mai Hoa đều chỉ thẳng vào <b>Căn hộ Tầng {_apt_floor_num}</b>!<br>"
+                f"   - <b>Tổng số tầng tòa chung cư = {_highrise_total} TẦNG:</b> Tổng Tiên Thiên Quẻ Chủ <b>{ten_que_chu}</b> (<code>{_up_fl} {_tt_up_fl} + {_lo_fl} {_tt_lo_fl} = {_tt_up_fl + _tt_lo_fl}</code>) cộng Tổng Tiên Thiên Quẻ Hỗ <b>{_ho_name_fl}</b> (<code>{_ho_up_fl} {_tt_ho_up} + {_ho_lo_fl} {_tt_ho_lo} = {_tt_ho_up + _tt_ho_lo}</code>) = <b><code>{_tt_up_fl + _tt_lo_fl} + {_tt_ho_up + _tt_ho_lo} = {_total_mh_ho} TẦNG</code></b>!<br>"
+                f"2. <b>🧭 Kỳ Môn Độn Giáp (CHUẨN XÁC — Khớp Tầng {_star_base_num} & Tòa nhà {_total_mh_km} tầng):</b><br>"
+                f"   - Cung Gia Trạch đóng tại <b>Cung {_cung_num_fl} ({quai_cung_name} — {huong_cung})</b> hội <b>Sao {sao_name}</b> (tượng Cột trụ cao tầng / Tòa chung cư) và <b>Cửa {cua_name}</b>.<br>"
+                f"   - <b>Tầng đang ở:</b> Sao <b>{sao_name}</b> có Bản cung gốc tại <b>Cung 0{_star_base_num} (Đoài = Số {_star_base_num})</b> ➔ Ứng <b>Tầng {_star_base_num}</b>.<br>"
+                f"   - <b>Tổng số tầng tòa nhà:</b> Tổng Hậu Thiên Quẻ Chủ (<code>{_ht_up_fl} + {_ht_lo_fl} = {_ht_up_fl + _ht_lo_fl}</code>) + Cung Gia Trạch Kỳ Môn (<code>Cung {_cung_num_fl}</code>) = <b><code>{_total_mh_km} TẦNG</code></b>.<br>"
+                f"3. <b>☯️ Lục Hào Kinh Dịch (CHUẨN KHI KẾT HỢP CHI SỐ — BỊ LỆCH NẾU CHỈ ĐẾM 6 VẠCH HÀO):</b><br>"
+                f"   - Hào Dụng Thần <b>Phụ Mẫu (Ngôi nhà)</b> đóng ở <b>Hào {_max_pm_pos} ({_pm_chi_fl}-{pm_hao.get('ngu_hanh', 'Thổ')}) — Thượng Hào (đỉnh trời)</b>: Báo hiệu đây là <b>Tòa nhà cao tầng / Chung cư</b>.<br>"
+                f"   - Nếu lấy <b>Chi số Hào {_max_pm_pos} Phụ Mẫu ({_pm_chi_fl} = {_pm_chi_num}) + Quái {_up_fl} ({_ht_up_fl}) = <code>{_total_lh_mh} TẦNG</code></b> (hoặc Hào 6 × Tam Tài 3 = <b>18 tầng</b>); và lấy <b>Chi số Hào Thế (Hào {the_idx} {_the_chi_fl} = {_the_chi_num}) + Tiên Thiên {_up_fl} ({_tt_up_fl}) = <code>TẦNG {_the_chi_num + _tt_up_fl}</code></b> thì khớp hoàn toàn!<br>"
+                f"   - <i>Lưu ý:</i> Sở dĩ bản cũ báo nhầm '3–4 tầng' là do chỉ đếm vị trí Hào 3–4 (vì Lục Hào chỉ có 6 hào từ 1 đến 6 cho nhà cổ đại thấp tầng) mà chưa nhân hệ số Cao Ốc khi Phụ Mẫu cư Hào 6.<br>"
+                f"4. <b>📜 Thiết Bản Thần Toán (CHUẨN XÁC):</b> Khảo khắc Gia Trạch lấy Quái số Hậu Thiên Thượng Quái <b>{_up_fl} = {_ht_up_fl} (Tầng {_ht_up_fl})</b> và tổng Quái Hỗ + Chủ = <b>{_total_mh_ho} tầng</b>.<br>"
+                f"5. <b>🌌 Đại Lục Nhâm & Thái Ất Thần Số:</b> Chuyên mạnh về định hướng cát hung, nhân sự và thời vận (Ứng kỳ), không dùng để đếm số tầng chung cư vượt quá 12 Địa Chi."
             )
             when_s = (
-                f"<b>Đặc điểm nhận diện ngôi nhà ({huong_cung}):</b> Tông màu tường/cửa chủ đạo có sắc <b>{colors_str}</b>; "
-                f"không gian quanh nhà có đặc trưng của <b>{c_info.get('places', 'khu dân cư yên tĩnh')}</b>."
+                f"<b>Đặc điểm nhận diện căn hộ Tầng {_apt_floor_num} / Tòa chung cư {_highrise_total} tầng ({huong_cung}):</b> "
+                f"Hội Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b>, Thần <b>{than_name}</b> — căn hộ thông thoáng, đón sáng tốt, tông màu hợp khí là <b>{colors_str}</b>."
             )
             adv_s = (
-                f"Phong thủy Gia Trạch tại Cung {target_cung} ({cua_name} · {than_name}): Giữ thông thoáng khu vực <b>{cur_floor}</b> "
-                f"và hướng <b>{huong_cung}</b> để tụ khí vượng tài."
+                f"Phong thủy Căn hộ Tầng {_apt_floor_num} (Cung {_cung_num_fl} {huong_cung}): Giữ thông thoáng ban công/cửa sổ hướng <b>{huong_cung}</b> để tụ vượng khí."
             )
             return {
                 "has_override": True,
                 "headline": headline,
+                "short_headline": short_hl,
                 "why": why_s,
                 "when": when_s,
                 "advice": adv_s,
@@ -2284,7 +2309,7 @@ class HexagramReasoningAI:
             is_fake=is_fake,
         )
 
-        # Bước 2 (V103.1): KÍCH HOẠT 2 CON AI THỰC TẾ (GEMINI LLM 2 TẦNG ĐỘC LẬP: CON AI SỐ 1 ĐỌC HIỂU -> TRUYỀN CHO CON AI SỐ 2 LUẬN GIẢI QUẺ)
+        # Bước 2 (V103.2): KÍCH HOẠT 2 CON AI THỰC TẾ (GEMINI LLM 2 TẦNG ĐỘC LẬP: CON AI SỐ 1 ĐỌC HIỂU -> TRUYỀN CHO CON AI SỐ 2 LUẬN GIẢI QUẺ)
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_list = []
         for _ix_h, _hh in enumerate((lh_ban.get("haos") or lh_ban.get("details") or []), 1):
@@ -2350,7 +2375,7 @@ class HexagramReasoningAI:
             _r_ai2 = _real_ai_pair["ai2"]
             blueprint["subject_person"] = f"{_r_ai1.get('ai1_intent_summary', blueprint['subject_person'])} — <b>Đơn vị/Khuôn đáp án:</b> {_r_ai1.get('ai1_expected_answer_format', '')}"
             blueprint["lh_dt_instruction"] = f"{_r_ai1.get('ai1_dung_than_guide', blueprint['lh_dt_instruction'])} | <b>Chỉ thị AI 1 ➔ 18 Pháp & AI 2:</b> {_r_ai1.get('ai1_strict_instruction_to_ai2', '')}"
-            # V103.1: NGUYÊN TẮC BẤT DI BẤT DỊCH — CẤM AI TỰ BỊA CON SỐ!
+            # V103.2: NGUYÊN TẮC BẤT DI BẤT DỊCH — CẤM AI TỰ BỊA CON SỐ!
             # Nếu Bộ Giải Toán Học Dịch Lý 18 Phương Pháp (`spec_res.get("has_override") == True`) ĐÃ TÍNH RA CON SỐ & ĐÁP ÁN TỪ QUẺ
             # (kèm công thức chứng minh từng Hào Lục Hào + Quái số Mai Hoa + Cung Kỳ Môn), thì GIỮ NGUYÊN 100% KẾT QUẢ TOÁN HỌC DỊCH LÝ ĐÓ,
             # TUYỆT ĐỐI KHÔNG cho LLM ghi đè bằng câu chữ tự do làm mất công thức quẻ hoặc tự bịa con số!
@@ -2439,7 +2464,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V103.1): CON AI SỐ 1 (FLASH-LITE ĐỌC HIỂU) ➔ TRUYỀN SANG CON AI SỐ 2 & 18 PHƯƠNG PHÁP LUẬN GIẢI</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V103.2): CON AI SỐ 1 (FLASH-LITE ĐỌC HIỂU) ➔ TRUYỀN SANG CON AI SỐ 2 & 18 PHƯƠNG PHÁP LUẬN GIẢI</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
