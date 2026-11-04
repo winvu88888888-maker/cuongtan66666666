@@ -16,10 +16,155 @@ import re
 import os
 import json
 import hashlib
+import datetime
 import requests
 from typing import Dict, Any, List, Optional
 
 _REAL_DUAL_AI_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+def get_realtime_vn_clock_context() -> Dict[str, Any]:
+    """
+    V108.0: Lấy chính xác Ngày/Tháng/Năm Dương lịch & Âm lịch hiện tại theo múi giờ Việt Nam (UTC+7)
+    để khóa cứng đồng hồ thời gian thực cho toàn bộ AI Online & Offline (chống tuyệt đối lỗi AI nhớ nhầm năm 2024/2025/đầu 2026).
+    """
+    vn_tz = datetime.timezone(datetime.timedelta(hours=7))
+    now_vn = datetime.datetime.now(vn_tz)
+    cur_y = now_vn.year
+    cur_m = now_vn.month
+    cur_d = now_vn.day
+    next_y = cur_y + 1
+    next_y2 = cur_y + 2
+
+    THIEN_CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+    DIA_CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+    THU_VN = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
+    thu_str = THU_VN[now_vn.weekday()]
+
+    try:
+        from xem_ngay_dep import solar2lunar
+        ld, lm, ly, is_leap = solar2lunar(cur_d, cur_m, cur_y)
+    except Exception:
+        ld, lm, ly, is_leap = cur_d, max(1, cur_m - 1), cur_y, False
+
+    can_ly = THIEN_CAN[(ly - 4) % 10]
+    chi_ly = DIA_CHI[(ly - 4) % 12]
+    can_next_y = THIEN_CAN[(next_y - 4) % 10]
+    chi_next_y = DIA_CHI[(next_y - 4) % 12]
+    can_next_y2 = THIEN_CAN[(next_y2 - 4) % 10]
+    chi_next_y2 = DIA_CHI[(next_y2 - 4) % 12]
+
+    if cur_m >= 10:
+        season_phase = f"CUỐI NĂM {cur_y} (Tháng {cur_m:02d}/{cur_y} Dương lịch)"
+        upcoming_window = f"Cuối năm {cur_y} (Tháng {cur_m:02d}–12/{cur_y} Dương lịch) sang Nửa đầu năm {next_y} ({can_next_y} {chi_next_y})"
+    elif cur_m >= 5:
+        season_phase = f"GIỮA NĂM {cur_y} (Tháng {cur_m:02d}/{cur_y} Dương lịch)"
+        upcoming_window = f"Nửa cuối năm {cur_y} (Tháng {cur_m:02d}–12/{cur_y}) hoặc Đầu năm {next_y} ({can_next_y} {chi_next_y})"
+    else:
+        season_phase = f"ĐẦU NĂM {cur_y} (Tháng {cur_m:02d}/{cur_y} Dương lịch)"
+        upcoming_window = f"Giữa và Cuối năm {cur_y} (Tháng {cur_m:02d}–12/{cur_y})"
+
+    clock_banner = (
+        f"🕒 ĐỒNG HỒ THỜI GIAN THỰC HIỆN TẠI (VIỆT NAM UTC+7 — BẮT BUỘC CẬP NHẬT 100%): "
+        f"Hôm nay là {thu_str}, ngày {cur_d:02d}/{cur_m:02d}/{cur_y} Dương lịch ({season_phase}) — "
+        f"Âm lịch: Ngày {ld:02d}/{lm:02d} năm {can_ly} {chi_ly} ({ly}).\n"
+        f"⛔ MỆNH LỆNH THỜI GIAN TUYỆT ĐỐI CHO AI: Hiện tại đã là {season_phase}! "
+        f"Toàn bộ năm 2024, năm 2025 và các tháng từ Tháng 01 đến Tháng {max(1, cur_m - 1):02d}/{cur_y} ĐỀU ĐÃ TRÔI QUA TRONG QUÁ KHỨ! "
+        f"TUYỆT ĐỐI CẤM dự báo thời gian tương lai rơi vào 'năm 2024', 'năm 2025', 'cuối năm 2025', hay 'đầu năm {cur_y}'! "
+        f"Mọi dự báo thời gian / ứng kỳ tương lai BẮT BUỘC phải tính từ ngày {cur_d:02d}/{cur_m:02d}/{cur_y} ({upcoming_window}, hoặc năm {next_y} [{can_next_y} {chi_next_y}], năm {next_y2} [{can_next_y2} {chi_next_y2}]) trở đi!"
+    )
+
+    return {
+        "now_vn": now_vn,
+        "cur_year": cur_y,
+        "cur_month": cur_m,
+        "cur_day": cur_d,
+        "lunar_day": ld,
+        "lunar_month": lm,
+        "lunar_year": ly,
+        "can_chi_year": f"{can_ly} {chi_ly}",
+        "cur_year_canchi": f"{can_ly} {chi_ly}",
+        "next_year": next_y,
+        "next_can_chi_year": f"{can_next_y} {chi_next_y}",
+        "next_year_canchi": f"{can_next_y} {chi_next_y}",
+        "next_year2": next_y2,
+        "next_can_chi_year2": f"{can_next_y2} {chi_next_y2}",
+        "season_phase": season_phase,
+        "upcoming_window": upcoming_window,
+        "solar_str": f"{cur_d:02d}/{cur_m:02d}/{cur_y}",
+        "solar_date_str": f"{cur_d:02d}/{cur_m:02d}/{cur_y}",
+        "lunar_str": f"{ld:02d}/{lm:02d}/{ly} ÂL ({can_ly} {chi_ly})",
+        "lunar_date_str": f"{ld:02d}/{lm:02d}/{ly} ÂL ({can_ly} {chi_ly})",
+        "clock_banner": clock_banner,
+    }
+
+
+def sanitize_outdated_years_text(text: str, question: str = "") -> str:
+    """
+    V108.0: Bộ lọc hậu kiểm thời gian thực — Tự động phát hiện và sửa mọi cụm từ năm cũ
+    (VD: "cuối năm 2025 hoặc đầu năm 2026", "nửa cuối năm 2025", "đầu năm 2026" khi hiện tại đã là cuối năm 2026)
+    do LLM bị ảnh hưởng bởi mốc dữ liệu huấn luyện cũ.
+    """
+    if not text or not isinstance(text, str):
+        return text
+    clk = get_realtime_vn_clock_context()
+    cy = clk["cur_year"]
+    cm = clk["cur_month"]
+    ny = clk["next_year"]
+    n_cc = clk["next_can_chi_year"]
+
+    out = text
+    # 1. Các cụm kết hợp 2025 & 2026 kinh điển mà LLM hay sinh ra
+    patterns_2025_2026 = [
+        r"(?:nửa\s+)?cuối\s+năm\s+2025\s*(?:hoặc|đến|và|-|–|sang|,)?\s*(?:nửa\s+)?đầu\s+năm\s+2026",
+        r"cuối\s+2025\s*(?:hoặc|đến|và|-|–|sang)?\s*đầu\s+2026",
+        r"năm\s+2025\s*(?:hoặc|đến|và|-|–|sang)\s*(?:đầu\s+)?năm\s+2026",
+    ]
+    for pat in patterns_2025_2026:
+        out = re.sub(
+            pat,
+            lambda m: (
+                f"CUỐI NĂM {cy} (THÁNG {cm:02d}–12/{cy}) HOẶC NỬA ĐẦU NĂM {ny} ({n_cc.upper()})"
+                if m.group(0).isupper()
+                else f"cuối năm {cy} (Tháng {cm:02d}–12/{cy}) hoặc nửa đầu năm {ny} ({n_cc})"
+            ),
+            out,
+            flags=re.IGNORECASE,
+        )
+
+    # 2. Cụm "nửa cuối năm 2025" / "cuối năm 2025" / "trong năm 2025" / "sang năm 2025"
+    out = re.sub(
+        r"(?:nửa\s+)?cuối\s+năm\s+2025",
+        lambda m: f"CUỐI NĂM {cy} (THÁNG {cm:02d}–12/{cy})" if m.group(0).isupper() else f"cuối năm {cy} (Tháng {cm:02d}–12/{cy})",
+        out,
+        flags=re.IGNORECASE,
+    )
+    out = re.sub(
+        r"(?:trong|vào|sang|đến)\s+năm\s+2025\b",
+        lambda m: f"VÀO CUỐI NĂM {cy} – NĂM {ny}" if m.group(0).isupper() else f"vào cuối năm {cy} – năm {ny} ({n_cc})",
+        out,
+        flags=re.IGNORECASE,
+    )
+
+    # 3. Nếu hiện tại đã là cuối năm (Tháng 9..12) mà văn bản dự báo "đầu năm 2026" hoặc "nửa đầu năm 2026" hoặc "giữa năm 2026"
+    if cm >= 9:
+        out = re.sub(
+            r"(?:nửa\s+)?(?:đầu|giữa)\s+năm\s+" + str(cy) + r"\b",
+            lambda m: f"NỬA ĐẦU NĂM {ny} ({n_cc.upper()})" if m.group(0).isupper() else f"nửa đầu năm {ny} ({n_cc})",
+            out,
+            flags=re.IGNORECASE,
+        )
+        # Các tháng đã qua trong năm hiện tại (VD: "tháng 02/2026" .. "tháng 10/2026" khi đang ở tháng 11/2026)
+        def _fix_past_month_in_cur_year(m_obj):
+            full_s = m_obj.group(0)
+            m_num = int(m_obj.group(1))
+            if 1 <= m_num < cm:
+                return full_s[:-4] + str(ny)
+            return full_s
+
+        out = re.sub(rf"tháng\s+0?([1-9]|1[0-2])/{cy}\b", _fix_past_month_in_cur_year, out, flags=re.IGNORECASE)
+
+    return out
 
 def _resolve_gemini_api_keys() -> List[str]:
     cand_keys = []
@@ -66,6 +211,8 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 12, tier: str = 
     keys = _resolve_gemini_api_keys()
     if not keys:
         return None
+    _clk_ctx = get_realtime_vn_clock_context()
+    _full_prompt_text = f"{_clk_ctx['clock_banner']}\n\n{prompt_text}"
     if tier == 'cheapest_reader':
         # Con AI Số 1 (Chuyên đọc hiểu câu hỏi): Ưu tiên dòng Flash-Lite rẻ nhất, nhẹ nhất, quota cao nhất, tốc độ 0.4s
         models = ['gemini-2.5-flash-lite', 'gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash']
@@ -91,7 +238,7 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 12, tier: str = 
                 if '2.5-flash' in m_name:
                     gen_cfg['thinkingConfig'] = {'thinkingBudget': 0}
                 payload = {
-                    'contents': [{'parts': [{'text': prompt_text}]}],
+                    'contents': [{'parts': [{'text': _full_prompt_text}]}],
                     'generationConfig': gen_cfg,
                     'safetySettings': safety,
                 }
@@ -114,7 +261,12 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 12, tier: str = 
                     txt = re.sub(r'^```(?:json)?\s*|\s*```$', '', txt, flags=re.IGNORECASE).strip()
                 m_json = re.search(r'\{[\s\S]*\}', txt)
                 if m_json:
-                    return json.loads(m_json.group(0))
+                    parsed_obj = json.loads(m_json.group(0))
+                    if isinstance(parsed_obj, dict):
+                        for _k_p, _v_p in list(parsed_obj.items()):
+                            if isinstance(_v_p, str):
+                                parsed_obj[_k_p] = sanitize_outdated_years_text(_v_p, question=prompt_text)
+                    return parsed_obj
             except Exception:
                 continue
     return None
@@ -3008,6 +3160,138 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
+        # ── 8E. GIẢI MÃ LIÊN KẾT MỌI YẾU TỐ CHO CÂU HỎI THỜI ĐIỂM (BAO GIỜ / KHI NÀO) & XỔ SỐ / VIETLOT / TÀI LỘC BẤT NGỜ (TIMING_WHEN) ──
+        _q_low_tm = str(blueprint.get("raw_question") or "").lower()
+        _is_lottery_q = any(w in _q_low_tm for w in ["vietlot", "vietlott", "xổ số", "vé số", "độc đắc", "trúng số", "trúng thưởng", "lộc bất ngờ", "hoạnh tài"])
+        if target == "TIMING_WHEN" or _is_lottery_q:
+            _clk_tm = get_realtime_vn_clock_context()
+            _m_tm = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=omni_data,
+                dung_than=dung_than,
+            )
+            _cur_solar = _clk_tm["solar_date_str"]
+            _cur_lunar = _clk_tm["lunar_date_str"]
+            _cur_yr = _clk_tm["cur_year"]
+            _cur_yr_cc = _clk_tm["cur_year_canchi"]
+            _nxt_yr = _clk_tm["next_year"]
+            _nxt_yr_cc = _clk_tm["next_year_canchi"]
+            _season_lbl = _clk_tm["season_phase"]
+            can_y = chart_data.get("can_nam", "Bính")
+            chi_y = chart_data.get("chi_nam", "Ngọ")
+            can_m = chart_data.get("can_thang", "Mậu")
+            chi_m = chart_data.get("chi_thang", "Tuất")
+            can_n = chart_data.get("can_ngay", "Quý")
+            chi_n = chart_data.get("chi_ngay", "Mùi")
+            can_g = chart_data.get("can_gio", "Nhâm")
+            chi_g = chart_data.get("chi_gio", "Tý")
+            _tai_status_tm = _m_tm.get("the_tai_status_str", "")
+            _km_pn_tm = bool(_m_tm.get("is_km_phuc_ngam", False))
+            _km_pn_str_tm = _m_tm.get("km_phuc_ngam_str", "Bình thường")
+            _dt_idx_tm = _m_tm.get("dt_idx", 6)
+            _dt_chi_tm = _m_tm.get("dt_chi", "Tị")
+            _dt_nh_tm = _m_tm.get("dt_nh", hanh_dt)
+            _dt_kv_tm = bool(_m_tm.get("dt_is_kv", False))
+            _the_idx_tm = _m_tm.get("the_idx", 5)
+            _the_chi_tm = _m_tm.get("the_chi", "Mùi")
+            _the_nh_tm = _m_tm.get("the_nh", "Thổ")
+            _dong_desc_tm = ", ".join([x for x in (_m_tm.get("haos_lines_desc") or []) if "ĐỘNG" in x]) or (f"Động hào {', '.join(map(str, _m_tm.get('dong_list') or []))}" if _m_tm.get("dong_list") else "Quẻ tĩnh (6 hào an tĩnh)")
+            _hd_dong_flag = ("Huynh Đệ" in _dong_desc_tm) or ("động khắc/đoạt Tài" in _tai_status_tm)
+
+            _SEASON_BY_NH = {
+                "Hỏa": f"Tháng 05 – 07/{_nxt_yr} Dương lịch (Tháng Tị – Ngọ – Mùi Âm lịch năm {_nxt_yr_cc} {_nxt_yr}, khi Hỏa – Thổ vượng cực điểm)",
+                "Thổ": f"Tháng 11/{_cur_yr} & Tháng 01, 04, 07/{_nxt_yr} Dương lịch (Các tháng Thìn – Tuất – Sửu – Mùi năm {_nxt_yr_cc} {_nxt_yr})",
+                "Kim": f"Tháng 08 – 09/{_nxt_yr} Dương lịch (Tháng Thân – Dậu Âm lịch Mùa Thu năm {_nxt_yr_cc} {_nxt_yr}, khi Kim vượng khí)",
+                "Thủy": f"Tháng 11 – 12/{_cur_yr} Dương lịch (Cuối năm {_cur_yr} — Tháng Hợi – Tý Âm lịch năm {_cur_yr_cc}) & Đầu năm {_nxt_yr}",
+                "Mộc": f"Tháng 02 – 03/{_nxt_yr} Dương lịch (Tháng Dần – Mão Âm lịch Đầu Xuân năm {_nxt_yr_cc} {_nxt_yr}, khi Mộc vượng)",
+            }
+            _best_window_tm = _SEASON_BY_NH.get(_dt_nh_tm, f"Quý I – Quý II năm {_nxt_yr} ({_nxt_yr_cc})")
+
+            if _is_lottery_q:
+                if _hd_dong_flag or _km_pn_tm or "DỤNG KHẮC THỂ" in str(_m_tm.get("rel_chu_tag", "")):
+                    short_hl = (
+                        f"🎰 KẾT LUẬN LIÊN KẾT MỌI YẾU TỐ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | THỜI ĐIỂM HIỆN TẠI: {_cur_solar} — {_season_lbl.upper()}): "
+                        f"NGAY TRONG THÁNG {_clk_tm['cur_month']:02d}/{_cur_yr} HIỆN TẠI CHƯA PHẢI ĐỈNH ĐIỂM ĐỂ TRÚNG ĐỘC ĐẮC VIETLOT (DO {_tai_status_tm.upper()} & KỲ MÔN {'PHẠM PHỤC NGÂM — ' + cua_name.upper() if _km_pn_tm else cua_name.upper()})! "
+                        f"➔ THỜI ĐIỂM MỞ VẬN CÓ LỘC BẤT NGỜ / TRÚNG THƯỞNG RƠI VÀO: CUỐI THÁNG 12/{_cur_yr} DƯƠNG LỊCH (THÁNG TÝ ÂM LỊCH CUỐI NĂM {_cur_yr_cc}) "
+                        f"VÀ ĐỈNH ĐIỂM VƯỢNG LỘC VÀO MÙA XUÂN – HẠ NĂM {_nxt_yr} ({_best_window_tm.upper()})!"
+                    )
+                else:
+                    short_hl = (
+                        f"🎰 KẾT LUẬN LIÊN KẾT MỌI YẾU TỐ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | THỜI ĐIỂM HIỆN TẠI: {_cur_solar} — {_season_lbl.upper()}): "
+                        f"VẬN HOẠNH TÀI ĐANG MỞ — BẠN CÓ CƠ HỘI ĐÓN LỘC BẤT NGỜ / TRÚNG THƯỞNG TRONG GIAI ĐOẠN CUỐI NĂM {_cur_yr} (THÁNG 11–12/{_cur_yr} DƯƠNG LỊCH) "
+                        f"VÀ ĐẦU NĂM {_nxt_yr} ({_nxt_yr_cc}) VÀO CÁC NGÀY {_dt_chi_tm.upper()} – {_the_chi_tm.upper()}!"
+                    )
+                why_s = (
+                    f"<b>• Phân tích Liên Kết Mật Thiết 4 Mắt Xích Của Quẻ (Đồng bộ thời gian thực: Ngày {_cur_solar} Dương lịch — {_cur_lunar} Âm lịch):</b><br>"
+                    f"1. <b>[Mắt xích 1 — Bản thân & Tứ Trụ hiện tại]:</b> Quẻ lập lúc Năm <b>{can_y} {chi_y} ({_cur_yr})</b> · Tháng <b>{can_m} {chi_m}</b> · Ngày <b>{can_n} {chi_n}</b> · Giờ <b>{can_g} {chi_g}</b> ({_season_lbl}). "
+                    f"Hào Thế (đại diện cho bạn) đóng tại <b>Hào {_the_idx_tm} ({_the_chi_tm}-{_the_nh_tm})</b>, hoàn toàn hữu khí và giữ được nền tảng tài chính.<br>"
+                    f"2. <b>[Mắt xích 2 — Nguồn tiền & Hào Động ({_dong_desc_tm})]:</b> {_tai_status_tm}. "
+                    f"{'Khi <b>Hào Huynh Đệ phát động</b> trên quẻ, cổ pháp Lục Hào khẳng định <i>Huynh Đệ động tắc đoạt Tài</i> (dòng tiền đang bị chia sẻ cho nhiều người cùng mua hoặc phát sinh chi phí ngoài dự kiến), nên nếu dồn tiền mua nhiều vé ngay lúc này sẽ hao tài mà chưa nổ giải lớn.' if _hd_dong_flag else 'Dòng tiền Thê Tài trên quẻ đang ổn định, hỗ trợ cho vận thử thời vận.'}<br>"
+                    f"3. <b>[Mắt xích 3 — Dụng Thần May Mắn / Hoạnh Tài ({dung_than})]:</b> Hào <b>{dung_than}</b> đóng tại <b>Hào {_dt_idx_tm} ({_dt_chi_tm}-{_dt_nh_tm})</b> "
+                    f"{'đang hữu khí trên Quẻ Chủ (chứng tỏ bạn CÓ SỐ hưởng lộc bất ngờ, không phải vô vọng), nhưng hiện đang tĩnh nên cần đợi đúng tháng/ngày Can Chi xung động mới phát lộ.' if not _dt_kv_tm else 'đang tạm thời phạm Tuần Không, phải đợi xuất Không mới phát lộc.'}<br>"
+                    f"4. <b>[Mắt xích 4 — Cục Diện Kỳ Môn & Mai Hoa Dịch Số]:</b> Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_m_tm.get('rel_chu_tag', '')} ➔ {_m_tm.get('rel_bien_tag', '')}); "
+                    f"Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> · Thần <b>{than_name}</b> ({_km_pn_str_tm}). "
+                    f"{'Do bàn Kỳ Môn đang phạm <b>Phục Ngâm</b> và lâm <b>Cửa Đỗ Môn</b> (cửa bế tắc/ẩn tàng), vận may lớn chưa thể bùng nổ ngay trong vài ngày tới mà phải chờ qua nhịp Phục Ngâm.' if _km_pn_tm else ''}"
+                )
+                when_s = (
+                    f"<b>Lộ trình Ứng Kỳ Trúng Thưởng / Đón Lộc Bất Ngờ (Tính từ mốc hiện tại {_cur_solar} — {_season_lbl}):</b><br>"
+                    f"• <b>1. Giai đoạn Hiện tại (Tháng {_clk_tm['cur_month']:02d}/{_cur_yr} Dương lịch — Tháng {can_m} {chi_m} Âm lịch):</b> Đang vướng <b>{_dong_desc_tm}</b> và <b>{_km_pn_str_tm}</b>, vận may hoạnh tài còn bị nén — chỉ nên mua 1 vé nhỏ giải trí, không đổ nhiều tiền.<br>"
+                    f"• <b>2. Điểm rơi Mở Vận Ngắn Hạn (Cuối năm {_cur_yr} — Tháng 12/{_cur_yr} Dương lịch & Tháng 01/{_nxt_yr} [Tháng Hợi – Tý – Sửu Âm lịch cuối năm {_cur_yr_cc}]):</b> Khi khí Thủy – Hỏa giao thời phá vỡ cục Phục Ngâm và tiết khí Huynh Đệ, bắt đầu xuất hiện lộc nhỏ hoặc giải thưởng phụ vào các ngày <b>{_dt_chi_tm}</b> và <b>{_the_chi_tm}</b>.<br>"
+                    f"• <b>3. Điểm rơi Đỉnh Điểm Vượng Lộc (Năm {_nxt_yr} — {_nxt_yr_cc}):</b> Cửa vận hoạnh tài mạnh nhất rơi vào <b>{_best_window_tm}</b> (khi Hào Dụng Thần <b>{dung_than} [{_dt_chi_tm}-{_dt_nh_tm}]</b> và <b>Hào Thế [{_the_chi_tm}-{_the_nh_tm}]</b> đồng lâm Đế Vượng – Trường Sinh), đặc biệt vào các ngày <b>{_dt_chi_tm} · {_the_chi_tm}</b> trong khung giờ <b>9h–11h (Giờ Tị)</b> hoặc <b>13h–15h (Giờ Mùi)</b>."
+                )
+                adv_s = (
+                    f"<b>Pháp quyết đón lộc theo đúng liên kết quẻ:</b><br>"
+                    f"1. Trong <b>Tháng {_clk_tm['cur_month']:02d}/{_cur_yr}</b> hiện tại: Giữ chặt túi tiền trước tượng <i>Huynh Đệ động đoạt Tài</i>; nếu mua Vietlot chỉ mua đúng <b>1 vé tự chọn</b> để giữ nhịp cầu may.<br>"
+                    f"2. Khi bước vào <b>Cuối tháng 12/{_cur_yr} Dương lịch</b> và <b>{_best_window_tm}</b>: Chọn điểm bán hoặc bấm mua vé khi đang ở hướng <b>{huong_cung}</b> (ứng Cung {target_cung}), ưu tiên chọn bộ số có chứa đuôi Hà Đồ của Hành <b>{_dt_nh_tm}</b> & <b>{_the_nh_tm}</b> (màu sắc trợ vận: <b>{colors_str}</b>) vào ngày <b>{_dt_chi_tm}</b> hoặc <b>{_the_chi_tm}</b>."
+                )
+                return {
+                    "has_override": True,
+                    "headline": f"🎯 {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+            else:
+                # Câu hỏi "Bao giờ / Khi nào..." tổng quát cho mọi sự việc khác (Đồng bộ 100% thời gian thực Cuối năm 2026 & Năm 2027)
+                if _km_pn_tm or _dt_kv_tm or _hd_dong_flag:
+                    short_hl = (
+                        f"⏳ KẾT LUẬN LIÊN KẾT MỌI YẾU TỐ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | HIỆN TẠI: {_cur_solar} — {_season_lbl.upper()}): "
+                        f"SỰ VIỆC CHƯA THỂ XẢY RA NGAY TRONG THÁNG {_clk_tm['cur_month']:02d}/{_cur_yr} DO ĐANG VƯỚNG {'PHỤC NGÂM KỲ MÔN & ' if _km_pn_tm else ''}{'TUẦN KHÔNG & ' if _dt_kv_tm else ''}{_dong_desc_tm.upper()}! "
+                        f"➔ THỜI ĐIỂM ỨNG NGHIỆM THỰC TẾ RƠI VÀO: CUỐI THÁNG 12/{_cur_yr} DƯƠNG LỊCH (CUỐI NĂM {_cur_yr_cc}) ĐẾN {_best_window_tm.upper()}!"
+                    )
+                else:
+                    short_hl = (
+                        f"⏳ KẾT LUẬN LIÊN KẾT MỌI YẾU TỐ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | HIỆN TẠI: {_cur_solar} — {_season_lbl.upper()}): "
+                        f"ĐIỀU KIỆN ĐÃ HỘI TỤ — THỜI ĐIỂM ỨNG NGHIỆM RƠI VÀO CUỐI NĂM {_cur_yr} (THÁNG 11–12/{_cur_yr} DƯƠNG LỊCH, NGÀY {_dt_chi_tm.upper()} / {_the_chi_tm.upper()}) "
+                        f"HOẶC ĐẦU NĂM {_nxt_yr} ({_nxt_yr_cc})!"
+                    )
+                why_s = (
+                    f"<b>• Phân tích Liên Kết 4 Mắt Xích Của Quẻ (Tại mốc hiện tại {_cur_solar} Dương lịch — {_cur_lunar} Âm lịch):</b><br>"
+                    f"1. <b>[Mắt xích 1 — Bản thân (Hào Thế)]:</b> Hào {_the_idx_tm} ({_the_chi_tm}-{_the_nh_tm}) phối hợp Quẻ Thể <b>{_m_tm.get('the_quai', '')} ({_m_tm.get('hanh_the', '')})</b>.<br>"
+                    f"2. <b>[Mắt xích 2 — Nguồn lực / Tiền bạc (Hào Thê Tài)]:</b> {_tai_status_tm}.<br>"
+                    f"3. <b>[Mắt xích 3 — Mục tiêu Dụng Thần ({dung_than})]:</b> Hào {_dt_idx_tm} ({_dt_chi_tm}-{_dt_nh_tm}) — Biến động: <b>{_dong_desc_tm}</b>.<br>"
+                    f"4. <b>[Mắt xích 4 — Kỳ Môn & Mai Hoa]:</b> Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_m_tm.get('rel_bien_tag', '')}); Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> ({_km_pn_str_tm})."
+                )
+                when_s = (
+                    f"<b>Lộ trình Ứng Kỳ Thực Tế (Tính từ hôm nay {_cur_solar} — {_season_lbl}):</b><br>"
+                    f"• <b>Mốc gần (Cuối năm {_cur_yr} — Tháng 11–12/{_cur_yr} Dương lịch):</b> Chuyển biến khởi đầu vào các ngày <b>{_dt_chi_tm}</b> và <b>{_the_chi_tm}</b>.<br>"
+                    f"• <b>Mốc thành tựu trọn vẹn (Năm {_nxt_yr} — {_nxt_yr_cc}):</b> Điểm rơi mạnh nhất vào <b>{_best_window_tm}</b> khi Dụng Thần <b>{dung_than} ({_dt_chi_tm}-{_dt_nh_tm})</b> đắc lệnh hoàn toàn."
+                )
+                adv_s = (
+                    f"Hành động theo phương vị <b>{huong_cung}</b> (Cung {target_cung}), tận dụng màu sắc <b>{colors_str}</b> và chuẩn bị kỹ nguồn lực từ <b>Cuối năm {_cur_yr}</b> sang <b>Năm {_nxt_yr}</b>."
+                )
+                return {
+                    "has_override": True,
+                    "headline": f"🎯 {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+
         # ── 9. GIẢI MÃ PHÂN TÁCH ĐỘC LẬP 2 CHỦ THỂ (PHÁP PHÂN CHIÊM ĐA NHÂN: "TÔI VÀ VỢ...", "TÔI VÀ BẠN...", "2 CON TÔI...") ──
         # Tránh tuyệt đối việc gộp chung 2 người vào 1 kết luận duy nhất khi trên quẻ 1 người Đỗ/Thuận lợi còn 1 người Trượt/Gặp cản trở!
         multi_subs = blueprint.get("multi_subjects") or []
@@ -3720,10 +4004,11 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V104.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ THEO PHƯƠNG PHÁP CHUẨN TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO)
+        # Bước 2 (V108.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ ĐỒNG BỘ THỜI GIAN THỰC (MAI HOA – KỲ MÔN – LỤC HÀO)
+        _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V104_DUAL::" + hashlib.md5(f"{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V108_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -3815,26 +4100,29 @@ class HexagramReasoningAI:
                 omni_data=omni_data,
             )
 
-        headline_ans = spec_res.get("headline") or omni_data.get("binary_verdict_headline", "")
-        why_proof = spec_res.get("why") or omni_data.get("binary_why_reasons", "")
-        when_proof = spec_res.get("when") or omni_data.get("binary_when_note", "")
-        advice_proof = spec_res.get("advice") or omni_data.get("binary_action_advice", "")
+        headline_ans = sanitize_outdated_years_text(spec_res.get("headline") or omni_data.get("binary_verdict_headline", ""), question=_raw_q_str)
+        why_proof = sanitize_outdated_years_text(spec_res.get("why") or omni_data.get("binary_why_reasons", ""), question=_raw_q_str)
+        when_proof = sanitize_outdated_years_text(spec_res.get("when") or omni_data.get("binary_when_note", ""), question=_raw_q_str)
+        advice_proof = sanitize_outdated_years_text(spec_res.get("advice") or omni_data.get("binary_action_advice", ""), question=_raw_q_str)
 
         if not headline_ans and narrative_summary:
             m_ans = re.search(r"👉\s*(.+?)</div>", narrative_summary)
             if m_ans:
-                headline_ans = re.sub(r"<[^>]+>", "", m_ans.group(1)).strip()
+                headline_ans = sanitize_outdated_years_text(re.sub(r"<[^>]+>", "", m_ans.group(1)).strip(), question=_raw_q_str)
             else:
                 m_ans2 = re.search(r"📢\s*\*\*CÂU TRẢ LỜI:\*\*\s*(.+?)(?:\n|$)", narrative_summary)
                 if m_ans2:
-                    headline_ans = re.sub(r"<[^>]+>", "", m_ans2.group(1)).strip()
+                    headline_ans = sanitize_outdated_years_text(re.sub(r"<[^>]+>", "", m_ans2.group(1)).strip(), question=_raw_q_str)
 
         if not why_proof and narrative_summary:
             m_why = re.search(r"🔍 NGUYÊN NHÂN CỐT LÕI</div><div[^>]*>(.+?)</div>", narrative_summary)
             if m_why:
-                why_proof = m_why.group(1).strip()
+                why_proof = sanitize_outdated_years_text(m_why.group(1).strip(), question=_raw_q_str)
 
-        tu_tru_str = f"Năm {can_y} {chi_y} · Tháng {can_m} {chi_m} · Ngày {can_n} {chi_n} · Giờ {can_g} {chi_g}".strip(" ·")
+        tu_tru_str = (
+            f"Ngày {_clk_cv['solar_date_str']} Dương lịch [{_clk_cv['season_phase']}] · Âm lịch {_clk_cv['lunar_date_str']} | "
+            f"Năm {can_y} {chi_y} · Tháng {can_m} {chi_m} · Ngày {can_n} {chi_n} · Giờ {can_g} {chi_g}"
+        ).strip(" ·")
         dong_str = f"Động hào {', '.join(map(str, dong_hao_list))}" if dong_hao_list else "Quẻ Tĩnh (6 hào an tĩnh)"
 
         _dt_real_flag = bool(_univ_mat.get("dt_is_real", True))
@@ -3933,7 +4221,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V107.0): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ (KHÔNG THIẾU 1 PHẦN NÀO)</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V108.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
@@ -3962,7 +4250,8 @@ class HexagramReasoningAI:
         )
 
         online_directive = (
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V107.0 — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"{_clk_cv['clock_banner']}\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V108.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
@@ -3974,7 +4263,7 @@ class HexagramReasoningAI:
             f"   - Nguồn tiền (Hào Thê Tài): {_univ_mat.get('the_tai_status_str', '')}\n"
             f"   - Kỳ Môn Độn Giáp: Cung {target_cung} ({huong_cung}) hội Sao {sao_name}, Cửa {cua_name}, Thần {than_name} ({_univ_mat.get('km_phuc_ngam_str', '')})\n"
             f"   - ĐÁP ÁN ĐỐI CHỨNG CHỐT HẠ (TUYỆT ĐỐI KHÔNG ĐƯỢC SỬA ĐỔI HAY BỊA KHÁC ĐI): {headline_ans}\n"
-            f"   - THỜI ĐIỂM / LỘ TRÌNH ỨNG KỲ THỰC TẾ (TUYỆT ĐỐI KHÔNG BÁO 2 NGÀY CHO VIỆC MUA NHÀ ĐẤT KHI CHƯA CÓ TIỀN): {re.sub(r'<[^>]+>', '', when_proof)}\n"
+            f"   - THỜI ĐIỂM / LỘ TRÌNH ỨNG KỲ THỰC TẾ (TÍNH TỪ NGÀY HIỆN TẠI {_clk_cv['solar_date_str']} — CẤM TUYỆT ĐỐI NHẮC NĂM 2024/2025/ĐẦU 2026 ĐÃ QUA): {re.sub(r'<[^>]+>', '', when_proof)}\n"
             f"   - Căn cứ suy luận liên kết 4 mắt xích: {re.sub(r'<[^>]+>', '', why_proof)}\n"
         )
 
