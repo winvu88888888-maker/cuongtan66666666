@@ -1144,7 +1144,7 @@ def build_omniscient_prophecy(
 
     # ═════════════════════════════════════════════════════════════════════════
 
-    # CHIỀU 5B (V102.1): GIẢI MÃ TỬ TỨC / CON CÁI & ĐỘ TUỔI CON GÁI - CON TRAI SÁT TỪ LIÊN KẾT ĐA HỆ THỐNG
+    # CHIỀU 5B (V103.0): GIẢI MÃ TỬ TỨC / CON CÁI & ĐỘ TUỔI CON GÁI - CON TRAI SÁT TỪ LIÊN KẾT ĐA HỆ THỐNG
 
     # ═════════════════════════════════════════════════════════════════════════
 
@@ -1408,7 +1408,7 @@ def build_omniscient_prophecy(
 
 
 
-    # V102.1: Kiểm tra sâu Hào Tử Tôn có thực sự bị Chân Không hay đang Hữu Khí / được Hào Động sinh trợ!
+    # V103.0: Kiểm tra sâu Hào Tử Tôn có thực sự bị Chân Không hay đang Hữu Khí / được Hào Động sinh trợ!
 
     _CHI_NH_OM = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc', 'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ', 'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
 
@@ -1520,7 +1520,7 @@ def build_omniscient_prophecy(
 
 
 
-    # V102.1: Giải mã chuyên sâu Độ Tuổi & Năm Sinh của CON GÁI và CON TRAI từ Liên kết Lục Hào + Mai Hoa + Kỳ Môn + Thiết Bản
+    # V103.0: Giải mã chuyên sâu Độ Tuổi & Năm Sinh của CON GÁI và CON TRAI từ Liên kết Lục Hào + Mai Hoa + Kỳ Môn + Thiết Bản
 
     _TT_MAP_AGE = {'Càn': 1, 'Đoài': 2, 'Ly': 3, 'Chấn': 4, 'Tốn': 5, 'Khảm': 6, 'Cấn': 7, 'Khôn': 8}
 
