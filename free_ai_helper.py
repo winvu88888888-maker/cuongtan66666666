@@ -12962,7 +12962,7 @@ class FreeAIHelper:
         except Exception:
             pass
 
-        # ── PHẦN E (V101.8): LIÊN KẾT SÂU ĐA HỆ THỐNG (LỤC HÀO + MAI HOA + KỲ MÔN) PHÂN ĐỊNH CHÂN KHÔNG VS GIẢ KHÔNG VS TÂM THẾ HỎI THỬ ──
+        # ── PHẦN E (V101.9): LIÊN KẾT SÂU ĐA HỆ THỐNG (LỤC HÀO + MAI HOA + KỲ MÔN) PHÂN ĐỊNH CHÂN KHÔNG VS GIẢ KHÔNG VS TÂM THẾ HỎI THỬ ──
         # Không phải cứ có Tuần Không ở Nhật Can/Hào Thế là đối tượng không tồn tại (= 0)!
         # Theo Tăng San Bốc Dịch (Tuần Không Chương):
         # 1. Nếu Hào Dụng Thần KHÔNG phạm Tuần Không (hoặc tuy lâm Không nhưng Động / được Hào Động sinh hợp / đắc Nhật Nguyệt sinh phù - xung thực = GIẢ KHÔNG),
@@ -12973,6 +12973,7 @@ class FreeAIHelper:
             _ql_e = (question or '').lower()
             _is_bin_choice_e = (' hay ' in _ql_e) and not any(w in _ql_e for w in ['hay không', 'có nên', 'trai hay gái', 'nam hay nữ'])
             _is_true_false_e = any(w in _ql_e for w in ['thật hay giả', 'giả hay thật', 'nói thật hay', 'nói dối', 'lừa dối'])
+            _is_future_event_e = any(w in _ql_e for w in ['sắp tới', 'sắp ', 'tương lai', 'tháng tới', 'năm tới', 'tuần tới', 'ngày mai', 'thi đỗ', 'thi đậu', 'có đỗ', 'lấy bằng', 'bằng lái', 'sát hạch', 'có nên', 'nên không', 'dự định', 'sẽ '])
             _CHI_NH_E = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc', 'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ', 'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
             _SINH_NH_E = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
             _HOP_CHI_E = {'Tý': 'Sửu', 'Sửu': 'Tý', 'Dần': 'Hợi', 'Hợi': 'Dần', 'Mão': 'Tuất', 'Tuất': 'Mão', 'Thìn': 'Dậu', 'Dậu': 'Thìn', 'Tị': 'Thân', 'Thân': 'Tị', 'Ngọ': 'Mùi', 'Mùi': 'Ngọ'}
@@ -13035,15 +13036,19 @@ class FreeAIHelper:
 
                 # Nếu Dụng Thần KHÔNG phạm Tuần Không, hoặc tuy lâm Không nhưng có Hào Động / Nhật Nguyệt cứu ứng -> ĐỐI TƯỢNG CÓ THẬT 100% NGOÀI ĐỜI!
                 _has_active_rescue = any('Hào Động' in p or 'Nhật Thần' in p or 'Nguyệt Lệnh' in p or 'phát động' in p for p in _support_proofs)
-                if (not _dt_in_kv0 and not (ky_dong_Desc and not _dt_dong0 and not _has_active_rescue)) or (_dt_in_kv0 and _has_active_rescue):
+                if _is_future_event_e or (not _dt_in_kv0 and not (ky_dong_Desc and not _dt_dong0 and not _has_active_rescue)) or (_dt_in_kv0 and _has_active_rescue):
                     is_fake = False
-                    if warnings:
+                    if warnings and not _is_future_event_e:
+                        _obj_lbl_e = "con cái / đối tượng" if dung_than == "Tử Tôn" else ("ngôi nhà / văn bằng / giấy tờ" if dung_than == "Phụ Mẫu" else ("tài sản / người phối ngẫu" if dung_than == "Thê Tài" else "đối tượng / sự việc"))
                         self._last_testing_linkage = {
                             'is_testing_mindset': True,
+                            'obj_label': _obj_lbl_e,
                             'dt_proof': "; cộng thêm ".join(_support_proofs),
                             'hex_pair': f"Quẻ <b>{_q_chu_nm_e}</b>" + (f" biến <b>{_q_bien_nm_e}</b>" if _q_bien_nm_e else ""),
                             'testing_warnings': list(warnings),
                         }
+                    elif _is_future_event_e:
+                        warnings.clear()
         except Exception:
             pass
 
@@ -13698,13 +13703,13 @@ class FreeAIHelper:
                         self.log_step("V32.5 Grammar", "INFO", 
                                       f"Parser suggest: {parser_dt} | V35.8 final: {dung_than} | {reason[:60]}")
                 
-            # V101.8: CON AI SỐ 1 (QuestionReaderAI) chạy ở BƯỚC 0 để đọc hiểu câu hỏi & khóa cứng Dụng Thần chuẩn
+            # V101.9: CON AI SỐ 1 (QuestionReaderAI) chạy ở BƯỚC 0 để đọc hiểu câu hỏi & khóa cứng Dụng Thần chuẩn
             try:
                 from dual_ai_agents import QuestionReaderAI
                 _early_bp = QuestionReaderAI.analyze_question(question=question, dung_than_hint=dung_than, category_hint=detected_category)
                 if _early_bp.get("authoritative_dt"):
                     dung_than = _early_bp["authoritative_dt"]
-                    self.log_step("V101.8 AI_1_Reader", "LOCK_DT", f"Archetype={_early_bp.get('archetype_code')} | Target={_early_bp.get('specific_target')} -> DT={dung_than}")
+                    self.log_step("V101.9 AI_1_Reader", "LOCK_DT", f"Archetype={_early_bp.get('archetype_code')} | Target={_early_bp.get('specific_target')} -> DT={dung_than}")
             except Exception:
                 pass
 
@@ -13728,7 +13733,7 @@ class FreeAIHelper:
                     f'<div style="background:linear-gradient(135deg,#064e3b,#0f172a);padding:16px 20px;border-radius:14px;margin-bottom:16px;border:2px solid #34d399;box-shadow:0 4px 20px rgba(52,211,153,0.3);">'
                     f'<div style="font-size:1.08em;font-weight:900;color:#6ee7b7;margin-bottom:8px;">🔍 NGHIỆM CHỨNG LIÊN KẾT SÂU ĐA TẦNG: ĐỐI TƯỢNG BẠN HỎI LÀ CÓ THẬT NGOÀI ĐỜI (KHÔNG PHẢI CHÂN KHÔNG) — ĐỒNG THỜI BẮT BÀI TÂM THẾ HỎI THỬ QUẺ!</div>'
                     f'<div style="font-size:0.95em;color:#ecfdf5;margin-bottom:7px;padding:8px 12px;background:rgba(16,185,129,0.16);border-radius:8px;border-left:4px solid #34d399;">'
-                    f'✅ <b>Xác nhận Thực Tế Có Thật từ {_hx_pair_s} (Bác bỏ Chân Không):</b> {_dt_prf_s} ➔ Khẳng định đối tượng / con cái / sự việc bạn hỏi <b>ĐANG TỒN TẠI THỰC TẾ NGOÀI ĐỜI (100% có thật, tuyệt đối không phải bằng 0)</b>!'
+                    f'✅ <b>Xác nhận Thực Tế Có Thật từ {_hx_pair_s} (Bác bỏ Chân Không):</b> {_dt_prf_s} ➔ Khẳng định {_test_link_info.get("obj_label", "đối tượng / sự việc")} bạn hỏi <b>ĐANG TỒN TẠI THỰC TẾ NGOÀI ĐỜI (100% có thật, tuyệt đối không phải bằng 0)</b>!'
                     f'</div>'
                     f'<div style="font-size:0.93em;color:#fde68a;margin-bottom:4px;padding:7px 12px;background:rgba(245,158,11,0.14);border-radius:8px;border-left:4px solid #fbbf24;">'
                     f'🎯 <b>Bắt bài Tâm Thế Hỏi Thử / Kiểm Chứng Quẻ:</b> Tuy Dụng Thần (đối tượng được hỏi) hoàn toàn hữu khí và có thật, nhưng <b>Nhật Can / Hào Thế (đại diện cho Người hỏi)</b> lại chạm <b>Tuần Không</b> — báo hiệu bạn đã biết rõ thực tế ngoài đời và đang đặt câu hỏi này để <b>thử độ nhạy bén và chính xác của quẻ</b>!'
@@ -16206,7 +16211,7 @@ class FreeAIHelper:
         except Exception as _e_nb:
             self.log_step("V100.0 Brain", "ERROR", str(_e_nb)[:80])
 
-        # V101.8: KÍCH HOẠT HỆ THỐNG SONG NÃO AI 2 TẦNG (AI SỐ 1 ĐỌC HIỂU CÂU HỎI -> AI SỐ 2 ĐỐI CHỨNG QUẺ & SUY LUẬN)
+        # V101.9: KÍCH HOẠT HỆ THỐNG SONG NÃO AI 2 TẦNG (AI SỐ 1 ĐỌC HIỂU CÂU HỎI -> AI SỐ 2 ĐỐI CHỨNG QUẺ & SUY LUẬN)
         _dual_agent_banner_html = ""
         try:
             from dual_ai_agents import QuestionReaderAI, HexagramReasoningAI
@@ -16235,7 +16240,7 @@ class FreeAIHelper:
                     _dual_verified["online_directive"] + "\n" + str(offline_analysis_data.get('deep_classical_dossier', ''))
                 )
         except Exception as _e_dual:
-            self.log_step("V101.8 DualAI", "ERROR", str(_e_dual)[:80])
+            self.log_step("V101.9 DualAI", "ERROR", str(_e_dual)[:80])
 
         def _format_md_for_html_details(_md_text: str) -> str:
             if not _md_text:
@@ -16508,7 +16513,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.8 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.9 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17220,8 +17225,8 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.8)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.9)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17995,8 +18000,8 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.8)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.9)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html
                     + _connected_prose_fb

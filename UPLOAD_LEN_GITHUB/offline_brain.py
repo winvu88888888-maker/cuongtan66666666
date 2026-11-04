@@ -516,11 +516,11 @@ def build_narrative_summary_text(
         )
 
     # ═════════════════════════════════════════════════════════════════════════
-    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V101.8 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
+    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V101.9 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
     # Khi quẻ lập đúng Giờ - Ngày - Tháng - Năm ra thế, tự động khớp chính xác Dụng Thần & Khuôn trả lời của từng dạng
     # ═════════════════════════════════════════════════════════════════════════
 
-    # [BƯỚC 0 - SONG NÃO AI 2 TẦNG V101.8]: GIẢI MÃ TRỰC DIỆN CÂU HỎI ĐẶC THÙ (NHÀ MẤY TẦNG, Ở TẦNG MẤY, MẤY PHÒNG, MẤY ANH CHỊ EM, KẾT HÔN CHƯA, MẶC ÁO MÀU GÌ, ĐI XE GÌ...)
+    # [BƯỚC 0 - SONG NÃO AI 2 TẦNG V101.9]: GIẢI MÃ TRỰC DIỆN CÂU HỎI ĐẶC THÙ (NHÀ MẤY TẦNG, Ở TẦNG MẤY, MẤY PHÒNG, MẤY ANH CHỊ EM, KẾT HÔN CHƯA, MẶC ÁO MÀU GÌ, ĐI XE GÌ...)
     try:
         from dual_ai_agents import QuestionReaderAI, HexagramReasoningAI
         _bp_ob = QuestionReaderAI.analyze_question(question=question, dung_than_hint=dung_than, category_hint=category)

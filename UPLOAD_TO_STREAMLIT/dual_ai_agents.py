@@ -1,5 +1,5 @@
 """
-dual_ai_agents.py — V101.8: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
+dual_ai_agents.py — V101.9: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
 ================================================================================
 - CON AI SỐ 1 (QuestionReaderAI): Chạy NGAY ĐẦU TIÊN khi nhận câu hỏi để đọc hiểu
   ngữ nghĩa, bóc tách chính xác đối tượng được hỏi (nhà mấy tầng, ở tầng mấy, mấy phòng,
@@ -316,7 +316,7 @@ class QuestionReaderAI:
         is_love = any(w in q_low for w in ["yêu", "tình cảm", "hôn nhân", "vợ chồng", "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình"])
         is_health = any(w in q_low for w in ["bệnh", "ốm", "nằm viện", "phẫu thuật", "mổ", "sức khỏe", "qua khỏi", "khỏi bệnh", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"])
         is_fengshui = any(w in q_low for w in ["phong thủy", "nhà đất", "xây nhà", "sửa nhà", "mồ mả", "âm phần", "mộ phần", "gia tiên", "động thổ", "hướng nhà"]) and not is_house_floors_q and not is_invest
-        is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "kỳ thi", "đi thi", "thi cử", "học hành", "điểm thi", "bằng cấp", "du học", "xin visa", "phỏng vấn visa"])
+        is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "có đỗ", "đỗ không", "đậu không", "kỳ thi", "đi thi", "thi cử", "học hành", "điểm thi", "bằng cấp", "lấy bằng", "bằng lái", "sát hạch", "thi bằng", "du học", "xin visa", "phỏng vấn visa"])
         is_travel = any(w in q_low for w in ["xuất hành", "đi xa", "du lịch", "công tác", "chuyến đi", "lên đường", "về quê", "di chuyển", "thượng lộ"])
         is_trachcat = any(w in q_low for w in ["xem ngày", "ngày tốt", "giờ tốt", "ngày đẹp", "khai trương", "nhập trạch", "cưới hỏi"])
         is_career = any(w in q_low for w in ["công việc", "sự nghiệp", "xin việc", "thăng chức", "chuyển việc", "nhảy việc", "hợp đồng"])
@@ -434,9 +434,10 @@ class QuestionReaderAI:
             arch_key = "D15_FINANCE_INVEST"
             specific_target = "INVEST_PROFIT"
             authoritative_dt = "Thê Tài"
-        elif is_love:
-            arch_key = "D17_LOVE_MARRIAGE"
-            specific_target = "LOVE_MARRIAGE"
+        elif is_exam:
+            arch_key = "D20_EXAM_STUDY_VISA"
+            specific_target = "EXAM_VISA"
+            authoritative_dt = "Phụ Mẫu"
         elif is_health:
             arch_key = "D18_HEALTH_MEDICAL"
             specific_target = "HEALTH_MEDICAL"
@@ -444,10 +445,9 @@ class QuestionReaderAI:
             arch_key = "D19_FENGSHUI_GRAVE"
             specific_target = "FENGSHUI_GRAVE"
             authoritative_dt = "Phụ Mẫu"
-        elif is_exam:
-            arch_key = "D20_EXAM_STUDY_VISA"
-            specific_target = "EXAM_VISA"
-            authoritative_dt = "Phụ Mẫu"
+        elif is_love:
+            arch_key = "D17_LOVE_MARRIAGE"
+            specific_target = "LOVE_MARRIAGE"
         elif is_travel:
             arch_key = "D22_TRAVEL_JOURNEY"
             specific_target = "TRAVEL_SAFETY"
@@ -464,7 +464,49 @@ class QuestionReaderAI:
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
+        # V101.9: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
+        multi_subjects = []
+        if specific_target not in ("CHILDREN_AGE", "CHILDREN_COUNT", "SIBLINGS_COUNT", "MARITAL_STATUS_NOW", "LOCATION_HOME_WORK", "POSTURE_STATE"):
+            if any(p in q_low for p in ["tôi và vợ", "vợ và tôi", "vợ chồng tôi", "hai vợ chồng", "2 vợ chồng", "cả hai vợ chồng"]):
+                multi_subjects = [
+                    {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
+                    {"label": "Vợ của bạn", "role": "WIFE", "lh_dt": "Thê Tài", "km_role": "CAN_HOP"},
+                ]
+            elif any(p in q_low for p in ["tôi và chồng", "chồng và tôi"]):
+                multi_subjects = [
+                    {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
+                    {"label": "Chồng của bạn", "role": "HUSBAND", "lh_dt": "Quan Quỷ", "km_role": "CAN_HOP"},
+                ]
+            elif any(p in q_low for p in ["tôi và người yêu", "tôi và bạn gái", "tôi và bạn trai"]):
+                multi_subjects = [
+                    {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
+                    {"label": "Người yêu của bạn", "role": "PARTNER", "lh_dt": "Hào Ứng", "km_role": "CAN_HOP"},
+                ]
+            elif any(p in q_low for p in ["tôi và bạn", "bạn và tôi", "tôi và anh", "tôi và chị", "tôi và em", "tôi và đồng nghiệp", "tôi và đối tác", "hai anh em", "2 anh em", "hai chị em", "2 chị em"]):
+                multi_subjects = [
+                    {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
+                    {"label": "Người đi cùng (Bạn / Anh chị em / Đối tác)", "role": "PEER", "lh_dt": "Huynh Đệ", "km_role": "NGUYET_CAN"},
+                ]
+            elif any(p in q_low for p in ["tôi và con", "mẹ con tôi", "bố con tôi", "cha con tôi", "hai mẹ con", "hai bố con"]):
+                multi_subjects = [
+                    {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
+                    {"label": "Con của bạn", "role": "CHILD", "lh_dt": "Tử Tôn", "km_role": "THOI_CAN"},
+                ]
+            elif any(p in q_low for p in ["con trai và con gái", "con gái và con trai", "hai con tôi", "2 con tôi", "hai đứa con", "2 đứa con"]):
+                multi_subjects = [
+                    {"label": "Con Trai của bạn", "role": "SON", "lh_dt": "Tử Tôn (Dương)", "km_role": "THOI_CAN"},
+                    {"label": "Con Gái của bạn", "role": "DAUGHTER", "lh_dt": "Tử Tôn (Âm)", "km_role": "THOI_CAN_AM"},
+                ]
+            elif any(p in q_low for p in ["bố và mẹ", "mẹ và bố", "ba và mẹ", "bố mẹ tôi", "ba mẹ tôi"]):
+                multi_subjects = [
+                    {"label": "Bố của bạn", "role": "FATHER", "lh_dt": "Phụ Mẫu (Dương)", "km_role": "NIEN_CAN"},
+                    {"label": "Mẹ của bạn", "role": "MOTHER", "lh_dt": "Phụ Mẫu (Âm)", "km_role": "NIEN_CAN_AM"},
+                ]
+
         sub_intents = []
+        if multi_subjects:
+            subject_person = f"{multi_subjects[0]['label']} & {multi_subjects[1]['label']} (Tách 2 trục Dụng Thần độc lập)"
+            sub_intents.append(f"Phân Chiêm Đa Nhân (Tách riêng kết quả của {multi_subjects[0]['label']} và {multi_subjects[1]['label']} — tránh gộp chung sai lệch nếu 1 người được 1 người trượt)")
         if is_when and arch_key != "D12_TIMING_WHEN":
             sub_intents.append("Hỏi kèm Thời điểm Ứng kỳ (Khi nào / Bao giờ)")
         if any(w in q_low for w in ["ở đâu", "hướng nào", "chỗ nào"]) and arch_key not in ("D01_LOCATION_BINARY", "D11_LOST_ITEM_WHERE"):
@@ -473,6 +515,7 @@ class QuestionReaderAI:
             sub_intents.append("Hỏi kèm Định lượng Con số / Số lượng")
 
         return {
+            "multi_subjects": multi_subjects,
             "raw_question": q_raw,
             "archetype_key": arch_key,
             "archetype_code": arch_meta["code"],
@@ -802,6 +845,229 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
+        # ── 9. GIẢI MÃ PHÂN TÁCH ĐỘC LẬP 2 CHỦ THỂ (PHÁP PHÂN CHIÊM ĐA NHÂN: "TÔI VÀ VỢ...", "TÔI VÀ BẠN...", "2 CON TÔI...") ──
+        # Tránh tuyệt đối việc gộp chung 2 người vào 1 kết luận duy nhất khi trên quẻ 1 người Đỗ/Thuận lợi còn 1 người Trượt/Gặp cản trở!
+        multi_subs = blueprint.get("multi_subjects") or []
+        if len(multi_subs) >= 2:
+            _CHI_NH_MS = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+            _SINH_MS = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+            _KHAC_MS = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+            _HOP_CHI_MS = {"Tý": "Sửu", "Sửu": "Tý", "Dần": "Hợi", "Hợi": "Dần", "Mão": "Tuất", "Tuất": "Mão", "Thìn": "Dậu", "Dậu": "Thìn", "Tị": "Thân", "Thân": "Tị", "Ngọ": "Mùi", "Mùi": "Ngọ"}
+            _XUNG_CHI_MS = {"Tý": "Ngọ", "Ngọ": "Tý", "Sửu": "Mùi", "Mùi": "Sửu", "Dần": "Thân", "Thân": "Dần", "Mão": "Dậu", "Dậu": "Mão", "Thìn": "Tuất", "Tuất": "Thìn", "Tị": "Hợi", "Hợi": "Tị"}
+            _CAN_HOP_MS = {"Giáp": "Kỷ", "Kỷ": "Giáp", "Ất": "Canh", "Canh": "Ất", "Bính": "Tân", "Tân": "Bính", "Đinh": "Nhâm", "Nhâm": "Đinh", "Mậu": "Quý", "Quý": "Mậu"}
+            # Bảng Phục Thần chuẩn theo 8 Cung Bát Thuần Kinh Dịch (khi Lục Thân ẩn phục trên Quẻ Chủ)
+            _PALACE_DEFAULT_LT = {
+                "Thê Tài": ("Ngọ", "Hỏa"),
+                "Quan Quỷ": ("Thìn", "Thổ"),
+                "Phụ Mẫu": ("Dậu", "Kim"),
+                "Huynh Đệ": ("Hợi", "Thủy"),
+                "Tử Tôn": ("Mão", "Mộc"),
+            }
+            _can_n_ms = chart_data.get("can_ngay", "Nhâm")
+            _chi_n_ms = chart_data.get("chi_ngay", "Ngọ")
+            _chi_m_ms = chart_data.get("chi_thang", "Tuất")
+            _CAN_10_MS = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+            _CHI_12_MS = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+            try:
+                _st_ms = (_CHI_12_MS.index(_chi_n_ms) - _CAN_10_MS.index(_can_n_ms)) % 12
+                _kv_ms = [_CHI_12_MS[(_st_ms - 2) % 12], _CHI_12_MS[(_st_ms - 1) % 12]]
+            except Exception:
+                _kv_ms = []
+
+            # 1. Xác định Hào Dụng Thần Sự Việc (VD: Phụ Mẫu cho Thi cử/Bằng lái/Visa, Thê Tài cho Đầu tư, Quan Quỷ cho Công việc...)
+            _ev_dt = dung_than if dung_than and dung_than != "Bản Thân" else ("Phụ Mẫu" if target == "EXAM_VISA" else "Quan Quỷ")
+            _ev_idx = pm_idx
+            _ev_chi = str(pm_hao.get("chi") or pm_hao.get("can_chi") or "Dậu").split()[-1] if pm_hao else "Dậu"
+            _ev_nh = pm_hao.get("ngu_hanh") or pm_hao.get("hanh") or _CHI_NH_MS.get(_ev_chi, hanh_dt)
+            for _ix_m, _h_m in enumerate(haos, 1):
+                if isinstance(_h_m, dict) and (_ev_dt in str(_h_m.get("luc_than") or "")):
+                    _ev_idx = _ix_m
+                    _ev_chi = str(_h_m.get("chi") or _h_m.get("can_chi") or "").split()[-1] or _ev_chi
+                    _ev_nh = _h_m.get("ngu_hanh") or _h_m.get("hanh") or _CHI_NH_MS.get(_ev_chi, _ev_nh)
+                    break
+
+            # Kiểm tra xem Hào Động có biến ra thêm 1 Hào Dụng Thần Sự Việc thứ 2 không (Tượng "Lưỡng Nhân Đồng Thi, Nhất Đắc Nhất Trì")
+            _bien_haos_ms = lh_bien.get("haos") or lh_bien.get("details") or []
+            _bien_ev_desc = ""
+            for _d_ix in dong_list:
+                if 1 <= _d_ix <= len(_bien_haos_ms) and isinstance(_bien_haos_ms[_d_ix - 1], dict):
+                    _bh_d = _bien_haos_ms[_d_ix - 1]
+                    _bh_lt = str(_bh_d.get("luc_than") or "")
+                    _bh_ch = str(_bh_d.get("chi") or _bh_d.get("can_chi") or "").split()[-1]
+                    _bh_nh = _bh_d.get("ngu_hanh") or _bh_d.get("hanh") or _CHI_NH_MS.get(_bh_ch, "")
+                    if _ev_dt in _bh_lt or _HOP_CHI_MS.get(_bh_ch) == _ev_chi:
+                        _bien_ev_desc = f"Hào {_d_ix} phát động hóa ra <b>{_bh_lt or _ev_dt} ({_bh_ch}-{_bh_nh})</b> hợp/trợ cho Hào {_ev_idx} {_ev_dt} ({_ev_chi})"
+
+            # 2. Hàm chấm điểm & đối chứng độc lập cho từng Chủ thể
+            _ctb_ms = chart_data.get("can_thien_ban", {}) or {}
+            _nb_ms = chart_data.get("nhan_ban", {}) or {}
+            _tb_ms = chart_data.get("thien_ban", {}) or {}
+            _sb_ms = chart_data.get("than_ban", {}) or {}
+
+            def _eval_single_subject(sub_info: dict, is_first: bool) -> dict:
+                _s_lbl = sub_info["label"]
+                _s_role = sub_info["role"]
+                _s_lh_target = sub_info["lh_dt"]
+                _s_score = max(44, min(56, int(weighted_pct) + 5))
+                _s_reasons = []
+
+                # Tìm hào đại diện cho chủ thể
+                _s_idx = the_idx if is_first else ung_idx
+                _s_hao = the_hao if is_first else ung_hao
+                _s_is_phuc = False
+                if _s_role == "SELF":
+                    _s_idx, _s_hao = the_idx, the_hao
+                    _s_ch = str(_s_hao.get("chi") or _s_hao.get("can_chi") or "Hợi").split()[-1]
+                    _s_nh = _s_hao.get("ngu_hanh") or _s_hao.get("hanh") or _CHI_NH_MS.get(_s_ch, "Thủy")
+                    _s_pos_lbl = f"Hào Thế (Hào {_s_idx} {_s_ch}-{_s_nh})"
+                else:
+                    # Tìm hào Lục Thân của người thứ 2 (Thê Tài cho Vợ, Quan Quỷ cho Chồng, Huynh Đệ cho Bạn...)
+                    _base_lt = _s_lh_target.split()[0] + (" " + _s_lh_target.split()[1] if len(_s_lh_target.split()) > 1 and "(" not in _s_lh_target.split()[1] else "")
+                    _found_s2 = None
+                    for _ix2, _h2 in enumerate(haos, 1):
+                        if isinstance(_h2, dict) and _base_lt in str(_h2.get("luc_than") or "") and _ix2 != _ev_idx:
+                            _found_s2 = (_ix2, _h2)
+                            break
+                    if _found_s2:
+                        _s_idx, _s_hao = _found_s2
+                        _s_ch = str(_s_hao.get("chi") or _s_hao.get("can_chi") or "").split()[-1]
+                        _s_nh = _s_hao.get("ngu_hanh") or _s_hao.get("hanh") or _CHI_NH_MS.get(_s_ch, "")
+                        _s_pos_lbl = f"Hào {_base_lt} tại Hào {_s_idx} ({_s_ch}-{_s_nh})"
+                    else:
+                        _s_is_phuc = True
+                        _def_ch, _def_nh = _PALACE_DEFAULT_LT.get(_base_lt, ("Ngọ", "Hỏa"))
+                        if _CHI_NH_MS.get(_chi_n_ms) == _def_nh:
+                            _def_ch = _chi_n_ms
+                        _s_ch, _s_nh = _def_ch, _def_nh
+                        _u_ch = str(ung_hao.get("chi") or ung_hao.get("can_chi") or "Sửu").split()[-1]
+                        _u_nh = ung_hao.get("ngu_hanh") or ung_hao.get("hanh") or _CHI_NH_MS.get(_u_ch, "Thổ")
+                        _s_pos_lbl = f"Hào {_base_lt} ({_s_ch}-{_s_nh} ẩn phục dưới Hào 3, kết hợp Hào Ứng tại Hào {ung_idx} {_u_ch}-{_u_nh})"
+
+                # Xét tương tác Ngũ Hành giữa Hào Sự Việc (_ev_dt: _ev_chi - _ev_nh) và Hào Chủ Thể (_s_ch - _s_nh)
+                if _SINH_MS.get(_ev_nh) == _s_nh:
+                    _s_score += 14
+                    _s_reasons.append(f"Đắc cách <b>Hào {_ev_dt} (Hào {_ev_idx} {_ev_chi}-{_ev_nh}) tương sinh trực tiếp cho {_s_pos_lbl}</b> (<b>{_ev_nh} sinh {_s_nh}</b> — Bằng cấp/Kết quả tự tìm đến người thi)")
+                elif _ev_nh == _s_nh and _ev_nh:
+                    _s_score += 8
+                    _s_reasons.append(f"<b>{_s_pos_lbl}</b> đồng hành Tỷ Hòa với Hào {_ev_dt} ({_ev_chi}-{_ev_nh})")
+                elif _SINH_MS.get(_s_nh) == _ev_nh:
+                    _s_score += 6
+                    _s_reasons.append(f"<b>{_s_pos_lbl}</b> tương sinh thuận chiều cho Hào {_ev_dt} ({_s_nh} sinh {_ev_nh})")
+                elif _KHAC_MS.get(_s_nh) == _ev_nh:
+                    _s_score -= 12
+                    _s_reasons.append(f"<b>{_s_pos_lbl}</b> phạm thế <b>Khắc trực tiếp Hào {_ev_dt} ({_ev_chi}-{_ev_nh})</b> (<b>{_s_nh} khắc {_ev_nh}</b> — {'Tài khắc Ấn, đại kỵ trong thi cử/văn bằng' if _ev_dt == 'Phụ Mẫu' else 'Chủ thể tự tạo lực cản với mục tiêu'})")
+                elif _KHAC_MS.get(_ev_nh) == _s_nh:
+                    _s_score -= 10
+                    _s_reasons.append(f"Hào {_ev_dt} ({_ev_chi}-{_ev_nh}) khắc chế <b>{_s_pos_lbl}</b> ({_ev_nh} khắc {_s_nh} — áp lực bài thi/sự việc đè nặng)")
+
+                # Xét Hào Động trợ lực hoặc khắc chế Chủ thể
+                for _d_ix in dong_list:
+                    if 1 <= _d_ix <= len(haos) and isinstance(haos[_d_ix - 1], dict):
+                        _dh = haos[_d_ix - 1]
+                        _d_ch = str(_dh.get("chi") or _dh.get("can_chi") or "").split()[-1]
+                        _d_nh = _dh.get("ngu_hanh") or _dh.get("hanh") or _CHI_NH_MS.get(_d_ch, "")
+                        if _SINH_MS.get(_d_nh) == _s_nh or (_d_nh == _s_nh and _d_nh):
+                            _s_score += 6
+                            _s_reasons.append(f"Được Hào Động <b>Hào {_d_ix} ({_d_ch}-{_d_nh})</b> phát động sinh/trợ lực trực tiếp")
+                        elif _KHAC_MS.get(_d_nh) == _s_nh:
+                            _s_score -= 6
+                            _s_reasons.append(f"Bị Hào Động <b>Hào {_d_ix} ({_d_ch}-{_d_nh})</b> phát động khắc chế ({_d_nh} khắc {_s_nh})")
+
+                # Xét Kỳ Môn Độn Giáp riêng cho Chủ thể (Nhật Can vs Can Hợp / Nguyệt Can / Thời Can)
+                _km_can = _can_n_ms if is_first else _CAN_HOP_MS.get(_can_n_ms, chart_data.get("can_gio", "Mậu"))
+                if sub_info["km_role"] == "NGUYET_CAN":
+                    _km_can = chart_data.get("can_thang", _km_can)
+                elif "THOI_CAN" in sub_info["km_role"]:
+                    _km_can = chart_data.get("can_gio", _km_can)
+                _km_cung_s = target_cung
+                for _ck, _cv in _ctb_ms.items():
+                    if str(_cv) == str(_km_can):
+                        _km_cung_s = int(_ck)
+                        break
+                _mon_s = str(_nb_ms.get(_km_cung_s, _nb_ms.get(str(_km_cung_s), cua_name)))
+                _sao_s = str(_tb_ms.get(_km_cung_s, _tb_ms.get(str(_km_cung_s), sao_name)))
+                _than_s = str(_sb_ms.get(_km_cung_s, _sb_ms.get(str(_km_cung_s), than_name)))
+                if any(m in _mon_s for m in ["Khai", "Hưu", "Sinh"]) or "Trực Phù" in _than_s or "Cửu Thiên" in _than_s:
+                    _s_score += 4
+                    _s_reasons.append(f"Kỳ Môn Can <b>{_km_can}</b> tại Cung {_km_cung_s} đắc <b>{_than_s} · {_mon_s}</b> che chở")
+                elif any(m in _mon_s for m in ["Tử", "Thương", "Đỗ"]) or "Thiên Trụ" in _sao_s or "Bạch Hổ" in _than_s:
+                    _s_score -= 3
+                    _s_reasons.append(f"Kỳ Môn Can <b>{_km_can}</b> tại Cung {_km_cung_s} gặp <b>Sao {_sao_s} · {_mon_s} · {_than_s}</b> (dễ bị tâm lý hoặc vướng lỗi kỹ thuật)")
+                else:
+                    _s_reasons.append(f"Kỳ Môn Can <b>{_km_can}</b> tại Cung {_km_cung_s} hội <b>Sao {_sao_s} · {_mon_s} · {_than_s}</b>")
+
+                _s_score = max(25, min(88, _s_score))
+                return {
+                    "label": _s_lbl,
+                    "score": _s_score,
+                    "pos_lbl": _s_pos_lbl,
+                    "km_can": _km_can,
+                    "km_cung": _km_cung_s,
+                    "reasons": "; ".join(_s_reasons),
+                    "is_pass": _s_score >= 52,
+                }
+
+            _res1 = _eval_single_subject(multi_subs[0], True)
+            _res2 = _eval_single_subject(multi_subs[1], False)
+
+            _is_exam_context = (target == "EXAM_VISA") or any(w in q_low for w in ["thi", "đỗ", "đậu", "bằng", "sát hạch", "visa"])
+            _pass_word = "ĐỖ THUẬN LỢI" if _is_exam_context else "THÀNH CÔNG / THUẬN LỢI"
+            _fail_word = "GẶP LỰC CẢN LỚN — DỄ TRƯỢT LẦN ĐẦU HOẶC PHẢI THI LẠI LẦN 2" if _is_exam_context else "GẶP CẢN TRỞ — CẦN BỔ SUNG / LÀM LẠI LẦN 2"
+
+            if _res1["is_pass"] and _res2["is_pass"]:
+                headline = (
+                    f"🎯 KẾT LUẬN PHÂN TÁCH 2 NGƯỜI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"CẢ 2 NGƯỜI ĐỀU CÓ KHẢ NĂNG {_pass_word} — "
+                    f"[1] {_res1['label'].upper()}: {_res1['score']}% ({_pass_word}) | "
+                    f"[2] {_res2['label'].upper()}: {_res2['score']}% ({_pass_word})!"
+                )
+            elif _res1["is_pass"] and not _res2["is_pass"]:
+                headline = (
+                    f"⚖️ KẾT LUẬN PHÂN TÁCH RIÊNG TỪNG NGƯỜI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"KẾT QUẢ PHÂN HÓA RÕ RỆT (1 NGƯỜI ĐẠT — 1 NGƯỜI TRẮC TRỞ): "
+                    f"[1] {_res1['label'].upper()}: {_pass_word} ({_res1['score']}% — ĐẮC KHÍ TƯƠNG SINH) | "
+                    f"[2] {_res2['label'].upper()}: {_fail_word} ({_res2['score']}%)!"
+                )
+            elif not _res1["is_pass"] and _res2["is_pass"]:
+                headline = (
+                    f"⚖️ KẾT LUẬN PHÂN TÁCH RIÊNG TỪNG NGƯỜI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"KẾT QUẢ PHÂN HÓA RÕ RỆT (1 NGƯỜI ĐẠT — 1 NGƯỜI TRẮC TRỞ): "
+                    f"[1] {_res2['label'].upper()}: {_pass_word} ({_res2['score']}% — ĐẮC KHÍ TƯƠNG SINH) | "
+                    f"[2] {_res1['label'].upper()}: {_fail_word} ({_res1['score']}%)!"
+                )
+            else:
+                headline = (
+                    f"⚠️ KẾT LUẬN PHÂN TÁCH 2 NGƯỜI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"HIỆN TẠI CẢ 2 NGƯỜI ĐỀU ĐANG GẶP LỰC CẢN — "
+                    f"[1] {_res1['label'].upper()}: {_res1['score']}% | [2] {_res2['label'].upper()}: {_res2['score']}% "
+                    f"(CẦN ÔN LUYỆN KỸ HOẶC CHỜ NGÀY XUẤT KHÔNG ĐỂ TRÁNH CÙNG TRƯỢT)!"
+                )
+
+            _dual_ev_note = (
+                f"Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, Hào {_ev_dt} tại Hào {_ev_idx} ({_ev_chi}-{_ev_nh}) "
+                + (f"đang tạm lâm Tuần Không ({', '.join(_kv_ms)}) nhưng {_bien_ev_desc} — cổ pháp gọi là tượng <b>'Lưỡng Nhân Đồng Chiêm, Nhất Đắc Nhất Trì' (Hai người cùng thi/làm, kết quả của từng người phân hóa khác nhau)</b>. " if (_ev_chi in _kv_ms and _bien_ev_desc) else f"tương tác khác nhau với trục của từng người. ")
+            )
+            why_s = (
+                f"{_dual_ev_note}"
+                f"<b>• Xét riêng [1] {_res1['label']} ({_res1['score']}%):</b> {_res1['reasons']}. "
+                f"<b>• Xét riêng [2] {_res2['label']} ({_res2['score']}%):</b> {_res2['reasons']}."
+            )
+            when_s = (
+                f"<b>Thời điểm ứng nghiệm & Xuất Không mở vận:</b> {omni_data.get('exact_timestamp', 'Ngày/Giờ Thìn, Thân, Dậu')} "
+                f"(Đặc biệt khi bước sang ngày/giờ <b>{_ev_chi}</b> hoặc <b>{_HOP_CHI_MS.get(_ev_chi, 'Thìn')}</b> Điền Thực / Hợp Thực Tuần Không, người đang gặp cản trở sẽ vượt qua ở lần thi/bổ sung tiếp theo)."
+            )
+            adv_s = (
+                f"<b>Chiến lược cho từng người:</b> <b>{_res1['label']}</b> giữ vững tâm lý ổn định để chốt kết quả tốt; "
+                f"riêng <b>{_res2['label']}</b> cần rà soát kỹ phần lý thuyết/mô phỏng/hồ sơ và ưu tiên hướng <b>{huong_cung}</b> (Màu trợ vận: <b>{colors_str}</b>) để hóa giải thế khắc."
+            )
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
         return {"has_override": False}
 
     @staticmethod
@@ -919,7 +1185,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V101.8): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V101.9): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
