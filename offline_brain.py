@@ -1319,6 +1319,7 @@ def build_connected_prose_analysis(
     chart_data: dict = None,
     luc_hao_data: dict = None,
     mai_hoa_data: dict = None,
+    omni_data: dict = None,
 ) -> str:
     """
     V100.1 — BÀI LUẬN GIẢI CHUYÊN SÂU 3 ĐOẠN MẠCH LẠC, DỄ HIỂU, SÁT CÂU HỎI 100%:
@@ -1439,6 +1440,10 @@ def build_connected_prose_analysis(
             is_fake=_is_fk_holo,
             auth_warnings=warn_parts,
         ).get("data", {})
+        if isinstance(omni_data, dict) and omni_data:
+            for _ok, _ov in omni_data.items():
+                if _ov not in (None, ""):
+                    _omni_for_holo[_ok] = _ov
         _holo_res = build_holographic_7_position_picture(
             question=question,
             category=category,

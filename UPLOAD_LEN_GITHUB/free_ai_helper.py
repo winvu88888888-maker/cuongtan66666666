@@ -7562,15 +7562,25 @@ class FreeAIHelper:
                 score -= 15
                 factors.append("DT Tuần Không -15")
         
-        # ⑧ V21.0: NGUYỆT PHÁ — chi tháng xung chi DT hào (−12)
+        # ⑧ V105.0: NGUYỆT PHÁ — Phân biệt chân Nguyệt Phá vs Xung Khai (Lưỡng Thổ) / Nhật Sinh Cứu Phá
         chi_thang_lh = luc_hao_data.get('chi_thang', '')
         if chi_thang_lh and dt_chi:
             CHI_XUNG = {'Tý': 'Ngọ', 'Ngọ': 'Tý', 'Sửu': 'Mùi', 'Mùi': 'Sửu',
                         'Dần': 'Thân', 'Thân': 'Dần', 'Mão': 'Dậu', 'Dậu': 'Mão',
                         'Thìn': 'Tuất', 'Tuất': 'Thìn', 'Tị': 'Hợi', 'Hợi': 'Tị'}
             if CHI_XUNG.get(chi_thang_lh) == dt_chi:
-                score -= 12
-                factors.append(f"NGUYỆT PHÁ ({chi_thang_lh}⇔{dt_chi}) -12")
+                _earth_chis = {'Thìn', 'Tuất', 'Sửu', 'Mùi'}
+                _nhat_hanh = CHI_NGU_HANH.get(chi_ngay, '') if chi_ngay else ''
+                _nhat_cuu_pha = bool(_nhat_hanh and dt_hanh and (SINH.get(_nhat_hanh) == dt_hanh or _nhat_hanh == dt_hanh))
+                if chi_thang_lh in _earth_chis and dt_chi in _earth_chis:
+                    score += 3
+                    factors.append(f"LƯỠNG THỔ XUNG KHAI ({chi_thang_lh}⇔{dt_chi}) +3")
+                elif _nhat_cuu_pha:
+                    score += 2
+                    factors.append(f"NHẬT SINH CỨU PHÁ ({chi_ngay} sinh {dt_chi}) +2")
+                else:
+                    score -= 12
+                    factors.append(f"NGUYỆT PHÁ ({chi_thang_lh}⇔{dt_chi}) -12")
         
         # ⑨ Thế↔Ứng (±5)
         the_h = None
@@ -7657,15 +7667,22 @@ class FreeAIHelper:
                     score -= 5
                     factors.append(f"Nhật Xung DT suy ({chi_ngay}⇔{dt_chi}) -5")
         
-        # ⑮ Lục Hợp chi DT — Hào khác hợp chi DT (bị giữ lại)
+        # ⑮ V105.0: Lục Hợp chi DT — Phân biệt Hợp Sinh Phù (+5/+3) vs Hợp Khắc/Trói (-3)
         for hao in haos:
             if hao == dt_hao:
                 continue
             h_chi = hao.get('chi', '')
             if h_chi and dt_chi and LUC_HOP_CHI.get(h_chi) == dt_chi:
                 h_lt = hao.get('luc_than', '')
-                score -= 3
-                factors.append(f"Hào {h_lt}({h_chi}) hợp DT -3")
+                h_hanh = hao.get('ngu_hanh', '') or hao.get('hanh', '') or CHI_NGU_HANH.get(h_chi, '')
+                h_idx_lh = haos.index(hao) + 1
+                if h_hanh and dt_hanh and (SINH.get(h_hanh) == dt_hanh or h_hanh == dt_hanh):
+                    _hop_bonus = 5 if h_idx_lh in (dong_hao or []) else 3
+                    score += _hop_bonus
+                    factors.append(f"Hào {h_lt}({h_chi}) lục hợp sinh phù DT +{_hop_bonus}")
+                else:
+                    score -= 3
+                    factors.append(f"Hào {h_lt}({h_chi}) hợp絆 DT -3")
                 break  # Chỉ tính 1 lần
         
         # ⑯ Lục Xung chi DT — Hào khác xung chi DT (bất ổn)
@@ -7733,20 +7750,7 @@ class FreeAIHelper:
                             factors.append(f"BÁN HỢP: DT({dt_chi})+({other}) → {bh_hanh} khắc DT -3")
                         break
         
-        # ⑰d V42.9.8: TRIỆT LỘ — DT bị Triệt (Can Ngày chia cắt khí)
-        # Triệt Lộ: Giáp→Thân Dậu, Ất→Ngọ Mùi, Bính→Thìn Tị, Đinh→Dần Mão, Mậu→Tý Sửu, Kỷ→Tuất Hợi
-        # Canh→Thân Dậu, Tân→Ngọ Mùi, Nhâm→Thìn Tị, Quý→Dần Mão
-        TRIET_LO_MAP = {
-            'Giáp': ['Thân', 'Dậu'], 'Ất': ['Ngọ', 'Mùi'], 'Bính': ['Thìn', 'Tị'],
-            'Đinh': ['Dần', 'Mão'], 'Mậu': ['Tý', 'Sửu'], 'Kỷ': ['Tuất', 'Hợi'],
-            'Canh': ['Thân', 'Dậu'], 'Tân': ['Ngọ', 'Mùi'], 'Nhâm': ['Thìn', 'Tị'],
-            'Quý': ['Dần', 'Mão'],
-        }
-        if can_ngay and dt_chi:
-            triet_chis = TRIET_LO_MAP.get(can_ngay, [])
-            if dt_chi in triet_chis:
-                score -= 8
-                factors.append(f"TRIỆT LỘ: DT({dt_chi}) bị Triệt (Can {can_ngay}) → khí bị cắt đứt -8")
+        # ⑰d V105.0: Bỏ trừ điểm Triệt Lộ ngoại lai trong Lục Hào (Chính tông Lục Hào Tăng San Bốc Dịch chỉ dùng Tuần Không ở mục ⑦)
         
         # ⑰e V42.9.8: TUẾ PHÁ — Thái Tuế (Chi Năm) xung DT
         chi_nam = ''
@@ -7892,17 +7896,17 @@ class FreeAIHelper:
         factors = []
         
         dong_hao = mai_hoa_data.get('dong_hao', 1)
-        upper = mai_hoa_data.get('upper', 0)
-        lower = mai_hoa_data.get('lower', 0)
+        upper = mai_hoa_data.get('upper', 0) or mai_hoa_data.get('thuong_quai', 0)
+        lower = mai_hoa_data.get('lower', 0) or mai_hoa_data.get('ha_quai', 0)
         
         if dong_hao <= 3:
             the_quai, dung_quai = upper, lower
         else:
             the_quai, dung_quai = lower, upper
         
-        the_el = QUAI_ELEMENTS.get(the_quai, '')
-        dung_el = QUAI_ELEMENTS.get(dung_quai, '')
-        the_name = QUAI_NAMES.get(the_quai, '?')
+        the_el = mai_hoa_data.get('hanh_the', '') or mai_hoa_data.get('the_hanh', '') or QUAI_ELEMENTS.get(the_quai, '')
+        dung_el = mai_hoa_data.get('hanh_dung', '') or mai_hoa_data.get('dung_hanh', '') or QUAI_ELEMENTS.get(dung_quai, '')
+        the_name = mai_hoa_data.get('ten_the', '') or QUAI_NAMES.get(the_quai, '?')
         
         if not the_el or not dung_el:
             return 0, "Thiếu Ngũ Hành Thể/Dụng", []
@@ -7912,8 +7916,8 @@ class FreeAIHelper:
             score += 10
             factors.append(f"MH Dụng sinh Thể +10")
         elif KHAC.get(dung_el) == the_el:
-            score -= 10
-            factors.append(f"MH Dụng khắc Thể -10")
+            score -= 8
+            factors.append(f"MH Quẻ Chủ Dụng khắc Thể (cản trở đầu) -8")
         elif KHAC.get(the_el) == dung_el:
             score += 8
             factors.append(f"MH Thể khắc Dụng (tốt) +8")
@@ -7921,10 +7925,10 @@ class FreeAIHelper:
             score -= 5
             factors.append(f"MH Thể sinh Dụng (hao mòn) -5")
         else:
-            score += 2
-            factors.append(f"MH Tỷ Hòa +2")
+            score += 4
+            factors.append(f"MH Tỷ Hòa +4")
         
-        # ② Hỗ Quái sinh/khắc Thể (±8) — V101.7: Lấy trực tiếp hanh_ho chuẩn từ mai_hoa_data
+        # ② Hỗ Quái sinh/khắc Thể (±8) — V105.0: Lấy trực tiếp hanh_ho chuẩn từ mai_hoa_data
         _TRIGRAM_WORD_HANH = {
             'Càn': 'Kim', 'Đoài': 'Kim', 'Thiên': 'Kim', 'Trạch': 'Kim',
             'Ly': 'Hỏa', 'Hỏa': 'Hỏa', 'Chấn': 'Mộc', 'Tốn': 'Mộc', 'Lôi': 'Mộc', 'Phong': 'Mộc',
@@ -7942,11 +7946,11 @@ class FreeAIHelper:
                 score += 8
                 factors.append(f"MH Hỗ({ho_el}) sinh Thể({the_el}) +8")
             elif KHAC.get(ho_el) == the_el:
-                score -= 8
-                factors.append(f"MH Hỗ({ho_el}) khắc Thể({the_el}) -8")
+                score -= 6
+                factors.append(f"MH Hỗ({ho_el}) khắc Thể({the_el}) -6")
             elif ho_el == the_el:
-                score += 3
-                factors.append(f"MH Hỗ({ho_el}) tỷ hòa Thể +3")
+                score += 5
+                factors.append(f"MH Hỗ({ho_el}) tỷ hòa trợ Thể +5")
             elif KHAC.get(the_el) == ho_el:
                 score += 4
                 factors.append(f"MH Thể khắc Hỗ({ho_el}) +4")
@@ -7954,7 +7958,7 @@ class FreeAIHelper:
                 score -= 3
                 factors.append(f"MH Thể sinh Hỗ({ho_el}) (hao khí) -3")
         
-        # ③ Biến Quái sinh/khắc Thể (±8) — V101.7: Lấy trực tiếp hanh_bien chuẩn từ mai_hoa_data
+        # ③ Biến Quái sinh/khắc Thể (±14) — V105.0: Quẻ Biến là kết cục quyết định ("Biến Quái vi chung")
         bien_el = mai_hoa_data.get('hanh_bien', '')
         if not bien_el:
             ten_bien = mai_hoa_data.get('ten_qua_bien', '')
@@ -7964,20 +7968,20 @@ class FreeAIHelper:
                     break
         if bien_el and the_el:
             if SINH.get(bien_el) == the_el:
-                score += 8
-                factors.append(f"MH Biến({bien_el}) sinh Thể({the_el}) +8")
+                score += 14
+                factors.append(f"MH Biến({bien_el}) sinh Thể({the_el}) (Đại Cát hậu vận) +14")
             elif KHAC.get(bien_el) == the_el:
-                score -= 8
-                factors.append(f"MH Biến({bien_el}) khắc Thể({the_el}) -8")
+                score -= 12
+                factors.append(f"MH Biến({bien_el}) khắc Thể({the_el}) -12")
             elif KHAC.get(the_el) == bien_el:
-                score += 5
-                factors.append(f"MH Thể khắc Biến({bien_el}) +5")
+                score += 7
+                factors.append(f"MH Thể khắc Biến({bien_el}) +7")
             elif SINH.get(the_el) == bien_el:
                 score -= 4
                 factors.append(f"MH Thể sinh Biến({bien_el}) (hao khí) -4")
             elif bien_el == the_el:
-                score += 4
-                factors.append(f"MH Biến({bien_el}) tỷ hòa Thể +4")
+                score += 6
+                factors.append(f"MH Biến({bien_el}) tỷ hòa Thể +6")
         
         # ④ Nguyệt lệnh (±6) — chuẩn theo Chi Tháng
         _chi_thang_mh = chart_data.get('chi_thang', '') if isinstance(chart_data, dict) else ''
@@ -10497,10 +10501,7 @@ class FreeAIHelper:
             lines.append(f"- 💡 Hành sinh: **{SINH_DT.get(hanh_dt, '?')}** → hỗ trợ DT")
             HANH_KHAC = {'Mộc': 'Kim', 'Hỏa': 'Thủy', 'Thổ': 'Mộc', 'Kim': 'Hỏa', 'Thủy': 'Thổ'}
             lines.append(f"- ⛔ Tránh phương án **thuộc Hành {HANH_KHAC.get(hanh_dt, '?')}** (khắc DT)")
-            if pct >= 55:
-                lines.append(f"- 🟢 Phương án **ĐẦU TIÊN** (trong quẻ) trội hơn")
-            else:
-                lines.append(f"- 🔴 Phương án **THỨ HAI** có thể tốt hơn (DT yếu → chọn an toàn)")
+            lines.append(f"- ⚖️ **Nguyên tắc bất biến theo Quẻ (Tam Thức):** Phán quyết chọn phương án nào phụ thuộc 100% vào lực Hào Thế / Dụng Thần Lục Hào, Quẻ Biến Mai Hoa và Cát Môn Kỳ Môn (đối xứng bất biến, tuyệt đối không phụ thuộc thứ tự viết trước/sau).")
         
         # [17] LỪA ĐẢO / THẬT GIẢ — kiểm tra Huynh Đệ + Quan Quỷ
         elif any(k in q for k in ['lừa đảo', 'lừa', 'giả', 'thật giả', 'tin được',
@@ -14526,17 +14527,17 @@ class FreeAIHelper:
                 'nhập trạch', 'xuất hành', 'ký hợp đồng', 'ký kết', 'chọn ngày', 'giờ nào', 'mở hàng', 'khởi công'
             ]
         )
-        # V101.7: 4 Hệ thống Bói Quẻ Thời Khắc Thực Tế (Lục Hào, Kỳ Môn, Mai Hoa, Đại Lục Nhâm) giữ >=85% trọng số quyết định;
-        # Các hệ thống Vĩ mô / Bổ trợ (Thái Ất, Thiết Bản, Xem Ngày khi không hỏi ngày, Tử Vi khi không nhập ngày sinh) giữ trọng số nhỏ để KHÔNG làm lệch kết quả quẻ.
+        # V105.0: Tập trung 95% trọng số quyết định vào 4 Hệ Thống Luận Quẻ Chuẩn Xác Nhất (Lục Hào, Kỳ Môn, Mai Hoa, Thiết Bản);
+        # Khóa trọng số = 0 đối với Thái Ất (Vĩ mô quốc sự), Xem Ngày (khi không hỏi chọn ngày) và Tử Vi (khi không nhập ngày giờ sinh) để TUYỆT ĐỐI KHÔNG làm nhiễu quẻ!
         weights = {
-            'KM': method_w.get('ky_mon', 85),
             'LH': method_w.get('luc_hao', 100),
-            'MH': method_w.get('mai_hoa', 75),
-            'LN': method_w.get('luc_nham', 65),
-            'TB': min(18, method_w.get('thiet_ban', 18)),
-            'TA': 10,
-            'XN': method_w.get('xem_ngay', 45) if _is_date_action_q else 6,
-            'TV': method_w.get('tu_vi', 50) if locals().get('_has_personal_tv') else 6,
+            'KM': method_w.get('ky_mon', 90),
+            'MH': method_w.get('mai_hoa', 85),
+            'TB': min(35, method_w.get('thiet_ban', 30)),
+            'LN': 15,
+            'TA': 0,
+            'XN': method_w.get('xem_ngay', 45) if _is_date_action_q else 0,
+            'TV': method_w.get('tu_vi', 50) if locals().get('_has_personal_tv') else 0,
         }
         
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
@@ -15668,36 +15669,45 @@ class FreeAIHelper:
             if DKT:
                 _dkt_fixes = []
                 
-                # 1. Mai Hoa: Kiểm tra Thể/Dụng Sinh Khắc
+                # 1. Mai Hoa: Kiểm tra Thể/Dụng Sinh Khắc toàn trình (Chủ ➔ Hỗ ➔ Biến) — V105.0
                 _mh_tree = DKT.get('MH', {}).get('sinh_khac', {})
                 if mai_hoa_data and isinstance(mai_hoa_data, dict) and _mh_tree:
                     _the_hanh = mai_hoa_data.get('the_hanh', mai_hoa_data.get('hanh_the', ''))
                     _dung_hanh = mai_hoa_data.get('dung_hanh', mai_hoa_data.get('hanh_dung', ''))
+                    _bien_hanh = mai_hoa_data.get('hanh_bien', '')
+                    _ho_hanh = mai_hoa_data.get('hanh_ho', '')
                     if _the_hanh and _dung_hanh:
                         _ngu_hanh_sinh = {'Kim':'Thủy','Thủy':'Mộc','Mộc':'Hỏa','Hỏa':'Thổ','Thổ':'Kim'}
                         _ngu_hanh_khac = {'Kim':'Mộc','Mộc':'Thổ','Thổ':'Thủy','Thủy':'Hỏa','Hỏa':'Kim'}
                         
                         _mh_verdict_dkt = 'BÌNH'
-                        if _ngu_hanh_sinh.get(_dung_hanh) == _the_hanh:
+                        if _bien_hanh and _ngu_hanh_sinh.get(_bien_hanh) == _the_hanh:
+                            _mh_verdict_dkt = 'CÁT'  # Biến Quái Dụng Sinh Thể (Kết cục Đại Cát)
+                            _dkt_fixes.append(f"MH: Quẻ Biến ({_bien_hanh}) sinh Thể ({_the_hanh}) = Tiên trở hậu thông → CÁT")
+                        elif _ngu_hanh_sinh.get(_dung_hanh) == _the_hanh:
                             _mh_verdict_dkt = 'CÁT'  # Dụng Sinh Thể
                             _dkt_fixes.append(f"MH: {_dung_hanh}→{_the_hanh} = Dụng Sinh Thể → CÁT")
                         elif _ngu_hanh_khac.get(_the_hanh) == _dung_hanh:
                             _mh_verdict_dkt = 'CÁT'  # Thể Khắc Dụng
                             _dkt_fixes.append(f"MH: {_the_hanh}⊳{_dung_hanh} = Thể Khắc Dụng → CÁT")
+                        elif _bien_hanh and _bien_hanh == _the_hanh and (_ho_hanh == _the_hanh or _ngu_hanh_sinh.get(_ho_hanh) == _the_hanh):
+                            _mh_verdict_dkt = 'CÁT'
+                            _dkt_fixes.append(f"MH: Hỗ/Biến đồng lòng trợ Thể ({_the_hanh}) → CÁT")
                         elif _ngu_hanh_sinh.get(_the_hanh) == _dung_hanh:
                             _mh_verdict_dkt = 'HUNG'  # Thể Sinh Dụng
                             _dkt_fixes.append(f"MH: {_the_hanh}→{_dung_hanh} = Thể Sinh Dụng → HUNG")
                         elif _ngu_hanh_khac.get(_dung_hanh) == _the_hanh:
-                            _mh_verdict_dkt = 'HUNG'  # Dụng Khắc Thể
+                            _mh_verdict_dkt = 'HUNG'  # Dụng Khắc Thể (không có Biến sinh cứu)
                             _dkt_fixes.append(f"MH: {_dung_hanh}⊳{_the_hanh} = Dụng Khắc Thể → HUNG")
                         elif _the_hanh == _dung_hanh:
-                            _mh_verdict_dkt = 'BÌNH'  # Tỷ Hòa
-                            _dkt_fixes.append(f"MH: {_the_hanh}={_dung_hanh} = Tỷ Hòa → BÌNH")
+                            _mh_verdict_dkt = 'CÁT'  # Tỷ Hòa
+                            _dkt_fixes.append(f"MH: {_the_hanh}={_dung_hanh} = Tỷ Hòa → CÁT")
                         
                         # Update MH verdict trong hub
                         if 'MH' in _hub['methods']:
                             _hub['methods']['MH']['verdict'] = _mh_verdict_dkt
                             _hub['methods']['MH']['reason'] = '; '.join(_dkt_fixes[-1:])
+                            mai_hoa_verdict = _mh_verdict_dkt
                 
                 # Removed generic DKT loop for all gates (caused hallucinations)
                 # 3. Lục Hào: Kiểm tra Hồi Đầu Sinh/Khắc (từ DKT)
@@ -16449,19 +16459,25 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === V42.1: CẢNH BÁO NGUYỆT PHÁ — Hiển thị TRƯỚC kết luận ===
+            # === V105.0: CẢNH BÁO NGUYỆT PHÁ — Không báo Nguyệt Phá giả khi Lưỡng Thổ Xung Khai (Thìn⇔Tuất, Sửu⇔Mùi) hoặc Nhật Thần sinh cứu ===
             try:
                 _lh_dt_chi_np = ''
                 _lh_chi_thang_np = ''
                 if luc_hao_data:
                     _lh_haos_np = luc_hao_data.get('ban', {}).get('haos', luc_hao_data.get('haos', []))
                     _lh_chi_thang_np = luc_hao_data.get('chi_thang', '')
+                    _lh_chi_ngay_np = luc_hao_data.get('chi_ngay', '') or (chart_data or {}).get('chi_ngay', '')
                     if _lh_haos_np and dung_than:
                         for _h_np in _lh_haos_np:
                             if _h_np.get('luc_than', '') == dung_than:
                                 _lh_dt_chi_np = _h_np.get('chi', '')
                                 break
-                    if _lh_dt_chi_np and _lh_chi_thang_np:
+                    _earth_np = {'Thìn', 'Tuất', 'Sửu', 'Mùi'}
+                    _is_xung_khai_np = (_lh_dt_chi_np in _earth_np and _lh_chi_thang_np in _earth_np)
+                    _nhat_h_np = CHI_NGU_HANH.get(_lh_chi_ngay_np, '')
+                    _dt_h_np = CHI_NGU_HANH.get(_lh_dt_chi_np, '')
+                    _is_nhat_cuu_np = bool(_nhat_h_np and _dt_h_np and (SINH.get(_nhat_h_np) == _dt_h_np or _nhat_h_np == _dt_h_np))
+                    if _lh_dt_chi_np and _lh_chi_thang_np and not _is_xung_khai_np and not _is_nhat_cuu_np:
                         _, _np_html_online = _build_nguyet_pha_warning(
                             _lh_dt_chi_np, _lh_chi_thang_np,
                             dung_than_name=dung_than or 'Dụng Thần'
@@ -16571,7 +16587,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V104.2 — Ưu Tiên Nhóm Quẻ Chính: Mai Hoa · Kỳ Môn · Lục Hào)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V105.0 — Ưu Tiên 4 Phương Pháp Chuẩn Xác Nhất: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17276,6 +17292,7 @@ class FreeAIHelper:
                         chart_data=chart_data,
                         luc_hao_data=luc_hao_data,
                         mai_hoa_data=mai_hoa_data,
+                        omni_data=_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else None,
                     )
                 except Exception:
                     _connected_prose_on = _off_summary_extra
@@ -17283,7 +17300,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V104.2 — ƯU TIÊN NHÓM QUẺ CHÍNH: MAI HOA · KỲ MÔN · LỤC HÀO)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V105.0 — ƯU TIÊN 4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
@@ -17567,19 +17584,25 @@ class FreeAIHelper:
             except Exception:
                 pass
             
-            # === V42.1: CẢNH BÁO NGUYỆT PHÁ ===
+            # === V105.0: CẢNH BÁO NGUYỆT PHÁ — Không báo Nguyệt Phá giả khi Lưỡng Thổ Xung Khai hoặc Nhật sinh cứu ===
             try:
                 _lh_dt_chi_np2 = ''
                 _lh_chi_thang_np2 = ''
                 if luc_hao_data:
                     _lh_haos_np2 = luc_hao_data.get('ban', {}).get('haos', luc_hao_data.get('haos', []))
                     _lh_chi_thang_np2 = luc_hao_data.get('chi_thang', '')
+                    _lh_chi_ngay_np2 = luc_hao_data.get('chi_ngay', '') or (chart_data or {}).get('chi_ngay', '')
                     if _lh_haos_np2 and dung_than:
                         for _h_np2 in _lh_haos_np2:
                             if _h_np2.get('luc_than', '') == dung_than:
                                 _lh_dt_chi_np2 = _h_np2.get('chi', '')
                                 break
-                    if _lh_dt_chi_np2 and _lh_chi_thang_np2:
+                    _earth_np2 = {'Thìn', 'Tuất', 'Sửu', 'Mùi'}
+                    _is_xung_khai_np2 = (_lh_dt_chi_np2 in _earth_np2 and _lh_chi_thang_np2 in _earth_np2)
+                    _nhat_h_np2 = CHI_NGU_HANH.get(_lh_chi_ngay_np2, '')
+                    _dt_h_np2 = CHI_NGU_HANH.get(_lh_dt_chi_np2, '')
+                    _is_nhat_cuu_np2 = bool(_nhat_h_np2 and _dt_h_np2 and (SINH.get(_nhat_h_np2) == _dt_h_np2 or _nhat_h_np2 == _dt_h_np2))
+                    if _lh_dt_chi_np2 and _lh_chi_thang_np2 and not _is_xung_khai_np2 and not _is_nhat_cuu_np2:
                         _, _np_html_offline = _build_nguyet_pha_warning(
                             _lh_dt_chi_np2, _lh_chi_thang_np2,
                             dung_than_name=dung_than or 'Dụng Thần'
@@ -18051,6 +18074,7 @@ class FreeAIHelper:
                         chart_data=chart_data,
                         luc_hao_data=luc_hao_data,
                         mai_hoa_data=mai_hoa_data,
+                        omni_data=_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else None,
                     )
                 except Exception:
                     _connected_prose_fb = _off2_summary
@@ -18058,7 +18082,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V104.2 — ƯU TIÊN NHÓM QUẺ CHÍNH: MAI HOA · KỲ MÔN · LỤC HÀO)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V105.0 — ƯU TIÊN 4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html
