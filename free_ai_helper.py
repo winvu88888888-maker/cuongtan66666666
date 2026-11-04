@@ -5521,9 +5521,26 @@ class FreeAIHelper:
             else:
                 _vb_label = 'ĐẠI HUNG — RẤT BẤT LỢI'
             
-            _is_factual_who_age = (_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi'])
             _omni_dict_on = od.get('hub', {}).get('synthesis', {}).get('omniscient_data', {}) or {}
-            if _is_factual_who_age:
+            _is_children_q_on = bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_lower_online and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+            _is_factual_who_age = (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
+            if _is_children_q_on:
+                _ch_sum = _omni_dict_on.get('children_summary', 'KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
+                _ch_rea = _omni_dict_on.get('children_reasons', '')
+                _ch_trt = _omni_dict_on.get('children_traits', '')
+                _ch_adv = _omni_dict_on.get('children_advice', '')
+                offline_verdict_block = (
+                    f"═══════════════════════════════════════════\n"
+                    f"   👶 KẾT LUẬN TỬ TỨC / CON CÁI SÁT TỪ QUẺ (BẮT BUỘC ĐỒNG BỘ 100%)\n"
+                    f"═══════════════════════════════════════════\n"
+                    f"👶 SỐ CON & GIỚI TÍNH TỪ QUẺ: {_ch_sum}\n"
+                    f"📜 CĂN CỨ QUẺ CHỦ/HỖ/BIẾN & KỲ MÔN: {_ch_rea}\n"
+                    f"🌟 TÍNH CÁCH & TƯƠNG LAI CÁC CON: {_ch_trt}\n"
+                    f"🧭 LỜI KHUYÊN GIA ĐẠO: {_ch_adv}\n"
+                    f"→ BẠN BẮT BUỘC PHẢI KHẲNG ĐỊNH ĐÚNG KẾT QUẢ '{_ch_sum}' NÀY.\n"
+                    f"→ CẤM TUYỆT ĐỐI viết các cụm từ 'HUNG — BẤT LỢI' hay 'CẦN CÂN NHẮC — BÌNH' vào câu trả lời về con cái!\n"
+                )
+            elif _is_factual_who_age:
                 _om_g = _omni_dict_on.get('gender', 'NAM GIỚI / ĐÀN ÔNG (Trai)')
                 _om_gr = _omni_dict_on.get('gender_reasons', 'Dụng Thần mang khí Dương Cương')
                 _om_a = _omni_dict_on.get('age_tier', 'THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)')
@@ -5594,9 +5611,11 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc PHÂN TÍCH TRỌNG TÂM'
             
-            # ═══ PHẦN 4: V100.6 GEMINI PROMPT — TRẢ LỜI DỨT KHOÁT TRỌNG TÂM & GHÉP 7 VỊ TRÍ ═══
+            # ═══ PHẦN 4: V100.8 GEMINI PROMPT — TRẢ LỜI DỨT KHOÁT TRỌNG TÂM & SÁT QUẺ THỰC TẾ ═══
             _is_quit_q_on = any(w in q_lower_online for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở', 'ở lại hay'])
-            if _is_factual_who_age:
+            if _is_children_q_on:
+                _vb_prompt_str = _omni_dict_on.get('children_summary', 'KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
+            elif _is_factual_who_age:
                 _vb_prompt_str = f"{_omni_dict_on.get('gender', 'NAM GIỚI')} — {_omni_dict_on.get('age_tier', 'DƯỚI 45 TUỔI')}"
             elif _is_quit_q_on:
                 if _vb_pct_int >= 55:
@@ -13414,7 +13433,7 @@ class FreeAIHelper:
                                       f"Parser suggest: {parser_dt} | V35.8 final: {dung_than} | {reason[:60]}")
                 
             # V42.9.29: Authenticity Check with Dung Than
-            auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data, dung_than=dung_than)
+            auth_warnings, is_fake = [], False  # V100.8: Không hiện cảnh báo giả 'không có thật/hư ảo' gây hiểu lầm; Tuần Không đã được luận chuẩn trong bài
             if is_fake:
                 auth_html = f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:16px;border-radius:12px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 15px rgba(239,68,68,0.4);"><div style="font-size:1.1em;font-weight:800;color:#fca5a5;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC (CẢNH BÁO)</div>'
                 for w in auth_warnings:
@@ -15915,7 +15934,7 @@ class FreeAIHelper:
 
             for _raw_l in _norm.split('\n'):
                 _s = _raw_l.strip()
-                if not _s:
+                if not _s or _s in ('#', '##', '###', '####', '#####', '######'):
                     continue
                 # Bỏ qua 4 dòng KẾT LUẬN đã hiển thị ở Ô Nâu bên trên để không bị lặp chữ
                 if any(_k in _s.upper() for _k in ['### 🏆 KẾT LUẬN', '📢 CÂU TRẢ LỜI:', '📋 VÌ SAO:', '⏳ ỨNG KỲ:', '🔧 GIẢI PHÁP:']):
@@ -16050,8 +16069,15 @@ class FreeAIHelper:
             # === Ô NÂU TO — KẾT LUẬN AI ONLINE V100.6 (BỐ CỤC 3 THẺ TRỰC QUAN — NHÌN PHÁT BIẾT NGAY CÂU TRẢ LỜI) ===
             import re as _re_clean_v100
             _q_low_on_box = question.lower() if question else ''
-            if any(w in _q_low_on_box for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
-                _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?CÂN NHẮC\s*[—\-]\s*BÌNH[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
+            _is_child_box = any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in _q_low_on_box and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+            if _is_child_box:
+                _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
+                if _omni_ch_data.get('children_summary'):
+                    _online_verdict_line = f"👶 {_omni_ch_data['children_summary']}"
+                else:
+                    _online_verdict_line = _re_clean_v100.sub(r'[,;]?\s*(?:nhưng\s*)?(?:tình hình chung là\s*)?(?:ĐẠI CÁT|CÁT|CẦN CÂN NHẮC|BÌNH|HUNG|ĐẠI HUNG)[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
+            elif any(w in _q_low_on_box for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
+                _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?(?:CÂN NHẮC|BÌNH|HUNG|CÁT)[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             elif any(w in _q_low_on_box for w in ['nghỉ hay', 'nên nghỉ', 'nghỉ việc', 'bỏ việc', 'xin nghỉ', 'làm tiếp hay', 'đi hay ở']):
                 if 'CÂN NHẮC' in _online_verdict_line.upper() or 'để quyết định' in _online_verdict_line.lower():
                     if weighted_pct >= 55:
@@ -16088,7 +16114,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.7 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.8 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16800,8 +16826,8 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.7)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{_off_v_color};border-radius:20px;border:1px solid {_off_v_color};">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.8)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17574,8 +17600,8 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.7)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{_off2_v_color};border-radius:20px;border:1px solid {_off2_v_color};">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.8)</span>'
+                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html
                     + _connected_prose_fb

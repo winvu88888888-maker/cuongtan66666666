@@ -289,7 +289,7 @@ def build_omniscient_prophecy(
 
     # Tìm hào Dụng Thần trong Lục Hào
     dt_hao_info = {}
-    lh_haos = lh_ban.get('haos') or lh_ban.get('details', []) or []
+    lh_haos = lh_ban.get('haos') or lh_ban.get('details') or lh_ban.get('lines') or []
     for idx_h, h_item in enumerate(lh_haos, 1):
         if not isinstance(h_item, dict):
             continue
@@ -564,8 +564,146 @@ def build_omniscient_prophecy(
     nums_sorted = sorted(list({hd_1, hd_2, lt_num, tt_num}))
     quantity_str = (
         f"Con số định lượng chuẩn: <b>{', '.join(str(n) for n in nums_sorted)}</b> "
-        f"(Số lượng: <b>{hd_1}</b> hoặc <b>{lt_num}</b> cái/đơn vị; "
+        f"(Số lượng: <b>{hd_1}</b> hoặc <b>{lt_num}</b> đơn vị; "
         f"Bội số giá trị/tài lộc: <b>{hd_1}0, {lt_num}0, {hd_2}00</b>)"
+    )
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # CHIỀU 5B (V100.8): GIẢI MÃ TỬ TỨC / CON CÁI & NHÂN ĐINH SÁT TỪ QUẺ THỰC TẾ
+    # ═════════════════════════════════════════════════════════════════════════
+    _is_children_q = any(w in _q_low_om for w in [
+        'người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái',
+        'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức',
+        'con cái', 'có mấy người con', 'bao nhiêu người con'
+    ]) or ('con' in _q_low_om and any(w in _q_low_om for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+
+    # Phân tích Quẻ Chủ, Quẻ Hỗ, Quẻ Biến, Hào Tử Tôn và Cung Kỳ Môn để tính số con & trai/gái:
+    _YANG_TRIGRAMS = {'Càn': 'Cha/Nam (Dương Kim)', 'Chấn': 'Trưởng Nam (Con trai lớn)', 'Khảm': 'Trung Nam (Con trai thứ)', 'Cấn': 'Thiếu Nam (Con trai út)'}
+    _YIN_TRIGRAMS = {'Khôn': 'Mẹ/Nữ (Âm Thổ)', 'Tốn': 'Trưởng Nữ (Con gái lớn)', 'Ly': 'Trung Nữ (Con gái thứ)', 'Đoài': 'Thiếu Nữ (Con gái út)'}
+    _HEX_TRIGRAM_SPLIT = {
+        'Trạch Địa Tụy': ('Đoài', 'Khôn'), 'Thiên Địa Bĩ': ('Càn', 'Khôn'), 'Địa Thiên Thái': ('Khôn', 'Càn'),
+        'Phong Sơn Tiệm': ('Tốn', 'Cấn'), 'Tốn Cấn': ('Tốn', 'Cấn'), 'Sơn Phong Cổ': ('Cấn', 'Tốn'),
+        'Thuần Càn': ('Càn', 'Càn'), 'Thuần Khôn': ('Khôn', 'Khôn'), 'Thủy Lôi Truân': ('Khảm', 'Chấn'),
+        'Sơn Thủy Mông': ('Cấn', 'Khảm'), 'Thủy Thiên Nhu': ('Khảm', 'Càn'), 'Thiên Thủy Tụng': ('Càn', 'Khảm'),
+        'Địa Thủy Sư': ('Khôn', 'Khảm'), 'Thủy Địa Tỷ': ('Khảm', 'Khôn'), 'Phong Thiên Tiểu Súc': ('Tốn', 'Càn'),
+        'Thiên Trạch Lý': ('Càn', 'Đoài'), 'Thiên Hỏa Đồng Nhân': ('Càn', 'Ly'), 'Hỏa Thiên Đại Hữu': ('Ly', 'Càn'),
+        'Địa Sơn Khiêm': ('Khôn', 'Cấn'), 'Lôi Địa Dự': ('Chấn', 'Khôn'), 'Trạch Lôi Tùy': ('Đoài', 'Chấn'),
+        'Địa Trạch Lâm': ('Khôn', 'Đoài'), 'Phong Địa Quan': ('Tốn', 'Khôn'), 'Hỏa Lôi Phệ Hạp': ('Ly', 'Chấn'),
+        'Sơn Hỏa Bí': ('Cấn', 'Ly'), 'Sơn Địa Bác': ('Cấn', 'Khôn'), 'Địa Lôi Phục': ('Khôn', 'Chấn'),
+        'Thiên Lôi Vô Vọng': ('Càn', 'Chấn'), 'Sơn Thiên Đại Súc': ('Cấn', 'Càn'), 'Sơn Lôi Di': ('Cấn', 'Chấn'),
+        'Trạch Phong Đại Quá': ('Đoài', 'Tốn'), 'Thuần Khảm': ('Khảm', 'Khảm'), 'Thuần Ly': ('Ly', 'Ly'),
+        'Trạch Sơn Hàm': ('Đoài', 'Cấn'), 'Lôi Phong Hằng': ('Chấn', 'Tốn'), 'Thiên Sơn Độn': ('Càn', 'Cấn'),
+        'Lôi Thiên Đại Tráng': ('Chấn', 'Càn'), 'Hỏa Địa Tấn': ('Ly', 'Khôn'), 'Địa Hỏa Minh Di': ('Khôn', 'Ly'),
+        'Phong Hỏa Gia Nhân': ('Tốn', 'Ly'), 'Hỏa Trạch Khuê': ('Ly', 'Đoài'), 'Thủy Sơn Kiển': ('Khảm', 'Cấn'),
+        'Lôi Thủy Giải': ('Chấn', 'Khảm'), 'Sơn Trạch Tổn': ('Cấn', 'Đoài'), 'Phong Lôi Ích': ('Tốn', 'Chấn'),
+        'Trạch Thiên Quải': ('Đoài', 'Càn'), 'Thiên Phong Cấu': ('Càn', 'Tốn'), 'Địa Phong Thăng': ('Khôn', 'Tốn'),
+        'Trạch Thủy Khốn': ('Đoài', 'Khảm'), 'Thủy Phong Tỉnh': ('Khảm', 'Tốn'), 'Trạch Hỏa Cách': ('Đoài', 'Ly'),
+        'Hỏa Phong Đỉnh': ('Ly', 'Tốn'), 'Thuần Chấn': ('Chấn', 'Chấn'), 'Thuần Cấn': ('Cấn', 'Cấn'),
+        'Lôi Trạch Quy Muội': ('Chấn', 'Đoài'), 'Lôi Hỏa Phong': ('Chấn', 'Ly'), 'Hỏa Sơn Lữ': ('Ly', 'Cấn'),
+        'Thuần Tốn': ('Tốn', 'Tốn'), 'Thuần Đoài': ('Đoài', 'Đoài'), 'Phong Thủy Hoán': ('Tốn', 'Khảm'),
+        'Thủy Trạch Tiết': ('Khảm', 'Đoài'), 'Phong Trạch Trung Phu': ('Tốn', 'Đoài'), 'Lôi Sơn Tiểu Quá': ('Chấn', 'Cấn'),
+        'Thủy Hỏa Ký Tế': ('Khảm', 'Ly'), 'Hỏa Thủy Vị Tế': ('Ly', 'Khảm'),
+    }
+
+    _boy_pts = 0
+    _girl_pts = 0
+    _child_evidences = []
+
+    # 1. Phân tích Quẻ Chủ, Quẻ Hỗ, Quẻ Biến
+    for _q_lbl, _q_nm in [('Quẻ Chủ', ten_que_ban), ('Quẻ Hỗ', ten_que_ho), ('Quẻ Biến', ten_que_bien)]:
+        if not _q_nm:
+            continue
+        _pair = _HEX_TRIGRAM_SPLIT.get(_q_nm)
+        if not _pair:
+            for _tk in list(_YANG_TRIGRAMS.keys()) + list(_YIN_TRIGRAMS.keys()):
+                if _tk in _q_nm:
+                    _pair = (_tk, _tk)
+                    break
+        if _pair:
+            for _tg in _pair:
+                if _tg in _YANG_TRIGRAMS:
+                    _boy_pts += 1
+                    _child_evidences.append(f"{_q_lbl} <b>{_q_nm}</b> có quái <b>{_tg}</b> ({_YANG_TRIGRAMS[_tg]})")
+                elif _tg in _YIN_TRIGRAMS:
+                    _girl_pts += 1
+                    _child_evidences.append(f"{_q_lbl} <b>{_q_nm}</b> có quái <b>{_tg}</b> ({_YIN_TRIGRAMS[_tg]})")
+
+    # 2. Phân tích Hào Tử Tôn trong Lục Hào
+    _tu_ton_lines = []
+    for _idx_h, _h_it in enumerate(lh_haos, 1):
+        if isinstance(_h_it, dict) and _h_it.get('luc_than') == 'Tử Tôn':
+            _h_ad = str(_h_it.get('am_duong', _h_it.get('type', '')))
+            _h_cc = _h_it.get('can_chi') or _h_it.get('chi', '')
+            _h_nh = _h_it.get('ngu_hanh', hanh_dt)
+            if any(x in _h_ad for x in ['Dương', '1', '7', '9']) or (_idx_h % 2 == 1):
+                _boy_pts += 2
+                _tu_ton_lines.append(f"Hào Tử Tôn tại Hào {_idx_h} ({_h_cc} hành {_h_nh} — Dương/Con Trai)")
+            else:
+                _girl_pts += 2
+                _tu_ton_lines.append(f"Hào Tử Tôn tại Hào {_idx_h} ({_h_cc} hành {_h_nh} — Âm/Con Gái)")
+    if _tu_ton_lines:
+        _child_evidences.extend(_tu_ton_lines)
+    else:
+        _child_evidences.append(f"Dụng Thần <b>Tử Tôn</b> mang hành <b>{hanh_dt}</b> (vòng Trường Sinh: <b>{ts_stage or 'Thai/Dưỡng'}</b>)")
+
+    # 3. Phân tích Cung Kỳ Môn (Cung + Sao + Cửa)
+    _quai_short = c_info['quai'].split()[0]
+    if _quai_short in _YANG_TRIGRAMS:
+        _boy_pts += 1
+        _child_evidences.append(f"Kỳ Môn Cung {target_cung} <b>{_quai_short}</b> ({_YANG_TRIGRAMS[_quai_short]})")
+    elif _quai_short in _YIN_TRIGRAMS:
+        _girl_pts += 1
+        _child_evidences.append(f"Kỳ Môn Cung {target_cung} <b>{_quai_short}</b> ({_YIN_TRIGRAMS[_quai_short]})")
+
+    if 'Nam' in star_g_matched[0]:
+        _boy_pts += 1
+        _child_evidences.append(f"Sao <b>{sao_name}</b> (Dương tinh — ứng Con Trai)")
+    else:
+        _girl_pts += 1
+        _child_evidences.append(f"Sao <b>{sao_name}</b> (Âm tinh — ứng Con Gái)")
+
+    if any(m in cua_name for m in ['Khai', 'Hưu', 'Sinh', 'Thương']):
+        _boy_pts += 1
+        _child_evidences.append(f"Cửa <b>{cua_name}</b> (Dương môn — ứng Con Trai)")
+    else:
+        _girl_pts += 1
+        _child_evidences.append(f"Cửa <b>{cua_name}</b> (Âm môn — ứng Con Gái)")
+
+    # Chốt số lượng con và cơ cấu Trai / Gái sát thực tế:
+    # Số Tiên Thiên của quái cung + số lượng hào Tử Tôn quyết định số con chủ đạo (thường từ 2 đến 3 người con)
+    if tt_num in (1, 2) or hd_1 in (1, 2):
+        _main_child_cnt = 2
+        _range_child_str = "2 người con (hoặc 2 – 3 con nếu tính đủ lộc Tử Tức)"
+    else:
+        _main_child_cnt = 2 if (_boy_pts > 0 and _girl_pts > 0) else 3
+        _range_child_str = f"{_main_child_cnt} người con (dao động 2 – 3 con theo số quẻ)"
+
+    if _boy_pts > 0 and _girl_pts > 0:
+        if _boy_pts > _girl_pts + 2:
+            _bg_str = "1 – 2 Con Trai và 1 Con Gái (Dương khí nhỉnh hơn — dễ có 2 Trai 1 Gái hoặc 1 Trai 1 Gái)"
+        elif _girl_pts > _boy_pts + 2:
+            _bg_str = "1 Con Trai và 1 – 2 Con Gái (Âm khí nhỉnh hơn — dễ có 1 Trai 1 Gái hoặc 1 Trai 2 Gái)"
+        else:
+            _bg_str = "1 Con Trai và 1 Con Gái — Đủ cả nếp lẫn tẻ (Nếu sinh 3 con thì ứng 2 Trai 1 Gái hoặc 1 Trai 2 Gái)"
+    elif _boy_pts > 0:
+        _bg_str = "Chủ yếu là Con Trai (1 – 2 Con Trai)"
+    else:
+        _bg_str = "Chủ yếu là Con Gái (1 – 2 Con Gái)"
+
+    children_summary = f"QUẺ BÁO TỬ TỨC: KHOẢNG {_range_child_str.upper()} — GỒM {_bg_str.upper()}"
+    # Lọc các bằng chứng không trùng lặp
+    _uniq_ev = []
+    for _ev in _child_evidences:
+        if _ev not in _uniq_ev:
+            _uniq_ev.append(_ev)
+    children_reasons = "; kết hợp ".join(_uniq_ev[:5]) + "."
+    children_traits = (
+        f"Hào Tử Tôn hành <b>{hanh_dt}</b> ({ts_stage or 'Vượng'}) hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{c_info['huong']}</b>: "
+        f"báo hiệu các con có tư chất thông minh, lanh lợi, tính tự lập cao ({star_g_matched[1].lower()}), lớn lên có chính kiến và biết lo cho gia đình."
+    )
+    children_advice = (
+        f"Để bồi đắp phúc khí cho con cái (Cung Tử Tức tại <b>{c_info['huong']}</b>), cha mẹ nên khích lệ sự tự lập của con, "
+        f"bố trí góc học tập/phòng ngủ của con ưu tiên hướng <b>{c_info['huong']}</b> và dùng các gam màu <b>{h_forensic['mau_sac']}</b>."
     )
 
     # ═════════════════════════════════════════════════════════════════════════
@@ -632,12 +770,13 @@ def build_omniscient_prophecy(
     # Chỉ đoán Giới tính (Trai/Gái) & Tuổi khi câu hỏi thực sự hỏi AI / TRAI HAY GÁI / BAO NHIÊU TUỔI / KẺ GIAN
     _is_person_focus = any(w in _q_focus for w in [
         'là ai', 'ai lấy', 'ai làm', 'người nào', 'trai hay gái', 'nam hay nữ',
-        'bao nhiêu tuổi', 'mấy tuổi', 'già hay trẻ', 'trộm', 'kẻ gian', 'người lạ'
+        'bao nhiêu tuổi', 'mấy tuổi', 'già hay trẻ', 'trộm', 'kẻ gian', 'người lạ',
+        'người con', 'mấy con', 'bao nhiêu con', 'mấy trai', 'mấy gái', 'con cái', 'anh chị em'
     ])
     _is_object_count_focus = any(w in _q_focus for w in [
         'cái gì', 'đồ gì', 'vật gì', 'trong hộp', 'mất ví', 'mất đồ', 'thất lạc', 'điện thoại',
-        'chìa khóa', 'sổ đỏ', 'giấy tờ', 'trang sức', 'bao nhiêu', 'có mấy', 'mấy cái', 'số lượng', 'con số', 'định giá'
-    ]) and not _is_health_focus and not _is_love_focus and not _is_person_focus
+        'chìa khóa', 'sổ đỏ', 'giấy tờ', 'trang sức', 'mấy cái', 'con số', 'định giá'
+    ]) and not _is_health_focus and not _is_love_focus and not _is_person_focus and not _is_children_q
 
     # V99.9.7: Nối toàn bộ diễn biến Quá khứ - Hiện tại - Tương lai, Trọng tâm câu hỏi & Ứng kỳ thành các đoạn văn liền mạch dễ đọc
     _focus_prose = ""
@@ -702,7 +841,12 @@ def build_omniscient_prophecy(
         _filtered_lines.append(f"3. **🏥 CHẨN ĐOÁN Y DỊCH & CƠ THỂ:** {health_str}")
     if _is_find_where_focus:
         _filtered_lines.append(f"3. **📍 ĐỊA ĐIỂM & HIỆN TRƯỜNG:** {where_summary} | {where_scene}")
-    if _is_person_focus:
+    if _is_children_q:
+        _filtered_lines.append(f"3. **👶 LUẬN ĐOÁN TỬ TỨC / CON CÁI SÁT TỪ QUẺ:** {children_summary}")
+        _filtered_lines.append(f"   - **Căn cứ từ Quẻ Chủ/Hỗ/Biến, Hào Tử Tôn & Cung Kỳ Môn:** {children_reasons}")
+        _filtered_lines.append(f"   - **Tính cách & Tương lai các con:** {children_traits}")
+        _filtered_lines.append(f"   - **Lời khuyên cho cha mẹ:** {children_advice}")
+    elif _is_person_focus:
         _filtered_lines.append(f"4. **👤 NHẬN DẠNG NGƯỜI LIÊN QUAN:** Giới tính {primary_gender}, Độ tuổi {age_tier} ({', '.join(birth_years)}), Ngoại hình: {appearance_str}")
     if _is_object_count_focus:
         _filtered_lines.append(f"5. **📦 ĐẶC ĐIỂM ĐỒ VẬT & ĐỊNH LƯỢNG:** {combined_objects} | Màu {h_forensic['mau_sac']} | {item_condition} | {quantity_str}")
@@ -720,6 +864,11 @@ def build_omniscient_prophecy(
             'gender_reasons': ', '.join(gender_reasons),
             'age_tier': age_tier,
             'birth_years': birth_years,
+            'is_children_question': _is_children_q,
+            'children_summary': children_summary,
+            'children_reasons': children_reasons,
+            'children_traits': children_traits,
+            'children_advice': children_advice,
             'where_summary': where_summary,
             'where_scene': where_scene,
             'objects': combined_objects,

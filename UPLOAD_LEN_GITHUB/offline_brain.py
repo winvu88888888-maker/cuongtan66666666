@@ -530,7 +530,15 @@ def build_narrative_summary_text(
         vh = f"THỜI ĐIỂM ỨNG NGHIỆM: {uk_clean.upper()} ({pct}% — {status_w})"
         return _hero_ui("⏳", vh, f"Dụng Thần <b>{dung_than}</b> hội tụ khí số theo chu kỳ Can Chi.", f"Điểm rơi chính xác: <b>{uk_clean}</b>", f"Chuẩn bị sẵn sàng và hành động theo hướng <b>{direction}</b>.")
 
-    # 5. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
+    # 5A. TRỌNG TÂM: CON CÁI / TỬ TỨC (BAO NHIÊU NGƯỜI CON, MẤY TRAI MẤY GÁI, SINH TRAI HAY GÁI)
+    if omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_low and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])):
+        c_sum = omni_data.get('children_summary', 'QUẺ BÁO TỬ TỨC: KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
+        c_rea = omni_data.get('children_reasons', f'Xác định trực tiếp từ Hào Tử Tôn ({dung_than}) và tổ hợp Quẻ Chủ – Hỗ – Biến.')
+        c_trt = omni_data.get('children_traits', 'Các con thông minh, tự lập, trưởng thành vững vàng và hiếu thuận.')
+        c_adv = omni_data.get('children_advice', f'Cha mẹ nên đồng hành tâm lý cùng con; hướng tốt cho cung Tử Tức: <b>{direction}</b>.')
+        return _hero_ui("👶", c_sum, f"<b>Căn cứ sát từ quẻ:</b> {c_rea}", c_trt, c_adv)
+
+    # 5B. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
     if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
         g_str = omni_data.get('gender', 'Nam giới (Khí Dương)')
         g_reasons = omni_data.get('gender_reasons', 'Dụng Thần mang khí Dương')
@@ -539,13 +547,16 @@ def build_narrative_summary_text(
         vh = f"{g_str} — {a_str}"
         return _hero_ui("👤", vh, f"Xác định từ Dụng Thần <b>{dung_than}</b> ({g_reasons}).", f"Ước tính năm sinh & độ tuổi: <b>{by_str}</b>", f"Phương vị tương ứng: <b>{direction}</b> | Màu hợp: <b>{omni_data.get('colors', 'Trắng, Vàng')}</b>.")
 
-    # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / BAO NHIÊU / MẤY
-    if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'bao nhiêu', 'có mấy', 'số lượng']):
+    # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / SỐ LƯỢNG VẬT PHẨM
+    if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'mặt hàng gì', 'sản phẩm gì']) or (any(w in q_low for w in ['bao nhiêu', 'có mấy', 'số lượng']) and not any(p in q_low for p in ['người', 'con', 'anh', 'chị', 'em', 'bạn', 'nhân viên'])):
         obj_str = omni_data.get('objects', 'Vật phẩm thuộc hành Dụng Thần')
         qty_str = omni_data.get('quantity', 'Theo số Hà Đồ - Lạc Thư')
         col_str = omni_data.get('colors', 'Sáng rõ')
-        vh = f"{obj_str[:110]} ({qty_str})"
-        return _hero_ui("📦", vh, f"Loại tượng hành của Dụng Thần <b>{dung_than}</b>.", f"Định lượng/Số lượng: <b>{qty_str}</b>", f"Màu sắc đặc trưng: <b>{col_str}</b> | Hướng: <b>{direction}</b>.")
+        if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'mặt hàng gì', 'sản phẩm gì']):
+            vh = f"{obj_str[:110]} ({qty_str})"
+        else:
+            vh = f"ĐỊNH LƯỢNG TỪ QUẺ: {qty_str}"
+        return _hero_ui("📦", vh, f"Tính theo số Tiên Thiên Bát Quái và Hà Đồ của hào <b>{dung_than}</b>.", f"Chi tiết con số ứng quẻ: <b>{qty_str}</b>", f"Màu sắc trợ vận: <b>{col_str}</b> | Hướng cát lợi: <b>{direction}</b>.")
 
     # 7. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
     if category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền']):
@@ -1250,37 +1261,62 @@ def build_connected_prose_analysis(
 
     _ban_n = (luc_hao_data or {}).get("ban", {}).get("name", "Quẻ Chủ") if isinstance(luc_hao_data, dict) else "Quẻ Chủ"
     _bien_n = (luc_hao_data or {}).get("bien", {}).get("name", "Quẻ Biến") if isinstance(luc_hao_data, dict) else "Quẻ Biến"
-    _dc1 = _deep_card(
-        "📿", "Góc Nhìn 1: Bản Chất Sự Việc & Con Người (Kinh Dịch Lục Hào · Mai Hoa)", "#fbbf24",
-        f"Quẻ <b>{_ban_n}</b> chuyển sang <b>{_bien_n}</b> cho biết sự việc của bạn đạt <b>{weighted_pct}%</b> độ thuận lợi; bạn đang nắm thế chủ động nhưng vẫn phải gánh vác nhiều trách nhiệm.",
-        f"Năng lượng cốt lõi (vòng Trường Sinh <b>{ts_stage or 'Vượng'}</b>) chứng tỏ nền tảng và giá trị thực tế của việc này vẫn còn tốt, chưa bị mất đi.",
-        "Tránh tâm lý sốt ruột hay áp đặt; hãy giữ vững những gì đang có và giải quyết từng việc theo thứ tự ưu tiên."
-    )
-    _dc2 = _deep_card(
-        "🏯", "Góc Nhìn 2: Hoàn Cảnh Xung Quanh & Phương Hướng (Kỳ Môn · Đại Lục Nhâm)", "#38bdf8",
-        f"Hoàn cảnh thực tế hội tụ tại hướng <b>{direction}</b>. Giai đoạn đầu tuy có chút chậm trễ hoặc áp lực tâm lý nhưng về sau sẽ dần ổn định.",
-        f"Cung hướng <b>{direction}</b> đang mở ra cơ hội về công danh, uy tín và sự hỗ trợ từ người có kinh nghiệm.",
-        f"Khi cần bàn bạc công việc, tìm kiếm cơ hội hoặc tháo gỡ vướng mắc, hãy chủ động hướng về phía <b>{direction}</b> và giữ thái độ mềm mỏng."
-    )
+    _lh_hex_p = dossier.get("lh_hexagram_prose", f"Quẻ <b>{_ban_n}</b> biến <b>{_bien_n}</b>.")
+    _lh_hao_p = dossier.get("lh_hao_dong_prose", f"Dụng Thần <b>{dung_than}</b> đạt trạng thái <b>{ts_stage or 'Vượng'}</b>.")
+    _mh_td_p = dossier.get("mh_the_dung_prose", "Mai Hoa Thể Dụng cân bằng.")
+    _km_pal_p = dossier.get("km_palace_prose", f"Cung trọng tâm tọa tại hướng <b>{direction}</b>.")
+    _km_cc_p = dossier.get("km_cach_cuc_prose", "Cần điềm tĩnh tháo gỡ từng bước.")
+    _wc_p = dossier.get("world_class_prose", "Chiêm tinh Horary, Ấn Độ Vệ Đà KP và Huyền Không Vận 9 đồng thuận với kết quả quẻ.")
+    _is_child_deep = any(w in q_low for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con"]) or ("con" in q_low and any(w in q_low for w in ["bao nhiêu", "mấy trai", "mấy gái", "có mấy"]))
+    if _is_child_deep:
+        _ch_sum_d = _omni_for_holo.get("children_summary", "KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI")
+        _ch_rea_d = _omni_for_holo.get("children_reasons", "")
+        _ch_trt_d = _omni_for_holo.get("children_traits", "")
+        _ch_adv_d = _omni_for_holo.get("children_advice", "")
+        _dc1 = _deep_card(
+            "📿", "Thẻ 1 — Gốc Rễ Quẻ Kinh Dịch & Hào Tử Tôn (Lục Hào · Mai Hoa)", "#fbbf24",
+            f"<b>{_ch_sum_d}</b>. {_lh_hex_p}",
+            f"<b>Căn cứ quẻ:</b> {_ch_rea_d} {_lh_hao_p}",
+            "Lộc con cái trên quẻ rất rõ ràng; cha mẹ nên giữ tâm thế an vui, bồi đắp phúc đức gia đình."
+        )
+        _dc2 = _deep_card(
+            "🏯", "Thẻ 2 — Cung Tử Tức & Tính Cách Con Cái (Kỳ Môn Độn Giáp)", "#38bdf8",
+            _km_pal_p,
+            f"{_ch_trt_d} {_km_cc_p}",
+            _ch_adv_d
+        )
+    else:
+        _dc1 = _deep_card(
+            "📿", "Thẻ 1 — Gốc Rễ Quẻ Kinh Dịch (Lục Hào · Mai Hoa)", "#fbbf24",
+            _lh_hex_p,
+            f"{_lh_hao_p} {_mh_td_p}",
+            "Bám sát biến chuyển của Hào Động và tương quan Thế – Ứng trên quẻ để hành xử chủ động, tránh nóng vội."
+        )
+        _dc2 = _deep_card(
+            "🏯", "Thẻ 2 — Hiện Trường Bàn Kỳ Môn & Cách Cục Lưu Bá Ôn", "#38bdf8",
+            _km_pal_p,
+            _km_cc_p,
+            f"Tận dụng cát khí tại hướng <b>{direction}</b> và hóa giải các nút thắt tâm lý bằng sự mềm mỏng, linh hoạt."
+        )
     _dc3 = _deep_card(
-        "🌍", "Góc Nhìn 3: Đối Chiếu Đông – Tây (Horary Phương Tây · Vệ Đà Ấn Độ · Vận 9)", "#a78bfa",
-        "Chiêm tinh Phương Tây (Horary) và Ấn Độ (Vệ Đà KP) cùng xác nhận mục tiêu của bạn có cơ sở thành hiện thực nếu đi đúng lộ trình.",
-        "Các góc chiếu tinh tú cho thấy cơ hội đang mở ra phía trước, nhưng thành quả phụ thuộc trực tiếp vào sự kiên trì và điều chỉnh chiến lược của chính bạn.",
-        "Không quyết định vội vàng theo cảm xúc nhất thời; hãy kết hợp sự quyết đoán trong chuyên môn với sự khéo léo trong giao tiếp."
+        "🌍", "Thẻ 3 — Đối Chiếu Đông – Tây Thực Tế (Horary · Vệ Đà KP · Phi Tinh Vận 9)", "#a78bfa",
+        _wc_p[:260] + ("..." if len(_wc_p) > 260 else ""),
+        _wc_p[260:520] + ("..." if len(_wc_p) > 520 else "") if len(_wc_p) > 260 else "Các hệ thống tinh tú Đông – Tây hội tụ xác nhận rõ xu hướng vận động của quẻ.",
+        "Kết hợp chặt chẽ giữa thực lực cá nhân và thời điểm mở vận để đạt kết quả cao nhất."
     )
-    _adv_joined = " ".join(clean_advs) if clean_advs else "Giữ vững vị trí hiện tại, chuẩn bị kỹ phương án dự phòng trước khi bước sang giai đoạn mới."
+    _adv_joined = " ".join(clean_advs) if clean_advs else "Giữ vững nhịp độ ổn định, chuẩn bị kỹ phương án trước khi bước sang giai đoạn mới."
     _uk_joined = ung_ky_str if (ung_ky_str and ung_ky_str != "?") else "Trong chu kỳ Can Chi gần nhất"
     _dc4 = _deep_card(
-        "🧙", "Góc Nhìn 4: Hội Đồng 40 Chuyên Gia AI & Giải Pháp Hành Động", "#34d399",
-        "Hội đồng chuyên gia đánh giá đây là giai đoạn cần lấy sự ổn định làm gốc, vừa duy trì nguồn lực hiện tại vừa chuẩn bị cho bước tiến tiếp theo.",
-        f"<b>Thời điểm vàng (Ứng kỳ):</b> Mọi việc sẽ sáng tỏ và chuyển biến thuận lợi nhất vào khoảng <b>{_uk_joined}</b>.",
+        "🧙", "Thẻ 4 — Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp Quyết Hành Động", "#34d399",
+        ("; ".join(clean_exps) + ".") if locals().get("clean_exps") else "Hội đồng 40 chuyên gia AI đồng thuận khuyến nghị ưu tiên sự chắc chắn và thuận theo tự nhiên.",
+        f"<b>Thời điểm vàng (Ứng kỳ):</b> Mọi việc sẽ sáng tỏ và ứng nghiệm rõ nhất vào khoảng <b>{_uk_joined}</b>.",
         f"{_adv_joined} (Hướng vượng khí hỗ trợ: <b>{direction}</b>)."
     )
 
     return (
         _holo_grid_html
         + f'<details style="margin-top:12px;padding:12px 16px;background:rgba(15,23,42,0.55);border-radius:12px;border:1px solid rgba(110,231,183,0.3);color:#f1f5f9;">'
-        + f'<summary style="cursor:pointer;font-size:0.98em;font-weight:800;color:#6ee7b7;">📖 XEM TÓM TẮT 4 GÓC NHÌN CHUYÊN SÂU: NÓI VỀ GÌ · CƠ HỘI · LỜI KHUYÊN & GIẢI PHÁP (Nhấn để mở)</summary>'
+        + f'<summary style="cursor:pointer;font-size:0.98em;font-weight:800;color:#6ee7b7;">📖 XEM 4 THẺ LUẬN GIẢI HỌC THUẬT SÁT QUẺ: NÓI VỀ GÌ · CƠ HỘI · LỜI KHUYÊN & GIẢI PHÁP (Nhấn để mở)</summary>'
         + f'<div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;">'
         + _dc1 + _dc2 + _dc3 + _dc4
         + f'</div></details>'
