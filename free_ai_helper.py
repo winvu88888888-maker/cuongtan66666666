@@ -16214,7 +16214,7 @@ class FreeAIHelper:
         except Exception as _e_nb:
             self.log_step("V100.0 Brain", "ERROR", str(_e_nb)[:80])
 
-        # V104.0: KÍCH HOẠT HỆ THỐNG SONG NÃO AI 2 TẦNG & ĐỒNG BỘ ĐA CÂU HỎI / ĐA PHƯƠNG ÁN TRÊN TOÀN BỘ 5 HỘP GIAO DIỆN
+        # V104.2: KÍCH HOẠT HỆ THỐNG SONG NÃO AI 2 TẦNG & ĐỒNG BỘ ĐA CÂU HỎI / ĐA PHƯƠNG ÁN TRÊN TOÀN BỘ 5 HỘP GIAO DIỆN
         _dual_agent_banner_html = ""
         try:
             from dual_ai_agents import QuestionReaderAI, HexagramReasoningAI
@@ -16223,6 +16223,25 @@ class FreeAIHelper:
                 dung_than_hint=dung_than,
                 category_hint=detected_category,
             )
+            if _q_blueprint.get("authoritative_dt"):
+                dung_than = _q_blueprint["authoritative_dt"]
+            _omni_data_for_dual = dict(_omniscient_res.get('data', {})) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict) else {}
+            if dung_than == "Thê Tài" and isinstance(chart_data, dict):
+                # Đồng bộ Cung Tài Sản / Sinh Môn trên bàn Kỳ Môn khi Dụng Thần là Thê Tài
+                _nb_d = chart_data.get('nhan_ban') or {}
+                _tb_d = chart_data.get('thien_ban') or {}
+                _thb_d = chart_data.get('than_ban') or {}
+                for _c_k, _c_v in _nb_d.items():
+                    if 'Sinh' in str(_c_v):
+                        _c_num = int(_c_k) if str(_c_k).isdigit() else 7
+                        _HUONG_MAP_D = {1: ("Chính Bắc", "Khảm"), 2: ("Tây Nam", "Khôn"), 3: ("Chính Đông", "Chấn"), 4: ("Đông Nam", "Tốn"), 6: ("Tây Bắc", "Càn"), 7: ("Chính Tây", "Đoài"), 8: ("Đông Bắc", "Cấn"), 9: ("Chính Nam", "Ly")}
+                        _h_d, _q_d = _HUONG_MAP_D.get(_c_num, ("Chính Tây", "Đoài"))
+                        _omni_data_for_dual['target_cung'] = _c_num
+                        _omni_data_for_dual['c_info'] = {'huong': _h_d, 'quai': _q_d}
+                        _omni_data_for_dual['sao_name'] = str(_tb_d.get(_c_k, _tb_d.get(str(_c_k), 'Thiên Phụ')))
+                        _omni_data_for_dual['cua_name'] = str(_c_v)
+                        _omni_data_for_dual['than_name'] = str(_thb_d.get(_c_k, _thb_d.get(str(_c_k), 'Huyền Vũ')))
+                        break
             _dual_verified = HexagramReasoningAI.cross_verify_and_reason(
                 blueprint=_q_blueprint,
                 dung_than=dung_than,
@@ -16230,7 +16249,7 @@ class FreeAIHelper:
                 chart_data=chart_data,
                 luc_hao_data=luc_hao_data,
                 mai_hoa_data=mai_hoa_data,
-                omni_data=_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {},
+                omni_data=_omni_data_for_dual,
                 auth_warnings=locals().get('auth_warnings', []),
                 is_fake=locals().get('is_fake', False),
                 narrative_summary=_narrative_main,
@@ -16552,7 +16571,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V104.0 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V104.2 — Ưu Tiên Nhóm Quẻ Chính: Mai Hoa · Kỳ Môn · Lục Hào)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17264,7 +17283,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V104.0)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V104.2 — ƯU TIÊN NHÓM QUẺ CHÍNH: MAI HOA · KỲ MÔN · LỤC HÀO)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
@@ -18039,7 +18058,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V104.0)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V104.2 — ƯU TIÊN NHÓM QUẺ CHÍNH: MAI HOA · KỲ MÔN · LỤC HÀO)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html

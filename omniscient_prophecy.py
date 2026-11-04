@@ -2093,63 +2093,51 @@ def build_omniscient_prophecy(
 
                 is_binary_factual_q = True
 
-                # So sánh Trục 1 (Hào Thế / Nội Quái / Quẻ Chủ = Phương án A) và Trục 2 (Hào Ứng / Ngoại Quái / Quẻ Biến = Phương án B)
-
+                # V104.2: Đối chứng 2 phương án BẤT BIẾN THỨ TỰ (100% căn cứ Nhóm Quẻ Chính: Mai Hoa + Kỳ Môn + Lục Hào, cấm chọn theo vị trí 1 hay 2)
                 _ung_in_kv = False
-
                 _the_in_kv = False
-
                 for _h_it in lh_haos:
-
                     if isinstance(_h_it, dict):
-
                         _tu_h = str(_h_it.get('the_ung') or _h_it.get('tu') or '')
-
                         _chi_h = str(_h_it.get('chi') or _h_it.get('can_chi') or '').split()[-1] if (_h_it.get('chi') or _h_it.get('can_chi')) else ''
-
                         if 'Ứng' in _tu_h and _chi_h in _kv_om:
-
                             _ung_in_kv = True
-
                         if 'Thế' in _tu_h and _chi_h in _kv_om:
-
                             _the_in_kv = True
 
-                if _ung_in_kv or (weighted_pct >= 50 and not _the_in_kv):
+                _POS_OM_KW = ('giàu', 'khá giả', 'dư dả', 'có tiền', 'lãi', 'lời', 'tốt', 'cát', 'thuận', 'thành công', 'đỗ', 'đậu', 'thắng', 'được', 'nên', 'có', 'thật', 'đúng', 'khỏe')
+                _NEG_OM_KW = ('nghèo', 'khó khăn', 'thiếu thốn', 'túng thiếu', 'lỗ', 'xấu', 'hung', 'nghịch', 'thất bại', 'trượt', 'rớt', 'thua', 'mất', 'không', 'giả', 'sai', 'ốm', 'bệnh')
+                _oa_l = _opt_a.lower()
+                _ob_l = _opt_b.lower()
+                _a_is_pos_om = any(w in _oa_l for w in _POS_OM_KW) and not _oa_l.startswith(('không ', 'chưa '))
+                _b_is_pos_om = any(w in _ob_l for w in _POS_OM_KW) and not _ob_l.startswith(('không ', 'chưa '))
+                _a_is_neg_om = any(w in _oa_l for w in _NEG_OM_KW) or _oa_l.startswith(('không ', 'chưa '))
+                _b_is_neg_om = any(w in _ob_l for w in _NEG_OM_KW) or _ob_l.startswith(('không ', 'chưa '))
 
-                    _chosen_opt = _opt_a.upper()
-
-                    _rejected_opt = _opt_b.upper()
-
-                    _ab_reason = (
-
-                        f"Quẻ Chủ <b>{ten_que_ban}</b> (ứng với phương án 1: <b>{_opt_a}</b>) đang nắm chủ quyền tại Cung {target_cung} ({c_info['quai']} · Sao {sao_name} · Cửa {cua_name}), "
-
-                        f"trong khi phương án 2 (<b>{_opt_b}</b>) bị Tuần Không/suy khí trên trục Ứng/Biến ({ten_que_bien or 'Biến quái'})."
-
-                    )
-
+                _hex_favors_pos = (not _the_in_kv) or ('Sinh' in cua_name or 'Khai' in cua_name or 'Hưu' in cua_name) or (weighted_pct >= 50)
+                if (_a_is_pos_om and _b_is_neg_om) or (_b_is_pos_om and _a_is_neg_om):
+                    _pick_a = (_a_is_pos_om and _hex_favors_pos) or (_a_is_neg_om and not _hex_favors_pos)
                 else:
+                    # Sắp xếp chuẩn hóa để kết quả bất biến 100% khi đảo thứ tự A và B
+                    _canon_a_first = (_oa_l <= _ob_l)
+                    _pick_a = (_canon_a_first and _hex_favors_pos) or ((not _canon_a_first) and (not _hex_favors_pos))
 
+                if _pick_a:
+                    _chosen_opt = _opt_a.upper()
+                    _rejected_opt = _opt_b.upper()
+                else:
                     _chosen_opt = _opt_b.upper()
-
                     _rejected_opt = _opt_a.upper()
 
-                    _ab_reason = (
-
-                        f"Hào Động trên quẻ <b>{ten_que_ban}</b> chuyển hóa mạnh sang Quẻ Biến <b>{ten_que_bien or 'Biến cuộc'}</b> (ứng với phương án 2: <b>{_opt_b}</b>) "
-
-                        f"tại Cung {target_cung} ({c_info['quai']} · Sao {sao_name} · Cửa {cua_name}), vượt trội hơn phương án 1 (<b>{_opt_a}</b>)."
-
-                    )
+                _ab_reason = (
+                    f"Căn cứ Nhóm Quẻ Chính (Mai Hoa <b>{ten_que_ban} ➔ {ten_que_bien or 'Biến quái'}</b> + Kỳ Môn Cung {target_cung} Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> + Lục Hào Thế/Ứng), "
+                    f"quẻ nghiêng hẳn về phương án <b>{_chosen_opt}</b> (loại trừ <b>{_rejected_opt}</b> — kết quả bất biến dù đảo thứ tự câu hỏi)."
+                )
 
                 binary_verdict_headline = f"🎯 KẾT LUẬN DỨT KHOÁT TỪ QUẺ: {_chosen_opt} (LOẠI TRỪ PHƯƠNG ÁN: {_rejected_opt})!"
-
                 binary_why_reasons = _ab_reason
-
                 binary_when_note = f"Thời điểm & không gian ứng nghiệm: <b>{uk_exact}</b> tại hướng <b>{c_info['huong']}</b>."
-
-                binary_action_advice = f"Quẻ đã phân định dứt khoát nghiêng hẳn về <b>{_chosen_opt}</b> dựa trên hào Thế/Ứng, Tuần Không và bàn Kỳ Môn."
+                binary_action_advice = f"Quẻ đã phân định dứt khoát nghiêng hẳn về <b>{_chosen_opt}</b> dựa trên Nhóm Quẻ Chính (Mai Hoa + Kỳ Môn + Lục Hào)."
 
 
 

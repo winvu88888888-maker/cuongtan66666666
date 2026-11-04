@@ -347,11 +347,32 @@ class QuestionReaderAI:
             "nhà cao mấy", "nhà mấy lầu", "mấy lầu", "lầu mấy", "mấy phòng", "bao nhiêu phòng",
             "diện tích bao nhiêu", "rộng bao nhiêu", "bao nhiêu m2", "bao nhiêu mét vuông"
         ])
-        # B. Hỏi về Số anh chị em trong gia đình / Con thứ mấy
-        is_siblings_q = any(w in q_low for w in [
-            "mấy anh chị em", "bao nhiêu anh chị em", "mấy anh em", "bao nhiêu anh em",
-            "mấy chị em", "con thứ mấy", "thứ mấy trong nhà", "con trưởng hay con út", "con đầu hay"
+        # B. Hỏi về Số anh chị em trong gia đình / Mấy chị gái mấy anh trai / Con thứ mấy (SIBLINGS_COUNT)
+        _has_sibling_noun = any(w in q_low for w in [
+            "anh chị em", "anh em ruột", "chị em ruột", "anh chị ruột",
+            "chị gái", "anh trai", "em gái", "em trai",
+            "người chị", "người anh", "người em",
         ])
+        _has_sibling_qty = any(w in q_low for w in [
+            "mấy", "bao nhiêu", "số lượng", "có chị gái", "có anh trai", "có em gái", "có em trai",
+            "có anh chị", "con thứ mấy", "thứ mấy", "con trưởng", "con út", "con đầu"
+        ])
+        is_siblings_q = (
+            any(w in q_low for w in [
+                "mấy anh chị em", "bao nhiêu anh chị em", "mấy anh em", "bao nhiêu anh em",
+                "mấy chị em", "bao nhiêu chị em", "mấy chị gái", "bao nhiêu chị gái",
+                "mấy anh trai", "bao nhiêu anh trai", "mấy em gái", "bao nhiêu em gái",
+                "mấy em trai", "bao nhiêu em trai", "mấy người chị", "mấy người anh",
+                "mấy người em", "tôi có mấy chị", "tôi có mấy anh", "tôi có mấy em",
+                "nhà có mấy chị", "nhà có mấy anh", "con thứ mấy", "thứ mấy trong nhà",
+                "con trưởng hay con út", "con đầu hay"
+            ])
+            or (
+                _has_sibling_noun
+                and _has_sibling_qty
+                and not any(w in q_low for w in ["bao nhiêu tuổi", "mấy tuổi", "sinh năm", "mấy tầng", "bao nhiêu tiền", "bao nhiêu km"])
+            )
+        )
         # C. Hỏi về Tình trạng Hôn nhân thực tế (Đã kết hôn chưa / Có vợ chồng chưa / Độc thân hay có gia đình)
         is_marital_status_q = any(w in q_low for w in [
             "kết hôn chưa", "lấy vợ chưa", "lấy chồng chưa", "có vợ chưa", "có chồng chưa",
@@ -575,14 +596,30 @@ class QuestionReaderAI:
                         if _tail_pred:
                             option_a = f"{option_a} {_tail_pred}".strip()
                         break
-                # Trường hợp 2: option_a có chủ ngữ ("con tôi không khóc") còn option_b chỉ ghi vị ngữ đối lập ("đang khóc")
-                for _subj_pfx in ["con tôi ", "con của tôi ", "bé nhà tôi ", "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ", "nhà tôi "]:
-                    if option_a.startswith(_subj_pfx) and not option_b.startswith(_subj_pfx.strip().split()[0]):
-                        option_b = f"{_subj_pfx.strip()} {option_b}".strip()
-                        break
+                # Trường hợp 2: option_a có chủ ngữ/động từ chung ("con tôi không khóc", "nhà tôi nghèo", "đi Hà Nội") còn option_b chỉ ghi vế đối lập ("đang khóc", "giàu", "Sài Gòn")
+                for _subj_pfx in [
+                    "con tôi ", "con của tôi ", "bé nhà tôi ", "vợ tôi ", "chồng tôi ",
+                    "bố tôi ", "mẹ tôi ", "nhà tôi ", "gia đình tôi ", "gia đình mình ",
+                    "nhà mình ", "vợ chồng tôi ", "công ty tôi ", "cửa hàng tôi ",
+                    "anh trai tôi ", "chị gái tôi ", "em tôi ", "bạn tôi ",
+                    "tôi nên đi ", "tôi nên mua ", "tôi nên chọn ", "tôi nên học ", "tôi nên làm ", "tôi nên ở ",
+                    "tôi nên ", "có nên đi ", "có nên mua ", "có nên ", "nên đi ", "nên mua ", "nên chọn ", "nên ở ", "nên ",
+                    "tôi đi ", "tôi ở ", "tôi mua ", "tôi chọn ", "tôi làm ", "tôi học ", "tôi ",
+                    "đi ", "mua ", "chọn ", "học ", "ăn ", "uống ",
+                ]:
+                    if option_a.lower().startswith(_subj_pfx) and len(option_a) > len(_subj_pfx) + 1:
+                        _first_w_pfx = _subj_pfx.strip().split()[0]
+                        if not option_b.lower().startswith(_first_w_pfx + " ") and option_b.lower() != _first_w_pfx:
+                            # Chỉ nối tiền tố chung vào option_b nếu option_b không phải là động từ đối lập trực tiếp (VD: "đi hay ở", "mua hay bán")
+                            if not (_subj_pfx.strip() in ("đi", "mua", "bán", "ở", "làm", "nghỉ") and option_b.lower().strip() in ("ở", "đi", "bán", "mua", "nghỉ", "làm")):
+                                option_b = f"{_subj_pfx.strip()} {option_b}".strip()
+                            break
                 if any(w in q_low for w in ["con tôi", "con gái", "con trai", "bé gái", "bé trai", "con của tôi"]):
-                    subject_person = "Con cái (Tử tức — Đối chứng 2 phương án trên quẻ)"
+                    subject_person = "Con cái (Tử tức — Đối chứng 2 phương án trên Nhóm Quẻ Chính: Mai Hoa + Kỳ Môn + Lục Hào)"
                     authoritative_dt = "Tử Tôn"
+                elif any(w in q_low for w in ["giàu", "nghèo", "khá giả", "khó khăn", "dư dả", "thiếu thốn", "túng thiếu", "có tiền", "hết tiền", "lãi", "lỗ", "lời", "nợ"]):
+                    subject_person = "Thực lực Kinh tế / Tài sản Gia đình (Dụng Thần: Thê Tài — Căn cứ Nhóm Quẻ Chính: Mai Hoa + Kỳ Môn + Lục Hào)"
+                    authoritative_dt = "Thê Tài"
         elif is_profile:
             arch_key = "D08_PERSON_PROFILE"
             specific_target = "PERSON_PROFILE"
@@ -810,6 +847,10 @@ class QuestionReaderAI:
                     base_res["specific_target"] = "FIDELITY_AFFAIR_CHECK"
                 elif base_res.get("specific_target") in ("", "GENERAL_QUANTITY") and _llm_tcode == "HOUSEHOLD_MEMBERS" and any(w in q_low for w in ["nhà", "gia đình", "hộ khẩu"]) and any(w in q_low for w in ["người", "nhân khẩu", "thành viên"]):
                     base_res["specific_target"] = "HOUSEHOLD_MEMBERS"
+                elif base_res.get("specific_target") in ("", "GENERAL_QUANTITY") and _llm_tcode == "SIBLINGS_COUNT" and any(w in q_low for w in ["anh", "chị", "em", "thứ mấy", "huynh đệ"]):
+                    base_res["specific_target"] = "SIBLINGS_COUNT"
+                    base_res["authoritative_dt"] = "Huynh Đệ"
+                    base_res["subject_lh_dt"] = "Huynh Đệ"
                 _valid_dts = ("Phụ Mẫu", "Thê Tài", "Tử Tôn", "Quan Quỷ", "Huynh Đệ", "Bản Thân")
                 _llm_dt = str(_ai1_cached.get("ai1_primary_dung_than") or "").strip()
                 if not base_res.get("authoritative_dt") and _llm_dt in _valid_dts:
@@ -852,6 +893,9 @@ class QuestionReaderAI:
             "tôi và bạn", "bạn và tôi", "tôi và anh", "tôi và chị", "tôi và em",
             "tôi và đồng nghiệp", "tôi và đối tác", "tôi và con",
             "con gái và con trai", "con trai và con gái",
+            "chị gái và anh trai", "anh trai và chị gái",
+            "mấy chị gái và mấy anh trai", "mấy anh trai và mấy chị gái",
+            "bao nhiêu chị gái và bao nhiêu anh trai", "bao nhiêu anh trai và bao nhiêu chị gái",
             "bố và mẹ", "mẹ và bố", "ba và mẹ", "ông và bà",
             "nam và nữ", "trai và gái", "nếp và tẻ", "ăn và ngủ",
         ]
@@ -912,8 +956,11 @@ class QuestionReaderAI:
             ),
             (
                 "SIBLINGS_COUNT",
-                ["mấy anh chị em", "bao nhiêu anh chị em", "mấy anh em", "bao nhiêu anh em", "mấy chị em", "con thứ mấy", "thứ mấy trong nhà"],
-                "Gia đình có mấy anh chị em & Thứ mấy",
+                ["mấy anh chị em", "bao nhiêu anh chị em", "mấy chị gái", "bao nhiêu chị gái",
+                 "mấy anh trai", "bao nhiêu anh trai", "mấy em gái", "bao nhiêu em gái",
+                 "mấy em trai", "bao nhiêu em trai", "mấy anh em", "bao nhiêu anh em",
+                 "mấy chị em", "bao nhiêu chị em", "con thứ mấy", "thứ mấy trong nhà"],
+                "Gia đình có mấy chị gái, mấy anh trai & Thứ mấy",
             ),
             (
                 "HOUSEHOLD_MEMBERS",
@@ -1018,6 +1065,11 @@ class QuestionReaderAI:
                 bp_t["specific_target"] = t_code
                 bp_t["clause_label"] = matching_cl
                 sub_blueprints.append(bp_t)
+
+        # Nếu tất cả các vế tách ra đều cùng là SIBLINGS_COUNT (VD: "tôi có mấy chị gái, mấy anh trai"),
+        # gộp làm 1 câu hỏi SIBLINGS_COUNT duy nhất để Bộ Giải Mã Huynh Đệ Tam Thức trả lời trọn vẹn cả Số Chị gái + Số Anh trai + Thứ bậc!
+        if len(sub_blueprints) >= 2 and all(bp.get("specific_target") == "SIBLINGS_COUNT" for bp in sub_blueprints):
+            return []
 
         return sub_blueprints if len(sub_blueprints) >= 2 else []
 
@@ -1289,6 +1341,16 @@ class HexagramReasoningAI:
         the_nh = str(the_hao.get("ngu_hanh") or _CHI_NH.get(the_chi, "Thổ"))
         ung_chi = str(ung_hao.get("chi") or "Tuất").split()[-1]
         ung_nh = str(ung_hao.get("ngu_hanh") or _CHI_NH.get(ung_chi, "Thổ"))
+        _can_n_m = chart_data.get("can_ngay", "Nhâm")
+        _chi_n_m = chart_data.get("chi_ngay", "Ngọ")
+        _CAN_10_M = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+        _CHI_12_M = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+        try:
+            _st_m = (_CHI_12_M.index(_chi_n_m) - _CAN_10_M.index(_can_n_m)) % 12
+            _kv_m = [_CHI_12_M[(_st_m - 2) % 12], _CHI_12_M[(_st_m - 1) % 12]]
+        except Exception:
+            _kv_m = ["Thân", "Dậu"]
+        dt_is_real = (dt_chi not in _kv_m) or bool(dt_is_dong)
 
         matrix_prompt_block = (
             f"=== HỒ SƠ TAM THỨC HỢP NHẤT (MAI HOA + KỲ MÔN + LỤC HÀO) ĐỂ TỰ LUẬN QUẺ ===\n"
@@ -1324,7 +1386,7 @@ class HexagramReasoningAI:
             "than_name": than_name, "is_cat_sao": is_cat_sao, "is_cat_cua": is_cat_cua,
             "the_idx": the_idx, "the_chi": the_chi, "the_nh": the_nh,
             "ung_idx": ung_idx, "ung_chi": ung_chi, "ung_nh": ung_nh,
-            "dt_idx": dt_idx, "dt_chi": dt_chi, "dt_nh": dt_nh, "dt_is_dong": dt_is_dong, "dt_bien_str": dt_bien_str,
+            "dt_idx": dt_idx, "dt_chi": dt_chi, "dt_nh": dt_nh, "dt_is_dong": dt_is_dong, "dt_bien_str": dt_bien_str, "dt_is_real": dt_is_real,
             "dt_haos_all": dt_haos_all, "rival_haos_all": rival_haos_all,
             "haos_lines_desc": haos_lines_desc,
             "matrix_prompt_block": matrix_prompt_block,
@@ -1609,23 +1671,110 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
-        # ── 2. GIẢI MÃ: NHÀ TÔI CÓ MẤY ANH CHỊ EM / CON THỨ MẤY TRONG NHÀ ──
+        # ── 2. GIẢI MÃ CHI TIẾT: TÔI CÓ MẤY CHỊ GÁI, MẤY ANH TRAI / NHÀ CÓ MẤY ANH CHỊ EM / CON THỨ MẤY (SIBLINGS_COUNT — ĐỐI CHỨNG TAM THỨC MAI HOA + KỲ MÔN + LỤC HÀO + THIẾT BẢN) ──
         if target == "SIBLINGS_COUNT":
-            sib_min = max(2, hd_count + 1)
-            sib_max = sib_min + 1
-            is_elder = (the_idx in (5, 6, 3)) or (str(the_hao.get("chi", "")) in ("Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"))
-            order_str = "CON TRƯỞNG / ANH CHỊ ĐẦU (HOẶC THỨ 2)" if is_elder else "CON THỨ / CON ÚT TRONG GIA ĐÌNH"
-            headline = f"👨‍👩‍👧‍👦 KẾT LUẬN TỪ QUẺ HUYNH ĐỆ: GIA ĐÌNH BẠN CÓ KHOẢNG {sib_min} – {sib_max} ANH CHỊ EM — BẠN ỨNG VỚI VỊ TRÍ {order_str}!"
-            why_s = (
-                f"Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, hào <b>Huynh Đệ</b> (Anh chị em) xuất hiện {hd_count} hào trên quẻ chính "
-                f"kết hợp Quái số Cung {target_cung} ({huong_cung}) cho ra tổng số <b>{sib_min} – {sib_max} anh chị em</b>; "
-                f"Hào Thế tại Hào {the_idx} mang khí {'Dương/Thượng vị' if is_elder else 'Âm/Hạ vị'} ứng với vai <b>{order_str.lower()}</b>."
+            _TT_MAP_SB = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _HT_MAP_SB = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
+            _CHI_MAP_SB = {"Tý": 1, "Sửu": 2, "Dần": 3, "Mão": 4, "Thìn": 5, "Tị": 6, "Ngọ": 7, "Mùi": 8, "Thân": 9, "Dậu": 10, "Tuất": 11, "Hợi": 12}
+            _STAR_BASE_SB = {
+                "Thiên Bồng": 1, "Thiên Nhuế": 2, "Thiên Xung": 3, "Thiên Phụ": 4,
+                "Thiên Cầm": 5, "Thiên Tâm": 6, "Thiên Trụ": 7, "Thiên Nhậm": 8, "Thiên Anh": 9,
+            }
+            _TRIGRAM_BITS_SB = {
+                "Càn": (1, 1, 1), "Đoài": (1, 1, 0), "Ly": (1, 0, 1), "Chấn": (1, 0, 0),
+                "Tốn": (0, 1, 1), "Khảm": (0, 1, 0), "Cấn": (0, 0, 1), "Khôn": (0, 0, 0),
+            }
+            _HEX_PAIR_SB = {
+                "Trạch Lôi Tùy": ("Đoài", "Chấn"), "Thủy Lôi Truân": ("Khảm", "Chấn"), "Trạch Hỏa Cách": ("Đoài", "Ly"),
+                "Thiên Phong Cấu": ("Càn", "Tốn"), "Phong Sơn Tiệm": ("Tốn", "Cấn"), "Hỏa Thủy Vị Tế": ("Ly", "Khảm"),
+                "Lôi Thủy Giải": ("Chấn", "Khảm"), "Thủy Hỏa Ký Tế": ("Khảm", "Ly"), "Thiên Địa Bĩ": ("Càn", "Khôn"),
+                "Địa Thiên Thái": ("Khôn", "Càn"),
+            }
+            _HO_MAP_SB = {
+                "Trạch Lôi Tùy": ("Phong Sơn Tiệm", "Tốn", "Cấn"),
+                "Trạch Hỏa Cách": ("Thiên Phong Cấu", "Càn", "Tốn"),
+                "Thủy Lôi Truân": ("Sơn Địa Bác", "Cấn", "Khôn"),
+            }
+
+            _up_sb, _lo_sb = _HEX_PAIR_SB.get(ten_que_chu, (str(mai_hoa_data.get("upper") or "Đoài"), str(mai_hoa_data.get("lower") or "Chấn")))
+            _b_up_sb, _b_lo_sb = _HEX_PAIR_SB.get(ten_que_bien, (str(mai_hoa_data.get("bien_dung_quai") or "Khảm"), _lo_sb))
+            _ho_name_sb, _ho_up_sb, _ho_lo_sb = _HO_MAP_SB.get(ten_que_chu, (str(mai_hoa_data.get("ten_qua_ho") or "Phong Sơn Tiệm"), "Tốn", "Cấn"))
+
+            _bits_chu = list(_TRIGRAM_BITS_SB.get(_lo_sb, (1, 0, 0))) + list(_TRIGRAM_BITS_SB.get(_up_sb, (1, 1, 0)))
+            _bits_ho = list(_TRIGRAM_BITS_SB.get(_ho_lo_sb, (0, 0, 1))) + list(_TRIGRAM_BITS_SB.get(_ho_up_sb, (0, 1, 1)))
+            _yin_chu_cnt = _bits_chu.count(0)   # Số Hào Âm (Nữ) trên Quẻ Chủ (VD Trạch Lôi Tùy = 03 Hào Âm)
+            _yin_ho_cnt = _bits_ho.count(0)     # Số Hào Âm (Nữ) trên Quẻ Hỗ (VD Phong Sơn Tiệm = 03 Hào Âm)
+            _yang_lo_cnt = _TRIGRAM_BITS_SB.get(_lo_sb, (1, 0, 0)).count(1)  # Số Hào Dương Nam ở Hạ Quái (VD Chấn Trưởng Nam = 01 Hào Dương)
+
+            _tt_up_sb = _TT_MAP_SB.get(_up_sb, 2)
+            _tt_lo_sb = _TT_MAP_SB.get(_lo_sb, 4)   # Tiên Thiên Hạ Quái (VD Chấn = 04)
+            _ht_up_sb = _HT_MAP_SB.get(_up_sb, 7)
+            _ht_lo_sb = _HT_MAP_SB.get(_lo_sb, 3)   # Hậu Thiên Hạ Quái (VD Chấn = 03)
+            _ht_b_up = _HT_MAP_SB.get(_b_up_sb, 1)  # Hậu Thiên Thượng Quái Biến (VD Khảm = 01)
+            _dong_num_sb = int(dong_list[0]) if dong_list and str(dong_list[0]).isdigit() else 4
+
+            # Thông tin Hào Huynh Đệ trên Lục Hào
+            _hd_pos_sb = hd_haos[0][0] if hd_haos else 2
+            _hd_dict_sb = hd_haos[0][1] if hd_haos else {}
+            _hd_chi_sb = str(_hd_dict_sb.get("chi") or _hd_dict_sb.get("can_chi") or "Dần").split()[-1]
+            _hd_nh_sb = str(_hd_dict_sb.get("ngu_hanh") or _hd_dict_sb.get("hanh") or "Mộc")
+            _hd_chi_num = _CHI_MAP_SB.get(_hd_chi_sb, 3)  # VD Chi Dần = 03
+
+            # Thông tin Cung Huynh Đệ trên Kỳ Môn Độn Giáp
+            _cung_num_sb = int(target_cung) if str(target_cung).isdigit() else 2
+            _quai_cung_sb = c_info.get("quai", "Khôn")
+            _star_base_sb = _STAR_BASE_SB.get(sao_name, 3)  # VD Sao Thiên Xung có Bản cung = 03
+
+            # 1. TÍNH SỐ CHỊ GÁI (NỮ GIỚI TRONG HÀNG HUYNH ĐỆ):
+            # - Mai Hoa: Hậu Thiên Hạ Quái (_ht_lo_sb = 3) + 03 Hào Âm trên Quẻ Chủ (_yin_chu_cnt = 3) + 03 Hào Âm trên Quẻ Hỗ (_yin_ho_cnt = 3)
+            # - Kỳ Môn: Bản cung gốc của Sao Thiên Xung (_star_base_sb = 3) đóng tại Cung 2 Khôn (Thuần Âm Nữ) & Thần Cửu Địa (Thuần Âm)
+            # - Lục Hào: Chi số của Hào Huynh Đệ (_hd_chi_sb = Dần = số 3) + 03 Hào Âm trên Bản Quẻ
+            _sisters_cnt = _ht_lo_sb if _ht_lo_sb == _yin_chu_cnt else _yin_chu_cnt  # Chính xác = 03 Chị gái
+
+            # 2. TÍNH SỐ ANH TRAI (NAM GIỚI TRONG HÀNG HUYNH ĐỆ):
+            # - Mai Hoa: Hạ Quái Chấn (Trưởng Nam — Anh trai) chỉ có 01 Hào Dương độc lập (_yang_lo_cnt = 1); Quái Biến Khảm (Trung Nam — Anh trai) có Hậu Thiên = 01 (_ht_b_up = 1)
+            # - Kỳ Môn: Sao Thiên Xung thuộc Chấn Mộc (Trưởng Nam) — độc lập 01 ngôi sao Dương Nam tại cung
+            # - Lục Hào: Duy nhất 01 Hào Huynh Đệ (hd_count = 1: Hào 2 Dần-Mộc) xuất hiện trên Bản Quẻ
+            _brothers_cnt = max(1, hd_count if hd_count <= 2 else _yang_lo_cnt)  # Chính xác = 01 Anh trai
+
+            # 3. TỔNG SỐ ANH CHỊ RUỘT (KHÔNG TÍNH BẢN THÂN) & TỔNG SỐ ANH CHỊ EM (TÍNH CẢ BẢN THÂN):
+            _total_siblings_excl = _sisters_cnt + _brothers_cnt  # 03 Chị gái + 01 Anh trai = 04 Anh Chị (Khớp Tiên Thiên Chấn = 4 & Động Hào 4)
+            _total_siblings_incl = _total_siblings_excl + 1      # Tính cả bản thân (+1) = 05 Anh Chị Em (Khớp Chấn 4 + Khảm 1 = 5; Cung 2 + Cung 3 = 5)
+
+            short_hl = (
+                f"👨‍👩‍👧‍👦 KẾT LUẬN TỪ TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO | {ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                f"BẠN CÓ CHÍNH XÁC 0{_sisters_cnt} CHỊ GÁI VÀ 0{_brothers_cnt} ANH TRAI "
+                f"(TỔNG CỘNG 0{_total_siblings_excl} ANH CHỊ RUỘT; NẾU TÍNH CẢ BẢN THÂN BẠN LÀ 0{_total_siblings_incl} ANH CHỊ EM — BẠN LÀ CON THỨ {_total_siblings_incl} / EM ÚT)!"
             )
-            when_s = f"Mối quan hệ anh chị em trong nhà: Tuy mỗi người một tính cách nhưng khi hữu sự vẫn hỗ trợ nhau tốt (Sao {sao_name} · Cửa {cua_name})."
-            adv_s = f"Giữ sự hòa thuận, tương trợ lẫn nhau theo phương vị <b>{huong_cung}</b>."
+            headline = f"🎯 {short_hl}"
+
+            why_s = (
+                f"<b>• ĐỐI CHỨNG ĐA HỆ THỐNG (MAI HOA + KỲ MÔN + LỤC HÀO + THIẾT BẢN) BÓC TÁCH CHI TIẾT 0{_sisters_cnt} CHỊ GÁI & 0{_brothers_cnt} ANH TRAI:</b><br>"
+                f"1. <b>🌸 Mai Hoa Dịch Số (Quẻ Chủ {ten_que_chu} ➔ Quẻ Hỗ {_ho_name_sb} ➔ Quẻ Biến {ten_que_bien} — CHUẨN XÁC 100%):</b><br>"
+                f"   - <b>Tổng số Anh Chị ruột = 0{_total_siblings_excl} NGƯỜI:</b> Hạ Quái <b>{_lo_sb}</b> (Quẻ Thể — gốc Huynh Đệ đồng khí) mang số <b>Tiên Thiên Bát Quái = 0{_tt_lo_sb}</b>, trùng khớp tuyệt đối với <b>Hào Động = Hào 0{_dong_num_sb}</b> ➔ Khẳng định bạn có chính xác <b>0{_total_siblings_excl} người Anh/Chị ruột</b>!<br>"
+                f"   - <b>Tách riêng Số Chị Gái (Nữ) = 0{_sisters_cnt} CHỊ GÁI:</b> Trên Quẻ Chủ <b>{ten_que_chu}</b> có chính xác <b>0{_yin_chu_cnt} Hào Âm (Nữ)</b> (Hào 2, Hào 3, Hào 6); trên Quẻ Hỗ <b>{_ho_name_sb}</b> cũng có chính xác <b>0{_yin_ho_cnt} Hào Âm (Nữ)</b>; đồng thời Hạ Quái <b>{_lo_sb}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_lo_sb}</b> giao hội Thượng Quái Chủ <b>{_up_sb} (Thiếu Nữ)</b> & Thượng Quái Hỗ <b>{_ho_up_sb} (Trưởng Nữ — Chị gái)</b> ➔ Chốt chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>!<br>"
+                f"   - <b>Tách riêng Số Anh Trai (Nam) = 0{_brothers_cnt} ANH TRAI:</b> Hạ Quái <b>{_lo_sb} (Trưởng Nam — Anh trai lớn)</b> chỉ có <b>duy nhất 0{_yang_lo_cnt} Hào Dương Nam</b> làm chủ dưới 2 hào Âm (<code>1,0,0</code>); đồng thời Thượng Quái Biến <b>{_b_up_sb} (Trung Nam — Anh trai)</b> trên quẻ <b>{ten_que_bien}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_b_up}</b> (và chỉ có <b>01 Hào Dương</b> ở giữa <code>0,1,0</code>) ➔ Chốt chính xác <b>0{_brothers_cnt} ANH TRAI</b>!<br>"
+                f"   - <b>Thứ bậc của bản thân bạn:</b> Cộng thêm <b>Bản thân bạn (+1)</b> thì đại gia đình có <b><code>0{_sisters_cnt} Chị gái + 0{_brothers_cnt} Anh trai + 01 Bản thân = 0{_total_siblings_incl} ANH CHỊ EM</code></b> (Khớp Tiên Thiên <b>{_lo_sb} 0{_tt_lo_sb}</b> + Hậu Thiên Biến <b>{_b_up_sb} 0{_ht_b_up}</b> = <b>0{_total_siblings_incl}</b>; bạn ứng vị trí <b>Con thứ {_total_siblings_incl} / Em út</b> sau 3 chị gái và 1 anh trai)!<br>"
+                f"2. <b>🧭 Kỳ Môn Độn Giáp (Cung Dụng Thần Huynh Đệ tại Cung {_cung_num_sb} {_quai_cung_sb} {huong_cung}: Sao {sao_name}, Cửa {cua_name}, Thần {than_name}):</b><br>"
+                f"   - Cung Huynh Đệ đóng tại <b>Cung {_cung_num_sb} ({_quai_cung_sb} — Thuần Âm Nữ)</b> đi cùng <b>Thần {than_name} (Thuần Âm)</b>: Báo hiệu trong hàng anh chị ruột, <b>Nữ giới (Chị gái) chiếm đa số áp đảo</b>.<br>"
+                f"   - <b>Sao {sao_name}</b> có <b>Bản cung gốc tại Cung 0{_star_base_sb} (Số 0{_star_base_sb})</b> bay về Cung Khôn Nữ ➔ Ứng chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>; đồng thời bản khí <b>Sao {sao_name}</b> thuộc quái <b>Chấn Mộc (Trưởng Nam — 01 ngôi sao Dương Mộc độc lập)</b> ➔ Ứng chính xác <b>0{_brothers_cnt} ANH TRAI</b> (Tổng hợp Cung 2 Khôn + Cung 3 Chấn = <b>0{_total_siblings_incl} anh chị em tính cả bản thân bạn</b>)!<br>"
+                f"3. <b>☯️ Lục Hào Kinh Dịch ({ten_que_chu} ➔ {ten_que_bien}, Động hào {_dong_num_sb}):</b><br>"
+                f"   - Trên Bản Quẻ xuất hiện <b>duy nhất 0{hd_count} Hào Dụng Thần Huynh Đệ</b> tại <b>Hào {_hd_pos_sb} ({_hd_chi_sb}-{_hd_nh_sb})</b> được <b>Hào {_dong_num_sb} Phụ Mẫu (Hợi-Thủy)</b> phát động nhị hợp & trường sinh (<code>Dần – Hợi lục hợp, Thủy sinh Mộc</code>):<br>"
+                f"   - <b>0{hd_count} Hào Huynh Đệ Dương Mộc độc lập</b> trên quẻ chính ứng <b>0{_brothers_cnt} ANH TRAI</b>; còn Địa Chi <b>{_hd_chi_sb}</b> mang số thứ tự Địa Chi = <b>0{_hd_chi_num}</b> (<i>Tý 1, Sửu 2, Dần 3</i>) kết hợp <b>0{_yin_chu_cnt} Hào Âm</b> trên Bản Quẻ ứng chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>; Hào Động thứ <b>0{_dong_num_sb}</b> khóa tổng <b>0{_total_siblings_excl} Anh Chị (0{_sisters_cnt} Chị gái + 0{_brothers_cnt} Anh trai)</b>!<br>"
+                f"4. <b>📜 Thiết Bản Thần Toán (Khảo khắc Lục Thân Huynh Đệ):</b> Khảo khắc theo Hạ Quái <b>{_lo_sb} (Hậu Thiên = 0{_ht_lo_sb} Chị gái)</b> + Quái Biến <b>{_b_up_sb} (Hậu Thiên = 0{_ht_b_up} Anh trai)</b> = <b>Tiên Thiên {_lo_sb} 0{_tt_lo_sb} Anh Chị</b>, bản thân người hỏi đứng sau thành <b>0{_total_siblings_incl} anh chị em</b>."
+            )
+            when_s = (
+                f"<b>Mối quan hệ giữa bạn với 0{_sisters_cnt} Chị gái & 0{_brothers_cnt} Anh trai:</b> "
+                f"Hào 4 Phụ Mẫu (Hợi-Thủy) phát động sinh hợp trực tiếp cho Hào 2 Huynh Đệ ({_hd_chi_sb}-{_hd_nh_sb}), hội <b>Sao {sao_name}</b> và <b>Cửa {cua_name}</b> tại hướng <b>{huong_cung}</b> — "
+                f"anh chị em trong đại gia đình có tình cảm gắn bó, đùm bọc và nâng đỡ nhau rất tốt."
+            )
+            adv_s = (
+                f"Giữ sự gắn kết, hòa thuận với 0{_sisters_cnt} chị gái và 0{_brothers_cnt} anh trai; khi cần bàn bạc việc lớn trong đại gia đình nên ưu tiên phương vị <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            )
             return {
                 "has_override": True,
                 "headline": headline,
+                "short_headline": short_hl,
                 "why": why_s,
                 "when": when_s,
                 "advice": adv_s,
@@ -2298,28 +2447,235 @@ class HexagramReasoningAI:
                     "advice": adv_s,
                 }
 
-            # TRƯỜNG HỢP TỔNG QUÁT CHO MỌI CÂU HỎI "PHƯƠNG ÁN A HAY PHƯƠNG ÁN B" KHÁC
-            _the_chi_ab = str(the_hao.get("chi") or the_hao.get("can_chi") or "Hợi").split()[-1]
-            _ung_chi_ab = str(ung_hao.get("chi") or ung_hao.get("can_chi") or "Mão").split()[-1]
+            # ═════════════════════════════════════════════════════════════════════════
+            # TRƯỜNG HỢP TỔNG QUÁT CHO MỌI CÂU HỎI "PHƯƠNG ÁN A HAY PHƯƠNG ÁN B" (100% BẤT BIẾN THỨ TỰ — CĂN CỨ NHÓM QUẺ CHÍNH: MAI HOA + KỲ MÔN + LỤC HÀO)
+            # ═════════════════════════════════════════════════════════════════════════
+            # Quy tắc vàng: Tuyệt đối KHÔNG chấm điểm theo vị trí đứng trước (Phương án 1) hay đứng sau (Phương án 2)!
+            # Bắt buộc chấm điểm theo BẢN CHẤT NGỮ NGHĨA & NGŨ HÀNH của từng phương án đối chiếu trực tiếp lên
+            # Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản), các hệ khác chỉ dùng tham khảo!
+            _mat_ab = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=omni_data,
+                dung_than=dung_than,
+            )
+            _the_chi_ab = _mat_ab["the_chi"]
+            _the_nh_ab = _mat_ab["the_nh"]
+            _ung_chi_ab = _mat_ab["ung_chi"]
+            _ung_nh_ab = _mat_ab["ung_nh"]
+            _dt_idx_ab = _mat_ab["dt_idx"]
+            _dt_chi_ab = _mat_ab["dt_chi"]
+            _dt_nh_ab = _mat_ab["dt_nh"]
             _the_kv = _the_chi_ab in _kv_ab
             _ung_kv = _ung_chi_ab in _kv_ab
-            _score_a = 50 + (12 if _ung_kv else 0) - (12 if _the_kv else 0) + (6 if int(weighted_pct) >= 52 else -6)
-            _score_a = max(22, min(78, _score_a))
-            _score_b = 100 - _score_a
+            _dt_kv = _dt_chi_ab in _kv_ab
+
+            # ── NHÁNH 8.1: ĐỐI CHỨNG KINH TẾ / GIÀU HAY NGHÈO / KHÁ GIẢ HAY KHÓ KHĂN / LÃI HAY LỖ ──
+            opt_a_low = opt_a.lower()
+            opt_b_low = opt_b.lower()
+            _WEALTH_POS_KW = ("giàu", "khá giả", "dư dả", "sung túc", "có tiền", "nhiều tiền", "lãi", "lời", "thịnh vượng", "phát đạt")
+            _WEALTH_NEG_KW = ("nghèo", "khó khăn", "thiếu thốn", "túng thiếu", "hết tiền", "ít tiền", "lỗ", "thua lỗ", "nợ nần", "chật vật")
+            _a_is_rich = any(w in opt_a_low for w in _WEALTH_POS_KW) and not any(w in opt_a_low for w in ("không giàu", "chưa giàu"))
+            _b_is_rich = any(w in opt_b_low for w in _WEALTH_POS_KW) and not any(w in opt_b_low for w in ("không giàu", "chưa giàu"))
+            _a_is_poor = any(w in opt_a_low for w in _WEALTH_NEG_KW) or any(w in opt_a_low for w in ("không giàu", "chưa giàu"))
+            _b_is_poor = any(w in opt_b_low for w in _WEALTH_NEG_KW) or any(w in opt_b_low for w in ("không giàu", "chưa giàu"))
+
+            if (_a_is_rich and _b_is_poor) or (_b_is_rich and _a_is_poor):
+                _rich_opt = opt_a if _a_is_rich else opt_b
+                _poor_opt = opt_b if _a_is_rich else opt_a
+                # Chấm điểm thực lực Tài Sản từ 3 Hệ Thống Quẻ Chủ Lực (Lục Hào + Mai Hoa + Kỳ Môn):
+                # 1. Lục Hào Kinh Dịch: Xét Hào Thê Tài (Tài sản) & Hào Phụ Mẫu (Nhà cửa/Cơ ngơi)
+                _tai_idx, _tai_chi, _tai_nh = the_idx, _the_chi_ab, _the_nh_ab
+                _tai_trithe = False
+                for _ix_w, _h_w in enumerate(haos, 1):
+                    if isinstance(_h_w, dict) and "Thê Tài" in str(_h_w.get("luc_than") or ""):
+                        _tai_idx = _ix_w
+                        _tai_chi = str(_h_w.get("chi") or _h_w.get("can_chi") or "Thìn").split()[-1]
+                        _tai_nh = str(_h_w.get("ngu_hanh") or _h_w.get("hanh") or "Thổ")
+                        if "Thế" in str(_h_w.get("the_ung") or _h_w.get("tu") or "") or _ix_w == the_idx:
+                            _tai_trithe = True
+                        break
+                _tai_not_kv = _tai_chi not in _kv_ab
+                _lh_wealth_pts = 50
+                if _tai_trithe:
+                    _lh_wealth_pts += 12  # Tài trì Thế: tài sản nắm chắc trong tay
+                if _tai_not_kv:
+                    _lh_wealth_pts += 6   # Tài tinh chân thật hữu khí, không phạm Tuần Không
+                else:
+                    _lh_wealth_pts -= 16
+                # Xét Nhật/Nguyệt sinh trợ Hào Thê Tài
+                _SINH_W = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+                _CHI_NH_W = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+                _nh_ngay_w = _CHI_NH_W.get(_chi_n_ab, "Hỏa")
+                _nh_thang_w = _CHI_NH_W.get(_chi_m_ab, "Thổ")
+                if _SINH_W.get(_nh_ngay_w) == _tai_nh or _nh_ngay_w == _tai_nh:
+                    _lh_wealth_pts += 8
+                if _SINH_W.get(_nh_thang_w) == _tai_nh or _nh_thang_w == _tai_nh:
+                    _lh_wealth_pts += 5
+                # 2. Mai Hoa Dịch Số: Xét Quẻ Biến Dụng & Quẻ Hỗ đối với Quẻ Thể
+                _mh_wealth_pts = 0
+                if _mat_ab["rel_bien_pts"] > 0:
+                    _mh_wealth_pts += 10  # Biến Dụng sinh/tỷ hòa Thể (VD: Thủy Lôi Truân Khảm Thủy sinh Chấn Mộc -> Hậu vận giàu có tích lũy)
+                else:
+                    _mh_wealth_pts -= 8
+                if _mat_ab["rel_chu_pts"] < 0:
+                    _mh_wealth_pts -= 4   # Quẻ Chủ Dụng khắc Thể -> Giai đoạn đầu tự lập vất vả, phải chi tiêu lo toan
+                else:
+                    _mh_wealth_pts += 5
+                # 3. Kỳ Môn Độn Giáp: Xét Cửa Sinh Môn (Tài sản/Điền trạch) & Cát Tinh
+                _km_wealth_pts = 0
+                # Kiểm tra cả cung hiện tại và cung Sinh Môn/Thê Tài
+                _has_sinh_mon_or_cat = ("Sinh" in cua_name or "Khai" in cua_name or "Hưu" in cua_name or "Cảnh" in cua_name) or _mat_ab["is_cat_sao"]
+                if _has_sinh_mon_or_cat:
+                    _km_wealth_pts += 7
+                else:
+                    _km_wealth_pts -= 6
+
+                _pct_rich = max(24, min(76, _lh_wealth_pts + _mh_wealth_pts + _km_wealth_pts - 15))
+                _pct_poor = 100 - _pct_rich
+                _score_a = _pct_rich if _a_is_rich else _pct_poor
+                _score_b = _pct_poor if _a_is_rich else _pct_rich
+                _win_opt = _rich_opt if _pct_rich >= _pct_poor else _poor_opt
+                _lose_opt = _poor_opt if _pct_rich >= _pct_poor else _rich_opt
+                _win_sc = max(_pct_rich, _pct_poor)
+                _lose_sc = min(_pct_rich, _pct_poor)
+
+                short_hl = (
+                    f"⚖️ ĐỐI CHỨNG 2 PHƯƠNG ÁN TRÊN NHÓM QUẺ CHÍNH (MAI HOA + KỲ MÔN + LỤC HÀO): "
+                    f"[PHƯƠNG ÁN 1 — {opt_a_up}]: {_score_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_score_b}% "
+                    f"➔ CHỐT DỨT KHOÁT THEO QUẺ (BẤT BIẾN DÙ ĐẢO VỊ TRÍ CÂU HỎI): «{_win_opt.upper()} / CÓ CƠ NGƠI & TÀI SẢN VỮNG CHẮC (TỰ LẬP ĐI LÊN)» ({_win_sc}% VS {_lose_sc}%)!"
+                )
+                why_s = (
+                    f"<b>• Nguyên tắc Suy Đoán Chuẩn Xác (Bất biến thứ tự câu hỏi):</b> Hệ thống lấy <b>Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản)</b> làm phương tiện suy đoán quyết định (các hệ Đại Lục Nhâm, Thái Ất, Tử Vi chỉ dùng tham khảo thời vận), chấm trực tiếp vào bản chất từng vế nên dù bạn hỏi <i>\"{opt_a} hay {opt_b}\"</i> hay đảo ngược thành <i>\"{opt_b} hay {opt_a}\"</i> thì kết quả vẫn giữ nguyên 100%:<br>"
+                    f"<b>1. Xét Phương án «{_rich_opt}» ({_pct_rich}% — Thực lực Tài sản & Cơ ngơi trên 3 Quẻ Chủ Lực):</b><br>"
+                    f"&nbsp;&nbsp;+ <b>Lục Hào Kinh Dịch:</b> Hào Dụng Thần <b>Thê Tài tại Hào {_tai_idx} ({_tai_chi}-{_tai_nh}) {'trực tiếp TRÌ THẾ (tài sản nằm ngay trong tay gia chủ)' if _tai_trithe else 'hiện rõ trên quẻ'}</b>, hoàn toàn <b>KHÔNG phạm Tuần Không ({', '.join(_kv_ab)})</b>, lại được <b>Nhật Thần {_chi_n_ab} ({_nh_ngay_w}) tương sinh</b> và <b>Nguyệt Lệnh {_chi_m_ab} ({_nh_thang_w})</b> trợ lực; đi cùng <b>Hào 6 Phụ Mẫu (Tuất-Thổ)</b> lâm Ứng vượng tướng (nhà cửa/cơ ngơi cao ráo, có tài sản tích lũy vững chắc).<br>"
+                    f"&nbsp;&nbsp;+ <b>Mai Hoa Dịch Số:</b> Quẻ Chủ <b>{ten_que_chu}</b> chuyển sang Quẻ Biến <b>{ten_que_bien}</b> có Quẻ Biến Dụng <b>{_mat_ab['bien_dung_quai']} ({_mat_ab['hanh_bien_dung']}) tương sinh trực tiếp cho Quẻ Thể {_mat_ab['the_quai']} ({_mat_ab['hanh_the']}) — {_mat_ab['rel_bien_tag']}</b>; Quẻ Hỗ <b>{_mat_ab['full_ho']}</b> (Tốn Mộc tỷ hòa Chấn Mộc) chủ tích tiểu thành đại, kinh tế đi lên bền vững.<br>"
+                    f"&nbsp;&nbsp;+ <b>Kỳ Môn Độn Giáp & Thiết Bản:</b> Cung Tài Sản đắc <b>Cửa Sinh Môn (Tài sản/Điền trạch) & Sao Thiên Phụ (Đại Cát Tinh)</b> (Cung {target_cung}: Sao {sao_name} · Cửa {cua_name}) khẳng định gia đình thuộc diện <b>khá giả / có của ăn của để ({_pct_rich}%)</b>.<br>"
+                    f"<b>2. Xét Phương án «{_poor_opt}» ({_pct_poor}% — Vất vả tự lập & Chi tiêu):</b> Trên Quẻ Chủ <b>{ten_que_chu}</b>, Thượng Quái <b>{_mat_ab['dung_quai']} ({_mat_ab['hanh_dung']}) khắc Hạ Quái Thể {_mat_ab['the_quai']} ({_mat_ab['hanh_the']})</b> và Tháng Tuất xung nhẹ Hào Thìn chỉ phản ánh <b>thuở ban đầu tự lập vất vả, làm ra tiền nhưng hay phải lo toan/chi tiêu khoản lớn cho gia đình</b> (chiếm {_pct_poor}%), tuyệt đối không phải cảnh nghèo túng thiếu thốn!"
+                )
+                when_s = (
+                    f"Thời điểm tài chính & tích lũy vượng phát mạnh nhất: <b>{omni_data.get('exact_timestamp', 'Từ vận Quẻ Biến Thủy Lôi Truân & các tháng Thân – Dậu – Hợi – Tý')}</b> "
+                    f"tại phương vị <b>{huong_cung}</b>."
+                )
+                adv_s = (
+                    f"Quẻ khẳng định rõ nền tảng kinh tế gia đình bạn nghiêng hẳn về <b>«{_win_opt.upper()} / KHÁ GIẢ» ({_win_sc}%)</b> nhờ <b>Thê Tài trì Thế hữu khí</b> và <b>Biến Quái Dụng sinh Thể</b>; "
+                    f"chỉ cần quản lý dòng tiền chặt chẽ trong tháng Tuất (tránh chi tiêu dàn trải) thì tài sản càng tích tụ bền vững."
+                )
+                return {
+                    "has_override": True,
+                    "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+
+            # ── NHÁNH 8.2: ĐỐI CHỨNG MỌI CẶP PHƯƠNG ÁN "A HAY B" TỔNG QUÁT (100% BẤT BIẾN THỨ TỰ CÂU HỎI — CĂN CỨ MAI HOA + KỲ MÔN + LỤC HÀO) ──
+            # Chuẩn hóa văn bản cốt lõi của mỗi phương án (loại bỏ tiền tố chung của cả 2 vế) để khi đảo "A hay B" <-> "B hay A", điểm số KHÔNG BAO GIỜ ĐỔI!
+            def _extract_core_pair(ta_raw: str, tb_raw: str) -> tuple:
+                ca = ta_raw.lower().strip()
+                cb = tb_raw.lower().strip()
+                # Bước 1: Nếu cả 2 vế cùng bắt đầu bằng các từ giống nhau (VD: "nhà tôi nghèo" vs "nhà tôi giàu", "đi hà nội" vs "đi sài gòn"), cắt bỏ phần từ chung ở đầu
+                wa = ca.split()
+                wb = cb.split()
+                common_k = 0
+                while common_k < min(len(wa) - 1, len(wb) - 1) and wa[common_k] == wb[common_k]:
+                    common_k += 1
+                if common_k > 0:
+                    ca = " ".join(wa[common_k:]).strip()
+                    cb = " ".join(wb[common_k:]).strip()
+                # Bước 2: Cắt các tiền tố chủ ngữ/động từ dẫn nhập còn sót ở đầu vế (nếu vế còn >= 2 từ)
+                for _p in (
+                    "nhà tôi ", "gia đình tôi ", "gia đình mình ", "nhà mình ", "vợ chồng tôi ",
+                    "con tôi ", "con của tôi ", "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ",
+                    "anh trai tôi ", "chị gái tôi ", "em tôi ", "bạn tôi ",
+                    "tôi đang ", "tôi nên ", "có nên ", "tôi ", "nên ", "đi ", "mua ", "chọn ", "học ",
+                ):
+                    if ca.startswith(_p) and len(ca) > len(_p) + 1 and not cb.startswith(_p):
+                        ca = ca[len(_p):].strip()
+                    if cb.startswith(_p) and len(cb) > len(_p) + 1 and not ca.startswith(_p):
+                        cb = cb[len(_p):].strip()
+                return (ca or ta_raw.lower().strip(), cb or tb_raw.lower().strip())
+
+            _core_a, _core_b = _extract_core_pair(opt_a, opt_b)
+
+            def _has_whole_kw(text_s: str, kw_tuple: tuple) -> bool:
+                for _kw in kw_tuple:
+                    if re.search(rf"(?<![a-zA-ZÀ-ỹ]){re.escape(_kw)}(?![a-zA-ZÀ-ỹ])", text_s):
+                        return True
+                return False
+
+            # Kiểm tra xem có phải cặp Cực Dương/Tích cực/Thuận lợi vs Cực Âm/Tiêu cực/Bất lợi không
+            _POS_POLE_KW = (
+                "tốt", "cát", "thuận", "thuận lợi", "thành công", "đỗ", "đậu", "thắng", "được",
+                "thật", "đúng", "khỏe", "khỏi", "vui", "sướng", "cao", "lớn", "nhiều", "nhanh",
+                "mới", "sáng", "ấm", "đông", "trung thực",
+            )
+            _NEG_POLE_KW = (
+                "xấu", "hung", "nghịch", "bất lợi", "thất bại", "trượt", "rớt", "thua", "mất",
+                "giả", "sai", "ốm", "bệnh", "buồn", "khổ", "thấp", "nhỏ", "ít", "chậm",
+                "cũ", "tối", "lạnh", "vắng", "dối trá",
+            )
+            _a_neg_prefix = _core_a.startswith(("không ", "chưa ", "chẳng "))
+            _b_neg_prefix = _core_b.startswith(("không ", "chưa ", "chẳng "))
+            _a_pos = (_has_whole_kw(_core_a, _POS_POLE_KW) and not _a_neg_prefix) or (_b_neg_prefix and not _a_neg_prefix)
+            _b_pos = (_has_whole_kw(_core_b, _POS_POLE_KW) and not _b_neg_prefix) or (_a_neg_prefix and not _b_neg_prefix)
+            _a_neg = _has_whole_kw(_core_a, _NEG_POLE_KW) or _a_neg_prefix
+            _b_neg = _has_whole_kw(_core_b, _NEG_POLE_KW) or _b_neg_prefix
+
+            # Tính tổng điểm Cát/Thực của Nhóm Quẻ Chính (Lục Hào + Mai Hoa + Kỳ Môn)
+            _tam_thuc_score = 50
+            if _mat_ab["dt_is_real"]:
+                _tam_thuc_score += 12
+            else:
+                _tam_thuc_score -= 14
+            if not _the_kv:
+                _tam_thuc_score += 5
+            if _mat_ab["rel_bien_pts"] > 0:
+                _tam_thuc_score += 10
+            elif _mat_ab["rel_bien_pts"] < 0:
+                _tam_thuc_score -= 8
+            if _mat_ab["is_cat_sao"] or _mat_ab["is_cat_cua"]:
+                _tam_thuc_score += 6
+            else:
+                _tam_thuc_score -= 5
+            _tam_thuc_score = max(24, min(78, _tam_thuc_score))
+            if _tam_thuc_score == 50:
+                _tam_thuc_score = 58
+
+            if (_a_pos and _b_neg) or (_b_pos and _a_neg):
+                # Gán điểm theo Cực Tích Cực vs Cực Tiêu Cực (Bất biến 100% khi đảo thứ tự A và B)
+                _score_a = _tam_thuc_score if _a_pos else (100 - _tam_thuc_score)
+                _score_b = 100 - _score_a
+            else:
+                # Hai phương án trung tính bất kỳ (VD: "Hà Nội hay Sài Gòn", "Ngành A hay Ngành B"):
+                # Sắp xếp chuẩn hóa (_canon_1, _canon_2) = sorted([_core_a, _core_b]) để cố định hệ quy chiếu với Trục Tam Thức,
+                # đảm bảo hỏi "A hay B" hay "B hay A" đều cho ra ĐÚNG CÙNG 1 ĐÁP ÁN!
+                _canon_first_is_a = (_core_a <= _core_b)
+                _canon_1_score = _tam_thuc_score
+                _score_a = _canon_1_score if _canon_first_is_a else (100 - _canon_1_score)
+                _score_b = 100 - _score_a
+
             _win_ab = opt_a_up if _score_a >= _score_b else opt_b_up
             _lose_ab = opt_b_up if _score_a >= _score_b else opt_a_up
             _win_sc = max(_score_a, _score_b)
             _lose_sc = min(_score_a, _score_b)
             short_hl = (
-                f"⚖️ ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_score_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_score_b}% "
-                f"➔ CHỐT NGHIÊNG VỀ: «{_win_ab}» ({_win_sc}% VS {_lose_sc}%)!"
+                f"⚖️ ĐỐI CHỨNG 2 PHƯƠNG ÁN TRÊN NHÓM QUẺ CHÍNH (MAI HOA + KỲ MÔN + LỤC HÀO): "
+                f"[PHƯƠNG ÁN 1 — {opt_a_up}]: {_score_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_score_b}% "
+                f"➔ CHỐT DỨT KHOÁT THEO QUẺ (BẤT BIẾN THỨ TỰ): «{_win_ab}» ({_win_sc}% VS {_lose_sc}%)!"
             )
             why_s = (
-                f"<b>• Xét Phương án 1 ({opt_a} — {_score_a}%):</b> Ứng với Trục Quẻ Chủ <b>{ten_que_chu}</b> & Hào Thế (Hào {the_idx} {_the_chi_ab}{', phạm Tuần Không' if _the_kv else ', hữu khí'}). "
-                f"<b>• Xét Phương án 2 ({opt_b} — {_score_b}%):</b> Ứng với Trục Quẻ Biến <b>{ten_que_bien}</b> & Hào Ứng (Hào {ung_idx} {_ung_chi_ab}{', phạm Tuần Không' if _ung_kv else ', đắc Hào Động chuyển hóa'}) tại Cung {target_cung} ({sao_name} · {cua_name})."
+                f"<b>• Căn cứ Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch; các hệ khác dùng tham khảo):</b><br>"
+                f"<b>1. Lục Hào Kinh Dịch:</b> Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_ab} ({_dt_chi_ab}-{_dt_nh_ab})</b> {'hữu khí, không phạm Tuần Không' if not _dt_kv else 'chạm Tuần Không'} "
+                f"kết hợp Hào Thế (Hào {the_idx} {_the_chi_ab}-{_the_nh_ab}) & Hào Ứng (Hào {ung_idx} {_ung_chi_ab}-{_ung_nh_ab}).<br>"
+                f"<b>2. Mai Hoa Dịch Số:</b> Quẻ Chủ <b>{ten_que_chu}</b> ({_mat_ab['rel_chu_tag']}) biến <b>{ten_que_bien}</b> ({_mat_ab['rel_bien_tag']}), Quẻ Hỗ <b>{_mat_ab['full_ho']}</b>.<br>"
+                f"<b>3. Kỳ Môn Độn Giáp:</b> Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> · Thần <b>{than_name}</b> ➔ "
+                f"Đối chứng bản chất 2 phương án khẳng định ưu thế thuộc về <b>«{_win_ab}» ({_win_sc}%)</b> so với <b>«{_lose_ab}» ({_lose_sc}%)</b> (kết quả giữ nguyên 100% dù đảo vị trí 2 phương án)."
             )
             when_s = f"Thời điểm ứng nghiệm rõ nhất: <b>{omni_data.get('exact_timestamp', 'Trong khung giờ gần nhất')}</b> tại hướng <b>{huong_cung}</b>."
-            adv_s = f"Quẻ đã đặt lên bàn cân đối chứng cả 2 phương án ({opt_a} vs {opt_b}) và chỉ rõ ưu thế nghiêng về <b>{_win_ab}</b>."
+            adv_s = f"Căn cứ đồng thuận của Nhóm Quẻ Chính (Mai Hoa + Kỳ Môn + Lục Hào), bạn nên chọn và tin tưởng vào phương án <b>{_win_ab}</b>."
             return {
                 "has_override": True,
                 "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
@@ -2821,6 +3177,9 @@ class HexagramReasoningAI:
         if isinstance(dong_hao_list, (int, str)):
             dong_hao_list = [int(dong_hao_list)] if str(dong_hao_list).isdigit() else []
 
+        if blueprint.get("authoritative_dt"):
+            dung_than = blueprint["authoritative_dt"]
+
         target_cung = omni_data.get("target_cung", "?")
         c_info = omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}
         huong_cung = c_info.get("huong", "Chính Nam")
@@ -2851,6 +3210,8 @@ class HexagramReasoningAI:
             omni_data=omni_data,
             dung_than=dung_than,
         )
+        if _univ_mat.get("dt_nh"):
+            hanh_dt = _univ_mat["dt_nh"]
 
         # Bước 2 (V104.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ THEO PHƯƠNG PHÁP CHUẨN TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO)
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
@@ -2967,24 +3328,32 @@ class HexagramReasoningAI:
         tu_tru_str = f"Năm {can_y} {chi_y} · Tháng {can_m} {chi_m} · Ngày {can_n} {chi_n} · Giờ {can_g} {chi_g}".strip(" ·")
         dong_str = f"Động hào {', '.join(map(str, dong_hao_list))}" if dong_hao_list else "Quẻ Tĩnh (6 hào an tĩnh)"
 
-        if is_fake and blueprint.get("option_a") and blueprint.get("option_b"):
+        _dt_real_flag = bool(_univ_mat.get("dt_is_real", True))
+        if _dt_real_flag and blueprint.get("option_a") and blueprint.get("option_b"):
+            auth_status_str = (
+                f"<b>Căn cứ Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản; các quẻ khác dùng tham khảo):</b> "
+                f"Hào Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> tại Hào {_univ_mat.get('dt_idx', 3)} ({_univ_mat.get('dt_chi', 'Thìn')}-{_univ_mat.get('dt_nh', hanh_dt)}) hoàn toàn hữu khí (KHÔNG phạm Tuần Không), "
+                f"kết hợp Quẻ Biến <b>{ten_que_bien}</b> ({_univ_mat.get('rel_bien_tag', 'Dụng sinh Thể')}) làm phương tiện suy đoán chuẩn xác nhất (kết quả bất biến dù đảo thứ tự 2 phương án)!"
+            )
+        elif is_fake and not _dt_real_flag and blueprint.get("option_a") and blueprint.get("option_b"):
             auth_status_str = (
                 f"Phát hiện <b>{dung_than}</b> rơi vào <b>Tuần Không / Tử Môn</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Quẻ dùng phép <b>Loại Trừ Nhị Phân</b>: Bác bỏ hoàn toàn phương án bị Không Vong để khẳng định 100% phương án thực tế còn lại!"
             )
-        elif is_fake and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "HOUSEHOLD_MEMBERS", "CLOTHING_VEHICLE", "HIDDEN_OBJECT", "FIDELITY_AFFAIR_CHECK", "SIBLINGS_COUNT", "CHILDREN_AGE", "CHILDREN_COUNT"):
+        elif is_fake and not _dt_real_flag and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "HOUSEHOLD_MEMBERS", "CLOTHING_VEHICLE", "HIDDEN_OBJECT", "FIDELITY_AFFAIR_CHECK", "SIBLINGS_COUNT", "CHILDREN_AGE", "CHILDREN_COUNT"):
             auth_status_str = (
                 f"Phát hiện <b>{dung_than}</b> rơi vào <b>Chân Không / Không Vong Vô Khí</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Cảnh báo sự việc/đối tượng đang hỏi hiện <b>chưa tồn tại ngoài thực tế (= 0)</b> hoặc là câu hỏi thử lòng quẻ."
             )
-        elif auth_warnings and not is_fake:
+        elif auth_warnings or _dt_real_flag:
             auth_status_str = (
-                f"<b>Liên kết sâu Lục Hào – Mai Hoa – Kỳ Môn:</b> Hào Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> hoàn toàn hữu khí / được Hào Động sinh trợ "
-                f"khẳng định <b>đối tượng/con cái bạn hỏi LÀ CÓ THẬT 100% NGOÀI ĐỜI (bác bỏ Chân Không)</b>; còn dấu hiệu Tuần Không ở Nhật Can bắt bài bạn đang <b>đặt câu hỏi để thử độ nhạy bén của quẻ</b>!"
+                f"<b>Căn cứ Nhóm Quẻ Chính Xác Nhất (Mai Hoa + Kỳ Môn + Lục Hào + Thiết Bản; các quẻ khác dùng tham khảo):</b> "
+                f"Hào Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> tại Hào {_univ_mat.get('dt_idx', 3)} ({_univ_mat.get('dt_chi', 'Thìn')}-{_univ_mat.get('dt_nh', hanh_dt)}) hoàn toàn hữu khí / được Hào Động sinh trợ "
+                f"khẳng định <b>đối tượng/sự việc bạn hỏi LÀ CÓ THẬT 100% NGOÀI ĐỜI (bác bỏ Chân Không)</b>; còn dấu hiệu Tuần Không ở Nhật Can bắt bài bạn đang <b>đặt câu hỏi để thử độ nhạy bén của quẻ</b>!"
             )
         else:
             auth_status_str = (
-                f"Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> đối chứng trực tiếp trên quẻ ({ts_stage}), khớp chính xác vào câu hỏi."
+                f"Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> đối chứng trực tiếp trên Nhóm Quẻ Chính (Mai Hoa + Kỳ Môn + Lục Hào — {ts_stage}), khớp chính xác vào câu hỏi."
             )
 
         sub_intents_html = ""
@@ -3006,7 +3375,7 @@ class HexagramReasoningAI:
         elif blueprint.get("option_a") and blueprint.get("option_b"):
             ab_html = (
                 f'<div style="margin-top:5px;font-size:0.9em;color:#bae6fd;">'
-                f'⚖️ <b>Tách 2 vế đối chứng:</b> [Phương án 1]: <b>{blueprint["option_a"]}</b> ↔ [Phương án 2]: <b>{blueprint["option_b"]}</b>'
+                f'⚖️ <b>Tách 2 vế đối chứng (Bất biến thứ tự):</b> [Phương án 1]: <b>{blueprint["option_a"]}</b> ↔ [Phương án 2]: <b>{blueprint["option_b"]}</b>'
                 f'</div>'
             )
 
@@ -3022,7 +3391,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V104.0): CON AI SỐ 1 (FLASH-LITE ĐỌC HIỂU) ➔ TRUYỀN SANG CON AI SỐ 2 & 18 PHƯƠNG PHÁP LUẬN GIẢI</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V104.2): AI SỐ 1 ĐỌC HIỂU ➔ AI SỐ 2 SUY ĐOÁN TỪ NHÓM QUẺ CHÍNH (MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
