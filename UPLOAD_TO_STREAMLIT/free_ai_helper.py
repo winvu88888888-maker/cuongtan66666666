@@ -5594,7 +5594,7 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc PHÂN TÍCH TRỌNG TÂM'
             
-            # ═══ PHẦN 4: V100.4 GEMINI PROMPT — GHÉP 14 HỆ THỐNG ĐÔNG-TÂY THÀNH 1 BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ ═══
+            # ═══ PHẦN 4: V100.5 GEMINI PROMPT — GHÉP 14 HỆ THỐNG ĐÔNG-TÂY THÀNH 1 BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ ═══
             _vb_prompt_str = (
                 f"{_omni_dict_on.get('gender', 'NAM GIỚI')} — {_omni_dict_on.get('age_tier', 'DƯỚI 45 TUỔI')}"
                 if _is_factual_who_age
@@ -5602,7 +5602,7 @@ class FreeAIHelper:
             )
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V100.4 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V100.5 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY.\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"1. GHÉP CÁC PHƯƠNG PHÁP THÀNH MỘT BỨC TRANH THỐNG NHẤT (7 VỊ TRÍ TỌA ĐỘ): Không liệt kê rời rạc từng môn mà phải đặt mỗi phương pháp vào đúng vị trí sở trường tuyệt đối của nó:\n"
                 f"   - Vị trí 1 (Con người & Bản chất Thành/Bại): Dùng Lục Hào Nạp Giáp + Chiêm Tinh Horary Phương Tây.\n"
@@ -15777,7 +15777,37 @@ class FreeAIHelper:
         except Exception as e:
             self.log_step("V38.1", "ERROR", str(e)[:80])
         
-        # V99.9 FIX: ĐỒNG BỘ weighted_pct SAU 27-STEP VÀO offline_analysis_data ĐỂ AI ONLINE & OFFLINE KHỚP 100%
+        # V100.5: HỢP LỰC 14 HỆ THỐNG QUA CHUỖI LIÊN KẾT 7 MẮT XÍCH ĐỂ HIỆU CHỈNH weighted_pct CHÍNH XÁC TUYỆT ĐỐI
+        try:
+            from world_class_methods import compute_7_link_synergy_chain
+            _syn_main = compute_7_link_synergy_chain(
+                question=question,
+                category=detected_category,
+                dung_than=dung_than,
+                hanh_dt=locals().get('hanh_dt_v22', 'Kim'),
+                weighted_pct=weighted_pct,
+                target_cung=_omniscient_res.get('data', {}).get('target_cung', 1) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else 1,
+                ung_ky_str=_hub.get('synthesis', {}).get('ung_ky', '') if locals().get('_hub') else '',
+                ts_stage=locals().get('ts_stage', ''),
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                ky_mon_verdict=ky_mon_verdict,
+                luc_hao_verdict=luc_hao_verdict,
+                mai_hoa_verdict=mai_hoa_verdict,
+                luc_nham_verdict=luc_nham_verdict,
+                thai_at_verdict=thai_at_verdict,
+                tu_vi_verdict=tu_vi_verdict,
+                xem_ngay_verdict=xem_ngay_verdict,
+            )
+            if _syn_main and isinstance(_syn_main.get('synergy_pct'), int):
+                weighted_pct = _syn_main['synergy_pct']
+                if locals().get('_hub') and isinstance(_hub.get('synthesis'), dict):
+                    _hub['synthesis']['synergy_chain_summary'] = _syn_main.get('synergy_summary_sentence', '')
+        except Exception as _e_syn:
+            self.log_step("V100.5 Synergy", "WARN", str(_e_syn)[:80])
+
+        # V99.9 FIX: ĐỒNG BỘ weighted_pct SAU 27-STEP & SYNERGY VÀO offline_analysis_data ĐỂ AI ONLINE & OFFLINE KHỚP 100%
         if isinstance(offline_analysis_data, dict):
             offline_analysis_data['weighted_pct'] = weighted_pct
             if isinstance(offline_analysis_data.get('v22_unified_strength'), dict):
@@ -15964,7 +15994,7 @@ class FreeAIHelper:
                 _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?CÂN NHẮC\s*[—\-]\s*BÌNH[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.4)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.5)</div>'
                 f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16675,7 +16705,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.4</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.5</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17448,7 +17478,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.4</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.5</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + ''

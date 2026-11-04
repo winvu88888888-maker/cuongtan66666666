@@ -449,7 +449,27 @@ def build_narrative_summary_text(
     omni_data = omni_data if isinstance(omni_data, dict) else {}
     factors_text = _connect_factors(all_factors or [], pct=pct)
 
-    uk_clean = ung_ky_str if (ung_ky_str and ung_ky_str != '?' and 'xem mục' not in ung_ky_str.lower()) else omni_data.get('exact_timestamp', 'trong chu kỳ Can Chi gần nhất')
+    uk_clean = ung_ky_str if (ung_ky_str and ung_ky_str != '?' and 'xem mục' not in ung_ky_str.lower()) else omni_data.get('exact_timestamp', 'trong chu kỳ Can Chi gần nhất')
+    _syn_tail = ""
+    try:
+        from world_class_methods import compute_7_link_synergy_chain
+        _c_syn, _, _ = _resolve_authentic_km_palace(chart_data, dung_than, q, category)
+        _syn_obj = compute_7_link_synergy_chain(
+            question=q,
+            category=category,
+            dung_than=dung_than,
+            hanh_dt=omni_data.get('hanh_dt', 'Kim'),
+            weighted_pct=pct,
+            target_cung=_c_syn or 1,
+            direction=direction,
+            ung_ky_str=uk_clean,
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+        )
+        _syn_tail = f"<br><span style='color:#a7f3d0;font-size:0.95em;'>{_syn_obj.get('synergy_summary_sentence', '')}</span>"
+    except Exception:
+        _syn_tail = "" 
 
     # 1. TRỌNG TÂM: BỆNH TẬT / SỨC KHỎE / QUA KHỎI KHÔNG
     if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in q_low for w in ['ốm', 'bệnh', 'đau', 'khỏe', 'qua khỏi', 'qua được', 'sống không', 'nguy kịch', 'nằm viện', 'mổ']):
@@ -465,7 +485,7 @@ def build_narrative_summary_text(
         else:
             head = f"🏥 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{subj_lbl.upper()} ĐANG GẶP NHIỀU BẤT LỢI / TIÊN LƯỢNG NẶNG ({pct}% — HUNG)</b>."
             body = f"Quẻ báo Dụng Thần (<b>{dung_than}</b>) suy yếu hoặc chịu xung khắc mạnh.{co_the_str} {factors_text} Cần lập tức ưu tiên điều trị chuyên sâu tuyến trên và theo dõi đặc biệt sát sao quanh mốc <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 2. TRỌNG TÂM: TÌM ĐỒ / MẤT ĐỒ / Ở ĐÂU (Kiểm tra TRƯỚC Tài Chính)
     if category == 'TÌM_ĐỒ' or any(w in q_low for w in ['tìm lại', 'bị mất', 'mất chiếc', 'mất đồ', 'mất ví', 'thất lạc', 'ở đâu', 'chỗ nào', 'để đâu', 'cất đâu']):
@@ -482,7 +502,7 @@ def build_narrative_summary_text(
         else:
             head = f"📍 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>KHÓ TÌM LẠI / ĐÃ DI CHUYỂN XA ({pct}% — HUNG) — MANH MỐI HƯỚNG {direction.upper()}</b>."
             body = f"Quẻ báo hào Tài/Dụng Thần đang ẩn phục hoặc bị khắc, khả năng tìm lại thấp. Phương vị manh mối cuối cùng: {where_sum}.{loc_detail} {factors_text}"
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 3. TRỌNG TÂM: ĐỐI KHÁNG / TRANH CHẤP / KIỆN TỤNG / AI THẮNG
     if category == 'THẮNG_THUA' or any(w in q_low for w in ['ai thắng', 'đối phương thắng', 'thắng hay thua', 'tranh chấp', 'vụ kiện', 'kiện tụng']):
@@ -495,14 +515,14 @@ def build_narrative_summary_text(
         else:
             head = f"⚔️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐỐI PHƯƠNG ĐANG LẤN LƯỚT — BÊN BẠN BẤT LỢI NẾU ĐỐI ĐẦU TRỰC DIỆN ({pct}% — HUNG)</b>."
             body = f"Trục Hào Ứng / Cung Khách đang vượng và chế khắc bên Chủ, đối đầu căng thẳng lúc này dễ thiệt thòi. {factors_text} Nên chuyển sang thế phòng thủ, củng cố hồ sơ pháp lý và chờ thời cơ chuyển cục vào <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 4. TRỌNG TÂM: KHI NÀO / BAO GIỜ / THÁNG MẤY / NGÀY NÀO
     if any(w in q_low for w in ['khi nào', 'bao giờ', 'lúc nào', 'tháng mấy', 'ngày nào', 'mấy giờ', 'năm nào']):
         status_w = "THUẬN LỢI ỨNG NGHIỆM" if pct >= 55 else ("ỨNG NGHIỆM NHƯNG CẦN KIÊN NHẪN" if pct >= 45 else "ĐANG BỊ TRÌ HOÃN, CẦN CHỜ XUNG KHAI")
         head = f"⏳ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>THỜI ĐIỂM ỨNG KỲ LÀ {uk_clean.upper()} ({pct}% — {status_w})</b>."
         body = f"Dựa trên sự hội tụ của Dụng Thần (<b>{dung_than}</b>) và vòng Can Chi: {factors_text} Phương hướng thuận lợi hỗ trợ: <b>{direction}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 5. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
     if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
@@ -512,7 +532,7 @@ def build_narrative_summary_text(
         by_str = ", ".join(omni_data.get('birth_years', [])[:3])
         head = f"👤 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{g_str} — {a_str} (Ước tính năm sinh & độ tuổi: {by_str})</b>."
         body = f"Luận cứ Dịch học hội tụ từ Dụng Thần <b>{dung_than}</b> ({g_reasons}) tại hướng <b>{direction}</b>. {factors_text}"
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / BAO NHIÊU / MẤY
     if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'bao nhiêu', 'có mấy', 'số lượng']):
@@ -521,7 +541,7 @@ def build_narrative_summary_text(
         col_str = omni_data.get('colors', '')
         head = f"📦 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>{obj_str[:120]}</b>."
         body = f"Màu sắc đặc trưng: <b>{col_str}</b> | {qty_str}. {factors_text}"
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 7. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
     if category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền']):
@@ -534,7 +554,7 @@ def build_narrative_summary_text(
         else:
             head = f"💰 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CHƯA NÊN ĐẦU TƯ / KHÓ CÓ LÃI NGAY, DỄ ĐỌNG VỐN ({pct}% — HUNG)</b>."
             body = f"Dụng Thần (<b>{dung_than}</b>) đang ẩn phục hoặc suy yếu, xuống tiền lúc này dễ bị kẹt thanh khoản hoặc hao hụt. {factors_text} Nên giữ tiền mặt và chờ qua mốc <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 8. TRỌNG TÂM: CÔNG VIỆC / CHUYỂN VIỆC / XIN VIỆC / THI CỬ / SỰ NGHIỆP
     if category == 'CÔNG_VIỆC' or any(w in q_low for w in ['chuyển việc', 'xin việc', 'nhảy việc', 'công việc', 'thăng chức', 'thi', 'đỗ', 'phỏng vấn', 'sự nghiệp']):
@@ -547,7 +567,7 @@ def build_narrative_summary_text(
         else:
             head = f"💼 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>CHƯA THUẬN LỢI / NHIỀU ÁP LỰC & CẢN TRỞ ({pct}% — HUNG)</b>."
             body = f"Dụng Thần (<b>{dung_than}</b>) đang gặp lực cản mạnh, nếu vội vàng thay đổi hoặc quyết định lớn lúc này sẽ bất lợi. {factors_text} Nên củng cố vị trí hiện tại và chờ tới <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 9. TRỌNG TÂM: TÌNH CẢM / HÔN NHÂN / VỢ CHỒNG / NGƯỜI YÊU
     if category == 'TÌNH_CẢM' or any(w in q_low for w in ['yêu', 'cưới', 'hôn nhân', 'vợ chồng', 'chia tay', 'quay lại', 'tình cảm', 'thật lòng', 'ngoại tình', 'vợ tôi', 'chồng tôi', 'người yêu']):
@@ -578,7 +598,7 @@ def build_narrative_summary_text(
             else:
                 head = f"❤️ <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> <b>ĐANG CÓ XUNG KHẮC / TRỞ NGẠI LỚN TRONG TÌNH CẢM ({pct}% — HUNG)</b>."
             body = f"Xét trên trục Dụng Thần (<b>{dung_than}</b>) và tương quan Thế – Ứng: {factors_text} Mốc chuyển biến tình cảm: <b>{uk_clean}</b>."
-        return _md_to_html_bold(f"{head}<br>{body}")
+        return _md_to_html_bold(f"{head}<br>{body}{_syn_tail}")
 
     # 10. CÁC CÂU HỎI KHÁC
     opener = _get_qtype_opener(q, pct, category)
@@ -591,7 +611,7 @@ def build_narrative_summary_text(
         direction=direction,
         ung_ky=uk_clean,
     )
-    return _md_to_html_bold(f"🎯 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> {opener}{filled}")
+    return _md_to_html_bold(f"🎯 <b>TRẢ LỜI TRỌNG TÂM ({q}):</b> {opener}{filled}{_syn_tail}")
 
 
 def generate_smart_offline_answer(
@@ -1193,7 +1213,7 @@ def build_connected_prose_analysis(
     return (
         f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.58);border-radius:14px;border:1px solid rgba(110,231,183,0.4);line-height:1.78;font-size:0.98em;color:#f1f5f9;">'
         f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
-        f'📖 BỨC TRANH TOÀN CẢNH ĐÔNG - TÂY HỢP NHẤT V100.4 (14 HỆ THỐNG · 7 VỊ TRÍ TỌA ĐỘ · HỘI TỤ BAYES)</div>'
+        f'📖 BỨC TRANH TOÀN CẢNH ĐÔNG - TÂY HỢP NHẤT V100.5 (14 HỆ THỐNG · 7 VỊ TRÍ TỌA ĐỘ · HỘI TỤ BAYES)</div>'
         f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Tâm điểm Con người & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
         f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Không gian hiện trường, Tâm lý & Diễn biến 3 thời qua Kỳ Môn – Đại Lục Nhâm:</b> {paragraph_2}</p>'
         + (f'<p style="margin:0 0 12px 0;text-align:justify;color:#bae6fd;">{paragraph_world}</p>' if paragraph_world else '')

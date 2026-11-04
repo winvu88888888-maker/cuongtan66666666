@@ -506,19 +506,38 @@ def build_holographic_7_position_picture(
         f"và phương vị vượng khí <b>{xk_dh['dieu_hau_dir']}</b>" + (f" ({remedy_extra})" if remedy_extra else ".")
     )
 
-    # Bản đồ HTML 7 vị trí ghép thành 1 bức tranh thống nhất
+    syn = compute_7_link_synergy_chain(
+        question=question,
+        category=category,
+        dung_than=dung_than,
+        hanh_dt=hanh_dt,
+        weighted_pct=weighted_pct,
+        target_cung=target_cung,
+        direction=direction,
+        ung_ky_str=uk_display,
+        ts_stage=ts_stage,
+        chart_data=chart_data,
+        luc_hao_data=luc_hao_data,
+        mai_hoa_data=mai_hoa_data,
+        thai_at_verdict=thai_at_verdict,
+        tu_vi_verdict=tu_vi_verdict,
+        xem_ngay_verdict=xem_ngay_verdict,
+    )
+
+    # Bản đồ HTML 7 vị trí liên kết hợp sức thành 1 bức tranh thống nhất
     grid_html = (
         f'<div style="margin-top:14px;padding:16px 18px;background:rgba(2,6,23,0.62);border-radius:12px;border:1px solid rgba(56,189,248,0.4);">'
         f'<div style="font-size:1.03em;font-weight:800;color:#38bdf8;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.25);padding-bottom:6px;">'
-        f'🗺️ BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ TỌA ĐỘ (MỖI PHƯƠNG PHÁP TRẤN GIỮ ĐÚNG 1 VỊ TRÍ CHUYÊN BIỆT — CHÍNH XÁC TUYỆT ĐỐI)</div>'
+        f'🗺️ BỨC TRANH TOÀN CẢNH 7 MẮT XÍCH LIÊN KẾT HỢP SỨC (14 HỆ THỐNG ĐÔNG – TÂY BẮT TAY GIẢI MÃ CHÍNH XÁC TUYỆT ĐỐI)</div>'
         f'<div style="display:flex;flex-direction:column;gap:8px;font-size:0.95em;line-height:1.68;color:#e2e8f0;text-align:justify;">'
-        f'<div>🎯 <b>Vị trí 1 — Tâm Điểm Con Người & Kết Cục Cốt Lõi</b> <i>(Do <b>Lục Hào Nạp Giáp + Chiêm Tinh Horary Phương Tây</b> trấn giữ — Xác định Ai & Thành/Bại)</i>: {pos1_result}</div>'
-        f'<div>🧭 <b>Vị trí 2 — Bản Đồ Không Gian 3D, Phương Hướng & Hiện Trường</b> <i>(Do <b>Kỳ Môn Độn Giáp + Huyền Không Phi Tinh Vận 9</b> trấn giữ — Xác định Ở đâu & Môi trường)</i>: {pos2_result}</div>'
-        f'<div>⏳ <b>Vị trí 3 — Trục Thời Gian 3 Thời: Quá Khứ → Hiện Tại → Tương Lai</b> <i>(Do <b>Đại Lục Nhâm Tam Truyền + Mai Hoa Dịch Số</b> trấn giữ — Xác định Nguyên nhân & Diễn biến)</i>: {pos3_result}</div>'
-        f'<div>📦 <b>Vị trí 4 — Hình Tướng, Đặc Điểm, Tuổi Tác & Con Số Định Lượng</b> <i>(Do <b>Vạn Vật Loại Tượng + Thiết Bản Thần Số + 12 Trường Sinh</b> trấn giữ — Xác định Đặc tính & Số lượng)</i>: {pos4_result}</div>'
-        f'<div>⏰ <b>Vị trí 5 — Đồng Hồ Điểm Hẹn Ứng Kỳ</b> <i>(Do <b>Động Cơ Ứng Kỳ + Chiêm Tinh Vệ Đà Ấn Độ KP Sub-Lord</b> trấn giữ — Xác định Khi nào xảy ra)</i>: {pos5_result}</div>'
-        f'<div>🌌 <b>Vị trí 6 — Thời Thế Vĩ Mô & Chiến Lược Công/Thủ</b> <i>(Do <b>Thái Ất Thần Số + Tử Vi Đẩu Số + Trạch Cát Thiên Văn</b> trấn giữ — Xác định Tiến hay Lùi)</i>: {pos6_result}</div>'
-        f'<div>🔑 <b>Vị trí 7 — Chìa Khóa Hóa Giải & Độ Tin Cậy Hội Tụ Bayes</b> <i>(Do <b>Bát Tự Điều Hầu Cùng Thông Bảo Giám + 40 Chuyên Gia AI + Toán Học Bayes</b> trấn giữ — Xác định Giải pháp xoay chuyển)</i>: {pos7_result}</div>'
+        f'<div>🎯 <b>Vị trí 1 [Mắt xích Khởi nguồn — Con Người & Cốt Lõi]</b> <i>(<b>Lục Hào Nạp Giáp + Horary Phương Tây</b>)</i>: {pos1_result} ➔ <i>Truyền tọa độ sang Vị trí 2</i>.</div>'
+        f'<div>🧭 <b>Vị trí 2 [Mắt xích Không gian — Phương Hướng & Hiện Trường]</b> <i>(<b>Kỳ Môn Độn Giáp + Huyền Không Vận 9</b> nhận lực từ Vị trí 1)</i>: {pos2_result} ➔ <i>Truyền bối cảnh sang Vị trí 3</i>.</div>'
+        f'<div>⏳ <b>Vị trí 3 [Mắt xích Thời gian — Quá Khứ → Hiện Tại → Tương Lai]</b> <i>(<b>Đại Lục Nhâm Tam Truyền + Mai Hoa Dịch Số</b> nối mạch từ Vị trí 2)</i>: {pos3_result} ➔ <i>Truyền khí số sang Vị trí 4</i>.</div>'
+        f'<div>📦 <b>Vị trí 4 [Mắt xích Định hình — Hình Tướng, Tuổi Tác & Số Lượng]</b> <i>(<b>Vạn Vật Loại Tượng + Thiết Bản + 12 Trường Sinh</b> kết tinh từ Vị trí 1-2-3)</i>: {pos4_result} ➔ <i>Khóa vào đồng hồ Vị trí 5</i>.</div>'
+        f'<div>⏰ <b>Vị trí 5 [Mắt xích Điểm hẹn — Đồng Hồ Ứng Kỳ]</b> <i>(<b>Động Cơ Ứng Kỳ + Vệ Đà Ấn Độ KP Sub-Lord</b> kích hoạt từ Vị trí 4)</i>: {pos5_result} ➔ <i>Soi chiếu lên Vị trí 6</i>.</div>'
+        f'<div>🌌 <b>Vị trí 6 [Mắt xích Chiến lược — Thời Thế Công/Thủ]</b> <i>(<b>Thái Ất Thần Số + Tử Vi + Trạch Cát</b> định hướng từ Vị trí 5)</i>: {pos6_result} ➔ <i>Mở chìa khóa Vị trí 7</i>.</div>'
+        f'<div>🔑 <b>Vị trí 7 [Mắt xích Chốt hạ — Hóa Giải & Hội Tụ Bayes]</b> <i>(<b>Bát Tự Điều Hầu + 40 Chuyên Gia AI + Toán Học Bayes</b> hợp lực cả 6 vị trí trên)</i>: {pos7_result}</div>'
+        f'<div style="margin-top:6px;padding:10px 12px;background:rgba(16,185,129,0.15);border-left:4px solid #34d399;border-radius:8px;color:#ecfdf5;">{syn["synergy_summary_sentence"]}</div>'
         f'</div></div>'
     )
 
@@ -537,4 +556,92 @@ def build_holographic_7_position_picture(
         "grid_html": grid_html,
         "prompt_blueprint": prompt_blueprint,
         "prose_html": wc["prose_html"],
+    }
+
+
+
+def compute_7_link_synergy_chain(
+    question: str,
+    category: str,
+    dung_than: str,
+    hanh_dt: str,
+    weighted_pct: int,
+    target_cung: int = 1,
+    direction: str = "Chính Bắc (Khảm)",
+    ung_ky_str: str = "",
+    ts_stage: str = "",
+    chart_data: Dict[str, Any] | None = None,
+    luc_hao_data: Dict[str, Any] | None = None,
+    mai_hoa_data: Dict[str, Any] | None = None,
+    ky_mon_verdict: str = "BÌNH",
+    luc_hao_verdict: str = "BÌNH",
+    mai_hoa_verdict: str = "BÌNH",
+    luc_nham_verdict: str = "BÌNH",
+    thai_at_verdict: str = "BÌNH",
+    tu_vi_verdict: str = "BÌNH",
+    xem_ngay_verdict: str = "BÌNH",
+) -> Dict[str, Any]:
+    """
+    V100.5: CHUỖI LIÊN KẾT HỢP SỨC 7 MẮT XÍCH (7-LINK SYNERGY CHAIN)
+    Các phương pháp không đứng rời rạc mà truyền kết quả từ Mắt xích 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+    để cộng hưởng lực lượng và chốt ra kết quả chính xác tuyệt đối.
+    """
+    chart_data = chart_data if isinstance(chart_data, dict) else {}
+    luc_hao_data = luc_hao_data if isinstance(luc_hao_data, dict) else {}
+    mai_hoa_data = mai_hoa_data if isinstance(mai_hoa_data, dict) else {}
+
+    horary = analyze_western_horary(question, category, dung_than, hanh_dt, chart_data, weighted_pct)
+    vedic = analyze_vedic_kp_prashna(question, category, chart_data, weighted_pct)
+    xk_dh = analyze_xuankong_and_dieuhau(dung_than, hanh_dt, target_cung, chart_data)
+    verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict, tu_vi_verdict, xem_ngay_verdict]
+    bayes = compute_bayesian_consensus(weighted_pct, verdicts_list, horary["score"], vedic["score"], xk_dh["score"])
+
+    # Tính hiệu chỉnh cộng hưởng liên hoàn giữa các mắt xích
+    synergy_delta = 0
+    chain_steps = []
+
+    # Liên kết 1 -> 2: Lục Hào + Horary (Nhân) kết hợp Kỳ Môn + Huyền Không Vận 9 (Địa)
+    lh_cat = "CÁT" in str(luc_hao_verdict).upper()
+    km_cat = "CÁT" in str(ky_mon_verdict).upper()
+    xk_cat = xk_dh["score"] >= 60
+    if (lh_cat or horary["score"] >= 60) and (km_cat or xk_cat):
+        synergy_delta += 3
+        link_1_2 = f"Mắt xích 1 (Lục Hào + Horary) đắc khí truyền lực sang Mắt xích 2 (Kỳ Môn + Phi Tinh Vận 9 tại {direction}) tạo thế Nhân - Địa đồng tâm (+3% cộng hưởng)"
+    elif not lh_cat and not km_cat and xk_dh["score"] < 45:
+        synergy_delta -= 3
+        link_1_2 = f"Mắt xích 1 (Lục Hào + Horary) gặp lực cản lại rơi vào cung Mắt xích 2 (Kỳ Môn + Phi Tinh tại {direction}) đang suy khí (-3% cảnh báo)"
+    else:
+        link_1_2 = f"Mắt xích 1 (Lục Hào + Horary) phối hợp cân bằng với không gian Mắt xích 2 (Kỳ Môn + Phi Tinh Vận 9 tại {direction})"
+    chain_steps.append(link_1_2)
+
+    # Liên kết 2 -> 3 -> 4: Không gian truyền sang Trục 3 thời (Đại Lục Nhâm + Mai Hoa) & Vạn Vật Trường Sinh
+    mh_cat = "CÁT" in str(mai_hoa_verdict).upper()
+    ln_cat = "CÁT" in str(luc_nham_verdict).upper()
+    if mh_cat and ln_cat:
+        synergy_delta += 2
+        link_3_4 = f"Mắt xích 3 (Đại Lục Nhâm + Mai Hoa) mở thông hậu vận, nuôi dưỡng Dụng Thần {dung_than} ({hanh_dt} - {ts_stage or 'Vượng'}) tại Mắt xích 4 (+2% hậu vận)"
+    elif "HUNG" in str(mai_hoa_verdict).upper() and "HUNG" in str(luc_nham_verdict).upper():
+        synergy_delta -= 2
+        link_3_4 = f"Mắt xích 3 (Đại Lục Nhâm + Mai Hoa) báo hiệu hậu vận có khúc quanh, đòi hỏi Mắt xích 4 ({dung_than} hành {hanh_dt}) phải bảo toàn nội lực (-2% thận trọng)"
+    else:
+        link_3_4 = f"Mắt xích 3 (Đại Lục Nhâm + Mai Hoa) dẫn dắt diễn biến sang Mắt xích 4 (Dụng Thần {dung_than} hành {hanh_dt}, vòng Trường Sinh {ts_stage or 'Bình hòa'})"
+    chain_steps.append(link_3_4)
+
+    # Liên kết 5 -> 6 -> 7: Ứng Kỳ + Vedic KP khóa thời điểm & Điều Hầu + Bayes chốt phán quyết
+    synergy_pct = int(round((weighted_pct * 0.65) + (bayes["bayesian_posterior_pct"] * 0.35) + synergy_delta))
+    synergy_pct = max(8, min(96, synergy_pct))
+
+    synergy_summary_sentence = (
+        f"🔗 <b>Chuỗi Liên Kết Hợp Sức 14 Hệ Thống (Đông – Tây Hội Tụ {bayes['consensus_pct']}%):</b> "
+        f"{link_1_2}; tiếp nối sang {link_3_4}; khóa điểm rơi Ứng Kỳ tại <b>{ung_ky_str or 'chu kỳ Can Chi kế tiếp'}</b> "
+        f"(Tinh tú Vệ Đà <b>{vedic['nakshatra']}</b>) và dùng pháp quyết Điều Hầu <b>{xk_dh['dieu_hau_god']}</b> "
+        f"(hướng <b>{xk_dh['dieu_hau_dir']}</b>) để chốt độ chuẩn xác hợp lực ở mức <b>{synergy_pct}%</b>."
+    )
+
+    return {
+        "synergy_pct": synergy_pct,
+        "consensus_pct": bayes["consensus_pct"],
+        "bayesian_posterior_pct": bayes["bayesian_posterior_pct"],
+        "synergy_delta": synergy_delta,
+        "synergy_summary_sentence": synergy_summary_sentence,
     }
