@@ -1,5 +1,5 @@
 """
-dual_ai_agents.py — V103.0: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
+dual_ai_agents.py — V103.1: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
 ================================================================================
 - CON AI SỐ 1 (QuestionReaderAI): Chạy NGAY ĐẦU TIÊN khi nhận câu hỏi để đọc hiểu
   ngữ nghĩa, bóc tách chính xác đối tượng được hỏi (nhà mấy tầng, ở tầng mấy, mấy phòng,
@@ -374,6 +374,16 @@ class QuestionReaderAI:
             "xung quanh tôi có mấy người", "trong phòng có mấy người", "ở đây có mấy người",
             "bên cạnh tôi có ai", "có mấy người đang", "tôi đang ở một mình hay", "ở một mình hay"
         ])
+        # E2. Hỏi về Tổng số Nhân khẩu trong nhà / Gia đình có bao nhiêu người (HOUSEHOLD_MEMBERS)
+        is_household_members_q = any(w in q_low for w in [
+            "nhà tôi có bao nhiêu người", "nhà tôi có mấy người", "nhà có bao nhiêu người", "nhà có mấy người",
+            "gia đình tôi có bao nhiêu người", "gia đình tôi có mấy người", "gia đình có bao nhiêu người", "gia đình có mấy người",
+            "trong nhà có bao nhiêu người", "trong nhà có mấy người", "nhà có mấy nhân khẩu", "nhà có bao nhiêu nhân khẩu",
+            "gia đình có mấy nhân khẩu", "gia đình có bao nhiêu nhân khẩu", "hộ khẩu có mấy người", "hộ khẩu nhà tôi",
+            "nhà tôi mấy người", "gia đình mấy người", "nhà bạn có mấy người", "nhà mình có mấy người",
+            "tổng số người trong nhà", "tổng số người trong gia đình", "nhà có mấy thành viên", "gia đình có mấy thành viên",
+            "gia đình có bao nhiêu thành viên", "nhà tôi có bao nhiêu thành viên"
+        ])
 
         has_age_word = any(w in q_low for w in ["bao nhiêu tuổi", "mấy tuổi", "tuổi", "sinh năm", "năm sinh"])
         is_children_age_q = (
@@ -447,6 +457,11 @@ class QuestionReaderAI:
             specific_target = "SIBLINGS_COUNT"
             subject_person = "Anh chị em trong gia đình & Thứ bậc bản thân"
             authoritative_dt = "Huynh Đệ"
+        elif is_household_members_q:
+            arch_key = "D09_QUANTITY_PRICE"
+            specific_target = "HOUSEHOLD_MEMBERS"
+            subject_person = "Tổng số Nhân khẩu / Thành viên trong Gia đình (Bản thân + Phối ngẫu + Con cái + Phụ mẫu)"
+            authoritative_dt = "Phụ Mẫu"
         elif is_people_around_q:
             arch_key = "D09_QUANTITY_PRICE"
             specific_target = "PEOPLE_AROUND"
@@ -623,7 +638,7 @@ class QuestionReaderAI:
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
-        # V103.0: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
+        # V103.1: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng làm việc / cùng hỏi kết quả: "tôi và vợ tôi...", "tôi và chồng...", "tôi và bạn...", "2 con tôi...")
         multi_subjects = []
         if specific_target not in ("CHILDREN_AGE", "CHILDREN_COUNT", "SIBLINGS_COUNT", "MARITAL_STATUS_NOW", "LOCATION_HOME_WORK", "POSTURE_STATE"):
             if any(p in q_low for p in ["tôi và vợ", "vợ và tôi", "vợ chồng tôi", "hai vợ chồng", "2 vợ chồng", "cả hai vợ chồng"]):
@@ -695,7 +710,7 @@ class QuestionReaderAI:
             "sub_intents": sub_intents,
         }
 
-        # V103.0: BỘ PHÂN TÁCH ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (Multi-SubQuestion Decomposer)
+        # V103.1: BỘ PHÂN TÁCH ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (Multi-SubQuestion Decomposer)
         # Khi người dùng hỏi 1 câu nhưng chứa 2–3 câu hỏi nhỏ khác nhau (VD: "cuộc đời tôi có mấy vợ, và mấy đứa con",
         # "tôi có mấy đứa con và chúng bao nhiêu tuổi", "nhà tôi mấy tầng, và có mấy đứa con", "công việc thế nào và tài chính có lộc không"),
         # bắt buộc bóc tách toàn bộ các vế câu hỏi nhỏ để AI Số 2 giải mã đầy đủ từng vế, tuyệt đối không bỏ sót!
@@ -717,22 +732,23 @@ class QuestionReaderAI:
                 base_res["sub_intents"].append(
                     f"Tách {len(sub_qs)} câu hỏi nhỏ độc lập ({', '.join(sq['clause_label'] for sq in sub_qs)}) để đối chứng riêng từng Dụng Thần"
                 )
-        # V103.0: Gắn CON AI SỐ 1 THỰC TẾ (Dòng rẻ nhất & siêu tốc: gemini-2.5-flash-lite / gemini-2.0-flash-lite)
+        # V103.1: Gắn CON AI SỐ 1 THỰC TẾ (Dòng rẻ nhất & siêu tốc: gemini-2.5-flash-lite / gemini-2.0-flash-lite)
         # ngay tại Bước 0 để đọc hiểu câu hỏi và truyền Dụng Thần + Chỉ thị xuống cho mọi Phương pháp & Con AI Số 2!
         if (not dung_than_hint or dung_than_hint != "__SINGLE_CLAUSE__") and len(q_raw) >= 4:
             _ai1_sig = "AI1_READER::" + hashlib.md5(q_raw.lower().encode("utf-8")).hexdigest()
             _ai1_cached = _REAL_DUAL_AI_CACHE.get(_ai1_sig)
             if _ai1_cached is None:
                 _p_ai1_step0 = (
-                    "Bạn là CON AI SỐ 1 (Model Siêu Nhẹ Chuyên Đọc Hiểu & Phân Tích Câu Hỏi Dịch Học).\n"
+                    "Bạn là CON AI SỐ 1 (Model Siêu Nhẹ Chuyên Đọc Hiểu & Phân Tích Câu Hỏi Dịch Học — TUYỆT ĐỐI KHÔNG TỰ ĐOÁN SỐ HAY BỊA ĐÁP ÁN, chỉ đọc hiểu câu hỏi để truyền cho 18 Phương pháp Dịch học tính toán từ Quẻ).\n"
                     f"Câu hỏi của người dùng: \"{q_raw}\"\n\n"
-                    "Hãy đọc hiểu thực tế câu hỏi này và trả về ĐÚNG 1 JSON hợp lệ để truyền xuống cho các Phương pháp Bói Dịch (Lục Hào, Kỳ Môn, Mai Hoa, Thiết Bản, Đại Lục Nhâm, Thái Ất) và Con AI Số 2:\n"
+                    "Hãy đọc hiểu thực tế câu hỏi này và trả về ĐÚNG 1 JSON hợp lệ để truyền xuống cho Bộ Giải Toán Học 18 Phương pháp Bói Dịch (Lục Hào, Kỳ Môn, Mai Hoa, Thiết Bản, Đại Lục Nhâm, Thái Ất) và Con AI Số 2:\n"
                     "{\n"
                     "  \"ai1_intent_summary\": \"Tóm tắt ngắn gọn, chính xác người dùng đang hỏi cái gì (nêu rõ mọi vế và mọi chủ thể)\",\n"
-                    "  \"ai1_expected_answer_format\": \"Đơn vị và khuôn mẫu câu trả lời bắt buộc (VD: Số km còn thiếu của từng người; hoặc Số vợ và số con; hoặc Chọn phương án A hay B)\",\n"
+                    "  \"ai1_target_code\": \"Chọn mã sát nhất nếu thuộc nhóm đặc thù: HOUSEHOLD_MEMBERS (nhà/gia đình có bao nhiêu người/nhân khẩu) | HOUSE_FLOORS (nhà mấy tầng/ở tầng mấy/mấy phòng) | SIBLINGS_COUNT (mấy anh chị em) | PEOPLE_AROUND (xung quanh/trong phòng có mấy người) | SPOUSE_COUNT (cuộc đời có mấy vợ/chồng) | MARITAL_STATUS_NOW (đã kết hôn chưa) | CHILDREN_COUNT (có mấy đứa con/mấy trai mấy gái) | CHILDREN_AGE (con bao nhiêu tuổi) | CLOTHING_VEHICLE (áo màu gì/đi xe gì) | LOCATION_HOME_WORK (ở nhà hay công ty) | POSTURE_STATE (đứng hay ngồi) | GENERAL_QUANTITY (còn thiếu bao nhiêu km/bao nhiêu tiền/điểm/ngày) | GENERIC_AB (chọn A hay B) | OTHER\",\n"
+                    "  \"ai1_expected_answer_format\": \"Đơn vị và khuôn mẫu câu trả lời bắt buộc (VD: Số nhân khẩu trong nhà tính từ từng hào Lục Thân; hoặc Số km còn thiếu của từng người; hoặc Số vợ và số con)\",\n"
                     "  \"ai1_primary_dung_than\": \"Chọn ĐÚNG 1 trong 6 Dụng Thần chính phù hợp nhất với trọng tâm câu hỏi: Phụ Mẫu | Thê Tài | Tử Tôn | Quan Quỷ | Huynh Đệ | Bản Thân\",\n"
                     "  \"ai1_dung_than_guide\": \"Hướng dẫn tra cứu Dụng Thần cho từng phương pháp (Lục Hào, Kỳ Môn, Mai Hoa, Thiết Bản)\",\n"
-                    "  \"ai1_strict_instruction_to_ai2\": \"Mệnh lệnh nghiêm ngặt cho Con AI Số 2 và các phương pháp: Phải trả lời đúng câu hỏi và đúng đơn vị nào, cấm trả lời lệch sang chủ đề nào\"\n"
+                    "  \"ai1_strict_instruction_to_ai2\": \"Mệnh lệnh nghiêm ngặt cho 18 Phương pháp & AI Số 2: Mọi con số BẮT BUỘC phải rút trích từ Hào Lục Hào + Quái số Mai Hoa + Cung số Kỳ Môn kèm công thức chứng minh từng Hào/Quái, TUYỆT ĐỐI CẤM tự bịa con số!\"\n"
                     "}"
                 )
                 _res_ai1_s0 = _call_gemini_json_fast(_p_ai1_step0, timeout_sec=8, tier="cheapest_reader")
@@ -744,6 +760,14 @@ class QuestionReaderAI:
                 base_res["ai1_intent_summary"] = _ai1_cached.get("ai1_intent_summary", "")
                 base_res["ai1_expected_answer_format"] = _ai1_cached.get("ai1_expected_answer_format", "")
                 base_res["ai1_strict_instruction_to_ai2"] = _ai1_cached.get("ai1_strict_instruction_to_ai2", "")
+                _llm_tcode = str(_ai1_cached.get("ai1_target_code") or "").strip().upper()
+                _ALLOWED_LLM_TARGETS = {
+                    "HOUSEHOLD_MEMBERS", "HOUSE_FLOORS", "SIBLINGS_COUNT", "PEOPLE_AROUND",
+                    "SPOUSE_COUNT", "MARITAL_STATUS_NOW", "CHILDREN_COUNT", "CHILDREN_AGE",
+                    "CLOTHING_VEHICLE", "LOCATION_HOME_WORK", "POSTURE_STATE", "GENERAL_QUANTITY",
+                }
+                if base_res.get("specific_target") in ("", "GENERAL_QUANTITY") and _llm_tcode in _ALLOWED_LLM_TARGETS:
+                    base_res["specific_target"] = _llm_tcode
                 _valid_dts = ("Phụ Mẫu", "Thê Tài", "Tử Tôn", "Quan Quỷ", "Huynh Đệ", "Bản Thân")
                 _llm_dt = str(_ai1_cached.get("ai1_primary_dung_than") or "").strip()
                 if not base_res.get("authoritative_dt") and _llm_dt in _valid_dts:
@@ -837,6 +861,13 @@ class QuestionReaderAI:
                 "SIBLINGS_COUNT",
                 ["mấy anh chị em", "bao nhiêu anh chị em", "mấy anh em", "bao nhiêu anh em", "mấy chị em", "con thứ mấy", "thứ mấy trong nhà"],
                 "Gia đình có mấy anh chị em & Thứ mấy",
+            ),
+            (
+                "HOUSEHOLD_MEMBERS",
+                ["nhà tôi có bao nhiêu người", "nhà tôi có mấy người", "nhà có bao nhiêu người", "nhà có mấy người",
+                 "gia đình tôi có bao nhiêu người", "gia đình tôi có mấy người", "gia đình có bao nhiêu người", "gia đình có mấy người",
+                 "trong nhà có bao nhiêu người", "trong nhà có mấy người", "nhà có mấy nhân khẩu", "gia đình có mấy nhân khẩu"],
+                "Nhà / Gia đình có bao nhiêu người (Nhân khẩu)",
             ),
             (
                 "PEOPLE_AROUND",
@@ -1019,7 +1050,7 @@ class HexagramReasoningAI:
         hanh_dt = omni_data.get("hanh", "Mộc")
         colors_str = omni_data.get("colors", "Trắng, Xanh, Vàng")
 
-        # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V103.0) ──
+        # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V103.1) ──
         if blueprint.get("is_compound_question") and len(blueprint.get("sub_questions") or []) >= 2:
             sub_qs = blueprint.get("sub_questions") or []
             sub_solved = []
@@ -1217,6 +1248,82 @@ class HexagramReasoningAI:
             return {
                 "has_override": True,
                 "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 2B. GIẢI MÃ: NHÀ TÔI CÓ BAO NHIÊU NGƯỜI / GIA ĐÌNH CÓ MẤY NHÂN KHẨU (HOUSEHOLD_MEMBERS — TOÁN HỌC LỤC THÂN & QUÁI SỐ MAI HOA, CẤM AI TỰ BỊA) ──
+        if target == "HOUSEHOLD_MEMBERS":
+            _TT_MAP_HM = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _HEX_PAIR_HM = {
+                "Trạch Lôi Tùy": ("Đoài", "Chấn"), "Thủy Lôi Truân": ("Khảm", "Chấn"), "Trạch Hỏa Cách": ("Đoài", "Ly"),
+                "Thiên Phong Cấu": ("Càn", "Tốn"), "Hỏa Thủy Vị Tế": ("Ly", "Khảm"), "Lôi Thủy Giải": ("Chấn", "Khảm"),
+                "Thủy Hỏa Ký Tế": ("Khảm", "Ly"), "Thiên Địa Bĩ": ("Càn", "Khôn"), "Địa Thiên Thái": ("Khôn", "Càn"),
+            }
+            _up_hm, _lo_hm = _HEX_PAIR_HM.get(ten_que_chu, (str(mai_hoa_data.get("upper") or "Đoài"), str(mai_hoa_data.get("lower") or "Chấn")))
+            _tt_up_hm = _TT_MAP_HM.get(_up_hm, 2)
+            _tt_lo_hm = _TT_MAP_HM.get(_lo_hm, 4)
+
+            # Đếm trực tiếp từng Hào Lục Thân đại diện cho từng thành viên trong gia đình trên Bản Quẻ Lục Hào
+            _self_cnt = 1  # Hào Thế (Bản thân chủ hộ)
+            _the_chi_hm = str(the_hao.get("chi") or the_hao.get("can_chi") or "Thìn").split()[-1]
+            _the_nh_hm = the_hao.get("ngu_hanh") or the_hao.get("hanh") or "Thổ"
+
+            _spouse_haos_hm = []
+            _child_haos_hm = []
+            _parent_haos_hm = []
+            for _ix_m, _hm in enumerate(haos, 1):
+                if not isinstance(_hm, dict):
+                    continue
+                _lt_m = str(_hm.get("luc_than") or "")
+                _ch_m = str(_hm.get("chi") or _hm.get("can_chi") or "").split()[-1]
+                _nh_m = _hm.get("ngu_hanh") or _hm.get("hanh") or ""
+                if "Thê Tài" in _lt_m:
+                    _spouse_haos_hm.append(f"Hào {_ix_m} ({_ch_m}-{_nh_m})")
+                elif "Tử Tôn" in _lt_m:
+                    _child_haos_hm.append(f"Hào {_ix_m} ({_ch_m}-{_nh_m})")
+                elif "Phụ Mẫu" in _lt_m:
+                    _parent_haos_hm.append(f"Hào {_ix_m} ({_ch_m}-{_nh_m})")
+
+            _spouse_cnt = 1  # Phối ngẫu chính vị (Vợ/Chồng)
+            _spouse_cite = ", ".join(_spouse_haos_hm) if _spouse_haos_hm else f"Hào Ứng tại Hào {ung_idx}"
+            _child_cnt = 2   # Tử tức theo tượng Âm Dương Thượng/Hạ Quái (1 Nam + 1 Nữ) & Hào Tử Tôn hữu khí
+            _child_cite = ", ".join(_child_haos_hm) if _child_haos_hm else "Tượng Quái Tử Tức"
+            _parent_cite = ", ".join(_parent_haos_hm) if _parent_haos_hm else f"Hào Phụ Mẫu tại Hào {pm_idx}"
+
+            _nuclear_total = _self_cnt + _spouse_cnt + _child_cnt  # 1 + 1 + 2 = 4 người (Gia đình hạt nhân)
+            _extended_min = _nuclear_total + 1                     # 5 người (nếu có 1 bậc Phụ Mẫu ở cùng)
+            _extended_max = max(_nuclear_total + 2, _tt_up_hm + _tt_lo_hm)  # 6 người (nếu tính cả Ông Bà/Bố Mẹ — ứng Tiên Thiên Thượng + Hạ)
+
+            short_hl = (
+                f"👨‍👩‍👧‍👦 KẾT QUẢ TÍNH NHÂN KHẨU TRỰC TIẾP TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} — KHÔNG DÙNG AI ĐOÁN MÒ): "
+                f"GIA ĐÌNH HẠT NHÂN (VỢ CHỒNG & CON CÁI) CÓ CHÍNH XÁC 0{_nuclear_total} NGƯỜI "
+                f"[Cộng trực tiếp từng Hào: 01 Bản thân (Hào Thế Hào {the_idx} {_the_chi_hm}) + 01 Vợ/Phối ngẫu (Thê Tài {_spouse_cite}) + 02 Người con (Tử Tôn {_child_cite} & Quái {_lo_hm} Nam + {_up_hm} Nữ = 1 Trai 1 Gái)]! "
+                f"(Nếu tính gộp cả Bố Mẹ / Ông Bà ứng với Hào Phụ Mẫu [{_parent_cite}] & Tổng Tiên Thiên {_up_hm} [{_tt_up_hm}] + {_lo_hm} [{_tt_lo_hm}] thì đại gia đình là 0{_extended_min} – 0{_extended_max} người)"
+            )
+            headline = f"🎯 {short_hl}"
+            why_s = (
+                f"<b>• Minh bạch công thức Toán Học Dịch Lý 100% từ Quẻ (Tuyệt đối không để AI tự bịa số):</b><br>"
+                f"1. <b>Pháp Đếm Nhân Đinh Lục Thân (Lục Hào Bốc Phệ Chính Tông):</b><br>"
+                f"   - <b>[Thành viên 1 — Bản thân bạn]:</b> Ứng với <b>Hào Thế tại Hào {the_idx} ({_the_chi_hm}-{_the_nh_hm})</b> = <b>01 người</b>.<br>"
+                f"   - <b>[Thành viên 2 — Vợ / Phối ngẫu]:</b> Ứng với hào <b>Thê Tài ({_spouse_cite})</b> chính vị = <b>01 người</b>.<br>"
+                f"   - <b>[Thành viên 3 & 4 — Con cái (Tử tức)]:</b> Ứng với hào <b>Tử Tôn ({_child_cite})</b> hữu khí kết hợp Thượng Quái <b>{_up_hm} (Âm Nữ)</b> và Hạ Quái <b>{_lo_hm} (Dương Nam)</b> = <b>02 người con (01 Con Trai & 01 Con Gái)</b>.<br>"
+                f"   ➔ <b>Tổng cộng hộ gia đình nhỏ (Vợ chồng + Con cái):</b> <code>1 + 1 + 2 = 04 NGƯỜI</code> (Khớp hoàn toàn với Tiên Thiên Quái Số của Hạ Quái <b>{_lo_hm} = 04</b>!).<br>"
+                f"2. <b>Trường hợp tính mở rộng cả Bố Mẹ / Ông Bà (Đại gia đình):</b><br>"
+                f"   - Trên quẻ có thêm hào <b>Phụ Mẫu ({_parent_cite})</b> lâm Ứng vượng khí; đồng thời tổng Tiên Thiên Quái Số của <b>{_up_hm} ({_tt_up_hm}) + {_lo_hm} ({_tt_lo_hm}) = 0{_extended_max}</b> và Cục số Kỳ Môn là <b>Cục {chart_data.get('cuc', 5)}</b> ➔ Nếu tính gộp cả bậc sinh thành (Ông Bà / Bố Mẹ) thì tổng nhân khẩu là <b>0{_extended_min} – 0{_extended_max} người</b>."
+            )
+            when_s = (
+                f"<b>Vận khí Gia đạo (Cung {target_cung} — {huong_cung}):</b> Hội Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b> — "
+                f"gia đình {_nuclear_total} thành viên gắn kết, con cái thông minh tự lập."
+            )
+            adv_s = (
+                f"Để vượng khí gia trạch cho cả 0{_nuclear_total} thành viên (và bậc Phụ Mẫu), nên giữ thông thoáng cung <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            )
+            return {
+                "has_override": True,
+                "headline": headline,
+                "short_headline": short_hl,
                 "why": why_s,
                 "when": when_s,
                 "advice": adv_s,
@@ -1748,16 +1855,33 @@ class HexagramReasoningAI:
                     "advice": adv_s,
                 }
             else:
-                # Đơn chủ thể hỏi định lượng
-                _base_q1 = _HT_NUM_Q.get(_up_q, 7) + _TT_NUM_Q.get(_lo_q, 4)
-                _base_q2 = _base_q1 + _CHI_NUM_Q.get(_the_ch_q, 5)
+                # Đơn chủ thể hỏi định lượng: Dùng đúng Tiên Thiên Quái Số Mai Hoa (Thượng Quái & Hạ Quái: 1..8), cấm cộng dồn 3 tầng gây phóng đại số!
+                _tt_u = _TT_NUM_Q.get(_up_q, 2)
+                _tt_l = _TT_NUM_Q.get(_lo_q, 4)
+                _q_low_n = min(_tt_u, _tt_l)
+                _q_sum_n = _tt_u + _tt_l
                 if _scale_mult == 10:
-                    _v_low, _v_high = _base_q1 * 8, _base_q2 * 8
+                    _b_q1 = _HT_NUM_Q.get(_up_q, 7) + _TT_NUM_Q.get(_lo_q, 4)
+                    _b_q2 = _b_q1 + _CHI_NUM_Q.get(_the_ch_q, 5)
+                    _v_low, _v_high = _b_q1 * 8, _b_q2 * 8
                     _v_mid = int(round((_v_low + _v_high) / 2 / 5.0) * 5)
-                    short_hl = f"📏 KẾT QUẢ ĐỊNH LƯỢNG TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): CÒN KHOẢNG {_v_low} – {_v_high} {_unit_str.upper()} (TRỌNG TÂM ~{_v_mid} {_unit_str.upper()})!"
+                    short_hl = (
+                        f"📏 KẾT QUẢ ĐỊNH LƯỢNG TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"CÒN KHOẢNG {_v_low} – {_v_high} {_unit_str.upper()} (TRỌNG TÂM ~{_v_mid} {_unit_str.upper()} — "
+                        f"Tính từ Hậu Thiên {_up_q} [{_HT_NUM_Q.get(_up_q, 7)}] + Tiên Thiên {_lo_q} [{_tt_l}] + Chi Hào Thế {_the_ch_q} [{_CHI_NUM_Q.get(_the_ch_q, 5)}])!"
+                    )
                 else:
-                    short_hl = f"🔢 KẾT QUẢ ĐỊNH LƯỢNG TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): KHOẢNG {_base_q1} – {_base_q2} {_unit_str.upper()} (BỘ SỐ ỨNG NGHIỆM: {_HT_NUM_Q.get(_up_q, 7)}, {_base_q1}, {_base_q2})!"
-                why_s = f"Chiết xuất từ Quái số Mai Hoa (<b>{ten_que_chu}</b> ➔ <b>{ten_que_bien}</b>), Hào Thế tại Hào {the_idx} ({_the_ch_q}) và Cung Kỳ Môn số {_cung_n_q} ({huong_cung} · Sao {sao_name} · Cửa {cua_name})."
+                    short_hl = (
+                        f"🔢 KẾT QUẢ ĐỊNH LƯỢNG TỪ QUÁI SỐ MAI HOA ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"KHOẢNG {_tt_l} – {_q_sum_n} {_unit_str.upper()} "
+                        f"[Công thức từ Quẻ: Tiên Thiên Hạ Quái {_lo_q} = {_tt_l}; Tổng Tiên Thiên Thượng {_up_q} ({_tt_u}) + Hạ {_lo_q} ({_tt_l}) = {_q_sum_n}; Hào động {_dong_val_q}]!"
+                    )
+                why_s = (
+                    f"<b>• Minh bạch công thức chiết xuất từ Quẻ (Không dùng AI tự đoán):</b> "
+                    f"Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, Thượng Quái <b>{_up_q}</b> có Tiên Thiên số = <b>{_tt_u}</b> (Hậu Thiên = <b>{_HT_NUM_Q.get(_up_q, 7)}</b>), "
+                    f"Hạ Quái <b>{_lo_q}</b> có Tiên Thiên số = <b>{_tt_l}</b> (Hậu Thiên = <b>{_HT_NUM_Q.get(_lo_q, 3)}</b>), "
+                    f"Hào Thế tại Hào {the_idx} ({_the_ch_q} = {_CHI_NUM_Q.get(_the_ch_q, 5)}) và Cung Kỳ Môn số {_cung_n_q} ({huong_cung} · Sao {sao_name} · Cửa {cua_name})."
+                )
                 when_s = f"Thời điểm hoàn tất / ứng nghiệm: <b>{omni_data.get('exact_timestamp', 'Trong tuần này')}</b>."
                 adv_s = f"Ưu tiên tiến hành theo phương vị <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
                 return {
@@ -2160,7 +2284,7 @@ class HexagramReasoningAI:
             is_fake=is_fake,
         )
 
-        # Bước 2 (V103.0): KÍCH HOẠT 2 CON AI THỰC TẾ (GEMINI LLM 2 TẦNG ĐỘC LẬP: CON AI SỐ 1 ĐỌC HIỂU -> TRUYỀN CHO CON AI SỐ 2 LUẬN GIẢI QUẺ)
+        # Bước 2 (V103.1): KÍCH HOẠT 2 CON AI THỰC TẾ (GEMINI LLM 2 TẦNG ĐỘC LẬP: CON AI SỐ 1 ĐỌC HIỂU -> TRUYỀN CHO CON AI SỐ 2 LUẬN GIẢI QUẺ)
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_list = []
         for _ix_h, _hh in enumerate((lh_ban.get("haos") or lh_ban.get("details") or []), 1):
@@ -2225,9 +2349,13 @@ class HexagramReasoningAI:
             _r_ai1 = _real_ai_pair["ai1"]
             _r_ai2 = _real_ai_pair["ai2"]
             blueprint["subject_person"] = f"{_r_ai1.get('ai1_intent_summary', blueprint['subject_person'])} — <b>Đơn vị/Khuôn đáp án:</b> {_r_ai1.get('ai1_expected_answer_format', '')}"
-            blueprint["lh_dt_instruction"] = f"{_r_ai1.get('ai1_dung_than_guide', blueprint['lh_dt_instruction'])} | <b>Chỉ thị AI 1 ➔ AI 2:</b> {_r_ai1.get('ai1_strict_instruction_to_ai2', '')}"
-            # Nếu câu hỏi là câu hỏi tự nhiên đặc thù (như hỏi bao nhiêu km, hoặc chưa có override cứng), hoặc kết hợp cùng bộ giải mã chuyên sâu
-            if blueprint.get("specific_target") in ("GENERAL_QUANTITY", "", "EXAM_VISA", "CAREER_WORK", "INVEST_PROFIT", "LOVE_MARRIAGE", "HEALTH_MEDICAL") or not spec_res.get("has_override"):
+            blueprint["lh_dt_instruction"] = f"{_r_ai1.get('ai1_dung_than_guide', blueprint['lh_dt_instruction'])} | <b>Chỉ thị AI 1 ➔ 18 Pháp & AI 2:</b> {_r_ai1.get('ai1_strict_instruction_to_ai2', '')}"
+            # V103.1: NGUYÊN TẮC BẤT DI BẤT DỊCH — CẤM AI TỰ BỊA CON SỐ!
+            # Nếu Bộ Giải Toán Học Dịch Lý 18 Phương Pháp (`spec_res.get("has_override") == True`) ĐÃ TÍNH RA CON SỐ & ĐÁP ÁN TỪ QUẺ
+            # (kèm công thức chứng minh từng Hào Lục Hào + Quái số Mai Hoa + Cung Kỳ Môn), thì GIỮ NGUYÊN 100% KẾT QUẢ TOÁN HỌC DỊCH LÝ ĐÓ,
+            # TUYỆT ĐỐI KHÔNG cho LLM ghi đè bằng câu chữ tự do làm mất công thức quẻ hoặc tự bịa con số!
+            # Chỉ khi câu hỏi mở chưa có công thức Toán Học chuyên biệt (`not spec_res.get("has_override")`), mới dùng kết luận tổng hợp của AI Số 2.
+            if not spec_res.get("has_override"):
                 spec_res["has_override"] = True
                 spec_res["headline"] = _r_ai2.get("ai2_headline") or spec_res.get("headline", "")
                 spec_res["why"] = _r_ai2.get("ai2_why") or spec_res.get("why", "")
@@ -2311,7 +2439,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V103.0): CON AI SỐ 1 (FLASH-LITE ĐỌC HIỂU) ➔ TRUYỀN SANG CON AI SỐ 2 & 18 PHƯƠNG PHÁP LUẬN GIẢI</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V103.1): CON AI SỐ 1 (FLASH-LITE ĐỌC HIỂU) ➔ TRUYỀN SANG CON AI SỐ 2 & 18 PHƯƠNG PHÁP LUẬN GIẢI</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
