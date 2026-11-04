@@ -1147,13 +1147,57 @@ def build_connected_prose_analysis(
     paragraph_3 = " ".join(p3_parts)
     paragraph_world = dossier.get("world_class_prose", "")
 
+    _holo_grid_html = ""
+    try:
+        from world_class_methods import build_holographic_7_position_picture
+        from omniscient_prophecy import build_omniscient_prophecy
+        _c_num, _, _ = _resolve_authentic_km_palace(chart_data, dung_than, question, category)
+        _omni_for_holo = build_omniscient_prophecy(
+            question=question,
+            dung_than=dung_than,
+            hanh_dt=hanh_dt,
+            weighted_pct=weighted_pct,
+            ts_stage=ts_stage,
+            ngu_khi=nk_stage,
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+        ).get("data", {})
+        _holo_res = build_holographic_7_position_picture(
+            question=question,
+            category=category,
+            dung_than=dung_than,
+            hanh_dt=hanh_dt or _omni_for_holo.get("hanh_dt", "Kim"),
+            weighted_pct=weighted_pct,
+            target_cung=_c_num or 1,
+            direction=direction,
+            ung_ky_str=ung_ky_str,
+            ts_stage=ts_stage,
+            nk_stage=nk_stage,
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            omni_data=_omni_for_holo,
+            dossier=dossier,
+            luc_nham_reason=luc_nham_reason,
+            thai_at_verdict=thai_at_verdict,
+            thai_at_reason=thai_at_reason,
+            tu_vi_verdict=tu_vi_verdict,
+            xem_ngay_verdict=xem_ngay_verdict,
+            verdicts_list=[ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, thiet_ban_verdict, luc_nham_verdict, thai_at_verdict, xem_ngay_verdict, tu_vi_verdict],
+        )
+        _holo_grid_html = _holo_res.get("grid_html", "")
+    except Exception:
+        _holo_grid_html = ""
+
     return (
         f'<div style="margin-top:14px;padding:18px 20px;background:rgba(15,23,42,0.58);border-radius:14px;border:1px solid rgba(110,231,183,0.4);line-height:1.78;font-size:0.98em;color:#f1f5f9;">'
         f'<div style="font-size:1.08em;font-weight:800;color:#6ee7b7;margin-bottom:10px;border-bottom:1px solid rgba(110,231,183,0.25);padding-bottom:6px;">'
-        f'📖 BÀI LUẬN GIẢI THẦN ĐOÁN ĐÔNG - TÂY HỢP NHẤT V100.3 (14 HỆ THỐNG ĐÔNG TÂY · 19 CỔ THƯ · HỘI TỤ BAYES)</div>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Bản chất hiện tại & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
-        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Giải mã tâm lý, hoàn cảnh & nguyên nhân qua Bàn Kỳ Môn Độn Giáp:</b> {paragraph_2}</p>'
+        f'📖 BỨC TRANH TOÀN CẢNH ĐÔNG - TÂY HỢP NHẤT V100.4 (14 HỆ THỐNG · 7 VỊ TRÍ TỌA ĐỘ · HỘI TỤ BAYES)</div>'
+        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>1. Tâm điểm Con người & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
+        f'<p style="margin:0 0 12px 0;text-align:justify;color:#e2e8f0;"><b>2. Không gian hiện trường, Tâm lý & Diễn biến 3 thời qua Kỳ Môn – Đại Lục Nhâm:</b> {paragraph_2}</p>'
         + (f'<p style="margin:0 0 12px 0;text-align:justify;color:#bae6fd;">{paragraph_world}</p>' if paragraph_world else '')
-        + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
+        + (f'<p style="margin:0 0 12px 0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
+        + _holo_grid_html
         + f'</div>'
     )

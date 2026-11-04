@@ -1,25 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-WORLD-CLASS DIVINATION & QUANTITATIVE PREDICTION ENGINE (V100.3)
-================================================================
-Hợp nhất 4 phương pháp dự đoán đỉnh cao thế giới bổ sung vào 10 hệ thống cổ học phương Đông:
-1. Western Classical Horary Astrology (William Lilly's Christian Astrology 1647):
-   - 12 Houses (Querent Ascendant House 1 vs Quesited Target House)
-   - Planetary Rulers, Essential Dignities, Applying Aspects (Trine/Sextile/Conjunction vs Square/Opposition)
-   - Void of Course Moon check (tương đương Tuần Không của Lục Hào)
-2. Vedic Prashna Shastra & KP System (Krishnamurti Paddhati 27 Nakshatras & Sub-Lord Significators):
-   - 27 Nakshatras (Tinh tú Vệ Đà), House Significators (2-6-10-11 Tài Lộc, 5-7-11 Tình Duyên, 1-5-9-11 Vạn Sự Cát, 6-8-12 Trở Ngại)
-3. Xuan Kong Flying Stars (Huyền Không Phi Tinh Tam Nguyên Cửu Vận — Hạ Nguyên Vận 9: 2024–2043) & Điều Hầu Dụng Thần (Cùng Thông Bảo Giám):
-   - Cửu Tinh Đương Vận (9 Cửu Tử Vượng Khí, 1 Nhất Bạch Sinh Khí, 8 Bát Bạch Phụ Khí vs 5 Ngũ Hoàng / 2 Nhị Hắc Sát Khí)
-   - Hàn - Noãn - Táo - Thấp Điều Hầu theo Nguyệt Lệnh
-4. Bayesian Multi-Model Evidence Fusion (Hợp Nhất Xác Suất Hậu Nghiệm Bayes & Độ Đồng Thuận Đa Hệ Thống):
-   - Tính Log-Odds Likelihood Ratio từ toàn bộ các hệ thống Đông - Tây để hiệu chỉnh xác suất chuẩn xác.
+WORLD-CLASS DIVINATION & HOLOGRAPHIC 7-COORDINATE MASTER PICTURE ENGINE (V100.4)
+================================================================================
+Ghép 14 hệ thống huyền học Đông – Tây – Ấn Độ – Toán học Bayes thành MỘT BỨC TRANH TOÀN CẢNH DUY NHẤT,
+trong đó mỗi phương pháp trấn giữ đúng 1 vị trí tọa độ chuyên biệt mà nó có độ chính xác tuyệt đối:
+
+- VỊ TRÍ 1 [TÂM ĐIỂM CON NGƯỜI & KẾT CỤC CỐT LÕI — AI? THÀNH HAY BẠI?]:
+  Phụ trách: Lục Hào Kinh Dịch Nạp Giáp + Chiêm Tinh Vấn Sự Phương Tây (Horary Astrology)
+- VỊ TRÍ 2 [BẢN ĐỒ KHÔNG GIAN 3D, PHƯƠNG HƯỚNG & HIỆN TRƯỜNG — Ở ĐÂU? HƯỚNG NÀO?]:
+  Phụ trách: Kỳ Môn Độn Giáp Cửu Cung + Huyền Không Phi Tinh Vận 9 (2024–2043)
+- VỊ TRÍ 3 [TRỤC THỜI GIAN 3 THỜI: QUÁ KHỨ → HIỆN TẠI → TƯƠNG LAI]:
+  Phụ trách: Đại Lục Nhâm Tam Truyền (Sơ-Trung-Mạt) + Mai Hoa Dịch Số (Chủ-Hỗ-Biến)
+- VỊ TRÍ 4 [HÌNH TƯỚNG, ĐẶC ĐIỂM VẬT CHẤT, TUỔI TÁC & CON SỐ ĐỊNH LƯỢNG]:
+  Phụ trách: Vạn Vật Loại Tượng + Thiết Bản Thần Số & Hoàng Cực Kinh Thế + 12 Trường Sinh
+- VỊ TRÍ 5 [ĐỒNG HỒ ĐIỂM HẸN ỨNG KỲ — NĂM, THÁNG, NGÀY, GIỜ, PHÚT NÀO?]:
+  Phụ trách: Động Cơ Ứng Kỳ Lục Hào/Kỳ Môn + Chiêm Tinh Vệ Đà Ấn Độ (KP Sub-Lord & 27 Nakshatras)
+- VỊ TRÍ 6 [THỜI THẾ VĨ MÔ & CHIẾN LƯỢC CÔNG/THỦ]:
+  Phụ trách: Thái Ất Thần Số + Tử Vi Đẩu Số + Hiệp Kỷ Trạch Cát & Thiên Văn
+- VỊ TRÍ 7 [CHÌA KHÓA HÓA GIẢI & ĐỘ ĐỒNG THUẬN XÁC SUẤT BAYES]:
+  Phụ trách: Bát Tự Điều Hầu (Cùng Thông Bảo Giám) + Hội Đồng 40 Chuyên Gia AI + Toán Học Hội Tụ Bayes
 """
 
 from __future__ import annotations
 import datetime
 import math
-from typing import Dict, Any, List, Tuple
+import re
+from typing import Dict, Any, List
 
 
 # ==============================================================================
@@ -51,6 +57,7 @@ CATEGORY_TO_HORARY_HOUSE = {
     "THI_CỬ": (9, "Nhà 9 & Nhà 10 (Học vấn cao, khoa bảng, danh vị)"),
     "XUẤT_HÀNH": (9, "Nhà 9 (Di chuyển xa, xuất ngoại, giao thương)"),
     "MẤT_ĐỒ": (2, "Nhà 2 & Nhà 4 (Tài sản thất lạc & Nơi ẩn tàng)"),
+    "TÌM_ĐỒ": (2, "Nhà 2 & Nhà 4 (Tài sản thất lạc & Nơi ẩn tàng)"),
     "BẢN_THÂN": (1, "Nhà 1 (Bản mệnh, thể chất, danh tính người hỏi)"),
 }
 
@@ -76,13 +83,11 @@ def analyze_western_horary(
     chi_gio = chart_data.get("chi_gio", "")
     chi_ngay = chart_data.get("chi_ngay", "")
 
-    # Tính Cung Mọc (Ascendant - Nhà 1) dựa trên kinh độ Mặt Trời theo tháng và Giờ gieo quẻ
     month_offset = (now.month - 3) % 12
     hour_idx = CHI_TO_ZODIAC_IDX.get(chi_gio, (now.hour // 2) % 12)
     asc_idx = (month_offset + hour_idx) % 12
     asc_sign, asc_elem, asc_mode, asc_ruler = ZODIAC_SIGNS[asc_idx]
 
-    # Xác định Nhà Sự Việc (Quesited House)
     house_num, house_desc = CATEGORY_TO_HORARY_HOUSE.get(
         category, (10, "Nhà 10 (Kết cục sự việc & Thành tựu)")
     )
@@ -93,7 +98,6 @@ def analyze_western_horary(
     quesited_idx = (asc_idx + house_num - 1) % 12
     q_sign, q_elem, q_mode, q_ruler = ZODIAC_SIGNS[quesited_idx]
 
-    # Tính góc chiếu (Aspect) giữa Chủ tinh Nhà 1 (Querent) và Chủ tinh Nhà Sự Việc (Quesited)
     day_idx = CHI_TO_ZODIAC_IDX.get(chi_ngay, now.day % 12)
     aspect_diff = abs((asc_idx + day_idx) % 12 - quesited_idx) % 12
     if aspect_diff > 6:
@@ -198,6 +202,7 @@ def analyze_vedic_kp_prashna(
     return {
         "system": "Vedic Prashna & KP Sub-Lord (Chiêm Tinh Vệ Đà Ấn Độ)",
         "nakshatra": f"{nak_name} (Chủ tinh: {nak_lord})",
+        "nak_trait": nak_trait,
         "kp_significators": kp_houses,
         "verdict": kp_verdict,
         "score": kp_score,
@@ -231,7 +236,7 @@ DIEU_HAU_BY_CHI_THANG = {
     "Tỵ": ("Đầu Hạ hỏa viêm", "Nhâm Quý Thủy (Điều hầu giải nhiệt) & Canh Kim (Sinh thủy)", "Chính Bắc / Chính Tây"),
     "Ngọ": ("Giữa Hạ cực nhiệt", "Nhâm Thủy & Canh Tân Kim (Hạ nhiệt nhuận cục)", "Chính Bắc / Tây Bắc"),
     "Mùi": ("Cuối Hạ khô táo", "Quý Thủy & Nhâm Thủy (Tư nhuận vạn vật)", "Chính Bắc"),
-    "Thân": ("Đầu Thu kim khí肃 sát", "Đinh Hỏa (Luyện kim thành khí) & Giáp Mộc", "Chính Nam / Chính Đông"),
+    "Thân": ("Đầu Thu kim khí nghiêm sát", "Đinh Hỏa (Luyện kim thành khí) & Giáp Mộc", "Chính Nam / Chính Đông"),
     "Dậu": ("Giữa Thu kim vượng", "Đinh Hỏa & Nhâm Thủy (Kim bạch thủy thanh)", "Chính Nam / Chính Bắc"),
     "Tuất": ("Cuối Thu thổ táo", "Giáp Mộc & Nhâm Quý Thủy (Sơ thổ nhuận cục)", "Chính Đông / Chính Bắc"),
     "Hợi": ("Đầu Đông thủy lạnh", "Bính Hỏa (Giải hàn chiếu ấm) & Mậu Thổ", "Chính Nam / Đông Nam"),
@@ -251,9 +256,7 @@ def analyze_xuankong_and_dieuhau(
     """
     chart_data = chart_data if isinstance(chart_data, dict) else {}
     chi_thang = chart_data.get("chi_thang", "Tuất") or "Tuất"
-    cuc = int(chart_data.get("cuc", 5) or 5)
 
-    # Phi tinh Vận 9 bay đến target_cung
     visiting_star = ((9 + target_cung - 5) % 9) or 9
     star_name, star_status, star_score = FLYING_STARS_PERIOD_9.get(
         visiting_star, FLYING_STARS_PERIOD_9[9]
@@ -268,6 +271,9 @@ def analyze_xuankong_and_dieuhau(
         "system": "Huyền Không Phi Tinh Vận 9 (2024–2043) & Bát Tự Điều Hầu (Cùng Thông Bảo Giám)",
         "flying_star": f"Sao #{visiting_star} {star_name} — {star_status}",
         "dieu_hau": f"Tháng {chi_thang} ({climate_desc}) → Dụng Thần Điều Hầu: {dieu_hau_god}",
+        "dieu_hau_god": dieu_hau_god,
+        "dieu_hau_dir": dieu_hau_dir,
+        "climate_desc": climate_desc,
         "score": star_score,
         "summary": (
             f"Xét theo <b>Huyền Không Phi Tinh Hạ Nguyên Vận 9 (2024–2043)</b>, cung trọng tâm đón <b>Sao #{visiting_star} {star_name}</b> "
@@ -293,7 +299,6 @@ def compute_bayesian_consensus(
     p0 = max(0.08, min(0.92, primary_pct / 100.0))
     log_odds = math.log(p0 / (1.0 - p0))
 
-    # Tích hợp Likelihood Ratio từ các hệ thống độc lập
     for s in (horary_score, vedic_score, xuankong_score):
         ps = max(0.15, min(0.85, s / 100.0))
         log_odds += 0.18 * math.log(ps / (1.0 - ps))
@@ -360,4 +365,176 @@ def build_world_class_synthesis_prose(
         "bayes": bayes,
         "prose_html": prose_html,
         "prompt_text": prompt_text,
+    }
+
+
+# ==============================================================================
+# 5. BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ ĐÔNG – TÂY HỢP NHẤT (HOLOGRAPHIC MASTER PICTURE V100.4)
+# ==============================================================================
+def build_holographic_7_position_picture(
+    question: str,
+    category: str,
+    dung_than: str,
+    hanh_dt: str,
+    weighted_pct: int,
+    target_cung: int = 1,
+    direction: str = "Chính Bắc (Khảm)",
+    ung_ky_str: str = "",
+    ts_stage: str = "",
+    nk_stage: str = "",
+    chart_data: Dict[str, Any] | None = None,
+    luc_hao_data: Dict[str, Any] | None = None,
+    mai_hoa_data: Dict[str, Any] | None = None,
+    omni_data: Dict[str, Any] | None = None,
+    dossier: Dict[str, Any] | None = None,
+    luc_nham_reason: str = "",
+    thai_at_verdict: str = "BÌNH",
+    thai_at_reason: str = "",
+    tu_vi_verdict: str = "BÌNH",
+    xem_ngay_verdict: str = "BÌNH",
+    verdicts_list: List[str] | None = None,
+) -> Dict[str, str]:
+    """
+    Ghép toàn bộ 14 phương pháp Đông – Tây – Ấn Độ – Toán học Bayes thành 1 BỨC TRANH TOÀN CẢNH DUY NHẤT,
+    trong đó chỉ rõ từng VỊ TRÍ (1 -> 7) do phương pháp nào làm chủ, có tác dụng làm gì, ở đâu và kết quả chính xác ra sao.
+    """
+    chart_data = chart_data if isinstance(chart_data, dict) else {}
+    luc_hao_data = luc_hao_data if isinstance(luc_hao_data, dict) else {}
+    mai_hoa_data = mai_hoa_data if isinstance(mai_hoa_data, dict) else {}
+    omni_data = omni_data if isinstance(omni_data, dict) else {}
+    dossier = dossier if isinstance(dossier, dict) else {}
+    verdicts_list = verdicts_list or []
+
+    wc = build_world_class_synthesis_prose(
+        question=question,
+        category=category,
+        dung_than=dung_than,
+        hanh_dt=hanh_dt,
+        target_cung=target_cung,
+        chart_data=chart_data,
+        weighted_pct=weighted_pct,
+        verdicts_list=verdicts_list,
+    )
+    horary = wc["horary"]
+    vedic = wc["vedic"]
+    xk_dh = wc["xuankong_dieuhau"]
+    bayes = wc["bayes"]
+
+    # Trích xuất dữ liệu Lục Hào & Mai Hoa ngắn gọn, sắc bén
+    ban_name = luc_hao_data.get("ban", {}).get("name", "") or mai_hoa_data.get("ten_que", "Kinh Dịch")
+    bien_name = luc_hao_data.get("bien", {}).get("name", "") or mai_hoa_data.get("ten_qua_bien", "")
+    ho_name = mai_hoa_data.get("ten_ho", "")
+    que_transition = f"quẻ <b>{ban_name}</b>" + (f" biến <b>{bien_name}</b>" if bien_name else "") + (f" (Hỗ quái: <b>{ho_name}</b>)" if ho_name else "")
+
+    # Trích xuất Sao, Cửa, Thần Kỳ Môn tại target_cung
+    tb = chart_data.get("thien_ban", {}) or {}
+    nb = chart_data.get("nhan_ban", {}) or {}
+    sb = chart_data.get("than_ban", {}) or {}
+    sao_km = str(tb.get(target_cung, tb.get(str(target_cung), "Thiên Tâm")))
+    cua_km = str(nb.get(target_cung, nb.get(str(target_cung), "Khai Môn")))
+    than_km = str(sb.get(target_cung, sb.get(str(target_cung), "Trực Phù")))
+
+    # VỊ TRÍ 1: Tâm Điểm Chủ Thể & Nội Tình (Lục Hào + Horary)
+    q_low = (question or "").lower()
+    is_identity_q = any(w in q_low for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])
+    if is_identity_q and omni_data:
+        pos1_result = (
+            f"Xác định trực tiếp Chủ thể qua Hào Thế & Dụng Thần <b>{dung_than}</b> (hành <b>{hanh_dt}</b>, vòng Trường Sinh <b>{ts_stage or 'Vượng'}</b>) "
+            f"kết hợp Cung Mọc Horary <b>{horary['ascendant']}</b>: Giới tính là <b>{omni_data.get('gender', 'Nam giới')}</b>, "
+            f"độ tuổi thuộc nhóm <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b> ({', '.join(omni_data.get('birth_years', [])[:3])})."
+        )
+    else:
+        pos1_result = (
+            f"Trên {que_transition}, Dụng Thần <b>{dung_than}</b> mang hành <b>{hanh_dt}</b> (vòng Trường Sinh: <b>{ts_stage or 'Bình hòa'}</b>) "
+            f"đối chiếu cùng Chủ tinh Horary <b>{horary['quesited_house']}</b> tạo góc <b>{horary['aspect']}</b>, "
+            f"khẳng định lực lượng cốt lõi đạt <b>{weighted_pct}%</b> (Hậu nghiệm Bayes: <b>{bayes['bayesian_posterior_pct']}%</b>)."
+        )
+
+    # VỊ TRÍ 2: Không Gian 3D, Phương Hướng & Hiện Trường (Kỳ Môn + Huyền Không Vận 9)
+    where_scene = omni_data.get("where_scene", "") or f"tọa độ Cung số {target_cung} hướng {direction}"
+    pos2_result = (
+        f"Tọa độ không gian khóa tại <b>Cung {target_cung} — Hướng {direction}</b>, hội tụ bộ ba Kỳ Môn "
+        f"(Sao <b>{sao_km}</b> · Cửa <b>{cua_km}</b> · Thần <b>{than_km}</b>) cùng Phi Tinh Vận 9 "
+        f"<b>{xk_dh['flying_star']}</b>. Đặc điểm hiện trường/môi trường: {where_scene}"
+    )
+
+    # VỊ TRÍ 3: Trục Thời Gian 3 Thời Quá Khứ -> Hiện Tại -> Tương Lai (Đại Lục Nhâm + Mai Hoa)
+    ln_clean = re.sub(r"<[^>]+>", "", str(luc_nham_reason or "")).strip()
+    pos3_result = (
+        f"Khởi phát từ Quẻ Chủ <b>{ban_name}</b> (Sơ truyền), đi qua nội tình Quẻ Hỗ <b>{ho_name or 'Trung truyền'}</b> "
+        f"và hội tụ về Quẻ Biến <b>{bien_name or 'Mạt truyền'}</b>"
+        + (f" ({ln_clean[:160]})" if ln_clean else "")
+        + ": cho thấy mạch vận động từ nguyên nhân ban đầu đến kết cục cuối cùng đang chuyển dịch theo đúng quy luật nhân quả của quẻ."
+    )
+
+    # VỊ TRÍ 4: Hình Tướng, Đặc Điểm Vật Chất, Tuổi Tác & Định Lượng (Vạn Vật + Thiết Bản + 12 Trường Sinh)
+    if is_identity_q or any(w in q_low for w in ["là ai", "người nào"]):
+        pos4_result = (
+            f"Chân dung con người: Giới tính <b>{omni_data.get('gender', 'Nam giới')}</b>, "
+            f"độ tuổi <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b> ({', '.join(omni_data.get('birth_years', [])[:3])}), "
+            f"chiều cao/vóc dáng: {omni_data.get('height_desc', 'Cân đối')}, màu sắc hợp mệnh: <b>{omni_data.get('colors', 'Trắng, Vàng kim')}</b>."
+        )
+    else:
+        pos4_result = (
+            f"Loại tượng hành <b>{hanh_dt}</b> ({ts_stage or 'Tướng khí'}): đặc trưng bởi màu sắc <b>{omni_data.get('colors', 'Sáng rõ')}</b>, "
+            f"chất liệu/thuộc tính <b>{omni_data.get('materials', hanh_dt)}</b> ({omni_data.get('condition', 'Đang vận hành')}); "
+            f"con số định lượng ứng nghiệm: <b>{omni_data.get('quantity', 'Theo số Hà Đồ - Lạc Thư của cung quẻ')}</b>."
+        )
+
+    # VỊ TRÍ 5: Đồng Hồ Điểm Hẹn Ứng Kỳ (Ứng Kỳ Lục Hào/Kỳ Môn + Vedic KP Sub-Lord)
+    uk_display = omni_data.get("exact_timestamp") or ung_ky_str or "Các ngày/giờ thuộc hành Dụng Thần hoặc Xung Không/Xuất Mộ"
+    pos5_result = (
+        f"Điểm hẹn thời gian được khóa kép bởi <b>Động cơ Ứng Kỳ ({uk_display})</b> và tinh tú Vệ Đà Ấn Độ "
+        f"<b>Nakshatra {vedic['nakshatra']}</b> ({vedic['kp_significators']} — <i>{vedic['nak_trait']}</i>)."
+    )
+
+    # VỊ TRÍ 6: Thời Thế Vĩ Mô & Chiến Lược Công/Thủ (Thái Ất + Tử Vi + Trạch Cát)
+    strategy_mode = "CHỦ ĐỘNG TẤN CÔNG (Lợi Động — Nắm bắt cơ hội)" if weighted_pct >= 55 else (
+        "LINH HOẠT THĂM DÒ, VỪA TIẾN VỪA GIỮ (Thận trọng từng bước)" if weighted_pct >= 45 else
+        "ÁN BINH BẤT ĐỘNG, PHÒNG THỦ BẢO TOÀN (Lợi Tĩnh — Chờ qua vận cản)"
+    )
+    pos6_result = (
+        f"Cục diện Thái Ất ({thai_at_verdict}) kết hợp Tử Vi ({tu_vi_verdict}) và Trạch Cát ({xem_ngay_verdict}) "
+        f"xác định chiến lược tối ưu lúc này là: <b>{strategy_mode}</b>."
+    )
+
+    # VỊ TRÍ 7: Chìa Khóa Hóa Giải & Độ Đồng Thuận Bayes (Bát Tự Điều Hầu + 40 Chuyên Gia AI + Bayes)
+    remedy_extra = omni_data.get("hoa_giai", "")
+    pos7_result = (
+        f"Độ đồng thuận liên hệ thống đạt <b>{bayes['consensus_pct']}%</b> (Xác suất hậu nghiệm Bayes: <b>{bayes['bayesian_posterior_pct']}%</b>). "
+        f"Pháp quyết Điều Hầu (Cùng Thông Bảo Giám): <b>{xk_dh['dieu_hau']}</b>, ưu tiên hướng <b>{direction}</b> "
+        f"và phương vị vượng khí <b>{xk_dh['dieu_hau_dir']}</b>" + (f" ({remedy_extra})" if remedy_extra else ".")
+    )
+
+    # Bản đồ HTML 7 vị trí ghép thành 1 bức tranh thống nhất
+    grid_html = (
+        f'<div style="margin-top:14px;padding:16px 18px;background:rgba(2,6,23,0.62);border-radius:12px;border:1px solid rgba(56,189,248,0.4);">'
+        f'<div style="font-size:1.03em;font-weight:800;color:#38bdf8;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.25);padding-bottom:6px;">'
+        f'🗺️ BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ TỌA ĐỘ (MỖI PHƯƠNG PHÁP TRẤN GIỮ ĐÚNG 1 VỊ TRÍ CHUYÊN BIỆT — CHÍNH XÁC TUYỆT ĐỐI)</div>'
+        f'<div style="display:flex;flex-direction:column;gap:8px;font-size:0.95em;line-height:1.68;color:#e2e8f0;text-align:justify;">'
+        f'<div>🎯 <b>Vị trí 1 — Tâm Điểm Con Người & Kết Cục Cốt Lõi</b> <i>(Do <b>Lục Hào Nạp Giáp + Chiêm Tinh Horary Phương Tây</b> trấn giữ — Xác định Ai & Thành/Bại)</i>: {pos1_result}</div>'
+        f'<div>🧭 <b>Vị trí 2 — Bản Đồ Không Gian 3D, Phương Hướng & Hiện Trường</b> <i>(Do <b>Kỳ Môn Độn Giáp + Huyền Không Phi Tinh Vận 9</b> trấn giữ — Xác định Ở đâu & Môi trường)</i>: {pos2_result}</div>'
+        f'<div>⏳ <b>Vị trí 3 — Trục Thời Gian 3 Thời: Quá Khứ → Hiện Tại → Tương Lai</b> <i>(Do <b>Đại Lục Nhâm Tam Truyền + Mai Hoa Dịch Số</b> trấn giữ — Xác định Nguyên nhân & Diễn biến)</i>: {pos3_result}</div>'
+        f'<div>📦 <b>Vị trí 4 — Hình Tướng, Đặc Điểm, Tuổi Tác & Con Số Định Lượng</b> <i>(Do <b>Vạn Vật Loại Tượng + Thiết Bản Thần Số + 12 Trường Sinh</b> trấn giữ — Xác định Đặc tính & Số lượng)</i>: {pos4_result}</div>'
+        f'<div>⏰ <b>Vị trí 5 — Đồng Hồ Điểm Hẹn Ứng Kỳ</b> <i>(Do <b>Động Cơ Ứng Kỳ + Chiêm Tinh Vệ Đà Ấn Độ KP Sub-Lord</b> trấn giữ — Xác định Khi nào xảy ra)</i>: {pos5_result}</div>'
+        f'<div>🌌 <b>Vị trí 6 — Thời Thế Vĩ Mô & Chiến Lược Công/Thủ</b> <i>(Do <b>Thái Ất Thần Số + Tử Vi Đẩu Số + Trạch Cát Thiên Văn</b> trấn giữ — Xác định Tiến hay Lùi)</i>: {pos6_result}</div>'
+        f'<div>🔑 <b>Vị trí 7 — Chìa Khóa Hóa Giải & Độ Tin Cậy Hội Tụ Bayes</b> <i>(Do <b>Bát Tự Điều Hầu Cùng Thông Bảo Giám + 40 Chuyên Gia AI + Toán Học Bayes</b> trấn giữ — Xác định Giải pháp xoay chuyển)</i>: {pos7_result}</div>'
+        f'</div></div>'
+    )
+
+    prompt_blueprint = (
+        f"=== BẢN ĐỒ GHÉP TRANH TOÀN CẢNH 7 VỊ TRÍ ĐÔNG - TÂY (BẮT BUỘC KẾT NỐI THÀNH 1 BỨC TRANH THỐNG NHẤT) ===\n"
+        f"1. [VỊ TRÍ 1 - CON NGƯỜI & CỐT LÕI (Lục Hào + Horary)]: {re.sub(r'<[^>]+>', '', pos1_result)}\n"
+        f"2. [VỊ TRÍ 2 - KHÔNG GIAN & PHƯƠNG HƯỚNG (Kỳ Môn + Huyền Không Vận 9)]: {re.sub(r'<[^>]+>', '', pos2_result)}\n"
+        f"3. [VỊ TRÍ 3 - QUÁ KHỨ -> HIỆN TẠI -> TƯƠNG LAI (Đại Lục Nhâm + Mai Hoa)]: {re.sub(r'<[^>]+>', '', pos3_result)}\n"
+        f"4. [VỊ TRÍ 4 - HÌNH TƯỚNG, TUỔI TÁC & ĐỊNH LƯỢNG (Vạn Vật + Thiết Bản + 12 Trường Sinh)]: {re.sub(r'<[^>]+>', '', pos4_result)}\n"
+        f"5. [VỊ TRÍ 5 - ĐỒNG HỒ ỨNG KỲ (Ứng Kỳ + Ấn Độ Vệ Đà KP Sub-Lord)]: {re.sub(r'<[^>]+>', '', pos5_result)}\n"
+        f"6. [VỊ TRÍ 6 - THỜI THẾ & CHIẾN LƯỢC CÔNG/THỦ (Thái Ất + Tử Vi + Trạch Cát)]: {re.sub(r'<[^>]+>', '', pos6_result)}\n"
+        f"7. [VỊ TRÍ 7 - PHÁP QUYẾT HÓA GIẢI & HỘI TỤ BAYES (Bát Tự Điều Hầu + Bayes)]: {re.sub(r'<[^>]+>', '', pos7_result)}\n"
+    )
+
+    return {
+        "grid_html": grid_html,
+        "prompt_blueprint": prompt_blueprint,
+        "prose_html": wc["prose_html"],
     }
