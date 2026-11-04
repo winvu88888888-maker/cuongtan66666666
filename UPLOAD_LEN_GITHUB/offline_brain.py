@@ -536,7 +536,7 @@ def build_narrative_summary_text(
         c_rea = omni_data.get('children_reasons', f'Xác định trực tiếp từ Hào Tử Tôn ({dung_than}) và tổ hợp Quẻ Chủ – Hỗ – Biến.')
         c_trt = omni_data.get('children_traits', 'Các con thông minh, tự lập, trưởng thành vững vàng và hiếu thuận.')
         c_adv = omni_data.get('children_advice', f'Cha mẹ nên đồng hành tâm lý cùng con; hướng tốt cho cung Tử Tức: <b>{direction}</b>.')
-        return _hero_ui("👶", c_sum, f"<b>Căn cứ sát từ quẻ:</b> {c_rea}", c_trt, c_adv)
+        return _hero_ui("🚨" if omni_data.get("is_fake") else "👶", c_sum, f"<b>Căn cứ sát từ quẻ:</b> {c_rea}", c_trt, c_adv)
 
     # 5B. TRỌNG TÂM: AI / NGƯỜI NÀO / TRAI HAY GÁI / BAO NHIÊU TUỔI
     if any(w in q_low for w in ['là ai', 'người nào', 'trai hay gái', 'nam hay nữ', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
@@ -1209,6 +1209,7 @@ def build_connected_prose_analysis(
         from world_class_methods import build_holographic_7_position_picture
         from omniscient_prophecy import build_omniscient_prophecy
         _c_num, _, _ = _resolve_authentic_km_palace(chart_data, dung_than, question, category)
+        _is_fk_holo = any("Tuần Không" in str(w) or "Huyền Vũ" in str(w) or "Không Vong" in str(w) or "Khuyết Dụng Thần" in str(w) or "Kỵ Thần" in str(w) for w in (warn_parts or []))
         _omni_for_holo = build_omniscient_prophecy(
             question=question,
             dung_than=dung_than,
@@ -1220,6 +1221,8 @@ def build_connected_prose_analysis(
             chart_data=chart_data,
             luc_hao_data=luc_hao_data,
             mai_hoa_data=mai_hoa_data,
+            is_fake=_is_fk_holo,
+            auth_warnings=warn_parts,
         ).get("data", {})
         _holo_res = build_holographic_7_position_picture(
             question=question,

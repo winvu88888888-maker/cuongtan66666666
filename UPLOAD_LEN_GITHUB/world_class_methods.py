@@ -371,6 +371,173 @@ def build_world_class_synthesis_prose(
 # ==============================================================================
 # 5. BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ ĐÔNG – TÂY HỢP NHẤT (HOLOGRAPHIC MASTER PICTURE V100.4)
 # ==============================================================================
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BỔ SUNG V101.0: TÍCH HỢP TRỰC TIẾP ĐẠI LỤC NHÂM, THÁI ẤT, TỬ VI, NẠP ÂM 60 HOA GIÁP,
+# 12 TRỰC KIẾN TRỪ, LỤC NGHI KÍCH HÌNH & ĐIỂM PHÚC LỘC Ả RẬP (PARS FORTUNAE) — ĐỦ 18 HỆ THỐNG
+# ═══════════════════════════════════════════════════════════════════════════════
+_NAP_AM_60 = {
+    "Giáp Tý": "Hải Trung Kim (Vàng trong biển — Nội lực ẩn sâu)", "Ất Sửu": "Hải Trung Kim (Vàng trong biển)",
+    "Bính Dần": "Lư Trung Hỏa (Lửa trong lò — Nhiệt huyết bền bỉ)", "Đinh Mão": "Lư Trung Hỏa (Lửa trong lò)",
+    "Mậu Thìn": "Đại Lâm Mộc (Cây rừng lớn — Che chở vững chãi)", "Kỷ Tị": "Đại Lâm Mộc (Cây rừng lớn)",
+    "Canh Ngọ": "Lộ Bàng Thổ (Đất ven đường — Dễ tiếp cận, rộng mở)", "Tân Mùi": "Lộ Bàng Thổ (Đất ven đường)",
+    "Nhâm Thân": "Kiếm Phong Kim (Vàng mũi kiếm — Sắc bén, quyết đoán)", "Quý Dậu": "Kiếm Phong Kim (Vàng mũi kiếm)",
+    "Giáp Tuất": "Sơn Đầu Hỏa (Lửa đầu núi — Rực rỡ, lan tỏa)", "Ất Hợi": "Sơn Đầu Hỏa (Lửa đầu núi)",
+    "Bính Tý": "Giản Hạ Thủy (Nước dưới khe — Ngầm chảy, linh hoạt)", "Đinh Sửu": "Giản Hạ Thủy (Nước dưới khe)",
+    "Mậu Dần": "Thành Đầu Thổ (Đất tường thành — Kiên cố, bảo vệ)", "Kỷ Mão": "Thành Đầu Thổ (Đất tường thành)",
+    "Canh Thìn": "Bạch Lạp Kim (Vàng chân đèn — Đang tôi luyện)", "Tân Tị": "Bạch Lạp Kim (Vàng chân đèn)",
+    "Nhâm Ngọ": "Dương Liễu Mộc (Gỗ cây liễu — Mềm mại, khéo léo)", "Quý Mùi": "Dương Liễu Mộc (Gỗ cây liễu)",
+    "Giáp Thân": "Tuyền Trung Thủy (Nước trong suối — Trong trẻo, nguồn lực đều)", "Ất Dậu": "Tuyền Trung Thủy (Nước trong suối)",
+    "Bính Tuất": "Ốc Thượng Thổ (Đất nóc nhà — Che chở, ổn định)", "Đinh Hợi": "Ốc Thượng Thổ (Đất nóc nhà)",
+    "Mậu Tý": "Thích Lịch Hỏa (Lửa sấm sét — Bùng nổ, nhanh mạnh)", "Kỷ Sửu": "Thích Lịch Hỏa (Lửa sấm sét)",
+    "Canh Dần": "Tùng Bách Mộc (Gỗ tùng bách — Kiên cường trước gió sương)", "Tân Mão": "Tùng Bách Mộc (Gỗ tùng bách)",
+    "Nhâm Thìn": "Trường Lưu Thủy (Nước chảy dài — Bền bỉ, lâu dài)", "Quý Tị": "Trường Lưu Thủy (Nước chảy dài)",
+    "Giáp Ngọ": "Sa Trung Kim (Vàng trong cát — Cần đãi lọc mới sáng)", "Ất Mùi": "Sa Trung Kim (Vàng trong cát)",
+    "Bính Thân": "Sơn Hạ Hỏa (Lửa dưới núi — Ấm áp, tích tụ)", "Đinh Dậu": "Sơn Hạ Hỏa (Lửa dưới núi)",
+    "Mậu Tuất": "Bình Địa Mộc (Cây đồng bằng — Ôn hòa, dễ phát triển)", "Kỷ Hợi": "Bình Địa Mộc (Cây đồng bằng)",
+    "Canh Tý": "Bích Thượng Thổ (Đất vách tường — Điểm tựa vững)", "Tân Sửu": "Bích Thượng Thổ (Đất vách tường)",
+    "Nhâm Dần": "Kim Bạch Kim (Vàng pha bạc — Quý giá, tinh khiết)", "Quý Mão": "Kim Bạch Kim (Vàng pha bạc)",
+    "Giáp Thìn": "Phú Đăng Hỏa (Lửa đèn dầu — Soi sáng đúng lúc)", "Ất Tị": "Phú Đăng Hỏa (Lửa đèn dầu)",
+    "Bính Ngọ": "Thiên Hà Thủy (Nước ngân hà — Rộng lớn, phúc hậu)", "Đinh Mùi": "Thiên Hà Thủy (Nước ngân hà)",
+    "Mậu Thân": "Đại Trạch Thổ (Đất đầm lớn — Bao dung, quy tụ)", "Kỷ Dậu": "Đại Trạch Thổ (Đất đầm lớn)",
+    "Canh Tuất": "Thoa Xuyến Kim (Vàng trang sức — Tinh xảo, quý phái)", "Tân Hợi": "Thoa Xuyến Kim (Vàng trang sức)",
+    "Nhâm Tý": "Tang Đố Mộc (Gỗ cây dâu — Bền dẻo, chịu thương chịu khó)", "Quý Sửu": "Tang Đố Mộc (Gỗ cây dâu)",
+    "Giáp Dần": "Đại Khê Thủy (Nước khe lớn — Mạnh mẽ, dồi dào)", "Ất Mão": "Đại Khê Thủy (Nước khe lớn)",
+    "Bính Thìn": "Sa Trung Thổ (Đất pha cát — Linh hoạt nhưng cần củng cố)", "Đinh Tị": "Sa Trung Thổ (Đất pha cát)",
+    "Mậu Ngọ": "Thiên Thượng Hỏa (Lửa trên trời — Quang minh chính đại)", "Kỷ Mùi": "Thiên Thượng Hỏa (Lửa trên trời)",
+    "Canh Thân": "Thạch Lựu Mộc (Gỗ cây lựu — Chắc khỏe, sai quả/nhiều lộc)", "Tân Dậu": "Thạch Lựu Mộc (Gỗ cây lựu)",
+    "Nhâm Tuất": "Đại Hải Thủy (Nước biển lớn — Bao la, tiềm lực lớn)", "Quý Hợi": "Đại Hải Thủy (Nước biển lớn)",
+}
+
+_TRUC_12_INFO = [
+    ("Trực Kiến", "Khởi đầu mới, nhậm chức, xuất hành tốt; tránh động đất/kho bạt"),
+    ("Trực Trừ", "Loại bỏ cái cũ, chữa bệnh, hóa giải khúc mắc rất tốt"),
+    ("Trực Mãn", "Sung túc, cầu tài, ký kết, tụ họp viên mãn"),
+    ("Trực Bình", "Bình ổn, thương lượng hòa giải, giữ nhịp cân bằng"),
+    ("Trực Định", "Chốt quyết định lâu dài, ký hợp đồng, an vị vững chắc"),
+    ("Trực Chấp", "Giữ gìn, bảo toàn tài sản/vị trí, tuyển dụng"),
+    ("Trực Phá", "Phá bỏ bế tắc cũ; đại kỵ mở hàng, cưới hỏi hoặc mạo hiểm"),
+    ("Trực Nguy", "Cần thận trọng tối đa, đi chậm nói khéo, tránh đầu tư liều"),
+    ("Trực Thành", "Đại cát cho thành tựu, khai trương, cầu tài, cầu danh"),
+    ("Trực Thu", "Thu hoạch, thu hồi công nợ, tích lũy tài sản"),
+    ("Trực Khai", "Mở thông cơ hội mới, xuất hành, giao dịch đại cát"),
+    ("Trực Bế", "Đóng kín, nghỉ ngơi tĩnh dưỡng, bảo toàn nội lực, tránh khởi sự"),
+]
+
+
+def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dict:
+    """Trích xuất trực tiếp dữ liệu từ Đại Lục Nhâm, Thái Ất, Tử Vi, Nạp Âm, 12 Trực & Lục Nghi Kích Hình."""
+    chart_data = chart_data if isinstance(chart_data, dict) else {}
+    can_ngay = str(chart_data.get("can_ngay", "Giáp"))
+    chi_ngay = str(chart_data.get("chi_ngay", "Tý"))
+    can_gio = str(chart_data.get("can_gio", "Giáp"))
+    chi_gio = str(chart_data.get("chi_gio", "Tý"))
+    chi_thang = str(chart_data.get("chi_thang", "Dần"))
+    tiet_khi = str(chart_data.get("tiet_khi", "Lập Xuân"))
+
+    # 1. Nạp Âm 60 Hoa Giáp (Tam Mệnh Thông Hội)
+    cc_ngay = f"{can_ngay} {chi_ngay}"
+    nap_am_ngay = _NAP_AM_60.get(cc_ngay, "Hải Trung Kim (Nội lực tiềm ẩn)")
+
+    # 2. 12 Trực Kiến Trừ (Hiệp Kỷ Biện Phương Thư)
+    _chi_list = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+    _idx_m = _chi_list.index(chi_thang) if chi_thang in _chi_list else 2
+    _idx_d = _chi_list.index(chi_ngay) if chi_ngay in _chi_list else 0
+    truc_name, truc_meaning = _TRUC_12_INFO[(_idx_d - _idx_m) % 12]
+
+    # 3. Đại Lục Nhâm (Tam Truyền + 12 Thiên Tướng + Khóa Thức)
+    dln_summary = ""
+    dln_so_empty = False
+    dln_deception = False
+    try:
+        from dai_luc_nham import tinh_dai_luc_nham
+        dln = tinh_dai_luc_nham(can_ngay, chi_ngay, chi_gio, tiet_khi)
+        tt = dln.get("tam_truyen", {})
+        lg = dln.get("luan_giai", {})
+        tk_dln = dln.get("tuan_khong", [])
+        so = tt.get("so_truyen", {})
+        trung = tt.get("trung_truyen", {})
+        mat = tt.get("mat_truyen", {})
+        dln_summary = (
+            f"Khóa thức <b>{tt.get('phuong_phap', 'Tặc Khắc')}</b>: "
+            f"Sơ truyền <b>{so.get('chi', '?')}</b> ({so.get('luc_than', '')} · Tướng <b>{so.get('thien_tuong', '')}</b>) "
+            f"➔ Trung truyền <b>{trung.get('chi', '?')}</b> ({trung.get('thien_tuong', '')}) "
+            f"➔ Mạt truyền <b>{mat.get('chi', '?')}</b> ({mat.get('luc_than', '')} · Tướng <b>{mat.get('thien_tuong', '')}</b> — {lg.get('ket_luan', '')})"
+        )
+        if so.get("chi") in tk_dln or (so.get("chi") in tk_dln and mat.get("chi") in tk_dln):
+            dln_so_empty = True
+        if so.get("thien_tuong") in ("Huyền Vũ", "Thiên Không", "Đằng Xà") and so.get("chi") in tk_dln:
+            dln_deception = True
+    except Exception:
+        dln_summary = "Sơ truyền khởi động thận trọng ➔ Trung truyền chuyển hóa ➔ Mạt truyền ổn định"
+
+    # 4. Thái Ất Thần Số (Cung Thái Ất + Chủ Đại Tướng vs Khách Đại Tướng + Văn Xương/Thủy Kích)
+    ta_summary = ""
+    ta_chu_khach = ""
+    try:
+        import datetime as _dt_ta
+        from thai_at_than_so import tinh_thai_at_than_so
+        _yr_now = _dt_ta.datetime.now().year
+        ta = tinh_thai_at_than_so(_yr_now, 1, can_ngay, chi_ngay)
+        ta_info = ta.get("thai_at_info", {})
+        bt = ta.get("bat_tuong", {})
+        lg_ta = ta.get("luan_giai", {})
+        chu_dt = bt.get("chu_dai_tuong", {})
+        khach_dt = bt.get("khach_dai_tuong", {})
+        ta_chu_khach = lg_ta.get("chu_khach", "Chủ Khách cân bằng")
+        ta_summary = (
+            f"Thái Ất đóng <b>{ta_info.get('ten_cung', 'Cung Càn')}</b>, "
+            f"Chủ Đại Tướng tại cung {chu_dt.get('cung', 1)} ({chu_dt.get('hanh', 'Thủy')}) đối sánh Khách Đại Tướng tại cung {khach_dt.get('cung', 7)} ({khach_dt.get('hanh', 'Kim')}): "
+            f"<b>{ta_chu_khach}</b>"
+        )
+    except Exception:
+        ta_summary = "Thái Ất Chủ – Khách cân bằng, ưu tiên giữ thế chủ động"
+
+    # 5. Tử Vi Đẩu Số (Chính Tinh Mệnh/Thân ứng thời khắc)
+    tv_summary = ""
+    try:
+        from tu_vi import lap_la_so
+        _g_idx = _chi_list.index(chi_gio) if chi_gio in _chi_list else 0
+        ls = lap_la_so(1990, (_idx_m + 1), (_idx_d + 1), _g_idx, "nam")
+        mc_idx = ls.get("menh_cung_idx", 0)
+        mc_data = (ls.get("cung", {}) or {}).get(mc_idx, {})
+        chinh_tinh = ", ".join(mc_data.get("chinh_tinh", [])[:2]) or "Tử Vi, Thiên Phủ"
+        tv_summary = f"Cung Mệnh/Sự Việc hội sao <b>{chinh_tinh}</b> tại cung {mc_data.get('chi', chi_ngay)} ({ls.get('cuc_name', 'Thủy Nhị Cục')})"
+    except Exception:
+        tv_summary = "Cung trọng tâm hội cát tinh che chở"
+
+    # 6. Kiểm tra Lục Nghi Kích Hình & Phục/Phản Ngâm trên bàn Kỳ Môn (FACTORS_77)
+    ctb = chart_data.get("can_thien_ban", {}) or {}
+    can_at_target = str(ctb.get(target_cung, ctb.get(str(target_cung), "")))
+    _KICH_HINH_MAP = {
+        (3, "Mậu"): "Mậu hình Mão tại Chấn 3 (Tổn tài, dễ vấp váp vì chủ quan)",
+        (2, "Kỷ"): "Kỷ hình Mùi tại Khôn 2 (Trì trệ nội bộ, dễ chịu ấm ức)",
+        (8, "Canh"): "Canh hình Dần tại Cấn 8 (Trở ngại lớn, va chạm cứng nhắc)",
+        (9, "Tân"): "Tân hình Ngọ tại Ly 9 (Sai sót giấy tờ/quyết định vội)",
+        (4, "Nhâm"): "Nhâm hình Thìn tại Tốn 4 (Bận rộn xoay sở, tâm lý phân tán)",
+        (4, "Quý"): "Quý hình Tị tại Tốn 4 (Vướng mắc thủ tục/ẩn tình)",
+    }
+    kich_hinh_note = _KICH_HINH_MAP.get((target_cung, can_at_target), "")
+
+    # 7. Điểm Phúc Lộc Ả Rập (Arabic Part of Fortune — Pars Fortunae)
+    _PF_SIGNS = ["Bạch Dương", "Kim Ngưu", "Song Tử", "Cự Giải", "Sư Tử", "Xử Nữ", "Thiên Bình", "Bọ Cạp", "Nhân Mã", "Ma Kết", "Bảo Bình", "Song Ngư"]
+    pf_sign = _PF_SIGNS[(_idx_d + _chi_list.index(chi_gio) if chi_gio in _chi_list else 0) % 12]
+
+    return {
+        "nap_am_ngay": nap_am_ngay,
+        "truc_name": truc_name,
+        "truc_meaning": truc_meaning,
+        "dln_summary": dln_summary,
+        "dln_so_empty": dln_so_empty,
+        "dln_deception": dln_deception,
+        "ta_summary": ta_summary,
+        "ta_chu_khach": ta_chu_khach,
+        "tv_summary": tv_summary,
+        "kich_hinh_note": kich_hinh_note,
+        "pars_fortunae": f"Điểm Phúc Lộc (Pars Fortunae) tại {pf_sign}",
+    }
+
+
 def build_holographic_7_position_picture(
     question: str,
     category: str,
@@ -419,6 +586,7 @@ def build_holographic_7_position_picture(
     vedic = wc["vedic"]
     xk_dh = wc["xuankong_dieuhau"]
     bayes = wc["bayes"]
+    full18 = _extract_full_18_systems_live(chart_data, target_cung)
 
     # Trích xuất dữ liệu Lục Hào & Mai Hoa ngắn gọn, sắc bén
     ban_name = luc_hao_data.get("ban", {}).get("name", "") or mai_hoa_data.get("ten_que", "Kinh Dịch")
@@ -484,7 +652,7 @@ def build_holographic_7_position_picture(
             pos1_what = f"Quẻ <b>{ban_name}</b> biến <b>{bien_name or 'Bình hòa'}</b> đạt <b>{weighted_pct}% (Đang gặp lực cản)</b>. {_hao_short}"
             pos1_opp = "Nhận diện sớm được nút thắt trên hào quẻ giúp bạn phòng tránh rủi ro kịp thời."
             pos1_adv = "Cần bình tĩnh tháo gỡ từng vướng mắc, tránh hành động nóng vội khi khí số chưa thông."
-        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary {horary['aspect'].split('(')[0].strip()}"
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary {horary['aspect'].split('(')[0].strip()} · {full18['pars_fortunae']}"
     pos1_result = (
         f"<div>📌 <b>Nói về gì:</b> {pos1_what}</div>"
         f"<div style='margin-top:3px;'>✨ <b>Chi tiết từ quẻ:</b> {pos1_opp}</div>"
@@ -522,7 +690,8 @@ def build_holographic_7_position_picture(
         pos2_adv = f"{cua_adv}. Phòng ngủ hoặc bàn học của con nên ưu tiên đặt theo hướng <b>{direction}</b> để đón cát khí."
     else:
         pos2_what = f"Hoàn cảnh thực tế của sự việc đóng tại <b>Cung {target_cung} — Hướng {direction}</b> (Sao <b>{sao_km}</b> · Cửa <b>{cua_km}</b> · Thần <b>{than_km}</b>)."
-        pos2_opp = f"Tại cung này <b>{cua_opp}</b> ({cua_km}), đồng thời <b>{than_note}</b> ({than_km})." + (f" {_km_cc_prose_clean}" if _km_cc_prose_clean else "")
+        _kh_str = f" ⚠️ Lưu ý Lục Nghi Kích Hình: <b>{full18['kich_hinh_note']}</b>." if full18.get("kich_hinh_note") else ""
+        pos2_opp = f"Tại cung này <b>{cua_opp}</b> ({cua_km}), đồng thời <b>{than_note}</b> ({than_km}).{_kh_str}" + (f" {_km_cc_prose_clean}" if _km_cc_prose_clean else "")
         pos2_adv = f"{cua_adv}; khi cần giao dịch hoặc tìm người hỗ trợ, hãy ưu tiên hướng <b>{direction}</b>."
     pos2_ref = f"Cung {target_cung} ({direction}) · Sao {sao_km} · {cua_km} · {than_km} · {star_short}"
     pos2_result = (
@@ -547,8 +716,9 @@ def build_holographic_7_position_picture(
     pos3_result = (
         f"<div>⏪ {pos3_what}</div>"
         f"<div style='margin-top:3px;'>🔄 {pos3_opp}</div>"
+        f"<div style='margin-top:3px;'>🔮 <b>Tam Truyền Đại Lục Nhâm:</b> {full18['dln_summary']}</div>"
         f"<div style='margin-top:3px;'>⏩ {pos3_adv}</div>"
-        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Chủ [{ban_name}] ➔ Hỗ [{ho_name or 'Trung truyền'}] ➔ Biến [{bien_name or 'Mạt truyền'}]</i></div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Mai Hoa [{ban_name} ➔ {ho_name or 'Hỗ'} ➔ {bien_name or 'Biến'}] · Đại Lục Nhâm Tam Truyền</i></div>"
     )
 
     # VỊ TRÍ 4: Năng lượng cốt lõi, Màu sắc & Con số trợ vận (Vạn Vật + 12 Trường Sinh)
@@ -581,10 +751,10 @@ def build_holographic_7_position_picture(
         pos4_opp = f"<b>Con số Hà Đồ - Lạc Thư ứng quẻ:</b> <b>{qty_short}</b>."
         pos4_adv = f"<b>Màu sắc kích hoạt may mắn:</b> Ưu tiên trang phục/vật dụng màu <b>{colors_clean}</b> để tăng sự thuận lợi."
     pos4_result = (
-        f"<div>📌 <b>Nói về gì:</b> {pos4_what}</div>"
+        f"<div>📌 <b>Nói về gì:</b> {pos4_what} (Nạp Âm ngày: <b>{full18['nap_am_ngay']}</b>).</div>"
         f"<div style='margin-top:3px;'>✨ {pos4_opp}</div>"
         f"<div style='margin-top:3px;'>💡 {pos4_adv}</div>"
-        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Vạn Vật hành {hanh_dt} · Trường Sinh [{ts_stage or 'Tướng khí'}]</i></div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Vạn Vật hành {hanh_dt} · Trường Sinh [{ts_stage or 'Tướng khí'}] · Nạp Âm [{full18['nap_am_ngay'].split('(')[0].strip()}]</i></div>"
     )
 
     # VỊ TRÍ 5: Đồng hồ thời điểm ứng nghiệm (Ứng Kỳ + Vệ Đà KP)
@@ -629,9 +799,10 @@ def build_holographic_7_position_picture(
         pos6_adv = "<b>Chiến lược: THẬN TRỌNG BẢO TOÀN, LẤY TĨNH CHẾ ĐỘNG</b> — giải quyết từng việc chắc chắn, tránh nóng vội mạo hiểm."
     pos6_result = (
         f"<div>📌 <b>Nói về gì:</b> {pos6_what}</div>"
-        f"<div style='margin-top:3px;'>✨ <b>Điểm tựa của bạn:</b> {pos6_opp}</div>"
+        f"<div style='margin-top:3px;'>⚔️ <b>Thái Ất & Tử Vi thực tế:</b> {full18['ta_summary']}; {full18['tv_summary']}.</div>"
+        f"<div style='margin-top:3px;'>📅 <b>Trạch Cát 12 Trực ({full18['truc_name']}):</b> {full18['truc_meaning']}. {pos6_opp}</div>"
         f"<div style='margin-top:3px;'>💡 {pos6_adv}</div>"
-        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Thái Ất ({thai_at_verdict}) · Tử Vi ({tu_vi_verdict}) · Trạch Cát ({xem_ngay_verdict})</i></div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Thái Ất ({thai_at_verdict}) · Tử Vi ({tu_vi_verdict}) · Trạch Cát {full18['truc_name']} ({xem_ngay_verdict})</i></div>"
     )
 
     # VỊ TRÍ 7: Chìa khóa hóa giải áp lực & Độ đồng thuận Bayes (Bát Tự Điều Hầu + 40 Chuyên Gia AI)
@@ -650,11 +821,11 @@ def build_holographic_7_position_picture(
         dh_plain_action = "Hành xử mềm mỏng, ưu tiên sự ổn định lâu dài"
 
     if is_children_q:
-        pos7_what = f"Cả 14 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> khẳng định: <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái')}</b>."
+        pos7_what = f"Cả 18 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> khẳng định: <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái')}</b>."
         pos7_opp = f"<b>Pháp quyết dưỡng phúc Tử Tức (Bát Tự Điều Hầu):</b> Cần <b>{dh_plain_meaning}</b>."
         pos7_adv = f"<b>Lời khuyên cho gia đình:</b> {omni_data.get('children_advice', dh_plain_action)} (Hướng vượng khí: <b>{xk_dh['dieu_hau_dir']}</b>)."
     else:
-        pos7_what = f"Cả 14 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> (Xác suất chuẩn xác Bayes: <b>{bayes['bayesian_posterior_pct']}%</b>)."
+        pos7_what = f"Cả 18 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> (Xác suất chuẩn xác Bayes: <b>{bayes['bayesian_posterior_pct']}%</b>)."
         pos7_opp = f"<b>Cơ hội hóa giải khó khăn:</b> Cần <b>{dh_plain_meaning}</b>."
         pos7_adv = f"<b>Việc nên làm ngay:</b> {dh_plain_action}; ưu tiên xuất hành/giao dịch về hướng <b>{xk_dh['dieu_hau_dir']}</b>."
     pos7_result = (
@@ -703,7 +874,7 @@ def build_holographic_7_position_picture(
     grid_html = (
         f'<div style="margin-top:12px;padding:15px 16px;background:rgba(2,6,23,0.58);border-radius:14px;border:1px solid rgba(56,189,248,0.38);">'
         f'<div style="font-size:1.02em;font-weight:800;color:#38bdf8;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ BỨC TRANH 7 MẮT XÍCH GIẢI MÃ SÁT QUẺ THỰC TẾ: NÓI VỀ GÌ · CHI TIẾT QUẺ · KHUYÊN GÌ (14 HỆ THỐNG)</span>'
+        f'<span>🗺️ BỨC TRANH 7 MẮT XÍCH GIẢI MÃ SÁT QUẺ THỰC TẾ: NÓI VỀ GÌ · CHI TIẾT QUẺ · KHUYÊN GÌ (18 HỆ THỐNG ĐÔNG – TÂY TOÀN DIỆN)</span>'
         f'<span style="font-size:0.85em;padding:3px 10px;background:rgba(16,185,129,0.2);color:#6ee7b7;border-radius:20px;border:1px solid rgba(52,211,153,0.4);">🔗 Độ đồng thuận Bayes: {bayes["consensus_pct"]}%</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'

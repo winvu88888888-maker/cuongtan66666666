@@ -5522,6 +5522,8 @@ class FreeAIHelper:
                 _vb_label = 'ĐẠI HUNG — RẤT BẤT LỢI'
             
             _omni_dict_on = od.get('hub', {}).get('synthesis', {}).get('omniscient_data', {}) or {}
+            _is_fake_on = bool(_omni_dict_on.get('is_fake'))
+            _auth_warns_on = _omni_dict_on.get('auth_warnings') or []
             _is_children_q_on = bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_lower_online and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
             _is_factual_who_age = (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
             if _is_children_q_on:
@@ -12665,48 +12667,136 @@ class FreeAIHelper:
     # ===========================
     # CORE: ANSWER QUESTION
     # ===========================
-    def _check_authenticity(self, chart_data, luc_hao_data, dung_than=None):
+    def _check_authenticity(self, chart_data, luc_hao_data, dung_than=None, mai_hoa_data=None, question=''):
+        """
+        V100.9: HỆ THỐNG NGHIỆM CHỨNG TÍNH CHÂN THỰC 10 DẠNG (CHỐNG CÂU HỎI LỪA DỐI / KHÔNG CÓ THẬT / HỎI THỬ)
+        Phát hiện khi người hỏi đặt câu hỏi về sự việc/con người KHÔNG CÓ THẬT, CHƯA TỒN TẠI, hoặc HỎI THỬ LÒNG QUẺ
+        dựa trên 10 dạng kinh điển của Lục Hào, Kỳ Môn Độn Giáp, Mai Hoa Dịch Số & Đại Lục Nhâm.
+        """
         warnings = []
         is_fake = False
-        if not chart_data or not isinstance(chart_data, dict): return warnings, is_fake
-        
+        if not chart_data or not isinstance(chart_data, dict):
+            return warnings, is_fake
+
         can_ngay = chart_data.get('can_ngay')
         chi_ngay = chart_data.get('chi_ngay')
         can_gio = chart_data.get('can_gio')
         chi_gio = chart_data.get('chi_gio')
-        if not can_ngay or not chi_ngay: return warnings, is_fake
-        
+        if not can_ngay or not chi_ngay:
+            return warnings, is_fake
+
         kv = _get_khong_vong(can_ngay, chi_ngay)
-        if not kv: return warnings, is_fake
-        
+        if not kv:
+            return warnings, is_fake
+
+        _KY_THAN_MAP = {
+            'Tử Tôn': 'Phụ Mẫu',
+            'Thê Tài': 'Huynh Đệ',
+            'Quan Quỷ': 'Tử Tôn',
+            'Phụ Mẫu': 'Thê Tài',
+            'Huynh Đệ': 'Quan Quỷ',
+        }
+        _ky_target = _KY_THAN_MAP.get(dung_than or '', '')
+
+        # ── PHẦN A: KIỂM TRA 7 DẠNG TRÊN QUẺ LỤC HÀO KINH DỊCH ──
         if luc_hao_data and isinstance(luc_hao_data, dict):
-            haos = luc_hao_data.get('haos', [])
-            for hao in haos:
-                tu = str(hao.get('tu', ''))
-                chi = hao.get('chi', '')
-                luc_thu = hao.get('luc_thu', hao.get('luc_than_kd', ''))
-                luc_than = hao.get('luc_than', '')
-                
+            _ban_lh = luc_hao_data.get('ban', {}) if isinstance(luc_hao_data.get('ban'), dict) else {}
+            _bien_lh = luc_hao_data.get('bien', {}) if isinstance(luc_hao_data.get('bien'), dict) else {}
+            haos = (
+                _ban_lh.get('haos')
+                or _ban_lh.get('details')
+                or _ban_lh.get('lines')
+                or luc_hao_data.get('haos')
+                or []
+            )
+            dong_list = (
+                luc_hao_data.get('dong_hao')
+                or _ban_lh.get('dong_hao')
+                or (luc_hao_data.get('ban_main', {}) or {}).get('dong_hao')
+                or []
+            )
+            found_dt_in_hex = False
+            dt_is_dong = False
+            ky_dong_Desc = []
+
+            for idx_h, hao in enumerate(haos, 1):
+                if not isinstance(hao, dict):
+                    continue
+                tu = str(hao.get('the_ung') or hao.get('tu') or '')
+                _raw_cc = str(hao.get('chi') or hao.get('can_chi') or '')
+                chi = _raw_cc.split()[-1] if _raw_cc else ''
+                luc_thu = str(hao.get('luc_thu') or hao.get('luc_than_kd') or hao.get('than') or '')
+                luc_than = str(hao.get('luc_than') or '')
+                is_dong = bool(
+                    hao.get('is_dong')
+                    or hao.get('dong')
+                    or hao.get('is_moving')
+                    or (idx_h in dong_list)
+                )
+
+                # Kiểm tra Hào Thế (Người hỏi)
                 if 'Thế' in tu:
                     if chi in kv:
-                        warnings.append('Lục Hào - Hào Thế (Người hỏi) rơi vào Tuần Không: Việc tự bản thân còn mơ hồ, chưa có chủ đích thực sự, mông lung hoặc thiếu thành tâm (hỏi thử).')
+                        warnings.append(
+                            f"🔹 <b>Dạng 4 [Lục Hào — Hào Thế Tuần Không]:</b> Hào Thế tại Hào {idx_h} (<b>{chi}</b> — Người hỏi) rơi vào <b>Tuần Không ({', '.join(kv)})</b>: Người hỏi tâm ý trống rỗng, chưa có sự việc thực mà đang <b>hỏi thử quẻ</b> hoặc hỏi chuyện giả định."
+                        )
                         is_fake = True
-                    if luc_thu == 'Huyền Vũ':
-                        warnings.append('Lục Hào - Hào Thế lâm Huyền Vũ: Huyền Vũ chủ về sự giả dối, mờ ám, che giấu. Cảnh báo người hỏi không trung thực hoặc đang giấu giếm sự thật.')
+                    if 'Huyền Vũ' in luc_thu:
+                        warnings.append(
+                            f"🔹 <b>Dạng 5 [Lục Hào — Hào Thế Lâm Huyền Vũ]:</b> Hào Thế (Hào {idx_h}) lâm <b>Huyền Vũ</b>: Chủ về sự che giấu, gian dối hoặc người hỏi đang <b>cố ý cung cấp thông tin ngược sự thật</b> để thử quẻ."
+                        )
                         is_fake = True
-                    if luc_thu == 'Đằng Xà':
-                        warnings.append('Lục Hào - Hào Thế lâm Đằng Xà: Người hỏi đang tự lo âu thái quá, thần hồn nát thần tính, tưởng tượng ra sự việc chứ chưa chắc đã có thật.')
-                
+                    if 'Đằng Xà' in luc_thu:
+                        warnings.append(
+                            f"🔹 <b>Dạng 6 [Lục Hào — Hào Thế Lâm Đằng Xà]:</b> Hào Thế (Hào {idx_h}) lâm <b>Đằng Xà</b>: Người hỏi đang tự suy diễn, tưởng tượng ra sự việc chứ ngoài đời chưa chắc đã có thật."
+                        )
+
+                # Kiểm tra Hào Ứng (Sự việc / Đối phương được hỏi)
                 if 'Ứng' in tu:
                     if chi in kv:
-                        warnings.append('Lục Hào - Hào Ứng (Sự việc/Đối phương) rơi vào Tuần Không: Đối tượng không có thật, hư ảo, hoặc sự kiện đã trôi qua, không còn tồn tại ở thời điểm hiện tại.')
+                        warnings.append(
+                            f"🔹 <b>Dạng 3 [Lục Hào — Hào Ứng Tuần Không]:</b> Hào Ứng tại Hào {idx_h} (<b>{chi}</b> — Sự việc/Đối tượng được hỏi) rơi vào <b>Tuần Không ({', '.join(kv)})</b>: Đối tượng hoặc sự việc được hỏi là <b>hư ảo, không có thật hoặc chưa tồn tại</b> ở thời điểm hiện tại."
+                        )
                         is_fake = True
-                        
-                if dung_than and dung_than != 'Bản Thân' and luc_than == dung_than:
+
+                # Kiểm tra Hào Dụng Thần
+                if dung_than and dung_than != 'Bản Thân' and (luc_than == dung_than or dung_than in luc_than):
+                    found_dt_in_hex = True
+                    if is_dong:
+                        dt_is_dong = True
                     if chi in kv:
-                        warnings.append(f'Lục Hào - Dụng Thần ({dung_than}) lâm Tuần Không: Đối tượng hoặc sự việc được hỏi hiện đang trống rỗng, chưa diễn ra hoặc hoàn toàn không tồn tại (chờ xuất Không).')
+                        warnings.append(
+                            f"🔹 <b>Dạng 1 [Lục Hào — Dụng Thần Tuần Không]:</b> Hào Dụng Thần <b>{dung_than}</b> tại Hào {idx_h} (<b>{chi}</b>) rơi vào <b>Tuần Không ({', '.join(kv)})</b>: Đối tượng hoặc sự việc được hỏi hiện đang <b>trống rỗng, CHƯA TỒN TẠI hoặc KHÔNG CÓ THẬT</b> (Con số thực tế hiện tại = 0)."
+                        )
                         is_fake = True
-                        
+                    if 'Huyền Vũ' in luc_thu:
+                        warnings.append(
+                            f"🔹 <b>Dạng 5B [Lục Hào — Dụng Thần Lâm Huyền Vũ]:</b> Hào Dụng Thần <b>{dung_than}</b> (Hào {idx_h}) lâm <b>Huyền Vũ</b>: Đối tượng/sự việc được hỏi có yếu tố giả tạo, không có thật như lời hỏi."
+                        )
+                        is_fake = True
+
+                # Kiểm tra Hào Kỵ Thần phát động
+                if _ky_target and (luc_than == _ky_target or _ky_target in luc_than) and is_dong:
+                    ky_dong_Desc.append(f"Hào {idx_h} {luc_than} ({chi})")
+
+            # Dạng 2: Trên 6 hào Quẻ Chủ KHÔNG CÓ hào Dụng Thần (Vô Dụng Thần / Phục Tàng)
+            if haos and dung_than and dung_than in ('Tử Tôn', 'Thê Tài', 'Quan Quỷ', 'Phụ Mẫu', 'Huynh Đệ') and not found_dt_in_hex:
+                warnings.append(
+                    f"🔹 <b>Dạng 2 [Lục Hào — Quẻ Khuyết Dụng Thần / Phục Tàng]:</b> Trên cả 6 hào Quẻ Chủ <b>KHÔNG CÓ hào {dung_than}</b> xuất hiện (Dụng Thần ẩn phục hoàn toàn): Báo hiệu người hoặc sự việc được hỏi <b>KHÔNG HỀ CÓ trên thực tế</b> (hoặc chưa từng xuất hiện)."
+                )
+                is_fake = True
+
+            # Dạng 7: Kỵ Thần độc phát khắc chế Dụng Thần đang tĩnh
+            if ky_dong_Desc and not dt_is_dong:
+                warnings.append(
+                    f"🔹 <b>Dạng 7 [Lục Hào — Kỵ Thần Độc Phát Khắc Dụng Thần]:</b> Kỵ Thần <b>{', '.join(ky_dong_Desc)}</b> phát động mạnh khắc trực tiếp Dụng Thần <b>{dung_than}</b> đang tĩnh: Báo hiệu sự việc bị triệt tiêu hoặc <b>HIỆN TẠI CHƯA CÓ TRÊN THỰC TẾ</b>."
+                )
+                # Nếu hỏi về số lượng/con cái hoặc đã có dấu hiệu Không Vong thì khẳng định is_fake
+                _ql_chk = (question or '').lower()
+                if any(w in _ql_chk for w in ['bao nhiêu', 'mấy con', 'người con', 'có mấy', 'mấy trai', 'mấy gái']):
+                    is_fake = True
+
+        # ── PHẦN B: KIỂM TRA CÁC DẠNG TRÊN BÀN KỲ MÔN ĐỘN GIÁP ──
         if chart_data and 'can_thien_ban' in chart_data and 'nhan_ban' in chart_data and 'than_ban' in chart_data:
             kv_cung = []
             try:
@@ -12714,6 +12804,9 @@ class FreeAIHelper:
                 kv_cung = [qmdg_calc.CHI_CUNG_MAP.get(c) for c in kv if c in qmdg_calc.CHI_CUNG_MAP]
             except Exception:
                 pass
+            if not kv_cung:
+                _FALLBACK_CHI_CUNG = {'Tý': 1, 'Sửu': 8, 'Dần': 8, 'Mão': 3, 'Thìn': 4, 'Tị': 4, 'Ngọ': 9, 'Mùi': 2, 'Thân': 2, 'Dậu': 7, 'Tuất': 6, 'Hợi': 6}
+                kv_cung = list({_FALLBACK_CHI_CUNG.get(c) for c in kv if c in _FALLBACK_CHI_CUNG})
 
             can_thien_ban = chart_data.get('can_thien_ban', {})
             nhan_ban = chart_data.get('nhan_ban', {})
@@ -12726,65 +12819,84 @@ class FreeAIHelper:
                     nhat_can_cung = int(cung)
                 if str(can) == str(can_gio):
                     thoi_can_cung = int(cung)
-            
+
             if nhat_can_cung:
                 _than = than_ban.get(nhat_can_cung, than_ban.get(str(nhat_can_cung), ''))
                 _mon = nhan_ban.get(nhat_can_cung, nhan_ban.get(str(nhat_can_cung), ''))
                 if nhat_can_cung in kv_cung:
-                    warnings.append(f'Kỳ Môn - Nhật Can (Người hỏi) tại cung {nhat_can_cung} bị Tuần Không: Tư tưởng trống rỗng, sự việc không có thực, mục đích hỏi mông lung hoặc hỏi thử.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 9 [Kỳ Môn — Nhật Can Lâm Tuần Không]:</b> Nhật Can <b>{can_ngay}</b> (Người hỏi) tại <b>Cung {nhat_can_cung}</b> bị <b>Tuần Không ({', '.join(kv)})</b>: Tư tưởng trống rỗng, sự việc không có thực, mục đích hỏi mông lung hoặc <b>đang hỏi thử</b>."
+                    )
                     is_fake = True
                 if _than == 'Huyền Vũ':
-                    warnings.append(f'Kỳ Môn - Nhật Can lâm Huyền Vũ: Huyền Vũ là sự giả dối, mờ ám. Người hỏi có sự che giấu, mưu đồ không chính đáng hoặc thông tin cung cấp là giả.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 5C [Kỳ Môn — Nhật Can Lâm Huyền Vũ]:</b> Nhật Can (Người hỏi) tại Cung {nhat_can_cung} lâm <b>Huyền Vũ</b>: Người hỏi có sự che giấu hoặc thông tin đưa ra trong câu hỏi là <b>giả / không đúng sự thật</b>."
+                    )
                     is_fake = True
                 if _than == 'Đằng Xà':
-                    warnings.append(f'Kỳ Môn - Nhật Can lâm Đằng Xà: Người hỏi đang tưởng tượng thái quá, tự dọa mình, hoặc sự việc mang tính chất hoang tưởng.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 6B [Kỳ Môn — Nhật Can Lâm Đằng Xà]:</b> Nhật Can tại Cung {nhat_can_cung} lâm <b>Đằng Xà</b>: Sự việc mang tính chất hư cấu, tưởng tượng hoặc thử lòng quẻ."
+                    )
                 if _mon == 'Tử Môn':
-                    warnings.append(f'Kỳ Môn - Nhật Can lâm Tử Môn: Sự việc đã đi vào bế tắc, kết thúc, hoặc đây là một sự việc đã xảy ra từ lâu, không còn đường tiến.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 9B [Kỳ Môn — Nhật Can Lâm Tử Môn]:</b> Nhật Can lâm <b>Tử Môn</b>: Sự việc không có sinh khí hoặc đã kết thúc từ lâu."
+                    )
                     is_fake = True
 
             if thoi_can_cung:
                 _than = than_ban.get(thoi_can_cung, than_ban.get(str(thoi_can_cung), ''))
                 _mon = nhan_ban.get(thoi_can_cung, nhan_ban.get(str(thoi_can_cung), ''))
                 if thoi_can_cung in kv_cung:
-                    warnings.append(f'Kỳ Môn - Thời Can (Sự việc) tại cung {thoi_can_cung} bị Tuần Không: Sự việc được hỏi hoàn toàn không có thật, hư ảo hoặc đã tan biến.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 8 [Kỳ Môn — Thời Can Lâm Tuần Không]:</b> Thời Can <b>{can_gio}</b> (Sự việc được hỏi) tại <b>Cung {thoi_can_cung}</b> bị <b>Tuần Không ({', '.join(kv)})</b>: Cổ pháp Kỳ Môn quyết <i>'Thời lâm Không Vong, sở vấn chi sự toàn hư'</i> — Sự việc được hỏi <b>hoàn toàn KHÔNG CÓ THẬT, chưa tồn tại hoặc chỉ là câu hỏi thử</b>."
+                    )
                     is_fake = True
                 if _than == 'Huyền Vũ':
-                    warnings.append(f'Kỳ Môn - Thời Can lâm Huyền Vũ: Bản chất sự việc có gian dối, giả tạo hoặc không đúng như bề ngoài người hỏi trình bày.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 5D [Kỳ Môn — Thời Can Lâm Huyền Vũ]:</b> Thời Can (Sự việc) tại Cung {thoi_can_cung} lâm <b>Huyền Vũ</b>: Bản chất sự việc được hỏi là giả tạo, hư cấu hoặc không đúng như câu hỏi trình bày."
+                    )
                     is_fake = True
+                if _than == 'Đằng Xà':
+                    warnings.append(
+                        f"🔹 <b>Dạng 6C [Kỳ Môn — Thời Can Lâm Đằng Xà]:</b> Thời Can (Sự việc) tại Cung {thoi_can_cung} lâm <b>Đằng Xà</b>: Sự việc biến ảo, hư cấu, không có thật ngoài đời thực."
+                    )
                 if _mon == 'Tử Môn':
-                    warnings.append(f'Kỳ Môn - Thời Can lâm Tử Môn: Sự việc đã đi vào ngõ cụt, không thể phát sinh trong tương lai hoặc đã hoàn toàn kết thúc.')
+                    warnings.append(
+                        f"🔹 <b>Dạng 9C [Kỳ Môn — Thời Can Lâm Tử Môn]:</b> Thời Can lâm <b>Tử Môn</b>: Sự việc không thể phát sinh hoặc hoàn toàn không tồn tại."
+                    )
                     is_fake = True
 
-        return warnings, is_fake
-        
-        can_ngay = chart_data.get('can_ngay')
-        chi_ngay = chart_data.get('chi_ngay')
-        if not can_ngay or not chi_ngay: return warnings, is_fake
-        
-        kv = _get_khong_vong(can_ngay, chi_ngay)
-        if not kv: return warnings, is_fake
-        
-        if luc_hao_data and isinstance(luc_hao_data, dict):
-            haos = luc_hao_data.get('haos', [])
-            for hao in haos:
-                tu = str(hao.get('tu', ''))
-                chi = hao.get('chi', '')
-                luc_thu = hao.get('luc_thu', hao.get('luc_than_kd', ''))
-                
-                if 'Thế' in tu:
-                    if chi in kv:
-                        warnings.append("Hào Thế (Người hỏi) rơi vào Tuần Không: Việc tự bản thân còn mơ hồ, chưa có chủ đích thực sự, mông lung hoặc thiếu thành tâm (hỏi thử).")
-                        is_fake = True
-                    if luc_thu == 'Huyền Vũ':
-                        warnings.append("Hào Thế lâm Huyền Vũ: Huyền Vũ chủ về sự giả dối, mờ ám, che giấu. Cảnh báo người hỏi không trung thực hoặc đang giấu giếm sự thật.")
-                        is_fake = True
-                    if luc_thu == 'Đằng Xà':
-                        warnings.append("Hào Thế lâm Đằng Xà: Người hỏi đang tự lo âu thái quá, thần hồn nát thần tính, tưởng tượng ra sự việc chứ chưa chắc đã có thật.")
-                
-                if 'Ứng' in tu:
-                    if chi in kv:
-                        warnings.append("Hào Ứng (Sự việc/Đối phương) rơi vào Tuần Không: Đối tượng không có thật, hư ảo, hoặc sự kiện đã trôi qua, không còn tồn tại ở thời điểm hiện tại.")
-                        is_fake = True
+        # ── PHẦN C: KIỂM TRA DẠNG 10 (QUẺ BIẾN THIÊN ĐỊA BĨ / SƠN ĐỊA BÁC HỘI TUẦN KHÔNG) ──
+        _bien_nm = ''
+        if isinstance(luc_hao_data, dict):
+            _bien_nm = (luc_hao_data.get('bien', {}) or {}).get('name', '')
+        if not _bien_nm and isinstance(mai_hoa_data, dict):
+            _bien_nm = mai_hoa_data.get('bien_que') or mai_hoa_data.get('ten_bien', '')
+        if _bien_nm in ('Thiên Địa Bĩ', 'Sơn Địa Bác') and is_fake:
+            warnings.append(
+                f"🔹 <b>Dạng 10 [Kinh Dịch & Mai Hoa — Quẻ Biến {_bien_nm} Hội Không Vong]:</b> Quẻ biến sang <b>{_bien_nm}</b> (Âm dương bất giao, vạn vật không thành) hội cùng Tuần Không — Khẳng định sự việc được hỏi <b>chưa hề thành hình ngoài thực tế</b>."
+            )
+
+        # ── PHẦN D: KIỂM TRA DẠNG 11 (ĐẠI LỤC NHÂM — SƠ TRUYỀN / TAM TRUYỀN LÂM TUẦN KHÔNG HOẶC HUYỀN VŨ) ──
+        try:
+            from dai_luc_nham import tinh_dai_luc_nham
+            _dln_chk = tinh_dai_luc_nham(can_ngay, chi_ngay, chi_gio or 'Tý', chart_data.get('tiet_khi', 'Lập Xuân'))
+            _tt_chk = _dln_chk.get('tam_truyen', {})
+            _so_chk = _tt_chk.get('so_truyen', {})
+            _mat_chk = _tt_chk.get('mat_truyen', {})
+            if _so_chk.get('chi') in kv:
+                warnings.append(
+                    f"🔹 <b>Dạng 11 [Đại Lục Nhâm — Sơ Truyền Lâm Tuần Không]:</b> Sơ truyền <b>{_so_chk.get('chi')}</b> (Thiên tướng <b>{_so_chk.get('thien_tuong', '')}</b>) rơi vào <b>Tuần Không ({', '.join(kv)})</b> — Cổ pháp Đại Lục Nhâm: <i>'Sơ truyền Không Vong, sự nguyên vô căn'</i> (Sự việc ngay từ gốc đã không có thật)."
+                )
+                is_fake = True
+            elif _mat_chk.get('chi') in kv and _so_chk.get('thien_tuong') in ('Huyền Vũ', 'Thiên Không', 'Đằng Xà'):
+                warnings.append(
+                    f"🔹 <b>Dạng 11B [Đại Lục Nhâm — Sơ Truyền Lâm {_so_chk.get('thien_tuong')} & Mạt Truyền Không Vong]:</b> Báo hiệu câu hỏi mang tính chất thử lòng hoặc sự việc hư ảo không thành."
+                )
+                is_fake = True
+        except Exception:
+            pass
+
         return warnings, is_fake
 
     def answer_question(self, question, chart_data=None, topic=None, selected_subject=None, mai_hoa_data=None, luc_hao_data=None, **kwargs):
@@ -13432,12 +13544,16 @@ class FreeAIHelper:
                         self.log_step("V32.5 Grammar", "INFO", 
                                       f"Parser suggest: {parser_dt} | V35.8 final: {dung_than} | {reason[:60]}")
                 
-            # V42.9.29: Authenticity Check with Dung Than
-            auth_warnings, is_fake = [], False  # V100.8: Không hiện cảnh báo giả 'không có thật/hư ảo' gây hiểu lầm; Tuần Không đã được luận chuẩn trong bài
+            # V100.9: Nghiệm Chứng Tính Chân Thực 10 Dạng (Phát hiện câu hỏi không có thật / chưa tồn tại / hỏi thử)
+            auth_warnings, is_fake = self._check_authenticity(chart_data, luc_hao_data, dung_than, mai_hoa_data, question)
             if is_fake:
-                auth_html = f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:16px;border-radius:12px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 15px rgba(239,68,68,0.4);"><div style="font-size:1.1em;font-weight:800;color:#fca5a5;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC (CẢNH BÁO)</div>'
+                auth_html = (
+                    f'<div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:18px 20px;border-radius:14px;margin-bottom:16px;border:2px solid #ef4444;box-shadow:0 4px 18px rgba(239,68,68,0.45);">'
+                    f'<div style="font-size:1.12em;font-weight:900;color:#fef08a;margin-bottom:8px;">🚨 NGHIỆM CHỨNG TÍNH CHÂN THỰC — PHÁT HIỆN CÂU HỎI KHÔNG CÓ THẬT / CHƯA TỒN TẠI HOẶC HỎI THỬ ({len(auth_warnings)} DẤU HIỆU TỪ QUẺ)</div>'
+                    f'<div style="font-size:0.95em;color:#fecaca;margin-bottom:8px;">Hệ thống chống câu hỏi giả/lừa dối phát hiện quẻ phạm <b>Tuần Không / Không Vong / Khuyết Dụng Thần / Huyền Vũ - Đằng Xà</b>: Sự việc hoặc đối tượng bạn hỏi <b>hiện KHÔNG CÓ THẬT ngoài đời thực</b> (hoặc chưa từng xảy ra / bạn đang hỏi thử lòng quẻ):</div>'
+                )
                 for w in auth_warnings:
-                    auth_html += f'<div style="font-size:1em;color:#fee2e2;margin-bottom:6px;">{w}</div>'
+                    auth_html += f'<div style="font-size:0.95em;color:#ffffff;margin-bottom:5px;padding:6px 10px;background:rgba(0,0,0,0.28);border-radius:8px;border-left:3px solid #fbbf24;">{w}</div>'
                 auth_html += '</div>'
 
             if v31_parsed_questions and len(v31_parsed_questions) >= 1:
@@ -15608,6 +15724,8 @@ class FreeAIHelper:
                 luc_hao_data=luc_hao_data,
                 mai_hoa_data=mai_hoa_data,
                 ung_ky_detail=_ung_ky_detail_result,
+                is_fake=locals().get('is_fake', False),
+                auth_warnings=locals().get('auth_warnings', []),
             )
             if _omniscient_res.get('text'):
                 offline_full_output += f"\n\n{_omniscient_res['text']}"
@@ -16070,10 +16188,12 @@ class FreeAIHelper:
             import re as _re_clean_v100
             _q_low_on_box = question.lower() if question else ''
             _is_child_box = any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in _q_low_on_box and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+            _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
             if _is_child_box:
-                _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
                 if _omni_ch_data.get('children_summary'):
-                    _online_verdict_line = f"👶 {_omni_ch_data['children_summary']}"
+                    _online_verdict_line = f"{'🚨' if _omni_ch_data.get('is_fake') else '👶'} {_omni_ch_data['children_summary']}"
+                if _omni_ch_data.get('is_fake') and _omni_ch_data.get('children_reasons'):
+                    _online_why_line = _omni_ch_data.get('children_reasons')
                 else:
                     _online_verdict_line = _re_clean_v100.sub(r'[,;]?\s*(?:nhưng\s*)?(?:tình hình chung là\s*)?(?:ĐẠI CÁT|CÁT|CẦN CÂN NHẮC|BÌNH|HUNG|ĐẠI HUNG)[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             elif any(w in _q_low_on_box for w in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']):
@@ -16114,7 +16234,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.8 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.0 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16809,7 +16929,7 @@ class FreeAIHelper:
                         tu_vi_verdict=tu_vi_verdict, tu_vi_reason=tu_vi_reason,
                         thien_van_reason=thien_van_reason,
                         exp_html_items=locals().get('_exp_html_items', []),
-                        warn_parts=_warn_parts,
+                        warn_parts=(list(locals().get('auth_warnings', [])) + list(_warn_parts or [])),
                         thoan_name=_t3_name_on, thoan_info=_t3_info_on,
                         ts_stage=_ts_st_on, ts_info=TRUONG_SINH_POWER.get(_ts_st_on, {}) if _ts_st_on else {},
                         nk_stage=_nk_st_on, nk_info=NGU_KHI_POWER.get(_nk_st_on, {}) if _nk_st_on else {},
@@ -16826,7 +16946,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.8)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.0)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
@@ -17583,7 +17703,7 @@ class FreeAIHelper:
                         tu_vi_verdict=tu_vi_verdict, tu_vi_reason=tu_vi_reason,
                         thien_van_reason=thien_van_reason,
                         exp_html_items=locals().get('_exp_html_items', []),
-                        warn_parts=_warn_fb,
+                        warn_parts=(list(locals().get('auth_warnings', [])) + list(_warn_fb or [])),
                         thoan_name=_t3_name_fb, thoan_info=_t3_info_fb,
                         ts_stage=_ts_st_fb, ts_info=TRUONG_SINH_POWER.get(_ts_st_fb, {}) if _ts_st_fb else {},
                         nk_stage=_nk_st_fb, nk_info=NGU_KHI_POWER.get(_nk_st_fb, {}) if _nk_st_fb else {},
@@ -17600,7 +17720,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.8)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.0)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html

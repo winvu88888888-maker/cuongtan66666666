@@ -243,6 +243,8 @@ def build_omniscient_prophecy(
     luc_hao_data=None,
     mai_hoa_data=None,
     ung_ky_detail=None,
+    is_fake=False,
+    auth_warnings=None,
 ):
     """
     Hàm trung tâm giải mã Tiên Tri Toàn Tri 360° cho mọi câu hỏi / mọi quẻ.
@@ -690,13 +692,28 @@ def build_omniscient_prophecy(
     else:
         _bg_str = "Chủ yếu là Con Gái (1 – 2 Con Gái)"
 
-    children_summary = f"QUẺ BÁO TỬ TỨC: KHOẢNG {_range_child_str.upper()} — GỒM {_bg_str.upper()}"
-    # Lọc các bằng chứng không trùng lặp
+    auth_warnings = auth_warnings if isinstance(auth_warnings, list) else []
     _uniq_ev = []
     for _ev in _child_evidences:
         if _ev not in _uniq_ev:
             _uniq_ev.append(_ev)
-    children_reasons = "; kết hợp ".join(_uniq_ev[:5]) + "."
+    _hex_child_reasons = "; kết hợp ".join(_uniq_ev[:5]) + "."
+
+    if is_fake:
+        children_summary = (
+            f"NGHIỆM CHỨNG TỪ QUẺ (PHÁT HIỆN TUẦN KHÔNG / KHÔNG VONG): HIỆN TẠI BẠN CHƯA CÓ CON (0 NGƯỜI CON) "
+            f"— HOẶC ĐANG HỎI THỬ MỘT VIỆC KHÔNG CÓ THẬT NGOÀI ĐỜI! "
+            f"(Nếu xét tiềm năng tương lai khi xuất Không: Khoảng {_range_child_str} — gồm {_bg_str})"
+        )
+        _clean_aw = [w.replace('🔹 ', '') for w in auth_warnings[:4]]
+        children_reasons = (
+            "<b>Quẻ bắt bài câu hỏi chưa có thật ở hiện tại:</b> "
+            + " | ".join(_clean_aw)
+            + f". <i>(Luận phụ cho tương lai khi xuất Không: {_hex_child_reasons})</i>"
+        )
+    else:
+        children_summary = f"QUẺ BÁO TỬ TỨC: KHOẢNG {_range_child_str.upper()} — GỒM {_bg_str.upper()}"
+        children_reasons = _hex_child_reasons
     children_traits = (
         f"Hào Tử Tôn hành <b>{hanh_dt}</b> ({ts_stage or 'Vượng'}) hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{c_info['huong']}</b>: "
         f"báo hiệu các con có tư chất thông minh, lanh lợi, tính tự lập cao ({star_g_matched[1].lower()}), lớn lên có chính kiến và biết lo cho gia đình."
@@ -864,6 +881,12 @@ def build_omniscient_prophecy(
             'gender_reasons': ', '.join(gender_reasons),
             'age_tier': age_tier,
             'birth_years': birth_years,
+            'is_fake': bool(is_fake),
+            'auth_warnings': auth_warnings,
+            'fake_summary': (
+                "NGHIỆM CHỨNG TỪ QUẺ (PHÁT HIỆN TUẦN KHÔNG / KHÔNG VONG): SỰ VIỆC HOẶC ĐỐI TƯỢNG BẠN HỎI HIỆN KHÔNG CÓ THẬT NGOÀI ĐỜI (HOẶC CHƯA TỒN TẠI / BẠN ĐANG HỎI THỬ LÒNG QUẺ)!"
+                if is_fake else ""
+            ),
             'is_children_question': _is_children_q,
             'children_summary': children_summary,
             'children_reasons': children_reasons,
