@@ -351,13 +351,16 @@ def _resolve_authentic_km_palace(chart_data: dict, dung_than: str = 'Bản Thân
             return (c_nhue, bt_cung, "Cung Sao Thiên Nhuế (Bệnh tinh)")
 
     # Ưu tiên 5: Tài chính / Đầu tư / Mua bán / Đòi nợ
+    if any(w in q_low for w in ["ở nhà hay", "đang ở đâu", "tôi đang ở"]):
+        return (bt_cung, bt_cung, f"Cung Nhật Can ({can_ngay} — Vị trí & Trạng thái hiện tại của Bản thân)")
     if category in ("TÀI_CHÍNH", "NHÀ_CỬA") or any(w in q_low for w in ["tiền", "đầu tư", "lãi", "lời", "lỗ", "mua", "bán", "kinh doanh", "vốn", "đất", "nhà", "nợ"]):
         if "nợ" in q_low or "vay" in q_low:
             c_thuong = _find_in_board(nb, "Thương") or sv_cung
             return (c_thuong, bt_cung, "Cung Thương Môn / Thời Can (Thu hồi công nợ)")
         c_sinh = _find_in_board(nb, "Sinh")
         if c_sinh:
-            return (c_sinh, bt_cung, "Cung Sinh Môn (Tài lộc & Lợi nhuận)")
+            _is_fin = any(w in q_low for w in ["tiền", "đầu tư", "lãi", "lời", "lỗ", "mua", "bán", "kinh doanh", "vốn", "giá"])
+            return (c_sinh, bt_cung, "Cung Sinh Môn (Tài lộc & Lợi nhuận)" if _is_fin else "Cung Sinh Môn (Gia trạch & Nhà cửa)")
 
     # Ưu tiên 6: Công việc / Sự nghiệp / Thi cử
     if category == "CÔNG_VIỆC" or any(w in q_low for w in ["việc", "sự nghiệp", "thăng chức", "công ty", "bổ nhiệm"]):

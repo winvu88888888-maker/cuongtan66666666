@@ -826,6 +826,10 @@ def _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data=None):
     if chart_data and isinstance(chart_data, dict):
         chi_thang = chi_thang or chart_data.get('chi_thang', '')
         chi_ngay = chi_ngay or chart_data.get('chi_ngay', '')
+    the_hao_obj = next((_h for _h in haos if 'Thế' in str(_h.get('the_ung', '') or _h.get('marker', ''))), None)
+    if dung_than == 'Bản Thân' and the_hao_obj and the_hao_obj.get('luc_than') in _NGUYEN_THAN_MAP:
+        _nkc_the = _NGUYEN_THAN_MAP[the_hao_obj['luc_than']]
+        nguyen_name, ky_name, cuu_name = _nkc_the['nguyen'], _nkc_the['ky'], _nkc_the['cuu']
     
     # Tìm hào DT, Nguyên, Kỵ, Cừu trong quẻ
     def _find_hao(luc_than_name, hao_list):
@@ -957,7 +961,7 @@ def _analyze_dt_ecosystem(dung_than, luc_hao_data, chart_data=None):
         result['cuu_than'] = {'name': cuu_name, 'strength': 'KHÔNG HIỆN', 'score': 0, 'detail': 'Ẩn'}
     
     # 4. DT Nhập Mộ kiểm tra
-    dt_haos = _find_hao(dung_than if dung_than != 'Bản Thân' else 'Huynh Đệ', haos)
+    dt_haos = ([the_hao_obj] if the_hao_obj else _find_hao('Huynh Đệ', haos)) if dung_than == 'Bản Thân' else _find_hao(dung_than, haos)
     if dt_haos:
         dt_chi = dt_haos[0].get('chi', '')
         dt_hanh = dt_haos[0].get('ngu_hanh', CHI_NGU_HANH.get(dt_chi, ''))
@@ -2025,8 +2029,25 @@ def _check_tan_thoai_than(chi_dong, chi_bien):
         return 'THOÁI THẦN'  # Thoái = suy giảm
     return None
 
-def _get_lenh_thang_hanh():
-    """V9.0: Xác định Ngũ Hành vượng theo tháng hiện tại (Lệnh Tháng)"""
+def _get_lenh_thang_hanh(chi_thang=None):
+    """V101.7: Xác định Ngũ Hành vượng theo Nguyệt Lệnh thực tế (Chi Tháng Tiết Khí, gồm cả Tứ Quý Thổ Thìn-Tuất-Sửu-Mùi)"""
+    if not chi_thang:
+        try:
+            from qmdg_calc import calculate_qmdg_params as _calc_lt
+            _now_lt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
+            chi_thang = _calc_lt(_now_lt).get('chi_thang', '')
+        except Exception:
+            chi_thang = ''
+    if chi_thang in ('Dần', 'Mão'):
+        return 'Mộc', f'Tháng {chi_thang} (Mùa Xuân - Mộc vượng)'
+    elif chi_thang in ('Tị', 'Tỵ', 'Ngọ'):
+        return 'Hỏa', f'Tháng {chi_thang} (Mùa Hạ - Hỏa vượng)'
+    elif chi_thang in ('Thân', 'Dậu'):
+        return 'Kim', f'Tháng {chi_thang} (Mùa Thu - Kim vượng)'
+    elif chi_thang in ('Hợi', 'Tý'):
+        return 'Thủy', f'Tháng {chi_thang} (Mùa Đông - Thủy vượng)'
+    elif chi_thang in ('Thìn', 'Tuất', 'Sửu', 'Mùi'):
+        return 'Thổ', f'Tháng {chi_thang} (Tứ Quý - Thổ vượng)' 
     now = datetime.datetime.now()
     month = now.month
     # Xuân (2,3,4) = Mộc vượng, Hạ (5,6,7) = Hỏa vượng, Thu (8,9,10) = Kim vượng, Đông (11,12,1) = Thủy vượng
@@ -7224,23 +7245,7 @@ class FreeAIHelper:
                     else:
                         score -= 3
                         factors.append(f"KM Sao×Môn: {sm_result}")
-            # Factor 2: Sinh khac BT<->DT
-            if bt_cung is not None and dt_cung is not None:
-                hanh_bt_cung = CUNG_NGU_HANH.get(bt_cung, '')
-                hanh_dt_cung = CUNG_NGU_HANH.get(dt_cung, '')
-                if hanh_bt_cung and hanh_dt_cung:
-                    rel = DATANG_SINH_KHAC(hanh_bt_cung, hanh_dt_cung)
-                    if 'Sinh' in str(rel) and 'Bi' not in str(rel):
-                        score += 6
-                        factors.append(f"KM Cung BT sinh DT +6 ({hanh_bt_cung}→{hanh_dt_cung})")
-                    elif 'Khac' in str(rel) or 'Khắc' in str(rel):
-                        if 'Bi' in str(rel) or 'Bị' in str(rel):
-                            score -= 6
-                            factors.append(f"KM Cung BT bị khắc -6 ({hanh_bt_cung}←{hanh_dt_cung})")
-                        else:
-                            score += 4
-                            factors.append(f"KM Cung BT khắc DT +4")
-            # Factor 3: Vuong Suy theo mua
+            # Factor 3: Vuong Suy theo mua (Factor 2 BT<->DT đã chấm chuẩn ở tầng ①, tránh cộng trùng)
             if dt_can:
                 can_hanh_km = CAN_NGU_HANH.get(dt_can, '')
                 tiet_khi = chart_data.get('tiet_khi', '')
@@ -7254,11 +7259,12 @@ class FreeAIHelper:
                         elif 'Tu' in vs_str or 'Tử' in vs_str or 'Tù' in vs_str:
                             score -= 5
                             factors.append(f"KM DT Tử/Tù mùa -5")
-            # Factor 5: Cách Cục
+            # Factor 5: Cách Cục (Lấy Địa Bàn thực tế từ chart_data thay vì bảng cố định)
             if dt_cung and can_thien_ban:
                 thien_can_dt = can_thien_ban.get(dt_cung, can_thien_ban.get(str(dt_cung), ''))
-                DIA_BAN_CAN = {1: 'Mậu', 2: 'Kỷ', 3: 'Canh', 4: 'Tân', 5: 'Mậu', 6: 'Nhâm', 7: 'Quý', 8: 'Ất', 9: 'Bính'}
-                dia_can_dt = DIA_BAN_CAN.get(dt_cung if isinstance(dt_cung, int) else int(dt_cung), '')
+                dia_ban_actual = chart_data.get('dia_ban', {})
+                DIA_BAN_CAN_FALLBACK = {1: 'Mậu', 2: 'Kỷ', 3: 'Canh', 4: 'Tân', 5: 'Mậu', 6: 'Nhâm', 7: 'Quý', 8: 'Ất', 9: 'Bính'}
+                dia_can_dt = dia_ban_actual.get(dt_cung, dia_ban_actual.get(str(dt_cung), '')) or DIA_BAN_CAN_FALLBACK.get(dt_cung if isinstance(dt_cung, int) else int(dt_cung), '')
                 if thien_can_dt and dia_can_dt:
                     CAT_CACH = {
                         ('Ất', 'Bính'): 'Nhật Kỳ → CÁT',
@@ -7296,7 +7302,7 @@ class FreeAIHelper:
                     if can_val == can_gio:
                         sv_cung = int(cung_num) if cung_num else None
                         break
-            if sv_cung and bt_cung:
+            if sv_cung and bt_cung and sv_cung != dt_cung:
                 if sv_cung != bt_cung:
                     sv_hanh = CUNG_NGU_HANH.get(sv_cung, '')
                     if bt_hanh and sv_hanh:
@@ -7441,20 +7447,20 @@ class FreeAIHelper:
             else:
                 factors.append(f"Nguyệt({chi_thang}/{hanh_thang}) không tác động DT +0")
         
-        # ③ Nhật Thần sinh/khắc DT (±6)
-        hanh_ngay = CAN_NGU_HANH.get(can_ngay, '')
+        # ③ Nhật Thần (Địa Chi Ngày) sinh/khắc DT (±6) — Chuẩn Bốc Phệ Chính Tông
+        hanh_ngay = CHI_NGU_HANH.get(chi_ngay, '') or CAN_NGU_HANH.get(can_ngay, '')
         if hanh_ngay and dt_hanh:
             if SINH.get(hanh_ngay) == dt_hanh:
                 score += 6
-                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) sinh DT +6")
+                factors.append(f"Nhật Thần({chi_ngay}/{hanh_ngay}) sinh DT +6")
             elif KHAC.get(hanh_ngay) == dt_hanh:
                 score -= 6
-                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) khắc DT -6")
+                factors.append(f"Nhật Thần({chi_ngay}/{hanh_ngay}) khắc DT -6")
             elif hanh_ngay == dt_hanh:
                 score += 3
-                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) tỷ hòa DT +3")
+                factors.append(f"Nhật Thần({chi_ngay}/{hanh_ngay}) tỷ hòa DT +3")
             else:
-                factors.append(f"Nhật({can_ngay}/{hanh_ngay}) không tác động DT +0")
+                factors.append(f"Nhật Thần({chi_ngay}/{hanh_ngay}) không tác động DT +0")
         
         # ④ Nguyên Thần (sinh DT) status (±6)
         nguyen_hanh = [h for h, s in SINH.items() if s == dt_hanh] if dt_hanh else []
@@ -7806,41 +7812,44 @@ class FreeAIHelper:
             score += 4
             factors.append("DT TRÌ THẾ +4")
         
-        # ㉑ Nguyên Thần bị Kỵ Thần khắc — chain effect
+        # ㉑ Nguyên Thần bị Cừu Thần khắc & ㉒ THAM SINH VONG KHẮC (KT + NT cùng động)
         if dt_hanh:
             nguyen_hanh_list = [h for h, s in SINH.items() if s == dt_hanh]
             ky_hanh_list2 = [h for h, k in KHAC.items() if k == dt_hanh]
+            cuu_hanh_list2 = [h for h, k in KHAC.items() if k in nguyen_hanh_list]
             nt_found = None
             kt_found = None
+            ct_found = None
             for hao in haos:
                 h_hanh = hao.get('ngu_hanh', '')
                 if h_hanh in nguyen_hanh_list and hao != dt_hao:
                     nt_found = hao
                 if h_hanh in ky_hanh_list2 and hao != dt_hao:
                     kt_found = hao
-            if nt_found and kt_found:
+                if h_hanh in cuu_hanh_list2 and hao != dt_hao:
+                    ct_found = hao
+            # ㉑ Cừu Thần khắc Nguyên Thần → DT mất nguồn sinh
+            if nt_found and ct_found:
                 nt_hanh = nt_found.get('ngu_hanh', '')
-                kt_hanh = kt_found.get('ngu_hanh', '')
-                if KHAC.get(kt_hanh) == nt_hanh:
-                    kt_idx = haos.index(kt_found) + 1
-                    if kt_idx in (dong_hao or []):
+                ct_hanh = ct_found.get('ngu_hanh', '')
+                if KHAC.get(ct_hanh) == nt_hanh:
+                    ct_idx = haos.index(ct_found) + 1
+                    if ct_idx in (dong_hao or []):
                         score -= 5
-                        factors.append(f"KT({kt_hanh}) động khắc NT({nt_hanh}) → DT mất nguồn -5")
+                        factors.append(f"CT({ct_hanh}) động khắc NT({nt_hanh}) → DT mất nguồn -5")
                     else:
-                        score -= 3
-                        factors.append(f"KT({kt_hanh}) khắc NT({nt_hanh}) → chain -3")
-                        
-                # ㉒ THAM SINH VONG KHẮC — KT + NT cùng ĐỘNG → KT tham sinh NT → quên khắc DT → HÓA CÁT!
-                if nt_found and kt_found and dong_hao:
-                    nt_idx_chk = haos.index(nt_found) + 1
-                    kt_idx_chk = haos.index(kt_found) + 1
-                    if nt_idx_chk in dong_hao and kt_idx_chk in dong_hao:
-                        # KT sinh NT? (VD: KT=Mộc, NT=Hỏa → Mộc sinh Hỏa → KT tham sinh)
-                        nt_h = nt_found.get('ngu_hanh', '')
-                        kt_h = kt_found.get('ngu_hanh', '')
-                        if SINH.get(kt_h) == nt_h:
-                            score += 10
-                            factors.append(f"⚡ THAM SINH VONG KHẮC: KT({kt_h}) tham sinh NT({nt_h}) → quên khắc DT → HÓA CÁT +10")
+                        score -= 2
+                        factors.append(f"CT({ct_hanh}) khắc NT({nt_hanh}) → chain -2")
+            # ㉒ THAM SINH VONG KHẮC — KT + NT cùng ĐỘNG → KT sinh NT, NT sinh DT → HÓA CÁT!
+            if nt_found and kt_found and dong_hao:
+                nt_idx_chk = haos.index(nt_found) + 1
+                kt_idx_chk = haos.index(kt_found) + 1
+                if nt_idx_chk in dong_hao and kt_idx_chk in dong_hao:
+                    nt_h = nt_found.get('ngu_hanh', '')
+                    kt_h = kt_found.get('ngu_hanh', '')
+                    if SINH.get(kt_h) == nt_h:
+                        score += 10
+                        factors.append(f"⚡ THAM SINH VONG KHẮC: KT({kt_h}) động tham sinh NT({nt_h}) → tiếp sức DT → HÓA CÁT +10")
         
         # ㉓ Vị trí hào DT (ý nghĩa ngữ cảnh)
         if dt_idx:
@@ -7914,37 +7923,64 @@ class FreeAIHelper:
             score += 2
             factors.append(f"MH Tỷ Hòa +2")
         
-        # ② Hỗ Quái sinh/khắc Thể (±8)
-        ho_name = mai_hoa_data.get('ten_ho', '')
-        if ho_name:
-            ho_yn = QUAI_Y_NGHIA.get(ho_name, {})
-            ho_el = ho_yn.get('hanh', '')
-            if ho_el and the_el:
-                if SINH.get(ho_el) == the_el:
-                    score += 8
-                    factors.append(f"MH Hỗ sinh Thể +8")
-                elif KHAC.get(ho_el) == the_el:
-                    score -= 8
-                    factors.append(f"MH Hỗ khắc Thể -8")
-        
-        # ③ Biến Quái sinh/khắc Thể (±8)
-        ten_bien = mai_hoa_data.get('ten_qua_bien', '')
-        if ten_bien:
-            for bp in ten_bien.split():
-                bien_yn = QUAI_Y_NGHIA.get(bp, {})
-                if bien_yn:
-                    bien_el = bien_yn.get('hanh', '')
-                    if bien_el and the_el:
-                        if SINH.get(bien_el) == the_el:
-                            score += 8
-                            factors.append(f"MH Biến sinh Thể +8")
-                        elif KHAC.get(bien_el) == the_el:
-                            score -= 8
-                            factors.append(f"MH Biến khắc Thể -8")
+        # ② Hỗ Quái sinh/khắc Thể (±8) — V101.7: Lấy trực tiếp hanh_ho chuẩn từ mai_hoa_data
+        _TRIGRAM_WORD_HANH = {
+            'Càn': 'Kim', 'Đoài': 'Kim', 'Thiên': 'Kim', 'Trạch': 'Kim',
+            'Ly': 'Hỏa', 'Hỏa': 'Hỏa', 'Chấn': 'Mộc', 'Tốn': 'Mộc', 'Lôi': 'Mộc', 'Phong': 'Mộc',
+            'Khảm': 'Thủy', 'Thủy': 'Thủy', 'Cấn': 'Thổ', 'Khôn': 'Thổ', 'Sơn': 'Thổ', 'Địa': 'Thổ'
+        }
+        ho_el = mai_hoa_data.get('hanh_ho', '')
+        if not ho_el:
+            ho_name = mai_hoa_data.get('ten_ho', '')
+            for _w in str(ho_name).split():
+                if _w in _TRIGRAM_WORD_HANH:
+                    ho_el = _TRIGRAM_WORD_HANH[_w]
                     break
+        if ho_el and the_el:
+            if SINH.get(ho_el) == the_el:
+                score += 8
+                factors.append(f"MH Hỗ({ho_el}) sinh Thể({the_el}) +8")
+            elif KHAC.get(ho_el) == the_el:
+                score -= 8
+                factors.append(f"MH Hỗ({ho_el}) khắc Thể({the_el}) -8")
+            elif ho_el == the_el:
+                score += 3
+                factors.append(f"MH Hỗ({ho_el}) tỷ hòa Thể +3")
+            elif KHAC.get(the_el) == ho_el:
+                score += 4
+                factors.append(f"MH Thể khắc Hỗ({ho_el}) +4")
+            elif SINH.get(the_el) == ho_el:
+                score -= 3
+                factors.append(f"MH Thể sinh Hỗ({ho_el}) (hao khí) -3")
         
-        # ④ Nguyệt lệnh (±6)
-        lenh_hanh, lenh_mua = _get_lenh_thang_hanh()
+        # ③ Biến Quái sinh/khắc Thể (±8) — V101.7: Lấy trực tiếp hanh_bien chuẩn từ mai_hoa_data
+        bien_el = mai_hoa_data.get('hanh_bien', '')
+        if not bien_el:
+            ten_bien = mai_hoa_data.get('ten_qua_bien', '')
+            for _w in str(ten_bien).split():
+                if _w in _TRIGRAM_WORD_HANH:
+                    bien_el = _TRIGRAM_WORD_HANH[_w]
+                    break
+        if bien_el and the_el:
+            if SINH.get(bien_el) == the_el:
+                score += 8
+                factors.append(f"MH Biến({bien_el}) sinh Thể({the_el}) +8")
+            elif KHAC.get(bien_el) == the_el:
+                score -= 8
+                factors.append(f"MH Biến({bien_el}) khắc Thể({the_el}) -8")
+            elif KHAC.get(the_el) == bien_el:
+                score += 5
+                factors.append(f"MH Thể khắc Biến({bien_el}) +5")
+            elif SINH.get(the_el) == bien_el:
+                score -= 4
+                factors.append(f"MH Thể sinh Biến({bien_el}) (hao khí) -4")
+            elif bien_el == the_el:
+                score += 4
+                factors.append(f"MH Biến({bien_el}) tỷ hòa Thể +4")
+        
+        # ④ Nguyệt lệnh (±6) — chuẩn theo Chi Tháng
+        _chi_thang_mh = chart_data.get('chi_thang', '') if isinstance(chart_data, dict) else ''
+        lenh_hanh, lenh_mua = _get_lenh_thang_hanh(_chi_thang_mh)
         if the_el and lenh_hanh:
             if the_el == lenh_hanh:
                 score += 5
@@ -8023,11 +8059,9 @@ class FreeAIHelper:
 
         return score, summary, factors
     
-    def _thiet_ban_scoring(self, chart_data, luc_hao_data, mai_hoa_data):
-        """V41.0: Chấm điểm Thiết Bản — 7 tiêu chí, luôn >= 3 yếu tố.
-        
-        FIX: NAP_AM_GIAI_THICH dùng tên Nạp Âm làm key nhưng code lookup bằng CanChi
-        → Thêm bảng 60 Giáp Tý Nạp Âm chuẩn để tra ngược.
+    def _thiet_ban_scoring(self, chart_data, luc_hao_data, mai_hoa_data, dung_than='Bản Thân'):
+        """V101.7: Chấm điểm Thiết Bản Thần Toán gắn chặt với Dụng Thần câu hỏi + Nạp Âm Ngày/Giờ/Hào.
+        Không chấm tĩnh Can Ngày khắc Chi Ngày làm lệch kết quả mọi câu hỏi trong cùng ngày.
         """
         score = 0
         factors = []
@@ -8085,113 +8119,119 @@ class FreeAIHelper:
             'Phúc Đăng Hỏa': -2, 'Bích Thượng Thổ': -2, 'Thoa Xuyến Kim': -2, # Khá yếu
         }
         
+        can_gio = ''
+        chi_gio = ''
+        chi_thang = ''
         if chart_data and isinstance(chart_data, dict):
             can_ngay = chart_data.get('can_ngay', '')
             chi_ngay = chart_data.get('chi_ngay', '')
             chi_nam = chart_data.get('chi_nam', '')
+            chi_thang = chart_data.get('chi_thang', '')
+            can_gio = chart_data.get('can_gio', '')
+            chi_gio = chart_data.get('chi_gio', '')
             can_hanh = CAN_NGU_HANH.get(can_ngay, '')
         
-        # ① NẠP ÂM NGÀY — Tra bảng 60 Giáp Tý (±5)
-        nap_am_ten = ''
-        nap_am_hanh = ''
-        can_chi_key = can_ngay + chi_ngay if can_ngay and chi_ngay else ''
-        if can_chi_key and can_chi_key in _NAP_AM_60:
-            nap_am_ten, nap_am_hanh = _NAP_AM_60[can_chi_key]
+        # V101.7: Xác định Hành & Chi của Dụng Thần câu hỏi từ Lục Hào (để Thiết Bản bám sát từng câu hỏi)
+        dt_hanh_tb = ''
+        dt_chi_tb = ''
+        if luc_hao_data and isinstance(luc_hao_data, dict):
+            _haos_tb = luc_hao_data.get('ban', {}).get('haos', []) or luc_hao_data.get('ban', {}).get('details', [])
+            for _h in _haos_tb:
+                _lt = _h.get('luc_than', '')
+                _tu = str(_h.get('the_ung', '') or _h.get('marker', ''))
+                if (_lt == dung_than) or (dung_than == 'Bản Thân' and 'Thế' in _tu):
+                    dt_hanh_tb = _h.get('ngu_hanh', '')
+                    dt_chi_tb = _h.get('chi', '')
+                    break
+        target_hanh = dt_hanh_tb or can_hanh
+        target_chi = dt_chi_tb or chi_gio or chi_ngay
+        target_label = f"DT({dung_than}/{target_hanh})" if dt_hanh_tb else f"Mệnh({can_hanh})"
+
+        # ① NẠP ÂM NGÀY & GIỜ — Tra bảng 60 Giáp Tý (±4)
+        nap_am_ten, nap_am_hanh = _NAP_AM_60.get(can_ngay + chi_ngay, ('', ''))
+        nap_am_gio_ten, nap_am_gio_hanh = _NAP_AM_60.get(can_gio + chi_gio, ('', ''))
+        if nap_am_ten:
             na_str = _NAP_AM_STRENGTH.get(nap_am_ten, 0)
-            na_desc = NAP_AM_GIAI_THICH.get(nap_am_ten, nap_am_ten)
             if na_str >= 5:
+                score += 3
+                factors.append(f"TB-1 Nạp Âm Ngày [{nap_am_ten}] Vượng khí +3")
+            elif na_str >= 1:
+                score += 1
+                factors.append(f"TB-1 Nạp Âm Ngày [{nap_am_ten}] Bình ổn +1")
+            else:
+                factors.append(f"TB-1 Nạp Âm Ngày [{nap_am_ten}] Nhu khí +0")
+        
+        # ② NẠP ÂM NGÀY & GIỜ vs DỤNG THẦN HÀNH — Sinh Khắc (±6)
+        if nap_am_hanh and target_hanh:
+            if SINH.get(nap_am_hanh) == target_hanh:
                 score += 5
-                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] MẠNH ({na_desc}) +5")
-            elif na_str >= 2:
-                score += 2
-                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] TRUNG ({na_desc}) +2")
-            elif na_str <= -1:
-                score -= 3
-                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] YẾU ({na_desc}) -3")
-            else:
-                score += 0
-                factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] BÌNH ({na_desc}) +0")
-        elif can_ngay and chi_ngay:
-            # Fallback: Nạp Âm từ chart_data
-            nap_am_ten = chart_data.get('nap_am', chart_data.get('nap_am_ten', '')) if chart_data else ''
-            nap_am_hanh = chart_data.get('nap_am_hanh', '') if chart_data else ''
-            if nap_am_ten and nap_am_ten != '?':
-                na_str = _NAP_AM_STRENGTH.get(nap_am_ten, 0)
-                if na_str >= 5:
-                    score += 5
-                    factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] MẠNH +5")
-                elif na_str <= -1:
-                    score -= 3
-                    factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] YẾU -3")
-                else:
-                    factors.append(f"TB-1 Nạp Âm [{nap_am_ten}] BÌNH +0")
-        
-        # ② NẠP ÂM vs DỤNG THẦN HÀNH — Sinh Khắc (±4)
-        if nap_am_hanh and can_hanh:
-            if SINH.get(nap_am_hanh) == can_hanh:
+                factors.append(f"TB-2 Nạp Âm Ngày({nap_am_hanh}) SINH {target_label} +5")
+            elif KHAC.get(nap_am_hanh) == target_hanh:
+                score -= 5
+                factors.append(f"TB-2 Nạp Âm Ngày({nap_am_hanh}) KHẮC {target_label} -5")
+            elif nap_am_hanh == target_hanh:
+                score += 3
+                factors.append(f"TB-2 Nạp Âm Ngày({nap_am_hanh}) Tỷ Hòa {target_label} +3")
+        if nap_am_gio_hanh and target_hanh:
+            if SINH.get(nap_am_gio_hanh) == target_hanh:
                 score += 4
-                factors.append(f"TB-2 Nạp Âm({nap_am_hanh}) SINH Mệnh({can_hanh}) +4")
-            elif KHAC.get(nap_am_hanh) == can_hanh:
+                factors.append(f"TB-2b Nạp Âm Giờ [{nap_am_gio_ten}]({nap_am_gio_hanh}) SINH {target_label} +4")
+            elif KHAC.get(nap_am_gio_hanh) == target_hanh:
                 score -= 4
-                factors.append(f"TB-2 Nạp Âm({nap_am_hanh}) KHẮC Mệnh({can_hanh}) -4")
-            elif nap_am_hanh == can_hanh:
+                factors.append(f"TB-2b Nạp Âm Giờ [{nap_am_gio_ten}]({nap_am_gio_hanh}) KHẮC {target_label} -4")
+            elif nap_am_gio_hanh == target_hanh:
                 score += 2
-                factors.append(f"TB-2 Nạp Âm Tỷ Hòa Mệnh +2")
-            elif SINH.get(can_hanh) == nap_am_hanh:
-                score -= 1
-                factors.append(f"TB-2 Mệnh TIẾT KHÍ cho Nạp Âm -1")
-            else:
-                factors.append(f"TB-2 Nạp Âm({nap_am_hanh}) ↔ Mệnh({can_hanh}) Bình hòa +0")
+                factors.append(f"TB-2b Nạp Âm Giờ [{nap_am_gio_ten}] Tỷ Hòa {target_label} +2")
         
-        # ③ THIÊN ĐỊA SINH KHẮC — Can Ngày vs Chi Ngày (±4)
+        # ③ NHẬT THẦN & THỜI THẦN vs DỤNG THẦN HÀNH (±5)
         chi_hanh = CHI_NGU_HANH.get(chi_ngay, '')
-        if can_hanh and chi_hanh:
-            if SINH.get(chi_hanh) == can_hanh:
-                score += 4
-                factors.append(f"TB-3 Địa Chi({chi_ngay}/{chi_hanh}) SINH Thiên Can({can_ngay}/{can_hanh}) +4")
-            elif KHAC.get(chi_hanh) == can_hanh:
-                score -= 4
-                factors.append(f"TB-3 Địa Chi({chi_ngay}/{chi_hanh}) KHẮC Thiên Can({can_ngay}/{can_hanh}) -4")
-            elif can_hanh == chi_hanh:
-                score += 2
-                factors.append(f"TB-3 Thiên Địa Tỷ Hòa({can_hanh}) +2")
+        if target_hanh and chi_hanh:
+            if SINH.get(chi_hanh) == target_hanh:
+                score += 5
+                factors.append(f"TB-3 Nhật Chi({chi_ngay}/{chi_hanh}) SINH {target_label} +5")
+            elif KHAC.get(chi_hanh) == target_hanh:
+                score -= 5
+                factors.append(f"TB-3 Nhật Chi({chi_ngay}/{chi_hanh}) KHẮC {target_label} -5")
+            elif target_hanh == chi_hanh:
+                score += 3
+                factors.append(f"TB-3 Nhật Chi({chi_ngay}/{chi_hanh}) Tỷ Hòa {target_label} +3")
         
-        # ④ THÁI TUẾ (Lưu Niên) sinh khắc Mệnh Chủ (±6)
-        if can_ngay and chi_nam:
-            nam_hanh = CHI_NGU_HANH.get(chi_nam, '')
-            if can_hanh and nam_hanh:
-                if SINH.get(nam_hanh) == can_hanh:
-                    score += 6
-                    factors.append(f"TB-4 Thái Tuế({chi_nam}/{nam_hanh}) SINH Mệnh +6")
-                elif KHAC.get(nam_hanh) == can_hanh:
-                    score -= 6
-                    factors.append(f"TB-4 Thái Tuế({chi_nam}/{nam_hanh}) KHẮC Mệnh -6")
-                elif nam_hanh == can_hanh:
-                    score += 3
-                    factors.append(f"TB-4 Mệnh đắc Thái Tuế +3")
+        # ④ NGUYỆT LỆNH (Chi Tháng) sinh khắc Dụng Thần (±5)
+        if target_hanh and chi_thang:
+            thang_hanh_tb = CHI_NGU_HANH.get(chi_thang, '')
+            if thang_hanh_tb:
+                if SINH.get(thang_hanh_tb) == target_hanh:
+                    score += 5
+                    factors.append(f"TB-4 Nguyệt Lệnh({chi_thang}/{thang_hanh_tb}) SINH {target_label} +5")
+                elif KHAC.get(thang_hanh_tb) == target_hanh:
+                    score -= 5
+                    factors.append(f"TB-4 Nguyệt Lệnh({chi_thang}/{thang_hanh_tb}) KHẮC {target_label} -5")
+                elif thang_hanh_tb == target_hanh:
+                    score += 4
+                    factors.append(f"TB-4 {target_label} Đắc Nguyệt Lệnh({chi_thang}) +4")
         
-        # ⑤ 12 TRƯỜNG SINH — Mệnh tại Chi Ngày (±8)
-        if can_hanh and chi_ngay:
-            ts_stage, ts_explain = _get_truong_sinh(can_hanh, chi_ngay)
+        # ⑤ 12 TRƯỜNG SINH — Hành Dụng Thần tại Chi Hào DT / Chi Ngày (±8)
+        if target_hanh and target_chi:
+            ts_stage, ts_explain = _get_truong_sinh(target_hanh, target_chi)
             if ts_stage:
                 if ts_stage in ['Đế Vượng', 'Lâm Quan', 'Trường Sinh']:
                     score += 8
-                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] CỰC VƯỢNG +8")
+                    factors.append(f"TB-5 12TrSinh {target_label} tại {target_chi}=[{ts_stage}] CỰC VƯỢNG +8")
                 elif ts_stage in ['Quan Đới', 'Mộc Dục']:
                     score += 4
-                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] KHÁ +4")
+                    factors.append(f"TB-5 12TrSinh {target_label} tại {target_chi}=[{ts_stage}] KHÁ +4")
                 elif ts_stage in ['Tử', 'Mộ', 'Tuyệt']:
                     score -= 8
-                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] CỰC SUY -8")
+                    factors.append(f"TB-5 12TrSinh {target_label} tại {target_chi}=[{ts_stage}] CỰC SUY -8")
                 elif ts_stage in ['Suy', 'Bệnh']:
                     score -= 4
-                    factors.append(f"TB-5 12TrSinh Mệnh ở [{ts_stage}] SUY -4")
+                    factors.append(f"TB-5 12TrSinh {target_label} tại {target_chi}=[{ts_stage}] SUY -4")
                 elif ts_stage == 'Thai':
                     score += 1
-                    factors.append(f"TB-5 12TrSinh Mệnh ở [Thai] khởi đầu mới +1")
+                    factors.append(f"TB-5 12TrSinh {target_label} tại {target_chi}=[Thai] khởi đầu mới +1")
                 elif ts_stage == 'Dưỡng':
                     score += 2
-                    factors.append(f"TB-5 12TrSinh Mệnh ở [Dưỡng] đang nuôi dưỡng +2")
+                    factors.append(f"TB-5 12TrSinh {target_label} tại {target_chi}=[Dưỡng] đang nuôi dưỡng +2")
         
         # ⑥ QUẺ TƯỢNG Cát Hung (±5)
         que_name = ''
@@ -8213,19 +8253,19 @@ class FreeAIHelper:
                         factors.append(f"TB-6 Quẻ [{que_name}] Bình +0")
                     break
         
-        # ⑦ MÙA VƯỢNG SUY — Mệnh Hành vs Mùa hiện tại (±3)
+        # ⑦ MÙA VƯỢNG SUY — Hành Dụng Thần vs Lệnh Tháng chuẩn (±3)
         try:
-            mua_hanh, mua_ten = _get_lenh_thang_hanh()
-            if mua_hanh and can_hanh:
-                if mua_hanh == can_hanh:
+            mua_hanh, mua_ten = _get_lenh_thang_hanh(chi_thang)
+            if mua_hanh and target_hanh:
+                if mua_hanh == target_hanh:
                     score += 3
-                    factors.append(f"TB-7 Mệnh({can_hanh}) ĐẮCL LỆNH {mua_ten} +3")
-                elif SINH.get(mua_hanh) == can_hanh:
+                    factors.append(f"TB-7 {target_label} ĐẮC LỆNH {mua_ten} +3")
+                elif SINH.get(mua_hanh) == target_hanh:
                     score += 2
-                    factors.append(f"TB-7 Mệnh({can_hanh}) được {mua_ten}({mua_hanh}) sinh +2")
-                elif KHAC.get(mua_hanh) == can_hanh:
+                    factors.append(f"TB-7 {target_label} được {mua_ten}({mua_hanh}) sinh +2")
+                elif KHAC.get(mua_hanh) == target_hanh:
                     score -= 3
-                    factors.append(f"TB-7 Mệnh({can_hanh}) bị {mua_ten}({mua_hanh}) khắc -3")
+                    factors.append(f"TB-7 {target_label} bị {mua_ten}({mua_hanh}) khắc -3")
         except Exception:
             pass
         
@@ -8262,8 +8302,8 @@ class FreeAIHelper:
 
         return score, summary, factors
     
-    def _luc_nham_scoring(self, chart_data):
-        """V16.0: Chấm điểm Đại Lục Nhâm — Tam Truyền + Thiên Tướng + Tuần Không."""
+    def _luc_nham_scoring(self, chart_data, dung_than='Bản Thân'):
+        """V101.7: Chấm điểm Đại Lục Nhâm — Tam Truyền + Lục Thân Dụng Thần + Thiên Tướng + Tuần Không."""
         if not chart_data or not isinstance(chart_data, dict):
             return 0, "Không có chart_data", []
         
@@ -8347,43 +8387,41 @@ class FreeAIHelper:
         
         summary = f"LN Điểm={score}, {strength} ({len(factors)} yếu tố: {', '.join(factors[:3])}...)"
         
-        # V27.0: Bo sung Phan Tich Luc Nham
-        # Factor: Sinh khac Tam Truyen voi Can Ngay (chi tiet hon)
+        # V101.7: Phân tích Trung Truyền & Lục Thân Dụng Thần phát dụng trong Tam Truyền (Không cộng trùng Mạt Truyền / 12 Thiên Tướng toàn bàn)
         try:
             trung_hanh = tam_truyen.get('trung_truyen_hanh', '')
-            mat_hanh = tam_truyen.get('mat_truyen_hanh', '')
-            
-            # Trung Truyen (Hien Tai) - trong so trung binh
             if trung_hanh and can_hanh:
                 if SINH.get(trung_hanh) == can_hanh:
-                    score += 5
-                    factors.append(f"LN Trung Truyen sinh Can +5")
+                    score += 4
+                    factors.append(f"LN Trung Truyền sinh Can +4")
                 elif KHAC.get(trung_hanh) == can_hanh:
-                    score -= 5
-                    factors.append(f"LN Trung Truyen khac Can -5")
+                    score -= 4
+                    factors.append(f"LN Trung Truyền khắc Can -4")
             
-            # Mat Truyen (Tuong Lai) - trong so thap
-            if mat_hanh and can_hanh:
-                if SINH.get(mat_hanh) == can_hanh:
-                    score += 3
-                    factors.append(f"LN Mat Truyen sinh Can +3 (tuong lai tot)")
-                elif KHAC.get(mat_hanh) == can_hanh:
-                    score -= 3
-                    factors.append(f"LN Mat Truyen khac Can -3 (tuong lai xau)")
-            
-            # Thien Tuong
-            thien_tuong = ln_data.get('thien_tuong', {})
-            if thien_tuong:
-                for tt_name, tt_val in thien_tuong.items():
-                    if isinstance(tt_val, dict) and tt_val.get('cat_hung'):
-                        ch = str(tt_val['cat_hung'])
-                        if 'Cat' in ch or 'Cát' in ch:
-                            score += 2
-                            factors.append(f"LN Thien Tuong {tt_name} Cat +2")
-                        elif 'Hung' in ch:
-                            score -= 2
-                            factors.append(f"LN Thien Tuong {tt_name} Hung -2")
-                        if len(factors) > 20:
+            # Kiểm tra Dụng Thần (Lục Thân) có xuất hiện trong Tam Truyền hay không
+            if dung_than and dung_than != 'Bản Thân' and can_hanh:
+                _LN_DT_HANH_MAP = {
+                    'Phụ Mẫu': next((h for h, s in SINH.items() if s == can_hanh), ''),
+                    'Tử Tôn': SINH.get(can_hanh, ''),
+                    'Quan Quỷ': next((h for h, k in KHAC.items() if k == can_hanh), ''),
+                    'Thê Tài': KHAC.get(can_hanh, ''),
+                    'Huynh Đệ': can_hanh,
+                }
+                _dt_hanh_ln = _LN_DT_HANH_MAP.get(dung_than, '')
+                if _dt_hanh_ln:
+                    _truyen_list = [
+                        ('Sơ Truyền', tam_truyen.get('so_truyen', ''), tam_truyen.get('so_truyen_hanh', '')),
+                        ('Trung Truyền', tam_truyen.get('trung_truyen', ''), tam_truyen.get('trung_truyen_hanh', '')),
+                        ('Mạt Truyền', tam_truyen.get('mat_truyen', ''), tam_truyen.get('mat_truyen_hanh', '')),
+                    ]
+                    for _t_name, _t_chi, _t_hanh in _truyen_list:
+                        if _t_hanh == _dt_hanh_ln:
+                            if _t_chi in tuan_khong:
+                                score -= 6
+                                factors.append(f"LN Dụng Thần {dung_than}({_t_chi}) hiện tại {_t_name} nhưng lâm Tuần Không -6")
+                            else:
+                                score += 6
+                                factors.append(f"LN Dụng Thần {dung_than}({_t_chi}) phát dụng tại {_t_name} +6")
                             break
         except Exception:
             pass
@@ -14308,7 +14346,7 @@ class FreeAIHelper:
         except Exception:
             pass
         try:
-            tb_s, tb_sum, v24_tb_factors = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data)
+            tb_s, tb_sum, v24_tb_factors = self._thiet_ban_scoring(chart_data, luc_hao_data, mai_hoa_data, dung_than)
             v16_tb_score_str = tb_sum
             v16_tb_raw = tb_s
             thiet_ban_verdict = _score_to_canonical_verdict(tb_s)
@@ -14317,7 +14355,7 @@ class FreeAIHelper:
         except Exception:
             pass
         try:
-            ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data)
+            ln_s, ln_sum, v24_ln_factors = self._luc_nham_scoring(chart_data, dung_than)
             v16_ln_score_str = ln_sum
             v16_ln_raw = ln_s
             luc_nham_verdict = _score_to_canonical_verdict(ln_s)
@@ -14378,15 +14416,17 @@ class FreeAIHelper:
                 'nhập trạch', 'xuất hành', 'ký hợp đồng', 'ký kết', 'chọn ngày', 'giờ nào', 'mở hàng', 'khởi công'
             ]
         )
+        # V101.7: 4 Hệ thống Bói Quẻ Thời Khắc Thực Tế (Lục Hào, Kỳ Môn, Mai Hoa, Đại Lục Nhâm) giữ >=85% trọng số quyết định;
+        # Các hệ thống Vĩ mô / Bổ trợ (Thái Ất, Thiết Bản, Xem Ngày khi không hỏi ngày, Tử Vi khi không nhập ngày sinh) giữ trọng số nhỏ để KHÔNG làm lệch kết quả quẻ.
         weights = {
-            'KM': method_w.get('ky_mon', 55),
+            'KM': method_w.get('ky_mon', 85),
             'LH': method_w.get('luc_hao', 100),
-            'MH': method_w.get('mai_hoa', 70),
-            'TB': method_w.get('thiet_ban', 40),
-            'LN': method_w.get('luc_nham', 50),
-            'TA': method_w.get('thai_at', 35),
-            'XN': method_w.get('xem_ngay', 45) if _is_date_action_q else 8,
-            'TV': method_w.get('tu_vi', 50) if locals().get('_has_personal_tv') else 8,
+            'MH': method_w.get('mai_hoa', 75),
+            'LN': method_w.get('luc_nham', 65),
+            'TB': min(18, method_w.get('thiet_ban', 18)),
+            'TA': 10,
+            'XN': method_w.get('xem_ngay', 45) if _is_date_action_q else 6,
+            'TV': method_w.get('tu_vi', 50) if locals().get('_has_personal_tv') else 6,
         }
         
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
@@ -18928,7 +18968,8 @@ class FreeAIHelper:
                         if _luc_thu and _luc_thu in LUC_THAN_DEEP:
                             _ltd = LUC_THAN_DEEP[_luc_thu]
                             # Xét vượng/suy dựa trên Ngũ Hành Lục Thần vs lệnh tháng
-                            _lenh = _get_lenh_thang_hanh()
+                            _lenh_tup = _get_lenh_thang_hanh(chi_thang)
+                            _lenh = _lenh_tup[0] if isinstance(_lenh_tup, tuple) else _lenh_tup
                             _ltd_hanh = _ltd['hanh']
                             if _lenh == _ltd_hanh or SINH.get(_lenh) == _ltd_hanh:
                                 lines.append(f"  → 🎭 **{_luc_thu} (VƯỢNG):** {_ltd['vuong']}")
@@ -19427,15 +19468,15 @@ class FreeAIHelper:
                     if uk_info:
                         lines.append(f"  ⏰ Ứng Kỳ: {uk_info.get('giai_thich', '')} (tốc độ: {uk_info.get('toc_do', '?')})")
         
-        # ====== V9.0: LỆNH THÁNG VƯỢNG SUY ======
+        # ====== V101.7: LỆNH THÁNG VƯỢNG SUY (Chuẩn Chi Tháng) ======
         lenh_hanh, lenh_mua = _get_lenh_thang_hanh()
         if the_el and the_el != '?':
-            if the_el == lenh_hanh:
+            if the_el == lenh_hanh or SINH.get(lenh_hanh) == the_el:
                 lines.append(f"\n**🌿 LỆNH THÁNG:** {lenh_mua} — {lenh_hanh} vượng")
-                lines.append(f"  → Thể quái ({the_el}) ĐANG VƯỢNG theo mùa = Sức mạnh TĂNG GẤP ĐÔI! ✅")
+                lines.append(f"  → Thể quái ({the_el}) ĐẮC LỆNH / ĐƯỢC THÁNG SINH = Nền tảng vững chắc! ✅")
                 if verdict == "HUNG":
                     verdict = "BÌNH"
-                    reason += " + Thể vượng lệnh"
+                    reason += " + Thể đắc lệnh"
             elif KHAC.get(lenh_hanh) == the_el:
                 lines.append(f"\n**🍂 LỆNH THÁNG:** {lenh_mua} — {lenh_hanh} vượng")
                 lines.append(f"  → Thể quái ({the_el}) BỊ KHẮC bởi Lệnh Tháng ({lenh_hanh}) = SUY YẾU ⚠️")
@@ -19443,37 +19484,31 @@ class FreeAIHelper:
                     verdict = "BÌNH"
                     reason += " + Thể suy lệnh"
         
-        # ====== V9.0: HỖ QUÁI SINH KHẮC THỂ ======
-        ho_el = None
-        ho_name_for_check = mai_hoa_data.get('ten_ho', '')
-        if ho_name_for_check:
-            ho_yn_check = QUAI_Y_NGHIA.get(ho_name_for_check, {})
-            ho_el = ho_yn_check.get('hanh', '')
+        # ====== V101.7: HỖ QUÁI SINH KHẮC THỂ (Lấy trực tiếp hanh_ho) ======
+        ho_el = mai_hoa_data.get('hanh_ho', '')
         if ho_el and the_el and the_el != '?':
             if SINH.get(ho_el) == the_el:
                 lines.append(f"\n**🤝 HỖ QUÁI SINH THỂ:** Hỗ ({ho_el}) sinh Thể ({the_el})")
-                lines.append(f"  → Có QUÝ NHÂN ẨN giúp đỡ, sự việc có nền tảng bên trong! ✅")
+                lines.append(f"  → Có QUÝ NHÂN ẨN giúp đỡ, quá trình diễn biến thuận lợi! ✅")
             elif KHAC.get(ho_el) == the_el:
                 lines.append(f"\n**⚠️ HỖ QUÁI KHẮC THỂ:** Hỗ ({ho_el}) khắc Thể ({the_el})")
-                lines.append(f"  → Có TRỞ NGẠI ẨN chưa thấy, bên trong có vấn đề ngầm!")
+                lines.append(f"  → Quá trình trung gian có TRỞ NGẠI ẨN, cần thận trọng!")
+            elif ho_el == the_el:
+                lines.append(f"\n**🤝 HỖ QUÁI TỶ HÒA THỂ:** Hỗ ({ho_el}) đồng hành Thể ({the_el}) → Nội lực ổn định ✅")
         
-        # ====== V9.0: BIẾN QUÁI SINH KHẮC THỂ ======
-        ten_bien = mai_hoa_data.get('ten_qua_bien', '')
-        if ten_bien:
-            # Tìm quái biến trong QUAI_Y_NGHIA
-            bien_parts = ten_bien.split()
-            for bp in bien_parts:
-                bien_yn = QUAI_Y_NGHIA.get(bp, {})
-                if bien_yn:
-                    bien_el = bien_yn.get('hanh', '')
-                    if bien_el and the_el and the_el != '?':
-                        if SINH.get(bien_el) == the_el:
-                            lines.append(f"\n**🔮 BIẾN QUÁI SINH THỂ:** Biến ({bien_el}) sinh Thể ({the_el})")
-                            lines.append(f"  → Kết cục TỐT HƠN dự kiến, có chuyển biến tích cực! ✅")
-                        elif KHAC.get(bien_el) == the_el:
-                            lines.append(f"\n**🔮 BIẾN QUÁI KHẮC THỂ:** Biến ({bien_el}) khắc Thể ({the_el})")
-                            lines.append(f"  → Kết cục XẤU HƠN, hậu quả lâu dài, cần đề phòng! ⚠️")
-                    break
+        # ====== V101.7: BIẾN QUÁI SINH KHẮC THỂ (Lấy trực tiếp hanh_bien) ======
+        bien_el = mai_hoa_data.get('hanh_bien', '')
+        if bien_el and the_el and the_el != '?':
+            if SINH.get(bien_el) == the_el:
+                lines.append(f"\n**🔮 BIẾN QUÁI SINH THỂ:** Biến ({bien_el}) sinh Thể ({the_el})")
+                lines.append(f"  → Kết cục TỐT HƠN dự kiến, có chuyển biến tích cực! ✅")
+            elif KHAC.get(bien_el) == the_el:
+                lines.append(f"\n**🔮 BIẾN QUÁI KHẮC THỂ:** Biến ({bien_el}) khắc Thể ({the_el})")
+                lines.append(f"  → Kết cục XẤU HƠN, hậu quả về sau cần đề phòng! ⚠️")
+            elif KHAC.get(the_el) == bien_el:
+                lines.append(f"\n**🔮 THỂ KHẮC BIẾN QUÁI:** Thể ({the_el}) chế phục Biến ({bien_el}) → Làm chủ kết cục cuối cùng! ✅")
+            elif SINH.get(the_el) == bien_el:
+                lines.append(f"\n**🔮 THỂ SINH BIẾN QUÁI:** Thể ({the_el}) sinh Biến ({bien_el}) → Kết cục hao tổn sức lực/chi phí.")
         
         # ====== V9.0: ỨNG KỲ MAI HOA ======
         if the_el and the_el != '?':
