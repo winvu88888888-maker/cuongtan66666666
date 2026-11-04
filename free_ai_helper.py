@@ -5594,15 +5594,26 @@ class FreeAIHelper:
                 question_type = 'YESNO'
                 question_type_label = 'CÂU HỎI CÓ/KHÔNG hoặc PHÂN TÍCH TRỌNG TÂM'
             
-            # ═══ PHẦN 4: V99.9 GEMINI PROMPT — TRỰC DIỆN, ĐÚNG TRỌNG TÂM 100%, KHÔNG BỊ CẮT CÂU ═══
+            # ═══ PHẦN 4: V100.4 GEMINI PROMPT — GHÉP 14 HỆ THỐNG ĐÔNG-TÂY THÀNH 1 BỨC TRANH TOÀN CẢNH 7 VỊ TRÍ ═══
+            _vb_prompt_str = (
+                f"{_omni_dict_on.get('gender', 'NAM GIỚI')} — {_omni_dict_on.get('age_tier', 'DƯỚI 45 TUỔI')}"
+                if _is_factual_who_age
+                else f"{_vb_label} ({_vb_pct_int}%)"
+            )
             deep_prompt = (
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V99.9 — CHUYÊN GIA LUẬN GIẢI HUYỀN HỌC ĐA HỆ THỐNG CẤP ĐỘ CAO NHẤT.\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V100.4 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY.\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
-                f"1. TRẢ LỜI TRỰC DIỆN 100% VÀO ĐÚNG TRỌNG TÂM CÂU HỎI '{question}'. Hỏi chuyện tình cảm/vợ chồng thì chỉ phân tích tâm lý, tình cảm, sự gắn kết vợ chồng; hỏi tài lộc thì chỉ phân tích tiền bạc/đầu tư; hỏi bệnh tật thì chỉ phân tích bệnh lý/y dịch; hỏi tìm đồ thì chỉ phân tích vị trí/phương hướng. TUYỆT ĐỐI KHÔNG nói lan man sang đồ vật, tuổi tác hay bệnh tật nếu người dùng không hỏi!\n"
-                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT & TỶ LỆ %: Bắt buộc giữ nguyên kết quả '{_vb_label} ({_vb_pct_int}%)' trong <verdict_block>.\n"
-                f"3. CẤM MỞ ĐẦU RƯỜM RÀ: Không chào hỏi ('Kính chào quý vị...'), bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
-                f"4. VIẾT TRỌN VẸN, SÂU SẮC, MẠCH LẠC: Mỗi mục xuống dòng rõ ràng, giải thích thấu đáo căn cứ từ Kỳ Môn, Lục Hào, Mai Hoa, Tử Vi và Hội Đồng Chuyên Gia AI.\n"
+                f"1. GHÉP CÁC PHƯƠNG PHÁP THÀNH MỘT BỨC TRANH THỐNG NHẤT (7 VỊ TRÍ TỌA ĐỘ): Không liệt kê rời rạc từng môn mà phải đặt mỗi phương pháp vào đúng vị trí sở trường tuyệt đối của nó:\n"
+                f"   - Vị trí 1 (Con người & Bản chất Thành/Bại): Dùng Lục Hào Nạp Giáp + Chiêm Tinh Horary Phương Tây.\n"
+                f"   - Vị trí 2 (Không gian, Phương hướng & Hiện trường): Dùng Kỳ Môn Độn Giáp + Huyền Không Phi Tinh Vận 9.\n"
+                f"   - Vị trí 3 (Trục thời gian Quá khứ -> Hiện tại -> Tương lai): Dùng Đại Lục Nhâm Tam Truyền + Mai Hoa Dịch Số.\n"
+                f"   - Vị trí 4 (Hình tướng, Tuổi tác, Đặc điểm & Số lượng): Dùng Vạn Vật Loại Tượng + Thiết Bản Thần Số + 12 Trường Sinh.\n"
+                f"   - Vị trí 5 (Đồng hồ Điểm hẹn Ứng kỳ): Dùng Động cơ Ứng Kỳ + Chiêm Tinh Vệ Đà Ấn Độ KP Sub-Lord.\n"
+                f"   - Vị trí 6 (Thời thế Vĩ mô & Chiến lược Công/Thủ): Dùng Thái Ất Thần Số + Tử Vi Đẩu Số + Trạch Cát.\n"
+                f"   - Vị trí 7 (Chìa khóa Hóa giải & Xác suất Bayes): Dùng Bát Tự Điều Hầu Cùng Thông Bảo Giám + Toán học Hội tụ Bayes.\n"
+                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT: Bắt buộc giữ nguyên kết luận '{_vb_prompt_str}' trong <verdict_block>. Nếu là câu hỏi Giới tính / Độ tuổi thì trả lời thẳng Giới tính & Độ tuổi, CẤM ghi 'CẦN CÂN NHẮC — BÌNH'.\n"
+                f"3. CẤM MỞ ĐẦU RƯỜM RÀ: Bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
                 f"</system_role>\n\n"
                 
                 f"<question>\n"
@@ -5619,16 +5630,16 @@ class FreeAIHelper:
                 f"</verdict_block>\n\n"
                 
                 f"<output_format>\n"
-                f"BẮT BUỘC TRÌNH BÀY BẰNG VĂN XUÔI MẠCH LẠC, DỄ ĐỌC, DỄ HIỂU (TUYỆT ĐỐI KHÔNG LIỆT KÊ MÃ ĐIỂM SỐ +8, -10 HAY GẠCH ĐẦU DÒNG RỜI RẠC):\n\n"
+                f"BẮT BUỘC TRÌNH BÀY BẰNG VĂN XUÔI MẠCH LẠC, GHÉP KHÍT THÀNH 1 BỨC TRANH TOÀN CẢNH DỄ ĐỌC, DỄ HIỂU:\n\n"
                 f"### 🏆 KẾT LUẬN\n"
-                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Kèm Phán Quyết {_vb_label} ({_vb_pct_int}%)]\n"
-                f"**📋 VÌ SAO:** [Viết thành 1 đoạn văn ngắn gọn, mượt mà, dễ hiểu giải thích nguyên nhân cốt lõi từ quẻ tác động trực tiếp đến '{question}']\n"
-                f"**⏳ ỨNG KỲ:** [Ghi rõ mốc thời gian ứng nghiệm hoặc chuyển biến dựa trên Ứng Kỳ trong verdict_block]\n"
-                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động thực tế, gần gũi, sát hoàn cảnh câu hỏi '{question}']\n\n"
-                f"### 🔮 BÀI LUẬN GIẢI CHUYÊN SÂU (VIẾT THÀNH 3 ĐOẠN VĂN LIỀN MẠCH, DỄ ĐỌC, DỄ HIỂU)\n"
-                f"**Đoạn 1 — Bản chất thực tế & Tâm lý/Tình thế trọng tâm:** [Viết 1 đoạn văn liền mạch phân tích sâu bản chất câu hỏi '{question}' dựa trên sự kết hợp giữa Kỳ Môn Độn Giáp, Lục Hào và Mai Hoa Dịch Số bằng ngôn ngữ đời thường, sâu sắc, dễ hiểu]\n\n"
-                f"**Đoạn 2 — Đối chiếu vận trình từ 10 Hệ Thống & Hội Đồng Chuyên Gia:** [Viết 1 đoạn văn liền mạch kết nối nhận định của Đại Lục Nhâm, Thái Ất, Thiết Bản, Tử Vi và Hội Đồng Chuyên Gia AI để làm rõ diễn biến từ hiện tại đến tương lai]\n\n"
-                f"**Đoạn 3 — Cẩm nang ứng xử, Thời điểm & Hóa giải:** [Viết 1 đoạn văn liền mạch đưa ra lời khuyên cụ thể, tinh tế giúp người hỏi đạt kết quả tốt đẹp nhất]\n"
+                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Khẳng định rõ kết quả '{_vb_prompt_str}']\n"
+                f"**📋 VÌ SAO:** [Viết 1 đoạn văn ghép nối mạch lạc: Vị trí 1 (Con người/Bản chất qua Lục Hào & Horary), Vị trí 2 (Không gian/Hướng qua Kỳ Môn & Huyền Không), Vị trí 3 (Quá khứ-Hiện tại-Tương lai qua Đại Lục Nhâm & Mai Hoa) và Vị trí 4 (Đặc điểm/Tuổi tác/Số lượng qua Vạn Vật & 12 Trường Sinh)]\n"
+                f"**⏳ ỨNG KỲ:** [Vị trí 5: Ghi rõ mốc thời gian ứng nghiệm dựa trên Ứng Kỳ & Tinh tú Vệ Đà KP Sub-Lord trong verdict_block]\n"
+                f"**🔧 GIẢI PHÁP:** [Vị trí 6 & 7: Chiến lược Tiến/Lùi theo Thái Ất - Tử Vi và Pháp quyết hóa giải theo Bát Tự Điều Hầu & phương vị Cát lợi]\n\n"
+                f"### 🔮 BỨC TRANH TOÀN CẢNH ĐÔNG - TÂY HỢP NHẤT (3 ĐOẠN VĂN LIỀN MẠCH)\n"
+                f"**Đoạn 1 — Tâm điểm Con người, Không gian & Nội tình (Lục Hào + Horary + Kỳ Môn + Huyền Không Vận 9):** [Phân tích sâu chủ thể, đối phương và không gian phương hướng hiện trường của '{question}']\n\n"
+                f"**Đoạn 2 — Trục thời gian 3 Thời & Định lượng Vạn Vật (Đại Lục Nhâm + Mai Hoa + Thiết Bản + Vedic KP):** [Làm rõ diễn biến từ nguyên nhân quá khứ, nút thắt hiện tại đến kết cục tương lai và điểm hẹn ứng kỳ]\n\n"
+                f"**Đoạn 3 — Chiến lược Vĩ mô, Pháp quyết Điều Hầu & Hội tụ Bayes:** [Đưa ra cẩm nang hành động cụ thể, phương hướng, màu sắc và thời cơ giúp người hỏi làm chủ hoàn toàn cục diện]\n"
                 f"</output_format>\n\n"
             )
             
@@ -15953,7 +15964,7 @@ class FreeAIHelper:
                 _online_verdict_line = _re_clean_v100.sub(r'(?:Tuy nhiên,\s*)?(?:cần\s*)?CÂN NHẮC\s*[—\-]\s*BÌNH[^.]*\.?', '', _online_verdict_line, flags=_re_clean_v100.IGNORECASE).strip()
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:26px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.3)</div>'
+                f'<div style="font-size:1.2em;font-weight:700;color:#fde68a;margin-bottom:10px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.4)</div>'
                 f'<div style="font-size:1.75em;font-weight:900;color:#ffffff;line-height:1.35;margin-bottom:12px;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16664,7 +16675,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG TÂY & 40 CHUYÊN GIA AI — V100.3</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.4</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off_v_color};line-height:1.3;margin-bottom:10px;">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</div>'
                     f'<div style="font-size:1.08em;color:#ffffff;margin-bottom:12px;padding:15px 18px;background:rgba(0,0,0,0.36);border-radius:12px;border-left:5px solid {_off_v_color};line-height:1.72;text-align:justify;">'
                     + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
@@ -17437,7 +17448,7 @@ class FreeAIHelper:
 
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:26px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG TÂY & 40 CHUYÊN GIA AI — V100.3</div>'
+                    f'<div style="font-size:1.18em;font-weight:800;color:#6ee7b7;margin-bottom:8px;">🔮 ĐẠI PHÁN QUYẾT BỨC TRANH TOÀN CẢNH 14 HỆ THỐNG (7 VỊ TRÍ TỌA ĐỘ) — V100.4</div>'
                     f'<div style="font-size:2em;font-weight:900;color:{_off2_v_color};line-height:1.3;margin-bottom:10px;">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</div>'
                     + _combined_direct_html
                     + ''
