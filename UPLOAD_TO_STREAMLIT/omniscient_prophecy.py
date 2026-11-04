@@ -577,7 +577,7 @@ def build_omniscient_prophecy(
         'người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái',
         'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức',
         'con cái', 'có mấy người con', 'bao nhiêu người con'
-    ]) or ('con' in _q_low_om and any(w in _q_low_om for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+    ]) or (('con' in _q_low_om and not any(bad in _q_low_om for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in _q_low_om for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
 
     # Phân tích Quẻ Chủ, Quẻ Hỗ, Quẻ Biến, Hào Tử Tôn và Cung Kỳ Môn để tính số con & trai/gái:
     _YANG_TRIGRAMS = {'Càn': 'Cha/Nam (Dương Kim)', 'Chấn': 'Trưởng Nam (Con trai lớn)', 'Khảm': 'Trung Nam (Con trai thứ)', 'Cấn': 'Thiếu Nam (Con trai út)'}
@@ -736,7 +736,7 @@ def build_omniscient_prophecy(
     )
     _is_posture_state_q = any(w in _q_low_om for w in ['đứng hay ngồi', 'ngồi hay đứng', 'nằm hay ngồi', 'ngồi hay nằm', 'đang đứng hay', 'đang ngồi hay', 'đang nằm hay', 'ngủ hay thức', 'thức hay ngủ'])
     _is_true_false_q = any(w in _q_low_om for w in ['thật hay giả', 'giả hay thật', 'nói thật hay', 'nói dối hay', 'có thật không', 'thật không'])
-    _is_done_yet_q = any(w in _q_low_om for w in ['rồi hay chưa', 'chưa hay rồi', 'ăn cơm chưa', 'ăn chưa', 'về chưa', 'đi chưa', 'xong chưa'])
+    _is_done_yet_q = any(w in _q_low_om for w in ['rồi hay chưa', 'chưa hay rồi', 'hay chưa', 'ăn cơm chưa', 'ăn chưa', 'về chưa', 'đi chưa', 'xong chưa', 'đã ăn', 'đã về', 'đã đi'])
 
     is_binary_factual_q = False
     binary_verdict_headline = ""
@@ -784,23 +784,25 @@ def build_omniscient_prophecy(
                     _loc_evidences.append(
                         f"<b>Lục Hào (Hào Công ty bị Tuần Không):</b> Hào <b>Quan Quỷ</b> (đại diện cho Công ty/Cơ quan) tại Hào {_idx_h} (<b>{_chi_h}</b>) rơi vào <b>Tuần Không ({', '.join(_kv_om)})</b> — chứng tỏ vị trí ở công ty đang trống không, bạn <b>KHÔNG có mặt ở công ty</b>"
                     )
-                elif _is_d_h:
-                    _work_pts += 3
-                    _loc_evidences.append(f"<b>Lục Hào:</b> Hào <b>Quan Quỷ</b> (Công ty) tại Hào {_idx_h} ({_chi_h}) phát động hữu khí")
+                else:
+                    if _is_d_h or 'Thế' in _tu_h or _idx_h in (4, 5, 6):
+                        _work_pts += 3
+                        _loc_evidences.append(f"<b>Lục Hào (Hào Công sở đắc vị):</b> Hào <b>Quan Quỷ</b> (Công ty/Cơ quan) tại Hào {_idx_h} ({_chi_h}) không phạm Tuần Không và đang hoạt động hữu khí trên trục Ngoại Quái/Thế")
             if 'Tử Tôn' in _lt_h and _is_d_h:
                 _home_pts += 4
                 _loc_evidences.append(
                     f"<b>Lục Hào (Hào Nghỉ ngơi ở nhà phát động):</b> Hào {_idx_h} <b>Tử Tôn ({_chi_h})</b> — đại diện cho sự nghỉ ngơi, thoải mái tại gia — phát động mạnh khắc trực tiếp hào <b>Quan Quỷ (Công ty)</b>"
                 )
-            if 'Phụ Mẫu' in _lt_h and ('Thế' in _tu_h or _is_d_h):
+            if 'Phụ Mẫu' in _lt_h and ('Thế' in _tu_h or _idx_h == 2):
                 _home_pts += 2
-                _loc_evidences.append(f"<b>Lục Hào (Hào Gia trạch):</b> Hào <b>Phụ Mẫu ({_chi_h} — Nhà cửa/Mái ấm)</b> vượng khí che chở")
+                _loc_evidences.append(f"<b>Lục Hào (Hào Gia trạch):</b> Hào <b>Phụ Mẫu ({_chi_h} — Nhà cửa/Mái ấm)</b> tọa tại {'Hào Thế' if 'Thế' in _tu_h else 'Hào 2 Trạch vị'}")
             if 'Thế' in _tu_h:
                 if _idx_h in (1, 2, 3):
                     _home_pts += 2
                     _loc_evidences.append(f"<b>Vị trí Hào Thế:</b> Hào Thế đóng ở <b>Nội Quái (Hào {_idx_h})</b> — tượng người đang ở bên trong nhà (Tại gia)")
                 else:
-                    _work_pts += 1
+                    _work_pts += 2
+                    _loc_evidences.append(f"<b>Vị trí Hào Thế:</b> Hào Thế đóng ở <b>Ngoại Quái (Hào {_idx_h})</b> — tượng người đang ở bên ngoài / nơi làm việc")
 
         _nhat_cung_om = target_cung
         for _c_k, _c_v in ctb.items():
@@ -883,7 +885,7 @@ def build_omniscient_prophecy(
         binary_when_note = f"Khung giờ ứng nghiệm liên quan: <b>{uk_hour}</b>."
         binary_action_advice = f"Hướng không gian liên quan trực tiếp: <b>{c_info['huong']}</b>."
 
-    elif (" hay " in _q_low_om) and not _is_quit_work_q and not _is_who_age_q and not _is_children_q and not any(w in _q_low_om for w in ['hay không', 'có nên']):
+    elif (" hay " in _q_low_om) and not _is_quit_work_q and not _is_who_age_q and not _is_children_q and not any(w in _q_low_om for w in ['hay không', 'có nên', 'mưa hay nắng', 'nắng hay mưa', 'thời tiết', 'thắng hay', 'ai thắng', 'đối phương thắng', 'vụ kiện', 'tranh chấp', 'cao hay thấp', 'béo hay gầy']):
         # Bộ giải mã tổng quát cho MỌI câu hỏi lựa chọn "Phương án A hay Phương án B"
         import re as _re_ab
         _m_ab = _re_ab.search(r'(?:đang\s+|là\s+|nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', _q_low_om)
@@ -1109,7 +1111,14 @@ def build_omniscient_prophecy(
             'objects': combined_objects,
             'colors': h_forensic['mau_sac'],
             'materials': h_forensic['chat_lieu'],
+            'material': h_forensic['chat_lieu'],
+            'shape': h_forensic['hinh_dang'],
             'condition': item_condition,
+            'item_condition': item_condition,
+            'appearance': appearance_str,
+            'personality': appearance_str,
+            'career': h_forensic.get('nghe_nghiep', ''),
+            'motive': motive_str,
             'quantity': quantity_str,
             'exact_timestamp': uk_exact,
             'minute': uk_minute,

@@ -727,9 +727,9 @@ import re as _re
 # Từ vô nghĩa / filler / noise thường gặp trong câu hỏi
 _NOISE_WORDS = {
     # Filler / padding
-    'ạ', 'á', 'ơi', 'nhé', 'hen', 'ha', 'hả', 'nhỉ', 'đi', 'thôi',
-    'vậy đó', 'đấy', 'nè', 'nghe', 'xem', 'giúp', 'giùm', 'dùm', 'hộ',
-    'với', 'luôn', 'rồi', 'đây', 'kìa', 'kia', 'chút', 'xíu', 'tí', 'tý',
+    'ạ', 'á', 'ơi', 'nhé', 'hen', 'ha', 'hả', 'nhỉ', 'thôi',
+    'vậy đó', 'đấy', 'nè', 'giúp', 'giùm', 'dùm', 'hộ',
+    'kìa', 'chút', 'xíu', 'tí', 'tý',
     # Lịch sự thừa (dài→ngắn)
     'cho tôi hỏi', 'cho em hỏi', 'em muốn hỏi', 'tôi muốn hỏi',
     'mình muốn hỏi', 'hỏi xíu', 'hỏi chút', 'hỏi tí', 'hỏi tý',

@@ -5525,7 +5525,7 @@ class FreeAIHelper:
             _is_fake_on = bool(_omni_dict_on.get('is_fake'))
             _auth_warns_on = _omni_dict_on.get('auth_warnings') or []
             _is_bin_fact_on = bool(_omni_dict_on.get('is_binary_factual_q'))
-            _is_children_q_on = (not _is_bin_fact_on) and (bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_lower_online and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])))
+            _is_children_q_on = (not _is_bin_fact_on) and (bool(_omni_dict_on.get('is_children_question')) or any(kw in q_lower_online for kw in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_lower_online and not any(bad in q_lower_online for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(kw in q_lower_online for kw in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])))
             _is_factual_who_age = (not _is_bin_fact_on) and (not _is_children_q_on) and ((_qtype in ('WHO', 'AGE')) or any(kw in q_lower_online for kw in ['nam hay nữ', 'trai hay gái', 'giới tính', 'bao nhiêu tuổi', 'mấy tuổi']))
             if _is_bin_fact_on:
                 _bf_head = _omni_dict_on.get('binary_verdict_headline', '')
@@ -16044,6 +16044,35 @@ class FreeAIHelper:
         except Exception as _e_nb:
             self.log_step("V100.0 Brain", "ERROR", str(_e_nb)[:80])
 
+        # V101.4: KÍCH HOẠT HỆ THỐNG SONG NÃO AI 2 TẦNG (AI SỐ 1 ĐỌC HIỂU CÂU HỎI -> AI SỐ 2 ĐỐI CHỨNG QUẺ & SUY LUẬN)
+        _dual_agent_banner_html = ""
+        try:
+            from dual_ai_agents import QuestionReaderAI, HexagramReasoningAI
+            _q_blueprint = QuestionReaderAI.analyze_question(
+                question=question,
+                dung_than_hint=dung_than,
+                category_hint=detected_category,
+            )
+            _dual_verified = HexagramReasoningAI.cross_verify_and_reason(
+                blueprint=_q_blueprint,
+                dung_than=dung_than,
+                weighted_pct=weighted_pct,
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {},
+                auth_warnings=locals().get('auth_warnings', []),
+                is_fake=locals().get('is_fake', False),
+                narrative_summary=_narrative_main,
+            )
+            _dual_agent_banner_html = _dual_verified.get("dual_agent_html", "")
+            if isinstance(offline_analysis_data, dict) and _dual_verified.get("online_directive"):
+                offline_analysis_data['deep_classical_dossier'] = (
+                    _dual_verified["online_directive"] + "\n" + str(offline_analysis_data.get('deep_classical_dossier', ''))
+                )
+        except Exception as _e_dual:
+            self.log_step("V101.4 DualAI", "ERROR", str(_e_dual)[:80])
+
         def _format_md_for_html_details(_md_text: str) -> str:
             if not _md_text:
                 return ""
@@ -16218,7 +16247,7 @@ class FreeAIHelper:
             # === Ô NÂU TO — KẾT LUẬN AI ONLINE V100.6 (BỐ CỤC 3 THẺ TRỰC QUAN — NHÌN PHÁT BIẾT NGAY CÂU TRẢ LỜI) ===
             import re as _re_clean_v100
             _q_low_on_box = question.lower() if question else ''
-            _is_child_box = any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in _q_low_on_box and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+            _is_child_box = any(w in _q_low_on_box for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in _q_low_on_box and not any(bad in _q_low_on_box for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in _q_low_on_box for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
             _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
             _is_bin_fact_box = bool(_omni_ch_data.get('is_binary_factual_q'))
             if _is_bin_fact_box and _omni_ch_data.get('binary_verdict_headline'):
@@ -16266,6 +16295,13 @@ class FreeAIHelper:
                     _km_cite_on = f"Kỳ Môn Cung {_tc_on} (Sao {_s_o}, Cửa {_c_o}, Thần {_t_o})"
                 _hex_cite_parts = [p for p in [f"Quẻ {_q_chu_on}" + (f" ➔ {_q_bien_on}" if _q_bien_on else "") if _q_chu_on else "", _dt_hao_on, _km_cite_on] if p]
                 _hex_cite_str = " · ".join(_hex_cite_parts)
+                # Đồng bộ Câu Trả Lời Trọng Tâm từ Bộ Khớp 25 Dạng Câu Hỏi (_narrative_main) sang Ô Nâu Online nếu Gemini trả lời chung chung "CẦN CÂN NHẮC — BÌNH"
+                if _narrative_main and ('👉 ' in _narrative_main):
+                    _m_hero_vh = _re_clean_v100.search(r'👉\s*(.+?)</div>', _narrative_main)
+                    if _m_hero_vh:
+                        _hero_vh_clean = _re_clean_v100.sub(r'<[^>]+>', '', _m_hero_vh.group(1)).strip()
+                        if _hero_vh_clean and ('CẦN CÂN NHẮC' in _online_verdict_line.upper() or 'giằng co' in _online_verdict_line.lower() or len(_online_verdict_line) < 12):
+                            _online_verdict_line = _hero_vh_clean
                 if _online_visao and _hex_cite_str:
                     _vs_low = _online_visao.lower()
                     if not any(k in _vs_low for k in ['quẻ ', 'hào ', 'cung ', 'môn', 'tuần không', 'dụng thần']):
@@ -16300,7 +16336,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.2 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.4 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17012,7 +17048,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.2)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.4)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
@@ -17038,6 +17074,7 @@ class FreeAIHelper:
             final_parts.append("")
             
             if auth_html: final_parts.insert(0, auth_html)
+            if locals().get('_dual_agent_banner_html'): final_parts.insert(0, _dual_agent_banner_html)
             return "\n".join(final_parts)
         else:
             # AI Online không khả dụng → Hiện KếT LUẬN trực tiếp, offline chi tiết ẩn sau
@@ -17786,7 +17823,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.2)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V101.4)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"]) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html
@@ -17824,6 +17861,7 @@ class FreeAIHelper:
             final_parts.append("\n</details>")
             final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
             if auth_html: final_parts.insert(0, auth_html)
+            if locals().get('_dual_agent_banner_html'): final_parts.insert(0, _dual_agent_banner_html)
             return "\n".join(final_parts)
 
 

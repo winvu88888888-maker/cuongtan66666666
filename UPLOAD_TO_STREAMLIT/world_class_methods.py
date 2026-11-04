@@ -556,7 +556,7 @@ def build_18_layer_conflict_arbiter_and_instant_check(
     xem_ngay_verdict: str = "BÌNH",
 ) -> str:
     """
-    V101.1: BỘ TRỌNG TÀI HÓA GIẢI XUNG ĐỘT 18 TẦNG & THƯỚC ĐO KIỂM CHỨNG ĐÚNG/SAI TỨC THỜI
+    V101.3: BỘ TRỌNG TÀI HÓA GIẢI XUNG ĐỘT 18 TẦNG & THƯỚC ĐO KIỂM CHỨNG ĐÚNG/SAI TỨC THỜI
     1. Giải thích vì sao một số tầng báo CÁT còn tầng khác báo HUNG (Phân quyền Chủ - Phụ & Trục Thời Gian).
     2. Đưa ra 3 Phép Kiểm Chứng Tức Thời ngay tại thời điểm hỏi để người dùng tự biết ngay quẻ Đúng hay Sai.
     """

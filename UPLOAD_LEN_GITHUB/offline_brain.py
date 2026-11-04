@@ -512,13 +512,145 @@ def build_narrative_summary_text(
             f'</div>'
         )
 
-    # 0. TRỌNG TÂM ƯU TIÊN SỐ 1 (V101.2): CÂU HỎI LỰA CHỌN THỰC TẾ "A HAY B" (Ở NHÀ HAY CÔNG TY, ĐỨNG HAY NGỒI, THẬT HAY GIẢ, RỒI HAY CHƯA)
+    # ═════════════════════════════════════════════════════════════════════════
+    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V101.4 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
+    # Khi quẻ lập đúng Giờ - Ngày - Tháng - Năm ra thế, tự động khớp chính xác Dụng Thần & Khuôn trả lời của từng dạng
+    # ═════════════════════════════════════════════════════════════════════════
+
+    # [DẠNG 1 - 5] LỰA CHỌN THỰC TẾ & NHỊ PHÂN "A HAY B" (Ở nhà hay công ty, Đứng hay ngồi, Thật hay giả, Rồi hay chưa, Chọn A hay B)
     if omni_data.get('is_binary_factual_q') and omni_data.get('binary_verdict_headline'):
         _b_head = omni_data['binary_verdict_headline']
         _b_why = omni_data.get('binary_why_reasons', '')
         _b_when = omni_data.get('binary_when_note', f'Hướng ứng nghiệm: <b>{direction}</b>')
         _b_act = omni_data.get('binary_action_advice', '')
         return _hero_ui("🎯", _b_head, _b_why, _b_when, _b_act)
+
+    # [DẠNG 23] DỰ BÁO THỜI TIẾT & THIÊN TƯỢNG (Mưa hay nắng, Có mưa không, Thời tiết, Bão)
+    if any(w in q_low for w in ['mưa hay nắng', 'nắng hay mưa', 'có mưa không', 'trời mưa', 'thời tiết', 'bão không', 'tạnh mưa']):
+        _phu_dong = any('Phụ Mẫu' in str(_hr.get('luc_than', '')) and (_hr.get('is_dong') or _hr.get('dong') or (idx_r in _real_dong_list)) for idx_r, _hr in enumerate(_real_haos, 1) if isinstance(_hr, dict))
+        _tu_dong = any('Tử Tôn' in str(_hr.get('luc_than', '')) and (_hr.get('is_dong') or _hr.get('dong') or (idx_r in _real_dong_list)) for idx_r, _hr in enumerate(_real_haos, 1) if isinstance(_hr, dict))
+        _rain_star = any(s in str(_sao_r) for s in ['Bồng', 'Trụ', 'Nhuế'])
+        _sun_star = any(s in str(_sao_r) for s in ['Anh', 'Tâm', 'Phụ']) or ('Cảnh' in str(_cua_r))
+        if _phu_dong or (_rain_star and not _sun_star):
+            _w_vh = "🌧️ DỰ BÁO TỪ QUẺ: TRỜI SẼ CÓ MƯA / ĐỘ ẨM CAO & NHIỀU MÂY!"
+            _w_why = f"Hào <b>Phụ Mẫu</b> (Vũ thủy — chủ về mưa) hoặc Sao Thủy/Vũ (<b>{_sao_r}</b>) đắc khí phát động trên bàn quẻ."
+            _w_act = "Nên chuẩn bị áo mưa/ô dù và che chắn hàng hóa khi di chuyển ngoài trời."
+        elif _tu_dong or _sun_star or pct >= 55:
+            _w_vh = "☀️ DỰ BÁO TỪ QUẺ: TRỜI TẠNH RÁO & NẮNG QUANG ĐÃNG (KHÔNG MƯA)!"
+            _w_why = f"Hào <b>Tử Tôn / Thê Tài</b> và Sao Hỏa/Quang (<b>{_sao_r} · {_cua_r}</b>) vượng khí chế phục thủy khí, bầu trời quang đãng."
+            _w_act = "Thời tiết thuận lợi cho việc xuất hành, giao dịch và tổ chức hoạt động ngoài trời."
+        else:
+            _w_vh = "⛅ DỰ BÁO TỪ QUẺ: TRỜI NHIỀU MÂY, ÂM U NHƯNG MƯA NHỎ HOẶC CHƯA MƯA NGAY"
+            _w_why = f"Khí Thủy – Hỏa trong quẻ giằng co tại Cung {_c_num_r} (<b>{_sao_r} · {_cua_r}</b>), trời râm mát nhiều mây."
+            _w_act = "Có thể ra ngoài bình thường nhưng nên mang theo đồ phòng mưa rào cục bộ."
+        return _hero_ui("🌦️", _w_vh, _w_why, f"Khung giờ ứng nghiệm thời tiết: <b>{uk_clean}</b>", _w_act)
+
+    # [DẠNG 20] THI CỬ, HỌC HÀNH, ĐIỂM SỐ, BẰNG CẤP & XIN VISA DU HỌC
+    if any(w in q_low for w in ['đi thi', 'thi cử', 'thi đỗ', 'đỗ không', 'trượt không', 'điểm số', 'bằng cấp', 'luận văn', 'du học', 'xin visa', 'visa', 'học bổng']):
+        if pct >= 55:
+            _ex_vh = f"🎓 KẾT QUẢ TỪ QUẺ: ĐỖ ĐẠT CAO / ĐẠT YÊU CẦU & HỒ SƠ THUẬN LỢI ({pct}% — CÁT)"
+            _ex_why = f"Hào <b>Phụ Mẫu</b> (Văn thư/Bảng vàng/Visa) và Sao <b>{_sao_r or 'Thiên Phụ'}</b> đắc khí cùng Cửa <b>{_cua_r or 'Cảnh Môn'}</b> sáng rõ."
+            _ex_act = f"Giữ tâm lý tự tin, rà soát kỹ giấy tờ/bài vở; hướng bàn học/phỏng vấn đại lợi: <b>{direction}</b>."
+        elif pct >= 45:
+            _ex_vh = f"📚 KẾT QUẢ TỪ QUẺ: CÓ KHẢ NĂNG ĐỖ NHƯNG ĐIỂM SÁT NÚT — CẦN NỖ LỰC BỨT PHÁ ({pct}% — BÌNH)"
+            _ex_why = f"Văn tinh và Dụng Thần <b>{dung_than}</b> có lực nhưng còn vướng trở ngại nhỏ về thủ tục hoặc tâm lý phòng thi."
+            _ex_act = f"Ôn tập tập trung vào các phần trọng tâm, kiểm tra kỹ hồ sơ tránh sai sót nhỏ (Hướng trợ vận: <b>{direction}</b>)."
+        else:
+            _ex_vh = f"⚠️ KẾT QUẢ TỪ QUẺ: ĐANG GẶP LỰC CẢN LỚN — CẨN TRỌNG THIẾU ĐIỂM HOẶC BỔ SUNG HỒ SƠ ({pct}% — HUNG)"
+            _ex_why = f"Hào Văn thư / <b>{dung_than}</b> bị Thê Tài hoặc Tuần Không khắc chế, báo hiệu sự chuẩn bị chưa đủ hoặc hồ sơ thiếu sót."
+            _ex_act = f"Cần bổ sung ngay kiến thức/chứng chỉ còn thiếu và chuẩn bị sẵn phương án dự phòng (Hướng hóa giải: <b>{direction}</b>)."
+        return _hero_ui("🎓", _ex_vh, _ex_why, f"Mốc công bố kết quả / phỏng vấn: <b>{uk_clean}</b>", _ex_act)
+
+    # [DẠNG 22] XUẤT HÀNH, ĐI XA, DU LỊCH, CÔNG TÁC & AN TOÀN GIAO THÔNG
+    if any(w in q_low for w in ['xuất hành', 'đi xa', 'du lịch', 'công tác', 'xuất ngoại', 'đi nước ngoài', 'chuyến đi', 'máy bay', 'tàu xe', 'thượng lộ', 'bình an không']):
+        if pct >= 55:
+            _tr_vh = f"✈️ KẾT QUẢ TỪ QUẺ: CHUYẾN ĐI THƯỢNG LỘ BÌNH AN & ĐẠT MỤC ĐÍCH ({pct}% — CÁT)"
+            _tr_why = f"Hào Thế và Cung <b>{_c_num_r} ({_sao_r} · {_cua_r})</b> tương sinh hòa hợp, đường đi thông suốt và có quý nhân đón tiếp."
+            _tr_act = f"Xuất phát đúng giờ hoàng đạo theo hướng <b>{direction}</b> để đón cát khí."
+        elif pct >= 45:
+            _tr_vh = f"🧳 KẾT QUẢ TỪ QUẺ: ĐI ĐƯỢC BÌNH AN NHƯNG DỄ TRỄ GIỜ HOẶC PHÁT SINH CHI PHÍ ({pct}% — BÌNH)"
+            _tr_why = f"Trục hành trình ({dung_than}) gặp sao/cửa trung bình, dễ có sự chậm trễ phương tiện hoặc thay đổi lịch trình nhỏ."
+            _tr_act = f"Ra sân bay/bến xe sớm hơn dự kiến 30-45 phút và giữ kỹ hành lý, giấy tờ tùy thân (Hướng thuận: <b>{direction}</b>)."
+        else:
+            _tr_vh = f"🛑 KẾT QUẢ TỪ QUẺ: CHUYẾN ĐI NHIỀU TRẮC TRỞ — NÊN HOÃN HOẶC ĐỔI LỊCH NẾU CÓ THỂ ({pct}% — HUNG)"
+            _tr_why = f"Hào hành trình chịu xung khắc hoặc phạm cửa hung (<b>{_cua_r} · {_than_r}</b>), đi xa dễ mệt mỏi hoặc việc không thành."
+            _tr_act = f"Nếu bắt buộc phải đi, cần kiểm tra kỹ phương tiện, tránh đi đêm và mang vật phẩm hóa giải theo hướng <b>{direction}</b>."
+        return _hero_ui("✈️", _tr_vh, _tr_why, f"Khung giờ khởi hành / ứng nghiệm: <b>{uk_clean}</b>", _tr_act)
+
+    # [DẠNG 19] PHONG THỦY DƯƠNG TRẠCH (NHÀ CỬA, XÂY SỬA NHÀ) & ÂM PHẦN (MỒ MẢ GIA TIÊN)
+    if any(w in q_low for w in ['phong thủy', 'mồ mả', 'âm phần', 'ngôi mộ', 'mộ phần', 'xây nhà', 'sửa nhà', 'động thổ', 'nhập trạch', 'hướng nhà', 'long mạch', 'bàn thờ']):
+        if any(w in q_low for w in ['mồ mả', 'âm phần', 'ngôi mộ', 'mộ phần', 'long mạch']):
+            if pct >= 50:
+                _fs_vh = f"⛰️ PHONG THỦY ÂM PHẦN / MỒ MẢ: ĐẮC ĐỊA KHÍ — GIA TIÊN AN VỊ, PHÙ HỘ CON CHÁU ({pct}% — CÁT)"
+                _fs_why = f"Cung Âm phần / Tử Môn và Hào <b>{dung_than}</b> đắc vượng khí tại Cung {_c_num_r} (<b>{_sao_r} · {_cua_r}</b>), đất kết tụ khí lành."
+                _fs_act = f"Duy trì việc hương khói chu đáo, giữ gìn cảnh quan quanh mộ phần sạch sẽ (Hướng khí: <b>{direction}</b>)."
+            else:
+                _fs_vh = f"⚠️ PHONG THỦY ÂM PHẦN / MỒ MẢ: ĐANG CÓ ĐỘNG KHÍ HOẶC RỄ CÂY / NƯỚC NGẦM XÂM LẤN ({pct}% — CẦN TU BỔ)"
+                _fs_why = f"Cung Âm phần chịu xung khắc (<b>{_sao_r} · {_cua_r} · {_than_r}</b>), báo hiệu xung quanh mộ có sụt lún, rễ cây hoặc thoát khí."
+                _fs_act = f"Nên chọn ngày lành tháng tốt lên thăm khám, đắp bồi và tạ mộ theo hướng <b>{direction}</b>."
+        else:
+            if pct >= 50:
+                _fs_vh = f"🏡 PHONG THỦY DƯƠNG TRẠCH / NHÀ ĐẤT: TỤ KHÍ VƯỢNG ĐINH VƯỢNG TÀI ({pct}% — CÁT)"
+                _fs_why = f"Hào Trạch (Hào 2) và Cung <b>{_c_num_r} ({_sao_r} · {_cua_r})</b> tương sinh, khí trường ngôi nhà hài hòa, tốt cho sức khỏe và tài lộc."
+                _fs_act = f"Giữ cửa chính và phòng khách thông thoáng, kích hoạt cung tài lộc tại hướng <b>{direction}</b>."
+            else:
+                _fs_vh = f"⚠️ PHONG THỦY DƯƠNG TRẠCH / NHÀ ĐẤT: ĐANG VƯỚNG SÁT KHÍ HOẶC BỐ CỤC CHƯA HỢP ({pct}% — CẦN HÓA GIẢI)"
+                _fs_why = f"Hào Trạch / Phụ Mẫu chịu xung khắc tại Cung {_c_num_r} (<b>{_sao_r} · {_cua_r}</b>), dễ gây bất an, mất ngủ hoặc hao tán."
+                _fs_act = f"Tránh động thổ tại góc xung sát; bố trí lại ánh sáng/cây xanh hóa giải tại hướng <b>{direction}</b>."
+        return _hero_ui("🧭", _fs_vh, _fs_why, f"Thời điểm động thổ / tu bổ tốt nhất: <b>{uk_clean}</b>", _fs_act)
+
+    # [DẠNG 16] ĐÒI NỢ, CHO VAY & THU HỒI CÔNG NỢ
+    if any(w in q_low for w in ['đòi nợ', 'trả nợ', 'nợ tiền', 'cho vay', 'vay tiền', 'thu hồi nợ', 'khất nợ', 'quỵt nợ']):
+        if pct >= 55:
+            _db_vh = f"💵 KẾT QUẢ TỪ QUẺ: CÓ THỂ ĐÒI LẠI ĐƯỢC TIỀN / THU HỒI NỢ THÀNH CÔNG ({pct}% — CÁT)"
+            _db_why = f"Hào <b>Thê Tài</b> hữu khí sinh hợp Hào Thế, đối phương (Hào Ứng) có khả năng thanh toán."
+            _db_act = f"Chủ động liên hệ nhắc nợ khéo léo nhưng dứt khoát vào đúng ngày/giờ ứng kỳ (Hướng lợi: <b>{direction}</b>)."
+        elif pct >= 45:
+            _db_vh = f"⏳ KẾT QUẢ TỪ QUẺ: ĐỐI PHƯƠNG ĐANG KẸT VỐN — CHỈ ĐÒI ĐƯỢC TỪNG PHẦN ({pct}% — BÌNH)"
+            _db_why = f"Hào <b>Thê Tài / Hào Ứng</b> đang trì trệ tại Cung {_c_num_r} (<b>{_cua_r}</b>), họ chưa có đủ tiền mặt trả 1 lần."
+            _db_act = f"Nên chia nhỏ lộ trình trả góp hoặc nhận tài sản quy đổi thay vì ép trả toàn bộ ngay (Hướng: <b>{direction}</b>)."
+        else:
+            _db_vh = f"🚨 KẾT QUẢ TỪ QUẺ: RẤT KHÓ ĐÒI NGAY / ĐỐI PHƯƠNG CỐ TÌNH KHẤT LẦN ({pct}% — HUNG)"
+            _db_why = f"Hào <b>Huynh Đệ</b> (Kiếp tài) vượng hoặc Hào Ứng lâm Huyền Vũ/Tuần Không, nếu đang hỏi cho vay thì TUYỆT ĐỐI KHÔNG NÊN CHO VAY."
+            _db_act = f"Củng cố giấy biên nhận/chứng cứ pháp lý để bảo vệ quyền lợi, tuyệt đối không giải ngân thêm."
+        return _hero_ui("💵", _db_vh, _db_why, f"Mốc thời gian thu hồi / làm việc: <b>{uk_clean}</b>", _db_act)
+
+    # [DẠNG 8] CHÂN DUNG CON NGƯỜI: NGOẠI HÌNH, TÍNH CÁCH, TÂM TÍNH & NGHỀ NGHIỆP
+    if any(w in q_low for w in ['ngoại hình', 'dáng người', 'cao hay thấp', 'béo hay gầy', 'tính cách', 'tâm tính', 'con người thế nào', 'người như thế nào', 'làm nghề gì']):
+        _p_app = omni_data.get('appearance', 'Dáng người cân đối, thần thái rõ nét theo ngũ hành Dụng Thần')
+        _p_per = omni_data.get('personality', 'Tính cách thẳng thắn, có chính kiến riêng')
+        _p_car = omni_data.get('career', f'Lĩnh vực ứng với Sao {_sao_r} và Cửa {_cua_r} (quản lý, kinh doanh hoặc chuyên môn kỹ thuật)')
+        _p_vh = f"👤 CHÂN DUNG TỪ QUẺ: {_p_per.upper()[:95]}"
+        _p_why = f"<b>Ngoại hình & Thần thái:</b> {_p_app}. <b>Tính cách cốt lõi:</b> {_p_per}."
+        _p_when = f"<b>Nghề nghiệp / Vai vế ứng quẻ:</b> {_p_car}."
+        _p_act = f"Khi giao tiếp với người này nên đi thẳng vào trọng tâm, giữ chữ tín (Phương vị: <b>{direction}</b>)."
+        return _hero_ui("👤", _p_vh, _p_why, _p_when, _p_act)
+
+    # [DẠNG 13] TRUY TÌM NGUYÊN NHÂN, LÝ DO & TÂM LÝ / Ý ĐỒ NGẦM ("TẠI SAO / VÌ SAO / HỌ NGHĨ GÌ")
+    if any(w in q_low for w in ['tại sao', 'vì sao', 'do đâu', 'nguyên nhân gì', 'lý do gì', 'ý đồ gì', 'mục đích gì', 'nghĩ gì về tôi', 'tâm tư gì']):
+        _motive_om = omni_data.get('motive', '') or f"Xuất phát từ áp lực nội tại tại Cung {_c_num_r} ({_sao_r} · {_cua_r} · {_than_r})"
+        _why_vh = f"🔍 NGUYÊN NHÂN & ẨN TÌNH TỪ QUẺ: {_motive_om.upper()[:105]}"
+        _why_detail = f"Quẻ Hỗ và Thần Bàn (<b>{_than_r} · {_cua_r}</b>) chỉ rõ nguyên nhân gốc rễ: {_motive_om}. {factors_text[:150]}"
+        return _hero_ui("🔍", _why_vh, _why_detail, f"Thời điểm sự việc sáng tỏ: <b>{uk_clean}</b>", f"Giữ bình tĩnh quan sát, tháo gỡ nút thắt tâm lý theo hướng <b>{direction}</b>.")
+
+    # [DẠNG 24] TRẠCH CÁT / XEM NGÀY GIỜ TỐT (KHAI TRƯƠNG, CƯỚI HỎI, KÝ KẾT NGÀY NÀO)
+    if any(w in q_low for w in ['xem ngày', 'ngày tốt', 'ngày đẹp', 'giờ tốt', 'giờ hoàng đạo', 'khai trương ngày', 'cưới ngày nào']):
+        if pct >= 55:
+            _dt_vh = f"📅 TRẠCH CÁT TỪ QUẺ: NGÀY GIỜ ĐẠI CÁT — RẤT TỐT ĐỂ TIẾN HÀNH ({pct}% — CÁT)"
+        elif pct >= 45:
+            _dt_vh = f"📅 TRẠCH CÁT TỪ QUẺ: NGÀY GIỜ TRUNG BÌNH — CẦN CHỌN KHUNG GIỜ HOÀNG ĐẠO ({pct}% — BÌNH)"
+        else:
+            _dt_vh = f"📅 TRẠCH CÁT TỪ QUẺ: NGÀY ĐANG PHẠM XUNG SÁT — NÊN DỜI SANG MỐC ỨNG KỲ CÁT LỢI ({pct}% — HUNG)"
+        return _hero_ui("📅", _dt_vh, f"Xét theo 12 Trực Kiến Trừ, Nhị Thập Bát Tú và Cửa <b>{_cua_r}</b> tại Cung {_c_num_r}.", f"Khung giờ/ngày cát lợi nhất: <b>{uk_clean}</b>", f"Khi hành sự nên xuất phát hoặc quay mặt về hướng <b>{direction}</b>.")
+
+    # [DẠNG 25] TÂM LINH, GIẤC MƠ & ĐIỀM BÁO
+    if any(w in q_low for w in ['giấc mơ', 'mơ thấy', 'chiêm bao', 'điềm báo', 'điềm gì', 'tâm linh']):
+        _dr_vh = (
+            f"🔮 GIẢI MÃ ĐIỀM BÁO / GIẤC MƠ: ĐIỀM LÀNH BÁO HIỆU CƠ HỘI & QUÝ NHÂN ({pct}% — CÁT)" if pct >= 55 else
+            f"🔮 GIẢI MÃ ĐIỀM BÁO / GIẤC MƠ: TÂM TƯ LO LẮNG BAN NGÀY PHẢN ÁNH VÀO MƠ — KHÔNG ĐÁNG LO ({pct}% — BÌNH)" if pct >= 45 else
+            f"🔮 GIẢI MÃ ĐIỀM BÁO / GIẤC MƠ: LỜI NHẮC NHỞ CẨN TRỌNG SỨC KHỎE & LỜI ĂN TIẾNG NÓI ({pct}% — CẢNH BÁO)"
+        )
+        return _hero_ui("🔮", _dr_vh, f"Ứng với Quẻ Biến <b>{_real_bien_nm or _real_ban_nm}</b> và Thần <b>{_than_r}</b> tại Cung {_c_num_r}.", f"Thời điểm ứng nghiệm điềm báo: <b>{uk_clean}</b>", f"Giữ tâm an tịnh, làm việc thiện lành và hướng về phía <b>{direction}</b>.")
 
     # 1. TRỌNG TÂM: BỆNH TẬT / SỨC KHỎE / QUA KHỎI KHÔNG
     if category == 'SỨC_KHỎE_GIA_ĐÌNH' or any(w in q_low for w in ['ốm', 'bệnh', 'đau', 'khỏe', 'qua khỏi', 'qua được', 'sống không', 'nguy kịch', 'nằm viện', 'mổ']):
@@ -578,7 +710,7 @@ def build_narrative_summary_text(
         return _hero_ui("⏳", vh, f"Dụng Thần <b>{dung_than}</b> hội tụ khí số theo chu kỳ Can Chi.", f"Điểm rơi chính xác: <b>{uk_clean}</b>", f"Chuẩn bị sẵn sàng và hành động theo hướng <b>{direction}</b>.")
 
     # 5A. TRỌNG TÂM: CON CÁI / TỬ TỨC (BAO NHIÊU NGƯỜI CON, MẤY TRAI MẤY GÁI, SINH TRAI HAY GÁI)
-    if omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or ('con' in q_low and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])):
+    if omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_low and not any(bad in q_low for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])):
         c_sum = omni_data.get('children_summary', 'QUẺ BÁO TỬ TỨC: KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
         c_rea = omni_data.get('children_reasons', f'Xác định trực tiếp từ Hào Tử Tôn ({dung_than}) và tổ hợp Quẻ Chủ – Hỗ – Biến.')
         c_trt = omni_data.get('children_traits', 'Các con thông minh, tự lập, trưởng thành vững vàng và hiếu thuận.')
@@ -594,16 +726,21 @@ def build_narrative_summary_text(
         vh = f"{g_str} — {a_str}"
         return _hero_ui("👤", vh, f"Xác định từ Dụng Thần <b>{dung_than}</b> ({g_reasons}).", f"Ước tính năm sinh & độ tuổi: <b>{by_str}</b>", f"Phương vị tương ứng: <b>{direction}</b> | Màu hợp: <b>{omni_data.get('colors', 'Trắng, Vàng')}</b>.")
 
-    # 6. TRỌNG TÂM: CÁI GÌ / ĐỒ VẬT GÌ / SỐ LƯỢNG VẬT PHẨM
-    if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'mặt hàng gì', 'sản phẩm gì']) or (any(w in q_low for w in ['bao nhiêu', 'có mấy', 'số lượng']) and not any(p in q_low for p in ['người', 'con', 'anh', 'chị', 'em', 'bạn', 'nhân viên'])):
+    # [DẠNG 9 & DẠNG 10] ĐOÁN VẠN VẬT XẠ PHÚ (CÁI GÌ / MÀU GÌ / CHẤT LIỆU GÌ) & ĐỊNH LƯỢNG CON SỐ / GIÁ CẢ
+    if any(w in q_low for w in ['cái gì', 'đồ gì', 'đồ vật gì', 'vật gì', 'trong hộp', 'mặt hàng gì', 'sản phẩm gì', 'chất liệu gì', 'màu gì', 'hình dáng gì']) or (any(w in q_low for w in ['bao nhiêu', 'có mấy', 'số lượng', 'giá bao nhiêu', 'mấy triệu', 'mấy tỷ', 'số mấy']) and not any(p in q_low for p in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'bao nhiêu tuổi', 'mấy tuổi'])):
         obj_str = omni_data.get('objects', 'Vật phẩm thuộc hành Dụng Thần')
         qty_str = omni_data.get('quantity', 'Theo số Hà Đồ - Lạc Thư')
         col_str = omni_data.get('colors', 'Sáng rõ')
-        if any(w in q_low for w in ['cái gì', 'đồ gì', 'vật gì', 'mặt hàng gì', 'sản phẩm gì']):
-            vh = f"{obj_str[:110]} ({qty_str})"
+        mat_str = omni_data.get('material', 'Chất liệu đặc trưng theo Ngũ hành')
+        shp_str = omni_data.get('shape', 'Hình khối cân đối')
+        cond_str = omni_data.get('item_condition', 'Đang sử dụng tốt')
+        if any(w in q_low for w in ['cái gì', 'đồ gì', 'đồ vật gì', 'vật gì', 'trong hộp', 'mặt hàng gì', 'sản phẩm gì', 'chất liệu gì', 'màu gì', 'hình dáng gì']):
+            vh = f"📦 VẠN VẬT LOẠI TƯỢNG: {obj_str.upper()[:95]}"
+            why_v = f"<b>Chất liệu & Hình dáng:</b> {mat_str} ({shp_str}). <b>Màu sắc nhận diện:</b> {col_str}. <b>Tình trạng:</b> {cond_str}."
         else:
-            vh = f"ĐỊNH LƯỢNG TỪ QUẺ: {qty_str}"
-        return _hero_ui("📦", vh, f"Tính theo số Tiên Thiên Bát Quái và Hà Đồ của hào <b>{dung_than}</b>.", f"Chi tiết con số ứng quẻ: <b>{qty_str}</b>", f"Màu sắc trợ vận: <b>{col_str}</b> | Hướng cát lợi: <b>{direction}</b>.")
+            vh = f"🔢 ĐỊNH LƯỢNG CON SỐ & GIÁ TRỊ TỪ QUẺ: {qty_str}"
+            why_v = f"Tính theo số Tiên Thiên Bát Quái, Hà Đồ Lạc Thư và vòng 12 Trường Sinh của Dụng Thần <b>{dung_than}</b>."
+        return _hero_ui("📦", vh, why_v, f"Con số & Bội số định lượng: <b>{qty_str}</b>", f"Màu sắc đặc trưng: <b>{col_str}</b> | Phương vị đặt/tìm: <b>{direction}</b>.")
 
     # 7. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
     if category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền']):
