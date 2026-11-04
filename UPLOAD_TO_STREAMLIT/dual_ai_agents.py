@@ -1,20 +1,20 @@
 """
-dual_ai_agents.py — V101.4: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
+dual_ai_agents.py — V101.5: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
 ================================================================================
-- CON AI SỐ 1 (QuestionReaderAI): Chuyên đọc câu hỏi, bóc tách ngữ nghĩa, nhận diện
-  chính xác câu hỏi thuộc dạng nào trong 25 Đại Dạng Câu Hỏi Toàn Cầu, tách các vế
-  phương án (A hay B), xác định Đối tượng (Hỏi cho ai) và chỉ định đúng Dụng Thần
-  cần tra cứu trong quẻ.
+- CON AI SỐ 1 (QuestionReaderAI): Chạy NGAY ĐẦU TIÊN khi nhận câu hỏi để đọc hiểu
+  ngữ nghĩa, bóc tách chính xác đối tượng được hỏi (nhà mấy tầng, ở tầng mấy, mấy phòng,
+  mấy anh chị em, mặc áo màu gì, đi xe gì, ở nhà hay công ty, đã kết hôn chưa...),
+  khóa cứng Dụng Thần chuẩn (ví dụ: Nhà cửa/Số tầng = Phụ Mẫu + Hào Thế, tuyệt đối
+  không để nhầm sang Thê Tài đầu tư BĐS).
 - CON AI SỐ 2 (HexagramReasoningAI): Nhận Hồ Sơ Câu Hỏi từ Con AI Số 1, mang đi
   ĐỐI CHỨNG TRỰC TIẾP với Quẻ lập theo Giờ - Ngày - Tháng - Năm (Lục Hào, Kỳ Môn,
-  Mai Hoa, Đại Lục Nhâm, 18 Tầng), kiểm tra Tuần Không / Động Tĩnh / Sinh Khắc
-  rồi suy luận ra câu trả lời khớp 100% với thực tế của quẻ.
+  Mai Hoa, Đại Lục Nhâm, 18 Tầng), suy luận ra câu trả lời trực diện khớp 100% với
+  câu hỏi và quẻ, khóa cứng toàn bộ đầu ra Online & Offline.
 """
 
 import re
 
 
-# Bảng 25 Đại Dạng Câu Hỏi Toàn Cầu (Chuẩn hóa toàn diện mọi câu hỏi trên thế giới)
 UNIVERSAL_25_ARCHETYPES = {
     "D01_LOCATION_BINARY": {
         "code": "Dạng 1",
@@ -82,19 +82,19 @@ UNIVERSAL_25_ARCHETYPES = {
     },
     "D09_QUANTITY_PRICE": {
         "code": "Dạng 9",
-        "name": "Định lượng Con số, Giá cả, Tiền bạc, Điểm số & Số lượng",
+        "name": "Định lượng Con số, Số tầng nhà, Số phòng, Số người, Kích thước & Giá trị",
         "mode": "NUMERIC_QUANTITY",
-        "lh_dt": "Số Tiên Thiên Bát Quái + Số Hậu Thiên Lạc Thư + Số Hà Đồ của Hành Dụng Thần",
-        "km_dt": "Số Cung Kỳ Môn + Trạng thái Vượng/Tướng/Hưu/Tù nhân hệ số định lượng",
-        "answer_rule": "Đưa ra bộ Con số định lượng chuẩn, Số lượng đơn vị và Bội số giá trị tiền bạc/tài lộc",
+        "lh_dt": "Hào Phụ Mẫu & Hào Thế (Đoán số tầng nhà/vị trí tầng) + Số Tiên/Hậu Thiên Bát Quái + Số Hà Đồ Lạc Thư",
+        "km_dt": "Số Cung Kỳ Môn + Trạng thái Vượng/Tướng/Hưu/Tù định lượng con số thực tế",
+        "answer_rule": "Chốt trực diện con số thực tế cho đúng đối tượng được hỏi (mấy tầng, tầng mấy, mấy phòng, mấy người, giá bao nhiêu...)",
     },
     "D10_OBJECT_XAPHU": {
         "code": "Dạng 10",
-        "name": "Đoán Vạn Vật Xạ Phú (Đồ vật gì trong hộp kín / Màu sắc / Chất liệu / Hình dáng)",
+        "name": "Đoán Vạn Vật Xạ Phú (Đồ vật gì / Mặc áo màu gì / Đi xe gì / Chất liệu / Hình dáng)",
         "mode": "OBJECT_FORENSIC",
-        "lh_dt": "Ngũ Hành Hào Dụng Thần + Quái Tượng Nội/Ngoại + 12 Trường Sinh (Mới/Cũ/Hỏng)",
-        "km_dt": "Thiên Can + Cửu Tinh + Bát Quái tại Cung Dụng Thần (Xác định chất liệu, màu sắc, hình dáng, tên đồ vật)",
-        "answer_rule": "Chỉ rõ tên nhóm Đồ vật, Màu sắc, Chất liệu, Hình dáng và Tình trạng đồ vật",
+        "lh_dt": "Ngũ Hành Hào Dụng Thần (Phụ Mẫu = Áo/Xe; Thê Tài = Đồ vật) + Quái Tượng Nội/Ngoại + 12 Trường Sinh",
+        "km_dt": "Thiên Can + Cửu Tinh + Bát Quái tại Cung Dụng Thần (Xác định màu sắc, chất liệu, hình dáng, tên đồ vật)",
+        "answer_rule": "Chỉ rõ Màu sắc, Tên đồ vật/trang phục/xe cộ, Chất liệu, Hình dáng và Tình trạng thực tế",
     },
     "D11_LOST_ITEM_WHERE": {
         "code": "Dạng 11",
@@ -146,11 +146,11 @@ UNIVERSAL_25_ARCHETYPES = {
     },
     "D17_LOVE_MARRIAGE": {
         "code": "Dạng 17",
-        "name": "Tình cảm, Hôn nhân, Vợ chồng, Người yêu cũ Quay lại & Ngoại tình",
+        "name": "Tình cảm, Hôn nhân, Tình trạng Độc thân/Kết hôn, Vợ chồng & Quay lại",
         "mode": "LOVE_RELATIONSHIP",
-        "lh_dt": "Hào Thê Tài (Nam hỏi) / Quan Quỷ (Nữ hỏi) + Trục Thế–Ứng (Sinh Hợp hay Xung Khắc)",
+        "lh_dt": "Hào Thê Tài (Nam hỏi) / Quan Quỷ (Nữ hỏi) + Trục Thế–Ứng (Sinh Hợp hay Xung Khắc / Tuần Không)",
         "km_dt": "Can Ất (Nữ) + Can Canh (Nam) + Thần Lục Hợp (Hôn nhân/Tình duyên)",
-        "answer_rule": "Phán quyết rõ tình cảm Còn chân thành / Có quay lại hàn gắn không hay Có khoảng cách/người thứ ba",
+        "answer_rule": "Phán quyết rõ Đã có gia đình/người yêu hay Độc thân; Còn yêu hay Có quay lại hàn gắn không",
     },
     "D18_HEALTH_MEDICAL": {
         "code": "Dạng 18",
@@ -221,12 +221,9 @@ UNIVERSAL_25_ARCHETYPES = {
 
 class QuestionReaderAI:
     """
-    CON AI SỐ 1: Chuyên trách ĐỌC HIỂU CÂU HỎI của người dùng.
-    Không đoán mò, không trả lời chung chung — nhiệm vụ của Con AI Số 1 là:
-      1. Đọc kỹ từng chữ, hiểu đúng ý định thật sự của người hỏi (kể cả câu hỏi gài/hỏi thử).
-      2. Phân loại chính xác vào 1 trong 25 Đại Dạng Câu Hỏi Toàn Cầu (kèm các câu hỏi phụ nếu hỏi gộp).
-      3. Nếu có cấu trúc lựa chọn "A hay B", tách rõ Phương án A và Phương án B.
-      4. Xác định rõ Đối tượng được hỏi (Bản thân, Bố mẹ, Con cái, Vợ/Chồng, Đối tác...) và chỉ định Dụng Thần chuẩn xác để giao cho Con AI Số 2 đi tra quẻ.
+    CON AI SỐ 1: Chuyên trách ĐỌC HIỂU CÂU HỎI của người dùng (Chạy ở Bước 0).
+    Phân tích chính xác câu hỏi đang hỏi về CÁI GÌ, SỐ LƯỢNG GÌ, AI, Ở ĐÂU, LỰA CHỌN NÀO,
+    và chỉ định Dụng Thần bắt buộc (`authoritative_dt`) để Con AI Số 2 đối chứng với quẻ.
     """
 
     @staticmethod
@@ -234,93 +231,156 @@ class QuestionReaderAI:
         q_raw = str(question or "").strip()
         q_low = q_raw.lower()
 
-        # 1. Phát hiện Đối tượng được hỏi (Subject / Person)
+        # 1. Phát hiện các mục tiêu câu hỏi đặc thù (Specific Question Targets)
+        specific_target = ""
+        authoritative_dt = ""
         subject_person = "Bản thân người hỏi"
-        subject_lh_dt = dung_than_hint or "Bản Thân"
-        person_patterns = [
-            (["bố tôi", "cha tôi", "mẹ tôi", "ba tôi", "má tôi", "bố mẹ", "ông bà", "bố ", "mẹ "], "Bố / Mẹ / Bậc sinh thành", "Phụ Mẫu"),
-            (["con trai", "con gái", "con tôi", "con cái", "người con", "mấy trai mấy gái", "sinh con"], "Con cái (Tử tức)", "Tử Tôn"),
-            (["chồng tôi", "chồng ", "bạn trai", "người yêu"], "Chồng / Người yêu", "Quan Quỷ"),
-            (["vợ tôi", "vợ ", "bạn gái"], "Vợ / Bạn gái", "Thê Tài"),
-            (["anh trai", "chị gái", "em trai", "em gái", "anh em", "bạn bè"], "Anh chị em / Bạn bè", "Huynh Đệ"),
-            (["đối tác", "khách hàng", "đối phương", "người đó", "họ "], "Đối phương / Đối tác (Hào Ứng)", "Hào Ứng"),
-            (["sếp", "cấp trên", "công ty", "cơ quan"], "Cấp trên / Công ty", "Quan Quỷ"),
-        ]
-        for kws, p_label, p_dt in person_patterns:
-            if any(k in q_low for k in kws):
-                # Tránh nhầm "con số" là "con cái"
-                if p_dt == "Tử Tôn" and any(ex in q_low for ex in ["con số", "con đường", "con xe", "con dao"]):
-                    continue
-                subject_person = p_label
-                if not dung_than_hint:
-                    subject_lh_dt = p_dt
-                break
 
-        # 2. Nhận diện Đại Dạng Câu Hỏi Chính (Primary Archetype trong 25 Dạng)
-        arch_key = "D25_SPIRITUAL_GENERAL"
-        option_a = ""
-        option_b = ""
+        # A. Hỏi về Số tầng nhà / Ở tầng mấy / Số phòng / Diện tích nhà
+        is_house_floors_q = any(w in q_low for w in [
+            "mấy tầng", "bao nhiêu tầng", "tầng mấy", "tầng thứ mấy", "tầng bao nhiêu",
+            "nhà cao mấy", "nhà mấy lầu", "mấy lầu", "lầu mấy", "mấy phòng", "bao nhiêu phòng",
+            "diện tích bao nhiêu", "rộng bao nhiêu", "bao nhiêu m2", "bao nhiêu mét vuông"
+        ])
+        # B. Hỏi về Số anh chị em trong gia đình / Con thứ mấy
+        is_siblings_q = any(w in q_low for w in [
+            "mấy anh chị em", "bao nhiêu anh chị em", "mấy anh em", "bao nhiêu anh em",
+            "mấy chị em", "con thứ mấy", "thứ mấy trong nhà", "con trưởng hay con út", "con đầu hay"
+        ])
+        # C. Hỏi về Tình trạng Hôn nhân thực tế (Đã kết hôn chưa / Có vợ chồng chưa / Độc thân hay có gia đình)
+        is_marital_status_q = any(w in q_low for w in [
+            "kết hôn chưa", "lấy vợ chưa", "lấy chồng chưa", "có vợ chưa", "có chồng chưa",
+            "có người yêu chưa", "có gia đình chưa", "độc thân hay", "đã lập gia đình chưa"
+        ])
+        # D. Hỏi về Trang phục đang mặc / Xe cộ đang đi / Màu sắc áo, xe, nhà / Biển số xe
+        is_clothing_vehicle_q = any(w in q_low for w in [
+            "mặc áo màu gì", "áo màu gì", "quần áo màu gì", "trang phục màu gì", "mặc đồ màu gì",
+            "đi xe gì", "xe màu gì", "xe của tôi màu gì", "biển số xe", "số nhà bao nhiêu",
+            "số nhà mấy", "nhà màu gì", "nhà sơn màu gì", "cửa màu gì"
+        ])
+        # E. Hỏi về Xung quanh / Trong phòng có mấy người / Có ai bên cạnh không
+        is_people_around_q = any(w in q_low for w in [
+            "xung quanh tôi có mấy người", "trong phòng có mấy người", "ở đây có mấy người",
+            "bên cạnh tôi có ai", "có mấy người đang", "tôi đang ở một mình hay", "ở một mình hay"
+        ])
 
         is_children_q = (
-            any(w in q_low for w in ["bao nhiêu người con", "mấy người con", "mấy đứa con", "có mấy con", "bao nhiêu con", "mấy trai mấy gái", "con cái", "sinh con", "đường con cái", "tử tức"])
-            and not any(ex in q_low for ex in ["con số", "con đường", "con xe", "con dao"])
+            any(w in q_low for w in [
+                "bao nhiêu người con", "mấy người con", "mấy đứa con", "có mấy con",
+                "bao nhiêu con", "mấy trai mấy gái", "con cái", "sinh con", "đường con cái", "tử tức",
+                "có con chưa", "mấy đứa"
+            ])
+            and not any(ex in q_low for ex in ["con số", "con đường", "con xe", "con dao", "con thứ mấy"])
+            and not is_siblings_q
         )
+
         is_where_home_work = (
             any(w in q_low for w in ["ở nhà hay", "hay ở nhà", "ở công ty", "ở cơ quan", "ở văn phòng", "ở quán", "ngoài đường", "trong nhà hay", "ngoài sân"])
             and any(w in q_low for w in ["nhà", "công ty", "cơ quan", "văn phòng", "ngoài", "phòng"])
         )
         is_posture = any(w in q_low for w in ["đứng hay ngồi", "ngồi hay đứng", "nằm hay ngồi", "ngồi hay nằm", "đang đứng hay", "đang ngồi hay", "đang nằm hay", "ngủ hay thức", "thức hay ngủ"])
         is_true_false = any(w in q_low for w in ["thật hay giả", "giả hay thật", "nói thật hay", "nói dối hay", "có thật không", "thật không", "lừa dối"])
-        is_done_yet = any(w in q_low for w in ["rồi hay chưa", "chưa hay rồi", "hay chưa", "ăn cơm chưa", "ăn chưa", "về chưa", "đi chưa", "xong chưa", "đã ăn", "đã về", "đã đi"])
+        is_done_yet = (
+            any(w in q_low for w in ["rồi hay chưa", "chưa hay rồi", "hay chưa", "ăn cơm chưa", "ăn chưa", "về chưa", "đi chưa", "xong chưa", "đã ăn", "đã về", "đã đi"])
+            and not is_marital_status_q and not is_children_q
+        )
         is_quit_work = any(w in q_low for w in ["nghỉ hay", "nên nghỉ", "nghỉ việc", "bỏ việc", "xin nghỉ", "làm tiếp hay", "đi hay ở", "ở lại hay"])
         is_gender_age = any(w in q_low for w in ["nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính", "bao nhiêu tuổi", "mấy tuổi", "sinh năm"]) and not is_children_q
         is_weather = any(w in q_low for w in ["mưa hay nắng", "nắng hay mưa", "thời tiết", "có mưa không", "trời mưa", "trời nắng", "bão"])
         is_lawsuit = any(w in q_low for w in ["kiện", "tòa án", "pháp lý", "tranh chấp", "ai thắng", "thắng hay thua", "thắng hay đối phương", "đấu thầu"])
-        is_profile = any(w in q_low for w in ["ngoại hình", "hình dáng người", "cao hay thấp", "béo hay gầy", "tính cách", "tính nết", "làm nghề gì", "nghề nghiệp gì", "ngành gì"])
-        is_quantity = any(w in q_low for w in ["giá bao nhiêu", "bao nhiêu tiền", "mấy tỷ", "mấy triệu", "con số", "số mấy", "định lượng", "số lượng bao nhiêu"]) and not is_children_q and not is_gender_age
-        is_object = any(w in q_low for w in ["trong hộp", "trong túi", "trong phòng có gì", "đồ vật gì", "vật gì", "là cái gì", "màu gì", "chất liệu gì", "hình gì"])
-        is_lost_where = any(w in q_low for w in ["mất", "thất lạc", "tìm lại", "tìm thấy", "ở đâu", "hướng nào", "chỗ nào"]) and not is_where_home_work
-        is_when = any(w in q_low for w in ["khi nào", "bao giờ", "mấy giờ", "ngày nào", "tháng nào", "năm nào", "bao lâu"])
+        is_profile = any(w in q_low for w in ["ngoại hình", "hình dáng người", "cao hay thấp", "béo hay gầy", "tính cách", "tính nết", "làm nghề gì", "nghề nghiệp gì", "ngành gì", "cao bao nhiêu", "nặng bao nhiêu"])
+        is_object = any(w in q_low for w in ["trong hộp", "trong túi", "trong phòng có gì", "trước mặt tôi có", "trên bàn có", "cầm cái gì", "đồ vật gì", "vật gì", "là cái gì", "màu gì", "chất liệu gì", "hình gì"]) and not is_clothing_vehicle_q
+        is_when = any(w in q_low for w in ["khi nào", "bao giờ", "mấy giờ", "ngày nào", "tháng nào", "năm nào", "bao lâu", "tháng mấy"])
+        # Mọi câu hỏi có từ "mấy" hoặc "bao nhiêu" hoặc "số mấy" (không phải tuổi, con cái, thời gian)
+        has_numeric_word = bool(re.search(r"\b(mấy|bao nhiêu|số mấy|thứ mấy|định lượng|số lượng)\b", q_low))
+        is_quantity = (
+            has_numeric_word
+            and not is_children_q
+            and not is_gender_age
+            and not is_when
+        )
+        is_lost_where = any(w in q_low for w in ["mất", "thất lạc", "tìm lại", "tìm thấy", "ở đâu", "hướng nào", "chỗ nào"]) and not is_where_home_work and not is_house_floors_q
         is_why = any(w in q_low for w in ["tại sao", "vì sao", "nguyên nhân", "lý do", "do đâu", "ý đồ gì", "nghĩ gì", "tâm lý"])
         is_debt = any(w in q_low for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "cho vay", "vay tiền", "vay ngân hàng", "khoản nợ", "con nợ"])
-        is_invest = any(w in q_low for w in ["đầu tư", "kinh doanh", "buôn bán", "mở quán", "mở cửa hàng", "chứng khoán", "cổ phiếu", "có lãi", "lời hay lỗ", "mua bán", "xuống tiền"])
+        is_invest = any(w in q_low for w in ["đầu tư", "kinh doanh", "buôn bán", "mở quán", "mở cửa hàng", "chứng khoán", "cổ phiếu", "có lãi", "lời hay lỗ", "mua bán", "xuống tiền", "mua đất", "bán đất", "mua nhà", "bán nhà"])
         is_love = any(w in q_low for w in ["yêu", "tình cảm", "hôn nhân", "vợ chồng", "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình"])
         is_health = any(w in q_low for w in ["bệnh", "ốm", "nằm viện", "phẫu thuật", "mổ", "sức khỏe", "qua khỏi", "khỏi bệnh", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"])
-        is_fengshui = any(w in q_low for w in ["phong thủy", "nhà đất", "xây nhà", "sửa nhà", "mua nhà", "mồ mả", "âm phần", "mộ phần", "gia tiên", "động thổ", "hướng nhà"])
+        is_fengshui = any(w in q_low for w in ["phong thủy", "nhà đất", "xây nhà", "sửa nhà", "mồ mả", "âm phần", "mộ phần", "gia tiên", "động thổ", "hướng nhà"]) and not is_house_floors_q and not is_invest
         is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "kỳ thi", "đi thi", "thi cử", "học hành", "điểm thi", "bằng cấp", "du học", "xin visa", "phỏng vấn visa"])
         is_travel = any(w in q_low for w in ["xuất hành", "đi xa", "du lịch", "công tác", "chuyến đi", "lên đường", "về quê", "di chuyển", "thượng lộ"])
         is_trachcat = any(w in q_low for w in ["xem ngày", "ngày tốt", "giờ tốt", "ngày đẹp", "khai trương", "nhập trạch", "cưới hỏi"])
         is_career = any(w in q_low for w in ["công việc", "sự nghiệp", "xin việc", "thăng chức", "chuyển việc", "nhảy việc", "hợp đồng"])
 
-        if is_where_home_work:
+        arch_key = "D25_SPIRITUAL_GENERAL"
+        option_a = ""
+        option_b = ""
+
+        if is_house_floors_q:
+            arch_key = "D09_QUANTITY_PRICE"
+            specific_target = "HOUSE_FLOORS"
+            subject_person = "Ngôi nhà & Vị trí tầng người hỏi đang ở"
+            authoritative_dt = "Phụ Mẫu"
+        elif is_siblings_q:
+            arch_key = "D09_QUANTITY_PRICE"
+            specific_target = "SIBLINGS_COUNT"
+            subject_person = "Anh chị em trong gia đình & Thứ bậc bản thân"
+            authoritative_dt = "Huynh Đệ"
+        elif is_people_around_q:
+            arch_key = "D09_QUANTITY_PRICE"
+            specific_target = "PEOPLE_AROUND"
+            subject_person = "Không gian & Số người xung quanh bạn"
+            authoritative_dt = "Bản Thân"
+        elif is_marital_status_q:
+            arch_key = "D17_LOVE_MARRIAGE"
+            specific_target = "MARITAL_STATUS_NOW"
+            subject_person = "Tình trạng Hôn nhân / Tình duyên hiện tại"
+            authoritative_dt = "Thê Tài"
+        elif is_clothing_vehicle_q:
+            arch_key = "D10_OBJECT_XAPHU"
+            specific_target = "CLOTHING_VEHICLE"
+            subject_person = "Trang phục / Phương tiện / Màu sắc & Biển số thực tế"
+            authoritative_dt = "Phụ Mẫu"
+        elif is_where_home_work:
             arch_key = "D01_LOCATION_BINARY"
+            specific_target = "LOCATION_HOME_WORK"
             option_a, option_b = "Đang ở Nhà (Tại gia)", "Đang ở Công ty / Bên ngoài"
         elif is_posture:
             arch_key = "D02_POSTURE_STATE"
+            specific_target = "POSTURE_STATE"
             option_a, option_b = "Đang Ngồi / Nằm nghỉ (Tĩnh)", "Đang Đứng / Di chuyển (Động)"
         elif is_true_false:
             arch_key = "D03_TRUE_OR_FALSE"
+            specific_target = "TRUE_OR_FALSE"
             option_a, option_b = "Sự thật (Đáng tin cậy)", "Chuyện giả / Lời nói dối"
         elif is_done_yet:
             arch_key = "D04_DONE_OR_NOT"
+            specific_target = "DONE_OR_NOT"
             option_a, option_b = "Đã thực hiện rồi", "Chưa thực hiện"
         elif is_children_q:
             arch_key = "D07_CHILDREN_COUNT"
+            specific_target = "CHILDREN_COUNT"
+            subject_person = "Con cái (Tử tức)"
+            authoritative_dt = "Tử Tôn"
         elif is_gender_age:
             arch_key = "D06_GENDER_AGE"
+            specific_target = "GENDER_AGE"
         elif is_weather:
             arch_key = "D23_WEATHER_CLIMATE"
+            specific_target = "WEATHER"
             option_a, option_b = "Trời Mưa / Nhiều mây ẩm", "Trời Nắng / Quang đãng"
         elif is_lawsuit:
             arch_key = "D21_LAWSUIT_COMPETE"
+            specific_target = "LAWSUIT"
             option_a, option_b = "Bên bạn (Hào Thế)", "Đối phương (Hào Ứng)"
         elif is_quit_work:
             arch_key = "D14_CAREER_WORK"
+            specific_target = "QUIT_OR_STAY"
             option_a, option_b = "Nên giữ công việc hiện tại (Ở lại)", "Nên nghỉ việc / Chuyển hướng"
         elif (" hay " in q_low) and not any(w in q_low for w in ["hay không", "có nên"]):
             m_ab = re.search(r'(?:đang\s+|là\s+|nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', q_low)
             if m_ab:
                 arch_key = "D05_CHOICE_A_OR_B"
+                specific_target = "GENERIC_AB"
                 option_a = m_ab.group(1).strip()
                 option_b = m_ab.group(2).strip()
                 for pfx in ["tôi đang ", "tôi nên ", "tôi ", "bạn đang ", "hiện tại "]:
@@ -328,49 +388,67 @@ class QuestionReaderAI:
                         option_a = option_a[len(pfx):].strip()
         elif is_profile:
             arch_key = "D08_PERSON_PROFILE"
-        elif is_quantity:
-            arch_key = "D09_QUANTITY_PRICE"
+            specific_target = "PERSON_PROFILE"
         elif is_object:
             arch_key = "D10_OBJECT_XAPHU"
+            specific_target = "HIDDEN_OBJECT"
+        elif is_quantity:
+            arch_key = "D09_QUANTITY_PRICE"
+            specific_target = "GENERAL_QUANTITY"
         elif is_lost_where:
             arch_key = "D11_LOST_ITEM_WHERE"
+            specific_target = "LOST_ITEM"
         elif is_when and not (is_career or is_invest or is_love or is_health):
             arch_key = "D12_TIMING_WHEN"
+            specific_target = "TIMING_WHEN"
         elif is_why:
             arch_key = "D13_CAUSE_MOTIVE_WHY"
+            specific_target = "CAUSE_WHY"
         elif is_debt:
             arch_key = "D16_DEBT_LOAN"
+            specific_target = "DEBT_LOAN"
+            authoritative_dt = "Thê Tài"
         elif is_invest:
             arch_key = "D15_FINANCE_INVEST"
+            specific_target = "INVEST_PROFIT"
+            authoritative_dt = "Thê Tài"
         elif is_love:
             arch_key = "D17_LOVE_MARRIAGE"
+            specific_target = "LOVE_MARRIAGE"
         elif is_health:
             arch_key = "D18_HEALTH_MEDICAL"
+            specific_target = "HEALTH_MEDICAL"
         elif is_fengshui:
             arch_key = "D19_FENGSHUI_GRAVE"
+            specific_target = "FENGSHUI_GRAVE"
+            authoritative_dt = "Phụ Mẫu"
         elif is_exam:
             arch_key = "D20_EXAM_STUDY_VISA"
+            specific_target = "EXAM_VISA"
+            authoritative_dt = "Phụ Mẫu"
         elif is_travel:
             arch_key = "D22_TRAVEL_JOURNEY"
+            specific_target = "TRAVEL_SAFETY"
         elif is_trachcat:
             arch_key = "D24_AUSPICIOUS_DATE"
+            specific_target = "AUSPICIOUS_DATE"
         elif is_career:
             arch_key = "D14_CAREER_WORK"
+            specific_target = "CAREER_WORK"
+            authoritative_dt = "Quan Quỷ"
         elif is_when:
             arch_key = "D12_TIMING_WHEN"
+            specific_target = "TIMING_WHEN"
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
-        # 3. Nhận diện các câu hỏi phụ đi kèm (Sub-intents trong câu hỏi phức hợp)
         sub_intents = []
         if is_when and arch_key != "D12_TIMING_WHEN":
             sub_intents.append("Hỏi kèm Thời điểm Ứng kỳ (Khi nào / Bao giờ)")
         if any(w in q_low for w in ["ở đâu", "hướng nào", "chỗ nào"]) and arch_key not in ("D01_LOCATION_BINARY", "D11_LOST_ITEM_WHERE"):
             sub_intents.append("Hỏi kèm Phương hướng & Không gian (Ở đâu / Hướng nào)")
-        if any(w in q_low for w in ["bao nhiêu", "mấy"]) and arch_key not in ("D06_GENDER_AGE", "D07_CHILDREN_COUNT", "D09_QUANTITY_PRICE"):
+        if has_numeric_word and arch_key not in ("D06_GENDER_AGE", "D07_CHILDREN_COUNT", "D09_QUANTITY_PRICE"):
             sub_intents.append("Hỏi kèm Định lượng Con số / Số lượng")
-        if any(w in q_low for w in ["làm sao", "giải pháp", "cách nào", "hóa giải"]):
-            sub_intents.append("Hỏi kèm Pháp quyết Hóa giải & Hành động")
 
         return {
             "raw_question": q_raw,
@@ -378,8 +456,10 @@ class QuestionReaderAI:
             "archetype_code": arch_meta["code"],
             "archetype_name": arch_meta["name"],
             "question_mode": arch_meta["mode"],
+            "specific_target": specific_target,
+            "authoritative_dt": authoritative_dt,
             "subject_person": subject_person,
-            "subject_lh_dt": subject_lh_dt,
+            "subject_lh_dt": authoritative_dt or dung_than_hint or "Bản Thân",
             "lh_dt_instruction": arch_meta["lh_dt"],
             "km_dt_instruction": arch_meta["km_dt"],
             "answer_rule": arch_meta["answer_rule"],
@@ -394,12 +474,228 @@ class HexagramReasoningAI:
     CON AI SỐ 2: Chuyên trách SUY LUẬN & ĐỐI CHỨNG QUẺ.
     Nhận Bản Hồ Sơ Câu Hỏi (`blueprint`) từ Con AI Số 1, mang đi đối chứng trực tiếp
     với Quẻ lập theo Giờ - Ngày - Tháng - Năm hiện tại (`chart_data`, `luc_hao_data`,
-    `mai_hoa_data`, `omni_data`) để:
-      1. Xác minh từng hào, từng cung, từng sao/cửa xem khớp với phương án nào.
-      2. Phát hiện ngay nếu câu hỏi rơi vào Tuần Không / Không Vong (câu hỏi thử / không có thật
-         hoặc loại trừ phương án sai trong câu hỏi A hay B).
-      3. Đưa ra kết luận đối chứng 1-1 không lệch nửa bước khỏi quẻ.
+    `mai_hoa_data`, `omni_data`) để giải mã trực diện từng câu hỏi đặc thù!
     """
+
+    @staticmethod
+    def deduce_specialized_answer(
+        blueprint: dict,
+        dung_than: str,
+        weighted_pct: int,
+        chart_data: dict = None,
+        luc_hao_data: dict = None,
+        mai_hoa_data: dict = None,
+        omni_data: dict = None,
+        auth_warnings: list = None,
+        is_fake: bool = False,
+    ) -> dict:
+        """
+        Giải mã chuyên biệt của CON AI SỐ 2 cho các câu hỏi thực tế đời sống
+        (Nhà mấy tầng, Ở tầng mấy, Mấy phòng, Mấy anh chị em, Kết hôn chưa, Mặc áo màu gì, Đi xe gì...)
+        """
+        chart_data = chart_data or {}
+        luc_hao_data = luc_hao_data or {}
+        mai_hoa_data = mai_hoa_data or {}
+        omni_data = omni_data or {}
+        target = blueprint.get("specific_target", "")
+        q_low = blueprint.get("raw_question", "").lower()
+
+        lh_ban = luc_hao_data.get("ban", {}) if isinstance(luc_hao_data, dict) else {}
+        lh_bien = luc_hao_data.get("bien", {}) if isinstance(luc_hao_data, dict) else {}
+        haos = lh_ban.get("haos") or lh_ban.get("details") or []
+        ten_que_chu = lh_ban.get("name") or mai_hoa_data.get("ten_que") or omni_data.get("ten_que_ban") or "Quẻ Chủ"
+        ten_que_bien = lh_bien.get("name") or mai_hoa_data.get("ten_qua_bien") or omni_data.get("ten_que_bien") or "Quẻ Biến"
+        dong_list = luc_hao_data.get("dong_hao") or lh_ban.get("dong_hao") or []
+
+        the_idx = 3
+        the_hao = {}
+        ung_idx = 6
+        ung_hao = {}
+        pm_idx = 2
+        pm_hao = {}
+        hd_count = 0
+        hd_haos = []
+
+        for idx, h in enumerate(haos, 1):
+            if not isinstance(h, dict):
+                continue
+            tu = str(h.get("the_ung") or h.get("tu") or "")
+            lt = str(h.get("luc_than") or "")
+            if "Thế" in tu:
+                the_idx = idx
+                the_hao = h
+            elif "Ứng" in tu:
+                ung_idx = idx
+                ung_hao = h
+            if "Phụ Mẫu" in lt:
+                pm_idx = idx
+                pm_hao = h
+            if "Huynh Đệ" in lt:
+                hd_count += 1
+                hd_haos.append((idx, h))
+
+        c_info = omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}
+        huong_cung = c_info.get("huong", "Chính Nam")
+        target_cung = omni_data.get("target_cung", 3)
+        sao_name = omni_data.get("sao_name", "Thiên Tâm")
+        cua_name = omni_data.get("cua_name", "Khai Môn")
+        than_name = omni_data.get("than_name", "Trực Phù")
+        hanh_dt = omni_data.get("hanh", "Mộc")
+        colors_str = omni_data.get("colors", "Trắng, Xanh, Vàng")
+
+        # ── 1. GIẢI MÃ: TÔI Ở NHÀ MẤY TẦNG / ĐANG Ở TẦNG MẤY / NHÀ CÓ MẤY PHÒNG ──
+        if target == "HOUSE_FLOORS":
+            # Tính số tầng nhà theo Quái số Mai Hoa + vị trí Hào Phụ Mẫu (Nhà) & Hào Thế (Người ở)
+            QUAI_FLOOR_MAP = {
+                "Khôn": (1, 2, "Nhà thấp tầng (1 – 2 tầng / nhà trệt kiên cố)"),
+                "Cấn": (2, 3, "Nhà 2 – 3 tầng (kết cấu vững chãi như núi)"),
+                "Khảm": (2, 3, "Nhà 2 – 3 tầng (hoặc có tầng lửng/hầm)"),
+                "Chấn": (3, 4, "Nhà 3 – 4 tầng (vươn lên thẳng đứng)"),
+                "Tốn": (3, 4, "Nhà 3 – 4 tầng (thoáng gió, nhiều cửa sổ)"),
+                "Ly": (3, 4, "Nhà 3 – 4 tầng (sáng sủa, mặt tiền thoáng)"),
+                "Đoài": (2, 4, "Nhà 2 – 4 tầng (thiết kế hiện đại)"),
+                "Càn": (4, 5, "Nhà cao 4 – 5 tầng (hoặc tòa nhà/chung cư cao tầng)"),
+            }
+            quai_cung_name = c_info.get("quai", "Ly")
+            # Xác định Thượng Quái & Hạ Quái từ tên quẻ
+            base_f1, base_f2, desc_f = QUAI_FLOOR_MAP.get(quai_cung_name, (3, 4, "Nhà 3 – 4 tầng"))
+            if the_idx in (1, 2) and pm_idx in (1, 2) and not dong_list:
+                floor_main = "NHÀ 1 – 2 TẦNG (NHÀ TRỆT HOẶC NHÀ 2 TẦNG)"
+                cur_floor = "Tầng 1 (Tầng trệt)" if the_idx == 1 else "Tầng 1 hoặc Tầng 2"
+            elif the_idx in (5, 6):
+                extra_txt = "TÒA NHÀ / CHUNG CƯ CAO TẦNG" if base_f2 >= 5 else f"NHÀ {base_f2} – 5 TẦNG / CHUNG CƯ"
+                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (HOẶC {extra_txt})"
+                cur_floor = f"Tầng {base_f1} – {base_f2} (Tầng trên của nhà, hoặc Tầng {the_idx - 1}–{the_idx} nếu ở chung cư)"
+            else:
+                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (ỨNG MẠNH NHẤT: NHÀ {base_f1} TẦNG HOẶC {base_f2} TẦNG)"
+                cur_floor = f"Tầng {max(1, the_idx - 1)} hoặc Tầng {the_idx}"
+
+            if any(w in q_low for w in ["mấy phòng", "bao nhiêu phòng"]):
+                room_n1 = max(2, int(target_cung) if str(target_cung).isdigit() else 3)
+                room_n2 = room_n1 + 2
+                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: NGÔI NHÀ CÓ KHOẢNG {room_n1} – {room_n2} PHÒNG CHÍNH (KẾT CẤU {floor_main})!"
+            elif any(w in q_low for w in ["đang ở tầng mấy", "ngồi ở tầng mấy", "phòng ở tầng mấy"]):
+                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: HIỆN TẠI BẠN ĐANG Ở {cur_floor.upper()} (TRONG {floor_main})!"
+            else:
+                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: BẠN ĐANG Ở {floor_main} — VỊ TRÍ SINH HOẠT CHÍNH CỦA BẠN ỨNG VỚI {cur_floor.upper()} (HÀO THẾ TẠI HÀO {the_idx})!"
+
+            pm_desc = (
+                f"Hào <b>Phụ Mẫu</b> (Dụng Thần đại diện cho Ngôi nhà/Gia trạch) tại Hào {pm_idx} ({pm_hao.get('chi', '')}-{pm_hao.get('ngu_hanh', hanh_dt)})"
+                if pm_hao else f"Dụng Thần <b>Phụ Mẫu</b> (Gia trạch hành {hanh_dt}) ẩn phục dưới Hào {the_idx}"
+            )
+            why_s = (
+                f"Xét theo Pháp Gia Trạch Lục Hào & Mai Hoa Dịch Số: Quẻ lập được là <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>. "
+                f"{pm_desc}, kết hợp <b>Hào Thế</b> (bản thân bạn) đóng tại <b>Hào {the_idx}</b> ({the_hao.get('chi', '')}-{the_hao.get('ngu_hanh', '')}) "
+                f"và Cung Gia Trạch tại <b>Cung {target_cung} ({quai_cung_name} — {huong_cung})</b> hội Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b> "
+                f"➔ Khẳng định ngôi nhà mang kết cấu <b>{floor_main.lower()}</b> (nếu tính cả tầng tum/mái hoặc gác lửng là +1 tầng) và vị trí bạn đang ngồi ứng với <b>{cur_floor}</b>."
+            )
+            when_s = (
+                f"<b>Đặc điểm nhận diện ngôi nhà ({huong_cung}):</b> Tông màu tường/cửa chủ đạo có sắc <b>{colors_str}</b>; "
+                f"không gian quanh nhà có đặc trưng của <b>{c_info.get('places', 'khu dân cư yên tĩnh')}</b>."
+            )
+            adv_s = (
+                f"Phong thủy Gia Trạch tại Cung {target_cung} ({cua_name} · {than_name}): Giữ thông thoáng khu vực <b>{cur_floor}</b> "
+                f"và hướng <b>{huong_cung}</b> để tụ khí vượng tài."
+            )
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 2. GIẢI MÃ: NHÀ TÔI CÓ MẤY ANH CHỊ EM / CON THỨ MẤY TRONG NHÀ ──
+        if target == "SIBLINGS_COUNT":
+            sib_min = max(2, hd_count + 1)
+            sib_max = sib_min + 1
+            is_elder = (the_idx in (5, 6, 3)) or (str(the_hao.get("chi", "")) in ("Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"))
+            order_str = "CON TRƯỞNG / ANH CHỊ ĐẦU (HOẶC THỨ 2)" if is_elder else "CON THỨ / CON ÚT TRONG GIA ĐÌNH"
+            headline = f"👨‍👩‍👧‍👦 KẾT LUẬN TỪ QUẺ HUYNH ĐỆ: GIA ĐÌNH BẠN CÓ KHOẢNG {sib_min} – {sib_max} ANH CHỊ EM — BẠN ỨNG VỚI VỊ TRÍ {order_str}!"
+            why_s = (
+                f"Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, hào <b>Huynh Đệ</b> (Anh chị em) xuất hiện {hd_count} hào trên quẻ chính "
+                f"kết hợp Quái số Cung {target_cung} ({huong_cung}) cho ra tổng số <b>{sib_min} – {sib_max} anh chị em</b>; "
+                f"Hào Thế tại Hào {the_idx} mang khí {'Dương/Thượng vị' if is_elder else 'Âm/Hạ vị'} ứng với vai <b>{order_str.lower()}</b>."
+            )
+            when_s = f"Mối quan hệ anh chị em trong nhà: Tuy mỗi người một tính cách nhưng khi hữu sự vẫn hỗ trợ nhau tốt (Sao {sao_name} · Cửa {cua_name})."
+            adv_s = f"Giữ sự hòa thuận, tương trợ lẫn nhau theo phương vị <b>{huong_cung}</b>."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 3. GIẢI MÃ: XUNG QUANH / TRONG PHÒNG CÓ MẤY NGƯỜI ──
+        if target == "PEOPLE_AROUND":
+            if is_fake or any(m in cua_name for m in ["Tử", "Đỗ", "Hưu"]) and not dong_list:
+                headline = "👤 KẾT LUẬN TỪ QUẺ: HIỆN TẠI BẠN ĐANG Ở MỘT MÌNH TRONG PHÒNG (KHÔNG CÓ NGƯỜI LẠ BÊN CẠNH)!"
+                why_s = f"Hào Thế tại Hào {the_idx} an tĩnh, Cung Bản Mệnh lâm cửa tĩnh <b>{cua_name}</b> — báo hiệu không gian riêng tư, bạn đang ngồi một mình."
+            else:
+                p_cnt = max(1, len(dong_list) + 1)
+                headline = f"👥 KẾT LUẬN TỪ QUẺ: QUANH KHU VỰC BẠN ĐANG Ở CÓ KHOẢNG {p_cnt} – {p_cnt + 1} NGƯỜI (TÍNH CẢ BẠN HOẶC NGƯỜI TRONG NHÀ)!"
+                why_s = f"Quẻ <b>{ten_que_chu}</b> có {len(dong_list)} hào động tương tác với Hào Thế tại Cung {target_cung} ({cua_name} · {sao_name})."
+            when_s = f"Hướng không gian xung quanh bạn: <b>{huong_cung}</b> ({c_info.get('places', '')})."
+            adv_s = f"Đồ vật gần bạn nhất: <b>{omni_data.get('objects', 'Điện thoại, bàn ghế')}</b>."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 4. GIẢI MÃ: ĐÃ KẾT HÔN CHƯA / CÓ VỢ CHỒNG CHƯA / ĐỘC THÂN HAY CÓ GIA ĐÌNH ──
+        if target == "MARITAL_STATUS_NOW":
+            if is_fake or ("Tuần Không" in str(auth_warnings)):
+                headline = "💫 KẾT LUẬN TỪ QUẺ: HIỆN TẠI BẠN CHƯA KẾT HÔN / ĐANG ĐỘC THÂN (HOẶC ĐANG SỐNG ĐỘC LẬP)!"
+                why_s = (
+                    f"Hào Dụng Thần Phối Ngẫu (<b>{dung_than}</b>) rơi vào <b>Tuần Không / Không Vong</b> trên quẻ <b>{ten_que_chu}</b> — "
+                    f"chứng tỏ vị trí hôn nhân/phối ngẫu hiện đang trống, bạn chưa lập gia đình hoặc đang độc thân."
+                )
+            else:
+                headline = "💍 KẾT LUẬN TỪ QUẺ: BẠN ĐÃ CÓ NGƯỜI THƯƠNG / ĐÃ LẬP GIA ĐÌNH (CÓ MỐI QUAN HỆ GẮN BÓ)!"
+                why_s = (
+                    f"Trục <b>Hào Thế (Hào {the_idx}) – Hào Ứng (Hào {ung_idx})</b> và Dụng Thần <b>{dung_than}</b> hữu khí trên quẻ <b>{ten_que_chu}</b>, "
+                    f"hội Cửa <b>{cua_name}</b> và Thần <b>{than_name}</b> — báo hiệu đã có nhân duyên/gia thất thực tế."
+                )
+            when_s = f"Mốc vượng nhân duyên / gia đạo: <b>{omni_data.get('exact_timestamp', 'Trong năm nay')}</b>."
+            adv_s = f"Phương vị kích hoạt đào hoa & hòa hợp gia đạo: <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 5. GIẢI MÃ: MẶC ÁO MÀU GÌ / ĐI XE GÌ, MÀU GÌ / BIỂN SỐ XE MẤY ──
+        if target == "CLOTHING_VEHICLE":
+            qty_str = omni_data.get("quantity", "3, 4, 9")
+            if "xe" in q_low or "biển số" in q_low:
+                headline = f"🛵 KẾT LUẬN TỪ QUẺ PHỤ MẪU: XE CỦA BẠN MANG TÔNG MÀU {colors_str.upper()} — CHỮ SỐ ĐUÔI BIỂN SỐ / ĐỊNH LƯỢNG ỨNG VỚI: {qty_str.upper()}!"
+                why_s = (
+                    f"Xét Hào <b>Phụ Mẫu</b> (Phương tiện/Biển số) tại Hào {pm_idx} và Hào Thế tại Hào {the_idx} trên quẻ <b>{ten_que_chu}</b>: "
+                    f"Ngũ hành <b>{hanh_dt}</b> tại Cung {target_cung} ({huong_cung}) chỉ định rõ màu xe thuộc nhóm <b>{colors_str}</b>."
+                )
+            else:
+                headline = f"👕 KẾT LUẬN TỪ QUẺ: TRANG PHỤC / MÀU SẮC HIỆN TẠI CỦA BẠN MANG TÔNG MÀU {colors_str.upper()} (HÀNH {hanh_dt.upper()})!"
+                why_s = (
+                    f"Xét Hào <b>Phụ Mẫu</b> (Quần áo/Trang phục) và <b>Hào Thế</b> (cơ thể bạn) tại Hào {the_idx} trên quẻ <b>{ten_que_chu}</b>: "
+                    f"Khí Ngũ hành <b>{hanh_dt}</b> hội Sao <b>{sao_name}</b> phản ánh rõ sắc màu <b>{colors_str}</b>."
+                )
+            when_s = f"Chất liệu & Kiểu dáng: <b>{omni_data.get('material', 'Vải/Kim loại bền đẹp')}</b> ({omni_data.get('shape', 'Cân đối')})."
+            adv_s = f"Bộ số may mắn đi kèm: <b>{qty_str}</b> | Hướng cát lợi: <b>{huong_cung}</b>."
+            return {
+                "has_override": True,
+                "headline": headline,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        return {"has_override": False}
 
     @staticmethod
     def cross_verify_and_reason(
@@ -446,42 +742,56 @@ class HexagramReasoningAI:
         hanh_dt = omni_data.get("hanh", "Kim")
         ts_stage = omni_data.get("ts_stage", "Vượng")
 
-        # Trích xuất câu kết luận chuẩn đã được giải mã từ bộ 25 Đại Dạng
-        headline_ans = omni_data.get("binary_verdict_headline", "")
+        # Kiểm tra xem Con AI Số 2 có bộ giải mã chuyên biệt cho câu hỏi này không
+        spec_res = HexagramReasoningAI.deduce_specialized_answer(
+            blueprint=blueprint,
+            dung_than=dung_than,
+            weighted_pct=weighted_pct,
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            omni_data=omni_data,
+            auth_warnings=auth_warnings,
+            is_fake=is_fake,
+        )
+
+        headline_ans = spec_res.get("headline") or omni_data.get("binary_verdict_headline", "")
+        why_proof = spec_res.get("why") or omni_data.get("binary_why_reasons", "")
+        when_proof = spec_res.get("when") or omni_data.get("binary_when_note", "")
+        advice_proof = spec_res.get("advice") or omni_data.get("binary_action_advice", "")
+
         if not headline_ans and narrative_summary:
-            m_ans = re.search(r"📢\s*\*\*CÂU TRẢ LỜI:\*\*\s*(.+?)(?:\n|$)", narrative_summary)
+            m_ans = re.search(r"👉\s*(.+?)</div>", narrative_summary)
             if m_ans:
                 headline_ans = re.sub(r"<[^>]+>", "", m_ans.group(1)).strip()
-                headline_ans = re.sub(r"\*\*(.+?)\*\*", r"\1", headline_ans)
+            else:
+                m_ans2 = re.search(r"📢\s*\*\*CÂU TRẢ LỜI:\*\*\s*(.+?)(?:\n|$)", narrative_summary)
+                if m_ans2:
+                    headline_ans = re.sub(r"<[^>]+>", "", m_ans2.group(1)).strip()
 
-        # Trích xuất lý do đối chứng từ quẻ
-        why_proof = omni_data.get("binary_why_reasons", "")
         if not why_proof and narrative_summary:
-            m_why = re.search(r"📋\s*\*\*VÌ SAO:\*\*\s*(.+?)(?:\n|$)", narrative_summary)
+            m_why = re.search(r"🔍 NGUYÊN NHÂN CỐT LÕI</div><div[^>]*>(.+?)</div>", narrative_summary)
             if m_why:
                 why_proof = m_why.group(1).strip()
 
-        # Xây dựng Ma trận Đối Chứng Quẻ 4 Trục của Con AI Số 2
         tu_tru_str = f"Năm {can_y} {chi_y} · Tháng {can_m} {chi_m} · Ngày {can_n} {chi_n} · Giờ {can_g} {chi_g}".strip(" ·")
         dong_str = f"Động hào {', '.join(map(str, dong_hao_list))}" if dong_hao_list else "Quẻ Tĩnh (6 hào an tĩnh)"
 
-        # Kiểm tra trạng thái Tuần Không / Nghiệm chứng trong quẻ
         if is_fake and blueprint.get("option_a") and blueprint.get("option_b"):
             auth_status_str = (
                 f"Phát hiện <b>{dung_than}</b> rơi vào <b>Tuần Không / Tử Môn</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Quẻ dùng phép <b>Loại Trừ Nhị Phân</b>: Bác bỏ hoàn toàn phương án bị Không Vong để khẳng định 100% phương án thực tế còn lại!"
             )
-        elif is_fake:
+        elif is_fake and blueprint.get("specific_target") not in ("HOUSE_FLOORS", "CLOTHING_VEHICLE", "SIBLINGS_COUNT"):
             auth_status_str = (
                 f"Phát hiện <b>{dung_than}</b> phạm <b>Tuần Không / Không Vong</b> ({len(auth_warnings)} dấu hiệu) "
                 f"➔ Cảnh báo sự việc/đối tượng đang hỏi hiện <b>chưa tồn tại ngoài thực tế (= 0)</b> hoặc là câu hỏi thử lòng quẻ."
             )
         else:
             auth_status_str = (
-                f"Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> hữu khí trên quẻ ({ts_stage}), sự việc có thật và đang vận hành theo đúng khí số."
+                f"Dụng Thần <b>{dung_than} (Hành {hanh_dt})</b> đối chứng trực tiếp trên quẻ ({ts_stage}), khớp chính xác vào câu hỏi."
             )
 
-        # Tạo khối HTML hiển thị trực quan sự phối hợp giữa CON AI SỐ 1 và CON AI SỐ 2
         sub_intents_html = ""
         if blueprint.get("sub_intents"):
             sub_intents_html = f" · <b>Ý phụ đi kèm:</b> {', '.join(blueprint['sub_intents'])}"
@@ -497,11 +807,10 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V101.4): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V101.5): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
-            # Card AI Số 1
             f'<div style="padding:12px 14px;background:rgba(15,23,42,0.78);border-radius:10px;border-left:4px solid #38bdf8;border-top:1px solid rgba(255,255,255,0.08);">'
             f'<div style="font-size:0.93em;font-weight:900;color:#7dd3fc;margin-bottom:6px;">🧠 AI SỐ 1 — CHUYÊN ĐỌC & THẤU HIỂU CÂU HỎI</div>'
             f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.55;">'
@@ -510,7 +819,6 @@ class HexagramReasoningAI:
             f'• <b>Chỉ thị tra quẻ cho AI Số 2:</b> <i>{blueprint["lh_dt_instruction"]}</i>'
             f'{ab_html}'
             f'</div></div>'
-            # Card AI Số 2
             f'<div style="padding:12px 14px;background:rgba(15,23,42,0.78);border-radius:10px;border-left:4px solid #fbbf24;border-top:1px solid rgba(255,255,255,0.08);">'
             f'<div style="font-size:0.93em;font-weight:900;color:#fde047;margin-bottom:6px;">🔮 AI SỐ 2 — CHUYÊN ĐỐI CHỨNG QUẺ & SUY LUẬN ĐÁP ÁN</div>'
             f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.55;">'
@@ -521,7 +829,6 @@ class HexagramReasoningAI:
             f'</div></div>'
         )
 
-        # Tạo bản chỉ thị bắt buộc (Prompt Directive) để khóa cứng LLM Online (nếu gọi Gemini)
         online_directive = (
             f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [AI SỐ 1 - ĐỌC CÂU HỎI]:\n"
@@ -531,15 +838,17 @@ class HexagramReasoningAI:
             f"2. [AI SỐ 2 - ĐỐI CHỨNG QUẺ ({tu_tru_str})]:\n"
             f"   - Lục Hào & Mai Hoa: Quẻ {ten_que_chu} biến {ten_que_bien} ({dong_str})\n"
             f"   - Kỳ Môn Độn Giáp: Cung {target_cung} ({huong_cung}) hội Sao {sao_name}, Cửa {cua_name}, Thần {than_name}\n"
-            f"   - Đối chứng Thực/Hư: {re.sub(r'<[^>]+>', '', auth_status_str)}\n"
             f"   - ĐÁP ÁN ĐỐI CHỨNG CHỐT HẠ (TUYỆT ĐỐI KHÔNG ĐƯỢC SỬA ĐỔI HAY BỊA KHÁC ĐI): {headline_ans}\n"
             f"   - Căn cứ suy luận: {re.sub(r'<[^>]+>', '', why_proof)}\n"
         )
 
         return {
             "blueprint": blueprint,
+            "has_specialized_override": bool(spec_res.get("has_override")),
             "verified_headline": headline_ans,
             "verified_why": why_proof,
+            "verified_when": when_proof,
+            "verified_advice": advice_proof,
             "dual_agent_html": dual_agent_html,
             "online_directive": online_directive,
         }

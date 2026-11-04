@@ -79,7 +79,7 @@ UNIFIED_TOPICS = {
                      'vay', 'cho vay', 'kinh doanh', 'buôn bán', 'lãi', 'lỗ',
                      'cổ phiếu', 'crypto', 'bitcoin', 'nhà đất', 'mua nhà',
                      'bất động sản', 'vốn', 'hùn vốn', 'trúng số', 'tài sản',
-                     'vàng', 'mua bán', 'giàu', 'nghèo'],
+                     'vàng', 'mua bán', 'giàu', 'nghèo', 'làm ăn', 'thất bát', 'hợp tác'],
         'negative_keywords': [],
         'default_dt': 'Thê Tài',
         'label': '💰 Tài Chính',
@@ -123,7 +123,7 @@ UNIFIED_TOPICS = {
                      'cửa nhà', 'dọn nhà', 'chuyển nhà', 'thửa đất',
                      'lô đất', 'căn hộ', 'chung cư', 'tầng'],
         'negative_keywords': [],
-        'default_dt': 'Thê Tài',
+        'default_dt': 'Phụ Mẫu',
         'label': '🏠 Nhà Cửa',
         'diagram_fallback': None,
     },
@@ -221,7 +221,7 @@ QTYPE_RULES = [
     # THẾ NÀO
     {
         'keywords': ['thế nào', 'như thế nào', 'ra sao', 'tình trạng',
-                     'tình hình', 'tiến triển'],
+                     'tình hình', 'tiến triển', 'lên hay', 'xuống hay', 'tốt hay xấu', 'thành hay bại', 'thế cờ', 'tốt hay'],
         'qtype': 'THẾ NÀO',
         'diagram_id': 'SD15',
         'label': '📊 THẾ NÀO',
@@ -506,7 +506,7 @@ class ContextSplitter:
                         new_candidates.append(candidate)
                 sub_candidates = new_candidates
             
-            # Thêm dấu , splitting (chặt hơn: chỉ khi phần sau có question marker)
+            # Thêm dấu , splitting (chặt hơn: chỉ khi phần sau có question marker hoặc topic/dụng thần mới)
             final_subs = []
             for sub in sub_candidates:
                 comma_splits = re.split(r',\s+', sub)
@@ -514,7 +514,21 @@ class ContextSplitter:
                     merged = [comma_splits[0]]
                     for i in range(1, len(comma_splits)):
                         curr = comma_splits[i].strip()
-                        if self._has_question_signal(curr) and len(curr) >= 8:
+                        prev = merged[-1]
+                        
+                        # V42.9.10+: Tách mạnh qua dấu phẩy nếu:
+                        # 1. Có tín hiệu câu hỏi
+                        # 2. Có Topic khác nhau
+                        # 3. Có Dụng Thần (Person) khác nhau
+                        has_signal = self._has_question_signal(curr)
+                        diff_topic = self._segments_have_different_topics(prev, curr)
+                        
+                        p1 = set(k for k in UNIFIED_PERSON_DT if re.search(r'\b'+k+r'\b', prev.lower()))
+                        p2 = set(k for k in UNIFIED_PERSON_DT if re.search(r'\b'+k+r'\b', curr.lower()))
+                        diff_person = bool(p2 and not p1.intersection(p2))
+                        
+                        # Hoặc nếu là câu đủ dài và độc lập (có marker)
+                        if (has_signal or diff_topic or diff_person) and len(curr) >= 5:
                             merged.append(curr)
                         else:
                             # Gộp lại
@@ -867,9 +881,15 @@ class EntityExtractor:
         
         # 4. Inherit context nếu thiếu
         if not person and ctx.get('person'):
-            person = ctx['person']
-            dt_override = ctx.get('dt_override')
-            person_kw = ctx.get('person_kw')
+            # V42.9.11: Không kế thừa person từ câu trước nếu câu này ám chỉ rõ bản thân (SELF)
+            _self_kws = ['tôi', 'mình', 'em', 'cháu', 'anh', 'chị', 'tớ', 'ta', 'con']
+            _text_lower = f" {text.lower()} "
+            if any(f" {kw} " in _text_lower for kw in _self_kws):
+                pass # Có đại từ nhân xưng ngôi thứ nhất -> giữ nguyên Bản Thân
+            else:
+                person = ctx['person']
+                dt_override = ctx.get('dt_override')
+                person_kw = ctx.get('person_kw')
         
         if topic == 'CHUNG' and ctx.get('topic') and ctx['topic'] != 'CHUNG':
             topic = ctx['topic']

@@ -513,9 +513,29 @@ def build_narrative_summary_text(
         )
 
     # ═════════════════════════════════════════════════════════════════════════
-    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V101.4 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
+    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V101.5 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
     # Khi quẻ lập đúng Giờ - Ngày - Tháng - Năm ra thế, tự động khớp chính xác Dụng Thần & Khuôn trả lời của từng dạng
     # ═════════════════════════════════════════════════════════════════════════
+
+    # [BƯỚC 0 - SONG NÃO AI 2 TẦNG V101.5]: GIẢI MÃ TRỰC DIỆN CÂU HỎI ĐẶC THÙ (NHÀ MẤY TẦNG, Ở TẦNG MẤY, MẤY PHÒNG, MẤY ANH CHỊ EM, KẾT HÔN CHƯA, MẶC ÁO MÀU GÌ, ĐI XE GÌ...)
+    try:
+        from dual_ai_agents import QuestionReaderAI, HexagramReasoningAI
+        _bp_ob = QuestionReaderAI.analyze_question(question=question, dung_than_hint=dung_than, category_hint=category)
+        _spec_ob = HexagramReasoningAI.deduce_specialized_answer(
+            blueprint=_bp_ob,
+            dung_than=dung_than,
+            weighted_pct=pct,
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            omni_data=omni_data,
+            auth_warnings=[],
+            is_fake=bool(omni_data.get('is_fake')),
+        )
+        if _spec_ob.get("has_override") and _spec_ob.get("headline"):
+            return _hero_ui("🎯", _spec_ob["headline"], _spec_ob["why"], _spec_ob["when"], _spec_ob["advice"])
+    except Exception:
+        pass
 
     # [DẠNG 1 - 5] LỰA CHỌN THỰC TẾ & NHỊ PHÂN "A HAY B" (Ở nhà hay công ty, Đứng hay ngồi, Thật hay giả, Rồi hay chưa, Chọn A hay B)
     if omni_data.get('is_binary_factual_q') and omni_data.get('binary_verdict_headline'):
@@ -710,7 +730,7 @@ def build_narrative_summary_text(
         return _hero_ui("⏳", vh, f"Dụng Thần <b>{dung_than}</b> hội tụ khí số theo chu kỳ Can Chi.", f"Điểm rơi chính xác: <b>{uk_clean}</b>", f"Chuẩn bị sẵn sàng và hành động theo hướng <b>{direction}</b>.")
 
     # 5A. TRỌNG TÂM: CON CÁI / TỬ TỨC (BAO NHIÊU NGƯỜI CON, MẤY TRAI MẤY GÁI, SINH TRAI HAY GÁI)
-    if omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_low and not any(bad in q_low for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])):
+    if omni_data.get('is_children_question') or any(w in q_low for w in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái', 'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức', 'có mấy người con']) or (('con' in q_low and not any(bad in q_low for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con', 'con thứ mấy', 'con trưởng', 'con út', 'con đầu'])) and any(w in q_low for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy'])):
         c_sum = omni_data.get('children_summary', 'QUẺ BÁO TỬ TỨC: KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)')
         c_rea = omni_data.get('children_reasons', f'Xác định trực tiếp từ Hào Tử Tôn ({dung_than}) và tổ hợp Quẻ Chủ – Hỗ – Biến.')
         c_trt = omni_data.get('children_traits', 'Các con thông minh, tự lập, trưởng thành vững vàng và hiếu thuận.')
@@ -726,8 +746,8 @@ def build_narrative_summary_text(
         vh = f"{g_str} — {a_str}"
         return _hero_ui("👤", vh, f"Xác định từ Dụng Thần <b>{dung_than}</b> ({g_reasons}).", f"Ước tính năm sinh & độ tuổi: <b>{by_str}</b>", f"Phương vị tương ứng: <b>{direction}</b> | Màu hợp: <b>{omni_data.get('colors', 'Trắng, Vàng')}</b>.")
 
-    # [DẠNG 9 & DẠNG 10] ĐOÁN VẠN VẬT XẠ PHÚ (CÁI GÌ / MÀU GÌ / CHẤT LIỆU GÌ) & ĐỊNH LƯỢNG CON SỐ / GIÁ CẢ
-    if any(w in q_low for w in ['cái gì', 'đồ gì', 'đồ vật gì', 'vật gì', 'trong hộp', 'mặt hàng gì', 'sản phẩm gì', 'chất liệu gì', 'màu gì', 'hình dáng gì']) or (any(w in q_low for w in ['bao nhiêu', 'có mấy', 'số lượng', 'giá bao nhiêu', 'mấy triệu', 'mấy tỷ', 'số mấy']) and not any(p in q_low for p in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'bao nhiêu tuổi', 'mấy tuổi'])):
+    # [DẠNG 9 & DẠNG 10] ĐOÁN VẠN VẬT XẠ PHÚ (CÁI GÌ / MÀU GÌ / CHẤT LIỆU GÌ) & ĐỊNH LƯỢNG CON SỐ / GIÁ CẢ / MẤY / BAO NHIÊU
+    if any(w in q_low for w in ['cái gì', 'đồ gì', 'đồ vật gì', 'vật gì', 'trong hộp', 'mặt hàng gì', 'sản phẩm gì', 'chất liệu gì', 'màu gì', 'hình dáng gì']) or (bool(re.search(r'\b(mấy|bao nhiêu|số lượng|số mấy|thứ mấy|định lượng)\b', q_low)) and not any(p in q_low for p in ['người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'bao nhiêu tuổi', 'mấy tuổi', 'mấy giờ', 'tháng mấy'])):
         obj_str = omni_data.get('objects', 'Vật phẩm thuộc hành Dụng Thần')
         qty_str = omni_data.get('quantity', 'Theo số Hà Đồ - Lạc Thư')
         col_str = omni_data.get('colors', 'Sáng rõ')
@@ -743,7 +763,7 @@ def build_narrative_summary_text(
         return _hero_ui("📦", vh, why_v, f"Con số & Bội số định lượng: <b>{qty_str}</b>", f"Màu sắc đặc trưng: <b>{col_str}</b> | Phương vị đặt/tìm: <b>{direction}</b>.")
 
     # 7. TRỌNG TÂM: MUA BÁN ĐẤT ĐAI / NHÀ CỬA / ĐẦU TƯ / TÀI CHÍNH / CÓ LÃI KHÔNG
-    if category in ('TÀI_CHÍNH', 'NHÀ_CỬA') or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền']):
+    if category == 'TÀI_CHÍNH' or any(w in q_low for w in ['mua đất', 'bán đất', 'mua nhà', 'bán nhà', 'đầu tư', 'có lãi', 'lời', 'lỗ', 'kinh doanh', 'vốn', 'tiền', 'tăng giá', 'giá nhà']):
         if pct >= 55:
             vh = f"NÊN ĐẦU TƯ / GIAO DỊCH — CÓ LÃI & KHẢ QUAN ({pct}% — CÁT)"
             why_s = f"Dụng Thần <b>{dung_than}</b> đắc khí, dòng tiền và cơ hội sinh lời thuận lợi."

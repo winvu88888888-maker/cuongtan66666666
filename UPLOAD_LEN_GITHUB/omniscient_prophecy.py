@@ -577,7 +577,7 @@ def build_omniscient_prophecy(
         'người con', 'mấy con', 'bao nhiêu con', 'mấy đứa con', 'mấy trai mấy gái',
         'con trai hay con gái', 'sinh con trai hay', 'sinh trai hay gái', 'tử tức',
         'con cái', 'có mấy người con', 'bao nhiêu người con'
-    ]) or (('con' in _q_low_om and not any(bad in _q_low_om for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con'])) and any(w in _q_low_om for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
+    ]) or (('con' in _q_low_om and not any(bad in _q_low_om for bad in ['con số', 'con đường', 'con xe', 'con dao', 'con cá', 'con gà', 'con chó', 'con mèo', 'bà con', 'con thứ mấy', 'con trưởng', 'con út', 'con đầu'])) and any(w in _q_low_om for w in ['bao nhiêu', 'mấy trai', 'mấy gái', 'có mấy']))
 
     # Phân tích Quẻ Chủ, Quẻ Hỗ, Quẻ Biến, Hào Tử Tôn và Cung Kỳ Môn để tính số con & trai/gái:
     _YANG_TRIGRAMS = {'Càn': 'Cha/Nam (Dương Kim)', 'Chấn': 'Trưởng Nam (Con trai lớn)', 'Khảm': 'Trung Nam (Con trai thứ)', 'Cấn': 'Thiếu Nam (Con trai út)'}
@@ -885,7 +885,7 @@ def build_omniscient_prophecy(
         binary_when_note = f"Khung giờ ứng nghiệm liên quan: <b>{uk_hour}</b>."
         binary_action_advice = f"Hướng không gian liên quan trực tiếp: <b>{c_info['huong']}</b>."
 
-    elif (" hay " in _q_low_om) and not _is_quit_work_q and not _is_who_age_q and not _is_children_q and not any(w in _q_low_om for w in ['hay không', 'có nên', 'mưa hay nắng', 'nắng hay mưa', 'thời tiết', 'thắng hay', 'ai thắng', 'đối phương thắng', 'vụ kiện', 'tranh chấp', 'cao hay thấp', 'béo hay gầy']):
+    elif (" hay " in _q_low_om) and not _is_quit_work_q and not _is_who_age_q and not _is_children_q and not any(w in _q_low_om for w in ['hay không', 'có nên', 'mưa hay nắng', 'nắng hay mưa', 'thời tiết', 'thắng hay', 'ai thắng', 'đối phương thắng', 'vụ kiện', 'tranh chấp', 'cao hay thấp', 'béo hay gầy', 'kết hôn chưa', 'độc thân', 'có vợ chưa', 'có chồng chưa', 'ở một mình hay', 'con trưởng hay']):
         # Bộ giải mã tổng quát cho MỌI câu hỏi lựa chọn "Phương án A hay Phương án B"
         import re as _re_ab
         _m_ab = _re_ab.search(r'(?:đang\s+|là\s+|nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', _q_low_om)
@@ -1086,6 +1086,14 @@ def build_omniscient_prophecy(
             'target_cung': target_cung,
             'quai': c_info['quai'],
             'hanh_dt': hanh_dt,
+            'hanh': hanh_dt,
+            'c_info': c_info,
+            'sao_name': sao_name,
+            'cua_name': cua_name,
+            'than_name': than_name,
+            'ts_stage': ts_stage,
+            'ten_que_ban': ten_que_ban,
+            'ten_que_bien': ten_que_bien,
             'gender': primary_gender,
             'gender_reasons': ', '.join(gender_reasons),
             'age_tier': age_tier,

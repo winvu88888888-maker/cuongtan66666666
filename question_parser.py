@@ -123,7 +123,7 @@ UNIFIED_TOPICS = {
                      'cửa nhà', 'dọn nhà', 'chuyển nhà', 'thửa đất',
                      'lô đất', 'căn hộ', 'chung cư', 'tầng'],
         'negative_keywords': [],
-        'default_dt': 'Thê Tài',
+        'default_dt': 'Phụ Mẫu',
         'label': '🏠 Nhà Cửa',
         'diagram_fallback': None,
     },
