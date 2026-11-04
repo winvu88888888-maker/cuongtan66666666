@@ -1030,7 +1030,7 @@ def extract_deep_divination_dossier(
             category=category,
             dung_than=dung_than,
             hanh_dt=hanh_dt,
-            target_cung=dt_cung if 'dt_cung' in locals() and dt_cung else 1,
+            target_cung=target_cung if 'target_cung' in locals() and target_cung else 1,
             chart_data=chart_data,
             weighted_pct=weighted_pct,
         )
@@ -1205,6 +1205,7 @@ def build_connected_prose_analysis(
             weighted_pct=weighted_pct,
             ts_stage=ts_stage,
             ngu_khi=nk_stage,
+            ung_ky_detail=ung_ky_str,
             chart_data=chart_data,
             luc_hao_data=luc_hao_data,
             mai_hoa_data=mai_hoa_data,
@@ -1236,14 +1237,51 @@ def build_connected_prose_analysis(
     except Exception:
         _holo_grid_html = ""
 
+    def _deep_card(icon_c: str, title_c: str, border_c: str, what_c: str, opp_c: str, adv_c: str) -> str:
+        return (
+            f'<div style="padding:12px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid {border_c};border-top:1px solid rgba(255,255,255,0.08);">'
+            f'<div style="font-size:0.94em;font-weight:800;color:{border_c};margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:4px;">{icon_c} {title_c}</div>'
+            f'<div style="font-size:0.92em;color:#f1f5f9;line-height:1.52;">'
+            f'<div>📌 <b>Nói về cái gì:</b> {what_c}</div>'
+            f'<div style="margin-top:4px;">✨ <b>Cơ hội & Điểm sáng:</b> {opp_c}</div>'
+            f'<div style="margin-top:4px;">💡 <b>Khuyên gì & Giải pháp:</b> {adv_c}</div>'
+            f'</div></div>'
+        )
+
+    _ban_n = (luc_hao_data or {}).get("ban", {}).get("name", "Quẻ Chủ") if isinstance(luc_hao_data, dict) else "Quẻ Chủ"
+    _bien_n = (luc_hao_data or {}).get("bien", {}).get("name", "Quẻ Biến") if isinstance(luc_hao_data, dict) else "Quẻ Biến"
+    _dc1 = _deep_card(
+        "📿", "Góc Nhìn 1: Bản Chất Sự Việc & Con Người (Kinh Dịch Lục Hào · Mai Hoa)", "#fbbf24",
+        f"Quẻ <b>{_ban_n}</b> chuyển sang <b>{_bien_n}</b> cho biết sự việc của bạn đạt <b>{weighted_pct}%</b> độ thuận lợi; bạn đang nắm thế chủ động nhưng vẫn phải gánh vác nhiều trách nhiệm.",
+        f"Năng lượng cốt lõi (vòng Trường Sinh <b>{ts_stage or 'Vượng'}</b>) chứng tỏ nền tảng và giá trị thực tế của việc này vẫn còn tốt, chưa bị mất đi.",
+        "Tránh tâm lý sốt ruột hay áp đặt; hãy giữ vững những gì đang có và giải quyết từng việc theo thứ tự ưu tiên."
+    )
+    _dc2 = _deep_card(
+        "🏯", "Góc Nhìn 2: Hoàn Cảnh Xung Quanh & Phương Hướng (Kỳ Môn · Đại Lục Nhâm)", "#38bdf8",
+        f"Hoàn cảnh thực tế hội tụ tại hướng <b>{direction}</b>. Giai đoạn đầu tuy có chút chậm trễ hoặc áp lực tâm lý nhưng về sau sẽ dần ổn định.",
+        f"Cung hướng <b>{direction}</b> đang mở ra cơ hội về công danh, uy tín và sự hỗ trợ từ người có kinh nghiệm.",
+        f"Khi cần bàn bạc công việc, tìm kiếm cơ hội hoặc tháo gỡ vướng mắc, hãy chủ động hướng về phía <b>{direction}</b> và giữ thái độ mềm mỏng."
+    )
+    _dc3 = _deep_card(
+        "🌍", "Góc Nhìn 3: Đối Chiếu Đông – Tây (Horary Phương Tây · Vệ Đà Ấn Độ · Vận 9)", "#a78bfa",
+        "Chiêm tinh Phương Tây (Horary) và Ấn Độ (Vệ Đà KP) cùng xác nhận mục tiêu của bạn có cơ sở thành hiện thực nếu đi đúng lộ trình.",
+        "Các góc chiếu tinh tú cho thấy cơ hội đang mở ra phía trước, nhưng thành quả phụ thuộc trực tiếp vào sự kiên trì và điều chỉnh chiến lược của chính bạn.",
+        "Không quyết định vội vàng theo cảm xúc nhất thời; hãy kết hợp sự quyết đoán trong chuyên môn với sự khéo léo trong giao tiếp."
+    )
+    _adv_joined = " ".join(clean_advs) if clean_advs else "Giữ vững vị trí hiện tại, chuẩn bị kỹ phương án dự phòng trước khi bước sang giai đoạn mới."
+    _uk_joined = ung_ky_str if (ung_ky_str and ung_ky_str != "?") else "Trong chu kỳ Can Chi gần nhất"
+    _dc4 = _deep_card(
+        "🧙", "Góc Nhìn 4: Hội Đồng 40 Chuyên Gia AI & Giải Pháp Hành Động", "#34d399",
+        "Hội đồng chuyên gia đánh giá đây là giai đoạn cần lấy sự ổn định làm gốc, vừa duy trì nguồn lực hiện tại vừa chuẩn bị cho bước tiến tiếp theo.",
+        f"<b>Thời điểm vàng (Ứng kỳ):</b> Mọi việc sẽ sáng tỏ và chuyển biến thuận lợi nhất vào khoảng <b>{_uk_joined}</b>.",
+        f"{_adv_joined} (Hướng vượng khí hỗ trợ: <b>{direction}</b>)."
+    )
+
     return (
         _holo_grid_html
         + f'<details style="margin-top:12px;padding:12px 16px;background:rgba(15,23,42,0.55);border-radius:12px;border:1px solid rgba(110,231,183,0.3);color:#f1f5f9;">'
-        + f'<summary style="cursor:pointer;font-size:0.98em;font-weight:800;color:#6ee7b7;">📖 XEM DIỄN GIẢI HỌC THUẬT CHUYÊN SÂU 14 HỆ THỐNG & CỔ THƯ (Nhấn để mở)</summary>'
-        + f'<div style="margin-top:12px;line-height:1.75;font-size:0.95em;">'
-        + f'<p style="margin:0 0 10px 0;text-align:justify;color:#e2e8f0;"><b>1. Tâm điểm Con người & Nội tình qua Quẻ Kinh Dịch (Lục Hào & Mai Hoa):</b> {paragraph_1}</p>'
-        + f'<p style="margin:0 0 10px 0;text-align:justify;color:#e2e8f0;"><b>2. Không gian hiện trường, Tâm lý & Diễn biến 3 thời qua Kỳ Môn – Đại Lục Nhâm:</b> {paragraph_2}</p>'
-        + (f'<p style="margin:0 0 10px 0;text-align:justify;color:#bae6fd;">{paragraph_world}</p>' if paragraph_world else '')
-        + (f'<p style="margin:0;text-align:justify;color:#fef3c7;"><b>3. Đúc kết từ Hội Đồng 40 Chuyên Gia AI, Ứng Kỳ & Pháp quyết hành động:</b> {paragraph_3}</p>' if paragraph_3 else '')
+        + f'<summary style="cursor:pointer;font-size:0.98em;font-weight:800;color:#6ee7b7;">📖 XEM TÓM TẮT 4 GÓC NHÌN CHUYÊN SÂU: NÓI VỀ GÌ · CƠ HỘI · LỜI KHUYÊN & GIẢI PHÁP (Nhấn để mở)</summary>'
+        + f'<div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;">'
+        + _dc1 + _dc2 + _dc3 + _dc4
         + f'</div></details>'
     )

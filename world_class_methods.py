@@ -434,63 +434,190 @@ def build_holographic_7_position_picture(
     cua_km = str(nb.get(target_cung, nb.get(str(target_cung), "Khai Môn")))
     than_km = str(sb.get(target_cung, sb.get(str(target_cung), "Trực Phù")))
 
-    # VỊ TRÍ 1: Tâm Điểm Chủ Thể & Nội Tình (Lục Hào + Horary) — Ngắn gọn, nhìn phát hiểu ngay
+    # ── TỪ ĐIỂN DỊCH NGHĨA ĐỜI THƯỜNG DỄ HIỂU CHO NGƯỜI KHÔNG CHUYÊN (V100.7) ──
     q_low = (question or "").lower()
     is_identity_q = any(w in q_low for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])
+
+    # Chuẩn hóa tên Quẻ Hỗ nếu đang ở dạng ghép 2 quái đơn (VD: "Tốn Cấn" -> "Phong Sơn Tiệm")
+    _TRIGRAM_PAIR_MAP = {
+        "Tốn Cấn": "Phong Sơn Tiệm (Tiến từng bước chậm mà chắc)",
+        "Cấn Tốn": "Sơn Phong Cổ (Chấn chỉnh lại việc cũ)",
+        "Càn Khôn": "Thiên Địa Bĩ (Tạm thời bế tắc, chưa thông)",
+        "Khôn Càn": "Địa Thiên Thái (Hanh thông, mở lối thuận lợi)",
+        "Đoài Khôn": "Trạch Địa Tụy (Tụ họp, dồn nhiều tâm sức)",
+        "Khảm Ly": "Thủy Hỏa Ký Tế (Việc đã vào guồng ổn định)",
+        "Ly Khảm": "Hỏa Thủy Vị Tế (Cần hoàn thiện nốt bước cuối)",
+    }
+    ho_display = _TRIGRAM_PAIR_MAP.get(ho_name, ho_name or "Giai đoạn chuyển tiếp")
+
+    # VỊ TRÍ 1: Thực lực & Khả năng thành công của bạn (Lục Hào + Horary)
     if is_identity_q and omni_data:
-        pos1_result = (
-            f"Dụng Thần <b>{dung_than}</b> (hành <b>{hanh_dt}</b>, <b>{ts_stage or 'Vượng'}</b>) & Cung Mọc Horary: "
-            f"<b>{omni_data.get('gender', 'Nam giới')}</b>, <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b>."
-        )
+        pos1_what = f"Xác định trực tiếp bản mệnh người hỏi là <b>{omni_data.get('gender', 'Nam giới')}</b>, thuộc nhóm <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b>."
+        pos1_opp = f"Năm sinh & độ tuổi ứng nghiệm: <b>{', '.join(omni_data.get('birth_years', [])[:3])}</b>."
+        pos1_adv = "Năng lượng bản mệnh đang rõ ràng, thuận lợi để hoạch định các mục tiêu cá nhân."
     else:
-        pos1_result = (
-            f"Quẻ <b>{ban_name}</b> → <b>{bien_name or 'Bình hòa'}</b>, Dụng Thần <b>{dung_than} ({hanh_dt})</b> "
-            f"kết hợp Horary ({horary['aspect'].split('/')[0].strip()}) đạt lực lượng <b>{weighted_pct}%</b>."
-        )
+        if weighted_pct >= 55:
+            pos1_what = f"Mức độ thuận lợi của bạn đạt <b>{weighted_pct}% (Khá/Tốt)</b> — bạn đang nắm thế chủ động và có nền tảng tốt."
+            pos1_opp = "Cơ hội phát triển mở ra rõ ràng, có người nâng đỡ hoặc điều kiện thực tế đang ủng hộ bạn."
+            pos1_adv = "Có thể tự tin tiến hành kế hoạch vì cán cân đang nghiêng về phía có lợi cho bạn."
+        elif weighted_pct >= 45:
+            pos1_what = f"Mức độ thuận lợi đạt <b>{weighted_pct}% (Trung bình — Nửa thuận nửa cản)</b>: việc vẫn giữ được nhưng đang có áp lực."
+            pos1_opp = "Bạn vẫn có quyền chủ động và cơ hội tiềm năng phía trước, chưa phải bế tắc hoàn toàn."
+            pos1_adv = "<b>Chưa nên nóng vội bỏ ngang hay thay đổi lớn lúc này</b>; hãy giữ chắc vị trí hiện tại và chuẩn bị kỹ hơn."
+        else:
+            pos1_what = f"Mức độ thuận lợi chỉ đạt <b>{weighted_pct}% (Đang gặp lực cản lớn)</b>: hoàn cảnh hiện tại chưa ủng hộ."
+            pos1_opp = "Nhận diện sớm được rủi ro giúp bạn tránh được quyết định sai lầm gây thiệt hại."
+            pos1_adv = "Tạm hoãn các bước đi mạo hiểm, ưu tiên giữ an toàn công việc và tài chính hiện tại."
+    pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary {horary['aspect'].split('(')[0].strip()}"
+    pos1_result = (
+        f"<div>📌 <b>Nói về gì:</b> {pos1_what}</div>"
+        f"<div style='margin-top:3px;'>✨ <b>Cơ hội:</b> {pos1_opp}</div>"
+        f"<div style='margin-top:3px;'>💡 <b>Khuyên bạn:</b> {pos1_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: {pos1_ref}</i></div>"
+    )
 
-    # VỊ TRÍ 2: Không Gian 3D, Phương Hướng & Hiện Trường (Kỳ Môn + Huyền Không Vận 9)
+    # VỊ TRÍ 2: Môi trường xung quanh & Phương hướng may mắn (Kỳ Môn + Phi Tinh Vận 9)
+    _DOOR_PLAIN = {
+        "Khai Môn": ("công việc, vị thế và cơ hội mở mang vẫn đang rộng mở", "Tận dụng uy tín chuyên môn để giữ vững vị trí hoặc mở rộng hợp tác"),
+        "Hưu Môn": ("môi trường có quý nhân ngầm nâng đỡ, thuận lợi để ổn định", "Chủ động kết nối, lắng nghe ý kiến của người có kinh nghiệm"),
+        "Sinh Môn": ("nguồn thu nhập, tài lộc và giá trị thực tế đang sinh sôi tốt", "Tập trung vào mảng mang lại dòng tiền và hiệu quả thiết thực"),
+        "Cảnh Môn": ("bề nổi có nhiều thông tin, kế hoạch sôi động nhưng dễ sốt ruột", "Rà soát kỹ giấy tờ, cam kết và giữ bình tĩnh khi trao đổi"),
+        "Đỗ Môn": ("hoàn cảnh đang có phần khép kín, bí bách hoặc thông tin chưa rõ hết", "Tập trung trau dồi chuyên môn nội lực, không nên ép buộc vội vàng"),
+        "Thương Môn": ("môi trường cạnh tranh gay gắt, dễ va chạm tự ái hoặc mệt mỏi", "Điềm tĩnh nhường nhịn một bước, tránh tranh cãi trực diện"),
+        "Kinh Môn": ("xung quanh đang có tâm lý lo âu, bàn tán hoặc thiếu chắc chắn", "Giữ vững lập trường, kiểm chứng thực tế thay vì nghe lời đồn"),
+        "Tử Môn": ("hoàn cảnh hiện tại đang chững lại, thiếu động lực đổi mới ngay", "Kiên nhẫn bảo toàn vị trí và nguồn vốn, chờ qua nhịp trầm lắng"),
+    }
+    _GOD_PLAIN = {
+        "Trực Phù": "có cấp trên hoặc quý nhân lớn che chở",
+        "Cửu Thiên": "thuận lợi cho việc vươn xa, lập kế hoạch lớn",
+        "Cửu Địa": "càng kiên trì bám trụ lâu dài càng chắc thắng",
+        "Lục Hợp": "thuận lợi cho việc đàm phán, hợp tác hài hòa",
+        "Thái Âm": "có sự trợ giúp âm thầm, nên chuẩn bị kín đáo",
+        "Đằng Xà": "đi kèm những lo nghĩ trằn trọc hoặc việc phát sinh dây dưa",
+        "Huyền Vũ": "cần chú ý sự minh bạch rõ ràng về tiền bạc/thông tin",
+        "Bạch Hổ": "đi kèm áp lực công việc nặng nề, sự khắt khe dễ gây căng thẳng",
+    }
+    cua_opp, cua_adv = _DOOR_PLAIN.get(cua_km, ("môi trường đang có sự dịch chuyển", "Quan sát kỹ hoàn cảnh trước khi hành động"))
+    than_note = _GOD_PLAIN.get(than_km, "cần giữ sự chủ động")
+    star_short = xk_dh["flying_star"].split("—")[0].strip()
+    pos2_what = f"Hoàn cảnh thực tế của sự việc nằm ở hướng <b>{direction}</b> (tác động trực tiếp đến môi trường làm việc/sinh hoạt của bạn)."
+    pos2_opp = f"Tại đây <b>{cua_opp}</b> ({cua_km}), nhưng <b>{than_note}</b> ({than_km})."
+    pos2_adv = f"{cua_adv}; khi cần tìm cơ hội hoặc gặp người hỗ trợ, hãy ưu tiên hướng <b>{direction}</b>."
+    pos2_ref = f"Cung {target_cung} ({direction}) · Sao {sao_km} · {cua_km} · {than_km} · {star_short}"
     pos2_result = (
-        f"Tọa độ <b>Cung {target_cung} ({direction})</b> — Sao <b>{sao_km}</b>, Cửa <b>{cua_km}</b>, Thần <b>{than_km}</b> "
-        f"& Phi Tinh <b>{xk_dh['flying_star'].split('—')[0].strip()}</b>."
+        f"<div>📌 <b>Nói về gì:</b> {pos2_what}</div>"
+        f"<div style='margin-top:3px;'>✨ <b>Thực tế & Cơ hội:</b> {pos2_opp}</div>"
+        f"<div style='margin-top:3px;'>💡 <b>Giải pháp:</b> {pos2_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: {pos2_ref}</i></div>"
     )
 
-    # VỊ TRÍ 3: Trục Thời Gian 3 Thời Quá Khứ -> Hiện Tại -> Tương Lai (Đại Lục Nhâm + Mai Hoa)
-    pos3_result = (
-        f"Khởi từ <b>{ban_name}</b> (Quá khứ) ➔ qua <b>{ho_name or 'Trung truyền'}</b> (Hiện tại) "
-        f"➔ kết cục về <b>{bien_name or 'Mạt truyền'}</b> (Tương lai)."
-    )
-
-    # VỊ TRÍ 4: Hình Tướng, Đặc Điểm Vật Chất, Tuổi Tác & Định Lượng (Vạn Vật + Thiết Bản + 12 Trường Sinh)
-    if is_identity_q or any(w in q_low for w in ["là ai", "người nào"]):
-        pos4_result = (
-            f"Giới tính <b>{omni_data.get('gender', 'Nam giới')}</b> · Độ tuổi <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b> "
-            f"({', '.join(omni_data.get('birth_years', [])[:2])})."
-        )
+    # VỊ TRÍ 3: Diễn biến 3 giai đoạn Quá khứ -> Hiện tại -> Sắp tới (Đại Lục Nhâm + Mai Hoa)
+    pos3_what = f"<b>Quá khứ ({ban_name}):</b> Bạn đã dồn nhiều tâm sức, tập hợp nguồn lực và đặt nhiều kỳ vọng vào việc này."
+    pos3_opp = f"<b>Hiện tại ({ho_display}):</b> Đang ở nhịp phải tiến từng bước chậm rãi, vừa làm vừa tháo gỡ vướng mắc, không thể đốt cháy giai đoạn."
+    if "Bĩ" in str(bien_name) or weighted_pct < 55:
+        pos3_adv = f"<b>Sắp tới ({bien_name or 'Biến cuộc'}) & Lời khuyên:</b> Nếu nóng vội thay đổi hoặc bỏ ngang ngay sẽ dễ gặp bế tắc; hãy kiên nhẫn giữ nhịp ổn định thì mới êm đẹp."
     else:
-        pos4_result = (
-            f"Hành <b>{hanh_dt}</b> ({ts_stage or 'Tướng khí'}) · Màu hợp: <b>{omni_data.get('colors', 'Sáng rõ')}</b> · "
-            f"Định lượng: <b>{omni_data.get('quantity', 'Theo số Hà Đồ')}</b>."
-        )
+        pos3_adv = f"<b>Sắp tới ({bien_name or 'Biến cuộc'}) & Lời khuyên:</b> Sau giai đoạn chuẩn bị kỹ ở hiện tại, kết cục sắp tới sẽ mở thông và đạt kết quả tốt."
+    pos3_result = (
+        f"<div>⏪ {pos3_what}</div>"
+        f"<div style='margin-top:3px;'>🔄 {pos3_opp}</div>"
+        f"<div style='margin-top:3px;'>⏩ {pos3_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Chủ [{ban_name}] ➔ Hỗ [{ho_name or 'Trung truyền'}] ➔ Biến [{bien_name or 'Mạt truyền'}]</i></div>"
+    )
 
-    # VỊ TRÍ 5: Đồng Hồ Điểm Hẹn Ứng Kỳ (Ứng Kỳ Lục Hào/Kỳ Môn + Vedic KP Sub-Lord)
-    uk_display = omni_data.get("exact_timestamp") or ung_ky_str or "Chu kỳ Can Chi gần nhất"
+    # VỊ TRÍ 4: Năng lượng cốt lõi, Màu sắc & Con số trợ vận (Vạn Vật + 12 Trường Sinh)
+    _TS_PLAIN = {
+        "Đế Vượng": "đang ở đỉnh cao năng lượng, nền tảng và giá trị thực tế còn rất mạnh",
+        "Lâm Quan": "đang vững vàng, có lộc và đủ năng lực làm chủ tình hình",
+        "Trường Sinh": "đang có sức sống mới, khả năng phát triển lâu dài rất tốt",
+        "Quan Đái": "đang từng bước khẳng định vị thế và được ghi nhận",
+        "Dưỡng": "đang trong giai đoạn nuôi dưỡng, tích lũy chờ thời cơ chín muồi",
+        "Thai": "đang ấp ủ dự định mới, cần thêm thời gian chuẩn bị",
+        "Suy": "đang có dấu hiệu mệt mỏi sau giai đoạn căng sức, cần giữ ổn định",
+        "Bệnh": "đang có điểm vướng mắc cần chỉnh sửa, tránh ôm đồm thêm",
+        "Mộ": "năng lượng đang bị bó hẹp, cần kiên nhẫn chờ thời điểm khai thông",
+        "Tuyệt": "cần làm mới phương pháp tiếp cận, tránh lối mòn cũ",
+    }
+    ts_plain_desc = _TS_PLAIN.get(ts_stage, "đang vận hành ổn định theo chu kỳ")
+    colors_clean = omni_data.get("colors", "Trắng, Vàng, Đỏ")
+    qty_raw = str(omni_data.get("quantity", "2, 7"))
+    qty_short = qty_raw.replace("Con số định lượng chuẩn:", "").strip()
+    if is_identity_q or any(w in q_low for w in ["là ai", "người nào"]):
+        pos4_what = f"Khẳng định đặc điểm người được hỏi là <b>{omni_data.get('gender', 'Nam giới')}</b>, độ tuổi <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b>."
+        pos4_opp = f"Vóc dáng/khí chất: {omni_data.get('height_desc', 'Cân đối, chững chạc')}."
+        pos4_adv = f"Màu sắc hợp mệnh giúp tăng may mắn: <b>{colors_clean}</b>."
+    else:
+        pos4_what = f"Giá trị cốt lõi của sự việc thuộc hành <b>{hanh_dt}</b> ({ts_stage or 'Vượng'}: <b>{ts_plain_desc}</b>)."
+        pos4_opp = f"<b>Con số may mắn trợ vận:</b> <b>{qty_short}</b> (dùng khi đàm phán lương/giá cả, chọn ngày giờ hoặc định lượng)."
+        pos4_adv = f"<b>Màu sắc kích hoạt may mắn:</b> Ưu tiên trang phục/vật dụng màu <b>{colors_clean}</b> để tăng sự thuận lợi."
+    pos4_result = (
+        f"<div>📌 <b>Nói về gì:</b> {pos4_what}</div>"
+        f"<div style='margin-top:3px;'>✨ {pos4_opp}</div>"
+        f"<div style='margin-top:3px;'>💡 {pos4_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Vạn Vật hành {hanh_dt} · Trường Sinh [{ts_stage or 'Tướng khí'}]</i></div>"
+    )
+
+    # VỊ TRÍ 5: Đồng hồ thời điểm ứng nghiệm (Ứng Kỳ + Vệ Đà KP)
+    _raw_exact_ts = omni_data.get("exact_timestamp", "")
+    if ung_ky_str and ung_ky_str != "?" and "hội tụ khí số" not in ung_ky_str.lower():
+        uk_display = ung_ky_str
+    elif _raw_exact_ts and "hội tụ khí số" not in _raw_exact_ts.lower():
+        uk_display = _raw_exact_ts
+    else:
+        uk_display = "Các ngày/giờ thuộc hành Dụng Thần gần nhất trong tháng"
+    pos5_what = "Chỉ ra mốc thời gian sự việc sẽ mở nút thắt, có tin tức rõ ràng hoặc thuận lợi nhất để quyết định."
+    pos5_opp = f"<b>Thời điểm chuyển biến quan trọng:</b> <b>{uk_display}</b>."
+    pos5_adv = f"Từ nay đến mốc đó hãy chuẩn bị thật chắc chắn (theo tinh thần <i>{vedic['nak_trait'].lower()}</i>); <b>đợi đúng mốc này mới chốt quyết định lớn</b>."
     pos5_result = (
-        f"Điểm rơi: <b>{uk_display}</b> (kích hoạt bởi Tinh tú Vệ Đà <b>{vedic['nakshatra']}</b>)."
+        f"<div>📌 <b>Nói về gì:</b> {pos5_what}</div>"
+        f"<div style='margin-top:3px;'>⏰ {pos5_opp}</div>"
+        f"<div style='margin-top:3px;'>💡 <b>Khuyên bạn:</b> {pos5_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Động cơ Ứng Kỳ · Tinh tú Vệ Đà {vedic['nakshatra']}</i></div>"
     )
 
-    # VỊ TRÍ 6: Thời Thế Vĩ Mô & Chiến Lược Công/Thủ (Thái Ất + Tử Vi + Trạch Cát)
-    strategy_mode = "CHỦ ĐỘNG TIẾN HÀNH (Lợi Động)" if weighted_pct >= 55 else (
-        "GIỮ VỮNG VỊ TRÍ, CHỜ ĐÚNG THỜI CƠ (Thận trọng)" if weighted_pct >= 45 else
-        "ÁN BINH BẤT ĐỘNG, PHÒNG THỦ BẢO TOÀN (Lợi Tĩnh)"
-    )
+    # VỊ TRÍ 6: Chiến lược hành động: Nên Tiến hay Giữ? (Thái Ất + Tử Vi + Trạch Cát)
+    if weighted_pct >= 55:
+        pos6_what = f"Cả vận thế bên ngoài (Thái Ất: {thai_at_verdict}) và vận cá nhân (Tử Vi: {tu_vi_verdict}) đều đang ủng hộ bạn tiến lên."
+        pos6_opp = "Thời cơ đang mở, nếu chủ động nắm bắt sẽ tạo được bước tiến mới rất tốt."
+        pos6_adv = "<b>Chiến lược: CHỦ ĐỘNG TIẾN HÀNH</b> — mạnh dạn triển khai kế hoạch hoặc đón nhận cơ hội mới."
+    elif weighted_pct >= 45:
+        pos6_what = f"Vận cá nhân của bạn có điểm sáng tốt (Tử Vi: <b>{tu_vi_verdict}</b>), nhưng bối cảnh chung bên ngoài còn biến động (Thái Ất: <b>{thai_at_verdict}</b>)."
+        pos6_opp = "Năng lực cá nhân và quý nhân của bạn vẫn vững, giúp bạn đứng vững trước sóng gió."
+        pos6_adv = "<b>Chiến lược: GIỮ VỮNG VỊ TRÍ HIỆN TẠI, CHỜ ĐÚNG THỜI CƠ</b> — không bỏ việc/thay đổi vội khi chưa có bến đỗ mới chắc chắn 100%."
+    else:
+        pos6_what = f"Bối cảnh chung (Thái Ất: {thai_at_verdict}) và vận trình hiện tại đang có nhiều lực cản bất lợi."
+        pos6_opp = "Giữ nguyên vị trí hiện tại chính là lá chắn an toàn nhất giúp bạn không bị hao tổn."
+        pos6_adv = "<b>Chiến lược: ÁN BINH BẤT ĐỘNG, PHÒNG THỦ BẢO TOÀN</b> — tuyệt đối tránh tự ý thay đổi hay đầu tư mạo hiểm."
     pos6_result = (
-        f"Thái Ất ({thai_at_verdict}) + Tử Vi ({tu_vi_verdict}) khuyên: <b>{strategy_mode}</b>."
+        f"<div>📌 <b>Nói về gì:</b> {pos6_what}</div>"
+        f"<div style='margin-top:3px;'>✨ <b>Điểm tựa của bạn:</b> {pos6_opp}</div>"
+        f"<div style='margin-top:3px;'>💡 {pos6_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Thái Ất ({thai_at_verdict}) · Tử Vi ({tu_vi_verdict}) · Trạch Cát ({xem_ngay_verdict})</i></div>"
     )
 
-    # VỊ TRÍ 7: Chìa Khóa Hóa Giải & Độ Đồng Thuận Bayes (Bát Tự Điều Hầu + 40 Chuyên Gia AI + Bayes)
+    # VỊ TRÍ 7: Chìa khóa hóa giải áp lực & Độ đồng thuận Bayes (Bát Tự Điều Hầu + 40 Chuyên Gia AI)
+    _dh_god = xk_dh["dieu_hau_god"]
+    if "Mộc" in _dh_god and "Thủy" in _dh_god:
+        dh_plain_meaning = "bổ sung sự mềm mỏng, linh hoạt (Mộc) và sự điềm tĩnh, nghỉ ngơi thư giãn (Thủy) để làm dịu bớt áp lực căng thẳng hiện tại"
+        dh_plain_action = "Tránh tranh cãi cứng nhắc tại nơi làm việc; học thêm kỹ năng mới, đặt cây xanh hoặc nước tại bàn làm việc"
+    elif "Hỏa" in _dh_god:
+        dh_plain_meaning = "bổ sung sự nhiệt huyết, ấm áp và chủ động kết nối (Hỏa) để phá tan sự trầm lắng, trì trệ"
+        dh_plain_action = "Chủ động trò chuyện cởi mở với cấp trên/đồng nghiệp, giữ tinh thần lạc quan và làm việc ở nơi nhiều ánh sáng"
+    elif "Kim" in _dh_god:
+        dh_plain_meaning = "bổ sung sự quyết đoán, kỷ luật rõ ràng (Kim) và sự điềm tĩnh (Thủy)"
+        dh_plain_action = "Làm việc có kế hoạch rõ ràng, rà soát kỹ các điều khoản hợp đồng/tài chính, cắt bỏ việc rườm rà"
+    else:
+        dh_plain_meaning = "giữ sự cân bằng giữa công việc và nghỉ ngơi, điều hòa cảm xúc ôn hòa"
+        dh_plain_action = "Hành xử mềm mỏng, ưu tiên sự ổn định và tránh quyết định lúc đang nóng giận"
+
+    pos7_what = f"Cả 14 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> (Xác suất chuẩn xác Bayes: <b>{bayes['bayesian_posterior_pct']}%</b>)."
+    pos7_opp = f"<b>Cơ hội hóa giải khó khăn:</b> Cần <b>{dh_plain_meaning}</b>."
+    pos7_adv = f"<b>Việc nên làm ngay:</b> {dh_plain_action}; ưu tiên xuất hành/giao dịch về hướng <b>{xk_dh['dieu_hau_dir']}</b>."
     pos7_result = (
-        f"Đồng thuận 14 hệ thống: <b>{bayes['consensus_pct']}%</b> · Bổ trợ: <b>{xk_dh['dieu_hau_god']}</b> "
-        f"(Hướng vượng: <b>{xk_dh['dieu_hau_dir']}</b>)."
+        f"<div>📌 <b>Độ tin cậy:</b> {pos7_what}</div>"
+        f"<div style='margin-top:3px;'>✨ {pos7_opp}</div>"
+        f"<div style='margin-top:3px;'>💡 {pos7_adv}</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Điều Hầu Bát Tự [{_dh_god}] · Hướng vượng [{xk_dh['dieu_hau_dir']}]</i></div>"
     )
 
     syn = compute_7_link_synergy_chain(
@@ -513,31 +640,31 @@ def build_holographic_7_position_picture(
 
     def _card7(num: int, icon: str, title: str, methods: str, body: str, border_col: str = "#38bdf8") -> str:
         return (
-            f'<div style="padding:10px 13px;background:rgba(15,23,42,0.78);border-radius:10px;'
-            f'border-left:4px solid {border_col};border-top:1px solid rgba(255,255,255,0.08);">'
-            f'<div style="font-size:0.88em;font-weight:800;color:{border_col};margin-bottom:3px;">'
-            f'{icon} Vị trí {num} — {title} <span style="font-weight:500;color:#94a3b8;font-size:0.9em;">({methods})</span></div>'
-            f'<div style="font-size:0.94em;color:#f1f5f9;line-height:1.48;">{body}</div>'
+            f'<div style="padding:12px 14px;background:rgba(15,23,42,0.82);border-radius:11px;'
+            f'border-left:4px solid {border_col};border-top:1px solid rgba(255,255,255,0.09);">'
+            f'<div style="font-size:0.93em;font-weight:800;color:{border_col};margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:4px;">'
+            f'{icon} Vị trí {num} — {title} <span style="font-weight:500;color:#94a3b8;font-size:0.86em;">({methods})</span></div>'
+            f'<div style="font-size:0.93em;color:#f1f5f9;line-height:1.52;">{body}</div>'
             f'</div>'
         )
 
-    # Bản đồ HTML 7 vị trí thiết kế dạng Lưới Thẻ Visual (Grid Cards) thoáng đẹp, nhìn 1 giây hiểu ngay
+    # Bản đồ HTML 7 vị trí thiết kế dạng Lưới Thẻ Visual (Grid Cards) diễn giải đời thường siêu dễ hiểu
     grid_html = (
-        f'<div style="margin-top:12px;padding:14px 16px;background:rgba(2,6,23,0.55);border-radius:14px;border:1px solid rgba(56,189,248,0.35);">'
-        f'<div style="font-size:1.0em;font-weight:800;color:#38bdf8;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ BỨC TRANH 7 MẮT XÍCH LIÊN KẾT HỢP SỨC (14 HỆ THỐNG ĐÔNG – TÂY)</span>'
+        f'<div style="margin-top:12px;padding:15px 16px;background:rgba(2,6,23,0.58);border-radius:14px;border:1px solid rgba(56,189,248,0.38);">'
+        f'<div style="font-size:1.02em;font-weight:800;color:#38bdf8;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
+        f'<span>🗺️ BỨC TRANH 7 MẮT XÍCH GIẢI MÃ DỄ HIỂU: NÓI VỀ GÌ · CƠ HỘI GÌ · KHUYÊN GÌ (14 HỆ THỐNG)</span>'
         f'<span style="font-size:0.85em;padding:3px 10px;background:rgba(16,185,129,0.2);color:#6ee7b7;border-radius:20px;border:1px solid rgba(52,211,153,0.4);">🔗 Độ đồng thuận Bayes: {bayes["consensus_pct"]}%</span>'
         f'</div>'
-        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:9px;">'
-        + _card7(1, "🎯", "Con Người & Cốt Lõi", "Lục Hào + Horary", pos1_result, "#fbbf24")
-        + _card7(2, "🧭", "Không Gian & Phương Hướng", "Kỳ Môn + Phi Tinh Vận 9", pos2_result, "#38bdf8")
-        + _card7(3, "⏳", "Trục Thời Gian 3 Thời", "Đại Lục Nhâm + Mai Hoa", pos3_result, "#a78bfa")
-        + _card7(4, "📦", "Hình Tướng & Định Lượng", "Vạn Vật + Trường Sinh", pos4_result, "#f472b6")
-        + _card7(5, "⏰", "Đồng Hồ Điểm Hẹn Ứng Kỳ", "Ứng Kỳ + Vệ Đà KP", pos5_result, "#fb923c")
-        + _card7(6, "🌌", "Chiến Lược Công / Thủ", "Thái Ất + Tử Vi", pos6_result, "#2dd4bf")
+        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
+        + _card7(1, "🎯", "Thực Lực & Khả Năng Thành Công", "Lục Hào + Horary", pos1_result, "#fbbf24")
+        + _card7(2, "🧭", "Môi Trường & Hướng May Mắn", "Kỳ Môn + Phi Tinh Vận 9", pos2_result, "#38bdf8")
+        + _card7(3, "⏳", "Diễn Biến: Quá Khứ ➔ Hiện Tại ➔ Sắp Tới", "Đại Lục Nhâm + Mai Hoa", pos3_result, "#a78bfa")
+        + _card7(4, "📦", "Năng Lượng, Con Số & Màu Sắc Trợ Vận", "Vạn Vật + Trường Sinh", pos4_result, "#f472b6")
+        + _card7(5, "⏰", "Thời Điểm Mở Vận & Chốt Quyết Định", "Ứng Kỳ + Vệ Đà KP", pos5_result, "#fb923c")
+        + _card7(6, "🌌", "Chiến Lược: Nên Tiến Hay Giữ?", "Thái Ất + Tử Vi", pos6_result, "#2dd4bf")
         + '</div>'
-        + f'<div style="margin-top:9px;">'
-        + _card7(7, "🔑", "Chìa Khóa Hóa Giải & Chốt Hạ Bayes", "Bát Tự Điều Hầu + 40 Chuyên Gia AI", pos7_result, "#34d399")
+        + f'<div style="margin-top:10px;">'
+        + _card7(7, "🔑", "Chìa Khóa Hóa Giải Áp Lực & Cách Làm Ngay", "Bát Tự Điều Hầu + 40 Chuyên Gia AI", pos7_result, "#34d399")
         + f'</div>'
         + f'</div>'
     )

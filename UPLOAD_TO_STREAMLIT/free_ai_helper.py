@@ -5644,16 +5644,29 @@ class FreeAIHelper:
                 f"</verdict_block>\n\n"
                 
                 f"<output_format>\n"
-                f"BẮT BUỘC TRÌNH BÀY BẰNG VĂN XUÔI MẠCH LẠC, GHÉP KHÍT THÀNH 1 BỨC TRANH TOÀN CẢNH DỄ ĐỌC, DỄ HIỂU:\n\n"
+                f"⛔ CẤM VIẾT ĐOẠN VĂN DÀI DÀY ĐẶC! BẮT BUỘC DỊCH TOÀN BỘ THUẬT NGỮ QUẺ RA NGÔN NGỮ ĐỜI THƯỜNG DỄ HIỂU CHO NGƯỜI KHÔNG CÓ CHUYÊN MÔN, CHIA NHỎ THÀNH CÁC Ý NGẮN GỌN (NÓI VỀ CÁI GÌ · CƠ HỘI GÌ · KHUYÊN GÌ & GIẢI PHÁP GÌ):\n\n"
                 f"### 🏆 KẾT LUẬN\n"
-                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Khẳng định rõ kết quả '{_vb_prompt_str}']\n"
-                f"**📋 VÌ SAO:** [Viết 1 đoạn văn ghép nối mạch lạc: Vị trí 1 (Con người/Bản chất qua Lục Hào & Horary), Vị trí 2 (Không gian/Hướng qua Kỳ Môn & Huyền Không), Vị trí 3 (Quá khứ-Hiện tại-Tương lai qua Đại Lục Nhâm & Mai Hoa) và Vị trí 4 (Đặc điểm/Tuổi tác/Số lượng qua Vạn Vật & 12 Trường Sinh)]\n"
-                f"**⏳ ỨNG KỲ:** [Vị trí 5: Ghi rõ mốc thời gian ứng nghiệm dựa trên Ứng Kỳ & Tinh tú Vệ Đà KP Sub-Lord trong verdict_block]\n"
-                f"**🔧 GIẢI PHÁP:** [Vị trí 6 & 7: Chiến lược Tiến/Lùi theo Thái Ất - Tử Vi và Pháp quyết hóa giải theo Bát Tự Điều Hầu & phương vị Cát lợi]\n\n"
-                f"### 🔮 BỨC TRANH TOÀN CẢNH ĐÔNG - TÂY HỢP NHẤT (3 ĐOẠN VĂN LIỀN MẠCH)\n"
-                f"**Đoạn 1 — Tâm điểm Con người, Không gian & Nội tình (Lục Hào + Horary + Kỳ Môn + Huyền Không Vận 9):** [Phân tích sâu chủ thể, đối phương và không gian phương hướng hiện trường của '{question}']\n\n"
-                f"**Đoạn 2 — Trục thời gian 3 Thời & Định lượng Vạn Vật (Đại Lục Nhâm + Mai Hoa + Thiết Bản + Vedic KP):** [Làm rõ diễn biến từ nguyên nhân quá khứ, nút thắt hiện tại đến kết cục tương lai và điểm hẹn ứng kỳ]\n\n"
-                f"**Đoạn 3 — Chiến lược Vĩ mô, Pháp quyết Điều Hầu & Hội tụ Bayes:** [Đưa ra cẩm nang hành động cụ thể, phương hướng, màu sắc và thời cơ giúp người hỏi làm chủ hoàn toàn cục diện]\n"
+                f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Khẳng định rõ '{_vb_prompt_str}']\n"
+                f"**📋 VÌ SAO:** [Chỉ viết 2 câu ngắn gọn bằng ngôn ngữ đời thường dễ hiểu: giải thích thực trạng hiện tại đang thuận hay vướng ở đâu, giúp ích gì cho câu hỏi]\n"
+                f"**⏳ ỨNG KỲ:** [Chỉ viết 1-2 câu ngắn gọn: ghi rõ mốc giờ/ngày/tháng chuyển biến quan trọng nhất và ý nghĩa của mốc đó]\n"
+                f"**🔧 GIẢI PHÁP:** [Chỉ viết 2 câu ngắn gọn: khuyên người hỏi nên làm gì ngay, đi hướng nào, dùng màu sắc/con số nào để gặp may mắn]\n\n"
+                f"### 🔮 4 THẺ GIẢI MÃ TRỰC QUAN (DỄ ĐỌC CHO NGƯỜI KHÔNG CHUYÊN)\n"
+                f"#### 🎯 Thẻ 1 — Thực Lực Hiện Tại & Bản Chất Sự Việc (Lục Hào + Horary)\n"
+                f"- **📌 Nói về cái gì:** [Giải thích ngắn gọn 1 câu bằng tiếng Việt đời thường về tình hình thực tế của '{question}']\n"
+                f"- **✨ Cơ hội / Điểm sáng:** [Chỉ rõ 1 câu về lợi thế hoặc cơ hội đang có]\n"
+                f"- **💡 Khuyên bạn:** [1 câu lời khuyên thực tế dễ hiểu]\n\n"
+                f"#### 🧭 Thẻ 2 — Môi Trường Xung Quanh & Phương Hướng May Mắn (Kỳ Môn + Phi Tinh Vận 9)\n"
+                f"- **📌 Nói về cái gì:** [Giải thích 1 câu về hoàn cảnh/môi trường xung quanh và hướng tọa độ]\n"
+                f"- **✨ Cơ hội / Điểm sáng:** [1 câu về điểm thuận lợi tại phương hướng đó]\n"
+                f"- **💡 Giải pháp:** [1 câu chỉ rõ cách ứng xử tại nơi làm việc/sinh hoạt và hướng tốt nên chọn]\n\n"
+                f"#### ⏳ Thẻ 3 — Diễn Biến Quá Khứ ➔ Hiện Tại ➔ Sắp Tới & Thời Điểm Vàng (Đại Lục Nhâm + Mai Hoa + Ứng Kỳ)\n"
+                f"- **📌 Diễn biến 3 giai đoạn:** [1 câu tóm tắt: Trước đây thế nào ➔ Hiện tại đang vướng gì ➔ Sắp tới ra sao]\n"
+                f"- **✨ Thời cơ vàng (Ứng kỳ):** [1 câu chốt mốc thời gian mở vận chính xác]\n"
+                f"- **💡 Khuyên bạn:** [1 câu khuyên khi nào nên giữ, khi nào nên chốt quyết định]\n\n"
+                f"#### 🔑 Thẻ 4 — Chiến Lược Hành Động & Mẹo Hóa Giải Ngay (Thái Ất + Tử Vi + Bát Tự Điều Hầu)\n"
+                f"- **📌 Chiến lược tốt nhất:** [1 câu khẳng định nên Chủ động tấn công hay Giữ vững ổn định]\n"
+                f"- **✨ Trợ lực may mắn:** [1 câu về màu sắc, con số Hà Đồ và hướng vượng khí bổ trợ]\n"
+                f"- **💡 Giải pháp làm ngay:** [1 câu chỉ dẫn hành động thực tế cụ thể trong đời sống hàng ngày]\n"
                 f"</output_format>\n\n"
             )
             
@@ -15868,34 +15881,79 @@ class FreeAIHelper:
                 return ""
             import re as _re_md
             _norm = str(_md_text)
-            # Tách dòng nếu nhiều icon mục bị dính trên cùng 1 dòng
-            for _ic in ['📢', '📋', '⏳', '🔧', '### ', '## ']:
+            for _ic in ['📢', '📋', '⏳', '🔧', '#### ', '### ', '## ']:
                 _norm = _norm.replace(f" {_ic}", f"\n{_ic}").replace(f"**{_ic}", f"\n**{_ic}")
             _out_lines = []
+            _cards_buf = []
+            _cur_card_title = None
+            _cur_card_lines = []
+            _card_colors = ["#fbbf24", "#38bdf8", "#a78bfa", "#34d399", "#f472b6", "#fb923c"]
+
+            def _flush_card():
+                nonlocal _cur_card_title, _cur_card_lines
+                if _cur_card_title is not None:
+                    _col = _card_colors[len(_cards_buf) % len(_card_colors)]
+                    _body_c = "".join(_cur_card_lines)
+                    _cards_buf.append(
+                        f'<div style="padding:12px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid {_col};border-top:1px solid rgba(255,255,255,0.08);">'
+                        f'<div style="font-size:0.95em;font-weight:800;color:{_col};margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:4px;">{_cur_card_title}</div>'
+                        f'<div style="font-size:0.93em;color:#f1f5f9;line-height:1.52;">{_body_c}</div></div>'
+                    )
+                    _cur_card_title = None
+                    _cur_card_lines = []
+
+            def _flush_grid():
+                nonlocal _cards_buf
+                _flush_card()
+                if _cards_buf:
+                    _out_lines.append(
+                        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;margin:10px 0;">'
+                        + "".join(_cards_buf)
+                        + '</div>'
+                    )
+                    _cards_buf = []
+
             for _raw_l in _norm.split('\n'):
                 _s = _raw_l.strip()
                 if not _s:
                     continue
+                # Bỏ qua 4 dòng KẾT LUẬN đã hiển thị ở Ô Nâu bên trên để không bị lặp chữ
+                if any(_k in _s.upper() for _k in ['### 🏆 KẾT LUẬN', '📢 CÂU TRẢ LỜI:', '📋 VÌ SAO:', '⏳ ỨNG KỲ:', '🔧 GIẢI PHÁP:']):
+                    continue
                 if _s.startswith(('<div', '</div', '<table', '</table', '<tr', '</tr', '<td', '<th', '<ul', '<li', '<hr', '<details', '</details', '<summary')):
+                    _flush_grid()
                     _out_lines.append(_s)
                     continue
                 if _s in ('---', '***', '___'):
+                    _flush_grid()
                     _out_lines.append('<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:10px 0;">')
                     continue
-                # Convert **bold** -> <b>bold</b>
                 _s_html = _re_md.sub(r'\*\*(.+?)\*\*', r'<b style="color:#fde68a;">\1</b>', _s)
-                if _s_html.startswith('#### '):
-                    _out_lines.append(f'<div style="font-size:1.02em;font-weight:800;color:#93c5fd;margin:10px 0 4px 0;">{_s_html[5:]}</div>')
+                if _s_html.startswith('#### ') or _s.startswith(('**Đoạn 1', '**Đoạn 2', '**Đoạn 3', 'Đoạn 1', 'Đoạn 2', 'Đoạn 3')):
+                    _flush_card()
+                    _cur_card_title = _s_html[5:] if _s_html.startswith('#### ') else _s_html
                 elif _s_html.startswith('### '):
-                    _out_lines.append(f'<div style="font-size:1.12em;font-weight:800;color:#fbbf24;margin:14px 0 6px 0;border-bottom:1px solid rgba(251,191,36,0.25);padding-bottom:4px;">{_s_html[4:]}</div>')
+                    _flush_grid()
+                    _out_lines.append(f'<div style="font-size:1.05em;font-weight:800;color:#38bdf8;margin:10px 0 6px 0;">{_s_html[4:]}</div>')
                 elif _s_html.startswith('## '):
-                    _out_lines.append(f'<div style="font-size:1.18em;font-weight:900;color:#34d399;margin:14px 0 6px 0;">{_s_html[3:]}</div>')
+                    _flush_grid()
+                    _out_lines.append(f'<div style="font-size:1.12em;font-weight:900;color:#34d399;margin:10px 0 6px 0;">{_s_html[3:]}</div>')
                 elif _s_html.startswith('# '):
-                    _out_lines.append(f'<div style="font-size:1.22em;font-weight:900;color:#f59e0b;margin:14px 0 6px 0;">{_s_html[2:]}</div>')
+                    _flush_grid()
+                    _out_lines.append(f'<div style="font-size:1.16em;font-weight:900;color:#f59e0b;margin:10px 0 6px 0;">{_s_html[2:]}</div>')
                 elif _s_html.startswith(('- ', '• ', '* ')):
-                    _out_lines.append(f'<div style="margin:5px 0 5px 12px;line-height:1.65;color:#f1f5f9;">• {_s_html[2:]}</div>')
+                    _line_item = f'<div style="margin:4px 0;line-height:1.52;color:#f1f5f9;">{_s_html[2:]}</div>'
+                    if _cur_card_title is not None:
+                        _cur_card_lines.append(_line_item)
+                    else:
+                        _out_lines.append(_line_item)
                 else:
-                    _out_lines.append(f'<div style="margin:6px 0;line-height:1.65;color:#f8fafc;">{_s_html}</div>')
+                    _line_p = f'<div style="margin:4px 0;line-height:1.52;color:#f8fafc;">{_s_html}</div>'
+                    if _cur_card_title is not None:
+                        _cur_card_lines.append(_line_p)
+                    else:
+                        _out_lines.append(_line_p)
+            _flush_grid()
             return "\n".join(_out_lines)
 
         # V99.9: Mặc định LUÔN BẬT AI Online (use_online_api=True) kết hợp 10 Hệ Thống + 40 Chuyên Gia AI
@@ -16030,7 +16088,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.6 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V100.7 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -16742,7 +16800,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.6)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.7)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{_off_v_color};border-radius:20px;border:1px solid {_off_v_color};">{_off_v_icon} {_off_v_label} ({weighted_pct}%)</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
@@ -17516,7 +17574,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.6)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 14 HỆ THỐNG ĐÔNG – TÂY (V100.7)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{_off2_v_color};border-radius:20px;border:1px solid {_off2_v_color};">{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)</span>'
                     f'</div>'
                     + _combined_direct_html
