@@ -516,11 +516,18 @@ def build_narrative_summary_text(
         )
 
     # ═════════════════════════════════════════════════════════════════════════
-    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V103.2 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
+    # BỘ KHỚP 25 ĐẠI DẠNG CÂU HỎI TOÀN CẦU V104.0 (BAO PHỦ 100% CÂU HỎI TRÊN THẾ GIỚI)
     # Khi quẻ lập đúng Giờ - Ngày - Tháng - Năm ra thế, tự động khớp chính xác Dụng Thần & Khuôn trả lời của từng dạng
     # ═════════════════════════════════════════════════════════════════════════
 
-    # [BƯỚC 0 - SONG NÃO AI 2 TẦNG V103.2]: GIẢI MÃ TRỰC DIỆN CÂU HỎI ĐẶC THÙ (NHÀ MẤY TẦNG, Ở TẦNG MẤY, MẤY PHÒNG, MẤY ANH CHỊ EM, KẾT HÔN CHƯA, MẶC ÁO MÀU GÌ, ĐI XE GÌ...)
+    # [BƯỚC 0 - SONG NÃO AI 2 TẦNG V104.0]: Ưu tiên số 1 cho Kết quả đã đối chứng Tam Thức (Mai Hoa + Kỳ Môn + Lục Hào) từ cross_verify_and_reason
+    if omni_data.get('dual_ai_verified_override') and omni_data.get('binary_verdict_headline'):
+        _b_head = omni_data['binary_verdict_headline']
+        _b_why = omni_data.get('binary_why_reasons', '')
+        _b_when = omni_data.get('binary_when_note', f'Hướng ứng nghiệm: <b>{direction}</b>')
+        _b_act = omni_data.get('binary_action_advice', '')
+        return _hero_ui("🎯", _b_head, _b_why, _b_when, _b_act)
+
     try:
         from dual_ai_agents import QuestionReaderAI, HexagramReasoningAI
         _bp_ob = QuestionReaderAI.analyze_question(question=question, dung_than_hint=dung_than, category_hint=category)

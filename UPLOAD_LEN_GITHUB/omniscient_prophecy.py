@@ -570,6 +570,11 @@ def build_omniscient_prophecy(
 
     ten_que_ho = mai_hoa_data.get('ten_ho', '')
 
+    # V104.0: Đồng bộ Sắc Tướng Tam Thức (Mai Hoa Biến Dụng + Kỳ Môn Bát Thần Huyền Vũ/Bạch Hổ)
+    h_forensic = dict(h_forensic)
+    if "Huyền Vũ" in str(than_name) or "Thủy" in str(ten_que_bien):
+        h_forensic["mau_sac"] = f"Đen, Xám đen, Xanh đen (Phối {h_forensic.get('mau_sac', 'Trắng, Bạc')})"
+
     dong_hao_list = luc_hao_data.get('dong_hao') or (
 
         [mai_hoa_data.get('dong_hao')] if mai_hoa_data.get('dong_hao') else []
@@ -1144,7 +1149,7 @@ def build_omniscient_prophecy(
 
     # ═════════════════════════════════════════════════════════════════════════
 
-    # CHIỀU 5B (V103.2): GIẢI MÃ TỬ TỨC / CON CÁI & ĐỘ TUỔI CON GÁI - CON TRAI SÁT TỪ LIÊN KẾT ĐA HỆ THỐNG
+    # CHIỀU 5B (V104.0): GIẢI MÃ TỬ TỨC / CON CÁI & ĐỘ TUỔI CON GÁI - CON TRAI SÁT TỪ LIÊN KẾT ĐA HỆ THỐNG
 
     # ═════════════════════════════════════════════════════════════════════════
 
@@ -1408,7 +1413,7 @@ def build_omniscient_prophecy(
 
 
 
-    # V103.2: Kiểm tra sâu Hào Tử Tôn có thực sự bị Chân Không hay đang Hữu Khí / được Hào Động sinh trợ!
+    # V104.0: Kiểm tra sâu Hào Tử Tôn có thực sự bị Chân Không hay đang Hữu Khí / được Hào Động sinh trợ!
 
     _CHI_NH_OM = {'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc', 'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ', 'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'}
 
@@ -1520,7 +1525,7 @@ def build_omniscient_prophecy(
 
 
 
-    # V103.2: Giải mã chuyên sâu Độ Tuổi & Năm Sinh của CON GÁI và CON TRAI từ Liên kết Lục Hào + Mai Hoa + Kỳ Môn + Thiết Bản
+    # V104.0: Giải mã chuyên sâu Độ Tuổi & Năm Sinh của CON GÁI và CON TRAI từ Liên kết Lục Hào + Mai Hoa + Kỳ Môn + Thiết Bản
 
     _TT_MAP_AGE = {'Càn': 1, 'Đoài': 2, 'Ly': 3, 'Chấn': 4, 'Tốn': 5, 'Khảm': 6, 'Cấn': 7, 'Khôn': 8}
 
