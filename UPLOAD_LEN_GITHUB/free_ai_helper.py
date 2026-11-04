@@ -14527,18 +14527,44 @@ class FreeAIHelper:
                 'nhập trạch', 'xuất hành', 'ký hợp đồng', 'ký kết', 'chọn ngày', 'giờ nào', 'mở hàng', 'khởi công'
             ]
         )
-        # V105.0: Tập trung 95% trọng số quyết định vào 4 Hệ Thống Luận Quẻ Chuẩn Xác Nhất (Lục Hào, Kỳ Môn, Mai Hoa, Thiết Bản);
-        # Khóa trọng số = 0 đối với Thái Ất (Vĩ mô quốc sự), Xem Ngày (khi không hỏi chọn ngày) và Tử Vi (khi không nhập ngày giờ sinh) để TUYỆT ĐỐI KHÔNG làm nhiễu quẻ!
-        weights = {
-            'LH': method_w.get('luc_hao', 100),
-            'KM': method_w.get('ky_mon', 90),
-            'MH': method_w.get('mai_hoa', 85),
-            'TB': min(35, method_w.get('thiet_ban', 30)),
-            'LN': 15,
-            'TA': 0,
-            'XN': method_w.get('xem_ngay', 45) if _is_date_action_q else 0,
-            'TV': method_w.get('tu_vi', 50) if locals().get('_has_personal_tv') else 0,
-        }
+        # V106.0: PHÂN TÁCH RẠCH RÒI THEO CHUYÊN MẢNG:
+        # 1. Mảng Cả Cuộc Đời (_is_lifetime_tv_q) -> Tử Vi Đẩu Số & Thiết Bản làm chủ.
+        # 2. Mảng Vận Quốc Gia / Thế Giới (_is_national_ta_q) -> Thái Ất Thần Số & Kỳ Môn làm chủ.
+        # 3. Mảng Chọn Ngày Giờ Hành Sự (_is_date_action_q) -> Xem Ngày Đẹp & Kỳ Môn làm chủ.
+        # 4. Mọi câu hỏi thực tế khác -> CHỈ DÙNG 4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT (Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản = 100% trọng số; các phương pháp khác = 0).
+        _is_lifetime_tv_q = any(
+            k in q_lower for k in [
+                'cả cuộc đời', 'trọn đời', 'cuộc đời tôi', 'số mệnh cả đời', 'lá số tử vi', 'đại vận', 'hậu vận cả đời'
+            ]
+        )
+        _is_national_ta_q = any(
+            k in q_lower for k in [
+                'quốc gia', 'đất nước', 'thế giới', 'quốc vận', 'chiến tranh', 'thiên tai', 'kinh tế thế giới', 'vĩ mô'
+            ]
+        )
+        if _is_lifetime_tv_q:
+            weights = {
+                'TV': 100, 'TB': 80, 'LH': 40, 'KM': 40, 'MH': 40, 'LN': 0, 'TA': 0, 'XN': 0
+            }
+        elif _is_national_ta_q:
+            weights = {
+                'TA': 100, 'KM': 85, 'MH': 50, 'LH': 50, 'TB': 20, 'LN': 0, 'XN': 0, 'TV': 0
+            }
+        elif _is_date_action_q:
+            weights = {
+                'XN': 100, 'KM': 85, 'LH': 50, 'MH': 50, 'TB': 20, 'LN': 0, 'TA': 0, 'TV': 0
+            }
+        else:
+            weights = {
+                'LH': method_w.get('luc_hao', 100),
+                'KM': method_w.get('ky_mon', 90),
+                'MH': method_w.get('mai_hoa', 85),
+                'TB': min(35, method_w.get('thiet_ban', 30)),
+                'LN': 0,
+                'TA': 0,
+                'XN': 0,
+                'TV': 0,
+            }
         
         weighted_pct = sum(norm_scores[k] * weights[k] for k in norm_scores) / sum(weights.values())
         weighted_pct = max(5, min(95, int(weighted_pct)))
@@ -16587,7 +16613,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V105.0 — Ưu Tiên 4 Phương Pháp Chuẩn Xác Nhất: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V106.0 — 4 Phương Pháp Chuẩn Xác: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản | Tách Riêng: Tử Vi · Thái Ất · Xem Ngày)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17151,41 +17177,50 @@ class FreeAIHelper:
                 except Exception:
                     pass
                 
-                # --- TẦNG 7: CONSENSUS VOTING VISUAL ---
+                # --- TẦNG 7: CONSENSUS VOTING VISUAL (V106.0: TÁCH RÕ 4 PHƯƠNG PHÁP QUYẾT ĐỊNH CÂU HỎI & 4 MẢNG CHUYÊN BIỆT RIÊNG) ---
                 _t7_html = ''
                 try:
-                    _verdicts = [
+                    _verdicts_core4 = [
+                        ('🌸', 'MAI HOA', mai_hoa_verdict),
                         ('🏯', 'KỲ MÔN', ky_mon_verdict),
                         ('📿', 'LỤC HÀO', luc_hao_verdict),
-                        ('🌸', 'MAI HOA', mai_hoa_verdict),
                         ('📜', 'THIẾT BẢN', thiet_ban_verdict),
-                        ('🔮', 'Đ.L.NHÂM', luc_nham_verdict),
-                        ('⚔️', 'THÁI ẤT', thai_at_verdict),
-                        ('📅', 'XEM NGÀY', xem_ngay_verdict),
-                        ('🔯', 'TỬ VI', tu_vi_verdict),
                     ]
-                    _cat_count = sum(1 for _, _, v in _verdicts if v and 'CÁT' in str(v).upper())
-                    _hung_count = sum(1 for _, _, v in _verdicts if v and 'HUNG' in str(v).upper())
-                    _binh_count = len(_verdicts) - _cat_count - _hung_count
+                    _verdicts_spec4 = [
+                        ('🔯', 'TỬ VI (Mảng Cả Cuộc Đời)', tu_vi_verdict),
+                        ('⚔️', 'THÁI ẤT (Mảng Quốc Gia)', thai_at_verdict),
+                        ('📅', 'XEM NGÀY (Mảng Chọn Ngày)', xem_ngay_verdict),
+                        ('🔮', 'Đ.L.NHÂM (Mảng Lộ Trình)', luc_nham_verdict),
+                    ]
+                    _cat_count = sum(1 for _, _, v in _verdicts_core4 if v and 'CÁT' in str(v).upper())
+                    _hung_count = sum(1 for _, _, v in _verdicts_core4 if v and 'HUNG' in str(v).upper())
+                    _binh_count = len(_verdicts_core4) - _cat_count - _hung_count
                     
                     _v_chips = ''
-                    for _vi, _vn, _vv in _verdicts:
+                    for _vi, _vn, _vv in _verdicts_core4:
                         _vu = str(_vv).upper() if _vv else ''
                         if 'CÁT' in _vu:
-                            _vc, _vt = '#22c55e', '✅'
+                            _vc, _vt = '#22c55e', '✅ CÁT'
                         elif 'HUNG' in _vu:
-                            _vc, _vt = '#ef4444', '❌'
+                            _vc, _vt = '#ef4444', '❌ HUNG'
                         else:
-                            _vc, _vt = '#eab308', '🟡'
-                        _v_chips += f'<span style="display:inline-block;margin:3px;padding:4px 10px;background:rgba(0,0,0,0.3);border-radius:8px;border:1px solid {_vc};font-size:0.85em;">{_vi} {_vn}: <b style="color:{_vc};">{_vt}</b></span>'
+                            _vc, _vt = '#eab308', '🟡 BÌNH'
+                        _v_chips += f'<span style="display:inline-block;margin:3px;padding:4px 10px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid {_vc};font-size:0.86em;">{_vi} {_vn}: <b style="color:{_vc};">{_vt}</b></span>'
+
+                    _spec_chips = ''
+                    for _si, _sn, _sv in _verdicts_spec4:
+                        _spec_chips += f'<span style="display:inline-block;margin:3px;padding:3px 9px;background:rgba(15,23,42,0.55);border-radius:8px;border:1px dashed #64748b;font-size:0.82em;color:#cbd5e1;">{_si} {_sn}: <b>{_sv}</b></span>'
                     
                     _t7_html = (
-                        f'<div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;">'
-                        f'<div style="font-size:0.95em;font-weight:700;color:#a7f3d0;margin-bottom:6px;">📊 BỎ PHIẾU HỢP NHẤT 8 PHƯƠNG PHÁP (+ THIÊN VĂN · VẠN VẬT · 40 CHUYÊN GIA): '
+                        f'<div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.25);border-radius:10px;border:1px solid rgba(52,211,153,0.3);">'
+                        f'<div style="font-size:0.95em;font-weight:800;color:#6ee7b7;margin-bottom:6px;">🎯 BỎ PHIẾU QUYẾT ĐỊNH CÂU HỎI (4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN): '
                         f'<span style="color:#22c55e;">{_cat_count} CÁT</span> · '
                         f'<span style="color:#eab308;">{_binh_count} BÌNH</span> · '
                         f'<span style="color:#ef4444;">{_hung_count} HUNG</span></div>'
-                        + _v_chips + '</div>'
+                        + _v_chips
+                        + f'<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(148,163,184,0.25);font-size:0.85em;color:#94a3b8;">'
+                        f'🏛️ <b>Các mảng chuyên biệt xem riêng (Không tính vào điểm quẻ sự việc):</b> {_spec_chips}</div>'
+                        + '</div>'
                     )
                 except Exception:
                     pass
@@ -17300,7 +17335,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V105.0 — ƯU TIÊN 4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT TỪ 4 PHƯƠNG PHÁP CHUẨN XÁC (V106.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | TÁCH RIÊNG CÁC MẢNG CHUYÊN BIỆT)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
@@ -18002,34 +18037,42 @@ class FreeAIHelper:
                 except Exception:
                     pass
 
-                # --- TẦNG 7: BẢNG BỎ PHIẾU HỢP NHẤT 8 PHƯƠNG PHÁP CHẤM ĐIỂM ---
+                # --- TẦNG 7: BẢNG BỎ PHIẾU 4 PHƯƠNG PHÁP CHUẨN XÁC & TÁCH RIÊNG 4 MẢNG CHUYÊN BIỆT (V106.0) ---
                 _t7_fb_html = ''
                 try:
-                    _verdicts_fb = [
+                    _verdicts_fb_core4 = [
+                        ('🌸', 'MAI HOA', mai_hoa_verdict),
                         ('🏯', 'KỲ MÔN', ky_mon_verdict),
                         ('📿', 'LỤC HÀO', luc_hao_verdict),
-                        ('🌸', 'MAI HOA', mai_hoa_verdict),
                         ('📜', 'THIẾT BẢN', thiet_ban_verdict),
-                        ('🔮', 'Đ.L.NHÂM', luc_nham_verdict),
-                        ('⚔️', 'THÁI ẤT', thai_at_verdict),
-                        ('📅', 'XEM NGÀY', xem_ngay_verdict),
-                        ('🔯', 'TỬ VI', tu_vi_verdict),
                     ]
-                    _cat_c = sum(1 for _, _, v in _verdicts_fb if v and 'CÁT' in str(v).upper())
-                    _hung_c = sum(1 for _, _, v in _verdicts_fb if v and 'HUNG' in str(v).upper())
-                    _binh_c = len(_verdicts_fb) - _cat_c - _hung_c
+                    _verdicts_fb_spec4 = [
+                        ('🔯', 'TỬ VI (Mảng Cả Cuộc Đời)', tu_vi_verdict),
+                        ('⚔️', 'THÁI ẤT (Mảng Quốc Gia)', thai_at_verdict),
+                        ('📅', 'XEM NGÀY (Mảng Chọn Ngày)', xem_ngay_verdict),
+                        ('🔮', 'Đ.L.NHÂM (Mảng Lộ Trình)', luc_nham_verdict),
+                    ]
+                    _cat_c = sum(1 for _, _, v in _verdicts_fb_core4 if v and 'CÁT' in str(v).upper())
+                    _hung_c = sum(1 for _, _, v in _verdicts_fb_core4 if v and 'HUNG' in str(v).upper())
+                    _binh_c = len(_verdicts_fb_core4) - _cat_c - _hung_c
                     _chips = ''
-                    for _vi, _vn, _vv in _verdicts_fb:
+                    for _vi, _vn, _vv in _verdicts_fb_core4:
                         _vu = str(_vv).upper() if _vv else ''
                         _vc = '#22c55e' if 'CÁT' in _vu else ('#ef4444' if 'HUNG' in _vu else '#eab308')
                         _chips += f'<span style="display:inline-block;margin:3px;padding:4px 10px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid {_vc};font-size:0.86em;">{_vi} {_vn}: <b style="color:{_vc};">{_vv}</b></span>'
+                    _spec_chips_fb = ''
+                    for _si, _sn, _sv in _verdicts_fb_spec4:
+                        _spec_chips_fb += f'<span style="display:inline-block;margin:3px;padding:3px 9px;background:rgba(15,23,42,0.55);border-radius:8px;border:1px dashed #64748b;font-size:0.82em;color:#cbd5e1;">{_si} {_sn}: <b>{_sv}</b></span>'
                     _t7_fb_html = (
-                        f'<div style="margin-top:12px;padding:12px;background:rgba(0,0,0,0.22);border-radius:10px;">'
-                        f'<div style="font-size:0.95em;font-weight:700;color:#a7f3d0;margin-bottom:6px;">📊 HỘI ĐỒNG THẨM ĐỊNH 10 HỆ THỐNG (8 PP Chấm Điểm + Thiên Văn + 40 Chuyên Gia): '
+                        f'<div style="margin-top:12px;padding:12px;background:rgba(0,0,0,0.25);border-radius:10px;border:1px solid rgba(52,211,153,0.3);">'
+                        f'<div style="font-size:0.95em;font-weight:800;color:#6ee7b7;margin-bottom:6px;">🎯 BỎ PHIẾU QUYẾT ĐỊNH CÂU HỎI (4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN): '
                         f'<span style="color:#22c55e;">{_cat_c} CÁT</span> · '
                         f'<span style="color:#eab308;">{_binh_c} BÌNH</span> · '
                         f'<span style="color:#ef4444;">{_hung_c} HUNG</span></div>'
-                        + _chips + '</div>'
+                        + _chips
+                        + f'<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(148,163,184,0.25);font-size:0.85em;color:#94a3b8;">'
+                        f'🏛️ <b>Các mảng chuyên biệt xem riêng (Không tính vào điểm quẻ sự việc):</b> {_spec_chips_fb}</div>'
+                        + '</div>'
                     )
                 except Exception:
                     pass
@@ -18082,7 +18125,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT HỢP NHẤT 18 HỆ THỐNG ĐÔNG – TÂY (V105.0 — ƯU TIÊN 4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT TỪ 4 PHƯƠNG PHÁP CHUẨN XÁC (V106.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | TÁCH RIÊNG CÁC MẢNG CHUYÊN BIỆT)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html

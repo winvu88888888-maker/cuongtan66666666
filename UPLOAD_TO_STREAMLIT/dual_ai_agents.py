@@ -3388,25 +3388,49 @@ class HexagramReasoningAI:
             if blueprint.get("ai1_expected_answer_format") else ""
         )
 
+        _q_low_domain = str(question or "").lower()
+        if any(w in _q_low_domain for w in ["cả cuộc đời", "trọn đời", "cuộc đời tôi", "số mệnh cả đời", "lá số tử vi", "đại vận", "hậu vận cả đời"]):
+            _domain_badge_html = (
+                '• <b>Phân khu phương pháp chuyên trách:</b> <span style="color:#c4b5fd;font-weight:800;">'
+                '🔯 MẢNG VẬN MỆNH CẢ CUỘC ĐỜI — Chuyên trách bởi: Tử Vi Đẩu Số & Thiết Bản Thần Toán</span><br>'
+            )
+        elif any(w in _q_low_domain for w in ["quốc gia", "đất nước", "thế giới", "quốc vận", "chiến tranh", "thiên tai", "kinh tế thế giới", "vĩ mô"]):
+            _domain_badge_html = (
+                '• <b>Phân khu phương pháp chuyên trách:</b> <span style="color:#fda4af;font-weight:800;">'
+                '⚔️ MẢNG VẬN QUỐC GIA & THỜI CUỘC VĨ MÔ — Chuyên trách bởi: Thái Ất Thần Số & Kỳ Môn Độn Giáp</span><br>'
+            )
+        elif any(w in _q_low_domain for w in ["ngày nào tốt", "chọn ngày", "xem ngày", "giờ hoàng đạo", "khai trương ngày", "động thổ ngày", "nhập trạch ngày"]):
+            _domain_badge_html = (
+                '• <b>Phân khu phương pháp chuyên trách:</b> <span style="color:#fcd34d;font-weight:800;">'
+                '📅 MẢNG TRẠCH NHẬT HÀNH SỰ — Chuyên trách bởi: Xem Ngày Đẹp (12 Trực · 28 Tú) & Kỳ Môn</span><br>'
+            )
+        else:
+            _domain_badge_html = (
+                '• <b>Phân khu phương pháp chuyên trách:</b> <span style="color:#4ade80;font-weight:800;">'
+                '🎯 MẢNG LUẬN QUẺ THỰC TẾ — Chỉ dùng 4 Phương Pháp Chuẩn Xác: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản</span> '
+                '<span style="color:#94a3b8;font-size:0.9em;">(Tử Vi xem riêng Cả Cuộc Đời · Thái Ất xem riêng Quốc Gia · Xem Ngày xem riêng Chọn Ngày)</span><br>'
+            )
+
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V104.2): AI SỐ 1 ĐỌC HIỂU ➔ AI SỐ 2 SUY ĐOÁN TỪ NHÓM QUẺ CHÍNH (MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V106.0): AI SỐ 1 PHÂN KHU ➔ AI SỐ 2 LUẬN QUẺ BẰNG 4 PHƯƠNG PHÁP CHUẨN XÁC (MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
             f'<div style="padding:12px 14px;background:rgba(15,23,42,0.78);border-radius:10px;border-left:4px solid #38bdf8;border-top:1px solid rgba(255,255,255,0.08);">'
-            f'<div style="font-size:0.93em;font-weight:900;color:#7dd3fc;margin-bottom:6px;">🧠 CON AI SỐ 1 (GEMINI FLASH-LITE — CHUYÊN ĐỌC HIỂU CÂU HỎI & BÀN GIAO)</div>'
+            f'<div style="font-size:0.93em;font-weight:900;color:#7dd3fc;margin-bottom:6px;">🧠 CON AI SỐ 1 (GEMINI FLASH-LITE — ĐỌC HIỂU CÂU HỎI & PHÂN KHU PHƯƠNG PHÁP)</div>'
             f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.55;">'
             f'• <b>Nhận diện dạng câu hỏi:</b> <span style="color:#fde047;font-weight:800;">{blueprint["archetype_code"]} — {blueprint["archetype_name"]}</span><br>'
+            f'{_domain_badge_html}'
             f'{_ai1_summary_line}'
             f'• <b>Đối tượng trọng tâm:</b> {blueprint["subject_person"]} (Giao Dụng Thần: <b>{dung_than}</b>){sub_intents_html}<br>'
             f'{_ai1_format_line}'
-            f'• <b>Chỉ thị tra quẻ cho AI Số 2 & 18 Pháp:</b> <i>{blueprint["lh_dt_instruction"]}</i>'
+            f'• <b>Chỉ thị tra quẻ cho AI Số 2 & Bộ Tứ Chuẩn Xác:</b> <i>{blueprint["lh_dt_instruction"]}</i>'
             f'{ab_html}'
             f'</div></div>'
             f'<div style="padding:12px 14px;background:rgba(15,23,42,0.78);border-radius:10px;border-left:4px solid #fbbf24;border-top:1px solid rgba(255,255,255,0.08);">'
-            f'<div style="font-size:0.93em;font-weight:900;color:#fde047;margin-bottom:6px;">🔮 CON AI SỐ 2 — NHẬN CHỈ THỊ TỪ AI SỐ 1 & ĐỐI CHỨNG QUẺ SUY LUẬN ĐÁP ÁN</div>'
+            f'<div style="font-size:0.93em;font-weight:900;color:#fde047;margin-bottom:6px;">🔮 CON AI SỐ 2 — LUẬN QUẺ BẰNG 4 PHƯƠNG PHÁP CHUẨN XÁC (MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</div>'
             f'<div style="font-size:0.91em;color:#f1f5f9;line-height:1.55;">'
             f'• <b>Quẻ lập đúng thời khắc ({tu_tru_str}):</b> Quẻ <b>{ten_que_chu}</b> ➔ <b>{ten_que_bien}</b> ({dong_str}) · Kỳ Môn Cục {cuc_km} ({don_type}, Cung {target_cung} {huong_cung}: Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b>, Thần <b>{than_name}</b>)<br>'
             f'• <b>Kết quả đối chứng Thực/Hư:</b> {auth_status_str}<br>'

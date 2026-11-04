@@ -1465,7 +1465,7 @@ def build_connected_prose_analysis(
             thai_at_reason=thai_at_reason,
             tu_vi_verdict=tu_vi_verdict,
             xem_ngay_verdict=xem_ngay_verdict,
-            verdicts_list=[ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, thiet_ban_verdict, luc_nham_verdict, thai_at_verdict, xem_ngay_verdict, tu_vi_verdict],
+            verdicts_list=[ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, thiet_ban_verdict],
         )
         _holo_grid_html = _holo_res.get("grid_html", "")
     except Exception:

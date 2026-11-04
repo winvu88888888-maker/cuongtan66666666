@@ -927,36 +927,31 @@ def build_holographic_7_position_picture(
         f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Động cơ Ứng Kỳ · Tinh tú Vệ Đà {vedic['nakshatra']}</i></div>"
     )
 
-    # VỊ TRÍ 6: Chiến lược hành động (Thái Ất + Tử Vi + Trạch Cát)
-    if is_children_q:
-        pos6_what = f"Đối chiếu Cung Tử Tức trên Tử Vi ({tu_vi_verdict}) và cục diện Thái Ất ({thai_at_verdict}) đối với đường con cái."
-        pos6_opp = "Con cái có quý nhân phù trợ và có năng lực tự lập, tuy nhiên mỗi giai đoạn trưởng thành cần sự thấu hiểu của cha mẹ."
-        pos6_adv = "<b>Phương pháp giáo dục & đồng hành:</b> Khích lệ con phát huy sở trường riêng, uốn nắn bằng sự mềm mỏng và tình cảm ấm áp thay vì la mắng cứng nhắc."
-    elif weighted_pct >= 55:
-        pos6_what = (
-            f"Cả vận thế bên ngoài (Thái Ất: {thai_at_verdict}) và vận cá nhân (Tử Vi: {tu_vi_verdict}) đều đang ủng hộ bạn tiến lên."
-            if ("HUNG" not in str(thai_at_verdict) and "HUNG" not in str(tu_vi_verdict))
-            else f"Tổng điểm hợp lực đạt mức Cát ({weighted_pct}%), tuy nhiên cần lưu ý sự phân hóa giữa bối cảnh vĩ mô (Thái Ất: <b>{thai_at_verdict}</b>) và vận trình cá nhân (Tử Vi: <b>{tu_vi_verdict}</b>)."
-        )
-        pos6_opp = "Thời cơ đang mở, nếu chủ động nắm bắt sẽ tạo được bước tiến mới rất tốt."
-        pos6_adv = "<b>Chiến lược: CHỦ ĐỘNG TIẾN HÀNH</b> — mạnh dạn triển khai kế hoạch hoặc đón nhận cơ hội mới."
-    elif weighted_pct >= 45:
-        pos6_what = f"Vận cá nhân của bạn có điểm sáng tốt (Tử Vi: <b>{tu_vi_verdict}</b>), nhưng bối cảnh chung bên ngoài còn biến động (Thái Ất: <b>{thai_at_verdict}</b>)."
-        pos6_opp = "Năng lực cá nhân và quý nhân của bạn vẫn vững, giúp bạn đứng vững trước sóng gió."
-        pos6_adv = "<b>Chiến lược: GIỮ VỮNG VỊ TRÍ HIỆN TẠI, CHỜ ĐÚNG THỜI CƠ</b> — không bỏ việc/thay đổi vội khi chưa có bến đỗ mới chắc chắn 100%."
-    else:
-        pos6_what = f"Bối cảnh chung (Thái Ất: {thai_at_verdict}) và vận trình hiện tại đang có lực cản cần tháo gỡ."
-        pos6_opp = "Giữ sự bình tĩnh và ổn định hiện tại chính là điểm tựa giúp bạn hóa giải thử thách."
-        pos6_adv = "<b>Chiến lược: THẬN TRỌNG BẢO TOÀN, LẤY TĨNH CHẾ ĐỘNG</b> — giải quyết từng việc chắc chắn, tránh nóng vội mạo hiểm."
-    pos6_result = (
-        f"<div>📌 <b>Nói về gì:</b> {pos6_what}</div>"
-        f"<div style='margin-top:3px;'>⚔️ <b>Thái Ất & Tử Vi thực tế:</b> {full18['ta_summary']}; {full18['tv_summary']}.</div>"
-        f"<div style='margin-top:3px;'>📅 <b>Trạch Cát 12 Trực ({full18['truc_name']}):</b> {full18['truc_meaning']}. {pos6_opp}</div>"
-        f"<div style='margin-top:3px;'>💡 {pos6_adv}</div>"
-        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Thái Ất ({thai_at_verdict}) · Tử Vi ({tu_vi_verdict}) · Trạch Cát {full18['truc_name']} ({xem_ngay_verdict})</i></div>"
+    # PHÂN KHU RIÊNG 1: TỬ VI ĐẨU SỐ (CHUYÊN XEM RIÊNG VỀ CẢ CUỘC ĐỜI & VẬN MỆNH TRỌN ĐỜI)
+    pos_tv_lifetime = (
+        f"<div>📌 <b>Phạm vi chuyên biệt:</b> <b>Tử Vi Đẩu Số chỉ chuyên luận riêng về Bức Tranh Cả Cuộc Đời (12 Cung Mệnh – Thân – Đại Vận 10 năm)</b>, tách biệt hoàn toàn với việc chấm điểm sự việc trước mắt.</div>"
+        f"<div style='margin-top:3px;'>🔯 <b>Cấu trúc Mệnh Cục & Phúc Đức trọn đời:</b> {full18['tv_summary']} (Trạng thái cung trọng tâm: <b>{tu_vi_verdict}</b>).</div>"
+        f"<div style='margin-top:3px;'>💡 <b>Định hướng cả cuộc đời:</b> Dựa trên Chính Tinh thủ Mệnh/Thân và Cục số, đường đời lâu dài nên lấy việc bồi đắp phúc đức gia tộc và phát huy chuyên môn sâu làm gốc. <i>(Nhập thêm Ngày Giờ Sinh cá nhân nếu muốn lập Lá Số Tử Vi 12 cung trọn đời chính xác theo tuổi của riêng bạn)</i>.</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Phân khu độc lập: Tử Vi Đẩu Số — Chuyên Xem Cả Cuộc Đời (Không trộn vào điểm quẻ sự việc)</i></div>"
     )
 
-    # VỊ TRÍ 7: Chìa khóa hóa giải áp lực & Độ đồng thuận Bayes (Bát Tự Điều Hầu + 40 Chuyên Gia AI)
+    # PHÂN KHU RIÊNG 2: THÁI ẤT THẦN SỐ (CHUYÊN XEM RIÊNG VỀ VẬN QUỐC GIA, THỜI CUỘC THẾ GIỚI & VĨ MÔ)
+    pos_ta_national = (
+        f"<div>📌 <b>Phạm vi chuyên biệt:</b> <b>Thái Ất Thần Số chỉ chuyên luận riêng về Vận Quốc Gia, Thời Cuộc Thế Giới, Kinh Tế Vĩ Mô & Thiên Văn Đại Cục</b> (tuyệt đối không dùng để chấm điểm chuyện gia đình/cá nhân).</div>"
+        f"<div style='margin-top:3px;'>⚔️ <b>Cục diện Quốc Vận & Thời Thế Vĩ Mô:</b> {full18['ta_summary']} (Đánh giá đại cục vĩ mô: <b>{thai_at_verdict}</b>).</div>"
+        f"<div style='margin-top:3px;'>💡 <b>Nhận định thời cuộc chung:</b> Cho biết xu hướng chung của xã hội/thị trường rộng lớn đang ở thế <b>{full18['ta_chu_khach'] or 'Chủ – Khách cân bằng'}</b> để tham khảo khi tính chuyện đại sự quốc gia hoặc đầu tư vĩ mô.</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Phân khu độc lập: Thái Ất Thần Số — Chuyên Xem Quốc Gia & Vĩ Mô (Không trộn vào điểm quẻ cá nhân)</i></div>"
+    )
+
+    # PHÂN KHU RIÊNG 3: TRẠCH NHẬT XEM NGÀY ĐẸP & ĐẠI LỤC NHÂM (CHUYÊN XEM RIÊNG VỀ CHỌN NGÀY GIỜ & LỘ TRÌNH TAM TRUYỀN)
+    pos6_result = (
+        f"<div>📌 <b>Phạm vi chuyên biệt:</b> <b>Chỉ dùng riêng khi bạn cần Chọn Ngày Giờ Tốt Xấu (Khai trương, Động thổ, Xuất hành, Cưới hỏi)</b> và xem lộ trình 3 bước Tam Truyền.</div>"
+        f"<div style='margin-top:3px;'>📅 <b>Trạch Nhật 12 Trực ({full18['truc_name']} — {xem_ngay_verdict}):</b> {full18['truc_meaning']}.</div>"
+        f"<div style='margin-top:3px;'>🔮 <b>Lộ trình Đại Lục Nhâm Tam Truyền:</b> {full18['dln_summary']}.</div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Phân khu độc lập: Trạch Nhật 12 Trực & Đại Lục Nhâm (Chỉ kích hoạt khi hỏi chọn ngày giờ / lộ trình)</i></div>"
+    )
+
+    # VỊ TRÍ 7: Chìa khóa hóa giải áp lực & Độ đồng thuận 4 Phương Pháp Chuẩn (Bát Tự Điều Hầu + 40 Chuyên Gia AI)
     _dh_god = xk_dh["dieu_hau_god"]
     if "Mộc" in _dh_god and "Thủy" in _dh_god:
         dh_plain_meaning = "bổ sung sự mềm mỏng, linh hoạt (Mộc) và sự điềm tĩnh, thư giãn (Thủy) để cân bằng khí hậu bản mệnh"
@@ -972,15 +967,15 @@ def build_holographic_7_position_picture(
         dh_plain_action = "Hành xử mềm mỏng, ưu tiên sự ổn định lâu dài"
 
     if is_children_q:
-        pos7_what = f"Cả 18 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> khẳng định: <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái')}</b>."
+        pos7_what = f"Bộ Tứ Phương Pháp Chuẩn Xác (Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản) hội tụ khẳng định: <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái')}</b>."
         pos7_opp = f"<b>Pháp quyết dưỡng phúc Tử Tức (Bát Tự Điều Hầu):</b> Cần <b>{dh_plain_meaning}</b>."
         pos7_adv = f"<b>Lời khuyên cho gia đình:</b> {omni_data.get('children_advice', dh_plain_action)} (Hướng vượng khí: <b>{xk_dh['dieu_hau_dir']}</b>)."
     else:
-        pos7_what = f"Cả 18 hệ thống Đông – Tây hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b> (Xác suất chuẩn xác Bayes: <b>{bayes['bayesian_posterior_pct']}%</b>)."
-        pos7_opp = f"<b>Cơ hội hóa giải khó khăn:</b> Cần <b>{dh_plain_meaning}</b>."
+        pos7_what = f"Bộ Tứ Phương Pháp Chuẩn Xác (Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản) hội tụ với độ đồng thuận <b>{bayes['consensus_pct']}%</b>."
+        pos7_opp = f"<b>Pháp quyết cân bằng Ngũ Hành & Phong Thủy (Điều Hầu):</b> Cần <b>{dh_plain_meaning}</b>."
         pos7_adv = f"<b>Việc nên làm ngay:</b> {dh_plain_action}; ưu tiên xuất hành/giao dịch về hướng <b>{xk_dh['dieu_hau_dir']}</b>."
     pos7_result = (
-        f"<div>📌 <b>Tổng kết hội tụ:</b> {pos7_what}</div>"
+        f"<div>📌 <b>Tổng kết hội tụ Bộ Tứ Chuẩn Xác:</b> {pos7_what}</div>"
         f"<div style='margin-top:3px;'>✨ {pos7_opp}</div>"
         f"<div style='margin-top:3px;'>💡 {pos7_adv}</div>"
         f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Điều Hầu Bát Tự [{_dh_god}] · Hướng vượng [{xk_dh['dieu_hau_dir']}]</i></div>"
@@ -1004,41 +999,47 @@ def build_holographic_7_position_picture(
         xem_ngay_verdict=xem_ngay_verdict,
     )
 
-    def _card7(num: int, icon: str, title: str, methods: str, body: str, border_col: str = "#38bdf8") -> str:
+    def _card7(num: str, icon: str, title: str, methods: str, body: str, border_col: str = "#38bdf8") -> str:
         return (
             f'<div style="padding:12px 14px;background:rgba(15,23,42,0.82);border-radius:11px;'
             f'border-left:4px solid {border_col};border-top:1px solid rgba(255,255,255,0.09);">'
             f'<div style="font-size:0.93em;font-weight:800;color:{border_col};margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:4px;">'
-            f'{icon} Vị trí {num} — {title} <span style="font-weight:500;color:#94a3b8;font-size:0.86em;">({methods})</span></div>'
+            f'{icon} {num} — {title} <span style="font-weight:500;color:#94a3b8;font-size:0.86em;">({methods})</span></div>'
             f'<div style="font-size:0.93em;color:#f1f5f9;line-height:1.52;">{body}</div>'
             f'</div>'
         )
 
-    _t1 = "Gốc Rễ Tử Tức & Duyên Con Cái" if is_children_q else "Thực Lực & Khả Năng Thành Công"
-    _t2 = "Cung Tử Tức & Tính Cách Các Con" if is_children_q else "Môi Trường & Hướng May Mắn"
-    _t3 = "Quẻ Chủ ➔ Quẻ Hỗ ➔ Quẻ Biến (Gia Đạo)" if is_children_q else "Diễn Biến: Quá Khứ ➔ Hiện Tại ➔ Sắp Tới"
-    _t4 = "Số Lượng Con, Nếp Tẻ (Trai/Gái) & Màu Hợp" if is_children_q else "Năng Lượng, Con Số & Màu Sắc Trợ Vận"
-    _t5 = "Thời Điểm Tin Vui & Tương Lai Con Cái" if is_children_q else "Thời Điểm Mở Vận & Chốt Quyết Định"
-    _t6 = "Định Hướng Nuôi Dạy & Đồng Hành Cùng Con" if is_children_q else "Chiến Lược: Nên Tiến Hay Giữ?"
-    _t7 = "Tổng Kết Tử Tức 14 Hệ Thống & Phong Thủy Gia Đạo" if is_children_q else "Chìa Khóa Hóa Giải Áp Lực & Cách Làm Ngay"
+    _t1 = "Gốc Rễ Tử Tức & Duyên Con Cái" if is_children_q else "Luận Giải Trực Tiếp Từ Hào Thế – Ứng & Dụng Thần"
+    _t2 = "Cung Tử Tức & Tính Cách Các Con" if is_children_q else "Hiện Trường Không Gian, Cửu Tinh, Bát Môn & Bát Thần"
+    _t3 = "Quẻ Chủ ➔ Quẻ Hỗ ➔ Quẻ Biến (Gia Đạo)" if is_children_q else "Định Lượng Quái Số & Diễn Biến Chủ ➔ Hỗ ➔ Biến"
+    _t4 = "Số Lượng Con, Nếp Tẻ (Trai/Gái) & Màu Hợp" if is_children_q else "Định Số Lục Thân, Nạp Âm, Trường Sinh & Màu Sắc"
+    _t5 = "Thời Điểm Tin Vui & Tương Lai Con Cái" if is_children_q else "Đồng Hồ Ứng Kỳ (Khi Nào Ứng Nghiệm?)"
 
     grid_html = (
-        f'<div style="margin-top:12px;padding:15px 16px;background:rgba(2,6,23,0.58);border-radius:14px;border:1px solid rgba(56,189,248,0.38);">'
-        f'<div style="font-size:1.02em;font-weight:800;color:#38bdf8;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ BỨC TRANH 7 MẮT XÍCH GIẢI MÃ SÁT QUẺ THỰC TẾ: NÓI VỀ GÌ · CHI TIẾT QUẺ · KHUYÊN GÌ (18 HỆ THỐNG ĐÔNG – TÂY TOÀN DIỆN)</span>'
-        f'<span style="font-size:0.85em;padding:3px 10px;background:rgba(16,185,129,0.2);color:#6ee7b7;border-radius:20px;border:1px solid rgba(52,211,153,0.4);">🔗 Độ đồng thuận Bayes: {bayes["consensus_pct"]}%</span>'
+        f'<div style="margin-top:12px;padding:15px 16px;background:rgba(2,6,23,0.58);border-radius:14px;border:2px solid rgba(52,211,153,0.45);">'
+        f'<div style="font-size:1.02em;font-weight:900;color:#4ade80;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
+        f'<span>🎯 PHẦN I — TRUNG TÂM LUẬN QUẺ CHUẨN XÁC CHO CÂU HỎI (CHỈ DÙNG 4 PHƯƠNG PHÁP CHUẨN XÁC: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN)</span>'
+        f'<span style="font-size:0.85em;padding:3px 10px;background:rgba(16,185,129,0.2);color:#6ee7b7;border-radius:20px;border:1px solid rgba(52,211,153,0.4);">✅ 4 Phương Pháp Chủ Lực Quyết Định 100%</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
-        + _card7(1, "🎯", _t1, "Lục Hào + Horary", pos1_result, "#fbbf24")
-        + _card7(2, "🧭", _t2, "Kỳ Môn + Phi Tinh Vận 9", pos2_result, "#38bdf8")
-        + _card7(3, "⏳", _t3, "Đại Lục Nhâm + Mai Hoa", pos3_result, "#a78bfa")
-        + _card7(4, "📦", _t4, "Vạn Vật + Trường Sinh", pos4_result, "#f472b6")
-        + _card7(5, "⏰", _t5, "Ứng Kỳ + Vệ Đà KP", pos5_result, "#fb923c")
-        + _card7(6, "🌌", _t6, "Thái Ất + Tử Vi", pos6_result, "#2dd4bf")
+        + _card7("Trụ Cột 1", "📿", _t1, "Lục Hào Kinh Dịch", pos1_result, "#fbbf24")
+        + _card7("Trụ Cột 2", "🏯", _t2, "Kỳ Môn Độn Giáp", pos2_result, "#38bdf8")
+        + _card7("Trụ Cột 3", "🌸", _t3, "Mai Hoa Dịch Số", pos3_result, "#a78bfa")
+        + _card7("Trụ Cột 4", "📜", _t4, "Thiết Bản Thần Toán & Vạn Vật", pos4_result, "#f472b6")
+        + _card7("Ứng Kỳ", "⏰", _t5, "Ứng Kỳ Tam Thức", pos5_result, "#fb923c")
+        + _card7("Pháp Quyết", "🔑", "Pháp Quyết Hành Động & Hóa Giải", "Bát Tự Điều Hầu + 40 Chuyên Gia AI", pos7_result, "#34d399")
         + '</div>'
-        + f'<div style="margin-top:10px;">'
-        + _card7(7, "🔑", _t7, "Bát Tự Điều Hầu + 40 Chuyên Gia AI", pos7_result, "#34d399")
         + f'</div>'
+        + f'<div style="margin-top:12px;padding:15px 16px;background:rgba(15,23,42,0.65);border-radius:14px;border:1px dashed rgba(148,163,184,0.4);">'
+        f'<div style="font-size:0.98em;font-weight:800;color:#cbd5e1;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
+        f'<span>🏛️ PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (MỖI PHƯƠNG PHÁP CHỈ XEM RIÊNG ĐÚNG MẢNG ĐÓ — TÁCH BIỆT HOÀN TOÀN, KHÔNG LÀM NHIỄU QUẺ)</span>'
+        f'<span style="font-size:0.82em;padding:2px 9px;background:rgba(148,163,184,0.15);color:#94a3b8;border-radius:16px;">Chuyên Mảng Riêng Biệt</span>'
+        f'</div>'
+        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
+        + _card7("Mảng Riêng 1", "🔯", "Xem Riêng Về Cả Cuộc Đời & Mệnh Cục Trọn Đời", "Tử Vi Đẩu Số", pos_tv_lifetime, "#c084fc")
+        + _card7("Mảng Riêng 2", "⚔️", "Xem Riêng Về Vận Quốc Gia, Thế Giới & Vĩ Mô", "Thái Ất Thần Số", pos_ta_national, "#f87171")
+        + _card7("Mảng Riêng 3", "📅", "Xem Riêng Về Chọn Ngày Giờ Đẹp & Lộ Trình Tam Truyền", "Trạch Nhật 12 Trực · Đại Lục Nhâm", pos6_result, "#2dd4bf")
+        + '</div>'
         + build_18_layer_conflict_arbiter_and_instant_check(
             question=question,
             dung_than=dung_than,
@@ -1110,7 +1111,7 @@ def compute_7_link_synergy_chain(
     horary = analyze_western_horary(question, category, dung_than, hanh_dt, chart_data, weighted_pct)
     vedic = analyze_vedic_kp_prashna(question, category, chart_data, weighted_pct)
     xk_dh = analyze_xuankong_and_dieuhau(dung_than, hanh_dt, target_cung, chart_data)
-    verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict, luc_nham_verdict, thai_at_verdict, tu_vi_verdict, xem_ngay_verdict]
+    verdicts_list = [ky_mon_verdict, luc_hao_verdict, mai_hoa_verdict]
     bayes = compute_bayesian_consensus(weighted_pct, verdicts_list, horary["score"], vedic["score"], xk_dh["score"])
 
     # Tính hiệu chỉnh cộng hưởng liên hoàn giữa các mắt xích
