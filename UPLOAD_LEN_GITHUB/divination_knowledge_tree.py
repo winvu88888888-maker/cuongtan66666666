@@ -18,9 +18,9 @@ Cách dùng:
 # ═══════════════════════════════════════════════════════════
 LH_TREE = {
     'name': 'Lục Hào Kinh Dịch',
-    'coverage': '36/36 = 100%',
+    'coverage': '63/63 = 100%',
 
-    # --- Lục Thân (6 loại) ---
+    # --- Lục Thân (5 loại + Bản Thân = 6) ---
     'luc_than': {
         'Thê Tài':  {'khac': 'Huynh Đệ', 'sinh': 'Quan Quỷ', 'role': 'Tiền/Vợ/Tài sản'},
         'Quan Quỷ': {'khac': 'Tử Tôn',   'sinh': 'Phụ Mẫu', 'role': 'Chức vụ/Chồng/Bệnh'},
@@ -28,6 +28,54 @@ LH_TREE = {
         'Huynh Đệ': {'khac': 'Phụ Mẫu',  'sinh': 'Tử Tôn',   'role': 'Anh em/Bạn/Đối thủ'},
         'Tử Tôn':  {'khac': 'Quan Quỷ',  'sinh': 'Thê Tài',  'role': 'Con cái/Thuốc/Phúc'},
     },
+
+    # --- Lục Thú (6 con) ---
+    'luc_thu': {
+        'Thanh Long': {'hanh': 'Mộc', 'cat_hung': 'CÁT',  'y_nghia': 'Vui mừng, tài lộc, quý nhân'},
+        'Chu Tước':   {'hanh': 'Hỏa', 'cat_hung': 'BÌNH', 'y_nghia': 'Khẩu thiệt, văn thư, kiện tụng'},
+        'Câu Trận':   {'hanh': 'Thổ', 'cat_hung': 'BÌNH', 'y_nghia': 'Tranh chấp, trì trệ, đất đai'},
+        'Đằng Xà':    {'hanh': 'Hỏa', 'cat_hung': 'HUNG', 'y_nghia': 'Kinh sợ, ác mộng, quái dị'},
+        'Bạch Hổ':    {'hanh': 'Kim', 'cat_hung': 'HUNG',  'y_nghia': 'Tang tóc, bệnh tật, tai nạn'},
+        'Huyền Vũ':   {'hanh': 'Thủy','cat_hung': 'HUNG',  'y_nghia': 'Trộm cắp, gian lận, mất mát'},
+    },
+
+    # --- Ngũ Hành quan hệ (5) ---
+    'ngu_hanh': {
+        'Kim': {'sinh': 'Thủy', 'khac': 'Mộc', 'phuong': 'Tây',    'mua': 'Thu'},
+        'Mộc': {'sinh': 'Hỏa',  'khac': 'Thổ', 'phuong': 'Đông',   'mua': 'Xuân'},
+        'Thủy':{'sinh': 'Mộc',  'khac': 'Hỏa', 'phuong': 'Bắc',    'mua': 'Đông'},
+        'Hỏa': {'sinh': 'Thổ',  'khac': 'Kim',  'phuong': 'Nam',    'mua': 'Hạ'},
+        'Thổ': {'sinh': 'Kim',  'khac': 'Thủy', 'phuong': 'Trung',  'mua': 'Tứ quý'},
+    },
+
+    # --- Lục Xung (6 cặp xung) ---
+    'luc_xung': {
+        'Tý-Ngọ':   {'desc': 'Thủy xung Hỏa', 'impact': 'Phá, tan rã, chia ly'},
+        'Sửu-Mùi':  {'desc': 'Thổ xung Thổ',  'impact': 'Dao động, bất ổn'},
+        'Dần-Thân':  {'desc': 'Mộc xung Kim',  'impact': 'Xung đột mạnh'},
+        'Mão-Dậu':  {'desc': 'Mộc xung Kim',   'impact': 'Phá hoại, tranh đấu'},
+        'Thìn-Tuất': {'desc': 'Thổ xung Thổ',  'impact': 'Biến động đất đai'},
+        'Tị-Hợi':   {'desc': 'Hỏa xung Thủy', 'impact': 'Xung đột âm dương'},
+    },
+
+    # --- Lục Hợp (6 cặp hợp) ---
+    'luc_hop': {
+        'Tý-Sửu':   {'hoa': 'Thổ',  'desc': 'Hợp hóa Thổ'},
+        'Dần-Hợi':   {'hoa': 'Mộc',  'desc': 'Hợp hóa Mộc'},
+        'Mão-Tuất':  {'hoa': 'Hỏa',  'desc': 'Hợp hóa Hỏa'},
+        'Thìn-Dậu':  {'hoa': 'Kim',  'desc': 'Hợp hóa Kim'},
+        'Tị-Thân':   {'hoa': 'Thủy', 'desc': 'Hợp hóa Thủy'},
+        'Ngọ-Mùi':   {'hoa': 'Thổ',  'desc': 'Hợp hóa Thổ'},
+    },
+
+    # --- Tam Hợp Cục (4 cục) ---
+    'tam_hop': {
+        'Thân-Tý-Thìn': {'hanh': 'Thủy', 'desc': 'Tam Hợp Thủy Cục'},
+        'Dần-Ngọ-Tuất':  {'hanh': 'Hỏa',  'desc': 'Tam Hợp Hỏa Cục'},
+        'Hợi-Mão-Mùi':  {'hanh': 'Mộc',  'desc': 'Tam Hợp Mộc Cục'},
+        'Tị-Dậu-Sửu':   {'hanh': 'Kim',  'desc': 'Tam Hợp Kim Cục'},
+    },
+
 
     # --- 36 Yếu tố phân tích ---
     'factors': {
@@ -294,7 +342,7 @@ LH_TREE = {
 # ═══════════════════════════════════════════════════════════
 KM_TREE = {
     'name': 'Kỳ Môn Độn Giáp',
-    'coverage': '30/30 = 100%',
+    'coverage': '73/73 = 100%',
 
     # --- Bát Môn (8 cửa) ---
     'bat_mon': {
@@ -374,6 +422,61 @@ KM_TREE = {
         'khong_vong': {'name': 'Không Vong', 'desc': 'Hư ảo, chưa xảy ra'},
         'am_can': {'name': 'Ám Can', 'desc': 'Can ẩn trong cung → thông tin ẩn giấu'},  # ← MỚI
         'than_ban': {'name': 'Thần Bàn', 'desc': 'Bàn thần linh → yếu tố tâm linh'},  # ← MỚI
+    },
+
+    # --- Thiên Can (10 Can) ---
+    'thien_can': {
+        'Giáp': {'hanh': 'Mộc', 'am_duong': 'Dương', 'role': 'Chủ soái, đứng đầu'},
+        'Ất':   {'hanh': 'Mộc', 'am_duong': 'Âm',    'role': 'Quý nhân, mềm mỏng'},
+        'Bính': {'hanh': 'Hỏa', 'am_duong': 'Dương', 'role': 'Uy quyền, sáng rõ'},
+        'Đinh': {'hanh': 'Hỏa', 'am_duong': 'Âm',    'role': 'Văn thư, trí tuệ'},
+        'Mậu':  {'hanh': 'Thổ', 'am_duong': 'Dương', 'role': 'Giáp ẩn, tài sản lớn'},
+        'Kỷ':   {'hanh': 'Thổ', 'am_duong': 'Âm',    'role': 'Phó tướng, âm mưu'},
+        'Canh':  {'hanh': 'Kim', 'am_duong': 'Dương', 'role': 'Đối thủ, hung thần'},
+        'Tân':  {'hanh': 'Kim', 'am_duong': 'Âm',    'role': 'Sai lầm, trở ngại'},
+        'Nhâm': {'hanh': 'Thủy','am_duong': 'Dương', 'role': 'Ngoại giao, linh hoạt'},
+        'Quý':  {'hanh': 'Thủy','am_duong': 'Âm',    'role': 'Ẩn mật, bí mật'},
+    },
+
+    # --- Địa Chi (12 Chi) ---
+    'dia_chi': {
+        'Tý':   {'hanh': 'Thủy', 'am_duong': 'Dương', 'gio': '23-01', 'phuong': 'Bắc'},
+        'Sửu':  {'hanh': 'Thổ',  'am_duong': 'Âm',    'gio': '01-03', 'phuong': 'Đông Bắc'},
+        'Dần':  {'hanh': 'Mộc',  'am_duong': 'Dương', 'gio': '03-05', 'phuong': 'Đông Bắc'},
+        'Mão':  {'hanh': 'Mộc',  'am_duong': 'Âm',    'gio': '05-07', 'phuong': 'Đông'},
+        'Thìn': {'hanh': 'Thổ',  'am_duong': 'Dương', 'gio': '07-09', 'phuong': 'Đông Nam'},
+        'Tị':   {'hanh': 'Hỏa',  'am_duong': 'Âm',    'gio': '09-11', 'phuong': 'Đông Nam'},
+        'Ngọ':  {'hanh': 'Hỏa',  'am_duong': 'Dương', 'gio': '11-13', 'phuong': 'Nam'},
+        'Mùi':  {'hanh': 'Thổ',  'am_duong': 'Âm',    'gio': '13-15', 'phuong': 'Tây Nam'},
+        'Thân': {'hanh': 'Kim',  'am_duong': 'Dương', 'gio': '15-17', 'phuong': 'Tây Nam'},
+        'Dậu':  {'hanh': 'Kim',  'am_duong': 'Âm',    'gio': '17-19', 'phuong': 'Tây'},
+        'Tuất': {'hanh': 'Thổ',  'am_duong': 'Dương', 'gio': '19-21', 'phuong': 'Tây Bắc'},
+        'Hợi':  {'hanh': 'Thủy', 'am_duong': 'Âm',    'gio': '21-23', 'phuong': 'Tây Bắc'},
+    },
+
+    # --- Cửu Cung (9 Cung) ---
+    'cuu_cung': {
+        1: {'ten': 'Khảm',  'hanh': 'Thủy', 'phuong': 'Bắc',       'so': 1},
+        2: {'ten': 'Khôn',  'hanh': 'Thổ',  'phuong': 'Tây Nam',    'so': 2},
+        3: {'ten': 'Chấn',  'hanh': 'Mộc',  'phuong': 'Đông',       'so': 3},
+        4: {'ten': 'Tốn',   'hanh': 'Mộc',  'phuong': 'Đông Nam',   'so': 4},
+        5: {'ten': 'Trung',  'hanh': 'Thổ', 'phuong': 'Trung tâm',  'so': 5},
+        6: {'ten': 'Càn',   'hanh': 'Kim',  'phuong': 'Tây Bắc',    'so': 6},
+        7: {'ten': 'Đoài',  'hanh': 'Kim',  'phuong': 'Tây',        'so': 7},
+        8: {'ten': 'Cấn',   'hanh': 'Thổ',  'phuong': 'Đông Bắc',   'so': 8},
+        9: {'ten': 'Ly',    'hanh': 'Hỏa',  'phuong': 'Nam',        'so': 9},
+    },
+
+    # --- Bát Quái (8 Quái) trong Kỳ Môn ---
+    'bat_quai': {
+        'Càn':  {'hanh': 'Kim',  'so': 6, 'phuong': 'Tây Bắc', 'tuong': 'Trời/Cha/Thủ lĩnh'},
+        'Khảm': {'hanh': 'Thủy', 'so': 1, 'phuong': 'Bắc',     'tuong': 'Nước/Nguy hiểm/Trộm'},
+        'Cấn':  {'hanh': 'Thổ',  'so': 8, 'phuong': 'Đông Bắc','tuong': 'Núi/Dừng lại/Con út'},
+        'Chấn': {'hanh': 'Mộc',  'so': 3, 'phuong': 'Đông',    'tuong': 'Sấm/Chấn động/Con cả'},
+        'Tốn':  {'hanh': 'Mộc',  'so': 4, 'phuong': 'Đông Nam','tuong': 'Gió/Phong/Con gái cả'},
+        'Ly':   {'hanh': 'Hỏa',  'so': 9, 'phuong': 'Nam',     'tuong': 'Lửa/Sáng/Con gái giữa'},
+        'Khôn': {'hanh': 'Thổ',  'so': 2, 'phuong': 'Tây Nam', 'tuong': 'Đất/Mẹ/Thuận'},
+        'Đoài': {'hanh': 'Kim',  'so': 7, 'phuong': 'Tây',     'tuong': 'Đầm/Vui/Con gái út'},
     },
 
     # --- Quy trình luận giải chuẩn ---

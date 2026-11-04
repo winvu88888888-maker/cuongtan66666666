@@ -16,7 +16,7 @@ Cấu trúc:
 # ============================================================
 
 THIEN_CAN = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
-DIA_CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+DIA_CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
 
 # Ngũ Hành của Thiên Can
 CAN_NGU_HANH = {
@@ -30,7 +30,7 @@ CAN_NGU_HANH = {
 # Ngũ Hành của Địa Chi
 CHI_NGU_HANH = {
     'Tý': 'Thủy', 'Sửu': 'Thổ', 'Dần': 'Mộc', 'Mão': 'Mộc',
-    'Thìn': 'Thổ', 'Tỵ': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ',
+    'Thìn': 'Thổ', 'Tị': 'Hỏa', 'Tỵ': 'Hỏa', 'Ngọ': 'Hỏa', 'Mùi': 'Thổ',
     'Thân': 'Kim', 'Dậu': 'Kim', 'Tuất': 'Thổ', 'Hợi': 'Thủy'
 }
 
@@ -43,8 +43,8 @@ CAN_AM_DUONG = {
 
 # Can ký tại Chi (Thiên Can ẩn trong Địa Chi)
 CAN_KY_CHI = {
-    'Giáp': 'Dần', 'Ất': 'Mão', 'Bính': 'Tỵ', 'Đinh': 'Ngọ',
-    'Mậu': 'Tỵ', 'Kỷ': 'Ngọ', 'Canh': 'Thân', 'Tân': 'Dậu',
+    'Giáp': 'Dần', 'Ất': 'Mão', 'Bính': 'Tị', 'Đinh': 'Ngọ',
+    'Mậu': 'Tị', 'Kỷ': 'Ngọ', 'Canh': 'Thân', 'Tân': 'Dậu',
     'Nhâm': 'Hợi', 'Quý': 'Tý'
 }
 
@@ -62,7 +62,7 @@ NGUYET_TUONG_MAP = {
     'Tiểu Mãn': 'Thân',    # Truyền Tống
     'Hạ Chí': 'Mùi',       # Tiểu Cát
     'Đại Thử': 'Ngọ',      # Thắng Quang
-    'Xử Thử': 'Tỵ',       # Thái Ất
+    'Xử Thử': 'Tị',       # Thái Ất
     'Thu Phân': 'Thìn',    # Thiên Cương
     'Sương Giáng': 'Mão',  # Thái Xung
     'Tiểu Tuyết': 'Dần',   # Công Tào
@@ -74,7 +74,7 @@ NGUYET_TUONG_MAP = {
 NGUYET_TUONG_TEN = {
     'Tý': 'Thần Hậu (神后)', 'Sửu': 'Đại Cát (大吉)',
     'Dần': 'Công Tào (功曹)', 'Mão': 'Thái Xung (太冲)',
-    'Thìn': 'Thiên Cương (天罡)', 'Tỵ': 'Thái Ất (太乙)',
+    'Thìn': 'Thiên Cương (天罡)', 'Tị': 'Thái Ất (太乙)', 'Tỵ': 'Thái Ất (太乙)',
     'Ngọ': 'Thắng Quang (胜光)', 'Mùi': 'Tiểu Cát (小吉)',
     'Thân': 'Truyền Tống (传送)', 'Dậu': 'Tòng Khôi (从魁)',
     'Tuất': 'Hà Khôi (河魁)', 'Hợi': 'Đăng Minh (登明)'
@@ -272,7 +272,7 @@ QUY_NHAN_KHOI = {
     'Ất': ('Tý', 'Thân'), 'Kỷ': ('Tý', 'Thân'),
     'Bính': ('Hợi', 'Dậu'), 'Đinh': ('Hợi', 'Dậu'),
     'Canh': ('Dần', 'Ngọ'), 'Tân': ('Ngọ', 'Dần'),
-    'Nhâm': ('Mão', 'Tỵ'), 'Quý': ('Tỵ', 'Mão'),
+    'Nhâm': ('Mão', 'Tị'), 'Quý': ('Tị', 'Mão'),
 }
 
 
@@ -378,6 +378,8 @@ def luan_giai(tam_truyen, tu_khoa, thien_tuong, can_ngay):
 # ============================================================
 
 def tinh_dai_luc_nham(can_ngay, chi_ngay, chi_gio, tiet_khi='Đông Chí'):
+    if chi_ngay == 'Tỵ': chi_ngay = 'Tị'
+    if chi_gio == 'Tỵ': chi_gio = 'Tị'
     """
     Tính toàn bộ bảng Đại Lục Nhâm.
     
@@ -504,6 +506,7 @@ DUNG_THAN_MAP = {
 # ============================================================
 
 def tinh_tuan_khong(can_ngay, chi_ngay):
+    if chi_ngay == 'Tỵ': chi_ngay = 'Tị'
     """
     Tính 2 chi Tuần Không từ Can Chi ngày.
     Tìm đầu tuần (Giáp) → 2 chi cuối = Tuần Không.

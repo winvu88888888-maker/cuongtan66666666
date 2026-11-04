@@ -154,11 +154,18 @@ def get_nap_giap_for_hexagram(lower_idx, upper_idx):
     return result
 
 def get_element_strength(h_element, month):
+    chi_element_map = {"Dần": "Mộc", "Mão": "Mộc", "Tị": "Hỏa", "Tỵ": "Hỏa", "Ngọ": "Hỏa", "Thân": "Kim", "Dậu": "Kim", "Hợi": "Thủy", "Tý": "Thủy", "Thìn": "Thổ", "Tuất": "Thổ", "Sửu": "Thổ", "Mùi": "Thổ"}
+    if isinstance(month, str) and month in chi_element_map:
+        m_el = chi_element_map[month]
+    else:
+        month_element_map = {1: "Mộc", 2: "Mộc", 4: "Hỏa", 5: "Hỏa", 7: "Kim", 8: "Kim", 10: "Thủy", 11: "Thủy", 3: "Thổ", 6: "Thổ", 9: "Thổ", 12: "Thổ"}
+        m_el = m_el if 'm_el' in locals() else month_element_map.get(month, "Thổ")
+        pass
     month_element_map = {
         1: "Mộc", 2: "Mộc", 4: "Hỏa", 5: "Hỏa", 7: "Kim", 8: "Kim", 10: "Thủy", 11: "Thủy",
         3: "Thổ", 6: "Thổ", 9: "Thổ", 12: "Thổ"
     }
-    m_el = month_element_map.get(month, "Thổ")
+    m_el = m_el if 'm_el' in locals() else month_element_map.get(month, "Thổ")
     
     strengths = {
         "Mộc": {"Mộc": "Vượng", "Hỏa": "Tướng", "Thủy": "Hưu", "Thổ": "Tù", "Kim": "Tử"},
@@ -170,6 +177,7 @@ def get_element_strength(h_element, month):
     return strengths.get(m_el, {}).get(h_element, "Bình")
 
 def get_tuan_khong(can_ngay, chi_ngay):
+    if chi_ngay == "Tỵ": chi_ngay = "Tị"
     can_map = {"Giáp":1, "Ất":2, "Bính":3, "Đinh":4, "Mậu":5, "Kỷ":6, "Canh":7, "Tân":8, "Nhâm":9, "Quý":10}
     chi_map = {"Tý":1, "Sửu":2, "Dần":3, "Mão":4, "Thìn":5, "Tị":6, "Ngọ":7, "Mùi":8, "Thân":9, "Dậu":10, "Tuất":11, "Hợi":12}
     
@@ -184,6 +192,7 @@ def get_tuan_khong(can_ngay, chi_ngay):
     return [inv_chi_map.get(idx) for idx in void_indices]
 
 def get_dich_ma(chi_ngay):
+    if chi_ngay == "Tỵ": chi_ngay = "Tị"
     map_ma = {
         "Thân": "Dần", "Tý": "Dần", "Thìn": "Dần",
         "Dần": "Thân", "Ngọ": "Thân", "Tuất": "Thân",
@@ -322,7 +331,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         c_branch = cc.split("-")[0]
         c_element = cc.split("-")[1]
         lt = get_luc_than(c_element, p_element)
-        strength = get_element_strength(c_element, month)
+        strength = get_element_strength(c_element, chi_thang or lmonth)
         
         markers = []
         if (i+1) == the_pos: markers.append("(Thế)")
@@ -361,7 +370,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         c_branch = cc.split("-")[0]
         c_element = cc.split("-")[1]
         lt = get_luc_than(c_element, p_element)  # Still uses MAIN palace
-        strength = get_element_strength(c_element, month)
+        strength = get_element_strength(c_element, chi_thang or lmonth)
         
         markers_b = []
         if c_branch in void_branches: markers_b.append("(○)")
@@ -422,7 +431,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                         'hao_pos': hao_pos,
                         'phi_than_luc_than': phi_than['luc_than'],
                         'phi_than_can_chi': phi_than['can_chi'],
-                        'strength': get_element_strength(bt_d['element'], month),
+                        'strength': get_element_strength(bt_d['element'], chi_thang or lmonth),
                         'bat_thuan': bat_thuan_name.get(palace, '?'),
                     }
                     phuc_than_list.append(phuc_info)

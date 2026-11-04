@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V101.5"
+APP_VERSION = "V101.6"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Hợp Nhất 10 Hệ Thống Quẻ 🔮 + 40 Chuyên Gia AI 🧙 + Gemini Online Full Không Cắt Chữ 🌐)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -20,10 +20,20 @@ import traceback
 import re
 
 # V100.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V101.5"
+_CODE_BUILD_VERSION = "V101.6"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
+        "qmdg_calc",
+        "qmdg_data",
+        "mai_hoa_dich_so",
+        "luc_hao_kinh_dich",
+        "dai_luc_nham",
+        "thai_at_than_so",
+        "question_parser",
+        "dual_ai_agents",
+        "interaction_diagrams",
+        "ung_ky_engine",
         "world_class_methods",
         "offline_brain",
         "omniscient_prophecy",
@@ -2344,6 +2354,14 @@ if params:
             'am_duong_don': f"{'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn {params.get('cuc', 1)} Cục",
             'truc_phu': params.get('truc_phu', ''),
             'truc_su': params.get('truc_su', ''),
+            'is_duong_don': params.get('is_duong_don', True),
+            'nguyen': params.get('nguyen', ''),
+            'phu_dau': params.get('phu_dau', ''),
+            'year': selected_datetime.year,
+            'month': selected_datetime.month,
+            'day': selected_datetime.day,
+            'hour': selected_datetime.hour,
+            'minute': selected_datetime.minute,
         }
         if USE_MAI_HOA and not (st.session_state.get('random_hexagram_mode') and st.session_state.get('mai_hoa_result', {}).get('_random_cast')):
             _g_mh = tinh_qua_theo_thoi_gian(selected_datetime.year, selected_datetime.month, selected_datetime.day, selected_datetime.hour)
@@ -2727,7 +2745,23 @@ if st.session_state.current_view == "ky_mon":
                 'can_thang': params.get('can_thang', 'N/A'),
                 'chi_thang': params.get('chi_thang', 'N/A'),
                 'can_nam': params.get('can_nam', 'N/A'),
-                'chi_nam': params.get('chi_nam', 'N/A')
+                'chi_nam': params.get('chi_nam', 'N/A'),
+                'dia_ban': dia_can,
+                'khong_vong': khong_vong,
+                'dich_ma': dich_ma,
+                'tiet_khi': params.get('tiet_khi', ''),
+                'cuc': params.get('cuc', 1),
+                'is_duong_don': params.get('is_duong_don', True),
+                'am_duong_don': f"{'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn {params.get('cuc', 1)} Cục",
+                'nguyen': params.get('nguyen', ''),
+                'phu_dau': params.get('phu_dau', ''),
+                'truc_phu': params.get('truc_phu', ''),
+                'truc_su': params.get('truc_su', ''),
+                'year': selected_datetime.year,
+                'month': selected_datetime.month,
+                'day': selected_datetime.day,
+                'hour': selected_datetime.hour,
+                'minute': selected_datetime.minute,
             }
             
         except Exception as e:

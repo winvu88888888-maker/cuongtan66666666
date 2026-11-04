@@ -1,5 +1,5 @@
 """
-dual_ai_agents.py — V101.5: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
+dual_ai_agents.py — V101.6: HỆ THỐNG SONG NÃO AI 2 TẦNG (DUAL-AGENT PIPELINE)
 ================================================================================
 - CON AI SỐ 1 (QuestionReaderAI): Chạy NGAY ĐẦU TIÊN khi nhận câu hỏi để đọc hiểu
   ngữ nghĩa, bóc tách chính xác đối tượng được hỏi (nhà mấy tầng, ở tầng mấy, mấy phòng,
@@ -515,6 +515,8 @@ class HexagramReasoningAI:
         pm_hao = {}
         hd_count = 0
         hd_haos = []
+        pm_haos = []
+        tt_haos = []
 
         for idx, h in enumerate(haos, 1):
             if not isinstance(h, dict):
@@ -530,9 +532,12 @@ class HexagramReasoningAI:
             if "Phụ Mẫu" in lt:
                 pm_idx = idx
                 pm_hao = h
+                pm_haos.append((idx, h))
             if "Huynh Đệ" in lt:
                 hd_count += 1
                 hd_haos.append((idx, h))
+            if "Tử Tôn" in lt:
+                tt_haos.append((idx, h))
 
         c_info = omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}
         huong_cung = c_info.get("huong", "Chính Nam")
@@ -553,22 +558,47 @@ class HexagramReasoningAI:
                 "Chấn": (3, 4, "Nhà 3 – 4 tầng (vươn lên thẳng đứng)"),
                 "Tốn": (3, 4, "Nhà 3 – 4 tầng (thoáng gió, nhiều cửa sổ)"),
                 "Ly": (3, 4, "Nhà 3 – 4 tầng (sáng sủa, mặt tiền thoáng)"),
-                "Đoài": (2, 4, "Nhà 2 – 4 tầng (thiết kế hiện đại)"),
+                "Đoài": (2, 3, "Nhà 2 – 3 tầng (thiết kế hiện đại)"),
                 "Càn": (4, 5, "Nhà cao 4 – 5 tầng (hoặc tòa nhà/chung cư cao tầng)"),
             }
             quai_cung_name = c_info.get("quai", "Ly")
+            mh_upper = str(mai_hoa_data.get("upper") or "")
+            mh_lower = str(mai_hoa_data.get("lower") or "")
+            mh_the = str(mai_hoa_data.get("the_quai") or mh_upper or quai_cung_name)
+            mh_dung = str(mai_hoa_data.get("dung_quai") or mh_lower or quai_cung_name)
+            mh_bien_dung = str(mai_hoa_data.get("bien_dung_quai") or "")
+            pm_positions = [idx for idx, _ in pm_haos] if pm_haos else [pm_idx]
+            is_bat_thuan = bool(mh_upper and mh_upper == mh_lower) or ("Thuần " in str(ten_que_chu))
+            primary_quai = mh_the if mh_the in QUAI_FLOOR_MAP else (mh_upper if mh_upper in QUAI_FLOOR_MAP else quai_cung_name)
             # Xác định Thượng Quái & Hạ Quái từ tên quẻ
-            base_f1, base_f2, desc_f = QUAI_FLOOR_MAP.get(quai_cung_name, (3, 4, "Nhà 3 – 4 tầng"))
-            if the_idx in (1, 2) and pm_idx in (1, 2) and not dong_list:
+            base_f1, base_f2, desc_f = QUAI_FLOOR_MAP.get(primary_quai, (2, 3, "Nhà 2 – 3 tầng"))
+            if primary_quai == "Khôn" and (mh_bien_dung in ("Chấn", "Cấn", "Khảm", "Ly") or max(pm_positions) >= 2):
+                base_f1, base_f2 = 2, 3
+            active_hao = dong_list[0] if dong_list else (pm_positions[0] if is_bat_thuan else the_idx)
+            if max(pm_positions) <= 2 and (not dong_list or max(dong_list) <= 2) and primary_quai in ("Khôn", "Cấn", "Khảm", "Đoài"):
+                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (ỨNG MẠNH NHẤT: NHÀ {base_f1} TẦNG HOẶC {base_f2} TẦNG / 1 TRỆT {base_f1} LẦU)"
+                cur_floor = f"Tầng 1 (Tầng trệt — ứng Hào {active_hao}) hoặc Tầng 2 (Chính Trạch — Hào Phụ Mẫu tại Hào {pm_positions[0]})"
+            elif (not is_bat_thuan) and the_idx in (5, 6) and primary_quai == "Càn":
+                floor_main = f"NHÀ CAO {base_f1} – {base_f2} TẦNG (HOẶC TÒA NHÀ / CHUNG CƯ)"
+                cur_floor = f"Tầng {base_f1} – {base_f2} (hoặc Tầng {the_idx - 1}–{the_idx} nếu ở chung cư)"
+            else:
+                floor_main = locals().get("floor_main", "")
+                cur_f_low = min(max(1, active_hao), base_f1)
+                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (ỨNG MẠNH: NHÀ {base_f1} TẦNG HOẶC {base_f2} TẦNG)"
+                cur_f_high = min(max(cur_f_low + 1, pm_positions[0]), base_f2)
+                cur_floor = f"Tầng {cur_f_low} hoặc Tầng {cur_f_high}"
+            if False and the_idx in (1, 2) and pm_idx in (1, 2) and not dong_list:
                 floor_main = "NHÀ 1 – 2 TẦNG (NHÀ TRỆT HOẶC NHÀ 2 TẦNG)"
                 cur_floor = "Tầng 1 (Tầng trệt)" if the_idx == 1 else "Tầng 1 hoặc Tầng 2"
-            elif the_idx in (5, 6):
+            elif False and the_idx in (5, 6):
                 extra_txt = "TÒA NHÀ / CHUNG CƯ CAO TẦNG" if base_f2 >= 5 else f"NHÀ {base_f2} – 5 TẦNG / CHUNG CƯ"
                 floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (HOẶC {extra_txt})"
-                cur_floor = f"Tầng {base_f1} – {base_f2} (Tầng trên của nhà, hoặc Tầng {the_idx - 1}–{the_idx} nếu ở chung cư)"
+                cur_floor = f"Tầng {base_f1} – {base_f2}"
+                pass
             else:
-                floor_main = f"NHÀ {base_f1} – {base_f2} TẦNG (ỨNG MẠNH NHẤT: NHÀ {base_f1} TẦNG HOẶC {base_f2} TẦNG)"
-                cur_floor = f"Tầng {max(1, the_idx - 1)} hoặc Tầng {the_idx}"
+                floor_main = locals().get("floor_main", "")
+                pass
+                pass
 
             if any(w in q_low for w in ["mấy phòng", "bao nhiêu phòng"]):
                 room_n1 = max(2, int(target_cung) if str(target_cung).isdigit() else 3)
@@ -577,7 +607,7 @@ class HexagramReasoningAI:
             elif any(w in q_low for w in ["đang ở tầng mấy", "ngồi ở tầng mấy", "phòng ở tầng mấy"]):
                 headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: HIỆN TẠI BẠN ĐANG Ở {cur_floor.upper()} (TRONG {floor_main})!"
             else:
-                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH: BẠN ĐANG Ở {floor_main} — VỊ TRÍ SINH HOẠT CHÍNH CỦA BẠN ỨNG VỚI {cur_floor.upper()} (HÀO THẾ TẠI HÀO {the_idx})!"
+                headline = f"🏠 KẾT LUẬN TỪ QUẺ GIA TRẠCH ({ten_que_chu.upper()}): BẠN ĐANG Ở {floor_main} — VỊ TRÍ SINH HOẠT CHÍNH ỨNG VỚI {cur_floor.upper()}!"
 
             pm_desc = (
                 f"Hào <b>Phụ Mẫu</b> (Dụng Thần đại diện cho Ngôi nhà/Gia trạch) tại Hào {pm_idx} ({pm_hao.get('chi', '')}-{pm_hao.get('ngu_hanh', hanh_dt)})"
@@ -807,7 +837,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V101.5): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V101.6): AI ĐỌC HIỂU CÂU HỎI ➔ AI ĐỐI CHỨNG QUẺ & SUY LUẬN</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'

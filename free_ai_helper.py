@@ -5224,7 +5224,7 @@ class FreeAIHelper:
             try:
                 from thai_at_than_so import tinh_thai_at_than_so
                 import datetime
-                now = datetime.datetime.now()
+                now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
                 ta_can = chart_data.get('can_ngay','Giáp') if chart_data and isinstance(chart_data, dict) else 'Giáp'
                 ta_chi = chart_data.get('chi_ngay','Tý') if chart_data and isinstance(chart_data, dict) else 'Tý'
                 ta_data = tinh_thai_at_than_so(now.year, now.month, ta_can, ta_chi)
@@ -8472,7 +8472,7 @@ class FreeAIHelper:
         try:
             from thai_at_than_so import tinh_thai_at_than_so
             import datetime as _dt
-            now = _dt.datetime.now()
+            now = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=7)))
             can_ngay = chart_data.get('can_ngay', 'Giáp')
             chi_ngay = chart_data.get('chi_ngay', 'Tý')
             ta_data = tinh_thai_at_than_so(now.year, now.month, can_ngay, chi_ngay)
@@ -11842,7 +11842,7 @@ class FreeAIHelper:
         _timing_detail = []
         if is_timing_kl:
             import datetime as _dt_uk
-            _now_uk = _dt_uk.datetime.now()
+            _now_uk = _dt_uk.datetime.now(_dt_uk.timezone(_dt_uk.timedelta(hours=7))).replace(tzinfo=None)
             
             _UNG_KY_CHI = {
                 'Kim': ['Thân', 'Dậu'], 'Mộc': ['Dần', 'Mão'], 'Thủy': ['Tý', 'Hợi'],
@@ -12902,8 +12902,14 @@ class FreeAIHelper:
             from dai_luc_nham import tinh_dai_luc_nham
             _dln_chk = tinh_dai_luc_nham(can_ngay, chi_ngay, chi_gio or 'Tý', chart_data.get('tiet_khi', 'Lập Xuân'))
             _tt_chk = _dln_chk.get('tam_truyen', {})
-            _so_chk = _tt_chk.get('so_truyen', {})
-            _mat_chk = _tt_chk.get('mat_truyen', {})
+            _tt_map_chk = _dln_chk.get('thien_tuong_map', {})
+            _so_raw = _tt_chk.get('so_truyen', '')
+            _mat_raw = _tt_chk.get('mat_truyen', '')
+            _so_chi_chk = _so_raw.get('chi') if isinstance(_so_raw, dict) else str(_so_raw or '')
+            _mat_chi_chk = _mat_raw.get('chi') if isinstance(_mat_raw, dict) else str(_mat_raw or '')
+            _so_tt_chk = _so_raw.get('thien_tuong', '') if isinstance(_so_raw, dict) else (str(_tt_map_chk.get(_so_chi_chk, '')) if not isinstance(_tt_map_chk.get(_so_chi_chk), dict) else _tt_map_chk.get(_so_chi_chk, {}).get('ten', ''))
+            _so_chk = {'chi': _so_chi_chk, 'thien_tuong': _so_tt_chk}
+            _mat_chk = {'chi': _mat_chi_chk}
             if _so_chk.get('chi') in kv:
                 warnings.append(
                     f"🔹 <b>Dạng 11 [Đại Lục Nhâm — Sơ Truyền Lâm Tuần Không]:</b> Sơ truyền <b>{_so_chk.get('chi')}</b> (Thiên tướng <b>{_so_chk.get('thien_tuong', '')}</b>) rơi vào <b>Tuần Không ({', '.join(kv)})</b> — Cổ pháp Đại Lục Nhâm: <i>'Sơ truyền Không Vong, sự nguyên vô căn'</i> (Sự việc ngay từ gốc đã không có thật)."
@@ -12945,8 +12951,12 @@ class FreeAIHelper:
         # Đảm bảo 6/6 phương pháp LUÔN có data, kể cả Hỏi Nhanh
         # ═══════════════════════════════════════════════════════
         import datetime as _dt324
-        _now324 = _dt324.datetime.now()
-        _y, _m, _d, _h = _now324.year, _now324.month, _now324.day, _now324.hour
+        _now324 = _dt324.datetime.now(_dt324.timezone(_dt324.timedelta(hours=7))).replace(tzinfo=None)
+        _cd_init = chart_data if isinstance(chart_data, dict) else {}
+        _y = int(_cd_init.get('year') or _now324.year)
+        _m = int(_cd_init.get('month') or _now324.month)
+        _d = int(_cd_init.get('day') or _now324.day)
+        _h = int(_cd_init.get('hour') if _cd_init.get('hour') is not None else _now324.hour)
         
         # 1. Mai Hoa: gieo theo thời gian
         if not mai_hoa_data:
@@ -12965,7 +12975,7 @@ class FreeAIHelper:
                 from qmdg_data import lap_ban_qmdg
                 
                 # Tính tham số Kỳ Môn từ thời gian hiện tại
-                _params = calculate_qmdg_params(_now324)
+                _params = calculate_qmdg_params(_dt324.datetime(_y, _m, _d, _h, 0))
                 
                 # Lập bàn 9 cung đầy đủ (Sao/Cửa/Thần/Can Thiên bàn)
                 _thien_ban, _can_thien_ban, _nhan_ban, _than_ban, _truc_phu_cung = lap_ban_qmdg(
@@ -13801,7 +13811,7 @@ class FreeAIHelper:
         try:
             from thai_at_than_so import tinh_thai_at_than_so
             import datetime as _dt
-            now = _dt.datetime.now()
+            now = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=7)))
             ta_can_ngay = chart_data.get('can_ngay', 'Giáp') if chart_data else 'Giáp'
             ta_chi_ngay = chart_data.get('chi_ngay', 'Tý') if chart_data else 'Tý'
             ta_data = tinh_thai_at_than_so(now.year, now.month, ta_can_ngay, ta_chi_ngay)
@@ -14549,7 +14559,7 @@ class FreeAIHelper:
         if not chart_data or not isinstance(chart_data, dict):
             try:
                 import datetime
-                now = datetime.datetime.now()
+                now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
                 # Tính Can giờ hiện tại (đơn giản) → Hành DT
                 can_idx = (now.year % 10)
                 chi_idx = (now.hour // 2) % 12
@@ -16355,7 +16365,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.5 — Thiết Kế Trực Quan)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V101.6 — Thiết Kế Trực Quan)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'

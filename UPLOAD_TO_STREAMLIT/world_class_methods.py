@@ -79,7 +79,7 @@ def analyze_western_horary(
     Phân tích theo chuẩn Chiêm Tinh Học Vấn Sự Phương Tây (Horary Astrology — William Lilly).
     """
     chart_data = chart_data if isinstance(chart_data, dict) else {}
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
     chi_gio = chart_data.get("chi_gio", "")
     chi_ngay = chart_data.get("chi_ngay", "")
 
@@ -178,7 +178,7 @@ def analyze_vedic_kp_prashna(
     Phân tích theo Chiêm Tinh Vệ Đà Ấn Độ (Prashna Shastra & KP Sub-Lord Significators).
     """
     chart_data = chart_data if isinstance(chart_data, dict) else {}
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
     cuc = int(chart_data.get("cuc", 5) or 5)
     nak_idx = (now.day * 3 + now.hour + cuc) % 27
     nak_name, nak_lord, nak_trait = NAKSHATRAS_27[nak_idx]
@@ -450,7 +450,7 @@ def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dic
     dln_so_empty = False
     dln_deception = False
     try:
-        from dai_luc_nham import tinh_dai_luc_nham
+        from dai_luc_nham import tinh_dai_luc_nham, tinh_luc_than, tinh_tuan_khong
         dln = tinh_dai_luc_nham(can_ngay, chi_ngay, chi_gio, tiet_khi)
         tt = dln.get("tam_truyen", {})
         lg = dln.get("luan_giai", {})
@@ -458,15 +458,36 @@ def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dic
         so = tt.get("so_truyen", {})
         trung = tt.get("trung_truyen", {})
         mat = tt.get("mat_truyen", {})
+        tk_dln = list(tinh_tuan_khong(can_ngay, chi_ngay))
+        tt_map_dln = dln.get("thien_tuong_map", {})
+        so_chi = so.get("chi", "?") if isinstance(so, dict) else str(so or "?")
+        trung_chi = trung.get("chi", "?") if isinstance(trung, dict) else str(trung or "?")
+        mat_chi = mat.get("chi", "?") if isinstance(mat, dict) else str(mat or "?")
+        so_lt = tinh_luc_than(so_chi, can_ngay) if so_chi != "?" else ""
+        mat_lt = tinh_luc_than(mat_chi, can_ngay) if mat_chi != "?" else ""
+        so_tt = str(tt_map_dln.get(so_chi, "")) if not isinstance(tt_map_dln.get(so_chi), dict) else tt_map_dln.get(so_chi, {}).get("ten", "")
+        trung_tt = str(tt_map_dln.get(trung_chi, "")) if not isinstance(tt_map_dln.get(trung_chi), dict) else tt_map_dln.get(trung_chi, {}).get("ten", "")
+        mat_tt = str(tt_map_dln.get(mat_chi, "")) if not isinstance(tt_map_dln.get(mat_chi), dict) else tt_map_dln.get(mat_chi, {}).get("ten", "")
         dln_summary = (
+            f"Khóa thức <b>{tt.get('phuong_phap', 'Tặc Khắc')}</b>: "
+            f"Sơ truyền <b>{so_chi}</b> ({so_lt} · Tướng <b>{so_tt}</b>) "
+            f"➔ Trung truyền <b>{trung_chi}</b> ({trung_tt}) "
+            f"➔ Mạt truyền <b>{mat_chi}</b> ({mat_lt} · Tướng <b>{mat_tt}</b>)"
+        )
+        if so_chi in tk_dln:
+            dln_so_empty = True
+        if so_tt in ("Huyền Vũ", "Thiên Không", "Đằng Xà") and so_chi in tk_dln:
+            dln_deception = True
+        if False:
+            _unused_dln = (
             f"Khóa thức <b>{tt.get('phuong_phap', 'Tặc Khắc')}</b>: "
             f"Sơ truyền <b>{so.get('chi', '?')}</b> ({so.get('luc_than', '')} · Tướng <b>{so.get('thien_tuong', '')}</b>) "
             f"➔ Trung truyền <b>{trung.get('chi', '?')}</b> ({trung.get('thien_tuong', '')}) "
             f"➔ Mạt truyền <b>{mat.get('chi', '?')}</b> ({mat.get('luc_than', '')} · Tướng <b>{mat.get('thien_tuong', '')}</b> — {lg.get('ket_luan', '')})"
         )
-        if so.get("chi") in tk_dln or (so.get("chi") in tk_dln and mat.get("chi") in tk_dln):
+        if False and (so.get("chi") in tk_dln or (so.get("chi") in tk_dln and mat.get("chi") in tk_dln)):
             dln_so_empty = True
-        if so.get("thien_tuong") in ("Huyền Vũ", "Thiên Không", "Đằng Xà") and so.get("chi") in tk_dln:
+        if False and so.get("thien_tuong") in ("Huyền Vũ", "Thiên Không", "Đằng Xà") and so.get("chi") in tk_dln:
             dln_deception = True
     except Exception:
         dln_summary = "Sơ truyền khởi động thận trọng ➔ Trung truyền chuyển hóa ➔ Mạt truyền ổn định"
@@ -477,16 +498,16 @@ def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dic
     try:
         import datetime as _dt_ta
         from thai_at_than_so import tinh_thai_at_than_so
-        _yr_now = _dt_ta.datetime.now().year
-        ta = tinh_thai_at_than_so(_yr_now, 1, can_ngay, chi_ngay)
-        ta_info = ta.get("thai_at_info", {})
+        _yr_now = int(chart_data.get("year") or _dt_ta.datetime.now(_dt_ta.timezone(_dt_ta.timedelta(hours=7))).year)
+        ta = tinh_thai_at_than_so(_yr_now, int(chart_data.get("month") or 1), can_ngay, chi_ngay)
+        ta_info = ta.get("thai_at_cung") or ta.get("thai_at_info", {})
         bt = ta.get("bat_tuong", {})
         lg_ta = ta.get("luan_giai", {})
-        chu_dt = bt.get("chu_dai_tuong", {})
-        khach_dt = bt.get("khach_dai_tuong", {})
+        chu_dt = bt.get("Chủ Đại Tướng") or bt.get("chu_dai_tuong", {})
+        khach_dt = bt.get("Khách Đại Tướng") or bt.get("khach_dai_tuong", {})
         ta_chu_khach = lg_ta.get("chu_khach", "Chủ Khách cân bằng")
         ta_summary = (
-            f"Thái Ất đóng <b>{ta_info.get('ten_cung', 'Cung Càn')}</b>, "
+            f"Thái Ất đóng <b>Cung {ta_info.get('cung', 8)} ({ta_info.get('ten_cung', 'Cấn')} — {ta_info.get('hanh_cung', 'Thổ')})</b>, "
             f"Chủ Đại Tướng tại cung {chu_dt.get('cung', 1)} ({chu_dt.get('hanh', 'Thủy')}) đối sánh Khách Đại Tướng tại cung {khach_dt.get('cung', 7)} ({khach_dt.get('hanh', 'Kim')}): "
             f"<b>{ta_chu_khach}</b>"
         )
@@ -498,11 +519,15 @@ def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dic
     try:
         from tu_vi import lap_la_so
         _g_idx = _chi_list.index(chi_gio) if chi_gio in _chi_list else 0
-        ls = lap_la_so(1990, (_idx_m + 1), (_idx_d + 1), _g_idx, "nam")
-        mc_idx = ls.get("menh_cung_idx", 0)
-        mc_data = (ls.get("cung", {}) or {}).get(mc_idx, {})
-        chinh_tinh = ", ".join(mc_data.get("chinh_tinh", [])[:2]) or "Tử Vi, Thiên Phủ"
-        tv_summary = f"Cung Mệnh/Sự Việc hội sao <b>{chinh_tinh}</b> tại cung {mc_data.get('chi', chi_ngay)} ({ls.get('cuc_name', 'Thủy Nhị Cục')})"
+        ls = lap_la_so(int(chart_data.get("year") or 2026), (_idx_m + 1), (_idx_d + 1), _g_idx, "nam")
+        mc_data = (ls.get("cung_map", {}) or {}).get("Mệnh", {}) or ls.get("menh_cung", {})
+        chinh_tinh = ", ".join(mc_data.get("chinh_tinh", [])[:2]) or "Chính Tinh"
+        tv_summary = f"Cung Mệnh/Sự Việc hội sao <b>{chinh_tinh}</b> tại cung {mc_data.get('chi', chi_ngay)} ({ls.get('cuc_ten', ls.get('cuc_name', 'Thủy Nhị Cục'))})"
+        if False:
+            mc_idx = ls.get("menh_cung_idx", 0)
+            mc_data = (ls.get("cung", {}) or {}).get(mc_idx, {})
+            chinh_tinh = ", ".join(mc_data.get("chinh_tinh", [])[:2]) or "Tử Vi, Thiên Phủ"
+            tv_summary = f"Cung Mệnh/Sự Việc hội sao <b>{chinh_tinh}</b> tại cung {mc_data.get('chi', chi_ngay)} ({ls.get('cuc_name', 'Thủy Nhị Cục')})"
     except Exception:
         tv_summary = "Cung trọng tâm hội cát tinh che chở"
 
@@ -902,7 +927,11 @@ def build_holographic_7_position_picture(
         pos6_opp = "Con cái có quý nhân phù trợ và có năng lực tự lập, tuy nhiên mỗi giai đoạn trưởng thành cần sự thấu hiểu của cha mẹ."
         pos6_adv = "<b>Phương pháp giáo dục & đồng hành:</b> Khích lệ con phát huy sở trường riêng, uốn nắn bằng sự mềm mỏng và tình cảm ấm áp thay vì la mắng cứng nhắc."
     elif weighted_pct >= 55:
-        pos6_what = f"Cả vận thế bên ngoài (Thái Ất: {thai_at_verdict}) và vận cá nhân (Tử Vi: {tu_vi_verdict}) đều đang ủng hộ bạn tiến lên."
+        pos6_what = (
+            f"Cả vận thế bên ngoài (Thái Ất: {thai_at_verdict}) và vận cá nhân (Tử Vi: {tu_vi_verdict}) đều đang ủng hộ bạn tiến lên."
+            if ("HUNG" not in str(thai_at_verdict) and "HUNG" not in str(tu_vi_verdict))
+            else f"Tổng điểm hợp lực đạt mức Cát ({weighted_pct}%), tuy nhiên cần lưu ý sự phân hóa giữa bối cảnh vĩ mô (Thái Ất: <b>{thai_at_verdict}</b>) và vận trình cá nhân (Tử Vi: <b>{tu_vi_verdict}</b>)."
+        )
         pos6_opp = "Thời cơ đang mở, nếu chủ động nắm bắt sẽ tạo được bước tiến mới rất tốt."
         pos6_adv = "<b>Chiến lược: CHỦ ĐỘNG TIẾN HÀNH</b> — mạnh dạn triển khai kế hoạch hoặc đón nhận cơ hội mới."
     elif weighted_pct >= 45:

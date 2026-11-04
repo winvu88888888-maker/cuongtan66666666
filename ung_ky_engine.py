@@ -120,7 +120,7 @@ def _format_solar_lunar_date(dt_obj):
 def _chi_to_dates(chi, base_date=None, scope='month'):
     """Chuyển Chi thành ngày/tháng/năm dương lịch & âm lịch cụ thể chính xác theo JDN."""
     if not base_date:
-        base_date = datetime.date.today()
+        base_date = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).date()
 
     results = []
 
@@ -274,7 +274,13 @@ def calc_ung_ky_detail(
         'html': str,               # HTML hiển thị
     }
     """
-    now = datetime.date.today()
+    try:
+        if isinstance(chart_data, dict) and chart_data.get('year') and chart_data.get('month') and chart_data.get('day'):
+            now = datetime.date(int(chart_data['year']), int(chart_data['month']), int(chart_data['day']))
+        else:
+            now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).date()
+    except Exception:
+        now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).date()
     result = {
         'summary': '', 'minute': '', 'minute_data': {},
         'hour': '', 'day': '', 'month': '', 'year': '',
