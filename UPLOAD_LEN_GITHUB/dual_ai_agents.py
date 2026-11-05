@@ -5398,7 +5398,7 @@ class HexagramReasoningAI:
         # 3D. Tử Vi Đẩu Số & Kho Tàng Tử Vi Thiên Kỷ 56.6GB GitHub (Renhuai123/ziwei-doushu — 13 Chiều Luận Mệnh)
         _tv_detail_html = ""
         try:
-            from tu_vi import lap_la_so
+            from tu_vi import lap_la_so, analyze_thien_ky_13_dimensions
             _CHI_IDX_TV = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
             _g_idx_tv = _CHI_IDX_TV.index(chi_g) if chi_g in _CHI_IDX_TV else 6
             _tv_res = lap_la_so(_clk_bd["lunar_year"], _clk_bd["lunar_month"], _clk_bd["lunar_day"], _g_idx_tv, "nam")
@@ -5407,9 +5407,10 @@ class HexagramReasoningAI:
                 _tc_tv = (_tv_res.get("than_cung") or {}).get("chi", "Thân")
                 _th_tv = _tv_res.get("tu_hoa") or {}
                 _th_str = ", ".join(f"{k}: <b>{v}</b>" for k, v in _th_tv.items()) if isinstance(_th_tv, dict) else str(_th_tv)
-                _tk13 = _tv_res.get("thien_ky_13_dimensions") or {}
-                _tk13_env = _tk13.get("dim2_birth_origin_environment") or ""
-                _tk13_core = _tk13.get("dim1_menh_than_core") or ""
+                _tk13 = _tv_res.get("thien_ky_13_dimensions") or (analyze_thien_ky_13_dimensions(_tv_res) if callable(analyze_thien_ky_13_dimensions) else {}) or {}
+                _tk13_vals = list(_tk13.values())
+                _tk13_core = _tk13_vals[1] if len(_tk13_vals) > 1 else ""
+                _tk13_env = _tk13_vals[3] if len(_tk13_vals) > 3 else ""
                 _tv_detail_html = (
                     f"Cục số: <b>{_tv_res.get('cuc_ten', 'Thủy Nhị Cục')}</b> · Nạp âm: <b>{_tv_res.get('nap_am', '')}</b> · "
                     f"Cung Mệnh lập tại <b>{_mc_tv}</b> · Cung Thân lập tại <b>{_tc_tv}</b> · "
