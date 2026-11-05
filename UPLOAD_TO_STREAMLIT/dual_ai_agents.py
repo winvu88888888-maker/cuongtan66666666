@@ -619,7 +619,7 @@ class QuestionReaderAI:
         )
         is_quit_work = any(w in q_low for w in ["nghỉ hay", "nên nghỉ", "nghỉ việc", "bỏ việc", "xin nghỉ", "làm tiếp hay", "đi hay ở", "ở lại hay"])
         _is_child_action_ab = bool(re.search(r"(?:con\s+gái\s+hay\s+con\s+trai|con\s+trai\s+hay\s+con\s+gái)\s+\S+", q_low)) and not has_age_word and not any(w in q_low for w in ["sinh con", "đẻ con", "mang thai", "bầu"])
-        is_gender_age = any(w in q_low for w in ["nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính", "bao nhiêu tuổi", "mấy tuổi", "sinh năm"]) and not is_children_q and not _is_child_action_ab
+        is_gender_age = any(w in q_low for w in ["nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính", "bao nhiêu tuổi", "mấy tuổi", "sinh năm mấy", "sinh năm nào", "sinh năm bao nhiêu"]) and not is_children_q and not _is_child_action_ab
         is_weather = any(w in q_low for w in ["mưa hay nắng", "nắng hay mưa", "thời tiết", "có mưa không", "trời mưa", "trời nắng", "bão"])
         is_lawsuit = any(w in q_low for w in ["kiện", "tòa án", "pháp lý", "tranh chấp", "ai thắng", "thắng hay thua", "thắng hay đối phương", "đấu thầu"])
         is_profile = any(w in q_low for w in ["ngoại hình", "hình dáng người", "cao hay thấp", "béo hay gầy", "tính cách", "tính nết", "làm nghề gì", "nghề nghiệp gì", "ngành gì", "cao bao nhiêu", "nặng bao nhiêu"])
@@ -1507,10 +1507,14 @@ class HexagramReasoningAI:
             for (u_k, l_k), (full_nm, desc_m) in _FULL_64_PAIRS.items():
                 if h_clean.lower() == full_nm.lower() or (len(h_clean) >= 2 and full_nm.lower().endswith(" " + h_clean.lower())):
                     return u_k, l_k, full_nm, desc_m
-            # Tách từ tự nhiên (VD: "Hỏa Lôi Phệ Hạp" -> Thượng Hỏa=Ly, Hạ Lôi=Chấn; "Thuần Càn" -> Càn/Càn)
+            # Tách từ tự nhiên (VD: "Hỏa Lôi Phệ Hạp" -> Thượng Hỏa=Ly, Hạ Lôi=Chấn; "Thuần Càn" / "Càn Vi Thiên" -> Càn/Càn)
             words_h = h_clean.lower().split()
             if len(words_h) >= 2 and words_h[0] == "thuần" and words_h[1] in _NATURE_TO_QUAI:
                 q_single = _NATURE_TO_QUAI[words_h[1]]
+                full_nm, desc_m = _FULL_64_PAIRS.get((q_single, q_single), (h_clean, "Biến hóa theo thời vận âm dương"))
+                return q_single, q_single, full_nm, desc_m
+            if len(words_h) >= 3 and words_h[1] == "vi" and (words_h[0] in _NATURE_TO_QUAI or words_h[2] in _NATURE_TO_QUAI):
+                q_single = _NATURE_TO_QUAI.get(words_h[0]) or _NATURE_TO_QUAI.get(words_h[2], fb_u)
                 full_nm, desc_m = _FULL_64_PAIRS.get((q_single, q_single), (h_clean, "Biến hóa theo thời vận âm dương"))
                 return q_single, q_single, full_nm, desc_m
             if len(words_h) >= 2 and words_h[0] in _NATURE_TO_QUAI and words_h[1] in _NATURE_TO_QUAI:
@@ -1523,8 +1527,8 @@ class HexagramReasoningAI:
 
         up_chu, lo_chu, full_chu, desc_chu = _resolve_hex(
             ten_que_chu,
-            mai_hoa_data.get("upper") or "Đoài",
-            mai_hoa_data.get("lower") or "Chấn",
+            mai_hoa_data.get("upper") or mai_hoa_data.get("thuong_quai") or "Đoài",
+            mai_hoa_data.get("lower") or mai_hoa_data.get("ha_quai") or "Chấn",
         )
         up_bien, lo_bien, full_bien, desc_bien = _resolve_hex(
             ten_que_bien,
@@ -1797,16 +1801,52 @@ class HexagramReasoningAI:
         except Exception:
             pass
 
-        # Tổng hợp Chuỗi Liên Kết 4 Mắt Xích Của Quẻ (Holistic 4-Link Chain) + Thiết Bản Điều Văn Số
+        # V116.0: MẢNH GHÉP 2 (Khớp Niên Mệnh Đích Danh trên RAM, không lưu câu hỏi) & MẢNH GHÉP 3 (Pháp Quyết Hóa Giải Thông Quan)
+        _nm_info = {}
+        _nm_summary_str = ""
+        _nm_prompt_line = ""
+        _tq_remedy = {}
+        _tq_remedy_html = ""
+        try:
+            from integrated_knowledge_base import extract_nien_menh_and_match_hexagram, compute_thong_quan_remedy
+            _q_raw_m = str(omni_data.get("question") or chart_data.get("question") or "")
+            _nm_info = extract_nien_menh_and_match_hexagram(
+                question=_q_raw_m,
+                chart_data=chart_data,
+                haos=haos,
+                dong_list=dong_list,
+                kv_list=_kv_m,
+            ) or {}
+            if _nm_info.get("has_nien_menh"):
+                _nm_summary_str = str(_nm_info.get("summary_str", ""))
+                _nm_prompt_line = str(_nm_info.get("prompt_line", ""))
+            _tq_remedy = compute_thong_quan_remedy(
+                hanh_the=str(hanh_the),
+                hanh_dung=str(hanh_dung),
+                dt_nh=str(dt_nh),
+                dt_chi=str(dt_chi),
+                is_phuc_ngam=bool(is_km_phuc_ngam),
+                is_dt_kv=bool(dt_chi in _kv_m),
+                chart_data=chart_data,
+                target_cung=int(target_cung) if str(target_cung).isdigit() else 8,
+                cua_name=str(cua_name),
+                sao_name=str(sao_name),
+            ) or {}
+            _tq_remedy_html = str(_tq_remedy.get("remedy_html", ""))
+        except Exception:
+            pass
+
+        # Tổng hợp Chuỗi Liên Kết 4 Mắt Xích Của Quẻ (Holistic 4-Link Chain) + Thiết Bản Điều Văn Số + Niên Mệnh (nếu có)
         holistic_chain_summary = (
             f"🔗 [Mắt xích 1 - Bản thân/Chủ thể]: Hào Thế tại Hào {the_idx} ({the_chi}-{the_nh}){' [Tuần Không]' if the_chi in _kv_m else ' [Hữu khí]'} phối hợp Quẻ Thể {the_quai} ({hanh_the}) | "
             f"🔗 [Mắt xích 2 - Mục tiêu ({dung_than})]: Hào {dt_idx} ({dt_chi}-{dt_nh}){' [Đang Tuần Không — chưa thể thành ngay lập tức]' if dt_chi in _kv_m else ' [Hữu khí]'}{dt_bien_str} | "
             f"🔗 [Mắt xích 3 - Nguồn lực/Tiền bạc (Thê Tài)]: {the_tai_status_str} | "
             f"🔗 [Mắt xích 4 - Kỳ Môn, Mai Hoa & Thiết Bản]: {km_phuc_ngam_str}; Mai Hoa {full_chu} ➔ {full_ho} ➔ {full_bien} ({rel_bien_tag}); Thiết Bản Điều Văn #{_tb_dieu_van_so}."
+            + (f" | {_nm_summary_str}" if _nm_summary_str else "")
         )
 
         matrix_prompt_block = (
-            f"=== HỒ SƠ TAM THỨC HỢP NHẤT & KHO TÀNG KINH ĐIỂN GITHUB (V115.0) ===\n"
+            f"=== HỒ SƠ TAM THỨC HỢP NHẤT & KHO TÀNG KINH ĐIỂN GITHUB (V116.0) ===\n"
             f"[1] MAI HOA DỊCH SỐ (18 Chiêm Pháp — handsomejustin/meihua-yi & westernwaterfall/yi-basic):\n"
             f"  - Quẻ Chủ: {full_chu} (Thượng {up_chu} [{hanh_dung if dung_pos_lbl=='Thượng Quái' else hanh_the}] / Hạ {lo_chu}) — Ý nghĩa: {desc_chu}.\n"
             f"  - Quẻ Hỗ (Nội tình bên trong): {full_ho} (Thượng {up_ho} [{hanh_ho_up}] / Hạ {lo_ho} [{hanh_ho_lo}]) — Ý nghĩa: {desc_ho}.\n"
@@ -1816,14 +1856,16 @@ class HexagramReasoningAI:
             f"  - Cục {cuc_km} ({don_type}), Cung Dụng Thần tại Cung {target_cung} ({quai_cung} — {huong_cung}).\n"
             f"  - Tinh/Môn/Thần: Sao [{sao_name}] ({sao_cat_lbl}: {sao_meaning}) + Cửa [{cua_name}] ({cua_cat_lbl}: {cua_meaning}) + Thần [{than_name}].\n"
             f"  - Trạng thái vận động Kỳ Môn: {km_phuc_ngam_str}. Cổ thư chỉ quyết: {_km_canon_note}\n"
+            + _nm_prompt_line +
             f"[3] LỤC HÀO KINH DỊCH (Tăng San Bốc Dịch & Hoàng Kim Sách — muyen/decoding-iching):\n"
             f"  - Sơ đồ 6 Hào: {' | '.join(haos_lines_desc)}\n"
             f"  - Tượng pháp Hào Động (Hào {_d_main}): {_hao_dong_vi_tuong}\n"
             f"  - Mắt xích Chủ thể (Hào Thế): Hào {the_idx} ({the_chi}-{the_nh}) | Đối phương/Môi trường (Hào Ứng): Hào {ung_idx} ({ung_chi}-{ung_nh}).\n"
             f"  - Mắt xích Mục tiêu chính (Dụng Thần [{dung_than}]): Đóng tại Hào {dt_idx} ({dt_chi}-{dt_nh}){' [ĐANG TUẦN KHÔNG (' + ', '.join(_kv_m) + ')]' if dt_chi in _kv_m else ' [HỮU KHÍ]'}{' — ĐẮC CÁCH DỤNG THẦN TRÌ THẾ' if dt_idx == the_idx else ''}{dt_bien_str}.\n"
             f"  - Mắt xích Nguồn lực Tài chính (Hào Thê Tài): {the_tai_status_str}.\n"
-            f"[4] THIẾT BẢN THẦN TOÁN & HOÀNG CỰC KINH THẾ (Ryanlyly-ai/huangji-jingshi & Horosa):\n"
+            f"[4] THIẾT BẢN THẦN TOÁN & PHÁP QUYẾT THÔNG QUAN HÓA GIẢI:\n"
             f"  - Điều Văn Thiết Bản Số #{_tb_dieu_van_so}: {_tb_luan_giai}\n"
+            f"  - Dụng Thần Thông Quan & Vận Trù: Hành {_tq_remedy.get('hanh_thong_quan', 'Thổ')} | Hướng hợp: {_tq_remedy.get('huong_hoa_giai', '')} | Tam Cát Môn: {_tq_remedy.get('km_cat_phuong', '')}.\n"
             f"  - NGUYÊN TẮC BẮT BUỘC KHI SUY LUẬN: Phải liên kết chặt chẽ cả 4 mắt xích (Bản thân Hào Thế + Mục tiêu Dụng Thần + Nguồn tiền Thê Tài + Cục diện Phục Ngâm/Tuần Không) cùng Điều Văn Thiết Bản #{_tb_dieu_van_so}!"
         )
 
@@ -1868,6 +1910,10 @@ class HexagramReasoningAI:
             "hao_dong_vi_tuong": _hao_dong_vi_tuong,
             "km_canon_note": _km_canon_note,
             "github_canon": _gh_canon,
+            "nien_menh_info": _nm_info,
+            "nien_menh_summary": _nm_summary_str,
+            "thong_quan_remedy": _tq_remedy,
+            "thong_quan_html": _tq_remedy_html,
         }
 
     @staticmethod
@@ -1889,7 +1935,9 @@ class HexagramReasoningAI:
         chart_data = chart_data or {}
         luc_hao_data = luc_hao_data or {}
         mai_hoa_data = mai_hoa_data or {}
-        omni_data = omni_data or {}
+        omni_data = dict(omni_data or {})
+        if blueprint.get("raw_question") and not omni_data.get("question"):
+            omni_data["question"] = blueprint.get("raw_question", "")
         target = blueprint.get("specific_target", "")
         q_low = blueprint.get("raw_question", "").lower()
 
@@ -3312,6 +3360,9 @@ class HexagramReasoningAI:
                 if common_k > 0:
                     ca = " ".join(wa[common_k:]).strip()
                     cb = " ".join(wb[common_k:]).strip()
+                # Loại bỏ cụm năm sinh/tuổi ở đầu vế (VD: "tôi sinh năm 1988 nên đầu tư ...")
+                ca = re.sub(r"^(?:tôi\s+|con\s+(?:gái|trai)\s+tôi\s+|vợ\s+tôi\s+|chồng\s+tôi\s+)?(?:sinh\s+năm|sn|tuổi)\s+\d{4}\s+", "", ca).strip()
+                cb = re.sub(r"^(?:tôi\s+|con\s+(?:gái|trai)\s+tôi\s+|vợ\s+tôi\s+|chồng\s+tôi\s+)?(?:sinh\s+năm|sn|tuổi)\s+\d{4}\s+", "", cb).strip()
                 for _p in (
                     "tôi được sinh ra ở ", "tôi được sinh ra tại ", "được sinh ra ở ", "được sinh ra tại ",
                     "tôi sinh ra ở ", "tôi sinh ra tại ", "sinh ra ở ", "sinh ra tại ", "quê tôi ở ", "nhà tôi ở ",
@@ -3322,6 +3373,7 @@ class HexagramReasoningAI:
                     "vợ tôi đang ", "chồng tôi đang ", "bố tôi đang ", "mẹ tôi đang ",
                     "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ",
                     "anh trai tôi ", "chị gái tôi ", "em tôi ", "bạn tôi ",
+                    "tôi nên đầu tư ", "nên đầu tư ", "đầu tư vào ", "đầu tư ", "nên làm ", "làm ngành ", "học ngành ", "theo ngành ",
                     "tôi đang ", "tôi nên ", "có nên ", "tôi ", "nên ", "đang ", "bị ", "đi ", "mua ", "chọn ", "học ", "ở ", "tại ", "là ",
                 ):
                     if ca.startswith(_p) and len(ca) > len(_p) + 1 and not cb.startswith(_p):
@@ -3561,6 +3613,85 @@ class HexagramReasoningAI:
                         if _eh == _mat_ab.get("hanh_the") or _eh == _mat_ab.get("hanh_dung"):
                             pts += 6
 
+                # 9. V116.0 (MẢNH GHÉP 4): MỞ RỘNG TỪ ĐIỂN VẠN VẬT LOẠI TƯỢNG HIỆN ĐẠI & CỔ ĐIỂN (NGÀNH NGHỀ, TÀI CHÍNH SỐ, ĐỘNG THÁI CHIẾN LƯỢC)
+                _MODERN_CATEGORY_RULES = (
+                    # (a) Công nghệ / IT / AI / Phần mềm / Điện tử / Truyền thông / Online / Marketing
+                    (
+                        ("công nghệ", "it", "phần mềm", "lập trình", "ai", "điện tử", "online", "truyền thông", "marketing", "mạng", "kỹ thuật số", "thương mại điện tử"),
+                        ("Ly", "Chấn", "Tốn"),
+                        ("Cảnh", "Khai", "Thương"),
+                        ("Thiên Anh", "Thiên Xung", "Thiên Phụ"),
+                        "Hỏa",
+                        "Tượng Ly Hỏa / Chấn Lôi & Cảnh Môn — chủ Công nghệ, Điện tử, Truyền thông & Kỹ thuật số",
+                    ),
+                    # (b) Tài chính / Ngân hàng / Chứng khoán / Vàng bạc / Đầu tư / Cơ khí / Kim khí
+                    (
+                        ("tài chính", "ngân hàng", "chứng khoán", "cổ phiếu", "vàng", "ngoại hối", "crypto", "coin", "cơ khí", "kim loại", "sắt thép", "kế toán", "kiểm toán"),
+                        ("Càn", "Đoài"),
+                        ("Khai", "Sinh"),
+                        ("Thiên Tâm", "Thiên Trụ", "Thiên Nhậm"),
+                        "Kim",
+                        "Tượng Càn/Đoài Kim & Khai/Sinh Môn — chủ Tài chính, Ngân hàng, Kim khí & Đầu tư vốn",
+                    ),
+                    # (c) Bất động sản / Xây dựng / Đất đai / Nông lâm nghiệp / Khoáng sản
+                    (
+                        ("bất động sản", "đất đai", "xây dựng", "kiến trúc", "nội thất", "nông nghiệp", "lâm nghiệp", "khoáng sản", "vật liệu"),
+                        ("Cấn", "Khôn"),
+                        ("Sinh", "Tử"),
+                        ("Thiên Nhậm", "Thiên Cầm"),
+                        "Thổ",
+                        "Tượng Cấn Sơn / Khôn Địa & Sinh/Tử Môn — chủ Bất động sản, Xây dựng & Điền thổ",
+                    ),
+                    # (d) Y tế / Dược phẩm / Bác sĩ / Sức khỏe / Chữa lành / Thẩm mỹ
+                    (
+                        ("y tế", "y dược", "dược phẩm", "bác sĩ", "bệnh viện", "phòng khám", "thuốc", "chữa bệnh", "chăm sóc sức khỏe", "thẩm mỹ", "spa"),
+                        ("Khảm", "Cấn", "Đoài"),
+                        ("Hưu", "Sinh", "Tử"),
+                        ("Thiên Tâm", "Thiên Nhuế"),
+                        "Thủy",
+                        "Tượng Thiên Tâm (Thần Y) / Tử Tôn — chủ Y dược, Điều trị & Chăm sóc sức khỏe",
+                    ),
+                    # (e) Giáo dục / Đào tạo / Luật pháp / Văn hóa / Nghệ thuật
+                    (
+                        ("giáo dục", "đào tạo", "giáo viên", "giảng viên", "dạy học", "luật", "luật sư", "pháp lý", "văn hóa", "nghệ thuật", "thiết kế", "sách"),
+                        ("Tốn", "Ly", "Càn"),
+                        ("Cảnh", "Đỗ", "Khai"),
+                        ("Thiên Phụ", "Thiên Anh"),
+                        "Mộc",
+                        "Tượng Thiên Phụ (Văn Xương) / Cảnh-Đỗ Môn — chủ Giáo dục, Học thuật & Pháp lý",
+                    ),
+                    # (f) Thương mại / Vận tải / Xuất nhập khẩu / Logistics / Du lịch / Ẩm thực / Dịch vụ
+                    (
+                        ("vận tải", "logistics", "xuất nhập khẩu", "hải quan", "du lịch", "nhà hàng", "ẩm thực", "ăn uống", "khách sạn", "dịch vụ", "vận chuyển", "giao hàng"),
+                        ("Khảm", "Chấn", "Tốn"),
+                        ("Thương", "Hưu", "Sinh"),
+                        ("Thiên Bồng", "Thiên Xung"),
+                        "Thủy",
+                        "Tượng Khảm Thủy / Chấn-Tốn & Thương/Hưu Môn — chủ Lưu thông, Vận tải, Thương mại & Dịch vụ",
+                    ),
+                )
+                for _m_kws, _m_trigs, _m_doors, _m_stars, _m_hanh, _m_label in _MODERN_CATEGORY_RULES:
+                    if _has_whole_kw(core_txt, _m_kws):
+                        _trig_hits = [q for q in _all_trigs_ab if q in _m_trigs]
+                        _door_hit = any(d in cua_name for d in _m_doors)
+                        _star_hit = any(s in sao_name for s in _m_stars)
+                        if len(_trig_hits) >= 2 or (_trig_hits and (_door_hit or _star_hit)) or (_m_hanh in _active_hanh_set and (_door_hit or _star_hit)):
+                            pts += 22
+                            evs.append(f"<b>Vạn Vật Loại Tượng Hiện Đại ({_m_label}):</b> Tổ hợp quẻ hội <b>{', '.join(sorted(set(_trig_hits))) or quai_cung}</b> · Cửa <b>{cua_name}</b> · Sao <b>{sao_name}</b>")
+
+                # 10. ĐỘNG THÁI CHIẾN LƯỢC: ĐI XA / CHUYỂN VIỆC / THAY ĐỔI vs Ở LẠI / GIỮ NGUYÊN
+                if _has_whole_kw(core_txt, ("đi xa", "xuất ngoại", "nước ngoài", "chuyển việc", "nhảy việc", "chuyển nhà", "chuyển chỗ", "thay đổi", "ra riêng", "mở mới")):
+                    if len(dong_list) >= 2 or "Cửu Thiên" in than_name or any(q in ("Chấn", "Tốn", "Khảm", "Càn") for q in (_up_chu_ab, _up_bien_ab)) or (not _mat_ab.get("is_km_phuc_ngam") and _dt_idx_ab in (4, 5, 6)):
+                        pts += 16
+                        evs.append(f"<b>Tượng Dịch Mã & Ngoại Quái Phát Động:</b> Quẻ thiên về vận động dịch chuyển ra ngoài hoặc đổi mới")
+                    if _mat_ab.get("is_km_phuc_ngam"):
+                        pts -= 16
+                        evs.append(f"<b>Cục Diện Phục Ngâm Kìm Hãm:</b> Bàn Kỳ Môn đang Phục Ngâm, bất lợi cho việc dịch chuyển đột ngột ngay lúc này")
+                if _has_whole_kw(core_txt, ("ở lại", "giữ nguyên", "làm tiếp", "đứng yên", "ổn định chỗ cũ", "trong nước", "quê nhà")):
+                    if _mat_ab.get("is_km_phuc_ngam") or "Cửu Địa" in than_name or any(q in ("Cấn", "Khôn") for q in (_up_chu_ab, _lo_chu_ab)) or _dt_idx_ab in (1, 2, 3):
+                        pts += 16
+                        evs.append(f"<b>Tượng Nội Quái Tĩnh Thủ (Cấn Sơn / Khôn Địa / Cửu Địa):</b> Quẻ khuyên giữ vững căn cơ hiện tại, lấy tĩnh chế động")
+
                 return pts, evs
 
             # Tính tổng điểm Cát/Thực của Nhóm Quẻ Chính (Lục Hào + Mai Hoa + Kỳ Môn) cho cặp Tốt/Xấu thuần túy
@@ -3636,16 +3767,20 @@ class HexagramReasoningAI:
                 f"➔ CHỐT DỨT KHOÁT THEO QUẺ (BẤT BIẾN THỨ TỰ): «{_win_ab}» ({_win_sc}% VS {_lose_sc}%)!"
             )
 
+            _nm_ab_str = _mat_ab.get("nien_menh_summary", "")
+            _nm_ab_line = f"&nbsp;&nbsp;• {_nm_ab_str}<br>" if _nm_ab_str else ""
             if _win_evs or _lose_evs:
                 _ev_lines_html = "<br>".join(f"&nbsp;&nbsp;• {ev}." for ev in (_win_evs + _lose_evs))
                 why_s = (
                     f"<b>• Phân tích Sâu Pháp Độc Tượng 6 Tầng (Mai Hoa Vạn Vật Loại Tượng + Kỳ Môn Cửu Cung + Lục Hào Nạp Giáp + Tử Vi Thiên Kỷ 56.6GB):</b><br>"
+                    f"{_nm_ab_line}"
                     f"{_ev_lines_html}<br>"
                     f"➔ <b>Kết luận khóa chéo:</b> Toàn bộ các tầng tượng quẻ đồng loạt hội tụ khẳng định <b>«{_win_ab}» ({_win_sc}%)</b> và loại trừ <b>«{_lose_ab}» ({_lose_sc}%)</b> (kết quả bất biến 100% dù đảo thứ tự câu hỏi)."
                 )
             else:
                 why_s = (
                     f"<b>• Căn cứ Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản & Thiên Kỷ):</b><br>"
+                    f"{_nm_ab_line}"
                     f"<b>1. Lục Hào Kinh Dịch:</b> Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_ab} ({_dt_chi_ab}-{_dt_nh_ab})</b> {'hữu khí, không phạm Tuần Không' if not _dt_kv else 'chạm Tuần Không'} "
                     f"kết hợp Hào Thế (Hào {the_idx} {_the_chi_ab}-{_the_nh_ab}) & Hào Ứng (Hào {ung_idx} {_ung_chi_ab}-{_ung_nh_ab}).<br>"
                     f"<b>2. Mai Hoa Dịch Số:</b> Quẻ Chủ <b>{ten_que_chu}</b> ({_mat_ab['rel_chu_tag']}) biến <b>{ten_que_bien}</b> ({_mat_ab['rel_bien_tag']}), Quẻ Hỗ <b>{_mat_ab['full_ho']}</b>.<br>"
@@ -3667,7 +3802,11 @@ class HexagramReasoningAI:
                 )
             else:
                 when_s = f"Thời điểm ứng nghiệm rõ nhất: <b>{omni_data.get('exact_timestamp', 'Trong khung giờ gần nhất')}</b> tại hướng <b>{huong_cung}</b>."
-                adv_s = f"Căn cứ đồng thuận của Nhóm Quẻ Chính (Mai Hoa + Kỳ Môn + Lục Hào + Thiên Kỷ), phương án khớp thực tế nhất là <b>{_win_ab}</b> (Hướng cát lợi: <b>{huong_cung}</b>)."
+                _tq_ab_html = _mat_ab.get("thong_quan_html", "")
+                adv_s = (
+                    f"Căn cứ đồng thuận của Nhóm Quẻ Chính (Mai Hoa + Kỳ Môn + Lục Hào + Thiên Kỷ), phương án khớp thực tế nhất là <b>{_win_ab}</b> (Hướng cát lợi: <b>{huong_cung}</b>)."
+                    + (f"<br>{_tq_ab_html}" if _tq_ab_html else "")
+                )
             return {
                 "has_override": True,
                 "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
@@ -4567,7 +4706,9 @@ class HexagramReasoningAI:
         chart_data = chart_data or {}
         luc_hao_data = luc_hao_data or {}
         mai_hoa_data = mai_hoa_data or {}
-        omni_data = omni_data or {}
+        omni_data = dict(omni_data or {})
+        if sq_bp.get("raw_question") and not omni_data.get("question"):
+            omni_data["question"] = sq_bp.get("raw_question", "")
         _m = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(chart_data, luc_hao_data, mai_hoa_data, omni_data, sq_dt)
 
         _CHI_NH = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
@@ -4751,7 +4892,10 @@ class HexagramReasoningAI:
             "short_headline": short_hl,
             "why": why_3sys,
             "when": f"Mốc ứng nghiệm & chuyển vận theo Can Chi (khi đủ điều kiện hội tụ): <b>{uk_str}</b>.",
-            "advice": f"Hành động chủ động theo nguyên lý quẻ <b>{_m['full_ho']} ➔ {_m['full_bien']}</b> ({_kd_c.get('loi_khuyen', 'Giữ vững chính đạo')}) và ưu tiên phương vị <b>{huong_str}</b>.",
+            "advice": (
+                f"Hành động chủ động theo nguyên lý quẻ <b>{_m['full_ho']} ➔ {_m['full_bien']}</b> ({_kd_c.get('loi_khuyen', 'Giữ vững chính đạo')}) và ưu tiên phương vị <b>{huong_str}</b>."
+                + (f"<br>{_m.get('thong_quan_html', '')}" if _m.get("thong_quan_html") else "")
+            ),
         }
 
     @staticmethod
@@ -4774,7 +4918,9 @@ class HexagramReasoningAI:
         chart_data = chart_data or {}
         luc_hao_data = luc_hao_data or {}
         mai_hoa_data = mai_hoa_data or {}
-        omni_data = omni_data or {}
+        omni_data = dict(omni_data or {})
+        if question and not omni_data.get("question"):
+            omni_data["question"] = question
         if not isinstance(univ_mat, dict):
             univ_mat = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
                 chart_data=chart_data,
