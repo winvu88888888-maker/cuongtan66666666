@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V108.0"
+APP_VERSION = "V109.0"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Đồng Bộ Thời Gian Thực 2026–2027 ⏰ + Liên Kết Mọi Yếu Tố Quẻ 🔗 + Phân Tích Chi Tiết Mọi Loại Quẻ 🎯)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V108.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V108.0"
+# V109.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V109.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [

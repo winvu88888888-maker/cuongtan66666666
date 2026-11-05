@@ -5684,7 +5684,7 @@ class FreeAIHelper:
             deep_prompt = (
                 f"{_clk_on_prompt}"
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V108.0 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY (ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V109.0 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY (ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"1. GHÉP CÁC PHƯƠNG PHÁP THÀNH MỘT BỨC TRANH THỐNG NHẤT (7 VỊ TRÍ TỌA ĐỘ): Không liệt kê rời rạc từng môn mà phải đặt mỗi phương pháp vào đúng vị trí sở trường tuyệt đối của nó:\n"
                 f"   - Vị trí 1 (Con người & Bản chất Thành/Bại): Dùng Lục Hào Nạp Giáp + Chiêm Tinh Horary Phương Tây.\n"
@@ -10148,7 +10148,7 @@ class FreeAIHelper:
                 'Ngọ': '11h-13h', 'Mùi': '13h-15h', 'Thân': '15h-17h',
                 'Dậu': '17h-19h', 'Tuất': '19h-21h', 'Hợi': '21h-23h',
             }
-            # Chi → Năm gần nhất (V108.0: Tự động tính chuẩn Can Chi từ năm hiện tại theo múi giờ Việt Nam UTC+7: 2026=Bính Ngọ, 2027=Đinh Mùi, 2028=Mậu Thân...)
+            # Chi → Năm gần nhất (V109.0: Tự động tính chuẩn Can Chi từ năm hiện tại theo múi giờ Việt Nam UTC+7: 2026=Bính Ngọ, 2027=Đinh Mùi, 2028=Mậu Thân...)
             import datetime as _dt_cn
             _cur_vn_yr = _dt_cn.datetime.now(_dt_cn.timezone(_dt_cn.timedelta(hours=7))).year
             _CHIS_12_CN = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
@@ -16633,7 +16633,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V108.0 — Đồng Bộ Thời Gian Thực & Liên Kết Mọi Yếu Tố Quẻ: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini V109.0 — Đồng Bộ Thời Gian Thực & Liên Kết Mọi Yếu Tố Quẻ: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'
@@ -17355,7 +17355,7 @@ class FreeAIHelper:
                 final_parts.append(
                     f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT LIÊN KẾT MỌI YẾU TỐ QUẺ (V108.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | ĐỒNG BỘ THỜI GIAN THỰC)</span>'
+                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT LIÊN KẾT MỌI YẾU TỐ QUẺ (V109.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | ĐỒNG BỘ THỜI GIAN THỰC)</span>'
                     f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
