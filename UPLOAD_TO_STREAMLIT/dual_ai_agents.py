@@ -2226,18 +2226,25 @@ class HexagramReasoningAI:
 
             _spouse_cnt = 1  # Phối ngẫu chính vị (Vợ/Chồng)
             _spouse_cite = ", ".join(_spouse_haos_hm) if _spouse_haos_hm else f"Hào Ứng tại Hào {ung_idx}"
-            _child_cnt = 2   # Tử tức theo tượng Âm Dương Thượng/Hạ Quái (1 Nam + 1 Nữ) & Hào Tử Tôn hữu khí
+            _yang_trigs_hm = {"Càn", "Chấn", "Khảm", "Cấn"}
+            _yim_trigs_hm = {"Khôn", "Tốn", "Ly", "Đoài"}
+            _has_boy_hm = (_up_hm in _yang_trigs_hm) or (_lo_hm in _yang_trigs_hm)
+            _has_girl_hm = (_up_hm in _yim_trigs_hm) or (_lo_hm in _yim_trigs_hm)
+            if _has_boy_hm and _has_girl_hm:
+                _child_cnt = max(2, min(3, len(_child_haos_hm))) if len(_child_haos_hm) >= 3 else 2
+            else:
+                _child_cnt = max(1, min(3, len(_child_haos_hm) if _child_haos_hm else 2))
             _child_cite = ", ".join(_child_haos_hm) if _child_haos_hm else "Tượng Quái Tử Tức"
             _parent_cite = ", ".join(_parent_haos_hm) if _parent_haos_hm else f"Hào Phụ Mẫu tại Hào {pm_idx}"
 
-            _nuclear_total = _self_cnt + _spouse_cnt + _child_cnt  # 1 + 1 + 2 = 4 người (Gia đình hạt nhân)
-            _extended_min = _nuclear_total + 1                     # 5 người (nếu có 1 bậc Phụ Mẫu ở cùng)
-            _extended_max = max(_nuclear_total + 2, _tt_up_hm + _tt_lo_hm)  # 6 người (nếu tính cả Ông Bà/Bố Mẹ — ứng Tiên Thiên Thượng + Hạ)
+            _nuclear_total = _self_cnt + _spouse_cnt + _child_cnt  # Động theo Bản Quẻ & Lục Thân
+            _extended_min = _nuclear_total + 1                     # Nếu có 1 bậc Phụ Mẫu ở cùng
+            _extended_max = max(_nuclear_total + 2, _tt_up_hm + _tt_lo_hm)  # Nếu tính cả Ông Bà/Bố Mẹ — ứng Tiên Thiên Thượng + Hạ
 
             short_hl = (
                 f"👨‍👩‍👧‍👦 KẾT QUẢ TÍNH NHÂN KHẨU TRỰC TIẾP TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} — KHÔNG DÙNG AI ĐOÁN MÒ): "
                 f"GIA ĐÌNH HẠT NHÂN (VỢ CHỒNG & CON CÁI) CÓ CHÍNH XÁC 0{_nuclear_total} NGƯỜI "
-                f"[Cộng trực tiếp từng Hào: 01 Bản thân (Hào Thế Hào {the_idx} {_the_chi_hm}) + 01 Vợ/Phối ngẫu (Thê Tài {_spouse_cite}) + 02 Người con (Tử Tôn {_child_cite} & Quái {_lo_hm} Nam + {_up_hm} Nữ = 1 Trai 1 Gái)]! "
+                f"[Cộng trực tiếp từng Hào: 01 Bản thân (Hào Thế Hào {the_idx} {_the_chi_hm}) + 01 Vợ/Phối ngẫu (Thê Tài {_spouse_cite}) + 0{_child_cnt} Người con (Tử Tôn {_child_cite} & Quái {_lo_hm} + {_up_hm})]! "
                 f"(Nếu tính gộp cả Bố Mẹ / Ông Bà ứng với Hào Phụ Mẫu [{_parent_cite}] & Tổng Tiên Thiên {_up_hm} [{_tt_up_hm}] + {_lo_hm} [{_tt_lo_hm}] thì đại gia đình là 0{_extended_min} – 0{_extended_max} người)"
             )
             headline = f"🎯 {short_hl}"
@@ -2267,17 +2274,26 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
-        # ── 3. GIẢI MÃ: XUNG QUANH / TRONG PHÒNG CÓ MẤY NGƯỜI ──
+        # ── 3. GIẢI MÃ: XUNG QUANH / TRONG PHÒNG CÓ MẤY NGƯỜI (LIÊN KẾT 6 TẦNG QUẺ) ──
         if target == "PEOPLE_AROUND":
-            if is_fake or any(m in cua_name for m in ["Tử", "Đỗ", "Hưu"]) and not dong_list:
-                headline = "👤 KẾT LUẬN TỪ QUẺ: HIỆN TẠI BẠN ĐANG Ở MỘT MÌNH TRONG PHÒNG (KHÔNG CÓ NGƯỜI LẠ BÊN CẠNH)!"
-                why_s = f"Hào Thế tại Hào {the_idx} an tĩnh, Cung Bản Mệnh lâm cửa tĩnh <b>{cua_name}</b> — báo hiệu không gian riêng tư, bạn đang ngồi một mình."
+            _TT_PA = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _HT_PA = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
+            _up_pa, _lo_pa = _mat_spec.get("up_chu") or "Đoài", _mat_spec.get("lo_chu") or "Khôn"
+            _dong_pa = int(dong_list[0]) if dong_list and str(dong_list[0]).isdigit() else 0
+            if (is_fake or any(m in cua_name for m in ["Tử", "Đỗ", "Hưu"])) and not dong_list:
+                headline = f"👤 KẾT LUẬN TỪ LIÊN KẾT QUẺ ({ten_que_chu.upper()}): HIỆN TẠI BẠN ĐANG Ở MỘT MÌNH TRONG PHÒNG (01 NGƯỜI — KHÔNG CÓ NGƯỜI LẠ BÊN CẠNH)!"
+                why_s = f"Hào Thế tại Hào {the_idx} hoàn toàn an tĩnh (không có hào động), Nội Quái <b>{_lo_pa}</b> tĩnh kết hợp Cung {target_cung} lâm cửa tĩnh <b>{cua_name}</b> — báo hiệu không gian riêng tư khép kín, bạn đang ở một mình."
             else:
-                p_cnt = max(1, len(dong_list) + 1)
-                headline = f"👥 KẾT LUẬN TỪ QUẺ: QUANH KHU VỰC BẠN ĐANG Ở CÓ KHOẢNG {p_cnt} – {p_cnt + 1} NGƯỜI (TÍNH CẢ BẠN HOẶC NGƯỜI TRONG NHÀ)!"
-                why_s = f"Quẻ <b>{ten_que_chu}</b> có {len(dong_list)} hào động tương tác với Hào Thế tại Cung {target_cung} ({cua_name} · {sao_name})."
-            when_s = f"Hướng không gian xung quanh bạn: <b>{huong_cung}</b> ({c_info.get('places', '')})."
-            adv_s = f"Đồ vật gần bạn nhất: <b>{omni_data.get('objects', 'Điện thoại, bàn ghế')}</b>."
+                _pa_candidates = [_HT_PA.get(_lo_pa, 2), _TT_PA.get(_up_pa, 2), max(1, len(dong_list) + 1), int(target_cung) if str(target_cung).isdigit() else 2]
+                p_cnt = min(max(1, min(_pa_candidates)), 6)
+                p_max = max(p_cnt + 1, min(8, max(_pa_candidates)))
+                headline = f"👥 KẾT LUẬN TỪ LIÊN KẾT QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): QUANH KHU VỰC BẠN ĐANG Ở CÓ KHOẢNG {p_cnt} – {p_max} NGƯỜI (TRỌNG TÂM {p_cnt} NGƯỜI TÍNH CẢ BẠN / NGƯỜI TRONG NHÀ)!"
+                why_s = (
+                    f"Liên kết Nội Quái <b>{_lo_pa}</b> (Hậu Thiên = <b>{_HT_PA.get(_lo_pa, 2)}</b>), Ngoại Quái <b>{_up_pa}</b> (Tiên Thiên = <b>{_TT_PA.get(_up_pa, 2)}</b>), "
+                    f"Hào Thế tại Hào {the_idx} cùng {len(dong_list)} hào động và Cung {target_cung} ({huong_cung} · {cua_name} · {sao_name})."
+                )
+            when_s = f"Hướng không gian xung quanh bạn: <b>{huong_cung}</b> ({c_info.get('places', 'Không gian sinh hoạt/làm việc')})."
+            adv_s = f"Đồ vật gần bạn nhất: <b>{omni_data.get('objects', 'Điện thoại, bàn ghế, vật dụng cá nhân')}</b>."
             return {
                 "has_override": True,
                 "headline": headline,
@@ -2620,33 +2636,49 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
-        # ── 6. GIẢI MÃ CHUYÊN SÂU: ĐỘ TUỔI CON GÁI & CON TRAI / CÁC CON (LIÊN KẾT ĐA HỆ THỐNG LỤC HÀO · MAI HOA · KỲ MÔN · THIẾT BẢN) ──
-        if target == "CHILDREN_AGE":
-            headline = omni_data.get("children_age_headline") or (
-                f"👧👦 KẾT LUẬN TỪ LIÊN KẾT ĐA TẦNG QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
-                f"BẠN ĐANG CÓ 2 NGƯỜI CON THẬT NGOÀI ĐỜI (CÓ CON GÁI & CON TRAI) — "
-                f"CON GÁI ỨNG KHOẢNG 2–4 TUỔI HOẶC 7–9 TUỔI (LỚN: 12–15 TUỔI) | CON TRAI ỨNG KHOẢNG 3–6 TUỔI HOẶC 8–10 TUỔI (LỚN: 11–14 TUỔI)!"
-            )
-            why_s = omni_data.get("children_age_why") or (
-                f"Liên kết Lục Hào (Hào Tử Tôn hữu khí/được Hào Động sinh trợ), Mai Hoa Dịch Số (Quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>) "
-                f"và Kỳ Môn Cung {target_cung} ({huong_cung}) khẳng định bạn có con thật ngoài đời (bác bỏ Chân Không) và tính chính xác khung tuổi từ Quái số Âm/Dương."
-            )
-            when_s = omni_data.get("children_age_when") or f"Các năm sinh Địa Chi ứng mạnh nhất theo Hào Tử Tôn và Hào Động tại hướng <b>{huong_cung}</b>."
-            adv_s = omni_data.get("children_age_advice") or f"Bồi đắp phúc khí cho các con theo hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
-            return {
-                "has_override": True,
-                "headline": headline,
-                "why": why_s,
-                "when": when_s,
-                "advice": adv_s,
-            }
+        # ── 6 & 7. GIẢI MÃ CHUYÊN SÂU: SỐ LƯỢNG CON CÁI & ĐỘ TUỔI CÁC CON (LIÊN KẾT ĐA HỆ THỐNG LỤC HÀO · MAI HOA · KỲ MÔN · THIẾT BẢN — TỰ ĐỘNG THEO TỪNG QUẺ) ──
+        if target in ("CHILDREN_AGE", "CHILDREN_COUNT"):
+            _TT_CH = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _HT_CH = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
+            _YANG_TRIGS = {"Càn", "Chấn", "Khảm", "Cấn"}
+            _YIN_TRIGS = {"Khôn", "Tốn", "Ly", "Đoài"}
+            _up_ch = _mat_spec.get("up_chu") or "Đoài"
+            _lo_ch = _mat_spec.get("lo_chu") or "Chấn"
+            _b_up_ch = _mat_spec.get("up_bien") or "Khảm"
+            _b_lo_ch = _mat_spec.get("lo_bien") or _lo_ch
+            _all_trigs_ch = [_up_ch, _lo_ch, _b_up_ch, _b_lo_ch]
+            _has_son_trig = any(t in _YANG_TRIGS for t in _all_trigs_ch)
+            _has_daughter_trig = any(t in _YIN_TRIGS for t in _all_trigs_ch)
+            _tt_list_desc = [f"Hào {ix} ({h.get('chi','')}-{h.get('ngu_hanh','')})" for ix, h in tt_haos] if tt_haos else [f"Hào {_mat_spec.get('dt_idx', 3)} ({_mat_spec.get('dt_chi', 'Mão')})"]
+            _gender_mix_str = "GỒM CẢ CON TRAI & CON GÁI (ĐỦ NẾP LẪN TẺ)" if (_has_son_trig and _has_daughter_trig) else ("NGHIÊNG VỀ CON TRAI (QUÁI DƯƠNG CHỦ ĐẠO)" if _has_son_trig else "NGHIÊNG VỀ CON GÁI (QUÁI ÂM CHỦ ĐẠO)")
+            _cnt_ch = 2 if (_has_son_trig and _has_daughter_trig) else max(1, min(3, len(tt_haos) or _TT_CH.get(_up_ch, 2)))
+            _g_a1, _g_a2 = min(_TT_CH.get(_up_ch, 2), _HT_CH.get(_up_ch, 7)), max(_TT_CH.get(_up_ch, 2), _HT_CH.get(_up_ch, 7))
+            _b_a1, _b_a2 = min(_TT_CH.get(_lo_ch, 4), _HT_CH.get(_lo_ch, 3)), max(_TT_CH.get(_lo_ch, 4), _HT_CH.get(_lo_ch, 3))
 
-        # ── 7. GIẢI MÃ CHUYÊN SÂU: SỐ LƯỢNG CON CÁI / MẤY TRAI MẤY GÁI (LIÊN KẾT ĐA HỆ THỐNG) ──
-        if target == "CHILDREN_COUNT":
-            headline = omni_data.get("children_summary") or "👶 KẾT LUẬN TỪ QUẺ: BẠN CÓ KHOẢNG 2 NGƯỜI CON — GỒM 1 CON TRAI VÀ 1 CON GÁI (ĐỦ CẢ NẾP LẪN TẺ)!"
-            why_s = omni_data.get("children_reasons") or f"Xác định từ Hào Tử Tôn trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> và Cung Tử Tức tại Cung {target_cung}."
-            when_s = omni_data.get("children_traits") or f"Cung Tử Tức hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{huong_cung}</b>."
-            adv_s = omni_data.get("children_advice") or f"Phương vị tốt cho con cái: <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            if target == "CHILDREN_AGE":
+                headline = omni_data.get("children_age_headline") or (
+                    f"👧👦 KẾT LUẬN TỪ LIÊN KẾT ĐA TẦNG QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"BẠN ĐANG CÓ CON THẬT NGOÀI ĐỜI (TRỌNG TÂM {_cnt_ch} CON — {_gender_mix_str}) — "
+                    f"KHUNG SỐ TUỔI TỪ QUÁI SỐ MAI HOA & LỤC HÀO: CON GÁI ỨNG {_g_a1}–{_g_a2} TUỔI (HOẶC {_g_a1 + 10}–{_g_a2 + 8} TUỔI) | "
+                    f"CON TRAI ỨNG {_b_a1}–{_b_a2 + 2} TUỔI (HOẶC {_b_a1 + 8}–{_b_a2 + 10} TUỔI)!"
+                )
+                why_s = omni_data.get("children_age_why") or (
+                    f"Liên kết Lục Hào (Hào Tử Tôn tại {', '.join(_tt_list_desc)} hữu khí), Mai Hoa Dịch Số (Quẻ <b>{ten_que_chu}</b> [Thượng {_up_ch} = {_g_a1}/{_g_a2}, Hạ {_lo_ch} = {_b_a1}/{_b_a2}] biến <b>{ten_que_bien}</b>) "
+                    f"và Kỳ Môn Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name}) khẳng định bạn có con thật ngoài đời và chiết xuất khung tuổi trực tiếp từ Quái số Âm/Dương."
+                )
+                when_s = omni_data.get("children_age_when") or f"Các năm sinh Địa Chi ứng mạnh nhất theo Hào Tử Tôn ({', '.join(_tt_list_desc)}) và Hào Động tại hướng <b>{huong_cung}</b>."
+                adv_s = omni_data.get("children_age_advice") or f"Bồi đắp phúc khí cho các con theo hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+            else:
+                headline = omni_data.get("children_summary") or (
+                    f"👶 KẾT LUẬN ĐỊNH LƯỢNG CON CÁI TỪ LIÊN KẾT QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"BẠN CÓ KHOẢNG {_cnt_ch} NGƯỜI CON ({_gender_mix_str} — ỨNG HÀO TỬ TÔN {', '.join(_tt_list_desc).upper()} & THƯỢNG {_up_ch.upper()} / HẠ {_lo_ch.upper()})!"
+                )
+                why_s = omni_data.get("children_reasons") or (
+                    f"Liên kết trực tiếp Hào Dụng Thần <b>Tử Tôn ({', '.join(_tt_list_desc)})</b> trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, "
+                    f"tượng Âm/Dương của Thượng Quái <b>{_up_ch}</b> – Hạ Quái <b>{_lo_ch}</b> và Cung Tử Tức tại Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name})."
+                )
+                when_s = omni_data.get("children_traits") or f"Cung Tử Tức hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{huong_cung}</b> — con cái thông minh, hiếu thảo."
+                adv_s = omni_data.get("children_advice") or f"Phương vị tốt cho con cái: <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
             return {
                 "has_override": True,
                 "headline": headline,
@@ -4233,8 +4265,10 @@ class HexagramReasoningAI:
         omni_data: dict = None,
     ) -> dict:
         """
-        V109.0: Giải mã Tam Thức Hợp Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản & 19 Cổ Thư)
-        cho bất kỳ câu hỏi mở hoặc vế câu hỏi nhỏ nào dựa trực tiếp trên Ma Trận Quẻ Chuẩn Xác trong kho GitHub!
+        V113.0 (BỘ NÃO HỢP NHẤT 8 ĐỊNH LUẬT CHO TOÀN BỘ 25 ĐẠI DẠNG CÂU HỎI):
+        Tự động liên kết 6 Mắt Xích Cốt Lõi (Chủ thể Hào Thế & Quái Chủ Thể <-> Dụng Thần & Quái Vật Thể [tách khỏi Quái Không Gian]
+        <-> Nguồn lực Thê Tài / Nguyên Thần / Phục Thần <-> Kỵ Thần / Tuần Không / Phục Ngâm [Tách biệt Hiện trạng vs Tiên lượng]
+        <-> Hội tụ 6 Tầng Số & Quy mô Quẻ Biến <-> Kỳ Môn Tinh/Môn/Thần) cho MỌI câu hỏi bất kỳ mà không cần sửa từng câu!
         """
         chart_data = chart_data or {}
         luc_hao_data = luc_hao_data or {}
@@ -4245,28 +4279,65 @@ class HexagramReasoningAI:
         _CHI_NH = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
         _SINH = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
         _KHAC = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+        _TT_NUM = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+        _HT_NUM = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
+        _TRIG_NH = {"Càn": "Kim", "Đoài": "Kim", "Ly": "Hỏa", "Chấn": "Mộc", "Tốn": "Mộc", "Khảm": "Thủy", "Cấn": "Thổ", "Khôn": "Thổ"}
 
         chi_m = chart_data.get("chi_thang", "Tuất")
         chi_n = chart_data.get("chi_ngay", "Ngọ")
         nh_m = _CHI_NH.get(chi_m, "Thổ")
         nh_n = _CHI_NH.get(chi_n, "Hỏa")
 
-        dt_idx = _m["dt_idx"]
+        dt_idx = int(_m["dt_idx"] or 3)
         dt_chi = _m["dt_chi"]
         dt_nh = _m["dt_nh"]
         found_dt = bool(_m["dt_haos_all"])
+        dt_is_kv = dt_chi in (_m.get("kv_list") or [])
+        ky_nh = next((k for k, v in _KHAC.items() if v == dt_nh), "Hỏa")
+        ng_nh = next((k for k, v in _SINH.items() if v == dt_nh), "Thổ")
+
+        # 1. Tính Hội Tụ 6 Tầng Số (6-Layer Convergent Number) cho mọi câu hỏi
+        _up_g, _lo_g = _m.get("up_chu") or "Đoài", _m.get("lo_chu") or "Khôn"
+        _dong_g = int(_m["dong_list"][0]) if _m.get("dong_list") else int(_m.get("the_idx") or 2)
+        _cung_g = int(_m.get("target_cung") or 2) if str(_m.get("target_cung") or "2").isdigit() else 2
+        _m_cuc_g = re.search(r"(\d+)", str(_m.get("cuc_km") or chart_data.get("cuc") or "2"))
+        _cuc_g = int(_m_cuc_g.group(1)) if _m_cuc_g else _cung_g
+        _votes_g = {}
+        for _val_g, _w_g in [
+            (_TT_NUM.get(_up_g, 2), 3),
+            (_HT_NUM.get(_lo_g, 2), 2),
+            (_dong_g, 2),
+            (int(_m.get("the_idx") or 2), 2),
+            (_cuc_g, 2),
+            (_cung_g, 2),
+        ]:
+            if 1 <= _val_g <= 12:
+                _votes_g[_val_g] = _votes_g.get(_val_g, 0) + _w_g
+        _conv_num = sorted(_votes_g.items(), key=lambda kv: (kv[1], -kv[0]), reverse=True)[0][0] if _votes_g else 2
+
+        # 2. Kiểm tra Kỵ Thần vây khắc (Hiện trạng cản trở) vs. Nguyên Thần cứu ứng (Tiên lượng thành công)
+        _up_nh_g = _TRIG_NH.get(_up_g, "Kim")
+        _lo_nh_g = _TRIG_NH.get(_lo_g, "Thổ")
+        _mh_under_attack = (_KHAC.get(_up_nh_g) == dt_nh) or (_KHAC.get(_lo_nh_g) == dt_nh) or ("DỤNG KHẮC THỂ" in str(_m.get("rel_chu_tag", "")))
+        _km_hung_door = any(d in str(_m.get("cua_name", "")) for d in ("Thương", "Tử", "Kinh", "Đỗ"))
+        _is_phuc_ngam = bool(_m.get("is_km_phuc_ngam", False))
+        _the_tai_ready = bool(_m.get("the_tai_ready", True))
 
         sq_score = int(base_pct or 52) + int(_m["rel_bien_pts"] // 2)
         if _m["is_cat_sao"]:
             sq_score += 5
         if _m["is_cat_cua"]:
             sq_score += 5
+        if _mh_under_attack:
+            sq_score -= 6
+        if dt_is_kv:
+            sq_score -= 8
 
         lh_reasons = []
         if found_dt:
-            lh_reasons.append(f"Hào Dụng Thần <b>{sq_dt}</b> hiện tại <b>Hào {dt_idx} ({dt_chi}-{dt_nh})</b>{' [TRÌ THẾ]' if dt_idx == _m['the_idx'] else ''} trên quẻ <b>{_m['full_chu']}</b>")
+            lh_reasons.append(f"Hào Dụng Thần <b>{sq_dt}</b> hiện rõ tại <b>Hào {dt_idx} ({dt_chi}-{dt_nh})</b>{' [TRÌ THẾ]' if dt_idx == _m['the_idx'] else ''} ({'Nội Quái — trong nhà/gần' if dt_idx <= 3 else 'Ngoại Quái — bên ngoài/xa'}) trên quẻ <b>{_m['full_chu']}</b>")
         else:
-            lh_reasons.append(f"Hào Dụng Thần <b>{sq_dt}</b> phối hợp trục <b>Hào Thế (Hào {_m['the_idx']} {_m['the_chi']}-{_m['the_nh']})</b> trên quẻ <b>{_m['full_chu']}</b>")
+            lh_reasons.append(f"Hào Dụng Thần <b>{sq_dt}</b> đang ẩn phục (Phục Thần), phối hợp trục <b>Hào Thế (Hào {_m['the_idx']} {_m['the_chi']}-{_m['the_nh']})</b> trên quẻ <b>{_m['full_chu']}</b>")
 
         if _SINH.get(nh_m) == dt_nh or nh_m == dt_nh:
             sq_score += 7
@@ -4282,13 +4353,13 @@ class HexagramReasoningAI:
             sq_score -= 5
             lh_reasons.append(f"bị Nhật Thần ({chi_n}-{nh_n}) xung khắc")
 
-        sq_score = max(30, min(90, sq_score))
+        sq_score = max(28, min(88, sq_score))
         t_code = sq_bp.get("specific_target") or sq_bp.get("archetype_key", "")
+        raw_q_g = QuestionReaderAI._normalize_vn_typos(str(sq_bp.get("raw_question") or "")).lower()
         c_lbl = sq_bp.get("clause_label") or sq_bp.get("raw_question") or sq_bp.get("subject_person") or "Sự việc"
-        uk_str = omni_data.get("exact_timestamp", f"Ngày/Giờ {dt_chi}, {chi_n}")
+        uk_str = omni_data.get("exact_timestamp", f"Ngày/Giờ {dt_chi}, {chi_n} (ứng số hội tụ {_conv_num})")
         huong_str = _m["huong_cung"]
 
-        # Tra cứu thêm trích dẫn Kinh Dịch 64 Quẻ & 8 lĩnh vực thực tế (iching_integrated_data.py)
         _kd_c = _m.get("kd_chu_info") or {}
         _ic_c = _m.get("ic_chu_info") or {}
         _ic_topic_line = ""
@@ -4300,23 +4371,83 @@ class HexagramReasoningAI:
                 f"<i>Gia đạo/Tình cảm:</i> {_ic_c.get('family', '')} / {_ic_c.get('love', '')}."
             )
 
-        if t_code == "TIMING_WHEN" or "D12" in t_code:
-            short_hl = f"⏳ THỜI ĐIỂM ỨNG KỲ TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): {uk_str.upper()} (KHI HÀO {sq_dt.upper()} {dt_chi.upper()} XUNG/HỢP MỞ VẬN)!"
+        # 3. Giải mã chuyên sâu theo từng Đại Dạng Câu Hỏi Thực Tế (Không trả lời chung chung!)
+        if t_code == "LOST_ITEM" or "D11" in t_code or any(w in raw_q_g for w in ["mất", "thất lạc", "tìm thấy", "tìm lại", "để quên"]):
+            _pos_in_out = "TRONG NHÀ / NỘI THẤT (NỘI QUÁI HÀO 1–3)" if dt_idx <= 3 else "BÊN NGOÀI / NƠI LÀM VIỆC / DI CHUYỂN (NGOẠI QUÁI HÀO 4–6)"
+            _height_lvl = "vị trí thấp (sát sàn/ngăn dưới/gầm tủ)" if dt_idx in (1, 2) else ("vị trí ngang tầm tay (trên bàn/ngăn kéo/trong túi/tủ giữa)" if dt_idx in (3, 4) else "vị trí cao (kệ trên/nóc tủ/ngăn trên)")
+            if found_dt and not (dt_is_kv and "Huyền Vũ" in str(_m.get("than_name", ""))):
+                short_hl = (
+                    f"🔎 KẾT LUẬN TÌM ĐỒ / ĐỊNH VỊ TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"CÓ THỂ TÌM LẠI ĐƯỢC ({sq_score}%) — ĐANG NẰM Ở {_pos_in_out}, TẠI PHƯƠNG {huong_str.upper()} (CUNG {_cung_g} · CỬA {_m['cua_name'].upper()} — {_height_lvl.upper()})! "
+                    f"➔ THỜI GIAN TÌM THẤY: TRONG {_conv_num} GIỜ / NGÀY TỚI (ỨNG NGÀY/GIỜ {dt_chi.upper()})!"
+                )
+            else:
+                short_hl = (
+                    f"⚠️ KẾT LUẬN TÌM ĐỒ TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"ĐỒ VẬT ĐANG BỊ CHE KHUẤT SÂU HOẶC ĐÃ RỜI KHỎI VỊ TRÍ CŨ (DO DỤNG THẦN {sq_dt.upper()} CHẠM TUẦN KHÔNG / ẨN PHỤC TẠI HƯỚNG {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
+                    f"CẦN TÌM KỸ Ở {_height_lvl.upper()} HƯỚNG {huong_str.upper()} VÀO NGÀY/GIỜ {dt_chi.upper()} MỚI LỘ DIỆN!"
+                )
+        elif t_code == "DEBT_LOAN" or "D16" in t_code or any(w in raw_q_g for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "vay tiền", "cho vay"]):
+            if _the_tai_ready and not dt_is_kv and not _is_phuc_ngam:
+                short_hl = (
+                    f"💰 KẾT LUẬN CÔNG NỢ & VAY MƯỢN ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"THU HỒI / GIẢI NGÂN ĐƯỢC ({sq_score}% — HÀO THÊ TÀI HỮU KHÍ TẠI HÀO {dt_idx} {dt_chi.upper()}-{dt_nh.upper()}), "
+                    f"NÊN CHIA THÀNH 0{_conv_num} ĐỢT HOẶC CHỐT VÀO NGÀY/THÁNG {dt_chi.upper()} TẠI HƯỚNG {huong_str.upper()}!"
+                )
+            else:
+                short_hl = (
+                    f"⏳ KẾT LUẬN CÔNG NỢ & VAY MƯỢN ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"HIỆN TẠI ĐỐI PHƯƠNG CHƯA CÓ SẴN TIỀN TRẢ NGAY 1 LẦN (DO {_m.get('the_tai_status_str', 'Thê Tài vướng cản').upper()}{' & KỲ MÔN PHỤC NGÂM' if _is_phuc_ngam else ''}), "
+                    f"NHƯNG GỐC NỢ KHÔNG MẤT — SẼ THU HỒI ĐƯỢC THEO 0{_conv_num} ĐỢT KHI BƯỚC SANG NGÀY/THÁNG {dt_chi.upper()} (HÀNH {dt_nh.upper()} VƯỢNG)!"
+                )
+        elif t_code in ("INVEST_PROFIT", "CAREER_WORK", "EXAM_VISA") or any(k in t_code for k in ("D14", "D15", "D20")):
+            if (_mh_under_attack or _km_hung_door or _is_phuc_ngam or dt_is_kv) and sq_score >= 48:
+                short_hl = (
+                    f"⚖️ KẾT LUẬN LIÊN KẾT ĐA TẦNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"[1] HIỆN TRẠNG TRƯỚC MẮT ĐANG VƯỚNG LỰC CẢN / CHẬM NHỊP (DO HÀNH {ky_nh.upper()} KHẮC {dt_nh.upper()} & CỬA {_m['cua_name'].upper()})  |  "
+                    f"[2] TIÊN LƯỢNG & KẾT CỤC: ĐẮC NGUYÊN THẦN HÀNH {ng_nh.upper()} & QUẺ BIẾN {_m['full_bien'].upper()} ({_m['rel_bien_tag'].upper()}) NÊN VƯỢT QUA ĐƯỢC VÀ THÀNH CÔNG ({sq_score}% — ỨNG KỲ SỐ 0{_conv_num} / NGÀY THÁNG {dt_chi.upper()})!"
+                )
+            elif sq_score >= 54:
+                short_hl = (
+                    f"✅ KẾT LUẬN LIÊN KẾT ĐA TẦNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"THUẬN LỢI & ĐẠT THÀNH QUẢ TỐT ({sq_score}% — DỤNG THẦN {sq_dt.upper()} Hào {dt_idx} {dt_chi.upper()}-{dt_nh.upper()} ĐẮC KHÍ, QUẺ BIẾN {_m['rel_bien_tag'].upper()}, CON SỐ ĐỊNH LƯỢNG HỘI TỤ = 0{_conv_num})!"
+                )
+            else:
+                short_hl = (
+                    f"⚠️ KẾT LUẬN LIÊN KẾT ĐA TẦNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"HIỆN TẠI ĐANG GẶP LỰC CẢN ({sq_score}% — {_m.get('the_tai_status_str', '')}) — CẦN CHUẨN BỊ KỸ NGUỒN LỰC VÀ CHỜ ĐẾN NGÀY/THÁNG {dt_chi.upper()} MỚI NÊN TIẾN HÀNH!"
+                )
+        elif re.search(r"\bcó\s+[^,;?]+?\s+(?:không|chưa)\b", raw_q_g) or raw_q_g.endswith((" không", " chưa", " không?", " chưa?")):
+            # Câu hỏi Kiểm chứng Thực Có / Đúng Sai ("Có ... không?", "Đã ... chưa?"):
+            if found_dt and not dt_is_kv:
+                short_hl = (
+                    f"✅ KẾT LUẬN KIỂM CHỨNG THỰC TẾ TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"KHẲNG ĐỊNH LÀ CÓ THẬT / ĐÃ HỘI TỤ ({sq_score}% — HÀO DỤNG THẦN {sq_dt.upper()} HIỆN RÕ TẠI HÀO {dt_idx} {dt_chi.upper()}-{dt_nh.upper()} [{'TRONG NỘI QUÁI/TRONG NHÀ' if dt_idx <= 3 else 'NGOẠI QUÁI'}], "
+                    f"CUNG {_cung_g} {huong_str.upper()} · CỬA {_m['cua_name'].upper()} · CON SỐ HỘI TỤ ĐA TẦNG = 0{_conv_num})!"
+                )
+            else:
+                short_hl = (
+                    f"⏳ KẾT LUẬN KIỂM CHỨNG TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"HIỆN TẠI CHƯA CÓ SẴN HOẶC ĐANG ẨN KÍN (DO DỤNG THẦN {sq_dt.upper()} {'LÂM TUẦN KHÔNG' if dt_is_kv else 'PHỤC TÀNG'} TẠI CUNG {_cung_g} {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
+                    f"PHẢI ĐỢI ĐẾN MỐC XUẤT KHÔNG / NGÀY GIỜ {dt_chi.upper()} MỚI HIỆN RÕ!"
+                )
+        elif t_code == "TIMING_WHEN" or "D12" in t_code:
+            short_hl = f"⏳ THỜI ĐIỂM ỨNG KỲ TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): {uk_str.upper()} (KHI HÀO {sq_dt.upper()} {dt_chi.upper()} XUNG/HỢP MỞ VẬN · HỘI TỤ SỐ 0{_conv_num})!"
         elif sq_score >= 54:
-            short_hl = f"✅ KẾT LUẬN TỪ TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO): THUẬN LỢI & ĐẠT KẾT QUẢ TỐT ({sq_score}% — CÁT: {_m['rel_bien_tag']}, ĐẮC SAO {_m['sao_name'].upper()} & CỬA {_m['cua_name'].upper()})!"
+            short_hl = f"✅ KẾT LUẬN LIÊN KẾT ĐA TẦNG (MAI HOA – KỲ MÔN – LỤC HÀO | {_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): THUẬN LỢI & ĐẠT KẾT QUẢ TỐT ({sq_score}% — CÁT: {_m['rel_bien_tag']}, ĐẮC SAO {_m['sao_name'].upper()} & CỬA {_m['cua_name'].upper()} · HỘI TỤ SỐ 0{_conv_num})!"
         elif sq_score >= 45:
-            short_hl = f"⚖️ KẾT LUẬN TỪ TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO): KHẢ QUAN NHƯNG CẦN KIÊN NHẪN VƯỢT QUA VẤT VẢ BAN ĐẦU ({sq_score}% — BÌNH: QUẺ BIẾN {_m['full_bien'].upper()} {_m['rel_bien_tag']})!"
+            short_hl = f"⚖️ KẾT LUẬN LIÊN KẾT ĐA TẦNG (MAI HOA – KỲ MÔN – LỤC HÀO | {_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): HIỆN TẠI CÒN VƯỚNG CẢN NHƯNG HẬU VẬN KHẢ QUAN ({sq_score}% — QUẺ BIẾN {_m['full_bien'].upper()} {_m['rel_bien_tag']} · HỘI TỤ SỐ 0{_conv_num})!"
         else:
-            short_hl = f"⚠️ KẾT LUẬN TỪ TAM THỨC (MAI HOA – KỲ MÔN – LỤC HÀO): ĐANG GẶP LỰC CẢN — NÊN THẬN TRỌNG & CHỜ THỜI ({sq_score}% — HUNG)!"
+            short_hl = f"⚠️ KẾT LUẬN LIÊN KẾT ĐA TẦNG (MAI HOA – KỲ MÔN – LỤC HÀO | {_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): ĐANG GẶP LỰC CẢN LỚN — NÊN THẬN TRỌNG & CHỜ THỜI ({sq_score}% — HUNG)!"
 
         why_3sys = (
-            f"<b>• Mạng Lưới Liên Kết Mọi Yếu Tố Của Quẻ (4 Mắt Xích Tương Tác Mật Thiết):</b><br>"
+            f"<b>• Mạng Lưới Liên Kết Mọi Yếu Tố Của Quẻ (Áp dụng đồng nhất 8 Định Luật cho mọi câu hỏi):</b><br>"
             f"&nbsp;&nbsp;🔗 {_m.get('holistic_chain_summary', '')}<br>"
-            f"1. <b>🌸 Mai Hoa Dịch Số (Chủ ➔ Hỗ ➔ Biến & Thể/Dụng):</b> Quẻ Chủ <b>{_m['full_chu']}</b> (Thượng {_m['up_chu']} · Hạ {_m['lo_chu']} — {_m['rel_chu_tag']}: {_m['rel_chu_desc']}) "
+            f"1. <b>🌸 Mai Hoa Dịch Số (Chủ ➔ Hỗ ➔ Biến, Thể/Dụng & Tách Quái Vật Thể – Không Gian):</b> Quẻ Chủ <b>{_m['full_chu']}</b> (Thượng {_m['up_chu']} [Tiên Thiên={_TT_NUM.get(_up_g,2)}] · Hạ {_m['lo_chu']} [Hậu Thiên={_HT_NUM.get(_lo_g,2)}] — {_m['rel_chu_tag']}: {_m['rel_chu_desc']}) "
             f"➔ Quẻ Hỗ <b>{_m['full_ho']}</b> (Thượng Hỗ {_m['up_ho']} · Hạ Hỗ {_m['lo_ho']} — {_m['desc_ho']}) "
-            f"➔ Quẻ Biến <b>{_m['full_bien']}</b> ({_m['rel_bien_tag']}: {_m['rel_bien_desc']}).{_ic_topic_line}<br>"
+            f"➔ Quẻ Biến <b>{_m['full_bien']}</b> ({_m['rel_bien_tag']}: {_m['rel_bien_desc']}; Con số hội tụ đa tầng = <b>0{_conv_num}</b>).{_ic_topic_line}<br>"
             f"2. <b>🧭 Kỳ Môn Độn Giáp (Thiên – Địa – Nhân – Thần Bàn):</b> Cục {_m['cuc_km']} ({_m['don_type']} · {_m.get('km_phuc_ngam_str', 'Vận hành bình thường')}), Cung {_m['target_cung']} ({_m['huong_cung']}) hội <b>Sao {_m['sao_name']}</b> ({_m['sao_meaning']}), <b>Cửa {_m['cua_name']}</b> ({_m['cua_meaning']}) và <b>Thần {_m['than_name']}</b>.<br>"
-            f"3. <b>☯️ Lục Hào Kinh Dịch (6 Hào & Lục Thân Liên Kết):</b> {', '.join(lh_reasons)}{_m['dt_bien_str']} · <b>Nguồn lực/Tiền bạc:</b> {_m.get('the_tai_status_str', '')}."
+            f"3. <b>☯️ Lục Hào Kinh Dịch (6 Hào, Nguyên Thần [{ng_nh}] – Kỵ Thần [{ky_nh}] & Nguồn Lực):</b> {', '.join(lh_reasons)}{_m['dt_bien_str']} · <b>Nguồn lực/Tiền bạc:</b> {_m.get('the_tai_status_str', '')}."
         )
 
         return {
@@ -5075,11 +5206,11 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V112.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ ĐỒNG BỘ THỜI GIAN THỰC (MAI HOA – KỲ MÔN – LỤC HÀO)
+        # Bước 2 (V113.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ ĐỒNG BỘ THỜI GIAN THỰC (MAI HOA – KỲ MÔN – LỤC HÀO)
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V112_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V113_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -5294,7 +5425,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V112.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V113.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
@@ -5324,7 +5455,7 @@ class HexagramReasoningAI:
 
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V112.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V113.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
