@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V110.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Gieo Quẻ Động Tâm & Ngẫu Nhiên 100% Đồng Bộ 🎲 + Không Trùng Lặp Quẻ Giữa Các Câu Hỏi 🔗 + Đủ 158+ Yếu Tố GitHub 🎯)"
+APP_VERSION = "V111.0"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Ngũ Chẩn Y Dịch & Bảy Định Luật Thực Chứng 🩺 + Gieo Quẻ Ngẫu Nhiên & Động Tâm 100% Đồng Bộ 🎲 + Đủ 158+ Yếu Tố GitHub 🎯)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V110.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V110.0"
+# V111.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V111.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [

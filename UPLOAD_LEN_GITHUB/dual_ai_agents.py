@@ -484,9 +484,29 @@ class QuestionReaderAI:
     """
 
     @staticmethod
+    def _normalize_vn_typos(text_in: str) -> str:
+        s = str(text_in or "").strip()
+        _TYPO_MAP = (
+            (r"\bđnag\b", "đang"),
+            (r"\bdnag\b", "đang"),
+            (r"\bđag\b", "đang"),
+            (r"\bkhoẻ\b", "khỏe"),
+            (r"\bkhoe\b", "khỏe"),
+            (r"\bsức khoẻ\b", "sức khỏe"),
+            (r"\bko\b", "không"),
+            (r"\bk\b", "không"),
+            (r"\bdc\b", "được"),
+            (r"\bđc\b", "được"),
+        )
+        for _pat, _rep in _TYPO_MAP:
+            s = re.sub(_pat, _rep, s, flags=re.IGNORECASE)
+        return s
+
+    @staticmethod
     def analyze_question(question: str, dung_than_hint: str = "", category_hint: str = "") -> dict:
         q_raw = str(question or "").strip()
-        q_low = q_raw.lower()
+        q_norm = QuestionReaderAI._normalize_vn_typos(q_raw)
+        q_low = q_norm.lower()
 
         # 1. Phát hiện các mục tiêu câu hỏi đặc thù (Specific Question Targets)
         specific_target = ""
@@ -622,7 +642,11 @@ class QuestionReaderAI:
         ]) and not is_house_floors_q and (" hay " not in q_low or any(w in q_low for w in ["hay không", "hay chưa"]))
         is_invest = any(w in q_low for w in ["đầu tư", "kinh doanh", "buôn bán", "mở quán", "mở cửa hàng", "chứng khoán", "cổ phiếu", "có lãi", "lời hay lỗ", "mua bán", "xuống tiền", "mua đất", "bán đất", "mua nhà", "bán nhà", "tài chính", "tài lộc", "có lộc", "tiền bạc", "thu nhập", "lương", "kiếm tiền"])
         is_love = any(w in q_low for w in ["yêu", "tình cảm", "hôn nhân", "vợ chồng", "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình"])
-        is_health = any(w in q_low for w in ["bệnh", "ốm", "nằm viện", "phẫu thuật", "mổ", "sức khỏe", "qua khỏi", "khỏi bệnh", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"])
+        is_health = any(w in q_low for w in [
+            "bệnh", "ốm", "sốt", "sốt cao", "nóng sốt", "hạ sốt", "viêm", "ho", "cảm",
+            "đau", "mệt", "nằm viện", "nhập viện", "cấp cứu", "phẫu thuật", "mổ",
+            "sức khỏe", "khỏe mạnh", "qua khỏi", "khỏi bệnh", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"
+        ])
         is_fengshui = any(w in q_low for w in ["phong thủy", "nhà đất", "xây nhà", "sửa nhà", "mồ mả", "âm phần", "mộ phần", "gia tiên", "động thổ", "hướng nhà"]) and not is_house_floors_q and not is_invest
         is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "có đỗ", "đỗ không", "đậu không", "kỳ thi", "đi thi", "thi cử", "học hành", "điểm thi", "bằng cấp", "lấy bằng", "bằng lái", "sát hạch", "thi bằng", "du học", "xin visa", "phỏng vấn visa"])
         is_travel = any(w in q_low for w in ["xuất hành", "đi xa", "du lịch", "công tác", "chuyến đi", "lên đường", "về quê", "di chuyển", "thượng lộ"])
@@ -753,15 +777,19 @@ class QuestionReaderAI:
                         if _tail_pred:
                             option_a = f"{option_a} {_tail_pred}".strip()
                         break
-                # Trường hợp 2: option_a có chủ ngữ/động từ chung ("con tôi không khóc", "nhà tôi nghèo", "đi Hà Nội") còn option_b chỉ ghi vế đối lập ("đang khóc", "giàu", "Sài Gòn")
+                # Trường hợp 2: option_a có chủ ngữ/động từ chung ("con tôi không khóc", "con gái tôi đang khỏe mạnh", "nhà tôi nghèo", "đi Hà Nội") còn option_b chỉ ghi vế đối lập ("đang khóc", "sốt cao", "giàu", "Sài Gòn")
                 for _subj_pfx in [
-                    "con tôi ", "con của tôi ", "bé nhà tôi ", "vợ tôi ", "chồng tôi ",
-                    "bố tôi ", "mẹ tôi ", "nhà tôi ", "gia đình tôi ", "gia đình mình ",
+                    "con gái tôi đang ", "con gái của tôi đang ", "con trai tôi đang ", "con trai của tôi đang ",
+                    "con tôi đang ", "con của tôi đang ", "bé gái nhà tôi đang ", "bé trai nhà tôi đang ", "bé nhà tôi đang ",
+                    "con gái tôi ", "con gái của tôi ", "con trai tôi ", "con trai của tôi ",
+                    "con tôi ", "con của tôi ", "bé gái nhà tôi ", "bé trai nhà tôi ", "bé nhà tôi ",
+                    "vợ tôi đang ", "chồng tôi đang ", "bố tôi đang ", "mẹ tôi đang ",
+                    "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ", "nhà tôi ", "gia đình tôi ", "gia đình mình ",
                     "nhà mình ", "vợ chồng tôi ", "công ty tôi ", "cửa hàng tôi ",
                     "anh trai tôi ", "chị gái tôi ", "em tôi ", "bạn tôi ",
                     "tôi nên đi ", "tôi nên mua ", "tôi nên chọn ", "tôi nên học ", "tôi nên làm ", "tôi nên ở ",
                     "tôi nên ", "có nên đi ", "có nên mua ", "có nên ", "nên đi ", "nên mua ", "nên chọn ", "nên ở ", "nên ",
-                    "tôi đi ", "tôi ở ", "tôi mua ", "tôi chọn ", "tôi làm ", "tôi học ", "tôi ",
+                    "tôi đang ", "tôi đi ", "tôi ở ", "tôi mua ", "tôi chọn ", "tôi làm ", "tôi học ", "tôi ",
                     "đi ", "mua ", "chọn ", "học ", "ăn ", "uống ",
                 ]:
                     if option_a.lower().startswith(_subj_pfx) and len(option_a) > len(_subj_pfx) + 1:
@@ -829,7 +857,25 @@ class QuestionReaderAI:
         elif is_health:
             arch_key = "D18_HEALTH_MEDICAL"
             specific_target = "HEALTH_MEDICAL"
-            authoritative_dt = "Quan Quỷ"
+            # V111.0 (Y Dịch Cổ Pháp — Tăng San Bốc Dịch): Định vị chính xác Dụng Thần của NGƯỜI BỆNH trước, Kỵ Thần là hào khắc Dụng Thần đó!
+            if any(w in q_low for w in ["con tôi", "con gái", "con trai", "bé gái", "bé trai", "con của tôi", "bé nhà tôi"]):
+                authoritative_dt = "Tử Tôn"
+                subject_person = "Sức khỏe & Bệnh chứng của Con cái (Dụng Thần: Tử Tôn — Xét Kỵ Thần Phụ Mẫu & Tượng Quái Chủ Thể)"
+            elif any(w in q_low for w in ["bố", "mẹ", "cha", "ba", "má", "ông", "bà"]):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Sức khỏe & Bệnh chứng của Cha mẹ / Trưởng bối (Dụng Thần: Phụ Mẫu — Xét Kỵ Thần Thê Tài & Quan Quỷ)"
+            elif any(w in q_low for w in ["vợ", "bạn gái"]) and "chồng" not in q_low:
+                authoritative_dt = "Thê Tài"
+                subject_person = "Sức khỏe & Bệnh chứng của Vợ / Bạn gái (Dụng Thần: Thê Tài — Xét Kỵ Thần Huynh Đệ & Quan Quỷ)"
+            elif any(w in q_low for w in ["chồng", "bạn trai"]) and "vợ" not in q_low:
+                authoritative_dt = "Quan Quỷ"
+                subject_person = "Sức khỏe & Bệnh chứng của Chồng / Bạn trai (Dụng Thần: Quan Quỷ)"
+            elif any(w in q_low for w in ["anh trai", "chị gái", "em trai", "em gái", "anh chị em"]):
+                authoritative_dt = "Huynh Đệ"
+                subject_person = "Sức khỏe & Bệnh chứng của Anh chị em (Dụng Thần: Huynh Đệ — Xét Kỵ Thần Quan Quỷ)"
+            else:
+                authoritative_dt = "Bản Thân"
+                subject_person = "Sức khỏe & Bệnh chứng Bản thân (Dụng Thần: Hào Thế — Bệnh Thần: Quan Quỷ — Dược Thần: Tử Tôn)"
         elif is_fengshui:
             arch_key = "D19_FENGSHUI_GRAVE"
             specific_target = "FENGSHUI_GRAVE"
@@ -2916,11 +2962,220 @@ class HexagramReasoningAI:
                     "advice": adv_s,
                 }
 
+            # ── NHÁNH 8.1B: ĐỐI CHỨNG SỨC KHỎE / BỆNH TẬT / SỐT CAO HAY KHỎE MẠNH (Y DỊCH TAM THỨC: LỤC HÀO + MAI HOA TƯỢNG QUÁI + KỲ MÔN — V111.0) ──
+            # Quy luật Y Dịch Cổ Pháp (Tăng San Bốc Dịch & Mai Hoa Quan Vật):
+            # 1. Phải tách biệt rõ [HIỆN TRẠNG CƠ THỂ ĐANG SỐT/ỐM] với [TIÊN LƯỢNG HỒI PHỤC (Dụng Thần hữu khí/được sinh)].
+            #    Tuyệt đối KHÔNG ĐƯỢC lấy việc Dụng Thần hữu khí (nghĩa là bệnh lành tính, có thuốc cứu, sẽ khỏi) để kết luận sai thành "Hiện tại đang khỏe mạnh"!
+            # 2. Trong Mai Hoa Dịch Số: Phải định vị QUÁI CHỦ THỂ của người bệnh (VD: Con gái/Thiếu nữ = Quẻ Đoài Kim; Con trai = Chấn/Cấn; Cha = Càn; Mẹ = Khôn).
+            #    Khi Thượng Quái là Ly Hỏa khắc Hạ Quái Đoài Kim (Hỏa Trạch Khuê ➔ Hỏa Thiên Đại Hữu, Động hào 3 tại Đoài), đó là LỬA NÓNG (Ly Hỏa) KHẮC THIẾU NỮ (Đoài Kim) = ĐANG SỐT CAO, chứ không phải "Thể khắc Dụng là khỏe mạnh"!
+            # 3. Trong Lục Hào: Khi Dụng Thần là Tử Tôn (Con cái, VD: Dậu-Kim), KỴ THẦN gây bệnh chính là PHỤ MẪU (VD: 2 hào Tị-Hỏa vây khắc Dậu-Kim = Lưỡng Hỏa Hiệp Khắc Kim gây sốt cao, viêm họng/hô hấp).
+            _HEALTH_GOOD_KW = (
+                "khỏe", "khoẻ", "khỏe mạnh", "khoẻ mạnh", "bình thường", "đã khỏi",
+                "khỏi bệnh", "hết sốt", "hạ sốt", "không sốt", "không ốm", "không bệnh", "ổn định",
+            )
+            _HEALTH_ILL_KW = (
+                "sốt", "sốt cao", "nóng sốt", "viêm", "đau", "ốm", "bệnh", "mệt",
+                "ho", "cảm", "trúng gió", "nhập viện", "nằm viện", "cấp cứu", "tiêu chảy", "nôn", "nhiễm trùng",
+            )
+            _a_is_healthy = any(w in opt_a_low for w in _HEALTH_GOOD_KW) and not any(w in opt_a_low for w in ("không khỏe", "không khoẻ", "chưa khỏe", "chưa khỏi", "chưa hạ sốt"))
+            _b_is_healthy = any(w in opt_b_low for w in _HEALTH_GOOD_KW) and not any(w in opt_b_low for w in ("không khỏe", "không khoẻ", "chưa khỏe", "chưa khỏi", "chưa hạ sốt"))
+            _a_is_ill = any(w in opt_a_low for w in _HEALTH_ILL_KW) and not any(w in opt_a_low for w in ("không sốt", "hết sốt", "hạ sốt", "không ốm", "không bệnh", "khỏi bệnh"))
+            _b_is_ill = any(w in opt_b_low for w in _HEALTH_ILL_KW) and not any(w in opt_b_low for w in ("không sốt", "hết sốt", "hạ sốt", "không ốm", "không bệnh", "khỏi bệnh"))
+
+            if (_a_is_healthy and _b_is_ill) or (_b_is_healthy and _a_is_ill):
+                _healthy_opt = opt_a if _a_is_healthy else opt_b
+                _ill_opt = opt_b if _a_is_healthy else opt_a
+                _KHAC_H = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+                _SINH_H = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+                _CHI_NH_H = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+
+                # 1. Định vị Chủ thể & Quái Chủ Thể theo Dịch Tượng
+                if any(w in q_low for w in ("con gái", "bé gái")):
+                    _subj_h_lbl = "Con gái của bạn (Thiếu nữ — Quái tượng Đoài Kim / Dụng Thần Tử Tôn)"
+                    _subj_trigrams = ("Đoài",)
+                elif any(w in q_low for w in ("con trai", "bé trai")):
+                    _subj_h_lbl = "Con trai của bạn (Quái tượng Chấn Mộc / Cấn Thổ / Dụng Thần Tử Tôn)"
+                    _subj_trigrams = ("Chấn", "Cấn")
+                elif any(w in q_low for w in ("con", "bé")):
+                    _subj_h_lbl = "Con của bạn (Dụng Thần Tử Tôn)"
+                    _subj_trigrams = ("Đoài", "Chấn", "Cấn")
+                elif any(w in q_low for w in ("bố", "cha", "ba", "ông")):
+                    _subj_h_lbl = "Người cha / Trưởng bối (Quái tượng Càn Kim / Dụng Thần Phụ Mẫu)"
+                    _subj_trigrams = ("Càn",)
+                elif any(w in q_low for w in ("mẹ", "má", "bà")):
+                    _subj_h_lbl = "Người mẹ / Trưởng bối (Quái tượng Khôn Thổ / Dụng Thần Phụ Mẫu)"
+                    _subj_trigrams = ("Khôn",)
+                elif "vợ" in q_low:
+                    _subj_h_lbl = "Người vợ (Dụng Thần Thê Tài)"
+                    _subj_trigrams = ("Khôn", "Đoài", "Tốn")
+                elif "chồng" in q_low:
+                    _subj_h_lbl = "Người chồng (Dụng Thần Quan Quỷ)"
+                    _subj_trigrams = ("Càn", "Chấn", "Khảm")
+                else:
+                    _subj_h_lbl = f"Chủ thể ({dung_than})"
+                    _subj_trigrams = (_mat_ab["the_quai"],)
+
+                _up_c_h, _lo_c_h = _mat_ab["up_chu"], _mat_ab["lo_chu"]
+                _up_b_h, _lo_b_h = _mat_ab["up_bien"], _mat_ab["lo_bien"]
+                _up_ho_h, _lo_ho_h = _mat_ab["up_ho"], _mat_ab["lo_ho"]
+                _nh_up_c = _mat_ab["meta_up_chu"][3]
+                _nh_lo_c = _mat_ab["meta_lo_chu"][3]
+                _is_fever_symptom = any(w in q_low for w in ("sốt", "nóng", "nhiệt", "viêm"))
+                _d_main_h = dong_list[0] if dong_list else 0
+
+                # Chấm điểm Ngũ Chẩn Y Dịch (Chẩn đoán Hiện trạng Bệnh/Sốt vs. Khỏe mạnh)
+                _ill_pts = 30
+                _ill_evidences = []
+                _rescue_evidences = []
+
+                # [Chẩn 1 — Mai Hoa Dịch Số: Xét Tượng Quái Chủ Thể bị Khắc & Tượng Hỏa Nhiệt]:
+                if _lo_c_h in _subj_trigrams and _KHAC_H.get(_nh_up_c) == _nh_lo_c:
+                    _ill_pts += 18
+                    _ill_evidences.append(
+                        f"<b>Mai Hoa Tượng Quái Trực Diện:</b> Trên Quẻ Chủ <b>{ten_que_chu}</b>, Hạ Quái <b>{_lo_c_h} ({_nh_lo_c}) chính là tượng Chủ Thể ({_subj_h_lbl} & bộ phận Phổi/Họng/Hô hấp)</b> đang bị Thượng Quái <b>{_up_c_h} ({_nh_up_c} — {'Lửa nóng/Cơn sốt cao' if _nh_up_c == 'Hỏa' else 'Tà khí'}) đè lên KHẮC TRỰC TIẾP ({_nh_up_c} khắc {_nh_lo_c})</b>"
+                    )
+                elif _up_c_h in _subj_trigrams and _KHAC_H.get(_nh_lo_c) == _nh_up_c:
+                    _ill_pts += 18
+                    _ill_evidences.append(
+                        f"<b>Mai Hoa Tượng Quái Trực Diện:</b> Trên Quẻ Chủ <b>{ten_que_chu}</b>, Thượng Quái <b>{_up_c_h} ({_nh_up_c} — Chủ Thể)</b> đang bị Hạ Quái <b>{_lo_c_h} ({_nh_lo_c}) khắc chế ({_nh_lo_c} khắc {_nh_up_c})</b>"
+                    )
+                elif _KHAC_H.get(_nh_up_c) == _dt_nh_ab or _KHAC_H.get(_nh_lo_c) == _dt_nh_ab:
+                    _ill_pts += 12
+                    _ill_evidences.append(
+                        f"<b>Mai Hoa Ngũ Hành:</b> Trên Quẻ Chủ <b>{ten_que_chu}</b> ({_up_c_h} {_nh_up_c} / {_lo_c_h} {_nh_lo_c}) xuất hiện hành khắc chế trực tiếp hành Dụng Thần ({_dt_nh_ab})"
+                    )
+
+                if (_d_main_h in (1, 2, 3) and _lo_c_h in _subj_trigrams) or (_d_main_h in (4, 5, 6) and _up_c_h in _subj_trigrams):
+                    _ill_pts += 7
+                    _ill_evidences.append(
+                        f"<b>Hào Động Chấn Động Bản Cung:</b> Hào {_d_main_h} phát động ngay tại quẻ <b>{_lo_c_h if _d_main_h <= 3 else _up_c_h}</b> (Chủ thể), báo hiệu cơ thể đang có biến động bệnh lý cấp tính chứ không phải trạng thái tĩnh khỏe mạnh"
+                    )
+
+                if _is_fever_symptom and ("Ly" in (_up_c_h, _lo_c_h, _up_b_h, _lo_b_h, _up_ho_h, _lo_ho_h) or "Hỏa" in ten_que_chu or "Hỏa" in ten_que_bien):
+                    _ill_pts += 10
+                    _ill_evidences.append(
+                        f"<b>Tượng Hỏa Nhiệt / Sốt Cao (Đồng Thanh Tương Ứng):</b> Quẻ Chủ <b>{ten_que_chu}</b> ➔ Quẻ Hỗ <b>{_mat_ab['full_ho']}</b> (Thủy Hỏa giao tranh trong cơ thể gây sốt nóng lạnh) ➔ Quẻ Biến <b>{ten_que_bien}</b> đều rực sáng <b>Quẻ Ly (Hỏa — Lửa nóng, nhiệt độ cao, viêm cấp)</b>"
+                    )
+
+                # [Chẩn 2 — Lục Hào Kinh Dịch: Xét Kỵ Thần & Quan Quỷ vây khắc Dụng Thần]:
+                _ky_nh_h = next((k for k, v in _KHAC_H.items() if v == _dt_nh_ab), "Hỏa")
+                _nguyen_nh_h = next((k for k, v in _SINH_H.items() if v == _dt_nh_ab), "Thổ")
+                _LT_BY_NH_DIFF = {
+                    ("Tử Tôn", _ky_nh_h): "Phụ Mẫu",
+                    ("Phụ Mẫu", _ky_nh_h): "Thê Tài",
+                    ("Thê Tài", _ky_nh_h): "Huynh Đệ",
+                    ("Huynh Đệ", _ky_nh_h): "Quan Quỷ",
+                    ("Quan Quỷ", _ky_nh_h): "Tử Tôn",
+                    ("Bản Thân", _ky_nh_h): "Quan Quỷ",
+                }
+                _ky_lt_name = _LT_BY_NH_DIFF.get((dung_than, _ky_nh_h), "Kỵ Thần")
+                _ky_haos_found = []
+                _nguyen_dong_found = []
+                for _ix_h, _h_obj in enumerate(haos, 1):
+                    if not isinstance(_h_obj, dict):
+                        continue
+                    _ch_h = str(_h_obj.get("chi") or _h_obj.get("can_chi") or "").split()[-1]
+                    _nh_h = str(_h_obj.get("ngu_hanh") or _h_obj.get("hanh") or _CHI_NH_H.get(_ch_h, ""))
+                    _lt_h = str(_h_obj.get("luc_than") or "")
+                    _is_d_h = (_ix_h in dong_list) or bool(_h_obj.get("dong") or _h_obj.get("is_dong"))
+                    if _nh_h == _ky_nh_h:
+                        _ky_haos_found.append(f"Hào {_ix_h} {_lt_h} ({_ch_h}-{_nh_h}){' [ĐỘNG]' if _is_d_h else ''}")
+                    if _nh_h == _nguyen_nh_h and _is_d_h:
+                        _nguyen_dong_found.append(f"Hào {_ix_h} {_lt_h} ({_ch_h}-{_nh_h}) phát động")
+
+                if len(_ky_haos_found) >= 2 or any("[ĐỘNG]" in x for x in _ky_haos_found) or (_is_fever_symptom and _ky_nh_h == "Hỏa" and len(_ky_haos_found) >= 1):
+                    _ill_pts += 15
+                    _ill_evidences.append(
+                        f"<b>Lục Hào Kỵ Thần Vây Khắc Dụng Thần:</b> Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_ab} ({_dt_chi_ab}-{_dt_nh_ab})</b> đang bị Kỵ Thần <b>{_ky_lt_name} (Hành {_ky_nh_h}: {', '.join(_ky_haos_found)})</b> kẹp khắc ({_ky_nh_h} khắc {_dt_nh_ab})"
+                        + (f" kết hợp Năm {chart_data.get('can_nam','Bính')} {chart_data.get('chi_nam','Ngọ')} (Vượng Hỏa) nung đốt <b>{_dt_chi_ab}-{_dt_nh_ab}</b> — đúng tượng <b>cơ thể đang sốt cao, nóng rực, dễ kèm viêm đường hô hấp/họng</b>" if _ky_nh_h == "Hỏa" and _dt_nh_ab == "Kim" else "")
+                    )
+
+                # [Chẩn 3 — Kỳ Môn Độn Giáp: Xét Cửa Bệnh (Thương/Tử/Kinh/Đỗ) & Sao Bệnh (Thiên Nhuế/Thiên Xung/Thiên Anh)]:
+                if any(m in cua_name for m in ("Thương", "Tử", "Kinh", "Đỗ")):
+                    _ill_pts += 10
+                    _ill_evidences.append(
+                        f"<b>Kỳ Môn Độn Giáp Lâm Hung Môn:</b> Cung {target_cung} ({huong_cung}) gặp <b>Cửa {cua_name}</b> (Hung Môn chủ cơ thể tổn thương, đau ốm, mệt mỏi phát bệnh)"
+                    )
+                if any(s in sao_name for s in ("Nhuế", "Xung", "Anh", "Bồng", "Trụ")):
+                    _ill_pts += 6
+                    _ill_evidences.append(
+                        f"<b>Cửu Tinh Kỳ Môn:</b> Hội <b>Sao {sao_name}</b> ({'chủ cơn sốt/bệnh bùng phát đột ngột, cấp tính' if 'Xung' in sao_name else ('Sao Bệnh Phù chủ bệnh tật' if 'Nhuế' in sao_name else ('chủ Hỏa nhiệt nóng sốt' if 'Anh' in sao_name else 'chủ biến động sức khỏe'))})"
+                        + (f" kèm cục diện <b>Phục Ngâm</b> (cơn sốt còn âm ỉ lặp lại theo chu kỳ thuốc)" if _mat_ab.get("is_km_phuc_ngam") else "")
+                    )
+
+                # [Chẩn 4 — Xét Lực Cứu Ứng & Tiên Lượng Hồi Phục (Nguyên Thần & Nhật Nguyệt sinh Dụng Thần)]:
+                _nh_m_h = _CHI_NH_H.get(_chi_m_ab, "Thổ")
+                _nh_n_h = _CHI_NH_H.get(_chi_n_ab, "Thổ")
+                if _SINH_H.get(_nh_m_h) == _dt_nh_ab or _nh_m_h == _dt_nh_ab:
+                    _rescue_evidences.append(f"Nguyệt Lệnh <b>{_chi_m_ab} ({_nh_m_h})</b> tương sinh/tỷ trợ ({_nh_m_h} sinh {_dt_nh_ab})")
+                if _SINH_H.get(_nh_n_h) == _dt_nh_ab or _nh_n_h == _dt_nh_ab:
+                    _rescue_evidences.append(f"Nhật Thần <b>{_chi_n_ab} ({_nh_n_h})</b> sinh phù ({_nh_n_h} sinh {_dt_nh_ab})")
+                if _nguyen_dong_found:
+                    _rescue_evidences.append(
+                        f"Nguyên Thần <b>{', '.join(_nguyen_dong_found)}</b>{_mat_ab.get('dt_bien_str','')} đứng ra <b>tiết khí {_ky_nh_h} độc và tương sinh trực tiếp cho Dụng Thần {dung_than} ({_dt_chi_ab}-{_dt_nh_ab})</b> (tượng có thuốc hạ sốt/điều trị đúng hướng và sức đề kháng gốc rất tốt)"
+                    )
+
+                # Nếu không có dấu hiệu bệnh lý mà toàn Cát Môn + Cát Tinh + Sinh Thể -> Đang khỏe mạnh
+                if _ill_pts >= 52:
+                    _pct_ill = max(68, min(85, _ill_pts))
+                    _pct_healthy = 100 - _pct_ill
+                else:
+                    _pct_healthy = max(65, min(82, 100 - _ill_pts))
+                    _pct_ill = 100 - _pct_healthy
+
+                _score_a = _pct_healthy if _a_is_healthy else _pct_ill
+                _score_b = _pct_ill if _a_is_healthy else _pct_healthy
+                _win_opt_h = _ill_opt if _pct_ill >= _pct_healthy else _healthy_opt
+                _lose_opt_h = _healthy_opt if _pct_ill >= _pct_healthy else _ill_opt
+                _win_sc_h = max(_pct_ill, _pct_healthy)
+                _lose_sc_h = min(_pct_ill, _pct_healthy)
+
+                _prognosis_tag = (
+                    " — HIỆN TẠI ĐANG SỐT CAO / PHÁT BỆNH ĐÚNG TƯỢNG HỎA KHẮC KIM & THƯƠNG MÔN, NHƯNG NHỜ DỤNG THẦN ĐẮC NGUYÊN THẦN THỔ ĐỘNG SINH TRỢ NÊN LÀNH TÍNH & SẼ NHANH HẠ SỐT"
+                    if (_pct_ill >= _pct_healthy and _rescue_evidences) else ""
+                )
+                short_hl = (
+                    f"🌡️ ĐỐI CHỨNG HIỆN TRẠNG SỨC KHỎE TRÊN NHÓM QUẺ CHÍNH (MAI HOA + KỲ MÔN + LỤC HÀO): "
+                    f"[PHƯƠNG ÁN 1 — {opt_a_up}]: {_score_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_score_b}% "
+                    f"➔ CHỐT DỨT KHOÁT THEO QUẺ (BẤT BIẾN THỨ TỰ): «{_win_opt_h.upper()}» ({_win_sc_h}% VS {_lose_sc_h}%{_prognosis_tag})!"
+                )
+                _ill_ev_html = "<br>".join(f"&nbsp;&nbsp;+ {ev}." for ev in _ill_evidences) if _ill_evidences else "&nbsp;&nbsp;+ Các hào và tượng quẻ ổn định."
+                _rescue_html = (
+                    f"<br><b>2. Giải mã Tiên Lượng & Vì Sao Hào Dụng Thần {dung_than} ({_dt_chi_ab}-{_dt_nh_ab}) Hữu Khí ({_pct_healthy}% nền tảng thể trạng — Quy Luật Phân Định Hiện Trạng vs. Tiên Lượng):</b><br>"
+                    f"&nbsp;&nbsp;+ Trong Y Dịch Cổ Pháp, việc Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_ab} ({_dt_chi_ab}-{_dt_nh_ab})</b> không phạm Tuần Không và được {', '.join(_rescue_evidences)} "
+                    f"<b>KHÔNG PHẢI là hiện tại không sốt</b>, mà là <b>TIÊN LƯỢNG CỨU ỨNG</b>: Hành <b>{_nguyen_nh_h}</b> đứng giữa làm cầu nối thông quan (<i>{_ky_nh_h} sinh {_nguyen_nh_h}, {_nguyen_nh_h} sinh {_dt_nh_ab}</i> = thuốc hạ sốt & sức đề kháng tự nhiên tiết bớt nhiệt độc), khẳng định <b>cơn sốt tuy cao nhưng LÀNH TÍNH, đáp ứng thuốc tốt và sẽ nhanh chóng hạ sốt hồi phục</b>!"
+                    if _rescue_evidences else ""
+                )
+                why_s = (
+                    f"<b>• Phân tích Liên Kết Mọi Yếu Tố Của Quẻ theo Chuẩn Y Dịch Cổ Pháp (Mai Hoa Quan Vật + Lục Hào Tăng San Bốc Dịch + Kỳ Môn Độn Giáp):</b><br>"
+                    f"<b>1. Bằng chứng Khẳng Định Hiện Trạng «{_ill_opt.upper()}» ({_pct_ill}%):</b><br>"
+                    f"{_ill_ev_html}"
+                    f"{_rescue_html}"
+                )
+                when_s = (
+                    f"<b>Lộ trình Hạ Sốt & Bình Phục Theo Chu Kỳ Can Chi (Y Dịch Ứng Kỳ):</b><br>"
+                    f"• <b>Khung giờ bắt đầu dịu nhiệt / hạ sốt trong ngày:</b> Khi bước sang các giờ <b>Thân – Dậu (15h–19h, Kim vượng trợ Dụng Thần)</b>, <b>Giờ Hợi – Tý – Sửu (21h–03h đêm, Thủy chế Hỏa & Thổ tiết Hỏa sinh Kim)</b> và <b>Giờ Thìn (07h–09h sáng, Thìn Thổ lục hợp Dậu Kim)</b>.<br>"
+                    f"• <b>Mốc cắt sốt & hồi phục sức khỏe:</b> Do bàn Kỳ Môn đang vướng <b>Phục Ngâm (Cửa {cua_name})</b> nên cơn sốt còn lặp lại thêm 1–2 nhịp thuốc, và sẽ <b>dứt sốt hoàn toàn trong 1 – 3 ngày tới (ứng mạnh vào ngày Sửu / Thìn [Nguyên Thần Thổ vượng] hoặc ngày Thân / Dậu [Dụng Thần Kim đăng diện])</b>."
+                )
+                adv_s = (
+                    f"<b>Pháp quyết chăm sóc & hóa giải theo Y Dịch:</b><br>"
+                    f"1. Do tượng quẻ là <b>Ly Hỏa khắc Đoài/Dậu Kim</b> (Kim chủ <b>Phổi, Họng, Amidan, Đường hô hấp & Thân nhiệt</b>), cha mẹ cần theo dõi sát nhiệt độ, kiểm tra vùng họng/hô hấp của bé, cho bé uống thuốc hạ sốt đúng cữ và <b>bù nhiều nước ấm / điện giải (bổ sung Hành Thủy để chế bớt Ly Hỏa)</b>.<br>"
+                    f"2. Đặt bé nằm nghỉ ở không gian thoáng mát (tránh hướng Chính Nam nhiều Hỏa khí; ưu tiên hướng <b>Chính Tây / Tây Bắc [Hành Kim]</b> hoặc <b>Đông Bắc / Tây Nam [Hành Thổ tiết Hỏa sinh Kim]</b>), mặc đồ thoáng màu <b>Trắng / Kem / Vàng nhạt / Xanh nhạt</b>."
+                )
+                return {
+                    "has_override": True,
+                    "headline": f"🎯 KẾT LUẬN ĐỐI CHỨNG 2 PHƯƠNG ÁN ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+
             # ── NHÁNH 8.2: ĐỐI CHỨNG MỌI CẶP PHƯƠNG ÁN "A HAY B" TỔNG QUÁT (100% BẤT BIẾN THỨ TỰ CÂU HỎI — CĂN CỨ MAI HOA + KỲ MÔN + LỤC HÀO) ──
             # Chuẩn hóa văn bản cốt lõi của mỗi phương án (loại bỏ tiền tố chung của cả 2 vế) để khi đảo "A hay B" <-> "B hay A", điểm số KHÔNG BAO GIỜ ĐỔI!
             def _extract_core_pair(ta_raw: str, tb_raw: str) -> tuple:
-                ca = ta_raw.lower().strip()
-                cb = tb_raw.lower().strip()
+                ca = QuestionReaderAI._normalize_vn_typos(ta_raw).lower().strip()
+                cb = QuestionReaderAI._normalize_vn_typos(tb_raw).lower().strip()
                 # Bước 1: Nếu cả 2 vế cùng bắt đầu bằng các từ giống nhau (VD: "nhà tôi nghèo" vs "nhà tôi giàu", "đi hà nội" vs "đi sài gòn"), cắt bỏ phần từ chung ở đầu
                 wa = ca.split()
                 wb = cb.split()
@@ -2933,9 +3188,12 @@ class HexagramReasoningAI:
                 # Bước 2: Cắt các tiền tố chủ ngữ/động từ dẫn nhập còn sót ở đầu vế (nếu vế còn >= 2 từ)
                 for _p in (
                     "nhà tôi ", "gia đình tôi ", "gia đình mình ", "nhà mình ", "vợ chồng tôi ",
-                    "con tôi ", "con của tôi ", "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ",
+                    "con gái tôi đang ", "con trai tôi đang ", "con tôi đang ", "con của tôi đang ",
+                    "con gái tôi ", "con trai tôi ", "con tôi ", "con của tôi ", "bé nhà tôi ",
+                    "vợ tôi đang ", "chồng tôi đang ", "bố tôi đang ", "mẹ tôi đang ",
+                    "vợ tôi ", "chồng tôi ", "bố tôi ", "mẹ tôi ",
                     "anh trai tôi ", "chị gái tôi ", "em tôi ", "bạn tôi ",
-                    "tôi đang ", "tôi nên ", "có nên ", "tôi ", "nên ", "đi ", "mua ", "chọn ", "học ",
+                    "tôi đang ", "tôi nên ", "có nên ", "tôi ", "nên ", "đang ", "bị ", "đi ", "mua ", "chọn ", "học ",
                 ):
                     if ca.startswith(_p) and len(ca) > len(_p) + 1 and not cb.startswith(_p):
                         ca = ca[len(_p):].strip()
@@ -2952,46 +3210,88 @@ class HexagramReasoningAI:
                 return False
 
             # Kiểm tra xem có phải cặp Cực Dương/Tích cực/Thuận lợi vs Cực Âm/Tiêu cực/Bất lợi không
+            # V111.0: Loại bỏ các tính từ đa nghĩa ("cao", "lớn", "nhiều") khỏi _POS_POLE_KW khi đi kèm từ bệnh lý/rủi ro,
+            # đồng thời kiểm tra _NEG_POLE_KW trước để "sốt cao", "huyết áp cao", "rủi ro cao" luôn được nhận diện chuẩn là Cực Âm/Bất lợi!
             _POS_POLE_KW = (
                 "tốt", "cát", "thuận", "thuận lợi", "thành công", "đỗ", "đậu", "thắng", "được",
-                "thật", "đúng", "khỏe", "khỏi", "vui", "sướng", "cao", "lớn", "nhiều", "nhanh",
-                "mới", "sáng", "ấm", "đông", "trung thực",
+                "thật", "đúng", "khỏe", "khỏe mạnh", "khỏi", "vui", "sướng", "nhanh",
+                "mới", "sáng", "ấm", "trung thực", "an toàn", "ổn định",
             )
             _NEG_POLE_KW = (
                 "xấu", "hung", "nghịch", "bất lợi", "thất bại", "trượt", "rớt", "thua", "mất",
-                "giả", "sai", "ốm", "bệnh", "buồn", "khổ", "thấp", "nhỏ", "ít", "chậm",
-                "cũ", "tối", "lạnh", "vắng", "dối trá",
+                "giả", "sai", "ốm", "bệnh", "sốt", "sốt cao", "nóng sốt", "viêm", "đau", "mệt",
+                "ho", "cảm", "nhập viện", "cấp cứu", "buồn", "khổ", "thấp", "nhỏ", "ít", "chậm",
+                "cũ", "tối", "lạnh", "vắng", "dối trá", "nguy hiểm", "trục trặc", "hỏng", "tắc",
             )
             _a_neg_prefix = _core_a.startswith(("không ", "chưa ", "chẳng "))
             _b_neg_prefix = _core_b.startswith(("không ", "chưa ", "chẳng "))
-            _a_pos = (_has_whole_kw(_core_a, _POS_POLE_KW) and not _a_neg_prefix) or (_b_neg_prefix and not _a_neg_prefix)
-            _b_pos = (_has_whole_kw(_core_b, _POS_POLE_KW) and not _b_neg_prefix) or (_a_neg_prefix and not _b_neg_prefix)
             _a_neg = _has_whole_kw(_core_a, _NEG_POLE_KW) or _a_neg_prefix
             _b_neg = _has_whole_kw(_core_b, _NEG_POLE_KW) or _b_neg_prefix
+            _a_pos = ((_has_whole_kw(_core_a, _POS_POLE_KW) and not _a_neg) or (_b_neg_prefix and not _a_neg_prefix))
+            _b_pos = ((_has_whole_kw(_core_b, _POS_POLE_KW) and not _b_neg) or (_a_neg_prefix and not _b_neg_prefix))
+
+            # V111.0 — ĐỊNH LUẬT ĐỒNG THANH TƯƠNG ỨNG NGŨ HÀNH & TƯỢNG QUÁI CHO MỌI CẶP PHƯƠNG ÁN "A HAY B":
+            # Nếu phương án A hoặc B mang đặc tính Ngũ Hành / Phương Hướng / Trạng Thái Động-Tĩnh cụ thể (VD: Nóng/Lửa/Đỏ/Nam = Hỏa; Lạnh/Mưa/Đen/Bắc = Thủy;
+            # Trắng/Tây/Kim loại = Kim; Xanh/Gió/Đông = Mộc; Vàng/Đất/Núi = Thổ), đối chiếu trực tiếp với Quái Chủ/Biến + Hào Động + Kỳ Môn!
+            def _direct_element_imagery_bonus(core_txt: str) -> int:
+                _ELEM_KW_MAP = {
+                    "Hỏa": ("nóng", "sốt", "lửa", "nhiệt", "đỏ", "hồng", "tím", "hướng nam", "phía nam", "mùa hè", "buổi trưa", "khô", "sáng"),
+                    "Thủy": ("lạnh", "mát", "mưa", "ẩm", "ướt", "nước", "đen", "hướng bắc", "phía bắc", "mùa đông", "ban đêm"),
+                    "Kim": ("trắng", "bạc", "kim loại", "sắt", "thép", "hướng tây", "phía tây", "mùa thu", "ồn ào", "tiếng vang"),
+                    "Mộc": ("xanh lá", "cây", "gỗ", "gió", "hướng đông", "phía đông", "mùa xuân"),
+                    "Thổ": ("vàng đất", "nâu", "đất", "đá", "núi", "tĩnh", "đứng yên"),
+                }
+                _active_hanh_set = {
+                    _mat_ab.get("hanh_the", ""), _mat_ab.get("hanh_dung", ""),
+                    _mat_ab.get("hanh_bien_dung", ""), _mat_ab.get("dt_nh", ""),
+                }
+                _bonus = 0
+                for _eh, _kws in _ELEM_KW_MAP.items():
+                    if _has_whole_kw(core_txt, _kws):
+                        if _eh in _active_hanh_set:
+                            _bonus += 10
+                        if _eh == _mat_ab.get("hanh_dung") or _eh == _mat_ab.get("hanh_bien_dung"):
+                            _bonus += 6
+                return _bonus
 
             # Tính tổng điểm Cát/Thực của Nhóm Quẻ Chính (Lục Hào + Mai Hoa + Kỳ Môn)
             _tam_thuc_score = 50
             if _mat_ab["dt_is_real"]:
-                _tam_thuc_score += 12
+                _tam_thuc_score += 10
             else:
                 _tam_thuc_score -= 14
             if not _the_kv:
-                _tam_thuc_score += 5
-            if _mat_ab["rel_bien_pts"] > 0:
+                _tam_thuc_score += 4
+            # Kiểm tra xem Dụng Thần có đang bị Kỵ Thần hoặc ngoại quái khắc trực tiếp không
+            _KHAC_GEN = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+            _dt_under_attack = (
+                _KHAC_GEN.get(_mat_ab["meta_up_chu"][3]) == _dt_nh_ab
+                or _KHAC_GEN.get(_mat_ab["meta_lo_chu"][3]) == _dt_nh_ab
+                or any(m in cua_name for m in ("Thương", "Tử", "Kinh", "Đỗ"))
+            )
+            if _dt_under_attack:
+                _tam_thuc_score -= 14
+            if _mat_ab["rel_bien_pts"] > 0 and not _dt_under_attack:
                 _tam_thuc_score += 10
             elif _mat_ab["rel_bien_pts"] < 0:
                 _tam_thuc_score -= 8
-            if _mat_ab["is_cat_sao"] or _mat_ab["is_cat_cua"]:
-                _tam_thuc_score += 6
-            else:
-                _tam_thuc_score -= 5
-            _tam_thuc_score = max(24, min(78, _tam_thuc_score))
+            if _mat_ab["is_cat_cua"]:
+                _tam_thuc_score += 8
+            elif any(m in cua_name for m in ("Thương", "Tử", "Kinh", "Đỗ")):
+                _tam_thuc_score -= 10
+            elif _mat_ab["is_cat_sao"]:
+                _tam_thuc_score += 4
+            _tam_thuc_score = max(22, min(78, _tam_thuc_score))
             if _tam_thuc_score == 50:
                 _tam_thuc_score = 58
 
+            _elem_bonus_a = _direct_element_imagery_bonus(_core_a)
+            _elem_bonus_b = _direct_element_imagery_bonus(_core_b)
+
             if (_a_pos and _b_neg) or (_b_pos and _a_neg):
-                # Gán điểm theo Cực Tích Cực vs Cực Tiêu Cực (Bất biến 100% khi đảo thứ tự A và B)
-                _score_a = _tam_thuc_score if _a_pos else (100 - _tam_thuc_score)
+                # Gán điểm theo Cực Tích Cực vs Cực Tiêu Cực + Cộng hưởng Ngũ Hành trực tiếp (Bất biến 100% khi đảo thứ tự A và B)
+                _base_a = _tam_thuc_score if _a_pos else (100 - _tam_thuc_score)
+                _score_a = max(18, min(82, _base_a + _elem_bonus_a - _elem_bonus_b))
                 _score_b = 100 - _score_a
             else:
                 # Hai phương án trung tính bất kỳ (VD: "Hà Nội hay Sài Gòn", "Ngành A hay Ngành B"):
@@ -2999,7 +3299,8 @@ class HexagramReasoningAI:
                 # đảm bảo hỏi "A hay B" hay "B hay A" đều cho ra ĐÚNG CÙNG 1 ĐÁP ÁN!
                 _canon_first_is_a = (_core_a <= _core_b)
                 _canon_1_score = _tam_thuc_score
-                _score_a = _canon_1_score if _canon_first_is_a else (100 - _canon_1_score)
+                _base_a = _canon_1_score if _canon_first_is_a else (100 - _canon_1_score)
+                _score_a = max(18, min(82, _base_a + _elem_bonus_a - _elem_bonus_b))
                 _score_b = 100 - _score_a
 
             _win_ab = opt_a_up if _score_a >= _score_b else opt_b_up
@@ -3264,6 +3565,60 @@ class HexagramReasoningAI:
                 adv_s = (
                     f"Chủ động khảo sát pháp lý và đàm phán mua {_asset_name} tại hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
                 )
+            return {
+                "has_override": True,
+                "headline": f"🎯 {short_hl}",
+                "short_headline": short_hl,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
+        # ── 8D_2. GIẢI MÃ CHUYÊN SÂU Y DỊCH — SỨC KHỎE, SỐT CAO, ĐAU ỐM & BỆNH TẬT (HEALTH_MEDICAL — V111.0 NGŨ CHẨN Y DỊCH) ──
+        if target == "HEALTH_MEDICAL" or any(w in q_low for w in ["sốt", "sốt cao", "nóng sốt", "hạ sốt", "khỏi bệnh", "bệnh gì", "có ốm không", "có sốt không", "sức khỏe", "nằm viện", "nhập viện", "viêm họng", "đau bụng"]):
+            _m_hl = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=omni_data,
+                dung_than=dung_than,
+            )
+            _KHAC_MD = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+            _SINH_MD = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+            _ORGAN_BY_NH = {
+                "Kim": "Phổi, Họng, Amidan, Đường hô hấp, Mũi, Xương khớp & Thân nhiệt",
+                "Mộc": "Gan, Mật, Dây thần kinh, Đầu mặt, Tay chân & Cảm phong hàn",
+                "Thủy": "Thận, Bàng quang, Tai, Huyết dịch & Hệ bài tiết",
+                "Hỏa": "Tim mạch, Huyết áp, Mắt, Sốt nhiệt & Viêm cấp tính",
+                "Thổ": "Dạ dày, Tỳ vị, Hệ tiêu hóa, Bụng & Cơ thịt",
+            }
+            _dt_idx_md = _m_hl["dt_idx"]
+            _dt_chi_md = _m_hl["dt_chi"]
+            _dt_nh_md = _m_hl["dt_nh"]
+            _ky_nh_md = next((k for k, v in _KHAC_MD.items() if v == _dt_nh_md), "Hỏa")
+            _ng_nh_md = next((k for k, v in _SINH_MD.items() if v == _dt_nh_md), "Thổ")
+            _organ_str = _ORGAN_BY_NH.get(_dt_nh_md, "Hô hấp & Thân nhiệt")
+            _has_fire_attack = ("Ly" in (_m_hl["up_chu"], _m_hl["lo_chu"], _m_hl["up_bien"], _m_hl["lo_bien"]) or _ky_nh_md == "Hỏa")
+            _has_hung_door = any(m in cua_name for m in ("Thương", "Tử", "Kinh", "Đỗ"))
+            _symptom_lbl = "ĐANG SỐT CAO / VIÊM NHIỆT CẤP TÍNH" if (_has_fire_attack and _dt_nh_md == "Kim") else ("ĐANG CÓ TRIỆU CHỨNG MỆT MỎI / PHÁT BỆNH" if _has_hung_door else "SỨC KHỎE ĐANG CẦN THEO DÕI & CHĂM SÓC")
+
+            short_hl = (
+                f"🩺 KẾT LUẬN Y DỊCH TAM THỨC ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_md} {_dt_chi_md.upper()}-{_dt_nh_md.upper()}): "
+                f"HIỆN TRẠNG {_symptom_lbl} (DO HÀNH {_ky_nh_md.upper()} KHẮC {_dt_nh_md.upper()} TÁC ĐỘNG VÀO {_organ_str.upper()} CÙNG CỬA {cua_name.upper()} · SAO {sao_name.upper()}), "
+                f"NHƯNG TIÊN LƯỢNG LÀNH TÍNH — ĐẮC NGUYÊN THẦN HÀNH {_ng_nh_md.upper()} SINH TRỢ NÊN SẼ NHANH HẠ SỐT / BÌNH PHỤC TRONG 1 – 3 NGÀY TỚI (ỨNG GIỜ/NGÀY SỬU · THÌN · THÂN · DẬU)!"
+            )
+            why_s = (
+                f"<b>• Phân tích Ngũ Chẩn Y Dịch (Liên kết Mai Hoa Quan Vật + Lục Hào + Kỳ Môn Độn Giáp):</b><br>"
+                f"1. <b>Chủ thể & Bộ phận chịu tác động:</b> Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_md} ({_dt_chi_md}-{_dt_nh_md})</b> đại diện cho người bệnh; Hành <b>{_dt_nh_md}</b> chủ về <b>{_organ_str}</b>.<br>"
+                f"2. <b>Căn nguyên phát bệnh / sốt:</b> Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, Kỵ Thần Hành <b>{_ky_nh_md}</b> khắc chế Hành <b>{_dt_nh_md}</b> kết hợp Cung {target_cung} ({huong_cung}) hội <b>Sao {sao_name} · Cửa {cua_name}</b>.<br>"
+                f"3. <b>Tiên lượng Cứu Ứng (Nguyên Thần & Dược Thần):</b> Hào Dụng Thần không phạm Chân Không và có Hành <b>{_ng_nh_md}</b> thông quan sinh trợ (<i>{_ky_nh_md} sinh {_ng_nh_md}, {_ng_nh_md} sinh {_dt_nh_md}</i>), khẳng định cơ thể đáp ứng thuốc tốt và nhanh chóng hồi phục."
+            )
+            when_s = (
+                f"<b>Thời điểm hạ sốt / lui bệnh (Ứng kỳ Y Dịch):</b> Bắt đầu dịu nhiệt vào các khung <b>Giờ Thân – Dậu (15h–19h)</b>, <b>Giờ Hợi – Tý – Sửu (21h–03h)</b> và bình phục rõ rệt trong <b>1 – 3 ngày tới (ngày Sửu, Thìn, Thân, Dậu)</b>."
+            )
+            adv_s = (
+                f"<b>Pháp quyết chăm sóc:</b> Chú trọng chăm sóc vùng <b>{_organ_str}</b>, uống thuốc đúng chỉ dẫn, bù đủ nước ấm và nghỉ ngơi ở hướng thoáng mát (<b>{huong_cung}</b>, màu sắc trợ vận: <b>{colors_str}</b>)."
+            )
             return {
                 "has_override": True,
                 "headline": f"🎯 {short_hl}",
@@ -4490,11 +4845,11 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V110.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ ĐỒNG BỘ THỜI GIAN THỰC (MAI HOA – KỲ MÔN – LỤC HÀO)
+        # Bước 2 (V111.0): KÍCH HOẠT 2 CON AI THỰC TẾ LUẬN QUẺ ĐỒNG BỘ THỜI GIAN THỰC (MAI HOA – KỲ MÔN – LỤC HÀO)
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V110_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V111_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -4527,13 +4882,14 @@ class HexagramReasoningAI:
                     f"   - Chuỗi Liên Kết Mọi Yếu Tố Của Quẻ: {_univ_mat.get('holistic_chain_summary', '')}\n"
                     f"   - Tứ Trụ Thời Khắc: Năm {can_y} {chi_y}, Tháng {can_m} {chi_m}, Ngày {can_n} {chi_n}, Giờ {can_g} {chi_g}.\n"
                     f"   - Kết quả giải mã toán học Tam Thức nội bộ (BẮT BUỘC ĐỒNG NHẤT 100%): {spec_res.get('headline', '')} | Ứng kỳ: {re.sub(r'<[^>]+>', '', str(spec_res.get('when', '')))[:350]} | Nguyên nhân: {re.sub(r'<[^>]+>', '', str(spec_res.get('why', '')))[:450]}\n\n"
-                    "4. SÁU ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ):\n"
+                    "4. BẢY ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ):\n"
                     "   - Định luật 1 (Đoán Màu sắc / Đồ vật / Thiết bị): Lấy Quẻ Biến Dụng Mai Hoa (VD: Khảm Thủy = Màu Đen) + Bát Thần Kỳ Môn (Huyền Vũ = Màu Đen, Bạch Hổ = Màu Trắng) + Nhật Can & Tam Hợp Lục Hào làm màu chủ đạo; Quẻ Dụng gốc làm màu chi tiết phụ.\n"
                     "   - Định luật 2 (Đoán Vợ chồng / Nhân tình / Gia đạo): Khi Hào Thê Tài/Quan Quỷ trì Thế hoặc sinh hợp Thế, Quẻ Biến Dụng sinh Thể, Quẻ Hỗ là Tiệm/Gia Nhân, Kỳ Môn đắc Thiên Phụ + Sinh Môn thì khẳng định 100% vợ/chồng chung thủy.\n"
                     "   - Định luật 3 (Đoán Tầng nhà / Chung cư): Hậu Thiên Thượng Quái Mai Hoa + Tiên Thiên Hạ Quái Hỗ + Bản cung Sao Kỳ Môn = Vị trí tầng đang ở; Tổng Tiên Thiên Chủ + Hỗ = Tổng số tầng tòa chung cư.\n"
                     "   - Định luật 4 (Đoán Số người / Con cái / Anh chị em / Quãng đường km): Rút trích trực tiếp từ các hào Lục Thân hiện hữu và Quái số Tiên/Hậu Thiên Mai Hoa, tuyệt đối cấm tự bịa số.\n"
                     "   - Định luật 5 (Liên kết Mọi Yếu Tố Cho Đại Sự Mua Nhà Mặt Đất / Mua Đất / Xây Nhà / Mua Xe): Tuyệt đối KHÔNG BAO GIỜ báo ứng kỳ vài giờ hay 2 ngày cho việc mua nhà mặt đất khi Nguồn tiền (Hào Thê Tài) đang Phục Tàng/chưa sẵn tiền hoặc Dụng Thần Phụ Mẫu đang Tuần Không / Kỳ Môn Phục Ngâm! Phải phân tích liên kết 4 mắt xích: [1] Nguồn tiền Hào Thê Tài (đã có tiền sẵn hay đang Phục Tàng chưa có tiền), [2] Dụng Thần Nhà đất Phụ Mẫu, [3] Bản thân Hào Thế, [4] Cục diện Phục Ngâm/Biến quái, từ đó chỉ rõ Lộ trình 2 giai đoạn (Tích lũy tài chính 2026-nửa đầu 2027 -> Điểm rơi mua được nhà vào Mùa Thu Tháng 08-09/2027 Dương lịch [Tháng Thân-Dậu Âm lịch] hoặc 2028-2029)!\n"
-                    "   - Định luật 6 (Mọi câu hỏi khác): Luôn liên kết chặt chẽ mọi yếu tố của quẻ (Bản thân <-> Nguồn lực/Tiền bạc <-> Dụng thần mục tiêu <-> Chuyển hóa & Ứng kỳ) từ Mai Hoa + Kỳ Môn + Lục Hào + Thiết Bản.\n\n"
+                    "   - Định luật 6 (Mọi câu hỏi khác): Luôn liên kết chặt chẽ mọi yếu tố của quẻ (Bản thân <-> Nguồn lực/Tiền bạc <-> Dụng thần mục tiêu <-> Chuyển hóa & Ứng kỳ) từ Mai Hoa + Kỳ Môn + Lục Hào + Thiết Bản.\n"
+                    "   - Định luật 7 (Phân Định Hiện Trạng Bệnh Chứng/Sốt Cao vs. Tiên Lượng Hồi Phục & Tượng Quái Chủ Thể): Khi hỏi về sức khỏe/triệu chứng (VD: 'con gái khỏe mạnh hay sốt cao'), phải định vị Quái Chủ Thể (Con gái = Đoài Kim) và Kỵ Thần của Dụng Thần (Tử Tôn Kim có Kỵ Thần là Phụ Mẫu Hỏa). Nếu Ly Hỏa/Tị Hỏa khắc Đoài/Dậu Kim + Kỳ Môn gặp Thương Môn/Thiên Xung thì khẳng định 100% HIỆN TẠI ĐANG SỐT CAO; còn việc Dụng Thần đắc Nguyệt/Nhật Thổ hoặc Nguyên Thần Thổ động sinh Kim là TIÊN LƯỢNG CỨU ỨNG (có thuốc hạ sốt & đề kháng tốt nên cơn sốt lành tính và sẽ nhanh hạ sốt), tuyệt đối cấm nhầm 'Dụng Thần hữu khí' thành 'hiện tại khỏe mạnh'!\n\n"
                     "Trả về ĐÚNG 1 JSON hợp lệ:\n"
                     "{\n"
                     "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện, in hoa các ý chính, trả lời đúng 100% câu hỏi và lộ trình thực tế từ Tam Thức\",\n"
@@ -4707,7 +5063,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V110.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI 2 TẦNG (V111.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ & PHÂN TÍCH ĐẦY ĐỦ MỌI LOẠI QUẺ</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
@@ -4737,7 +5093,7 @@ class HexagramReasoningAI:
 
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V110.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI 2 TẦNG (V111.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
