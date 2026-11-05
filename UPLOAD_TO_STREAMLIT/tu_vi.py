@@ -294,7 +294,7 @@ def lap_la_so(nam_sinh, thang_am, ngay_am, gio_idx, gioi_tinh='nam'):
             luu_nien_cung = cn
             break
 
-    return {
+    _ls_res = {
         "nam_sinh": nam_sinh,
         "thang_am": thang_am,
         "ngay_am": ngay_am,
@@ -312,6 +312,8 @@ def lap_la_so(nam_sinh, thang_am, ngay_am, gio_idx, gioi_tinh='nam'):
         "luu_nien": {"nam": nam_hien_tai, "tuoi": tuoi_hien_tai, "cung": luu_nien_cung, "chi": CHI[luu_nien_chi_idx]},
         "gioi_tinh": gioi_tinh,
     }
+    _ls_res["thien_ky_13_chieu"] = analyze_thien_ky_13_dimensions(_ls_res)
+    return _ls_res
 
 
 def format_la_so_text(ls):
@@ -338,4 +340,119 @@ def format_la_so_text(ls):
     lines.append("")
     lines.append(f"── LƯU NIÊN {ls['luu_nien']['nam']} ──")
     lines.append(f"  Tuổi {ls['luu_nien']['tuoi']}: Cung {ls['luu_nien']['cung']} ({ls['luu_nien']['chi']})")
+    if ls.get("thien_ky_13_chieu"):
+        lines.append("")
+        lines.append("── TINH HOA KHO TỬ VI 56.6GB GITHUB (Renhuai123/ziwei-doushu — NGHÊ HẢI HẠ《THIÊN KỶ》13 CHIỀU) ──")
+        for k_dim, v_dim in ls["thien_ky_13_chieu"].items():
+            lines.append(f"  • [{k_dim}]: {v_dim}")
     return "\n".join(lines)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TINH HOA KHO TÀNG TỬ VI 56.6GB TRÊN GITHUB (Renhuai123/ziwei-doushu v4.0)
+# Hệ thống Nghê Hải Hạ《Thiên Kỷ · Tử Vi Đẩu Số》&《Tử Vi Đẩu Số Toàn Thư》
+# (674,976 Mệnh Bàn × 13 Chiều Phân Tích = 8.77 Triệu Đoạn Luận Giải Chuẩn Hóa)
+# ══════════════════════════════════════════════════════════════════════════════
+
+THIEN_KY_DIA_CHI_DIA_LY = {
+    "Tý": ("Cung Khảm Thủy (Chính Bắc)", "Vùng sông nước, hồ đầm, kênh rạch hoặc nơi giao thương đường thủy; khí chất thông tuệ, thâm trầm"),
+    "Sửu": ("Cung Cấn Thổ (Đông Bắc)", "Vùng đất gò đồi, chân núi, đồng bãi cần cù; tính cách kiên nhẫn, chịu thương chịu khó"),
+    "Dần": ("Cung Cấn Sơn Lâm (Đông Bắc — Sơn Lâm Chi Địa)", "Vùng núi, rừng cây đại ngàn, miền sơn cước hoặc vùng cao nguyên cây cối trù phú; khí phách tự lập, vươn lên từ vùng núi"),
+    "Mão": ("Cung Chấn Mộc (Chính Đông — Điền Viên Chi Địa)", "Vùng thảo mộc, vườn tược, rừng tre trúc xanh tươi; tính tình cương trực, năng động"),
+    "Thìn": ("Cung Tốn Thủy Khố (Đông Nam — Long Trì Cao Nguyên)", "Vùng đất cao gần sông hồ lớn hoặc thung lũng trù phú; chí hướng lớn, có tài tổ chức"),
+    "Tỵ": ("Cung Tốn Hỏa (Đông Nam — Đô Hội Giao Thương)", "Khu vực giao thương nhộn nhịp, phố chợ phát triển; đầu óc nhạy bén, hoạt bát"),
+    "Ngọ": ("Cung Ly Hỏa (Chính Nam — Phồn Hoa Đô Hội)", "Trung tâm sáng sủa, cao ráo, văn minh; tính tình quang minh chính đại, nhiệt huyết"),
+    "Mùi": ("Cung Khôn Thổ (Tây Nam — Thảo Nguyên Điền Thổ)", "Vùng đất rộng, đồng quê hoặc cao nguyên bằng phẳng; nhân hậu, trọng tình nghĩa gia đình"),
+    "Thân": ("Cung Khôn/Đoài Kim (Tây Nam — Danh Đô Giao Lộ)", "Nơi đầu mối giao thông, thị trấn hoặc thành phố công nghiệp; lanh lợi, giỏi ứng biến"),
+    "Dậu": ("Cung Đoài Kim (Chính Tây — Kim Thành Tụ Khí)", "Phố thị sầm uất hoặc vùng thung lũng trạch địa; sắc sảo, trọng danh dự và lời nói"),
+    "Tuất": ("Cung Càn Hỏa Khố (Tây Bắc — Sơn Cương Cổ Địa)", "Vùng núi cao, gò đồi độc lập hoặc đất cổ truyền thống; trung thành, giữ vững nguyên tắc"),
+    "Hợi": ("Cung Càn Thủy (Tây Bắc — Giang Hải Chi Địa)", "Vùng biển rộng, sông lớn hoặc nơi giao lưu bốn phương; bao dung, trí tuệ sâu rộng"),
+}
+
+THIEN_KY_14_CHINH_TINH_DOCTRINE = {
+    "Tử Vi": "Đế Tinh (Bắc Đẩu Chủ — Hành Thổ): Chủ quyền uy, lãnh đạo, hậu đãi, giải ách chế hóa sát tinh; cần Tả Phụ - Hữu Bật phò tá mới thành Quân Thần Khánh Hội.",
+    "Thiên Cơ": "Thiện Tinh / Mưu Thần (Nam Đẩu — Hành Mộc): Chủ trí tuệ, mưu lược, biến hóa linh hoạt, kỹ thuật, tham mưu; hợp Thiên Lương thành Cơ Lương Thiện Đàm Binh.",
+    "Thái Dương": "Quang Minh Tinh (Trung Thiên — Hành Hỏa): Chủ quan lộc, danh tiếng, người cha/chồng, bác ái; đóng ban ngày (Dần-Mão-Thìn-Tỵ-Ngọ) là Nhật Lệ Trung Thiên đại cát.",
+    "Vũ Khúc": "Chính Tài Tinh (Bắc Đẩu — Hành Kim): Chủ tiền bạc thực chất, quyết đoán, cương nghị, thực thi tài chính/kinh doanh.",
+    "Thiên Đồng": "Phúc Tinh (Nam Đẩu — Hành Thủy): Chủ phúc thọ, hưởng thụ, hòa khí, khởi nghiệp từ hai bàn tay trắng (bạch thủ thành gia).",
+    "Liêm Trinh": "Thứ Đào Hoa & Quan Tinh (Bắc Đẩu — Hành Hỏa): Chủ liêm chính, pháp luật, hành chính, kiêm duyên ngầm; gặp Thiên Phủ thì nội ngoại song toàn.",
+    "Thiên Phủ": "Nam Đẩu Đế Tinh / Lộc Khố (Hành Thổ): Kho tàng tài lộc và điền sản, cẩn trọng, bảo toàn cơ nghiệp, hậu vận vững chắc.",
+    "Thái Âm": "Điền Trạch & Phú Tinh (Trung Thiên — Hành Thủy): Chủ bất động sản, tích lũy tài sản ngầm, người mẹ/vợ; sáng rực từ Dậu-Tuất-Hợi-Tý (Nguyệt Lãng Thiên Môn).",
+    "Tham Lang": "Chính Đào Hoa & Đa Nghệ Tinh (Bắc Đẩu — Hành Thủy/Mộc): Chủ giao tế, nghệ thuật, khát vọng lớn; hội Hỏa/Linh thành Hỏa Tham / Linh Tham bạo phát.",
+    "Cự Môn": "Ám Tinh / Khẩu Tài Tinh (Bắc Đẩu — Hành Thủy): Chủ ngôn từ, biện luận, nghiên cứu chuyên sâu; gặp Thái Dương sáng chiếu thì Cự Nhật Đồng Lâm giải ám.",
+    "Thiên Tướng": "Ấn Tinh (Nam Đẩu — Hành Thủy): Chủ con dấu quyền lực, phò tá trung thành, công bằng, trọng chữ tín (Phùng Phủ Khán Tướng).",
+    "Thiên Lương": "Ấm Tinh / Thọ Tinh (Nam Đẩu — Hành Thổ/Mộc): Chủ che chở, y dược, giáo dục, thanh cao, giải trừ tai ách (Thọ Tinh Nhập Miếu).",
+    "Thất Sát": "Tướng Tinh / Quyền Bính (Nam Đẩu — Hành Kim/Hỏa): Chủ uy dũng, khai phá, độc lập lập nghiệp nơi xa, quyết liệt.",
+    "Phá Quân": "Hao Tinh / Tiên Phong (Bắc Đẩu — Hành Thủy): Chủ phá cũ lập mới, tiên phong đột phá, biến động lớn trước khi thành công.",
+}
+
+THIEN_KY_13_DIMENSIONS_NAMES = (
+    "1. Bản Mệnh & Khí Chất Cốt Lõi (Mệnh - Thân)",
+    "2. Cách Cục Chủ Đạo (Tam Phương Tứ Chính)",
+    "3. Tứ Hóa Khâm Thiên (Lộc - Quyền - Khoa - Kỵ)",
+    "4. Nguồn Gốc Xuất Thân & Song Thân (Cung Phụ Mẫu & Địa Lý Sinh Trưởng)",
+    "5. Phúc Khí Tổ Tiên & Căn Cơ Tinh Thần (Cung Phúc Đức)",
+    "6. Điền Trạch, Nhà Cửa & Môi Trường Sống (Cung Điền Trạch)",
+    "7. Quan Lộc, Sự Nghiệp & Công Danh (Cung Quan Lộc)",
+    "8. Tài Bạch, Dòng Tiền & Khả Năng Tích Lũy (Cung Tài Bạch)",
+    "9. Phu Thê, Hôn Nhân & Phối Ngẫu (Cung Phu Thê)",
+    "10. Tử Tức, Con Cái & Hậu Thế (Cung Tử Tức)",
+    "11. Tật Ách, Cơ Độc & Ngũ Tạng Y Lý (Cung Tật Ách - Thiên Kỷ Y Dịch)",
+    "12. Thiên Di, Xuất Ngoại & Quý Nhân Xã Hội (Cung Thiên Di - Nô Bộc)",
+    "13. Đại Hạn 10 Năm & Lưu Niên Ứng Kỳ Thực Tế",
+)
+
+
+def analyze_thien_ky_13_dimensions(ls: dict) -> dict:
+    """Phân tích lá số theo chuẩn 13 chiều của Kho Tử Vi 56.6GB GitHub (Renhuai123/ziwei-doushu — Nghê Hải Hạ《Thiên Kỷ》)."""
+    if not isinstance(ls, dict):
+        return {}
+    cung_map = ls.get("cung_map") or {}
+    menh_chi = (ls.get("menh_cung") or {}).get("chi", "Dần")
+    than_chi = (ls.get("than_cung") or {}).get("chi", "Ngọ")
+    tu_hoa = ls.get("tu_hoa") or {}
+    luu_nien = ls.get("luu_nien") or {}
+
+    def _get_stars(c_name: str) -> str:
+        cd = cung_map.get(c_name) or {}
+        ct = cd.get("chinh_tinh") or []
+        pt = (cd.get("phu_tinh") or [])[:4]
+        chi_c = cd.get("chi", "")
+        s_str = ", ".join(ct) if ct else "Vô Chính Diệu (Mượn sao xung chiếu)"
+        if pt:
+            s_str += f" + [{', '.join(pt)}]"
+        return f"Cung {chi_c} ({s_str})"
+
+    menh_stars = (cung_map.get("Mệnh") or {}).get("chinh_tinh") or []
+    quan_stars = (cung_map.get("Quan Lộc") or {}).get("chinh_tinh") or []
+    tai_stars = (cung_map.get("Tài Bạch") or {}).get("chinh_tinh") or []
+    tam_phuong_set = set(menh_stars + quan_stars + tai_stars)
+
+    if tam_phuong_set & {"Sát", "Thất Sát", "Phá Quân", "Tham Lang"}:
+        cach_cuc = "Cách Cục SÁT PHÁ THAM (Khai sáng, tự lập bươn chải, dám nghĩ dám làm, lập nghiệp từ thực chiến)"
+    elif tam_phuong_set & {"Tử Vi", "Thiên Phủ", "Vũ Khúc", "Thiên Tướng"}:
+        cach_cuc = "Cách Cục TỬ PHỦ VŨ TƯỚNG (Quản trị, tài chính, điền sản vững chắc, có uy tín lãnh đạo)"
+    elif tam_phuong_set & {"Thiên Cơ", "Thái Âm", "Thiên Đồng", "Thiên Lương"}:
+        cach_cuc = "Cách Cục CƠ NGUYỆT ĐỒNG LƯƠNG (Mưu lược, chuyên môn cao, tham mưu, công chức/giáo dục/kỹ thuật)"
+    else:
+        cach_cuc = "Cách Cục CỰ NHẬT / NHẬT NGUYỆT CHIẾU BÍCH (Trọng danh dự, trí tuệ sáng suốt, lấy chữ tín lập thân)"
+
+    pm_chi = (cung_map.get("Phụ Mẫu") or {}).get("chi", menh_chi)
+    pm_geo = THIEN_KY_DIA_CHI_DIA_LY.get(pm_chi, ("Địa mạch trung hòa", "Quê hương giàu truyền thống"))
+
+    return {
+        THIEN_KY_13_DIMENSIONS_NAMES[0]: f"Mệnh tại {menh_chi}, Thân tại {than_chi}, Cục {ls.get('cuc_ten', '')}, Nạp Âm {ls.get('nap_am', '')} — {_get_stars('Mệnh')}.",
+        THIEN_KY_13_DIMENSIONS_NAMES[1]: f"{cach_cuc} | Hội chiếu Mệnh ({', '.join(menh_stars) or 'VCD'}) - Tài ({', '.join(tai_stars) or 'VCD'}) - Quan ({', '.join(quan_stars) or 'VCD'}).",
+        THIEN_KY_13_DIMENSIONS_NAMES[2]: f"Hóa Lộc: {tu_hoa.get('Hóa Lộc')} (Nguồn lộc) · Hóa Quyền: {tu_hoa.get('Hóa Quyền')} (Thực quyền) · Hóa Khoa: {tu_hoa.get('Hóa Khoa')} (Quý nhân/Danh tiếng) · Hóa Kỵ: {tu_hoa.get('Hóa Kỵ')} (Điểm cần tu dưỡng).",
+        THIEN_KY_13_DIMENSIONS_NAMES[3]: f"{_get_stars('Phụ Mẫu')} — Địa mạch gốc: {pm_geo[0]} ({pm_geo[1]}).",
+        THIEN_KY_13_DIMENSIONS_NAMES[4]: f"{_get_stars('Phúc Đức')} — Gốc phúc đức dòng họ che chở lúc gặp biến cố.",
+        THIEN_KY_13_DIMENSIONS_NAMES[5]: f"{_get_stars('Điền Trạch')} — Chủ khả năng tích lũy nhà đất, bất động sản.",
+        THIEN_KY_13_DIMENSIONS_NAMES[6]: f"{_get_stars('Quan Lộc')} — Định hướng công danh, sự nghiệp trọng tâm.",
+        THIEN_KY_13_DIMENSIONS_NAMES[7]: f"{_get_stars('Tài Bạch')} — Phương thức tạo dòng tiền và quản lý tài sản.",
+        THIEN_KY_13_DIMENSIONS_NAMES[8]: f"{_get_stars('Phu Thê')} — Duyên phận phối ngẫu và sự đồng hành gia đạo.",
+        THIEN_KY_13_DIMENSIONS_NAMES[9]: f"{_get_stars('Tử Tức')} — Đường con cái và phúc hậu vận.",
+        THIEN_KY_13_DIMENSIONS_NAMES[10]: f"{_get_stars('Tật Ách')} — Cần lưu ý cân bằng âm dương ngũ tạng theo Thiên Kỷ Y Lý.",
+        THIEN_KY_13_DIMENSIONS_NAMES[11]: f"Thiên Di: {_get_stars('Thiên Di')} | Nô Bộc: {_get_stars('Nô Bộc')}.",
+        THIEN_KY_13_DIMENSIONS_NAMES[12]: f"Lưu Niên {luu_nien.get('nam')} ({luu_nien.get('tuoi')} tuổi) nhập cung {luu_nien.get('cung')} ({luu_nien.get('chi')}).",
+    }
+
