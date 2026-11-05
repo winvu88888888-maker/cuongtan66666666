@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V114.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Pháp Độc Tượng Vạn Vật Loại Tượng 6 Tầng ⛰️ + Tích Hợp Kho Tử Vi Thiên Kỷ 56.6GB GitHub 🔯 + Hội Tụ 6 Tầng Số 🔢)"
+APP_VERSION = "V115.0"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Kho Tàng Kinh Điển GitHub: Kỳ Môn · Mai Hoa 18 Chiêm Pháp · Lục Hào Tăng San · Thiết Bản 12.000 Điều Văn · Tử Vi Thiên Kỷ 56.6GB 📚)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V114.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V114.0"
+# V115.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V115.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -30,6 +30,8 @@ if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
         "luc_hao_kinh_dich",
         "dai_luc_nham",
         "thai_at_than_so",
+        "tu_vi",
+        "integrated_knowledge_base",
         "question_parser",
         "dual_ai_agents",
         "interaction_diagrams",
