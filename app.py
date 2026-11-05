@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V109.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Đồng Bộ Thời Gian Thực 2026–2027 ⏰ + Liên Kết Mọi Yếu Tố Quẻ 🔗 + Phân Tích Chi Tiết Mọi Loại Quẻ 🎯)"
+APP_VERSION = "V110.0"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Gieo Quẻ Động Tâm & Ngẫu Nhiên 100% Đồng Bộ 🎲 + Không Trùng Lặp Quẻ Giữa Các Câu Hỏi 🔗 + Đủ 158+ Yếu Tố GitHub 🎯)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V109.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V109.0"
+# V110.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V110.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2363,11 +2363,11 @@ if params:
             'hour': selected_datetime.hour,
             'minute': selected_datetime.minute,
         }
-        if USE_MAI_HOA and not (st.session_state.get('random_hexagram_mode') and st.session_state.get('mai_hoa_result', {}).get('_random_cast')):
+        if USE_MAI_HOA and not st.session_state.get('mai_hoa_result'):
             _g_mh = tinh_qua_theo_thoi_gian(selected_datetime.year, selected_datetime.month, selected_datetime.day, selected_datetime.hour)
             _g_mh['interpretation'] = giai_qua(_g_mh, selected_topic)
             st.session_state.mai_hoa_result = _g_mh
-        if USE_LUC_HAO and not (st.session_state.get('random_hexagram_mode') and st.session_state.get('luc_hao_result', {}).get('_random_cast')):
+        if USE_LUC_HAO and not st.session_state.get('luc_hao_result'):
             st.session_state.luc_hao_result = lap_qua_luc_hao(
                 selected_datetime.year, selected_datetime.month, selected_datetime.day, selected_datetime.hour,
                 topic=selected_topic,
@@ -2425,9 +2425,28 @@ def render_master_unified_qa_box(location_key="main"):
         key=f"qa_domain_partition_{location_key}"
     )
 
+    # ── BỘ CHỌN CHẾ ĐỘ GIEO QUẺ TRỰC QUAN NGAY TRÊN Ô NHẬP CÂU HỎI (V110.0) ──
+    c_cast1, c_cast2 = st.columns([1.2, 1.2])
+    with c_cast1:
+        _rnd_mode = st.toggle(
+            "🎲 Gieo Quẻ Ngẫu Nhiên Mới Mỗi Lần Bấm (100% Đồng Bộ Mai Hoa · Lục Hào · Kỳ Môn)",
+            value=st.session_state.get('random_hexagram_mode', False),
+            key=f"qa_rnd_{location_key}",
+            help="BẬT: Mỗi lần bấm Phân Tích sẽ gieo một quẻ ngẫu nhiên mới hoàn toàn bằng phần cứng OS Entropy (không bao giờ lặp lại quẻ trước) và đồng bộ 100% cả Mai Hoa + Lục Hào + Kỳ Môn. TẮT: Tự khởi quẻ theo Thời Gian + Thanh Âm Câu Hỏi (mỗi câu hỏi khác nhau trong cùng giờ cũng tự động ra quẻ riêng, không bao giờ trùng lặp!)."
+        )
+        st.session_state['random_hexagram_mode'] = _rnd_mode
+    with c_cast2:
+        _use_cloud_llm = st.toggle(
+            "🌐 Chạy AI Online Gemini + 40 Chuyên Gia (Mặc định: BẬT)",
+            value=st.session_state.get('qa_use_cloud_llm', True),
+            key=f"qa_cloud_{location_key}",
+            help="BẬT (Mặc định): Kết hợp đồng thời AI Online Gemini + 10 Hệ Thống Quẻ + 40 Chuyên Gia AI để luận giải sâu và chuẩn xác nhất."
+        )
+        st.session_state['qa_use_cloud_llm'] = _use_cloud_llm
+
     # ── TÙY CHỌN NÂNG CAO (GỌN TRONG 1 EXPANDER ĐỂ CHỈ CÒN 1 Ô HỎI ĐÁP DUY NHẤT) ──
     with st.expander("⚙️ Tùy chọn nâng cao (Không bắt buộc — Mặc định hệ thống tự động nhận diện từ câu hỏi & giờ gieo quẻ)", expanded=False):
-        c_opt1, c_opt2, c_opt3 = st.columns([2, 2, 1.3])
+        c_opt1, c_opt2 = st.columns([1, 1])
         with c_opt1:
             _lt_options = [
                 "👤 Bản thân",
@@ -2464,22 +2483,6 @@ def render_master_unified_qa_box(location_key="main"):
                 _lead_experts,
                 key=f"qa_exp_{location_key}"
             )
-
-        with c_opt3:
-            _rnd_mode = st.toggle(
-                "🎲 Gieo Quẻ Ngẫu Nhiên",
-                value=st.session_state.get('random_hexagram_mode', False),
-                key=f"qa_rnd_{location_key}",
-                help="BẬT = Mỗi lần bấm Phân Tích sẽ gieo lại quẻ Lục Hào & Mai Hoa ngẫu nhiên mới. TẮT = Giữ quẻ theo thời gian."
-            )
-            st.session_state['random_hexagram_mode'] = _rnd_mode
-            _use_cloud_llm = st.toggle(
-                "🌐 Chạy AI Online Gemini + 40 Chuyên Gia (Mặc định: BẬT)",
-                value=st.session_state.get('qa_use_cloud_llm', True),
-                key=f"qa_cloud_{location_key}",
-                help="BẬT (Mặc định): Kết hợp đồng thời AI Online Gemini + 10 Hệ Thống Quẻ + 40 Chuyên Gia AI để luận giải sâu và chuẩn xác nhất."
-            )
-            st.session_state['qa_use_cloud_llm'] = _use_cloud_llm
 
         st.markdown("---")
         c_tv_opt, c_xn_opt = st.columns(2)
@@ -2579,58 +2582,177 @@ def render_master_unified_qa_box(location_key="main"):
                     offline_ai._api_key = _api_key
                 if True:
 
-                    dt_now = selected_datetime
+                    dt_now = dt_module.datetime.now(vn_tz) if use_current_time else selected_datetime
                     _use_rnd = st.session_state.get('random_hexagram_mode', False)
+                    _cast_seq = int(st.session_state.get('_cast_seq_counter', 0)) + 1
+                    st.session_state['_cast_seq_counter'] = _cast_seq
+                    _prev_tuple = st.session_state.get('_last_cast_tuple', None)
+                    _prev_q_text = st.session_state.get('_last_cast_q_text', '')
+                    _q_clean_now = user_question.strip()
+                    _is_repeat_same_q = (_q_clean_now.lower() == str(_prev_q_text).strip().lower())
+                    st.session_state['_last_cast_q_text'] = _q_clean_now
 
-                    # 1. Mai Hoa & Lục Hào
+                    _cans_rq = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
+                    _chis_rq = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                    chart_for_q = dict(st.session_state.get('chart_data') or {})
+
+                    # 1. V110.0: GIEO QUẺ ĐỒNG BỘ 100% MAI HOA + LỤC HÀO + KỲ MÔN (KHÔNG TRÙNG LẶP GIỮA CÁC CÂU HỎI)
                     if _use_rnd:
                         try:
-                            import random as _rnd_q
-                            mai_hoa_for_q = tinh_qua_ngau_nhien()
+                            import secrets as _sec_mod
+                            _sys_rng = _sec_mod.SystemRandom()
+                            mai_hoa_for_q = tinh_qua_ngau_nhien(prev_tuple=_prev_tuple)
                             mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
                             mai_hoa_for_q['_random_cast'] = True
                             st.session_state.mai_hoa_result = mai_hoa_for_q
 
-                            _cans_rq = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý']
-                            _chis_rq = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
+                            _u_rnd = mai_hoa_for_q['upper']
+                            _l_rnd = mai_hoa_for_q['lower']
+                            _d_rnd = mai_hoa_for_q['dong_hao']
+                            st.session_state['_last_cast_tuple'] = (_u_rnd, _l_rnd, _d_rnd)
+
+                            # Tạo cặp Can-Chi hợp lệ trong 60 Hoa Giáp (Can Dương đi với Chi Dương, Can Âm đi với Chi Âm)
+                            def _roll_valid_canchi():
+                                _ci = _sys_rng.randint(0, 9)
+                                _chi_candidates = [idx for idx in range(12) if (idx % 2) == (_ci % 2)]
+                                _chi_i = _sys_rng.choice(_chi_candidates)
+                                return _cans_rq[_ci], _chis_rq[_chi_i]
+
+                            _r_can_ngay, _r_chi_ngay = _roll_valid_canchi()
+                            _r_can_gio, _r_chi_gio = _roll_valid_canchi()
+                            _r_can_thang = chart_for_q.get('can_thang') or _cans_rq[(_u_rnd + _l_rnd) % 10]
+                            _r_chi_thang = chart_for_q.get('chi_thang') or _chis_rq[(dt_now.month + 1) % 12]
+
+                            # Lục Hào dùng ĐÚNG CÙNG (upper, lower, dong_hao) với Mai Hoa -> Đồng bộ 100%!
                             luc_hao_for_q = lap_qua_luc_hao(
-                                dt_now.year, _rnd_q.randint(1, 12), _rnd_q.randint(1, 28), _rnd_q.randint(0, 23),
+                                dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                 topic=selected_topic,
-                                can_ngay=_rnd_q.choice(_cans_rq), chi_ngay=_rnd_q.choice(_chis_rq),
-                                can_thang=_rnd_q.choice(_cans_rq), chi_thang=_rnd_q.choice(_chis_rq)
+                                can_ngay=_r_can_ngay,
+                                chi_ngay=_r_chi_ngay,
+                                can_thang=_r_can_thang,
+                                chi_thang=_r_chi_thang,
+                                upper_override=_u_rnd,
+                                lower_override=_l_rnd,
+                                moving_override=_d_rnd,
                             )
                             luc_hao_for_q['_random_cast'] = True
                             st.session_state.luc_hao_result = luc_hao_for_q
-                            st.toast("🎲 Đã gieo mới quẻ Lục Hào & Mai Hoa ngẫu nhiên!", icon="🎲")
+
+                            # Đồng bộ Bàn Kỳ Môn 9 Cung ngẫu nhiên theo quẻ vừa gieo
+                            try:
+                                from qmdg_data import an_bai_luc_nghi as _ab_rnd, lap_ban_qmdg as _lb_rnd
+                                _r_cuc = ((_u_rnd + _l_rnd + _d_rnd - 1) % 9) + 1
+                                _r_duong = bool((_u_rnd + _d_rnd) % 2 == 1)
+                                _r_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
+                                _r_doors = ["Hưu Môn", "Tử Môn", "Thương Môn", "Đỗ Môn", "Khai Môn", "Kinh Môn", "Sinh Môn", "Cảnh Môn"]
+                                _r_tp = _r_stars[(_u_rnd - 1) % len(_r_stars)]
+                                _r_ts = _r_doors[(_l_rnd - 1) % len(_r_doors)]
+                                _r_dia = _ab_rnd(_r_cuc, _r_duong)
+                                _r_tb, _r_ctb, _r_nb, _r_sb, _ = _lb_rnd(_r_cuc, _r_tp, _r_ts, _r_can_gio, _r_chi_gio, _r_duong)
+                                chart_for_q.update({
+                                    'thien_ban': _r_tb,
+                                    'can_thien_ban': _r_ctb,
+                                    'nhan_ban': _r_nb,
+                                    'than_ban': _r_sb,
+                                    'dia_can': _r_dia,
+                                    'dia_ban': _r_dia,
+                                    'can_ngay': _r_can_ngay,
+                                    'chi_ngay': _r_chi_ngay,
+                                    'can_gio': _r_can_gio,
+                                    'chi_gio': _r_chi_gio,
+                                    'cuc': _r_cuc,
+                                    'is_duong_don': _r_duong,
+                                    'am_duong_don': f"{'Dương' if _r_duong else 'Âm'} Độn {_r_cuc} Cục",
+                                    'truc_phu': _r_tp,
+                                    'truc_su': _r_ts,
+                                    '_random_cast': True,
+                                })
+                                st.session_state.chart_data = chart_for_q
+                            except Exception:
+                                pass
+                            st.toast(
+                                f"🎲 Đã gieo quẻ ngẫu nhiên mới: {mai_hoa_for_q.get('ten')} ➔ {mai_hoa_for_q.get('ten_qua_bien')} (Động hào {_d_rnd})!",
+                                icon="🎲"
+                            )
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')
                             luc_hao_for_q = st.session_state.get('luc_hao_result')
                     else:
-                        mai_hoa_for_q = st.session_state.get('mai_hoa_result')
-                        luc_hao_for_q = st.session_state.get('luc_hao_result')
-
-                    if not mai_hoa_for_q:
+                        # Chế độ Thời Gian + Thanh Âm Câu Hỏi (Đa Vấn Nhất Thời Chiêm Pháp):
+                        # Mỗi câu hỏi khác nhau (hoặc khi bấm hỏi lại) sẽ cộng hưởng chữ & khắc/phút để sinh quẻ riêng,
+                        # tuyệt đối không bị đơ/lặp lại cùng 1 quẻ cho nhiều câu hỏi trong cùng khung giờ!
                         try:
-                            mai_hoa_for_q = tinh_qua_theo_thoi_gian(dt_now.year, dt_now.month, dt_now.day, dt_now.hour)
+                            _q_salt = _cast_seq if _is_repeat_same_q else 0
+                            mai_hoa_for_q = tinh_qua_theo_thoi_gian(
+                                dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
+                                minute=dt_now.minute, second=dt_now.second,
+                                question_text=_q_clean_now, cast_salt=_q_salt
+                            )
+                            # Nếu câu hỏi mới vô tình trùng bộ (upper, lower, dong_hao) với câu vừa hỏi trước đó, tự động nhảy sang biến số kế tiếp
+                            while _prev_tuple and (mai_hoa_for_q['upper'], mai_hoa_for_q['lower'], mai_hoa_for_q['dong_hao']) == tuple(_prev_tuple) and _q_salt < _cast_seq + 8:
+                                _q_salt += 1
+                                mai_hoa_for_q = tinh_qua_theo_thoi_gian(
+                                    dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
+                                    minute=dt_now.minute, second=dt_now.second,
+                                    question_text=_q_clean_now, cast_salt=_q_salt
+                                )
                             mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
                             st.session_state.mai_hoa_result = mai_hoa_for_q
-                        except Exception:
-                            pass
 
-                    if not luc_hao_for_q:
-                        try:
-                            _chart_q = st.session_state.get('chart_data', {})
+                            _u_q = mai_hoa_for_q['upper']
+                            _l_q = mai_hoa_for_q['lower']
+                            _d_q = mai_hoa_for_q['dong_hao']
+                            st.session_state['_last_cast_tuple'] = (_u_q, _l_q, _d_q)
+
                             luc_hao_for_q = lap_qua_luc_hao(
                                 dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                 topic=selected_topic,
-                                can_ngay=_chart_q.get('can_ngay', 'Giáp') if _chart_q else 'Giáp',
-                                chi_ngay=_chart_q.get('chi_ngay', 'Tý') if _chart_q else 'Tý',
-                                can_thang=_chart_q.get('can_thang', 'Giáp') if _chart_q else 'Giáp',
-                                chi_thang=_chart_q.get('chi_thang', 'Tý') if _chart_q else 'Tý'
+                                can_ngay=chart_for_q.get('can_ngay', 'Giáp'),
+                                chi_ngay=chart_for_q.get('chi_ngay', 'Tý'),
+                                can_thang=chart_for_q.get('can_thang', 'Giáp'),
+                                chi_thang=chart_for_q.get('chi_thang', 'Tý'),
+                                upper_override=_u_q,
+                                lower_override=_l_q,
+                                moving_override=_d_q,
+                                question_text=_q_clean_now,
+                                minute=dt_now.minute,
+                                second=dt_now.second,
+                                cast_salt=_q_salt,
                             )
                             st.session_state.luc_hao_result = luc_hao_for_q
+
+                            # Hoạt Lạc Kỳ Môn theo Quái Số câu hỏi khi xem nhiều câu trong cùng 1 giờ (tránh kẹt cứng 1 bàn Phục Ngâm)
+                            try:
+                                from qmdg_data import an_bai_luc_nghi as _ab_q, lap_ban_qmdg as _lb_q
+                                _base_cuc = int(chart_for_q.get('cuc') or 5)
+                                _q_cuc = ((_base_cuc + _u_q + _l_q - 1) % 9) + 1
+                                _q_duong = bool(chart_for_q.get('is_duong_don', True))
+                                _q_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
+                                _q_doors = ["Hưu Môn", "Tử Môn", "Thương Môn", "Đỗ Môn", "Khai Môn", "Kinh Môn", "Sinh Môn", "Cảnh Môn"]
+                                _q_tp = _q_stars[(_u_q + _d_q - 1) % len(_q_stars)]
+                                _q_ts = _q_doors[(_l_q + _d_q - 1) % len(_q_doors)]
+                                _q_can_gio = _cans_rq[(_cans_rq.index(chart_for_q.get('can_gio', 'Giáp')) + _u_q + _l_q) % 10] if chart_for_q.get('can_gio') in _cans_rq else chart_for_q.get('can_gio', 'Bính')
+                                _q_chi_gio = _chis_rq[(_chis_rq.index(chart_for_q.get('chi_gio', 'Tý')) + _d_q) % 12] if chart_for_q.get('chi_gio') in _chis_rq else chart_for_q.get('chi_gio', 'Ngọ')
+                                _q_dia = _ab_q(_q_cuc, _q_duong)
+                                _q_tb, _q_ctb, _q_nb, _q_sb, _ = _lb_q(_q_cuc, _q_tp, _q_ts, _q_can_gio, _q_chi_gio, _q_duong)
+                                chart_for_q.update({
+                                    'thien_ban': _q_tb,
+                                    'can_thien_ban': _q_ctb,
+                                    'nhan_ban': _q_nb,
+                                    'than_ban': _q_sb,
+                                    'dia_can': _q_dia,
+                                    'dia_ban': _q_dia,
+                                    'cuc': _q_cuc,
+                                    'am_duong_don': f"{'Dương' if _q_duong else 'Âm'} Độn {_q_cuc} Cục",
+                                    'truc_phu': _q_tp,
+                                    'truc_su': _q_ts,
+                                })
+                                st.session_state.chart_data = chart_for_q
+                            except Exception:
+                                pass
                         except Exception:
-                            pass
+                            mai_hoa_for_q = st.session_state.get('mai_hoa_result')
+                            luc_hao_for_q = st.session_state.get('luc_hao_result')
 
                     # 2. Chỉ truyền lá số Tử Vi / Xem Ngày tùy chỉnh nếu người dùng chủ động bật;
                     #    còn lại để FreeAIHelper tự động tính theo đúng ngữ cảnh câu hỏi (chữa bệnh, cưới hỏi, năm sinh trong câu hỏi...)
@@ -2653,13 +2775,14 @@ def render_master_unified_qa_box(location_key="main"):
 
                     _cache_store = st.session_state.setdefault('_qa_fast_cache', {})
                     _want_online = st.session_state.get('qa_use_cloud_llm', True)
-                    _cache_key = f"{_CODE_BUILD_VERSION}|{_q_to_send}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
-                    if not _use_rnd and _cache_key in _cache_store:
+                    _hex_sig_q = f"{mai_hoa_for_q.get('ten','')}_{mai_hoa_for_q.get('ten_qua_bien','')}_{mai_hoa_for_q.get('dong_hao','')}_{chart_for_q.get('cuc','')}_{chart_for_q.get('can_ngay','')}_{chart_for_q.get('chi_ngay','')}"
+                    _cache_key = f"{_CODE_BUILD_VERSION}|{_q_to_send}|{_hex_sig_q}|{dt_now.strftime('%Y%m%d%H')}|{st.session_state.get('selected_doi_tuong','')}|{_use_rnd}|{_has_personal_tv}|{_has_custom_xn}|{_want_online}"
+                    if not _use_rnd and not _is_repeat_same_q and _cache_key in _cache_store:
                         combined_answer = _cache_store[_cache_key]
                     else:
                         combined_answer = offline_ai.answer_question(
                             _q_to_send,
-                            chart_data=st.session_state.get('chart_data'),
+                            chart_data=chart_for_q,
                             topic=None,
                             selected_subject=st.session_state.get('selected_doi_tuong', '👤 Bản thân'),
                             mai_hoa_data=mai_hoa_for_q,
@@ -3423,14 +3546,26 @@ elif st.session_state.current_view == "mai_hoa":
     # V42.9.9i: Sử dụng thời gian được chọn từ sidebar
     dt = selected_datetime
     
-    # V42.9.42: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
-    _mh_random_mode = st.session_state.get('random_hexagram_mode', False)
+    # V110.0: Hiển thị quẻ đang hoạt động (Ngẫu nhiên hoặc Động tâm theo câu hỏi) + Nút Gieo Ngẫu Nhiên Mới
     _mh_existing = st.session_state.get('mai_hoa_result')
-    
-    if _mh_random_mode and _mh_existing and _mh_existing.get('_random_cast'):
-        # Hiển thị quẻ ngẫu nhiên đã gieo
+    if st.button("🎲 Gieo Quẻ Ngẫu Nhiên Mới (Đồng bộ Mai Hoa & Lục Hào)", key="btn_mh_tab_rnd"):
+        _prev_t = st.session_state.get('_last_cast_tuple')
+        res = tinh_qua_ngau_nhien(prev_tuple=_prev_t)
+        res['interpretation'] = giai_qua(res, selected_topic)
+        res['_random_cast'] = True
+        st.session_state.mai_hoa_result = res
+        st.session_state['_last_cast_tuple'] = (res['upper'], res['lower'], res['dong_hao'])
+        st.session_state.luc_hao_result = lap_qua_luc_hao(
+            dt.year, dt.month, dt.day, dt.hour,
+            topic=selected_topic,
+            upper_override=res['upper'],
+            lower_override=res['lower'],
+            moving_override=res['dong_hao'],
+        )
+        st.session_state.luc_hao_result['_random_cast'] = True
+    elif _mh_existing and isinstance(_mh_existing, dict) and (_mh_existing.get('_random_cast') or _mh_existing.get('cast_mode') == 'question_time_resonance'):
         res = _mh_existing
-        st.info(f"🎲 Chế độ Ngẫu Nhiên: Đang hiển thị quẻ đã gieo ngẫu nhiên. Tắt toggle để về quẻ theo thời gian.")
+        st.info(f"🎲 Đang hiển thị quẻ vừa gieo: **{res.get('ten')} ➔ {res.get('ten_qua_bien')} (Động hào {res.get('dong_hao')})**.")
     else:
         st.info(f"🕒 Giờ gieo quẻ: {dt.strftime('%H:%M - %d/%m/%Y')}.")
         res = tinh_qua_theo_thoi_gian(dt.year, dt.month, dt.day, dt.hour)
@@ -3553,13 +3688,29 @@ elif st.session_state.current_view == "luc_hao":
     nhat_than = f"{chi_ngay}"
     nguyet_lenh = f"{chi_thang}"
     
-    # V42.9.42: Nếu chế độ ngẫu nhiên BẬT và đã có quẻ ngẫu nhiên → hiển thị quẻ đó
-    _lh_random_mode = st.session_state.get('random_hexagram_mode', False)
+    # V110.0: Hiển thị quẻ Lục Hào đang hoạt động (Ngẫu nhiên hoặc Động tâm theo câu hỏi) + Nút Gieo Ngẫu Nhiên Mới
     _lh_existing = st.session_state.get('luc_hao_result')
-    
-    if _lh_random_mode and _lh_existing and isinstance(_lh_existing, dict) and _lh_existing.get('_random_cast'):
-        # Hiển thị quẻ ngẫu nhiên đã gieo
-        st.info(f"🎲 Chế độ Ngẫu Nhiên: Đang hiển thị quẻ Lục Hào đã gieo ngẫu nhiên. Tắt toggle để về quẻ theo thời gian.")
+    if st.button("🎲 Gieo Quẻ Lục Hào Ngẫu Nhiên Mới (Đồng bộ Mai Hoa & Lục Hào)", key="btn_lh_tab_rnd"):
+        _prev_t = st.session_state.get('_last_cast_tuple')
+        _mh_r = tinh_qua_ngau_nhien(prev_tuple=_prev_t)
+        _mh_r['interpretation'] = giai_qua(_mh_r, selected_topic)
+        _mh_r['_random_cast'] = True
+        st.session_state.mai_hoa_result = _mh_r
+        st.session_state['_last_cast_tuple'] = (_mh_r['upper'], _mh_r['lower'], _mh_r['dong_hao'])
+        st.session_state.luc_hao_result = lap_qua_luc_hao(
+            dt.year, dt.month, dt.day, dt.hour,
+            topic=selected_topic,
+            can_ngay=can_ngay,
+            chi_ngay=chi_ngay,
+            can_thang=can_thang,
+            chi_thang=chi_thang,
+            upper_override=_mh_r['upper'],
+            lower_override=_mh_r['lower'],
+            moving_override=_mh_r['dong_hao'],
+        )
+        st.session_state.luc_hao_result['_random_cast'] = True
+    elif _lh_existing and isinstance(_lh_existing, dict) and (_lh_existing.get('_random_cast') or st.session_state.get('mai_hoa_result', {}).get('cast_mode') == 'question_time_resonance'):
+        st.info("🎲 Đang hiển thị quẻ Lục Hào vừa gieo (đồng bộ 100% với Mai Hoa Dịch Số).")
     else:
         try:
             st.session_state.luc_hao_result = lap_qua_luc_hao(

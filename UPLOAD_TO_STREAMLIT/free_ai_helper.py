@@ -13100,15 +13100,19 @@ class FreeAIHelper:
         _d = int(_cd_init.get('day') or _now324.day)
         _h = int(_cd_init.get('hour') if _cd_init.get('hour') is not None else _now324.hour)
         
-        # 1. Mai Hoa: gieo theo thời gian
+        # 1. Mai Hoa: gieo theo thời gian + cộng hưởng câu hỏi (V110.0)
         if not mai_hoa_data:
             try:
                 from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
-                mai_hoa_data = tinh_qua_theo_thoi_gian(_y, _m, _d, _h)
+                mai_hoa_data = tinh_qua_theo_thoi_gian(
+                    _y, _m, _d, _h,
+                    minute=_now324.minute, second=_now324.second,
+                    question_text=question
+                )
                 mai_hoa_data['interpretation'] = giai_qua(mai_hoa_data, topic or 'Chung')
-                self.log_step("V32.4 AutoCast", "MAI_HOA", f"Quẻ: {mai_hoa_data.get('ten_que', '?')}")
+                self.log_step("V110.0 AutoCast", "MAI_HOA", f"Quẻ: {mai_hoa_data.get('ten_que', '?')}")
             except Exception as e:
-                self.log_step("V32.4 AutoCast", "MH_ERR", str(e)[:60])
+                self.log_step("V110.0 AutoCast", "MH_ERR", str(e)[:60])
         
         # 2. Chart Data (Kỳ Môn ĐẦY ĐỦ 9 CUNG): chạy TRƯỚC Lục Hào để có chuẩn Tứ Trụ (Can/Chi Ngày & Tháng)
         if not chart_data or not isinstance(chart_data, dict) or not chart_data.get('thien_ban'):
@@ -13184,7 +13188,7 @@ class FreeAIHelper:
                     pass
 
         
-        # 3. Lục Hào: gieo theo thời gian (dùng chuẩn Can/Chi Ngày & Tháng từ chart_data)
+        # 3. Lục Hào: gieo theo thời gian + đồng bộ 100% với Mai Hoa (V110.0)
         if not luc_hao_data:
             try:
                 from luc_hao_kinh_dich import lap_qua_luc_hao
@@ -13192,6 +13196,9 @@ class FreeAIHelper:
                 _chi_ngay = chart_data.get('chi_ngay', 'Tý') if isinstance(chart_data, dict) else 'Tý'
                 _can_thang = chart_data.get('can_thang') if isinstance(chart_data, dict) else None
                 _chi_thang = chart_data.get('chi_thang') if isinstance(chart_data, dict) else None
+                _u_sync = mai_hoa_data.get('upper') if isinstance(mai_hoa_data, dict) else None
+                _l_sync = mai_hoa_data.get('lower') if isinstance(mai_hoa_data, dict) else None
+                _d_sync = mai_hoa_data.get('dong_hao') if isinstance(mai_hoa_data, dict) else None
                 luc_hao_data = lap_qua_luc_hao(
                     _y, _m, _d, _h,
                     topic=topic or 'Chung',
@@ -13199,10 +13206,16 @@ class FreeAIHelper:
                     chi_ngay=_chi_ngay,
                     can_thang=_can_thang,
                     chi_thang=_chi_thang,
+                    upper_override=_u_sync,
+                    lower_override=_l_sync,
+                    moving_override=_d_sync,
+                    question_text=question,
+                    minute=_now324.minute,
+                    second=_now324.second,
                 )
-                self.log_step("V99.7 AutoCast", "LUC_HAO", f"Can={_can_ngay} {_chi_ngay}, Thang={_can_thang} {_chi_thang}")
+                self.log_step("V110.0 AutoCast", "LUC_HAO", f"Can={_can_ngay} {_chi_ngay}, Thang={_can_thang} {_chi_thang}")
             except Exception as e:
-                self.log_step("V99.7 AutoCast", "LH_ERR", str(e)[:60])
+                self.log_step("V110.0 AutoCast", "LH_ERR", str(e)[:60])
 
 # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể

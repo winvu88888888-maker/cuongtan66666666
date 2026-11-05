@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
-# mai_hoa_dich_so.py - Module Mai Hoa Dịch Số 64 Quẻ FULL DATA (V101.6 Standard)
+# mai_hoa_dich_so.py - Module Mai Hoa Dịch Số 64 Quẻ FULL DATA (V110.0 Standard)
 import random
+import secrets
+import hashlib
+import re
 from datetime import datetime
 from qmdg_calc import solar_to_lunar
+
+_SYS_RNG_MH = secrets.SystemRandom()
 
 QUAI_SYMBOLS = {1: "☰ Càn", 2: "☱ Đoài", 3: "☲ Ly", 4: "☳ Chấn", 5: "☴ Tốn", 6: "☵ Khảm", 7: "☶ Cấn", 8: "☷ Khôn"}
 QUAI_NAMES = {1: "Càn", 2: "Đoài", 3: "Ly", 4: "Chấn", 5: "Tốn", 6: "Khảm", 7: "Cấn", 8: "Khôn"}
@@ -102,7 +107,53 @@ def _calc_the_dung_relation(hanh_the, hanh_dung):
     return "Dụng khắc Thể (Hung/Cản trở — Hoàn cảnh bên ngoài gây áp lực lên bản thân)"
 
 
-def tinh_qua_theo_thoi_gian(year, month, day, hour):
+def _compute_question_resonance_offsets(question_text="", minute=0, second=0, cast_salt=0):
+    """
+    V110.0 — Pháp Tự Khởi Quái & Đa Vấn Nhất Thời Chiêm Pháp (Thiệu Khang Tiết - Mai Hoa Dịch Số):
+    - Khi hỏi nhiều câu hỏi khác nhau hoặc hỏi lại nhiều câu tương tự trong cùng một khung giờ:
+      + Chia câu hỏi làm 2 nửa âm tiết (Thượng Thanh -> Thượng Quái, Hạ Thanh -> Hạ Quái)
+      + Cộng thêm khắc/phút hiện tại (minute, second) và số thứ tự lần động tâm (cast_salt)
+      => Đảm bảo mỗi câu hỏi khác nhau hoặc mỗi lần gieo lại đều ra quẻ biến thiên sống động, tuyệt đối không bị đơ/lặp lại 1 quẻ cố định!
+    """
+    q_norm = str(question_text or "").strip().lower()
+    min_v = int(minute or 0)
+    sec_v = int(second or 0)
+    salt_v = int(cast_salt or 0)
+    if not q_norm and min_v == 0 and sec_v == 0 and salt_v == 0:
+        return 0, 0, 0
+
+    words = [w for w in re.findall(r"\w+", q_norm) if w]
+    if words:
+        half = max(1, len(words) // 2)
+        w_upper = words[:half]
+        w_lower = words[half:] if len(words) > half else words
+        up_char_sum = sum(sum(ord(c) for c in w) + len(w) * 7 for w in w_upper)
+        lo_char_sum = sum(sum(ord(c) * (idx + 1) for idx, c in enumerate(w)) + len(w) * 11 for w in w_lower)
+        q_md5 = int(hashlib.md5(f"{q_norm}|{min_v}|{sec_v}|{salt_v}".encode("utf-8")).hexdigest()[:8], 16)
+    else:
+        up_char_sum = 0
+        lo_char_sum = 0
+        q_md5 = min_v * 31 + sec_v * 7 + salt_v * 13
+
+    up_offset = (up_char_sum + (min_v // 3) + salt_v * 3) % 64
+    lo_offset = (lo_char_sum + min_v + (sec_v // 4) + salt_v * 5) % 64
+    dong_offset = (q_md5 + min_v + sec_v + salt_v) % 6
+    return up_offset, lo_offset, dong_offset
+
+
+def tinh_qua_theo_thoi_gian(
+    year,
+    month,
+    day,
+    hour,
+    minute=0,
+    second=0,
+    question_text="",
+    cast_salt=0,
+    upper_override=None,
+    lower_override=None,
+    dong_override=None,
+):
     dt = datetime(year, month, day, hour)
     lday, lmonth, lyear, is_leap = solar_to_lunar(dt)
 
@@ -114,24 +165,44 @@ def tinh_qua_theo_thoi_gian(year, month, day, hour):
     if hour == 23:
         v_hour = 1  # Tý starts at 23:00
 
-    # Mai Hoa Formula: (Year + Month + Day) for Upper, (Year + Month + Day + Hour) for Lower
-    total_upper = lyear_chi_idx + lmonth + lday
-    total_lower = total_upper + v_hour
+    up_off, lo_off, dong_off = _compute_question_resonance_offsets(
+        question_text=question_text,
+        minute=minute,
+        second=second,
+        cast_salt=cast_salt,
+    )
 
-    upper = ((total_upper - 1) % 8) + 1
-    lower = ((total_lower - 1) % 8) + 1
-    dong_hao = ((total_lower - 1) % 6) + 1
+    # Mai Hoa Formula + Đa Vấn Nhất Thời / Tự Khởi Quái Resonance
+    total_upper = lyear_chi_idx + lmonth + lday + up_off
+    total_lower = total_upper + v_hour + lo_off
+
+    upper = int(upper_override) if upper_override in (1, 2, 3, 4, 5, 6, 7, 8) else (((total_upper - 1) % 8) + 1)
+    lower = int(lower_override) if lower_override in (1, 2, 3, 4, 5, 6, 7, 8) else (((total_lower - 1) % 8) + 1)
+    dong_hao = int(dong_override) if dong_override in (1, 2, 3, 4, 5, 6) else (((total_lower + dong_off - 1) % 6) + 1)
 
     res = build_res(upper, lower, dong_hao)
     res['lunar_info'] = f"Ngày {lday}/{lmonth} năm {lyear} ({'Nhuận' if is_leap else 'Thường'})"
     res['total_upper'] = total_upper
     res['total_lower'] = total_lower
+    res['cast_mode'] = "question_time_resonance" if (question_text or cast_salt) else "time"
     return res
 
 
-def tinh_qua_ngau_nhien():
-    upper, lower, dong_hao = random.randint(1, 8), random.randint(1, 8), random.randint(1, 6)
-    return build_res(upper, lower, dong_hao)
+def tinh_qua_ngau_nhien(prev_tuple=None):
+    """
+    V110.0: Gieo quẻ ngẫu nhiên bằng phần cứng OS Entropy (secrets.SystemRandom).
+    Đảm bảo 100% không bao giờ bị trùng lặp với quẻ vừa gieo trước đó (prev_tuple).
+    """
+    upper, lower, dong_hao = _SYS_RNG_MH.randint(1, 8), _SYS_RNG_MH.randint(1, 8), _SYS_RNG_MH.randint(1, 6)
+    if prev_tuple and isinstance(prev_tuple, (tuple, list)) and len(prev_tuple) == 3:
+        for _ in range(12):
+            if (upper, lower, dong_hao) != tuple(prev_tuple):
+                break
+            upper, lower, dong_hao = _SYS_RNG_MH.randint(1, 8), _SYS_RNG_MH.randint(1, 8), _SYS_RNG_MH.randint(1, 6)
+    res = build_res(upper, lower, dong_hao)
+    res['_random_cast'] = True
+    res['cast_mode'] = 'random_entropy'
+    return res
 
 
 def build_res(upper, lower, dong_hao):

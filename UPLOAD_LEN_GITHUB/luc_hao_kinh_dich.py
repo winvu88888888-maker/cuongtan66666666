@@ -244,12 +244,30 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
     if hour == 23: v_hour = 1 # Tý starts at 23:00
     
     # Standard time-based calculation using Lunar numbers
-    total_upper = lyear_chi_idx + lmonth + lday
-    total_lower = total_upper + v_hour
+    _q_txt_lh = kwargs.get("question_text", "")
+    _min_lh = kwargs.get("minute", 0)
+    _sec_lh = kwargs.get("second", 0)
+    _salt_lh = kwargs.get("cast_salt", 0)
+    _up_ov_lh = kwargs.get("upper_override", None)
+    _lo_ov_lh = kwargs.get("lower_override", None)
+    _mv_ov_lh = kwargs.get("moving_override", None)
+    _up_off_lh, _lo_off_lh, _dong_off_lh = 0, 0, 0
+    if _q_txt_lh or _min_lh or _sec_lh or _salt_lh:
+        try:
+            from mai_hoa_dich_so import _compute_question_resonance_offsets
+            _up_off_lh, _lo_off_lh, _dong_off_lh = _compute_question_resonance_offsets(
+                question_text=_q_txt_lh, minute=_min_lh, second=_sec_lh, cast_salt=_salt_lh
+            )
+        except Exception:
+            _up_off_lh = int(_min_lh or 0) + int(_salt_lh or 0) * 3
+            _lo_off_lh = int(_min_lh or 0) + int(_sec_lh or 0) + int(_salt_lh or 0) * 5
+            _dong_off_lh = int(_salt_lh or 0)
+    total_upper = lyear_chi_idx + lmonth + lday + _up_off_lh
+    total_lower = total_upper + v_hour + _lo_off_lh
     
-    upper_idx = ((total_upper - 1) % 8) + 1
-    lower_idx = ((total_lower - 1) % 8) + 1
-    moving_idx = ((total_lower - 1) % 6) + 1 # 1-indexed
+    upper_idx = int(_up_ov_lh) if _up_ov_lh in (1, 2, 3, 4, 5, 6, 7, 8) else (((total_upper - 1) % 8) + 1)
+    lower_idx = int(_lo_ov_lh) if _lo_ov_lh in (1, 2, 3, 4, 5, 6, 7, 8) else (((total_lower - 1) % 8) + 1)
+    moving_idx = int(_mv_ov_lh) if _mv_ov_lh in (1, 2, 3, 4, 5, 6) else (((total_lower + _dong_off_lh - 1) % 6) + 1) # 1-indexed
 
     # Convert trigram index to lines
     trigrams = {
