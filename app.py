@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V121.0"
+APP_VERSION = "V122.0"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Antigravity Brain Mode 🧠 + Gemini Pro Deep-Reasoning 🤖 + Giải Mã Tâm Linh & Phúc Khí ☯️ + Bố Cục Tinh Gọn 4 Trụ Cột 2×2 ✨)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V121.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V121.0"
+# V122.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V122.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
