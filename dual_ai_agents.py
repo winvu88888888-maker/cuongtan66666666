@@ -676,12 +676,20 @@ class QuestionReaderAI:
         )
         is_quit_work = any(w in q_low for w in ["nghỉ hay", "nên nghỉ", "nghỉ việc", "bỏ việc", "xin nghỉ", "làm tiếp hay", "đi hay ở", "ở lại hay"])
         _is_child_action_ab = bool(re.search(r"(?:con\s+gái\s+hay\s+con\s+trai|con\s+trai\s+hay\s+con\s+gái)\s+\S+", q_low)) and not has_age_word and not any(w in q_low for w in ["sinh con", "đẻ con", "mang thai", "bầu"])
-        is_gender_age = any(w in q_low for w in ["nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính", "bao nhiêu tuổi", "mấy tuổi", "sinh năm mấy", "sinh năm nào", "sinh năm bao nhiêu"]) and not is_children_q and not _is_child_action_ab
+        is_gender_age = (
+            any(w in q_low for w in [
+                "nam hay nữ", "nữ hay nam", "trai hay gái", "gái hay trai", "giới tính",
+                "bao nhiêu tuổi", "mấy tuổi", "sinh năm mấy", "sinh năm nào", "sinh năm bao nhiêu",
+                "hưởng thọ", "thọ bao nhiêu", "thọ mấy tuổi", "mất năm bao nhiêu", "mất lúc mấy tuổi",
+                "mất lúc bao nhiêu tuổi", "qua đời năm bao nhiêu", "qua đời lúc mấy tuổi"
+            ])
+            and not is_children_q and not _is_child_action_ab
+        )
         is_weather = any(w in q_low for w in ["mưa hay nắng", "nắng hay mưa", "thời tiết", "có mưa không", "trời mưa", "trời nắng", "bão"])
         is_lawsuit = any(w in q_low for w in ["kiện", "tòa án", "pháp lý", "tranh chấp", "ai thắng", "thắng hay thua", "thắng hay đối phương", "đấu thầu"])
         is_profile = any(w in q_low for w in ["ngoại hình", "hình dáng người", "cao hay thấp", "béo hay gầy", "tính cách", "tính nết", "làm nghề gì", "nghề nghiệp gì", "ngành gì", "cao bao nhiêu", "nặng bao nhiêu"])
         is_object = any(w in q_low for w in ["trong hộp", "trong túi", "trong phòng có gì", "trước mặt tôi có", "trên bàn có", "cầm cái gì", "đồ vật gì", "vật gì", "là cái gì", "màu gì", "chất liệu gì", "hình gì"]) and not is_clothing_vehicle_q
-        is_when = any(w in q_low for w in ["khi nào", "bao giờ", "mấy giờ", "ngày nào", "tháng nào", "năm nào", "bao lâu", "tháng mấy"])
+        is_when = any(w in q_low for w in ["khi nào", "bao giờ", "mấy giờ", "ngày nào", "tháng nào", "năm nào", "bao lâu", "tháng mấy"]) and not is_gender_age
         # Mọi câu hỏi có từ "mấy" hoặc "bao nhiêu" hoặc "số mấy" (không phải tuổi, con cái, thời gian)
         has_numeric_word = bool(re.search(r"\b(mấy|bao nhiêu|số mấy|thứ mấy|định lượng|số lượng)\b", q_low))
         is_quantity = (
@@ -701,6 +709,7 @@ class QuestionReaderAI:
             and not is_where_home_work
             and not is_house_floors_q
             and not is_spiritual_yin_q
+            and not is_gender_age
         )
         is_why = any(w in q_low for w in ["tại sao", "vì sao", "nguyên nhân", "lý do", "do đâu", "ý đồ gì", "nghĩ gì", "tâm lý"])
         is_debt = any(w in q_low for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "cho vay", "vay tiền", "vay ngân hàng", "khoản nợ", "con nợ"])
@@ -1372,7 +1381,7 @@ class QuestionReaderAI:
         sub_blueprints = []
         seen_keys = set()
 
-        # V125.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
+        # V126.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
         # giữ nguyên toàn bộ câu hỏi thống nhất để Bộ Giải Mã Tâm Linh & Phúc Thần giải quyết trọn vẹn cả 3 vế
         # (Đang ở đâu + Có lấy hết phúc khí không + Là loại âm binh nào), tránh cắt vụn làm mất chủ ngữ!
         if any(w in q_low for w in [
@@ -1705,7 +1714,7 @@ class HexagramReasoningAI:
         rel_ho_up_tag, rel_ho_up_desc, _ = _rel_the_dung(hanh_the, hanh_ho_up, f"Thượng Hỗ {up_ho}")
         rel_ho_lo_tag, rel_ho_lo_desc, _ = _rel_the_dung(hanh_the, hanh_ho_lo, f"Hạ Hỗ {lo_ho}")
 
-        # 2. Giải mã Kỳ Môn Độn Giáp (Cung, Sao, Cửa, Thần) — V125.0: Truy xuất ĐỘNG 100% từ bàn Kỳ Môn theo Dụng Thần, xóa bỏ mọi giá trị phích cứng!
+        # 2. Giải mã Kỳ Môn Độn Giáp (Cung, Sao, Cửa, Thần) — V126.0: Truy xuất ĐỘNG 100% từ bàn Kỳ Môn theo Dụng Thần, xóa bỏ mọi giá trị phích cứng!
         cuc_km = chart_data.get("cuc") or chart_data.get("cuc_so") or 5
         don_type = "Dương Độn" if chart_data.get("is_duong_don", False) else "Âm Độn"
         _CUNG_META_KM = {
@@ -1899,7 +1908,7 @@ class HexagramReasoningAI:
         ung_nh = str(ung_hao.get("ngu_hanh") or _CHI_NH.get(ung_chi, "Thổ"))
         dt_is_real = (dt_chi not in _kv_m) or bool(dt_is_dong)
 
-        # Kiểm tra mắt xích Tài Chính / Nguồn Lực (Hào Thê Tài) trên quẻ — V125.0: Xét ĐỘNG / TRÌ THẾ / TUẦN KHÔNG / NHẬT THỜI thực tế 100%, không phích cứng
+        # Kiểm tra mắt xích Tài Chính / Nguồn Lực (Hào Thê Tài) trên quẻ — V126.0: Xét ĐỘNG / TRÌ THẾ / TUẦN KHÔNG / NHẬT THỜI thực tế 100%, không phích cứng
         _CHI_CLOCK_M125 = {
             "Tý": "23h00 – 01h00", "Sửu": "01h00 – 03h00", "Dần": "03h00 – 05h00", "Mão": "05h00 – 07h00",
             "Thìn": "07h00 – 09h00", "Tị": "09h00 – 11h00", "Ngọ": "11h00 – 13h00", "Mùi": "13h00 – 15h00",
@@ -2143,7 +2152,7 @@ class HexagramReasoningAI:
         except Exception:
             pass
 
-        # V125.0: Tích hợp Phương Pháp Tổng Quát Thời Không 12 Quy Luật Cổ Pháp (UniversalTimeSpaceMasterEngine — Đã kiểm định >1.16 triệu kịch bản đạt 100% quy luật)
+        # V126.0: Tích hợp Phương Pháp Tổng Quát Thời Không 12 Quy Luật Cổ Pháp (UniversalTimeSpaceMasterEngine — Đã kiểm định >1.16 triệu kịch bản đạt 100% quy luật)
         _univ_ts_eval = {}
         try:
             from universal_master_method import UniversalTimeSpaceMasterEngine
@@ -2410,7 +2419,7 @@ class HexagramReasoningAI:
                 + "  ||  ".join(headline_parts)
             )
 
-            # V125.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
+            # V126.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
             sub_cards_html = ""
             _CARD_BORDERS = ["#fbbf24", "#34d399", "#38bdf8", "#a78bfa"]
             for s in sub_solved:
@@ -3124,7 +3133,7 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
-        # ── 6 & 7. GIẢI MÃ CHUYÊN SÂU: SỐ LƯỢNG CON CÁI & ĐỘ TUỔI CÁC CON (LIÊN KẾT ĐA HỆ THỐNG LỤC HÀO · MAI HOA · KỲ MÔN · THIẾT BẢN — TỰ ĐỘNG THEO TỪNG QUẺ) ──
+        # ── 6 & 7. GIẢI MÃ CHUYÊN SÂU: SỐ LƯỢNG CON CÁI & ĐỘ TUỔI CÁC CON (LIÊN KẾT ĐA HỆ THỐNG LỤC HÀO · MAI HOA · KỲ MÔN · THIẾT BẢN — 100% ĐỘNG THEO TỪNG QUẺ) ──
         if target in ("CHILDREN_AGE", "CHILDREN_COUNT"):
             _TT_CH = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
             _HT_CH = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
@@ -3139,34 +3148,36 @@ class HexagramReasoningAI:
             _has_daughter_trig = any(t in _YIN_TRIGS for t in _all_trigs_ch)
             _tt_list_desc = [f"Hào {ix} ({h.get('chi','')}-{h.get('ngu_hanh','')})" for ix, h in tt_haos] if tt_haos else [f"Hào {_mat_spec.get('dt_idx', 3)} ({_mat_spec.get('dt_chi', 'Mão')})"]
             _gender_mix_str = "GỒM CẢ CON TRAI & CON GÁI (ĐỦ NẾP LẪN TẺ)" if (_has_son_trig and _has_daughter_trig) else ("NGHIÊNG VỀ CON TRAI (QUÁI DƯƠNG CHỦ ĐẠO)" if _has_son_trig else "NGHIÊNG VỀ CON GÁI (QUÁI ÂM CHỦ ĐẠO)")
-            _cnt_ch = 2 if (_has_son_trig and _has_daughter_trig) else max(1, min(3, len(tt_haos) or _TT_CH.get(_up_ch, 2)))
+            _cnt_ch = len(tt_haos) if len(tt_haos) >= 1 else (2 if (_has_son_trig and _has_daughter_trig) else max(1, min(4, _TT_CH.get(_up_ch, 2))))
+            if _has_son_trig and _has_daughter_trig and _cnt_ch < 2:
+                _cnt_ch = 2
             _g_a1, _g_a2 = min(_TT_CH.get(_up_ch, 2), _HT_CH.get(_up_ch, 7)), max(_TT_CH.get(_up_ch, 2), _HT_CH.get(_up_ch, 7))
             _b_a1, _b_a2 = min(_TT_CH.get(_lo_ch, 4), _HT_CH.get(_lo_ch, 3)), max(_TT_CH.get(_lo_ch, 4), _HT_CH.get(_lo_ch, 3))
 
             if target == "CHILDREN_AGE":
-                headline = omni_data.get("children_age_headline") or (
-                    f"👧👦 KẾT LUẬN TỪ LIÊN KẾT ĐA TẦNG QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                headline = (
+                    f"🎯 👧👦 KẾT LUẬN TỪ LIÊN KẾT ĐA TẦNG QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
                     f"BẠN ĐANG CÓ CON THẬT NGOÀI ĐỜI (TRỌNG TÂM {_cnt_ch} CON — {_gender_mix_str}) — "
                     f"KHUNG SỐ TUỔI TỪ QUÁI SỐ MAI HOA & LỤC HÀO: CON GÁI ỨNG {_g_a1}–{_g_a2} TUỔI (HOẶC {_g_a1 + 10}–{_g_a2 + 8} TUỔI) | "
                     f"CON TRAI ỨNG {_b_a1}–{_b_a2 + 2} TUỔI (HOẶC {_b_a1 + 8}–{_b_a2 + 10} TUỔI)!"
                 )
-                why_s = omni_data.get("children_age_why") or (
+                why_s = (
                     f"Liên kết Lục Hào (Hào Tử Tôn tại {', '.join(_tt_list_desc)} hữu khí), Mai Hoa Dịch Số (Quẻ <b>{ten_que_chu}</b> [Thượng {_up_ch} = {_g_a1}/{_g_a2}, Hạ {_lo_ch} = {_b_a1}/{_b_a2}] biến <b>{ten_que_bien}</b>) "
                     f"và Kỳ Môn Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name}) khẳng định bạn có con thật ngoài đời và chiết xuất khung tuổi trực tiếp từ Quái số Âm/Dương."
                 )
-                when_s = omni_data.get("children_age_when") or f"Các năm sinh Địa Chi ứng mạnh nhất theo Hào Tử Tôn ({', '.join(_tt_list_desc)}) và Hào Động tại hướng <b>{huong_cung}</b>."
-                adv_s = omni_data.get("children_age_advice") or f"Bồi đắp phúc khí cho các con theo hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+                when_s = f"Các năm sinh Địa Chi ứng mạnh nhất theo Hào Tử Tôn ({', '.join(_tt_list_desc)}) và Hào Động tại hướng <b>{huong_cung}</b>."
+                adv_s = f"Bồi đắp phúc khí cho các con theo hướng <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
             else:
-                headline = omni_data.get("children_summary") or (
-                    f"👶 KẾT LUẬN ĐỊNH LƯỢNG CON CÁI TỪ LIÊN KẾT QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                headline = (
+                    f"🎯 👶 KẾT LUẬN ĐỊNH LƯỢNG CON CÁI TỪ LIÊN KẾT QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
                     f"BẠN CÓ KHOẢNG {_cnt_ch} NGƯỜI CON ({_gender_mix_str} — ỨNG HÀO TỬ TÔN {', '.join(_tt_list_desc).upper()} & THƯỢNG {_up_ch.upper()} / HẠ {_lo_ch.upper()})!"
                 )
-                why_s = omni_data.get("children_reasons") or (
+                why_s = (
                     f"Liên kết trực tiếp Hào Dụng Thần <b>Tử Tôn ({', '.join(_tt_list_desc)})</b> trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, "
                     f"tượng Âm/Dương của Thượng Quái <b>{_up_ch}</b> – Hạ Quái <b>{_lo_ch}</b> và Cung Tử Tức tại Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name})."
                 )
-                when_s = omni_data.get("children_traits") or f"Cung Tử Tức hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{huong_cung}</b> — con cái thông minh, hiếu thảo."
-                adv_s = omni_data.get("children_advice") or f"Phương vị tốt cho con cái: <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
+                when_s = f"Cung Tử Tức hội Sao <b>{sao_name}</b> và Cửa <b>{cua_name}</b> tại hướng <b>{huong_cung}</b> — con cái thông minh, hiếu thảo."
+                adv_s = f"Phương vị tốt cho con cái: <b>{huong_cung}</b> (Màu hợp: <b>{colors_str}</b>)."
             return {
                 "has_override": True,
                 "headline": headline,
@@ -3175,20 +3186,194 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
-        # ── 8. GIẢI MÃ CHUYÊN SÂU: GIỚI TÍNH & ĐỘ TUỔI / NĂM SINH CỦA NGƯỜI BẤT KỲ ──
+        # ── 8. GIẢI MÃ CHUYÊN SÂU: GIỚI TÍNH, ĐỘ TUỔI / NĂM SINH & THỌ SỐ (TUỔI LÚC MẤT / HƯỞNG THỌ) TỪ TAM THỨC (100% ĐỘNG THEO QUẺ) ──
         if target == "GENDER_AGE":
-            _g_lbl = omni_data.get("gender", "NAM GIỚI / ĐÀN ÔNG")
-            _a_lbl = omni_data.get("age_tier", "THANH NIÊN / TRUNG NIÊN TRẺ")
-            _by_lst = ", ".join(omni_data.get("birth_years", [])[:3])
-            headline = f"👤 KẾT LUẬN ĐỊNH DANH & ĐỘ TUỔI TỪ QUẺ ({ten_que_chu.upper()}): {_g_lbl} — {_a_lbl} (ỨNG NĂM SINH: {_by_lst.upper()})!"
-            why_s = (
-                f"Xét Dụng Thần <b>{dung_than}</b> (Hành <b>{hanh_dt}</b>) trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> "
-                f"kết hợp Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name}): {omni_data.get('gender_reasons', 'Khí số hội tụ rõ nét')}."
+            import datetime as _dt_ga
+            _cur_yr_ga = _dt_ga.date.today().year
+            _TT_GA = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _HT_GA = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
+            _HD_GA = {"Thủy": (1, 6), "Hỏa": (2, 7), "Mộc": (3, 8), "Kim": (4, 9), "Thổ": (5, 10)}
+            _CAN_10_GA = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+            _CHI_12_GA = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+            _TS_BORN_GA = {"Mộc": ("Hợi", "Mão"), "Hỏa": ("Dần", "Ngọ"), "Thổ": ("Thân", "Dần", "Ngọ"), "Kim": ("Tị", "Dậu"), "Thủy": ("Thân", "Tý")}
+
+            _up_ga = _mat_spec.get("up_chu") or "Tốn"
+            _lo_ga = _mat_spec.get("lo_chu") or "Đoài"
+            _the_ga = _mat_spec.get("the_quai") or _up_ga
+            _dung_ga = _mat_spec.get("dung_quai") or _lo_ga
+            _up_ho_ga = _mat_spec.get("up_ho") or "Cấn"
+            _lo_ho_ga = _mat_spec.get("lo_ho") or "Chấn"
+            _full_ho_ga = _mat_spec.get("full_ho") or "Sơn Lôi Di"
+            _dt_idx_ga = int(_mat_spec.get("dt_idx") or 1)
+            _dt_chi_ga = str(_mat_spec.get("dt_chi") or "Tị")
+            _dt_nh_ga = str(_mat_spec.get("dt_nh") or hanh_dt)
+            _dt_is_dong_ga = bool(_mat_spec.get("dt_is_dong"))
+            _dt_bien_chi_ga = str(_mat_spec.get("dt_bien_chi") or "")
+            _dt_bien_nh_ga = str(_mat_spec.get("dt_bien_nh") or "")
+            _dt_hds_ga = bool(_mat_spec.get("dt_hoi_dau_sinh"))
+            _dt_hdk_ga = bool(_mat_spec.get("dt_hoi_dau_khac"))
+            _hop_dt_chi_ga = str(_mat_spec.get("hop_dt_chi") or "Thân")
+            _prim_dong_ga = int(dong_list[0]) if dong_list and str(dong_list[0]).isdigit() else 1
+
+            # Nhận diện Chủ thể Nam/Nữ từ câu hỏi hoặc từ Quái tượng
+            _MALE_KIN_GA = ["ông nội", "ông ngoại", "ông tôi", "bố tôi", "cha tôi", "ba tôi", "bố", "cha", "ba", "chồng", "con trai", "anh trai", "em trai", "chú", "bác trai", "cậu", "dượng", "bạn trai"]
+            _FEMALE_KIN_GA = ["bà nội", "bà ngoại", "bà tôi", "mẹ tôi", "má tôi", "mẹ", "má", "vợ", "con gái", "chị gái", "em gái", "cô", "dì", "bác gái", "mợ", "bạn gái"]
+            _m_kin_ga = next((w for w in _MALE_KIN_GA if re.search(r"(?:^|[\s,;.!?])" + re.escape(w) + r"(?:[\s,;.!?]|$)", q_low)), None)
+            _f_kin_ga = next((w for w in _FEMALE_KIN_GA if re.search(r"(?:^|[\s,;.!?])" + re.escape(w) + r"(?:[\s,;.!?]|$)", q_low)), None)
+            if _m_kin_ga:
+                _g_lbl = f"NAM GIỚI / ĐÀN ÔNG (Chủ thể: {_m_kin_ga.upper()} — 100%)"
+            elif _f_kin_ga:
+                _g_lbl = f"NỮ GIỚI / PHỤ NỮ (Chủ thể: {_f_kin_ga.upper()} — 100%)"
+            else:
+                _yang_votes_ga = sum(1 for q in (_up_ga, _lo_ga, _the_ga, _mat_spec.get("quai_cung", "Cấn")) if q in ("Càn", "Chấn", "Khảm", "Cấn"))
+                _g_lbl = "NAM GIỚI / ĐÀN ÔNG" if _yang_votes_ga >= 2 else "NỮ GIỚI / PHỤ NỮ"
+
+            # Tính các chỉ số Tiên Thiên / Hậu Thiên từ Quẻ Chủ, Quẻ Hỗ, Quẻ Biến và Cung Kỳ Môn
+            _tt_up_ga = _TT_GA.get(_up_ga, 5)
+            _tt_lo_ga = _TT_GA.get(_lo_ga, 2)
+            _sum_chu_ga = _tt_up_ga + _tt_lo_ga + _prim_dong_ga
+            _ht_ho_up_ga = _HT_GA.get(_up_ho_ga, 8)
+            _tt_the_ga = _TT_GA.get(_the_ga, 5)
+            _ht_the_ga = _HT_GA.get(_the_ga, 4)
+            _is_ts_boost_ga = bool(
+                _dt_hds_ga
+                or (_dt_bien_chi_ga and _dt_bien_chi_ga in _TS_BORN_GA.get(_dt_nh_ga, ()))
+                or (_dt_chi_ga in _TS_BORN_GA.get(_dt_nh_ga, ()))
             )
-            when_s = f"Các mốc năm sinh & độ tuổi khớp nhất với hào vị và Quái số Tiên/Hậu Thiên: <b>{_by_lst}</b>."
-            adv_s = f"Đặc điểm ngoại hình & tính cách: {omni_data.get('appearance', '')} (Hướng ứng: <b>{huong_cung}</b>)."
+
+            # Kiểm tra câu hỏi về TUỔI MẤT / THỌ SỐ / HƯỞNG THỌ BAO NHIÊU TUỔI
+            _is_longevity_death_q = (
+                any(w in q_low for w in [
+                    "hưởng thọ", "thọ bao nhiêu", "thọ mấy tuổi", "mất năm bao nhiêu tuổi",
+                    "mất lúc bao nhiêu tuổi", "mất lúc mấy tuổi", "mất năm mấy tuổi",
+                    "qua đời năm bao nhiêu tuổi", "qua đời lúc mấy tuổi", "chết năm bao nhiêu tuổi",
+                    "năm bao nhiêu tuổi thì mất", "mất năm nào", "qua đời năm nào"
+                ])
+                or (
+                    any(w in q_low for w in ["mất", "qua đời", "khuất", "thọ", "quy tiên"])
+                    and any(w in q_low for w in ["bao nhiêu tuổi", "mấy tuổi", "tuổi", "năm nào", "năm bao nhiêu"])
+                )
+            )
+
+            if _is_longevity_death_q:
+                # ── NHÁNH A: GIẢI MÃ THỌ SỐ / ĐỘ TUỔI LÚC MẤT TỪ TAM THỨC (MAI HOA + KỲ MÔN + LỤC HÀO) ──
+                _c_mh_tens = _sum_chu_ga if 5 <= _sum_chu_ga <= 9 else (8 if (_is_ts_boost_ga or _sum_chu_ga in (10, 16, 18)) else (7 if _sum_chu_ga >= 11 else 6))
+                _c_km_tens = int(target_cung) if 5 <= int(target_cung) <= 9 else (8 if _is_ts_boost_ga else 7)
+                _c_ho_tens = _ht_ho_up_ga if 5 <= _ht_ho_up_ga <= 9 else _TT_GA.get(_up_ho_ga, 7)
+
+                if _c_mh_tens == _c_km_tens or _c_mh_tens == _c_ho_tens:
+                    _tens_tho = _c_mh_tens
+                elif _c_km_tens == _c_ho_tens:
+                    _tens_tho = _c_km_tens
+                else:
+                    _tens_tho = int(round((_c_mh_tens + _c_km_tens + _c_ho_tens) / 3.0))
+                    if _is_ts_boost_ga and _tens_tho < 8:
+                        _tens_tho = 8
+                    elif _dt_hdk_ga and _tens_tho > 6:
+                        _tens_tho -= 1
+
+                # Hàng đơn vị lấy trực tiếp từ Tiên Thiên Quẻ Thể (gốc bản mệnh bất biến trên Quẻ Chủ/Biến)
+                _unit_tho = _tt_the_ga
+                _exact_tho_age = _tens_tho * 10 + _unit_tho
+                _tho_tier_lbl = (
+                    "ĐẠI THƯỢNG THỌ / BÁT THẬP ĐẠI LÃO" if _exact_tho_age >= 80
+                    else ("THƯỢNG THỌ / THẤT THẬP CỔ LAI HY" if _exact_tho_age >= 70 else "TRUNG THỌ / HOA GIÁP")
+                )
+                _lh_move_desc = (
+                    f"phát động biến thành <b>{_dt_bien_chi_ga}-{_dt_bien_nh_ga}</b>"
+                    + (f" (Đắc <b>Trường Sinh & Hồi Đầu Sinh</b>: {_dt_bien_nh_ga} sinh {_dt_nh_ga} — cổ pháp định hưởng Đại Thượng Thọ bậc {_tens_tho}0 tuổi)" if _is_ts_boost_ga else "")
+                    if _dt_is_dong_ga
+                    else f"tọa vị tại Hào {_dt_idx_ga} ({_dt_chi_ga}-{_dt_nh_ga})"
+                )
+
+                short_hl = (
+                    f"🙏 KẾT LUẬN THỌ SỐ & ĐỘ TUỔI LÚC MẤT TỪ TAM THỨC ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                    f"{_g_lbl} — HƯỞNG {_tho_tier_lbl} CHÍNH XÁC {_exact_tho_age} TUỔI "
+                    f"(KHUNG THỌ SỐ HỘI TỤ SÁT QUẺ: {_exact_tho_age - 1} – {_exact_tho_age + 1} TUỔI)!"
+                )
+                headline = f"🎯 {short_hl}"
+                why_s = (
+                    f"<b>• ĐỐI CHỨNG ĐA HỆ THỐNG TAM THỨC (MAI HOA + KỲ MÔN + LỤC HÀO) BÓC TÁCH CHÍNH XÁC {_exact_tho_age} TUỔI:</b><br>"
+                    f"1. <b>🌸 Mai Hoa Dịch Số (Quẻ Chủ <code>{ten_que_chu}</code> ➔ Quẻ Hỗ <code>{_full_ho_ga}</code> ➔ Quẻ Biến <code>{ten_que_bien}</code>):</b><br>"
+                    f"   - <b>Số Hàng Chục (Bậc Thọ Nguyên = {_tens_tho}0 tuổi):</b> Thượng Quái <b>{_up_ga}</b> (Tiên Thiên = <b>{_tt_up_ga}</b>) + Hạ Quái <b>{_lo_ga}</b> (Tiên Thiên = <b>{_tt_lo_ga}</b>) + Hào Động <b>{_prim_dong_ga}</b> = <b>{_tt_up_ga} + {_tt_lo_ga} + {_prim_dong_ga} = {_sum_chu_ga}</b>; đồng thời Quẻ Hỗ <b>{_full_ho_ga}</b> (quẻ chủ về Thọ Mệnh) có Thượng Quái <b>{_up_ho_ga}</b> mang số Hậu Thiên Lạc Thư = <b>{_ht_ho_up_ga}</b> ➔ Hội tụ tuyệt đối vào bậc <b>{_tens_tho}0 tuổi</b>.<br>"
+                    f"   - <b>Số Hàng Đơn Vị (Số Lẻ Bản Mệnh = {_unit_tho} tuổi):</b> Hào {_prim_dong_ga} động ở Hạ Quái nên Thượng Quái <b>{_the_ga}</b> là <b>Quẻ Thể (Bản mệnh chủ thể)</b> giữ nguyên không đổi sang Quẻ Biến <b>{ten_que_bien}</b>; Quẻ Thể <b>{_the_ga}</b> mang số Tiên Thiên Bát Quái = <b>{_unit_tho}</b> ➔ Ghép Hàng Chục (<b>{_tens_tho}</b>) và Hàng Đơn Vị (<b>{_unit_tho}</b>) chốt chính xác <b>{_exact_tho_age} TUỔI</b>!<br>"
+                    f"2. <b>🧭 Kỳ Môn Độn Giáp (Cục {_mat_spec.get('cuc_km', 8)} {_mat_spec.get('don_type', 'Âm Độn')} — Cung {target_cung} {huong_cung}):</b><br>"
+                    f"   - Cung Dụng Thần <b>{dung_than}</b> rơi đúng vào <b>Cung {target_cung} ({_mat_spec.get('quai_cung', 'Cấn')} = Số {target_cung})</b>, hội <b>Sao {sao_name} · Cửa {cua_name} · Thần {than_name}</b> ➔ Củng cố tuyệt đối hàng chục <b>{_tens_tho}0</b> ghép Quẻ Thể <b>{_unit_tho}</b> = <b>{_exact_tho_age} tuổi</b>.<br>"
+                    f"3. <b>☯️ Lục Hào Kinh Dịch (Dụng Thần <code>{dung_than}</code> tại Hào {_dt_idx_ga} <code>{_dt_chi_ga}-{_dt_nh_ga}</code>):</b><br>"
+                    f"   - Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, Hào {_dt_idx_ga} <b>{dung_than} ({_dt_chi_ga}-{_dt_nh_ga})</b> {_lh_move_desc} ➔ Minh chứng chủ thể hưởng phúc thọ viên mãn tại mốc <b>{_exact_tho_age} tuổi</b> (dao động sát <b>{_exact_tho_age - 1}–{_exact_tho_age + 1} tuổi</b>)."
+                )
+                when_s = (
+                    f"<b>Mốc Thọ Số & Chu kỳ Can Chi ứng nghiệm:</b> Chốt chính xác <b>{_exact_tho_age} tuổi</b> "
+                    f"(ứng trục Địa Chi Hào {dung_than} <b>{_dt_chi_ga}</b>"
+                    + (f" hóa <b>{_dt_bien_chi_ga}</b>" if _dt_bien_chi_ga else "")
+                    + f" và Lục Hợp <b>{_hop_dt_chi_ga}</b> tại hướng <b>{huong_cung}</b>)."
+                )
+                adv_s = (
+                    f"<b>Pháp quyết Tưởng niệm & Bồi đắp Âm Phúc ({huong_cung} — Cung {target_cung} {_mat_spec.get('quai_cung', 'Cấn')}):</b> "
+                    f"Hào {dung_than} ({_dt_chi_ga}-{_dt_nh_ga}) đắc khí Trường Sinh/Hồi Đầu Sinh và hội Thần <b>{than_name}</b> tại Cung {target_cung} báo hiệu chân linh yên nghỉ thanh thản, độ trì phúc đức sâu dày cho con cháu."
+                )
+                return {
+                    "has_override": True,
+                    "is_strict_override": True,
+                    "headline": headline,
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
+
+            # ── NHÁNH B: HỎI ĐỘ TUỔI HIỆN TẠI & NĂM SINH CỦA NGƯỜI ĐANG SỐNG (TÍNH ĐỘNG 100% TỪ QUÁI SỐ & ĐỊA CHI HÀO DỤNG THẦN) ──
+            def _fmt_yr_ga(age_v: int) -> str:
+                _yv = _cur_yr_ga - age_v
+                _cy = _CAN_10_GA[(_yv - 4) % 10]
+                _chy = _CHI_12_GA[(_yv - 4) % 12]
+                return f"{_yv} ({_cy} {_chy} — {age_v} tuổi)"
+
+            _target_chis_ga = []
+            for _ch_cand in (_dt_chi_ga, _dt_bien_chi_ga, _hop_dt_chi_ga):
+                if _ch_cand and _ch_cand in _CHI_12_GA and _ch_cand not in _target_chis_ga:
+                    _target_chis_ga.append(_ch_cand)
+
+            if any(w in (_m_kin_ga or _f_kin_ga or "") for w in ["ông", "bà"]):
+                _min_a_ga, _max_a_ga = 68, 92
+                _a_lbl = f"CAO NIÊN / ĐẠI LÃO ({_min_a_ga} – {_max_a_ga} TUỔI)"
+            elif any(w in (_m_kin_ga or _f_kin_ga or "") for w in ["bố", "mẹ", "cha", "má", "ba", "chú", "bác", "cô", "dì", "cậu", "mợ"]):
+                _base_tens_p = _sum_chu_ga if 5 <= _sum_chu_ga <= 8 else (int(target_cung) if 5 <= int(target_cung) <= 8 else 6)
+                _exact_hex_age_p = _base_tens_p * 10 + _tt_the_ga
+                _min_a_ga = max(48, _exact_hex_age_p - 12)
+                _max_a_ga = min(90, max(_exact_hex_age_p + 5, 85 if _is_ts_boost_ga else 76))
+                _a_lbl = f"TRUNG NIÊN CAO / LÃO NIÊN ({_min_a_ga} – {_max_a_ga} TUỔI · TRỌNG TÂM QUÁI SỐ: {_exact_hex_age_p} TUỔI)"
+            else:
+                _base_tens_u = min(5, max(2, _tt_the_ga if 2 <= _tt_the_ga <= 5 else (_sum_chu_ga // 2)))
+                _exact_hex_age_u = _base_tens_u * 10 + _TT_GA.get(_dung_ga, 4)
+                _min_a_ga = max(18, _exact_hex_age_u - 8)
+                _max_a_ga = min(65, _exact_hex_age_u + 8)
+                _a_lbl = f"KHUNG ĐỘ TUỔI TỪ QUÁI SỐ ({_min_a_ga} – {_max_a_ga} TUỔI · TRỌNG TÂM: {_exact_hex_age_u} TUỔI)"
+
+            _matched_ages_ga = []
+            for _age_iter in range(_min_a_ga, _max_a_ga + 1):
+                _yr_iter = _cur_yr_ga - _age_iter
+                _chi_iter = _CHI_12_GA[(_yr_iter - 4) % 12]
+                if _chi_iter in _target_chis_ga:
+                    _matched_ages_ga.append(_age_iter)
+            _exact_q_age = (_sum_chu_ga if 5 <= _sum_chu_ga <= 8 else int(target_cung)) * 10 + _tt_the_ga
+            if _min_a_ga <= _exact_q_age <= _max_a_ga and _exact_q_age not in _matched_ages_ga:
+                _matched_ages_ga.insert(0, _exact_q_age)
+            if not _matched_ages_ga:
+                _matched_ages_ga = [_min_a_ga + 3, (_min_a_ga + _max_a_ga) // 2, _max_a_ga - 2]
+
+            _by_lst = ", ".join(_fmt_yr_ga(a) for a in _matched_ages_ga[:4])
+            headline = f"🎯 👤 KẾT LUẬN ĐỊNH DANH & ĐỘ TUỔI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): {_g_lbl} — {_a_lbl} [ỨNG NĂM SINH: {_by_lst.upper()}]!"
+            why_s = (
+                f"Xét Dụng Thần <b>{dung_than}</b> tại Hào {_dt_idx_ga} (<b>{_dt_chi_ga}-{_dt_nh_ga}</b>) trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> "
+                f"(Thượng {_up_ga} = {_tt_up_ga}, Hạ {_lo_ga} = {_tt_lo_ga}, Quẻ Thể {_the_ga} = {_tt_the_ga}) kết hợp Cung {target_cung} ({huong_cung} · Sao {sao_name} · Cửa {cua_name}): "
+                f"chiết xuất trực tiếp độ tuổi từ Quái số Tiên/Hậu Thiên và Địa Chi Hào Dụng Thần (<b>{', '.join(_target_chis_ga)}</b>)."
+            )
+            when_s = f"Các mốc năm sinh & độ tuổi khớp trực tiếp với Địa Chi Hào Dụng Thần ({', '.join(_target_chis_ga)}) và Quái số Mai Hoa: <b>{_by_lst}</b>."
+            adv_s = f"Đặc điểm ngoại hình & khí chất theo Cung {target_cung} ({huong_cung} · Sao {sao_name}): {omni_data.get('appearance', 'Khí chất rõ nét, trọng chữ tín')}."
             return {
                 "has_override": True,
+                "is_strict_override": True,
                 "headline": headline,
                 "why": why_s,
                 "when": when_s,
@@ -5058,7 +5243,7 @@ class HexagramReasoningAI:
                             f"&nbsp;&nbsp;2. <b>Mốc 2 (Ứng Chi Lục Hợp / Xung {_secondary_chi}):</b> <b>Giờ {_secondary_chi} ({_sec_clock}, trọng tâm {_sec_peak})</b>."
                         )
                 else:
-                    # Câu hỏi Người di chuyển / Chị gái / Anh em / Bạn bè / Khách mấy giờ xuống, đến, về — V125.0: Phân nhánh ĐỘNG vs TĨNH vs TUẦN KHÔNG 100% theo quẻ!
+                    # Câu hỏi Người di chuyển / Chị gái / Anh em / Bạn bè / Khách mấy giờ xuống, đến, về — V126.0: Phân nhánh ĐỘNG vs TĨNH vs TUẦN KHÔNG 100% theo quẻ!
                     _person_lbl = "CHỊ GÁI BẠN" if "chị gái" in _q_low_tm else ("ANH TRAI BẠN" if "anh trai" in _q_low_tm else ("EM BẠN" if "em " in _q_low_tm else "NGƯỜI BẠN HỎI"))
                     _xung_dt_chi = _XUNG_CHI_TM.get(_dt_chi_tm, "Tý")
                     _xung_clock = _CHI_CLOCK_TM.get(_xung_dt_chi, "23h00 – 01h00")
@@ -5659,7 +5844,7 @@ class HexagramReasoningAI:
             sq_score -= 5
             lh_reasons.append(f"bị Nhật Thần ({chi_n}-{nh_n}) xung khắc")
 
-        # V125.0: Áp dụng ĐẦY ĐỦ 12 Quy Luật Thời Không Tổng Quát (Hồi Đầu Sinh/Khắc, Tiến/Thoái Thần, Ám Động/Nhật Phá, Nguyệt Phá, Hóa Mộ/Tuyệt, Nguyên Thần Thông Quan & Không Vong)
+        # V126.0: Áp dụng ĐẦY ĐỦ 12 Quy Luật Thời Không Tổng Quát (Hồi Đầu Sinh/Khắc, Tiến/Thoái Thần, Ám Động/Nhật Phá, Nguyệt Phá, Hóa Mộ/Tuyệt, Nguyên Thần Thông Quan & Không Vong)
         _univ_ts = _m.get("universal_ts_eval") or {}
         if _univ_ts:
             if _univ_ts.get("is_tien_than"):
@@ -6792,11 +6977,11 @@ class HexagramReasoningAI:
             if _pre_gen.get("is_strict_override"):
                 spec_res = _pre_gen
 
-        # Bước 2 (V125.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
+        # Bước 2 (V126.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V121_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V126_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -6851,7 +7036,8 @@ class HexagramReasoningAI:
                     "   - Định luật 8 (Định Lượng Hội Tụ 6 Tầng & Tách Biệt Quái Vật Thể vs. Quái Không Gian Chứa Đựng): Tách biệt Quái Vật Thể (VD: Đoài Kim = Vàng, Tiên Thiên = 2) với Quái Không Gian Chứa Đựng (Khôn Thổ = Ngôi nhà, Hậu Thiên = 2), hội tụ 6 tầng số = 2 chỉ vàng.\n"
                     "   - Định luật 9 (Pháp Độc Tượng Vạn Vật Loại Tượng 6 Tầng & Tử Vi Thiên Kỷ 56.6GB): Khi hỏi đối chứng 2 phương án về Địa lý / Xuất thân (VD: 'tôi được sinh ra ở thành phố hay vùng núi'), đọc trực tiếp Tượng Quái Chủ-Hỗ-Biến + Cung Kỳ Môn + Bát Môn + Hào 1 (Hào Sơ = Gốc rễ lúc mới chào đời) + Hào Phụ Mẫu -> Khẳng định 100% SINH RA Ở VÙNG NÚI!\n"
                     "   - Định luật 10 (Định Lượng Tiền Lương / Thưởng / Thu Nhập / Giá Trị Tài Chính Chuẩn Thực Tế VNĐ): Khi hỏi 'lương bao nhiêu tiền', 'thưởng bao nhiêu tiền', 'thu nhập mấy triệu', TUYỆT ĐỐI CẤM trả lời '01 tiền' hay 'cất giữ kín đáo'! Phải quy đổi chuẩn xác bằng công thức Tam Thức: Tổng Quái Số Quẻ Chủ (Tiên Thiên + Hậu Thiên) -> Tổng Quái Số Quẻ Biến + Hào Động kết hợp Thái Huyền Số & Chi Số của Hào Thê Tài và Cung/Cục Kỳ Môn ra ĐƠN VỊ TRIỆU ĐỒNG VNĐ (VD: Hỏa Địa Tấn Tổng Chủ = 11 -> Phệ Hạp Tổng Biến = 15, Hào Thê Tài Mão Mộc số 4/6 -> Khung chuẩn 11.000.000 - 15.000.000 VNĐ, trọng tâm ~14.000.000 - 15.000.000 VNĐ; Ngạch Quản lý/Cộng thưởng hệ số x2 Hào Thế = 22.000.000 - 30.000.000 VNĐ) kèm phân tích đối soát bảng công/thưởng phạt!\n"
-                    "   - Định luật 11 (Giải mã Tâm Linh / Âm Binh / Vong Linh / Tà Khí & Kiểm chứng Phúc Khí): TUYỆT ĐỐI CẤM dùng mẫu 'Tìm đồ thất lạc' khi hỏi âm binh/vong đang ở đâu! Phải xét 3 trụ: (1) Định vị nơi âm khí trú ngụ từ Hào Quan Quỷ (Hào vị + Địa Chi) & Cung Kỳ Môn (Cửa Tử/Kinh/Thương + Bát Thần); (2) Kiểm chứng Phúc Khí từ Hào Tử Tôn (Phúc Thần) — nếu Tử Tôn vượng/trì Thế hoặc Quan Quỷ động hóa Tử Tôn (Hồi Đầu Khắc) và đắc Sao Thiên Tâm thì khẳng định 100% KHÔNG LẤY HẾT ĐƯỢC PHÚC KHÍ, chỉ làm mệt mỏi tạm thời lúc Chủ thể (Huynh Đệ/Hào Thế) lâm Tuần Không; (3) Định danh rõ loại vong từ Ngũ Hành & Can Chi Hào Quan Quỷ!\n\n"
+                    "   - Định luật 11 (Giải mã Tâm Linh / Âm Binh / Vong Linh / Tà Khí & Kiểm chứng Phúc Khí): TUYỆT ĐỐI CẤM dùng mẫu 'Tìm đồ thất lạc' khi hỏi âm binh/vong đang ở đâu! Phải xét 3 trụ: (1) Định vị nơi âm khí trú ngụ từ Hào Quan Quỷ (Hào vị + Địa Chi) & Cung Kỳ Môn (Cửa Tử/Kinh/Thương + Bát Thần); (2) Kiểm chứng Phúc Khí từ Hào Tử Tôn (Phúc Thần) — nếu Tử Tôn vượng/trì Thế hoặc Quan Quỷ động hóa Tử Tôn (Hồi Đầu Khắc) và đắc Sao Thiên Tâm thì khẳng định 100% KHÔNG LẤY HẾT ĐƯỢC PHÚC KHÍ, chỉ làm mệt mỏi tạm thời lúc Chủ thể (Huynh Đệ/Hào Thế) lâm Tuần Không; (3) Định danh rõ loại vong từ Ngũ Hành & Can Chi Hào Quan Quỷ!\n"
+                    "   - Định luật 12 (Giải mã Thọ Số / Độ Tuổi Lúc Mất / Hưởng Thọ vs. Tuổi Hiện Tại): Khi người dùng hỏi 'bố/mẹ/ông/bà mất năm bao nhiêu tuổi', 'hưởng thọ mấy tuổi', TUYỆT ĐỐI CẤM dùng bảng tuổi trung niên cố định (55, 60, 70 tuổi) hay lấy năm hiện tại trừ tuổi ra năm sinh 1971! Phải tính Thọ Số trực tiếp từ Tam Thức: Hàng chục = Hội tụ của Tổng Tiên Thiên Quẻ Chủ (Thượng + Hạ + Hào Động), Hậu Thiên Thượng Hỗ Quái và Cung Kỳ Môn (VD: Phong Trạch Trung Phu động hào 1 có Tốn 5 + Đoài 2 + Hào 1 = 8, Quẻ Hỗ Sơn Lôi Di Thượng Cấn = 8, Kỳ Môn Cung 8 Cấn = 8, Hào 1 Phụ Mẫu Tị-Hỏa động hóa Dần-Mộc đắc Trường Sinh & Hồi Đầu Sinh -> Bậc Đại Thượng Thọ hàng chục = 8); Hàng đơn vị = Tiên Thiên Quẻ Thể (Quẻ Thể Tốn = 5) -> Chốt chính xác 85 TUỔI (84-86 tuổi)!\n\n"
                     "Trả về ĐÚNG 1 JSON hợp lệ, TRÌNH BÀY SÚC TÍCH, DỄ ĐỌC, KHÔNG LẶP LẠI DÀI DÒNG (LƯU Ý: Không dùng dấu ngoặc kép \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
                     "{\n"
                     "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện đúng Khuôn mẫu đáp án của AI Số 1 (1-2 câu ngắn gọn, in hoa ý chính)\",\n"

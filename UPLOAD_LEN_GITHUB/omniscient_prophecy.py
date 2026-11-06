@@ -957,69 +957,54 @@ def build_omniscient_prophecy(
 
 
 
-    # Độ tuổi (Già hay Trẻ, bao nhiêu tuổi cụ thể)
-
+    # Độ tuổi / Thọ số (Tính động 100% từ Quái số Mai Hoa + Cung Kỳ Môn + Địa Chi Hào Dụng Thần Lục Hào)
     cur_year = datetime.date.today().year
-
-    base_ages = list(c_info['base_ages'])
-
-    _yr_match = _re_om.search(r"(?:sinh năm|tuổi|sn|năm)\s*(19\d\d|20[0-2]\d)", _q_low_om)
-
-    if _yr_match:
-
-        _by = int(_yr_match.group(1))
-
-        _exact_age = max(1, cur_year - _by)
-
-        age_tier = f"XÁC ĐỊNH THEO NĂM SINH ({_by} — {_exact_age} tuổi)"
-
-        est_ages = [_exact_age]
-
-    elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["ông", "bà"]):
-
-        age_tier = "CAO NIÊN / LÃO NIÊN (68 – 90+ tuổi)"
-
-        est_ages = [68 + (base_ages[0] % 7), 75 + (base_ages[1] % 7), 82 + (base_ages[2] % 7)]
-
-    elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["bố", "mẹ", "cha", "má", "ba", "chú", "bác", "cô", "dì", "cậu", "mợ"]):
-
-        age_tier = "TRUNG NIÊN CAO / LỚN TUỔI (50 – 78 tuổi)"
-
-        est_ages = [52 + (base_ages[0] % 6), 60 + (base_ages[1] % 6), 68 + (base_ages[2] % 7)]
-
-    elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["con trai", "con gái", "con"]): 
-
-        age_tier = "THANH THIẾU NIÊN / TRẺ TUỔI (5 – 30 tuổi)"
-
-        est_ages = [8 + (base_ages[0] % 6), 16 + (base_ages[1] % 6), 24 + (base_ages[2] % 6)]
-
-    elif ts_stage in ('Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Thai', 'Dưỡng'):
-
-        age_tier = "THANH NIÊN / TRUNG NIÊN TRẺ (DƯỚI 45 TUỔI — Khoảng 22 – 38 tuổi)"
-
-        est_ages = [22 + (base_ages[0] % 5), 29 + (base_ages[1] % 5), 36 + (base_ages[2] % 5)]
-
-    elif ts_stage in ('Đế Vượng',):
-
-        age_tier = "TRUNG NIÊN ĐỘ CHÍN (DƯỚI 50 TUỔI — Khoảng 28 – 45 tuổi)"
-
-        est_ages = [28 + (base_ages[0] % 5), 35 + (base_ages[1] % 5), 42 + (base_ages[2] % 4)]
-
-    elif ts_stage in ('Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt'):
-
-        age_tier = "NGƯỜI LỚN TUỔI / TRUNG NIÊN CAO (GIÀ DẶN)"
-
-        est_ages = [min(78, a + 12) for a in base_ages[:3]]
-
+    _TT_OM_AGE = {'Càn': 1, 'Đoài': 2, 'Ly': 3, 'Chấn': 4, 'Tốn': 5, 'Khảm': 6, 'Cấn': 7, 'Khôn': 8}
+    _HT_OM_AGE = {'Khảm': 1, 'Khôn': 2, 'Chấn': 3, 'Tốn': 4, 'Càn': 6, 'Đoài': 7, 'Cấn': 8, 'Ly': 9}
+    _PREFIX_TRIG_OM = {'Thiên': 'Càn', 'Trạch': 'Đoài', 'Hỏa': 'Ly', 'Lôi': 'Chấn', 'Phong': 'Tốn', 'Thủy': 'Khảm', 'Sơn': 'Cấn', 'Địa': 'Khôn'}
+    _up_om_q, _lo_om_q = 'Tốn', 'Đoài'
+    if str(ten_que_ban).startswith('Thuần '):
+        _t_om = str(ten_que_ban).replace('Thuần ', '').strip()
+        _up_om_q = _lo_om_q = _t_om if _t_om in _TT_OM_AGE else 'Càn'
     else:
+        _w_om = str(ten_que_ban).split()
+        if len(_w_om) >= 2 and _w_om[0] in _PREFIX_TRIG_OM and _w_om[1] in _PREFIX_TRIG_OM:
+            _up_om_q, _lo_om_q = _PREFIX_TRIG_OM[_w_om[0]], _PREFIX_TRIG_OM[_w_om[1]]
+    _the_om_q = _lo_om_q if primary_dong_hao in (4, 5, 6) else _up_om_q
+    _sum_chu_om = _TT_OM_AGE.get(_up_om_q, 5) + _TT_OM_AGE.get(_lo_om_q, 2) + int(primary_dong_hao or 1)
+    _tt_the_om = _TT_OM_AGE.get(_the_om_q, 5)
+    _tens_om = _sum_chu_om if 5 <= _sum_chu_om <= 9 else (int(target_cung) if 5 <= int(target_cung) <= 9 else 8)
+    _exact_hex_om_age = _tens_om * 10 + _tt_the_om
 
-        age_tier = c_info['age_group'].upper()
-
-        est_ages = base_ages[:3]
-
-
-
-    birth_years = [f"{cur_year - a} ({a} tuổi)" for a in est_ages]
+    _is_longevity_om = (
+        any(w in _q_low_om for w in ['hưởng thọ', 'thọ bao nhiêu', 'thọ mấy tuổi', 'mất năm bao nhiêu tuổi', 'mất lúc bao nhiêu tuổi', 'mất lúc mấy tuổi', 'qua đời năm bao nhiêu tuổi', 'qua đời lúc mấy tuổi', 'mất năm nào'])
+        or (any(w in _q_low_om for w in ['mất', 'qua đời', 'khuất', 'thọ', 'quy tiên']) and any(w in _q_low_om for w in ['bao nhiêu tuổi', 'mấy tuổi', 'tuổi', 'năm nào', 'năm bao nhiêu']))
+    )
+    _yr_match = _re_om.search(r"(?:sinh năm|tuổi|sn|năm)\s*(19\d\d|20[0-2]\d)", _q_low_om)
+    if _yr_match:
+        _by = int(_yr_match.group(1))
+        _exact_age = max(1, cur_year - _by)
+        age_tier = f"XÁC ĐỊNH THEO NĂM SINH ({_by} — {_exact_age} tuổi)"
+        est_ages = [_exact_age]
+        birth_years = [f"{_by} ({_exact_age} tuổi)"]
+    elif _is_longevity_om:
+        age_tier = f"HƯỞNG ĐẠI THƯỢNG THỌ CHÍNH XÁC {_exact_hex_om_age} TUỔI (KHUNG THỌ SỐ HỘI TỤ: {_exact_hex_om_age - 1} – {_exact_hex_om_age + 1} TUỔI)"
+        est_ages = [_exact_hex_om_age, _exact_hex_om_age - 1, _exact_hex_om_age + 1]
+        birth_years = [f"Hưởng thọ {a} tuổi" for a in est_ages]
+    else:
+        if any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["ông", "bà", "bố", "mẹ", "cha", "má", "ba", "chú", "bác", "cô", "dì", "cậu", "mợ"]):
+            age_tier = f"TRUNG NIÊN CAO / LÃO NIÊN (TRỌNG TÂM QUÁI SỐ: {_exact_hex_om_age} TUỔI · KHUNG {max(50, _exact_hex_om_age - 12)} – {min(92, _exact_hex_om_age + 4)} TUỔI)"
+            est_ages = [_exact_hex_om_age, max(50, _exact_hex_om_age - 6), max(55, _exact_hex_om_age - 12)]
+        elif any(w in (_matched_male_kin or _matched_female_kin or "") for w in ["con trai", "con gái", "con"]):
+            _c_a1 = _TT_OM_AGE.get(_up_om_q, 5)
+            _c_a2 = _HT_OM_AGE.get(_lo_om_q, 7)
+            age_tier = f"THANH THIẾU NIÊN / TRẺ TUỔI ({min(_c_a1, _c_a2)} – {10 + max(_c_a1, _c_a2)} TUỔI)"
+            est_ages = [min(_c_a1, _c_a2), max(_c_a1, _c_a2), 10 + min(_c_a1, _c_a2)]
+        else:
+            _u_age = min(55, max(20, _tt_the_om * 6 + int(target_cung)))
+            age_tier = f"KHUNG ĐỘ TUỔI TỪ QUÁI SỐ ({max(18, _u_age - 6)} – {_u_age + 6} TUỔI · TRỌNG TÂM {_u_age} TUỔI)"
+            est_ages = [_u_age, max(18, _u_age - 4), _u_age + 4]
+        birth_years = [f"{cur_year - a} ({a} tuổi)" for a in est_ages]
 
 
 

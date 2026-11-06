@@ -16284,7 +16284,7 @@ class FreeAIHelper:
                 dung_than = _q_blueprint["authoritative_dt"]
             _omni_data_for_dual = dict(_omniscient_res.get('data', {})) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict) else {}
             if isinstance(chart_data, dict):
-                # V125.0: Đồng bộ ĐỘNG 100% Cung / Sao / Cửa / Thần trên bàn Kỳ Môn cho MỌI Dụng Thần (Thê Tài, Huynh Đệ, Phụ Mẫu, Tử Tôn, Quan Quỷ, Bản Thân)
+                # V126.0: Đồng bộ ĐỘNG 100% Cung / Sao / Cửa / Thần trên bàn Kỳ Môn cho MỌI Dụng Thần (Thê Tài, Huynh Đệ, Phụ Mẫu, Tử Tôn, Quan Quỷ, Bản Thân)
                 _nb_d = chart_data.get('nhan_ban') or {}
                 _tb_d = chart_data.get('thien_ban') or {}
                 _thb_d = chart_data.get('than_ban') or {}
