@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V116.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Khớp Niên Mệnh Đích Danh 👤 + Pháp Quyết Hóa Giải Thông Quan 🛡️ + Từ Điển Vạn Vật Hiện Đại 🌐 + Kho GitHub 56.6GB 📚)"
+APP_VERSION = "V117.0"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Gemini Pro Deep-Reasoning 🤖 + Bóc Tách Sâu 24 Yếu Tố A→Z 🔬 + Khóa Chống Bịa Đặt 3 Lớp 🛡️ + Kho GitHub 56.6GB 📚)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V116.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V116.0"
+# V117.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V117.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2392,7 +2392,7 @@ def render_master_unified_qa_box(location_key="main"):
     <div style='background:linear-gradient(135deg,#0f172a,#1e1b4b,#064e3b);padding:18px 22px;border-radius:16px;
                 border:2px solid #34d399;margin:14px 0;box-shadow:0 6px 24px rgba(16,185,129,0.22);'>
         <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:8px;'>
-            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V106.0 — BỘ TỨ QUẺ CHUẨN XÁC & CÁC MẢNG ĐỘC LẬP)
+            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V117.0 — GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z)
         </div>
         <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:6px;'>
             <div style='padding:10px 14px;background:rgba(16,185,129,0.14);border-radius:10px;border-left:4px solid #34d399;'>
@@ -2826,7 +2826,7 @@ def render_master_unified_qa_box(location_key="main"):
         _ms = st.session_state.get('master_qa_elapsed_ms', 40.0)
         st.markdown(
             f"<div style='background:rgba(16,185,129,0.12);border:1px solid #10b981;padding:6px 14px;border-radius:8px;margin-top:8px;font-size:0.85rem;color:#6ee7b7;'>"
-            f"⚡ <b>Tốc độ giải mã Siêu Tốc (V106.0): {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã phân khu: <b>Phần I (4 Phương Pháp Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</b> & <b>Phần II (Các Mảng Chuyên Biệt Độc Lập)</b>"
+            f"⚡ <b>Tốc độ giải mã Siêu Tốc (V117.0): {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã phân khu: <b>Phần I (4 Phương Pháp Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản — Bóc tách sâu 24 yếu tố A→Z)</b> & <b>Phần II (Các Mảng Chuyên Biệt Độc Lập)</b>"
             f"</div>",
             unsafe_allow_html=True
         )
