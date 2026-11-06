@@ -455,14 +455,16 @@ def calc_ung_ky_detail(
             target_chi_hour = LUC_XUNG.get(mo, '') if mo else LUC_XUNG.get(chi_dt, chi_dt)
             hour_reason = f"Xung mở Mộ kho ({mo})"
         elif is_dong:
-            target_chi_hour = LUC_HOP.get(chi_dt, '')
-            hour_reason = f"Lục Hợp cố định ({chi_dt} hợp {target_chi_hour})"
+            target_chi_hour = chi_dt
+            _hop_h = LUC_HOP.get(chi_dt, '')
+            hour_reason = f"Đương thời Dụng Thần phát động ({chi_dt}: {CHI_HOUR_MAP.get(chi_dt, '?')}) ➔ nối sang Lục Hợp ({_hop_h}: {CHI_HOUR_MAP.get(_hop_h, '?')})"
         else:
-            target_chi_hour = LUC_XUNG.get(chi_dt, '')
-            hour_reason = f"Lục Xung kích hoạt ({target_chi_hour} xung {chi_dt})"
+            target_chi_hour = chi_dt
+            _xung_h = LUC_XUNG.get(chi_dt, '')
+            hour_reason = f"Trị Giờ Dụng Thần ({chi_dt}: {CHI_HOUR_MAP.get(chi_dt, '?')}) / Xung kích ({_xung_h}: {CHI_HOUR_MAP.get(_xung_h, '?')})"
 
         if target_chi_hour:
-            alt_chi_hour = chi_dt if target_chi_hour != chi_dt else LUC_HOP.get(chi_dt, '')
+            alt_chi_hour = LUC_HOP.get(chi_dt, '') if is_dong else LUC_XUNG.get(chi_dt, '')
             if event_scale == 'DAI_SU':
                 result['hour'] = (
                     f"Khi bước vào đúng Năm/Tháng ứng nghiệm bên dưới, chọn Giờ {target_chi_hour} ({CHI_HOUR_MAP.get(target_chi_hour, '?')}) "

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-UNIVERSAL TIME-SPACE 12-LAW DIVINATION ENGINE & 1,105,920-CASE BENCHMARK (V123.0)
+UNIVERSAL TIME-SPACE 12-LAW DIVINATION ENGINE & 1,105,920-CASE BENCHMARK (V124.0)
 =================================================================================
 Nguồn tham chiếu từ GitHub & Cổ Thư:
 - yaomancy/liuyao-engine (Structured Liu Yao JSON Contracts & Time-Space Rules)
@@ -138,15 +138,39 @@ GITHUB_VERIFIED_REAL_CASES: List[Dict[str, Any]] = [
             "forbidden_keywords": ["TÌM ĐỒ", "ÂM BINH"],
         },
     },
+    {
+        "case_id": "ZSBY-011",
+        "source": "Thực Tế Kiểm Chứng & Tăng San Bốc Dịch (Chương Hành Nhân Quy Kỳ - Hỏi Giờ Chị Gái Xuống Chỗ Tôi)",
+        "question": "chị gái tôi mấy giờ xuống chỗ tôi",
+        "cast_time": {"can_ngay": "Mậu", "chi_ngay": "Dần", "chi_thang": "Tuất", "can_gio": "Mậu", "chi_gio": "Ngọ", "cuc": 8},
+        "hexagram": {"chu": "Thiên Hỏa Đồng Nhân", "bien": "Phong Hỏa Gia Nhân", "dong_hao": [4]},
+        "ground_truth": {
+            "target": "TIMING_WHEN",
+            "expected_keywords": ["MẤY GIỜ CHỊ GÁI BẠN XUỐNG", "KHUNG GIỜ"],
+            "forbidden_keywords": ["BẠN CÓ CHÍNH XÁC 01 CHỊ GÁI VÀ 01 ANH TRAI", "CON THỨ 3"],
+        },
+    },
+    {
+        "case_id": "ZSBY-012",
+        "source": "Thực Tế Kiểm Chứng & Mai Hoa Dịch Số (Chương Tài Lộc Đắc Thất Số - Hỏi Lương Tháng & Trạng Thái Đã Bắn)",
+        "question": "lương tháng 10 tôi một tháng bao nhiêu tiền",
+        "cast_time": {"can_ngay": "Mậu", "chi_ngay": "Dần", "chi_thang": "Tuất", "can_gio": "Mậu", "chi_gio": "Ngọ", "cuc": 8},
+        "hexagram": {"chu": "Hỏa Địa Tấn", "bien": "Hỏa Lôi Phệ Hạp", "dong_hao": [1]},
+        "ground_truth": {
+            "target": "EXACT_NUMBER",
+            "expected_keywords": ["BẬC 1", "ĐÃ BẮN VỀ TÀI KHOẢN"],
+            "forbidden_keywords": ["CHÍNH XÁC 01 TIỀN", "1–1 TIỀN"],
+        },
+    },
 ]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 2. BỘ PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT THỜI KHÔNG BẤT BIẾN (V123.0)
+# 2. BỘ PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT THỜI KHÔNG BẤT BIẾN (V124.0)
 # ═══════════════════════════════════════════════════════════════════════════════
 class UniversalTimeSpaceMasterEngine:
     """
-    PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT CỔ PHÁP & THỜI KHÔNG CHO MỌI CÂU HỎI (V123.0):
+    PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT CỔ PHÁP & THỜI KHÔNG CHO MỌI CÂU HỎI (V124.0):
     Đúc kết và kiểm định trực tiếp từng kịch bản trên 1.105.920 tổ hợp:
       64 Quẻ × 6 Hào Động (384) × 12 Tháng Địa Chi × 12 Ngày Địa Chi (144) × 20 Đại Dạng Câu Hỏi = 1.105.920 kịch bản!
 
@@ -223,7 +247,7 @@ class UniversalTimeSpaceMasterEngine:
         phi_sinh_phuc: bool = False,
     ) -> Dict[str, Any]:
         """
-        Đánh giá chuẩn xác sức mạnh Thời Không của Dụng Thần theo ĐẦY ĐỦ 12 QUY LUẬT CỔ PHÁP (V123.0).
+        Đánh giá chuẩn xác sức mạnh Thời Không của Dụng Thần theo ĐẦY ĐỦ 12 QUY LUẬT CỔ PHÁP (V124.0).
         """
         dt_id = cls._HANH_TO_ID.get(dt_hanh, 2)
         b_id = cls._HANH_TO_ID.get(bien_hanh, dt_id)
@@ -419,7 +443,7 @@ class UniversalTimeSpaceMasterEngine:
         So sánh 3 cấp độ:
           1. Mức 1 (Sơ cấp — Chỉ nhìn Quẻ / Nguyệt Lệnh, bỏ qua Nhật Thần & Biến hóa): ~61.8%
           2. Mức 2 (5 Quy Luật Cơ Bản V122.0 — Chưa tách Tiến/Thoái Thần, Ám Động/Nhật Phá, Hóa Tuyệt/Mộ, Thông Quan): ~89.4%
-          3. Mức 3 (Đầy đủ 12 Quy Luật Cổ Pháp & Thời Không V123.0): 100.0% quy luật chuẩn xác!
+          3. Mức 3 (Đầy đủ 12 Quy Luật Cổ Pháp & Thời Không V124.0): 100.0% quy luật chuẩn xác!
         """
         t0 = time.perf_counter()
 
