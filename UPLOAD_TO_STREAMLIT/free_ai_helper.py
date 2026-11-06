@@ -5684,11 +5684,11 @@ class FreeAIHelper:
             deep_prompt = (
                 f"{_clk_on_prompt}"
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V118.0 — ĐẠI SƯ AI CAO CẤP NHẤT GEMINI PRO LUẬN QUẺ CHUYÊN SÂU A→Z (MAI HOA DỊCH SỐ · KỲ MÔN ĐỘN GIÁP · LỤC HÀO KINH DỊCH · THIẾT BẢN THẦN TOÁN — ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V119.0 — ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO) LUẬN QUẺ CHUYÊN SÂU A→Z (MAI HOA DỊCH SỐ · KỲ MÔN ĐỘN GIÁP · LỤC HÀO KINH DỊCH · THIẾT BẢN THẦN TOÁN — ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
-                f"1. TRẢ LỜI TRÚNG ĐÍCH 100% CÂU HỎI CỤ THỂ CỦA NGƯỜI DÙNG: Đọc kỹ câu hỏi '{question}'. Nếu người dùng hỏi câu hỏi mở hoặc định danh Vạn Vật Loại Tượng (VD: đang nghe thể loại nhạc gì, ăn món gì, làm nghề gì, đồ vật gì, màu gì, tính cách ra sao, ở đâu, bao nhiêu...), BẠN BẮT BUỘC PHẢI ĐƯA RA ĐÁP ÁN CỤ THỂ TRỰC DIỆN TỪ TƯỢNG QUẺ (TUYỆT ĐỐI CẤM trả lời chung chung kiểu 'Hiện tại bạn đang ở trong giai đoạn thuận lợi về tinh thần và sự nghiệp'!).\n"
+                f"1. TRẢ LỜI TRÚNG ĐÍCH 100% CÂU HỎI CỤ THỂ CỦA NGƯỜI DÙNG: Đọc kỹ câu hỏi '{question}'. Nếu người dùng hỏi về SỐ TIỀN LƯƠNG / THƯỞNG / THU NHẬP ('bao nhiêu tiền', 'mấy triệu'), BẮT BUỘC trả lời bằng ĐƠN VỊ TRIỆU ĐỒNG VNĐ CHUẨN XÁC theo đúng công thức Tam Thức trong <verdict_block> (TUYỆT ĐỐI CẤM ghi '01 tiền'!). Nếu hỏi Vạn Vật Loại Tượng (nhạc gì, món gì, nghề gì, đồ vật gì, ở đâu...), BẮT BUỘC đưa ra đáp án cụ thể trực diện từ Tượng Quẻ.\n"
                 f"2. ĐỒNG BỘ 100% PHÁN QUYẾT & HỒ SƠ SONG NÃO AI: Bắt buộc giữ nguyên kết luận cốt lõi '{_vb_prompt_str}' và Hồ sơ bàn giao từ Hệ Thống Song Não AI trong <raw_chart_data> và <verdict_block>. CẤM TUYỆT ĐỐI ghi 'CẦN CÂN NHẮC — BÌNH' hay 'giằng co giữa A và B'.\n"
-                f"3. CHỐNG AI BỊA ĐẶT 100% & BÓC TÁCH SÂU TỪNG BƯỚC: Trong mục 📋 VÌ SAO và 4 Thẻ Giải Mã, BẮT BUỘC phải trích dẫn đích danh tên Quẻ Chủ ➔ Quẻ Hỗ ➔ Quẻ Biến (Thể/Dụng, Đảng Thể/Dụng), Hào Thế/Ứng/Dụng Thần (ở hào mấy, can chi gì, Lục Thú gì, vượng/suy/Tuần Không/Nguyệt Phá/12 Trường Sinh ra sao) và Cung Kỳ Môn (Sao, Cửa, Thần, Nội/Ngoại Bàn, Cách Cục) từ <raw_chart_data> để chứng minh cho câu trả lời.\n"
+                f"3. CHỐNG AI BỊA ĐẶT 100% & BÓC TÁCH SÂU TỪNG BƯỚC: Trong mục 📋 VÌ SAO và 4 Thẻ Giải Mã, BẮT BUỘC phải trích dẫn đích danh tên Quẻ Chủ ➔ Quẻ Hỗ ➔ Quẻ Biến (Thể/Dụng, Đảng Thể/Dụng, Tổng Quái Số), Hào Thế/Ứng/Dụng Thần (ở hào mấy, can chi gì, Lục Thú gì, vượng/suy/Tuần Không/Nguyệt Phá/12 Trường Sinh ra sao) và Cung Kỳ Môn (Sao, Cửa, Thần, Nội/Ngoại Bàn, Cách Cục) từ <raw_chart_data> để chứng minh cho câu trả lời.\n"
                 f"4. CẤM MỞ ĐẦU RƯỜM RÀ: Bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
                 f"</system_role>\n\n"
                 
@@ -16678,7 +16678,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini Pro V118.0 — Đồng Bộ Thời Gian Thực, Giải Mã Vạn Vật Loại Tượng & Bóc Tách Sâu 24 Yếu Tố A→Z: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Antigravity Brain Mode + Gemini Pro V119.0 — Đồng Bộ Thời Gian Thực, Giải Mã Tài Chính & Vạn Vật Loại Tượng 24 Yếu Tố A→Z)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'

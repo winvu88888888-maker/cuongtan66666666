@@ -261,6 +261,10 @@ def _robust_parse_ai_json(txt: str, question: str = "") -> Optional[Dict[str, An
 
     if isinstance(parsed_obj, dict) and parsed_obj:
         for _k_p, _v_p in list(parsed_obj.items()):
+            if isinstance(_v_p, dict):
+                _v_p = "<br>".join(f"<b>• {k_sub}:</b> {v_sub}" for k_sub, v_sub in _v_p.items())
+            elif isinstance(_v_p, list):
+                _v_p = "<br>".join(f"• {item}" for item in _v_p if item)
             if isinstance(_v_p, str):
                 parsed_obj[_k_p] = sanitize_outdated_years_text(_v_p, question=question)
         return parsed_obj
@@ -274,18 +278,19 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 18, tier: str = 
     _clk_ctx = get_realtime_vn_clock_context()
     _full_prompt_text = f"{_clk_ctx['clock_banner']}\n\n{prompt_text}"
     if tier == 'cheapest_reader':
-        # Con AI Số 1 (Đọc hiểu câu hỏi & phân khu): Ưu tiên Gemini 2.5 Flash / Pro tốc độ cao
-        models = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.5-flash-lite']
+        # Con AI Số 1 (Đọc hiểu câu hỏi & phân khu): Ưu tiên Gemini 2.5 Flash tốc độ cao
+        models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro']
     else:
-        # V118.0 — Con AI Số 2 (ĐẠI SƯ LUẬN QUẺ CAO CẤP NHẤT): Ưu tiên gemini-2.5-pro ổn định nhất trên Cloud + gemini-3.1-pro-preview + gemini-2.5-flash
-        models = ['gemini-2.5-pro', 'gemini-3.1-pro-preview', 'gemini-2.5-flash', 'gemini-2.0-flash']
+        # V119.0 — Con AI Số 2 (ĐẠI SƯ LUẬN QUẺ CHUYÊN SÂU PHONG CÁCH ANTIGRAVITY):
+        # Ưu tiên gemini-2.5-flash (quota cao gấp 15 lần trên Cloud, không bị kẹt 429/MAX_TOKENS) + gemini-2.5-pro + gemini-2.0-flash
+        models = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash']
     safety = [
         {'category': 'HARM_CATEGORY_HARASSMENT', 'threshold': 'BLOCK_NONE'},
         {'category': 'HARM_CATEGORY_HATE_SPEECH', 'threshold': 'BLOCK_NONE'},
         {'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold': 'BLOCK_NONE'},
         {'category': 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold': 'BLOCK_NONE'},
     ]
-    for api_key in keys[:3]:
+    for api_key in keys[:5]:
         for m_name in models:
             try:
                 url = f'https://generativelanguage.googleapis.com/v1beta/models/{m_name}:generateContent?key={api_key}'
@@ -293,17 +298,21 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 18, tier: str = 
                 gen_cfg: Dict[str, Any] = {
                     'temperature': 0.2 if _is_pro_model else 0.15,
                     'topP': 0.88,
-                    'maxOutputTokens': 8192 if tier != 'cheapest_reader' else 2048,
+                    'maxOutputTokens': 16384 if ('2.5' in m_name or '3.' in m_name) else 8192,
                     'responseMimeType': 'application/json',
                 }
+                if '2.5-flash' in m_name and 'lite' not in m_name:
+                    # Khóa thinkingBudget nhỏ để tuyệt đối không bao giờ bị cạn token (MAX_TOKENS) hoặc timeout trên Streamlit Cloud
+                    gen_cfg['thinkingConfig'] = {'thinkingBudget': 256 if tier != 'cheapest_reader' else 0}
                 payload = {
                     'contents': [{'parts': [{'text': _full_prompt_text}]}],
                     'generationConfig': gen_cfg,
                     'safetySettings': safety,
                 }
-                _req_timeout = max(timeout_sec, 25) if (_is_pro_model and tier != 'cheapest_reader') else timeout_sec
+                _req_timeout = max(timeout_sec, 22) if tier != 'cheapest_reader' else timeout_sec
                 r = requests.post(url, json=payload, timeout=_req_timeout)
                 if r.status_code == 400:
+                    gen_cfg.pop('thinkingConfig', None)
                     gen_cfg.pop('responseMimeType', None)
                     r = requests.post(url, json=payload, timeout=_req_timeout)
                 if r.status_code != 200:
@@ -1707,7 +1716,8 @@ class HexagramReasoningAI:
                 continue
             lt = str(h.get("luc_than") or "")
             tu = str(h.get("the_ung") or h.get("tu") or "")
-            ch = str(h.get("chi") or h.get("can_chi") or "Thìn").split()[-1]
+            _raw_cc = re.sub(r"\([^)]*\)", "", str(h.get("chi") or h.get("can_chi") or "Thìn")).strip()
+            ch = _raw_cc.split()[-1] if _raw_cc else "Thìn"
             nh = str(h.get("ngu_hanh") or h.get("hanh") or _CHI_NH.get(ch, "Thổ"))
             is_d = (ix in dong_list) or bool(h.get("dong") or h.get("is_dong"))
             is_kv_line = ch in _kv_m
@@ -1715,7 +1725,8 @@ class HexagramReasoningAI:
             if is_d and 1 <= ix <= len(bien_haos) and isinstance(bien_haos[ix - 1], dict):
                 bh = bien_haos[ix - 1]
                 b_lt = str(bh.get("luc_than") or "")
-                b_ch = str(bh.get("chi") or bh.get("can_chi") or "").split()[-1]
+                _raw_bcc = re.sub(r"\([^)]*\)", "", str(bh.get("chi") or bh.get("can_chi") or "")).strip()
+                b_ch = _raw_bcc.split()[-1] if _raw_bcc else ""
                 b_nh = str(bh.get("ngu_hanh") or bh.get("hanh") or _CHI_NH.get(b_ch, ""))
                 b_str = f" ➔ Động hóa {b_lt} ({b_ch}-{b_nh})"
             haos_lines_desc.append(
@@ -3940,7 +3951,7 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
-        # ── 8C. GIẢI MÃ ĐỊNH LƯỢNG HỘI TỤ 6 TẦNG & KIỂM CHỨNG CÓ/KHÔNG (GENERAL_QUANTITY — V112.0 ĐỊNH LUẬT 8: LIÊN KẾT MỌI YẾU TỐ CỦA QUẺ) ──
+        # ── 8C. GIẢI MÃ ĐỊNH LƯỢNG HỘI TỤ 6 TẦNG & ĐỊNH LƯỢNG TIỀN LƯƠNG / TÀI CHÍNH (GENERAL_QUANTITY — V119.0 ANTIGRAVITY BRAIN MODE) ──
         if target == "GENERAL_QUANTITY":
             # 1. Nhận diện chính xác Đơn vị, Vật thể cần đếm & Ngũ Hành Vật Thể (tách biệt Quái Vật Thể với Quái Không Gian Chứa Đựng!)
             _unit_str = "đơn vị"
@@ -3948,7 +3959,16 @@ class HexagramReasoningAI:
             _scale_mult = 1
             _obj_hanh_target = ""
             _obj_label = "đối tượng cần đếm"
-            _has_existence_q = bool(re.search(r"\bcó\s+[^,;?]+?\s+(?:không|chưa|khôn)\b", q_low)) or ("có vàng" in q_low) or ("có tiền" in q_low)
+            _has_existence_q = bool(re.search(r"\bcó\s+[^,;?]+?\s+(?:không|chưa|khôn)\b", q_low)) or ("có vàng" in q_low) or ("có tiền" in q_low and any(w in q_low for w in ["trong nhà", "trong két", "cất", "giấu"]))
+            _is_money_salary_q = any(
+                w in q_low
+                for w in [
+                    "bao nhiêu tiền", "mấy triệu", "bao nhiêu triệu", "mấy tỷ", "bao nhiêu tỷ",
+                    "mấy trăm", "bao nhiêu trăm", "lương", "thưởng", "thu nhập", "doanh thu",
+                    "lãi bao nhiêu", "lời bao nhiêu", "lỗ bao nhiêu", "giá bao nhiêu",
+                    "chi phí bao nhiêu", "tiền công", "hoa hồng", "trợ cấp", "số tiền",
+                ]
+            ) and not any(w in q_low for w in ["tờ tiền", "mấy tờ", "chỉ vàng", "mấy chỉ", "cây vàng", "lượng vàng"])
 
             if any(w in q_low for w in ["km", "cây số", "kilomet", "quãng đường", "đường trường"]):
                 _unit_str = "km"
@@ -3969,16 +3989,16 @@ class HexagramReasoningAI:
                 _topic_desc = "số lượng vàng bạc / trang sức"
                 _obj_hanh_target = "Kim"
                 _obj_label = "Vàng bạc / Trang sức quý"
-            elif any(w in q_low for w in ["triệu", "mấy triệu", "bao nhiêu triệu"]):
-                _unit_str = "triệu đồng"
-                _topic_desc = "số tiền (triệu đồng)"
-                _obj_hanh_target = "Kim"
-                _obj_label = "Tiền bạc (Triệu đồng)"
             elif any(w in q_low for w in ["tỷ", "mấy tỷ", "bao nhiêu tỷ"]):
                 _unit_str = "tỷ đồng"
                 _topic_desc = "giá trị / số tiền (tỷ đồng)"
                 _obj_hanh_target = "Kim"
                 _obj_label = "Tài sản / Số tiền (Tỷ đồng)"
+            elif _is_money_salary_q or any(w in q_low for w in ["triệu", "mấy triệu", "bao nhiêu triệu"]):
+                _unit_str = "triệu đồng (VNĐ)"
+                _topic_desc = "mức tiền lương / thu nhập thực nhận" if any(w in q_low for w in ["lương", "thưởng", "thu nhập", "tháng"]) else "số tiền thực tế (VNĐ)"
+                _obj_hanh_target = "Kim"
+                _obj_label = "Khoản tiền / Thu nhập (VNĐ)"
             elif any(w in q_low for w in ["tờ tiền", "mấy tờ"]):
                 _unit_str = "tờ"
                 _topic_desc = "số tờ"
@@ -4002,8 +4022,10 @@ class HexagramReasoningAI:
             else:
                 _m_u2 = re.search(r"(?:bao nhiêu|mấy)\s+([a-zA-ZÀ-ỹ%]+)", q_low)
                 if _m_u2:
-                    _unit_str = _m_u2.group(1).strip()
-                    _topic_desc = f"số lượng ({_unit_str})"
+                    _u_cand = _m_u2.group(1).strip()
+                    if _u_cand not in ("tiền", "đồng"):
+                        _unit_str = _u_cand
+                        _topic_desc = f"số lượng ({_unit_str})"
                 if any(w in q_low for w in ["sách", "vở", "cây", "hoa", "bút", "ghế", "bàn"]):
                     _obj_hanh_target = "Mộc"
                 elif any(w in q_low for w in ["chai", "cốc", "ly", "nước", "cá"]):
@@ -4019,14 +4041,19 @@ class HexagramReasoningAI:
             _HT_NUM_Q = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
             _TRIG_HANH_Q = {"Càn": "Kim", "Đoài": "Kim", "Ly": "Hỏa", "Chấn": "Mộc", "Tốn": "Mộc", "Khảm": "Thủy", "Cấn": "Thổ", "Khôn": "Thổ"}
             _CHI_NUM_Q = {"Tý": 1, "Sửu": 2, "Dần": 3, "Mão": 4, "Thìn": 5, "Tị": 6, "Ngọ": 7, "Mùi": 8, "Thân": 9, "Dậu": 10, "Tuất": 11, "Hợi": 12}
+            _THAI_HUYEN_CHI_Q = {"Tý": 9, "Ngọ": 9, "Sửu": 8, "Mùi": 8, "Dần": 7, "Thân": 7, "Mão": 6, "Dậu": 6, "Thìn": 5, "Tuất": 5, "Tị": 4, "Hợi": 4}
             _SINH_Q = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+            _KHAC_Q = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+            _XUNG_CHI_Q = {"Tý": "Ngọ", "Ngọ": "Tý", "Sửu": "Mùi", "Mùi": "Sửu", "Dần": "Thân", "Thân": "Dần", "Mão": "Dậu", "Dậu": "Mão", "Thìn": "Tuất", "Tuất": "Thìn", "Tị": "Hợi", "Hợi": "Tị"}
 
             _up_q, _lo_q = _mat_spec.get("up_chu") or "Đoài", _mat_spec.get("lo_chu") or "Khôn"
             _b_up_q, _b_lo_q = _mat_spec.get("up_bien") or _up_q, _mat_spec.get("lo_bien") or "Khảm"
             _the_quai_q = _mat_spec.get("the_quai") or _up_q
             _dung_quai_q = _mat_spec.get("dung_quai") or _lo_q
-            _the_ch_q = str(the_hao.get("chi") or the_hao.get("can_chi") or "Tị").split()[-1]
-            _ung_ch_q = str(ung_hao.get("chi") or ung_hao.get("can_chi") or "Hợi").split()[-1]
+            _raw_the_cc = re.sub(r"\([^)]*\)", "", str(the_hao.get("chi") or the_hao.get("can_chi") or _mat_spec.get("the_chi") or "Tị")).strip()
+            _the_ch_q = _raw_the_cc.split()[-1] if _raw_the_cc else "Tị"
+            _raw_ung_cc = re.sub(r"\([^)]*\)", "", str(ung_hao.get("chi") or ung_hao.get("can_chi") or _mat_spec.get("ung_chi") or "Hợi")).strip()
+            _ung_ch_q = _raw_ung_cc.split()[-1] if _raw_ung_cc else "Hợi"
             _cung_n_q = int(target_cung) if str(target_cung).isdigit() else 2
             _cuc_raw_q = str(_mat_spec.get("cuc_km") or chart_data.get("cuc") or "2")
             _m_cuc_q = re.search(r"(\d+)", _cuc_raw_q)
@@ -4034,6 +4061,116 @@ class HexagramReasoningAI:
 
             multi_subs_q = blueprint.get("multi_subjects") or []
             _dong_val_q = int(dong_list[0]) if isinstance(dong_list, (list, tuple)) and dong_list else (int(dong_list) if str(dong_list).isdigit() else 2)
+
+            # ── NHÁNH ĐẶC BIỆT V119.0: PHÁP ĐỊNH LƯỢNG TIỀN LƯƠNG / THU NHẬP / SỐ TIỀN / GIÁ TRỊ (CHUẨN PHONG CÁCH ANTIGRAVITY) ──
+            if _is_money_salary_q and not _has_existence_q:
+                _tt_u = _TT_NUM_Q.get(_up_q, 3)
+                _tt_l = _TT_NUM_Q.get(_lo_q, 8)
+                _ht_u = _HT_NUM_Q.get(_up_q, 9)
+                _ht_l = _HT_NUM_Q.get(_lo_q, 2)
+                _tt_bu = _TT_NUM_Q.get(_b_up_q, 3)
+                _tt_bl = _TT_NUM_Q.get(_b_lo_q, 4)
+                _ht_bu = _HT_NUM_Q.get(_b_up_q, 9)
+                _ht_bl = _HT_NUM_Q.get(_b_lo_q, 3)
+
+                # Tìm hào Thê Tài (Dụng Thần Tiền Lương / Tài Chính)
+                _tai_idx_m, _tai_chi_m, _tai_nh_m = 2, "Mão", "Mộc"
+                _CHI_NH_MAP = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+                for _ix_m, _hm in enumerate(haos, 1):
+                    if isinstance(_hm, dict) and "Thê Tài" in str(_hm.get("luc_than") or ""):
+                        _tai_idx_m = _ix_m
+                        _raw_t_cc = re.sub(r"\([^)]*\)", "", str(_hm.get("chi") or _hm.get("can_chi") or "Mão")).strip()
+                        _tai_chi_m = _raw_t_cc.split()[-1] if _raw_t_cc else "Mão"
+                        _tai_nh_m = str(_hm.get("ngu_hanh") or _hm.get("hanh") or _CHI_NH_MAP.get(_tai_chi_m, "Mộc"))
+                        break
+                _the_nh_m = str(the_hao.get("ngu_hanh") or the_hao.get("hanh") or _mat_spec.get("the_nh") or _CHI_NH_MAP.get(_the_ch_q, "Kim"))
+                _tai_th_num = _THAI_HUYEN_CHI_Q.get(_tai_chi_m, 6)
+                _tai_chi_num = _CHI_NUM_Q.get(_tai_chi_m, 4)
+
+                # Tính Tổng Quái Số Mai Hoa (Quẻ Chủ -> Quẻ Biến) + Thái Huyền Hào Tài
+                _sum_chu_tt = _tt_u + _tt_l
+                _sum_chu_ht = _ht_u + _ht_l
+                _sum_bien_mix = _ht_bu + _tt_bl + _dong_val_q
+                _sum_tai_comb = _ht_u + _tai_chi_num + _dong_val_q
+
+                _base_low = min(_sum_chu_tt, _sum_chu_ht, _sum_bien_mix)
+                _base_high = max(_sum_chu_tt, _sum_chu_ht, _sum_bien_mix, _sum_tai_comb)
+                if _base_low < 7:
+                    _base_low = max(8, _base_low + _tai_chi_num)
+                if _base_high <= _base_low:
+                    _base_high = _base_low + max(2, _dong_val_q)
+                _base_mid = round((_base_low + _base_high) / 2.0, 1)
+                _base_mid_vnd = f"{int(round(_base_mid * 1_000_000)):,}".replace(",", ".")
+                _base_mid_str = f"{int(_base_mid)}" if _base_mid == int(_base_mid) else f"{_base_mid}".replace(".", ",")
+
+                # Ngưỡng Bậc 2 (Cấp Quản lý / Kinh doanh / Lương + Thưởng gộp cuối năm = ×2 hệ số Quái số)
+                _high_tier_low = _base_low * 2
+                _high_tier_high = _base_high * 2
+                _high_tier_mid = int(round((_high_tier_low + _high_tier_high) / 2.0))
+
+                # Phân tích tương tác thực tế giữa Hào Thê Tài (Tiền) và Hào Thế (Bản thân) + Quẻ Biến + Kỳ Môn
+                _is_tai_xung_the = (_XUNG_CHI_Q.get(_tai_chi_m) == _the_ch_q)
+                _is_the_khac_tai = (_KHAC_Q.get(_the_nh_m) == _tai_nh_m)
+                _is_tai_sinh_the = (_SINH_Q.get(_tai_nh_m) == _the_nh_m)
+                _has_deduction_sign = (
+                    any(k in f"{ten_que_chu} {ten_que_bien}" for k in ["Phệ Hạp", "Khốn", "Tổn", "Bác", "Tụng", "Kiển"])
+                    or any(d in str(cua_name) for d in ["Kinh", "Thương", "Tử", "Đỗ"])
+                    or _is_tai_xung_the
+                )
+                if _has_deduction_sign:
+                    _money_flow_note = (
+                        f"Trên Lục Hào, Hào Thê Tài tại Hào {_tai_idx_m} (<b>{_tai_chi_m}-{_tai_nh_m}</b>) "
+                        + (f"đang tương xung/khắc với Hào Thế tại Hào {the_idx} (<b>{_the_ch_q}-{_the_nh_m}</b> — <i>Thế khắc Tài / Mão Dậu xung: vất vả nỗ lực mới thu về, có khoản phải chi ra hoặc khấu trừ</i>)" if (_is_tai_xung_the or _is_the_khac_tai) else f"tương tác với Hào Thế tại Hào {the_idx} ({_the_ch_q}-{_the_nh_m})")
+                        + f", kết hợp Hào {_dong_val_q} phát động biến ra quẻ <b>{ten_que_bien}</b> và Kỳ Môn Cung {_cung_n_q} gặp <b>Cửa {cua_name} + Sao {sao_name}</b> "
+                        f"➔ Báo hiệu khoản tiền/lương này <b>100% CÓ THẬT VÀ SẼ VỀ TAY BẠN</b>, nhưng trước khi thực lĩnh sẽ có <b>bước đối soát bảng công/chỉ tiêu/hồ sơ hoặc bị khấu trừ nhẹ một phần (thuế/bảo hiểm/ứng trước)</b> khiến con số thực nhận dao động sát ngưỡng chuẩn của quẻ!"
+                    )
+                else:
+                    _money_flow_note = (
+                        f"Trên Lục Hào, Hào Thê Tài tại Hào {_tai_idx_m} (<b>{_tai_chi_m}-{_tai_nh_m}</b>) hữu khí "
+                        + ("sinh hợp Hào Thế (<b>Tài sinh Thế — tiền tự tìm đến người, dễ có thêm thưởng/phụ cấp</b>)" if _is_tai_sinh_the else f"phối hợp Hào Thế tại Hào {the_idx} ({_the_ch_q}-{_the_nh_m})")
+                        + f", kết hợp Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> và Kỳ Môn Cung {_cung_n_q} (<b>Sao {sao_name} · Cửa {cua_name}</b>) "
+                        f"➔ Báo hiệu dòng tiền về thuận lợi, nhận đủ định mức và có lộc cộng thêm!"
+                    )
+
+                if "tỷ" in q_low or any(w in q_low for w in ["bán nhà", "mua nhà", "mảnh đất", "lô đất"]):
+                    short_hl = (
+                        f"💰 KẾT QUẢ ĐỊNH LƯỢNG TÀI CHÍNH TỪ LIÊN KẾT QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"KHOẢNG {_base_low/10:.1f} – {_base_high/10:.1f} TỶ VNĐ (TRỌNG TÂM ~{_base_mid/10:.2f} TỶ ĐỒNG, HOẶC {_base_low/2:.1f} – {_base_high/2:.1f} TỶ ĐỒNG ĐỐI VỚI BẤT ĐỘNG SẢN LỚN — "
+                        f"TỔNG QUÁI SỐ {_up_q} [{_tt_u}/{_ht_u}] + {_lo_q} [{_tt_l}/{_ht_l}] = {_sum_chu_tt} ➔ BIẾN QUẺ {ten_que_bien.upper()} = {_sum_bien_mix})!"
+                    )
+                else:
+                    _label_prefix = "MỨC LƯƠNG / THU NHẬP THỰC LĨNH" if any(w in q_low for w in ["lương", "thưởng", "thu nhập", "tháng"]) else "SỐ TIỀN ĐỊNH LƯỢNG TỪ QUẺ"
+                    short_hl = (
+                        f"💰 KẾT QUẢ {_label_prefix} ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"[1] KHUNG CHUẨN ỨNG TRỰC TIẾP TỔNG QUÁI SỐ: KHOẢNG {_base_low}.000.000 – {_base_high}.000.000 VNĐ (TRỌNG TÂM SÁT QUẺ NHẤT: ~{_base_mid_vnd} VNĐ — ỨNG QUẺ {ten_que_chu.upper()} TỔNG SỐ = {_sum_chu_tt} ➔ BIẾN {ten_que_bien.upper()} = {_sum_bien_mix})  |  "
+                        f"[2] NẾU Ở NGẠCH QUẢN LÝ / CHUYÊN GIA HOẶC CỘNG GỘP THƯỞNG CUỐI NĂM (HỆ SỐ ×2 HÀO THẾ {_the_ch_q.upper()}): KHOẢNG {_high_tier_low}.000.000 – {_high_tier_high}.000.000 VNĐ (TRỌNG TÂM ~{_high_tier_mid}.000.000 VNĐ)!"
+                    )
+
+                why_s = (
+                    f"<b>• [Bước 1 — Chiết xuất Con Số Tiền Tệ Từ Mai Hoa Quái Số & Thái Huyền Số]:</b><br>"
+                    f"&nbsp;&nbsp;1. <b>Quẻ Chủ ({ten_que_chu}):</b> Thượng Quái <b>{_up_q}</b> (Tiên Thiên = <b>{_tt_u}</b>, Hậu Thiên = <b>{_ht_u}</b>) + Hạ Quái <b>{_lo_q}</b> (Tiên Thiên = <b>{_tt_l}</b>, Hậu Thiên = <b>{_ht_l}</b>) ➔ Tổng Quái Số Nền = <b>{_sum_chu_tt}</b> (Tiên Thiên: {_tt_u}+{_tt_l}={_sum_chu_tt}) và <b>{_sum_chu_ht}</b> (Hậu Thiên: {_ht_u}+{_ht_l}={_sum_chu_ht}), ứng trực tiếp mốc nền <b>{_base_low}.000.000 VNĐ</b>.<br>"
+                    f"&nbsp;&nbsp;2. <b>Quẻ Biến ({ten_que_bien}) & Hào Thê Tài:</b> Động hào <b>{_dong_val_q}</b> biến Thượng <b>{_b_up_q} ({_ht_bu})</b> / Hạ <b>{_b_lo_q} ({_tt_bl})</b>, kết hợp Hào Thê Tài tại Hào {_tai_idx_m} (<b>{_tai_chi_m}</b> — Chi số = <b>{_tai_chi_num}</b>, Thái Huyền số = <b>{_tai_th_num}</b>) và Cung Kỳ Môn số <b>{_cung_n_q}</b> (Cục {_cuc_n_q}) ➔ Mở biên độ thực nhận lên <b>{_base_low}.000.000 – {_base_high}.000.000 VNĐ (hội tụ mạnh nhất tại ~{_base_mid_str} triệu đồng; hoặc {_high_tier_low} – {_high_tier_high} triệu đồng nếu tính gộp thưởng/ngạch cao)</b>.<br>"
+                    f"<b>• [Bước 2 — Bóc tách Yếu tố Tác động Thực tế lên Khoản Tiền (Tại sao tăng/giảm/khấu trừ?)]:</b> {_money_flow_note}"
+                )
+                when_s = (
+                    f"<b>• Thời điểm tiền về tài khoản / chốt bảng lương:</b> Ứng vào ngày/giờ <b>{_tai_chi_m}</b> hoặc ngày xung/hợp mở kho tài lộc (<b>{_XUNG_CHI_Q.get(_tai_chi_m, 'Dậu')} / {omni_data.get('exact_timestamp', 'Cuối tháng này – đầu tháng tới')}</b>). "
+                    f"Khi Hào Động (Hào {_dong_val_q}) và Hào Thê Tài ({_tai_chi_m}-{_tai_nh_m}) đắc khí, khoản tiền <b>{_base_low} – {_base_high} triệu VNĐ</b> sẽ được tất toán."
+                )
+                adv_s = (
+                    f"<b>• Chiến lược Tài chính & Hành động:</b> "
+                    + (f"Do quẻ xuất hiện <b>{ten_que_bien}</b> và <b>Cửa {cua_name}</b>, bạn nên kiểm tra kỹ bảng chấm công/KPI/chứng từ (Hào Phụ Mẫu) trước kỳ chốt lương để đảm bảo không bị tính thiếu hoặc khấu trừ sai; " if _has_deduction_sign else "Dòng tiền đang thuận lợi, bạn có thể chủ động đề xuất thưởng/KPI; ")
+                    + f"ưu tiên giao dịch/nhận tiền hoặc trao đổi công việc theo hướng <b>{huong_cung} (Cung {_cung_n_q})</b>."
+                )
+                return {
+                    "has_override": True,
+                    "is_strict_override": True,
+                    "is_open_van_vat": True,
+                    "headline": f"🎯 {short_hl}",
+                    "short_headline": short_hl,
+                    "why": why_s,
+                    "when": when_s,
+                    "advice": adv_s,
+                }
             if len(multi_subs_q) >= 2:
                 # Tính định lượng độc lập cho Chủ thể 1 (Hào Thế + Thượng Quái Chủ/Biến + Cung Kỳ Môn) và Chủ thể 2 (Hào Ứng/Phối ngẫu + Hạ Quái + Hào Động)
                 _n1_a = _HT_NUM_Q.get(_up_q, 7) + _CHI_NUM_Q.get(_the_ch_q, 5)
@@ -4272,16 +4409,28 @@ class HexagramReasoningAI:
                     f"<b>• [Mắt xích 3 — Sự Hội Tụ Tuyệt Đối Của {_converge_count}/6 Tầng Số Vào Con Số {_best_num}]:</b> {_converge_names_str}.<br>"
                     f"<b>• [Mắt xích 4 — Kiểm định Quy mô từ Quẻ Biến & Quẻ Hỗ]:</b> {_scale_explain} ➔ Chốt định lượng chính xác là <b>{_best_num} {_unit_str}</b>!"
                 )
-                when_s = (
-                    f"Trạng thái hiện tại (<b>{omni_data.get('exact_timestamp', 'Hiện tại')}</b>): "
-                    f"Số lượng <b>{_best_num} {_unit_str}</b> đang được cất giữ an toàn tại phương <b>{huong_cung} (Cung {_cung_n_q} · Cửa {cua_name} · Thần {than_name})</b>."
-                )
-                adv_s = (
-                    f"Tài vật (<b>{_best_num} {_unit_str}</b>) tại hướng <b>{huong_cung}</b> đang đắc cách <b>{_container_quai} sinh {_obj_quai}</b> và <b>Tài sinh Thế</b>, "
-                    f"nên tiếp tục cất giữ kín đáo (ứng tượng <b>{cua_name}</b>) để giữ vững khí tài lộc trong nhà (Màu hợp: <b>{colors_str}</b>)."
-                )
+                _is_storage_q = _has_existence_q or any(w in q_low for w in ["vàng", "bạc", "trang sức", "két", "cất", "giấu", "trong nhà", "trong tủ"])
+                if _is_storage_q:
+                    when_s = (
+                        f"Trạng thái hiện tại (<b>{omni_data.get('exact_timestamp', 'Hiện tại')}</b>): "
+                        f"Số lượng <b>{_best_num} {_unit_str}</b> đang được cất giữ an toàn tại phương <b>{huong_cung} (Cung {_cung_n_q} · Cửa {cua_name} · Thần {than_name})</b>."
+                    )
+                    adv_s = (
+                        f"Tài vật (<b>{_best_num} {_unit_str}</b>) tại hướng <b>{huong_cung}</b> đang đắc cách <b>{_container_quai} sinh {_obj_quai}</b> và <b>Tài sinh Thế</b>, "
+                        f"nên tiếp tục cất giữ kín đáo (ứng tượng <b>{cua_name}</b>) để giữ vững khí tài lộc trong nhà (Màu hợp: <b>{colors_str}</b>)."
+                    )
+                else:
+                    when_s = (
+                        f"Thời điểm ứng nghiệm & hội tụ con số <b>{_best_num} {_unit_str}</b>: "
+                        f"<b>{omni_data.get('exact_timestamp', f'Ứng vào Ngày/Giờ {_dt_hao_chi}')}</b> (Cung {_cung_n_q} {huong_cung} · Cửa <b>{cua_name}</b> · Sao <b>{sao_name}</b>)."
+                    )
+                    adv_s = (
+                        f"Chủ động căn cứ theo định lượng <b>{_best_num} {_unit_str}</b> từ quẻ <b>{ten_que_chu} ➔ {ten_que_bien}</b> để lập kế hoạch hành động, ưu tiên phương vị <b>{huong_cung}</b> (Màu trợ vận: <b>{colors_str}</b>)."
+                    )
                 return {
                     "has_override": True,
+                    "is_strict_override": True,
+                    "is_open_van_vat": not _is_storage_q,
                     "headline": f"🎯 {short_hl}",
                     "short_headline": short_hl,
                     "why": why_s,
@@ -4935,7 +5084,15 @@ class HexagramReasoningAI:
         is_open_van_vat = False
         extra_van_vat_why = ""
 
-        # Kiểm tra nhóm câu hỏi Mở — Giải mã Vạn Vật Loại Tượng (Thể loại nhạc, Món ăn/Đồ uống, Hoạt động đang làm, Ngành nghề, Tính cách/Ngoại hình, Đồ vật/Cái gì...)
+        # Kiểm tra nhóm câu hỏi Mở — Giải mã Vạn Vật Loại Tượng (Thể loại nhạc, Món ăn/Đồ uống, Hoạt động đang làm, Ngành nghề, Tính cách/Ngoại hình, Đồ vật/Cái gì, Tiền lương/Giá trị...)
+        _is_money_clause_q = any(
+            w in raw_q_g
+            for w in [
+                "bao nhiêu tiền", "mức lương", "lương tháng", "lương bao nhiêu", "thưởng bao nhiêu",
+                "thu nhập bao nhiêu", "lãi bao nhiêu", "lời bao nhiêu", "giá bao nhiêu",
+                "mấy triệu", "bao nhiêu triệu", "mấy tỷ", "bao nhiêu tỷ", "được bao nhiêu tiền",
+            ]
+        ) and not any(w in raw_q_g for w in ["chỉ vàng", "mấy chỉ", "tờ tiền"])
         _is_music_q = any(w in raw_q_g for w in ["nhạc", "bài hát", "ca khúc", "giai điệu", "nghe gì", "thể loại nhạc", "bản nhạc", "ca sĩ", "âm nhạc"])
         _is_food_drink_q = any(w in raw_q_g for w in ["ăn gì", "món gì", "ăn món", "uống gì", "đồ uống", "nước gì", "vị gì", "bữa sáng", "bữa trưa", "bữa tối"])
         _is_activity_q = any(w in raw_q_g for w in ["đang làm gì", "đang xem gì", "phim gì", "đọc gì", "sách gì", "đang nghĩ gì", "tâm trạng"])
@@ -4958,6 +5115,29 @@ class HexagramReasoningAI:
                     f"ĐỒ VẬT ĐANG BỊ CHE KHUẤT SÂU HOẶC ĐÃ RỜI KHỎI VỊ TRÍ CŨ (DO DỤNG THẦN {sq_dt.upper()} CHẠM TUẦN KHÔNG / ẨN PHỤC TẠI HƯỚNG {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
                     f"CẦN TÌM KỸ Ở {_height_lvl.upper()} HƯỚNG {huong_str.upper()} VÀO NGÀY/GIỜ {dt_chi.upper()} MỚI LỘ DIỆN!"
                 )
+        elif _is_money_clause_q:
+            is_open_van_vat = True
+            _tt_u_g = _TT_NUM.get(_up_g, 3)
+            _tt_l_g = _TT_NUM.get(_lo_g, 8)
+            _ht_u_g = _HT_NUM.get(_up_g, 9)
+            _ht_l_g = _HT_NUM.get(_lo_g, 2)
+            _ht_bu_g = _HT_NUM.get(_m.get("up_bien") or _up_g, 9)
+            _tt_bl_g = _TT_NUM.get(_m.get("lo_bien") or _lo_g, 4)
+            _sum_c_g = _tt_u_g + _tt_l_g
+            _sum_h_g = _ht_u_g + _ht_l_g
+            _sum_b_g = _ht_bu_g + _tt_bl_g + _dong_g
+            _low_m_g = max(8, min(_sum_c_g, _sum_h_g, _sum_b_g))
+            _high_m_g = max(_low_m_g + 2, max(_sum_c_g, _sum_h_g, _sum_b_g))
+            _mid_m_g = round((_low_m_g + _high_m_g) / 2.0, 1)
+            _mid_m_vnd = f"{int(round(_mid_m_g * 1_000_000)):,}".replace(",", ".")
+            short_hl = (
+                f"💰 KẾT QUẢ ĐỊNH LƯỢNG TIỀN LƯƠNG / THU NHẬP ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"[1] KHUNG CHUẨN ỨNG TỔNG QUÁI SỐ: KHOẢNG {_low_m_g}.000.000 – {_high_m_g}.000.000 VNĐ (TRỌNG TÂM ~{_mid_m_vnd} VNĐ)  |  "
+                f"[2] NGẠCH QUẢN LÝ / CỘNG GỘP THƯỞNG CUỐI NĂM (HỆ SỐ ×2): KHOẢNG {_low_m_g*2}.000.000 – {_high_m_g*2}.000.000 VNĐ!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Định Lượng Tiền Lương / Tài Chính (Mai Hoa + Kỳ Môn + Lục Hào):</b> Tổng Quái Số Quẻ Chủ <b>{_m['full_chu']}</b> = <b>{_sum_c_g}</b> ({_up_g} {_tt_u_g}+{_lo_g} {_tt_l_g}) ➔ Biến <b>{_m['full_bien']}</b> = <b>{_sum_b_g}</b>, phối hợp Hào Thê Tài ({dt_chi}-{dt_nh}) và Cung {_m['target_cung']} (Sao {_m['sao_name']}, Cửa {_m['cua_name']}) chốt biên độ thực nhận <b>{_low_m_g} – {_high_m_g} triệu đồng</b> (hoặc <b>{_low_m_g*2} – {_high_m_g*2} triệu đồng</b> ở ngạch quản lý/thưởng gộp).<br>"
+            )
         elif _is_music_q:
             is_open_van_vat = True
             _trigs_active = [_m.get("up_chu", ""), _m.get("lo_chu", ""), _m.get("up_bien", ""), _m.get("lo_bien", ""), _m.get("up_ho", ""), _m.get("lo_ho", "")]
@@ -5976,11 +6156,11 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V118.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
+        # Bước 2 (V119.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V118_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V119_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -6024,7 +6204,7 @@ class HexagramReasoningAI:
                     "   - [Bước 2 - Mai Hoa 5 Tầng Sâu]: Phân tích Trục Tam Quái (Chủ -> Hỗ -> Biến), Thể-Dụng, Đắc Thời/Thất Thời theo Mùa, đặc biệt là ĐẢNG THỂ vs ĐẢNG DỤNG trên Quẻ Hỗ (Thượng Hỗ & Hạ Hỗ phe nào mạnh hơn) và Tách Quái Vật Thể vs Quái Không Gian.\n"
                     "   - [Bước 3 - Kỳ Môn 6 Tầng Sâu]: Phân tích Nội Bàn vs Ngoại Bàn (gần/nhanh vs xa/chậm), Tương quan Cung Chủ (Can Ngày) <-> Cung Khách (Can Giờ), Tinh-Môn-Thần, Trạng thái Môn Bức/Chế/Hòa/Nghĩa, 81 Cách Cục Lưu Bá Ôn (Thiên Bàn Can + Địa Bàn Can) và Ngũ Bất Ngộ Thời / Dịch Mã / Phục Phản Ngâm / Niên Mệnh.\n"
                     "   - [Bước 4 - Thiết Bản & Pháp Quyết Thông Quan]: Liên kết Thái Huyền Tứ Trụ Số, Điều Văn Thiết Bản, Nạp Âm 60 Giáp Tý và Dụng Thần Thông Quan hóa giải.\n\n"
-                    "5. CHÍN ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ):\n"
+                    "5. MƯỜI ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ — TƯ DUY ĐẠI SƯ ANTIGRAVITY):\n"
                     "   - Định luật 1 (Đoán Màu sắc / Đồ vật / Thiết bị / Âm nhạc / Món ăn): Lấy Quẻ Biến Dụng & Quẻ Chủ Mai Hoa + Cửu Tinh/Bát Môn/Bát Thần Kỳ Môn + Lục Hào để định danh chính xác tên thể loại nhạc, món ăn, màu sắc, đồ vật cụ thể.\n"
                     "   - Định luật 2 (Đoán Vợ chồng / Nhân tình / Gia đạo): Khi Hào Thê Tài/Quan Quỷ trì Thế hoặc sinh hợp Thế, Quẻ Biến Dụng sinh Thể, Quẻ Hỗ là Tiệm/Gia Nhân, Kỳ Môn đắc Thiên Phụ + Sinh Môn thì khẳng định 100% vợ/chồng chung thủy.\n"
                     "   - Định luật 3 (Đoán Tầng nhà / Chung cư): Hậu Thiên Thượng Quái Mai Hoa + Tiên Thiên Hạ Quái Hỗ + Bản cung Sao Kỳ Môn = Vị trí tầng đang ở; Tổng Tiên Thiên Chủ + Hỗ = Tổng số tầng tòa chung cư.\n"
@@ -6033,7 +6213,8 @@ class HexagramReasoningAI:
                     "   - Định luật 6 (Mọi câu hỏi khác): Luôn liên kết chặt chẽ mọi yếu tố của quẻ từ Mai Hoa + Kỳ Môn + Lục Hào + Thiết Bản.\n"
                     "   - Định luật 7 (Phân Định Hiện Trạng Bệnh Chứng/Sốt Cao vs. Tiên Lượng Hồi Phục): Nếu Ly Hỏa/Tị Hỏa khắc Đoài/Dậu Kim + Kỳ Môn gặp Thương Môn/Thiên Xung thì khẳng định 100% HIỆN TẠI ĐANG SỐT CAO; còn Nguyên Thần Thổ động sinh Kim là TIÊN LƯỢNG CỨU ỨNG (nhanh hạ sốt).\n"
                     "   - Định luật 8 (Định Lượng Hội Tụ 6 Tầng & Tách Biệt Quái Vật Thể vs. Quái Không Gian Chứa Đựng): Tách biệt Quái Vật Thể (VD: Đoài Kim = Vàng, Tiên Thiên = 2) với Quái Không Gian Chứa Đựng (Khôn Thổ = Ngôi nhà, Hậu Thiên = 2), hội tụ 6 tầng số = 2 chỉ vàng.\n"
-                    "   - Định luật 9 (Pháp Độc Tượng Vạn Vật Loại Tượng 6 Tầng & Tử Vi Thiên Kỷ 56.6GB): Khi hỏi đối chứng 2 phương án về Địa lý / Xuất thân (VD: 'tôi được sinh ra ở thành phố hay vùng núi'), đọc trực tiếp Tượng Quái Chủ-Hỗ-Biến + Cung Kỳ Môn + Bát Môn + Hào 1 (Hào Sơ = Gốc rễ lúc mới chào đời) + Hào Phụ Mẫu -> Khẳng định 100% SINH RA Ở VÙNG NÚI!\n\n"
+                    "   - Định luật 9 (Pháp Độc Tượng Vạn Vật Loại Tượng 6 Tầng & Tử Vi Thiên Kỷ 56.6GB): Khi hỏi đối chứng 2 phương án về Địa lý / Xuất thân (VD: 'tôi được sinh ra ở thành phố hay vùng núi'), đọc trực tiếp Tượng Quái Chủ-Hỗ-Biến + Cung Kỳ Môn + Bát Môn + Hào 1 (Hào Sơ = Gốc rễ lúc mới chào đời) + Hào Phụ Mẫu -> Khẳng định 100% SINH RA Ở VÙNG NÚI!\n"
+                    "   - Định luật 10 (Định Lượng Tiền Lương / Thưởng / Thu Nhập / Giá Trị Tài Chính Chuẩn Thực Tế VNĐ): Khi hỏi 'lương bao nhiêu tiền', 'thưởng bao nhiêu tiền', 'thu nhập mấy triệu', TUYỆT ĐỐI CẤM trả lời '01 tiền' hay 'cất giữ kín đáo'! Phải quy đổi chuẩn xác bằng công thức Tam Thức: Tổng Quái Số Quẻ Chủ (Tiên Thiên + Hậu Thiên) -> Tổng Quái Số Quẻ Biến + Hào Động kết hợp Thái Huyền Số & Chi Số của Hào Thê Tài và Cung/Cục Kỳ Môn ra ĐƠN VỊ TRIỆU ĐỒNG VNĐ (VD: Hỏa Địa Tấn Tổng Chủ = 11 -> Phệ Hạp Tổng Biến = 15, Hào Thê Tài Mão Mộc số 4/6 -> Khung chuẩn 11.000.000 - 15.000.000 VNĐ, trọng tâm ~14.000.000 - 15.000.000 VNĐ; Ngạch Quản lý/Cộng thưởng hệ số x2 Hào Thế = 22.000.000 - 30.000.000 VNĐ) kèm phân tích đối soát bảng công/thưởng phạt!\n\n"
                     "Trả về ĐÚNG 1 JSON hợp lệ (LƯU Ý: Không dùng dấu ngoặc kép \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
                     "{\n"
                     "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện đúng Khuôn mẫu đáp án của AI Số 1, in hoa các ý chính, nêu rõ đáp án cụ thể từ Tam Thức\",\n"
@@ -6244,7 +6425,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V118.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V119.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): ANTIGRAVITY BRAIN MODE & GEMINI PRO DEEP-REASONING (24 YẾU TỐ A→Z)</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
@@ -6274,7 +6455,7 @@ class HexagramReasoningAI:
 
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V118.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V119.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
