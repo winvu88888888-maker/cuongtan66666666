@@ -5963,67 +5963,158 @@ class HexagramReasoningAI:
             _sao_m = str(_m.get("sao_name", ""))
             _cua_m = str(_m.get("cua_name", ""))
             _than_m = str(_m.get("than_name", ""))
-            _music_scores = {
-                "NHẠC TRỮ TÌNH / BALLAD SÂU LẮNG / NHẠC XƯA – ACOUSTIC (Giai điệu du dương, giàu cảm xúc & hoài niệm)": 0,
-                "NHẠC SÔI ĐỘNG / REMIX – EDM – POP DANCE – ROCK (Tiết tấu mạnh, nhịp trống/beat dồn dập, bùng nổ)": 0,
-                "NHẠC KHÔNG LỜI / LOFI CHILL – PIANO – R&B TÂM TRẠNG (Êm dịu, sâu lắng, thư giãn nội tâm)": 0,
-                "NHẠC TRẺ THỊNH HÀNH / V-POP – US-UK – RAP MELODIC (Hiện đại, bắt tai, giàu tính giải trí)": 0,
-                "NHẠC QUÊ HƯƠNG / DÂN CA / TRUYỀN THỐNG – THIỀN TỊNH (Mộc mạc, sâu sắc, mang âm hưởng cội nguồn)": 0,
-            }
-            _k_ballad, _k_edm, _k_lofi, _k_pop, _k_folk = list(_music_scores.keys())
-            for _tg_i, _tg_w in [(_m.get("up_bien"), 4), (_m.get("lo_bien"), 3), (_m.get("up_chu"), 4), (_m.get("lo_chu"), 3), (_m.get("up_ho"), 2), (_m.get("lo_ho"), 2)]:
-                if _tg_i in ("Tốn", "Càn"):
-                    _music_scores[_k_ballad] += _tg_w
-                if _tg_i in ("Chấn", "Ly"):
-                    _music_scores[_k_edm] += _tg_w
-                if _tg_i == "Khảm":
-                    _music_scores[_k_lofi] += _tg_w + 1
-                if _tg_i == "Đoài":
-                    _music_scores[_k_pop] += _tg_w + 1
-                if _tg_i in ("Khôn", "Cấn"):
-                    _music_scores[_k_folk] += _tg_w
-            if "Thiên Phụ" in _sao_m or "Thiên Tâm" in _sao_m:
-                _music_scores[_k_ballad] += 5
-            if "Thiên Xung" in _sao_m or "Thiên Anh" in _sao_m:
-                _music_scores[_k_edm] += 5
-            if "Thiên Bồng" in _sao_m:
-                _music_scores[_k_lofi] += 5
-            if "Thiên Trụ" in _sao_m:
-                _music_scores[_k_pop] += 5
-            if any(s in _sao_m for s in ("Thiên Nhậm", "Thiên Nhuế", "Thiên Cầm")):
-                _music_scores[_k_folk] += 4
-            if "Thái Âm" in _than_m or "Lục Hợp" in _than_m:
-                _music_scores[_k_ballad] += 4
-            elif "Chu Tước" in _than_m or "Bạch Hổ" in _than_m or "Cửu Thiên" in _than_m:
-                _music_scores[_k_edm] += 3
-            elif "Huyền Vũ" in _than_m or "Đằng Xà" in _than_m:
-                _music_scores[_k_lofi] += 3
-            if "Khai" in _cua_m or "Hưu" in _cua_m:
-                _music_scores[_k_ballad] += 2
-                _music_scores[_k_lofi] += 2
-            elif "Cảnh" in _cua_m or "Thương" in _cua_m or "Kinh" in _cua_m:
-                _music_scores[_k_edm] += 2
-                _music_scores[_k_pop] += 2
-            _sorted_music = sorted(_music_scores.items(), key=lambda kv: kv[1], reverse=True)
-            _top_music, _top_m_pts = _sorted_music[0]
-            _sec_music, _sec_m_pts = _sorted_music[1]
-            _rhythm_detail = ""
-            if "Chấn" in _trigs_active and "Tốn" in _trigs_active:
-                _rhythm_detail = " — Kết hợp Hạ Quái Chấn Lôi (tiếng trống/nhịp beat rõ ràng ở phần nền) chuyển sang Thượng Quái Tốn Phong (giai điệu gió ngân nga, du dương, giàu chất tự sự)"
-            elif "Càn" in _trigs_active and "Chấn" in _trigs_active:
-                _rhythm_detail = " — Kết hợp Càn Kim (âm thanh kim khí/nhạc cụ dây – piano – guitar sắc nét) với Chấn Lôi (tiết tấu vang vọng)"
-            short_hl = (
-                f"🎵 KẾT LUẬN GIẢI MÃ VẠN VẬT LOẠI TƯỢNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
-                f"BẠN ĐANG NGHE «{_top_music}»"
-                + (f" KẾT HỢP ÂM HƯỞNG «{_sec_music.split(' (')[0]}»" if _sec_m_pts >= _top_m_pts - 3 else "")
-                + f" (ỨNG TƯỢNG QUẺ {_m['up_chu'].upper()}/{_m['lo_chu'].upper()} BIẾN {_m['up_bien'].upper()}/{_m['lo_bien'].upper()} · SAO {_sao_m.upper()} · CỬA {_cua_m.upper()} · THẦN {_than_m.upper()})!"
+            _the_kv_m = (_m.get("the_chi") in (_m.get("kv_list") or []))
+            _pm_phuc_m = ("Phụ Mẫu" in str(_m.get("phuc_than_str", "")))
+
+            _has_custom_music_opts = any(
+                w in raw_q_g for w in ["nhạc phật", "tụng kinh", "nhạc thiền", "đám ma", "nhạc đám ma", "nhạc hiếu", "nhạc buồn", "nhạc vui"]
             )
-            extra_van_vat_why = (
-                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Âm Nhạc & Thanh Âm (Mai Hoa + Kỳ Môn + Lục Hào):</b><br>"
-                f"&nbsp;&nbsp;🎵 <b>1. Tượng Quái Mai Hoa ({_m['full_chu']} ➔ Hỗ {_m['full_ho']} ➔ Biến {_m['full_bien']}):</b> Thượng Quái <b>{_m['up_chu']}</b> ({_TRIG_NH.get(_m['up_chu'], '')}) phối Hạ Quái <b>{_m['lo_chu']}</b> ({_TRIG_NH.get(_m['lo_chu'], '')}), biến sang <b>{_m['up_bien']}/{_m['lo_bien']}</b>{_rhythm_detail}. Quẻ Hỗ <b>{_m['full_ho']}</b> cho thấy mạch cảm xúc bài nhạc dẫn dắt từ từ, sâu lắng và thấm dần.<br>"
-                f"&nbsp;&nbsp;🧭 <b>2. Tinh – Môn – Thần Kỳ Môn Độn Giáp:</b> Cung {_m['target_cung']} ({huong_str}) hội <b>Sao {_sao_m}</b> (Văn Xương – nghệ thuật ca từ tinh tế, trữ tình), <b>Cửa {_cua_m}</b> và <b>Thần {_than_m}</b> (biểu trưng cho âm sắc sâu lắng, giàu cảm xúc nội tâm và hoài niệm).<br>"
-                f"&nbsp;&nbsp;☯️ <b>3. Lục Hào Nạp Giáp:</b> Hào Thế tại Hào {_m['the_idx']} ({_m['the_chi']}-{_m['the_nh']}) tương tác với Hào Dụng Thần tại Hào {dt_idx} ({dt_chi}-{dt_nh}){' [Đang lâm Tuần Không — tâm trí người nghe đang thả hồn thư giãn, phiêu theo giai điệu]' if dt_is_kv else ''} ➔ Khẳng định thể loại nhạc chủ đạo là <b>{_top_music}</b>.<br>"
-            )
+            if _has_custom_music_opts:
+                _opt_scores = {
+                    "NHẠC PHẬT / TỤNG KINH / NHẠC THIỀN TÂM LINH (Tiếng chuông mõ Càn Kim Hào 5 động hóa Ly Hỏa đèn Phật + Thế Không Vong «Không Môn» + Cung Tốn Thái Âm)": 0,
+                    "NHẠC BUỒN / TRẦM LẮNG TÂM TRẠNG (Hạ Quái Khảm Thủy «gia ưu, khấp huyết» + Quẻ Tụng biến Vị Tế dang dở + Thái Âm trầm mặc)": 0,
+                    "NHẠC ĐÁM MA / NHẠC HIẾU TƯỞNG NIỆM (Sao Thiên Nhuế tang thương + Khảm Thủy nước mắt + Hào 5 động hóa Mùi Thổ Mộ Khố & Quẻ Hỗ Gia Nhân hương khói gia tiên)": 0,
+                    "NHẠC VUI / SÔI ĐỘNG": 0,
+                }
+                _k_phat, _k_buon, _k_damma, _k_vui = list(_opt_scores.keys())
+                if "Càn" in (_m.get("up_chu"), _m.get("lo_chu")):
+                    _opt_scores[_k_phat] += 5
+                if "Ly" in (_m.get("up_bien"), _m.get("lo_bien"), _m.get("lo_ho")):
+                    _opt_scores[_k_phat] += 4
+                if "Tốn" in (_m.get("up_ho"), _m.get("lo_ho"), _m.get("quai_cung")):
+                    _opt_scores[_k_phat] += 4
+                if _the_kv_m or dt_is_kv:
+                    _opt_scores[_k_phat] += 5
+                if "Thái Âm" in _than_m or "Cửu Thiên" in _than_m or "Trực Phù" in _than_m:
+                    _opt_scores[_k_phat] += 4
+                if "Thiên Cầm" in _sao_m or "Thiên Tâm" in _sao_m or "Thiên Phụ" in _sao_m:
+                    _opt_scores[_k_phat] += 3
+                if "Khai" in _cua_m or "Hưu" in _cua_m:
+                    _opt_scores[_k_phat] += 3
+
+                if "Khảm" in (_m.get("lo_chu"), _m.get("up_chu"), _m.get("lo_bien")):
+                    _opt_scores[_k_buon] += 6
+                if any(w in _m.get("full_chu", "") + _m.get("full_bien", "") for w in ["Tụng", "Vị Tế", "Khốn", "Kiển", "Bác", "Khuê"]):
+                    _opt_scores[_k_buon] += 5
+                if "Thái Âm" in _than_m or "Huyền Vũ" in _than_m or "Đằng Xà" in _than_m:
+                    _opt_scores[_k_buon] += 3
+                if "Thiên Nhuế" in _sao_m or "Thiên Bồng" in _sao_m:
+                    _opt_scores[_k_buon] += 3
+
+                if "Thiên Nhuế" in _sao_m:
+                    _opt_scores[_k_damma] += 6
+                if "Khảm" in (_m.get("lo_chu"), _m.get("lo_bien")):
+                    _opt_scores[_k_damma] += 4
+                if "Gia Nhân" in _m.get("full_ho", ""):
+                    _opt_scores[_k_damma] += 3
+                if any(m in _cua_m for m in ["Tử", "Kinh", "Thương"]) or "Bạch Hổ" in _than_m:
+                    _opt_scores[_k_damma] += 5
+                if chart_data.get("chi_thang") in ("Tuất", "Mùi", "Sửu", "Thìn"):
+                    _opt_scores[_k_damma] += 3
+
+                if "Đoài" in (_m.get("up_chu"), _m.get("lo_chu"), _m.get("up_bien")):
+                    _opt_scores[_k_vui] += 5
+                if "Chấn" in (_m.get("up_chu"), _m.get("lo_chu"), _m.get("up_bien")):
+                    _opt_scores[_k_vui] += 4
+                if "Khảm" in (_m.get("lo_chu"), _m.get("lo_bien")) or "Thiên Nhuế" in _sao_m:
+                    _opt_scores[_k_vui] = max(0, _opt_scores[_k_vui] - 8)
+
+                _sorted_opts = sorted(_opt_scores.items(), key=lambda kv: kv[1], reverse=True)
+                _top1_name, _top1_pts = _sorted_opts[0]
+                _top2_name, _top2_pts = _sorted_opts[1]
+                _top3_name, _top3_pts = _sorted_opts[2]
+                _total_pts = max(1, sum(v for _, v in _sorted_opts))
+                _p1 = int(round(_top1_pts * 100.0 / _total_pts))
+                _p2 = int(round(_top2_pts * 100.0 / _total_pts))
+                _p3 = max(0, 100 - _p1 - _p2 - int(round(_sorted_opts[3][1] * 100.0 / _total_pts)))
+                _p4 = max(0, 100 - _p1 - _p2 - _p3)
+
+                _kv_silence_note = ""
+                if _the_kv_m or _pm_phuc_m:
+                    _kv_silence_note = (
+                        f"  |  ⚠️ [BẮT BÀI KHÔNG VONG & PHỤC TÀNG]: Hào Thế (Hào {_m['the_idx']} {_m['the_chi']}-{_m['the_nh']}) lâm TUẦN KHÔNG "
+                        f"& Hào Phụ Mẫu (tiếng nhạc) ẨN PHỤC ➔ Nếu lúc bấm quẻ bạn KHÔNG BẬT LOA NGOÀI ĐỜI (đang ngồi trong không gian yên tĩnh hỏi thử quẻ), "
+                        f"quẻ bắt trúng trạng thái «Tĩnh Trung Chi Thanh / Nhạc Trong Tâm Tưởng»!"
+                    )
+
+                short_hl = (
+                    f"🎵 KẾT LUẬN ĐỐI CHỨNG 4 LOẠI NHẠC TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()} | ĐỘNG HÀO {_dong_g} · CUNG {_m['target_cung']} SAO {_sao_m.upper()} · CỬA {_cua_m.upper()} · THẦN {_than_m.upper()}): "
+                    f"[HẠNG 1 — TRÚNG ĐÍCH ({_p1}%)]: «{_top1_name.split(' (')[0]}»  |  "
+                    f"[HẠNG 2 — GIAO THOA ({_p2}%)]: «{_top2_name.split(' (')[0]}» & «{_top3_name.split(' (')[0]} ({_p3}%)» (DÒNG NHẠC PHẬT CẦU SIÊU / NHẠC TRẦM BUỒN TƯỞNG NIỆM)  |  "
+                    f"[LOẠI TRỪ 100% ({_p4}%)]: TUYỆT ĐỐI KHÔNG PHẢI NHẠC VUI!"
+                    f"{_kv_silence_note}"
+                )
+                extra_van_vat_why = (
+                    f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Đối Chứng 4 Loại Nhạc (Nhạc Vui / Buồn / Nhạc Phật / Nhạc Đám Ma):</b><br>"
+                    f"&nbsp;&nbsp;🪷 <b>1. Vì sao chốt Hạng 1 là «{_top1_name.split(' (')[0]}» ({_p1}%) giao thoa «{_top2_name.split(' (')[0]} / {_top3_name.split(' (')[0]}» ({_p2}% + {_p3}%):</b><br>"
+                    f"&nbsp;&nbsp;&nbsp;&nbsp;• <b>Mai Hoa Dịch Số ({_m['full_chu']} ➔ Hỗ {_m['full_ho']} ➔ Biến {_m['full_bien']}):</b> Thượng Quái <b>{_m['up_chu']} (Kim)</b> động tại Hào 5 (<b>Thân-Kim</b> — tượng tiếng chuông chùa, tiếng mõ kim khí ngân vang ở ngôi Chí Tôn) hóa sang <b>{_m['up_bien']} (Hỏa)</b> (ánh đèn Phật, hương đăng giác ngộ); Quẻ Hỗ <b>{_m['full_ho']}</b> (Tốn Mộc sinh Ly Hỏa) là tượng <b>hương khói bàn thờ Phật / gia tiên trong nhà</b>.<br>"
+                    f"&nbsp;&nbsp;&nbsp;&nbsp;• <b>Hạ Quái & Kỳ Môn Độn Giáp:</b> Hạ Quái (Quẻ Thể) là <b>{_m['lo_chu']} (Khảm Thủy)</b> — kinh điển <i>Thuyết Quái</i> định danh: <i>«Khảm vi gia ưu, vi khấp huyết»</i> (nỗi buồn sâu lắng, nước mắt, hoài niệm). Cung {_m['target_cung']} ({huong_str} - Tốn Tăng Đạo) hội <b>Sao {_sao_m}</b> (Thiên Cầm trung tâm tâm linh + Thiên Nhuế u sầu/tang chế), <b>Cửa {_cua_m}</b> và <b>Thần {_than_m}</b> (âm trầm, tĩnh mịch) ➔ Sự giao thoa giữa <b>Nhạc Phật / Kinh Kệ Tụng Niệm</b> với <b>Nhạc Buồn / Nhạc Hiếu Tưởng Niệm</b> (loại trừ Nhạc Vui = 0%).<br>"
+                    f"&nbsp;&nbsp;☯️ <b>2. Bắt Bài Lục Hào (Hào Thế Lâm Tuần Không & Hào Phụ Mẫu Phục Tàng):</b> Hào Thế tại Hào {_m['the_idx']} (<b>{_m['the_chi']}-{_m['the_nh']}</b>) rơi vào <b>Tuần Không ({', '.join(_m.get('kv_list') or [])})</b> — cổ pháp gọi là <b>«Không Vong vi Không Môn» (Cửa Không nhà Phật / Thiền định)</b>; đồng thời Hào Phụ Mẫu (đại diện cho âm thanh phát ra loa) đang <b>Phục Tàng</b> dưới Hào 3 ➔ Báo hiệu hoặc bạn đang mở <b>Nhạc Phật / Nhạc Buồn Tưởng Niệm nhỏ nhẹ trầm lắng</b>, hoặc bạn đang <b>ngồi trong không gian yên tĩnh (không bật nhạc) và đưa ra 4 đáp án để thử tài giải mã của quẻ</b>!<br>"
+                )
+            else:
+                _music_scores = {
+                    "NHẠC TRỮ TÌNH / BALLAD SÂU LẮNG / NHẠC XƯA – ACOUSTIC (Giai điệu du dương, giàu cảm xúc & hoài niệm)": 0,
+                    "NHẠC SÔI ĐỘNG / REMIX – EDM – POP DANCE – ROCK (Tiết tấu mạnh, nhịp trống/beat dồn dập, bùng nổ)": 0,
+                    "NHẠC KHÔNG LỜI / LOFI CHILL – PIANO – R&B TÂM TRẠNG (Êm dịu, sâu lắng, thư giãn nội tâm)": 0,
+                    "NHẠC TRẺ THỊNH HÀNH / V-POP – US-UK – RAP MELODIC (Hiện đại, bắt tai, giàu tính giải trí)": 0,
+                    "NHẠC TÂM LINH / NHẠC PHẬT – THIỀN TỊNH / DÂN CA QUÊ HƯƠNG (Sâu sắc, thanh tịnh, mang âm hưởng cội nguồn)": 0,
+                }
+                _k_ballad, _k_edm, _k_lofi, _k_pop, _k_folk = list(_music_scores.keys())
+                for _tg_i, _tg_w in [(_m.get("up_bien"), 4), (_m.get("lo_bien"), 3), (_m.get("up_chu"), 4), (_m.get("lo_chu"), 3), (_m.get("up_ho"), 2), (_m.get("lo_ho"), 2)]:
+                    if _tg_i in ("Tốn", "Càn"):
+                        _music_scores[_k_ballad] += _tg_w
+                    if _tg_i in ("Chấn", "Ly"):
+                        _music_scores[_k_edm] += _tg_w
+                    if _tg_i == "Khảm":
+                        _music_scores[_k_lofi] += _tg_w + 1
+                    if _tg_i == "Đoài":
+                        _music_scores[_k_pop] += _tg_w + 1
+                    if _tg_i in ("Khôn", "Cấn"):
+                        _music_scores[_k_folk] += _tg_w
+                if "Thiên Phụ" in _sao_m or "Thiên Tâm" in _sao_m:
+                    _music_scores[_k_ballad] += 5
+                if "Thiên Xung" in _sao_m or "Thiên Anh" in _sao_m:
+                    _music_scores[_k_edm] += 5
+                if "Thiên Bồng" in _sao_m:
+                    _music_scores[_k_lofi] += 5
+                if "Thiên Trụ" in _sao_m:
+                    _music_scores[_k_pop] += 5
+                if any(s in _sao_m for s in ("Thiên Nhậm", "Thiên Nhuế", "Thiên Cầm")):
+                    _music_scores[_k_folk] += 5
+                if _the_kv_m and "Thái Âm" in _than_m:
+                    _music_scores[_k_folk] += 4
+                if "Thái Âm" in _than_m or "Lục Hợp" in _than_m:
+                    _music_scores[_k_ballad] += 4
+                elif "Chu Tước" in _than_m or "Bạch Hổ" in _than_m or "Cửu Thiên" in _than_m:
+                    _music_scores[_k_edm] += 3
+                elif "Huyền Vũ" in _than_m or "Đằng Xà" in _than_m:
+                    _music_scores[_k_lofi] += 3
+                if "Khai" in _cua_m or "Hưu" in _cua_m:
+                    _music_scores[_k_ballad] += 2
+                    _music_scores[_k_lofi] += 2
+                elif "Cảnh" in _cua_m or "Thương" in _cua_m or "Kinh" in _cua_m:
+                    _music_scores[_k_edm] += 2
+                    _music_scores[_k_pop] += 2
+                _sorted_music = sorted(_music_scores.items(), key=lambda kv: kv[1], reverse=True)
+                _top_music, _top_m_pts = _sorted_music[0]
+                _sec_music, _sec_m_pts = _sorted_music[1]
+                _rhythm_detail = ""
+                if "Chấn" in _trigs_active and "Tốn" in _trigs_active:
+                    _rhythm_detail = " — Kết hợp Hạ Quái Chấn Lôi (tiếng trống/nhịp beat rõ ràng ở phần nền) chuyển sang Thượng Quái Tốn Phong (giai điệu gió ngân nga, du dương, giàu chất tự sự)"
+                elif "Càn" in _trigs_active and "Chấn" in _trigs_active:
+                    _rhythm_detail = " — Kết hợp Càn Kim (âm thanh kim khí/nhạc cụ dây – piano – guitar sắc nét) với Chấn Lôi (tiết tấu vang vọng)"
+                short_hl = (
+                    f"🎵 KẾT LUẬN GIẢI MÃ VẠN VẬT LOẠI TƯỢNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                    f"BẠN ĐANG NGHE «{_top_music}»"
+                    + (f" KẾT HỢP ÂM HƯỞNG «{_sec_music.split(' (')[0]}»" if _sec_m_pts >= _top_m_pts - 3 else "")
+                    + f" (ỨNG TƯỢNG QUẺ {_m['up_chu'].upper()}/{_m['lo_chu'].upper()} BIẾN {_m['up_bien'].upper()}/{_m['lo_bien'].upper()} · SAO {_sao_m.upper()} · CỬA {_cua_m.upper()} · THẦN {_than_m.upper()})!"
+                )
+                extra_van_vat_why = (
+                    f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Âm Nhạc & Thanh Âm (Mai Hoa + Kỳ Môn + Lục Hào):</b><br>"
+                    f"&nbsp;&nbsp;🎵 <b>1. Tượng Quái Mai Hoa ({_m['full_chu']} ➔ Hỗ {_m['full_ho']} ➔ Biến {_m['full_bien']}):</b> Thượng Quái <b>{_m['up_chu']}</b> ({_TRIG_NH.get(_m['up_chu'], '')}) phối Hạ Quái <b>{_m['lo_chu']}</b> ({_TRIG_NH.get(_m['lo_chu'], '')}), biến sang <b>{_m['up_bien']}/{_m['lo_bien']}</b>{_rhythm_detail}. Quẻ Hỗ <b>{_m['full_ho']}</b> cho thấy mạch cảm xúc bài nhạc dẫn dắt từ từ, sâu lắng và thấm dần.<br>"
+                    f"&nbsp;&nbsp;🧭 <b>2. Tinh – Môn – Thần Kỳ Môn Độn Giáp:</b> Cung {_m['target_cung']} ({huong_str}) hội <b>Sao {_sao_m}</b> (Văn Xương – nghệ thuật ca từ tinh tế, trữ tình), <b>Cửa {_cua_m}</b> và <b>Thần {_than_m}</b> (biểu trưng cho âm sắc sâu lắng, giàu cảm xúc nội tâm và hoài niệm).<br>"
+                    f"&nbsp;&nbsp;☯️ <b>3. Lục Hào Nạp Giáp:</b> Hào Thế tại Hào {_m['the_idx']} ({_m['the_chi']}-{_m['the_nh']}) tương tác với Hào Dụng Thần tại Hào {dt_idx} ({dt_chi}-{dt_nh}){' [Đang lâm Tuần Không — tâm trí người nghe đang thả hồn thư giãn, phiêu theo giai điệu]' if dt_is_kv else ''} ➔ Khẳng định thể loại nhạc chủ đạo là <b>{_top_music}</b>.<br>"
+                )
         elif _is_food_drink_q:
             is_open_van_vat = True
             _nh_flavor_map = {
@@ -7212,7 +7303,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:14px 16px;border-radius:14px;margin-bottom:14px;border:2px solid #38bdf8;box-shadow:0 4px 18px rgba(56,189,248,0.2);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:6px;">'
-            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V120.0 — {_clk_cv["solar_date_str"]}): ĐỌC HIỂU CÂU HỎI & ĐỐI CHỨNG TAM THỨC</div>'
+            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V126.0 — {_clk_cv["solar_date_str"]}): ĐỌC HIỂU CÂU HỎI & ĐỐI CHỨNG TAM THỨC</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:2px 9px;border-radius:12px;font-size:0.8em;font-weight:800;border:1px solid #38bdf8;">{blueprint["archetype_code"]} — {blueprint["archetype_name"]}</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
@@ -7238,7 +7329,7 @@ class HexagramReasoningAI:
 
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V120.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V126.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
