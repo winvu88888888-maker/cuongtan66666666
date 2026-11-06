@@ -2813,19 +2813,8 @@ def render_master_unified_qa_box(location_key="main"):
                     if len(st.session_state.chat_history) > 20:
                         st.session_state.chat_history = st.session_state.chat_history[-20:]
 
-                    # Tự động lưu thêm vào kho chủ đề
-                    try:
-                        from ai_modules.shard_manager import add_entry
-                        if len(user_question.strip()) > 5:
-                            topic_title = user_question.strip()[:100]
-                            add_entry(
-                                title=topic_title,
-                                content=f"Câu hỏi: {user_question}\n\nTrả lời AI (tóm tắt): {str(combined_answer)[:500]}",
-                                category="Kiến Thức",
-                                source="Master Unified Q&A"
-                            )
-                    except Exception:
-                        pass
+                    # V117.0: TUYỆT ĐỐI KHÔNG LƯU CÂU HỎI CỦA NGƯỜI DÙNG XUỐNG Ổ CỨNG (BẢO MẬT BÍ MẬT 100% THEO LỆNH NGƯỜI DÙNG)
+                    # Chỉ giữ kết quả tạm thời trong phiên RAM (st.session_state), đóng trình duyệt là tự xóa sạch.
 
             except Exception as e:
                 st.error(f"❌ Lỗi phân tích: {str(e)}")

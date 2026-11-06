@@ -16557,9 +16557,25 @@ class FreeAIHelper:
             if _is_spec_override_box and locals().get('_dual_verified', {}).get('verified_headline'):
                 _dv_box = locals().get('_dual_verified', {})
                 _online_verdict_line = _dv_box['verified_headline']
-                _online_visao = _dv_box.get('verified_why') or _online_visao
-                _online_ungky = _dv_box.get('verified_when') or _online_ungky
-                _online_giaiphap = _dv_box.get('verified_advice') or _online_giaiphap
+                _v_why_dv = str(_dv_box.get('verified_why') or '')
+                if _online_visao and len(_online_visao.strip()) > 35 and _online_visao.strip() not in _v_why_dv:
+                    _online_visao = (
+                        f'<div style="padding:8px 11px;background:rgba(56,189,248,0.12);border-left:3px solid #38bdf8;border-radius:6px;margin-bottom:8px;">'
+                        f'<b style="color:#7dd3fc;">🌐 [ĐẠI SƯ AI ONLINE GEMINI PRO LUẬN GIẢI TRỰC TIẾP]:</b><br>{_online_visao}</div>'
+                        f'{_v_why_dv}'
+                    )
+                else:
+                    _online_visao = _v_why_dv or _online_visao
+                _v_when_dv = str(_dv_box.get('verified_when') or '')
+                if _online_ungky and len(_online_ungky.strip()) > 25 and _online_ungky.strip() not in _v_when_dv:
+                    _online_ungky = f"{_v_when_dv}<br><br><b>🌐 [AI Online Gemini Pro — Ứng Kỳ]:</b> {_online_ungky}"
+                else:
+                    _online_ungky = _v_when_dv or _online_ungky
+                _v_adv_dv = str(_dv_box.get('verified_advice') or '')
+                if _online_giaiphap and len(_online_giaiphap.strip()) > 25 and _online_giaiphap.strip() not in _v_adv_dv:
+                    _online_giaiphap = f"{_v_adv_dv}<br><br><b>🌐 [AI Online Gemini Pro — Pháp Quyết]:</b> {_online_giaiphap}"
+                else:
+                    _online_giaiphap = _v_adv_dv or _online_giaiphap
             elif _is_bin_fact_box and _omni_ch_data.get('binary_verdict_headline'):
                 _online_verdict_line = _omni_ch_data['binary_verdict_headline']
                 _online_visao = _omni_ch_data.get('binary_why_reasons') or _online_visao

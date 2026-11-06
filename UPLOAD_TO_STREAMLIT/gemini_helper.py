@@ -72,7 +72,15 @@ class GeminiQMDGHelper:
         self.n8n_timeout = 8
         self.logs = [] 
 
-        self.model_name = "gemini-2.5-pro"  # V31.2: Best available, fallback to 3.1/flash
+        self.model_name = "gemini-3.1-pro-preview"
+        self.cascade_models = [
+            'gemini-3.1-pro-preview',
+            'gemini-2.5-pro',
+            'gemini-3.0-flash',
+            'gemini-2.5-flash',
+            'gemini-2.0-flash',
+            'gemini-2.5-flash-lite',
+        ]  # V31.2: Best available, fallback to 3.1/flash
         self.model = None  # V21.0: Không cần model object, dùng client.models
         self.fallback_helper = FreeAIHelper()
 
@@ -166,11 +174,13 @@ class GeminiQMDGHelper:
 
         if not hasattr(self, 'cascade_models') or not self.cascade_models:
             self.cascade_models = [
-                'gemini-2.5-flash',                # Nhanh + Sâu (với thinkingBudget=0 không cắt câu)
-                'gemini-2.0-flash',                # Siêu tốc, 0 tốn thinking token, không bao giờ cắt câu
-                'gemini-2.5-pro',                  # Suy luận sâu
-                'gemini-2.5-flash-lite',           # Nhẹ, tốc độ cao
-                'gemini-1.5-flash',                # Dự phòng ổn định
+                'gemini-3.1-pro-preview',
+                'gemini-2.5-pro',
+                'gemini-3.0-flash',
+                'gemini-2.5-flash',
+                'gemini-2.0-flash',
+                'gemini-2.5-flash-lite',
+                'gemini-1.5-flash',
             ]
 
         _END_CHARS = set('.!?*)]"”»…:;0123456789%')
@@ -245,7 +255,7 @@ class GeminiQMDGHelper:
                     if isinstance(_prompt, str) and len(_prompt) > 90000:
                         _prompt = _prompt[:45000] + "\n\n[...DATA TRUNCATED FOR SPEED...]\n\n" + _prompt[-40000:]
 
-                    _tb = 0 if '2.5-flash' in model_name else (512 if '2.5-pro' in model_name else None)
+                    _tb = 1024 if 'pro' in model_name else (0 if '2.5-flash' in model_name else None)
                     text, finish_reason = _call_rest_endpoint(current_api_key, model_name, _prompt, thinking_budget=_tb)
 
                     if text and not _is_complete_text(text, finish_reason) and _tb not in (0, None):
