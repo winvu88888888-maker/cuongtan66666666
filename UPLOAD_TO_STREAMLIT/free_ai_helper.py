@@ -5684,7 +5684,7 @@ class FreeAIHelper:
             deep_prompt = (
                 f"{_clk_on_prompt}"
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V119.0 — ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO) LUẬN QUẺ CHUYÊN SÂU A→Z (MAI HOA DỊCH SỐ · KỲ MÔN ĐỘN GIÁP · LỤC HÀO KINH DỊCH · THIẾT BẢN THẦN TOÁN — ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V120.0 — ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO) LUẬN QUẺ CHUYÊN SÂU A→Z (MAI HOA DỊCH SỐ · KỲ MÔN ĐỘN GIÁP · LỤC HÀO KINH DỊCH · THIẾT BẢN THẦN TOÁN — ĐỒNG BỘ 100% THỜI GIAN THỰC & BỐ CỤC TINH GỌN).\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
                 f"1. TRẢ LỜI TRÚNG ĐÍCH 100% CÂU HỎI CỤ THỂ CỦA NGƯỜI DÙNG: Đọc kỹ câu hỏi '{question}'. Nếu người dùng hỏi về SỐ TIỀN LƯƠNG / THƯỞNG / THU NHẬP ('bao nhiêu tiền', 'mấy triệu'), BẮT BUỘC trả lời bằng ĐƠN VỊ TRIỆU ĐỒNG VNĐ CHUẨN XÁC theo đúng công thức Tam Thức trong <verdict_block> (TUYỆT ĐỐI CẤM ghi '01 tiền'!). Nếu hỏi Vạn Vật Loại Tượng (nhạc gì, món gì, nghề gì, đồ vật gì, ở đâu...), BẮT BUỘC đưa ra đáp án cụ thể trực diện từ Tượng Quẻ.\n"
                 f"2. ĐỒNG BỘ 100% PHÁN QUYẾT & HỒ SƠ SONG NÃO AI: Bắt buộc giữ nguyên kết luận cốt lõi '{_vb_prompt_str}' và Hồ sơ bàn giao từ Hệ Thống Song Não AI trong <raw_chart_data> và <verdict_block>. CẤM TUYỆT ĐỐI ghi 'CẦN CÂN NHẮC — BÌNH' hay 'giằng co giữa A và B'.\n"
@@ -16339,18 +16339,8 @@ class FreeAIHelper:
                     )
                 except Exception:
                     pass
-                if _q_blueprint.get("specific_target") in ("HOUSE_FLOORS", "CLOTHING_VEHICLE", "SIBLINGS_COUNT", "PEOPLE_AROUND", "HOUSEHOLD_MEMBERS"):
-                    auth_html = ""
-                elif locals().get('auth_warnings') and (_q_blueprint.get("is_compound_question") or _q_blueprint.get("specific_target") == "GENERIC_AB"):
-                    _vh_top_sync = _dual_verified["verified_headline"]
-                    _vw_top_sync = _dual_verified.get("verified_why", "")
-                    auth_html = (
-                        f'<div style="background:linear-gradient(135deg,#064e3b,#0f766e);padding:18px 20px;border-radius:14px;margin-bottom:16px;border:2.5px solid #fbbf24;box-shadow:0 6px 24px rgba(251,191,36,0.38);">'
-                        f'<div style="font-size:1.12em;font-weight:900;color:#fde047;margin-bottom:8px;">🎯 NGHIỆM CHỨNG THỰC TẾ & ĐỐI CHỨNG ĐẦY ĐỦ CÁC VẾ / PHƯƠNG ÁN TỪ QUẺ ({len(auth_warnings)} DẤU HIỆU TỪ QUẺ)</div>'
-                        f'<div style="font-size:1.04em;font-weight:900;color:#ffffff;margin-bottom:8px;padding:10px 14px;background:rgba(0,0,0,0.35);border-radius:10px;border-left:4px solid #fbbf24;">{_vh_top_sync}</div>'
-                        f'<div style="font-size:0.93em;color:#e2e8f0;margin-bottom:8px;line-height:1.55;">{_vw_top_sync}</div>'
-                        f'</div>'
-                    )
+                # V120.0: Không hiển thị lặp lại hộp auth_html khổng lồ vì Con AI Số 2 và Hộp Kết Luận Chính đã hiển thị đầy đủ
+                auth_html = ""
             if isinstance(offline_analysis_data, dict) and _dual_verified.get("online_directive"):
                 offline_analysis_data['deep_classical_dossier'] = (
                     _dual_verified["online_directive"] + "\n" + str(offline_analysis_data.get('deep_classical_dossier', ''))
@@ -16522,43 +16512,16 @@ class FreeAIHelper:
                 _v_lbl_fallback = 'ĐẠI CÁT' if weighted_pct >= 70 else 'CÁT' if weighted_pct >= 55 else 'CẦN CÂN NHẮC — BÌNH' if weighted_pct >= 45 else 'HUNG' if weighted_pct >= 30 else 'ĐẠI HUNG'
                 _online_verdict_line = f"{_v_lbl_fallback} ({weighted_pct}%)"
             
-            # === V42.0: CẢNH BÁO PHẢN/PHỤC NGÂM — Hiển thị TRƯỚC kết luận ===
-            try:
-                _ppn_warning_online = _build_phan_phuc_ngam_warning(chart_data, luc_hao_data)
-                if _ppn_warning_online:
-                    final_parts.append(_ppn_warning_online)
-            except Exception:
-                pass
+            # === V120.0: Không hiển thị 2 hộp đỏ Phục Ngâm rời rạc làm rối mắt vì Thẻ 3 (Kỳ Môn) đã hiển thị rõ Cục diện Phục Ngâm ===
+            if not locals().get('_dual_verified', {}).get('has_specialized_override'):
+                try:
+                    _ppn_warning_online = _build_phan_phuc_ngam_warning(chart_data, luc_hao_data)
+                    if _ppn_warning_online:
+                        final_parts.append(_ppn_warning_online)
+                except Exception:
+                    pass
             
-            # === V105.0: CẢNH BÁO NGUYỆT PHÁ — Không báo Nguyệt Phá giả khi Lưỡng Thổ Xung Khai (Thìn⇔Tuất, Sửu⇔Mùi) hoặc Nhật Thần sinh cứu ===
-            try:
-                _lh_dt_chi_np = ''
-                _lh_chi_thang_np = ''
-                if luc_hao_data:
-                    _lh_haos_np = luc_hao_data.get('ban', {}).get('haos', luc_hao_data.get('haos', []))
-                    _lh_chi_thang_np = luc_hao_data.get('chi_thang', '')
-                    _lh_chi_ngay_np = luc_hao_data.get('chi_ngay', '') or (chart_data or {}).get('chi_ngay', '')
-                    if _lh_haos_np and dung_than:
-                        for _h_np in _lh_haos_np:
-                            if _h_np.get('luc_than', '') == dung_than:
-                                _lh_dt_chi_np = _h_np.get('chi', '')
-                                break
-                    _earth_np = {'Thìn', 'Tuất', 'Sửu', 'Mùi'}
-                    _is_xung_khai_np = (_lh_dt_chi_np in _earth_np and _lh_chi_thang_np in _earth_np)
-                    _nhat_h_np = CHI_NGU_HANH.get(_lh_chi_ngay_np, '')
-                    _dt_h_np = CHI_NGU_HANH.get(_lh_dt_chi_np, '')
-                    _is_nhat_cuu_np = bool(_nhat_h_np and _dt_h_np and (SINH.get(_nhat_h_np) == _dt_h_np or _nhat_h_np == _dt_h_np))
-                    if _lh_dt_chi_np and _lh_chi_thang_np and not _is_xung_khai_np and not _is_nhat_cuu_np:
-                        _, _np_html_online = _build_nguyet_pha_warning(
-                            _lh_dt_chi_np, _lh_chi_thang_np,
-                            dung_than_name=dung_than or 'Dụng Thần'
-                        )
-                        if _np_html_online:
-                            final_parts.append(_np_html_online)
-            except Exception:
-                pass
-            
-            # === Ô NÂU TO — KẾT LUẬN AI ONLINE V100.6 (BỐ CỤC 3 THẺ TRỰC QUAN — NHÌN PHÁT BIẾT NGAY CÂU TRẢ LỜI) ===
+            # === Ô NÂU TO — KẾT LUẬN CHÍNH V120.0 (BỐ CỤC TINH GỌN: BANNER CHỐT HẠ + 3 THẺ TÓM TẮT NGẮN GỌN + LƯỚI 4 THẺ 24 YẾU TỐ 2×2) ===
             import re as _re_clean_v100
             _q_low_on_box = question.lower() if question else ''
             _has_age_box = any(ag in _q_low_on_box for ag in ['tuổi', 'mấy tuổi', 'bao nhiêu tuổi', 'năm sinh', 'sinh năm'])
@@ -16574,24 +16537,21 @@ class FreeAIHelper:
                 else:
                     _online_verdict_line = _dv_hl_str
                 _v_why_dv = str(_dv_box.get('verified_why') or '')
-                if _online_visao and len(_online_visao.strip()) > 35 and _online_visao.strip() not in _v_why_dv:
+                if _online_visao and len(_online_visao.strip()) > 35 and "Tóm Tắt]:" not in _v_why_dv:
+                    _short_on_vs = _online_visao.strip()
+                    if len(_short_on_vs) > 260:
+                        _short_on_vs = _short_on_vs[:260].rsplit(" ", 1)[0] + "..."
                     _online_visao = (
-                        f'<div style="padding:8px 11px;background:rgba(56,189,248,0.12);border-left:3px solid #38bdf8;border-radius:6px;margin-bottom:8px;">'
-                        f'<b style="color:#7dd3fc;">🌐 [ĐẠI SƯ AI ONLINE GEMINI PRO LUẬN GIẢI TRỰC TIẾP]:</b><br>{_online_visao}</div>'
+                        f'<div style="padding:6px 10px;background:rgba(56,189,248,0.12);border-left:3px solid #38bdf8;border-radius:6px;margin-bottom:6px;">'
+                        f'<b style="color:#7dd3fc;">🌐 [AI Online Tóm Tắt]:</b> {_short_on_vs}</div>'
                         f'{_v_why_dv}'
                     )
                 else:
                     _online_visao = _v_why_dv or _online_visao
                 _v_when_dv = str(_dv_box.get('verified_when') or '')
-                if _online_ungky and len(_online_ungky.strip()) > 25 and _online_ungky.strip() not in _v_when_dv:
-                    _online_ungky = f"{_v_when_dv}<br><br><b>🌐 [AI Online Gemini Pro — Ứng Kỳ]:</b> {_online_ungky}"
-                else:
-                    _online_ungky = _v_when_dv or _online_ungky
+                _online_ungky = _v_when_dv or _online_ungky
                 _v_adv_dv = str(_dv_box.get('verified_advice') or '')
-                if _online_giaiphap and len(_online_giaiphap.strip()) > 25 and _online_giaiphap.strip() not in _v_adv_dv:
-                    _online_giaiphap = f"{_v_adv_dv}<br><br><b>🌐 [AI Online Gemini Pro — Pháp Quyết]:</b> {_online_giaiphap}"
-                else:
-                    _online_giaiphap = _v_adv_dv or _online_giaiphap
+                _online_giaiphap = _v_adv_dv or _online_giaiphap
             elif _is_bin_fact_box and _omni_ch_data.get('binary_verdict_headline'):
                 _online_verdict_line = _omni_ch_data['binary_verdict_headline']
                 _online_visao = _omni_ch_data.get('binary_why_reasons') or _online_visao
@@ -16654,33 +16614,35 @@ class FreeAIHelper:
             _on_cards = []
             if _online_visao:
                 _on_cards.append(
-                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.72);border-radius:10px;border-left:4px solid #38bdf8;">'
-                    f'<div style="font-weight:800;color:#38bdf8;font-size:0.9em;margin-bottom:4px;">🔍 VÌ SAO (NGUYÊN NHÂN CỐT LÕI)</div>'
-                    f'<div style="color:#f1f5f9;font-size:0.96em;line-height:1.55;">{_online_visao.rstrip(".")}.</div></div>'
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #38bdf8;">'
+                    f'<div style="font-weight:800;color:#38bdf8;font-size:0.92em;margin-bottom:5px;">🔍 VÌ SAO (NGUYÊN NHÂN CỐT LÕI)</div>'
+                    f'<div style="color:#f1f5f9;font-size:0.93em;line-height:1.52;">{_online_visao.rstrip(".")}</div></div>'
                 )
             if _online_ungky:
                 _on_cards.append(
-                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.72);border-radius:10px;border-left:4px solid #fbbf24;">'
-                    f'<div style="font-weight:800;color:#fbbf24;font-size:0.9em;margin-bottom:4px;">⏰ KHI NÀO (THỜI ĐIỂM ỨNG KỲ)</div>'
-                    f'<div style="color:#fef3c7;font-size:0.96em;line-height:1.55;">{_online_ungky.rstrip(".")}.</div></div>'
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #fbbf24;">'
+                    f'<div style="font-weight:800;color:#fbbf24;font-size:0.92em;margin-bottom:5px;">⏰ KHI NÀO (THỜI ĐIỂM ỨNG KỲ)</div>'
+                    f'<div style="color:#fef3c7;font-size:0.93em;line-height:1.52;">{_online_ungky.rstrip(".")}</div></div>'
                 )
             if _online_giaiphap:
                 _on_cards.append(
-                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.72);border-radius:10px;border-left:4px solid #34d399;">'
-                    f'<div style="font-weight:800;color:#34d399;font-size:0.9em;margin-bottom:4px;">🧭 LÀM GÌ (PHÁP QUYẾT HÀNH ĐỘNG)</div>'
-                    f'<div style="color:#ecfdf5;font-size:0.96em;line-height:1.55;">{_online_giaiphap.rstrip(".")}.</div></div>'
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #34d399;">'
+                    f'<div style="font-weight:800;color:#34d399;font-size:0.92em;margin-bottom:5px;">🧭 LÀM GÌ (PHÁP QUYẾT HÀNH ĐỘNG)</div>'
+                    f'<div style="color:#ecfdf5;font-size:0.93em;line-height:1.52;">{_online_giaiphap.rstrip(".")}</div></div>'
                 )
             _online_prose_html = (
-                f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px;">'
+                f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px;">'
                 + "".join(_on_cards)
                 + '</div>'
             ) if _on_cards else ''
+            _dv_grid_html = str(locals().get('_dual_verified', {}).get('deep_a_to_z_grid_html') or '')
 
             final_parts.append(
-                f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Antigravity Brain Mode + Gemini Pro V119.0 — Đồng Bộ Thời Gian Thực, Giải Mã Tài Chính & Vạn Vật Loại Tượng 24 Yếu Tố A→Z)</div>'
-                f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
+                f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
+                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & PHÂN TÍCH 24 YẾU TỐ (Antigravity Brain Mode V120.0 — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
+                + _dv_grid_html
                 + f'</div>'
             )
             
@@ -17397,23 +17359,23 @@ class FreeAIHelper:
                 except Exception:
                     _connected_prose_on = _off_summary_extra
 
-                final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid {_off_v_color};box-shadow:0 4px 25px rgba(52,211,153,0.4);">'
-                    f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT LIÊN KẾT MỌI YẾU TỐ QUẺ (V117.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | BÓC TÁCH SÂU 24 YẾU TỐ A→Z)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (_is_bin_fact_box or _is_child_box or _is_spec_override_box or any(w in _q_low_on_box for w in ["nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off_v_icon} {_off_v_label} ({weighted_pct}%)"}</span>'
+                # V120.0: Đưa phần Đối chứng Offline & 7 Mắt Xích vào trong thanh bấm mở <details> để màn hình chính KHÔNG bị lặp lại 2 hộp Kết Luận khổng lồ
+                _off_secondary_box = (
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:16px 18px;border-radius:14px;margin:10px 0;border:2px solid {_off_v_color};">'
+                    f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">'
+                    f'<span style="font-size:1.0em;font-weight:800;color:#6ee7b7;">🔮 ĐỐI CHỨNG HỆ THỐNG OFFLINE & 7 MẮT XÍCH CỔ THƯ</span>'
+                    f'<span style="font-size:0.95em;font-weight:900;padding:3px 10px;background:rgba(0,0,0,0.35);color:#fbbf24;border-radius:16px;border:1px solid #fbbf24;">🎯 ĐỒNG BỘ 100%</span>'
                     f'</div>'
-                    f'<div style="font-size:1.05em;color:#ffffff;margin-bottom:10px;padding:14px 16px;background:rgba(0,0,0,0.34);border-radius:12px;border-left:5px solid {_off_v_color};">'
-                    + (_narrative_main if _narrative_main else f'📢 {_direct_reply}')
-                    + '</div>'
                     + _connected_prose_on
                     + _t7_html
                     + f'</div>'
                 )
             
-            # V99.9: Chi tiết Offline → 1 collapse DUY NHẤT (HTML formatted)
+            # V120.0: Chi tiết Offline → 1 collapse DUY NHẤT gọn đẹp
             final_parts.append("\n<details>")
-            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
+            final_parts.append(f"<summary><b>📖 XEM ĐỐI CHỨNG AI OFFLINE & 7 MẮT XÍCH CỔ THƯ (nhấn để đóng/mở)</b></summary>\n")
+            if locals().get('_off_secondary_box'):
+                final_parts.append(_off_secondary_box)
             if v38_protocol_text:
                 final_parts.append(_format_md_for_html_details(v38_protocol_text))
             if _off_summary_extra:
@@ -18187,16 +18149,16 @@ class FreeAIHelper:
                 except Exception:
                     _connected_prose_fb = _off2_summary
 
+                _dv_grid_fb = str((locals().get('_dual_verified') or {}).get('deep_a_to_z_grid_html') or '')
                 final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:22px 24px;border-radius:16px;margin:14px 0;border:3px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
+                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:20px 22px;border-radius:16px;margin:14px 0;border:2px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.1em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT TỪ 4 PHƯƠNG PHÁP CHUẨN XÁC (V117.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | BÓC TÁCH SÂU 24 YẾU TỐ A→Z)</span>'
-                    f'<span style="font-size:1.05em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
+                    f'<span style="font-size:1.05em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT TỪ 4 PHƯƠNG PHÁP CHUẨN XÁC (V120.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | BỐ CỤC TINH GỌN 4 TRỤ CỘT)</span>'
+                    f'<span style="font-size:1.0em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
                     f'</div>'
                     + _combined_direct_html
-                    + _connected_prose_fb
+                    + _dv_grid_fb
                     + _comp_detail_html
-                    + _t7_fb_html
                     + f'</div>'
                 )
             final_parts.append("")
@@ -18206,7 +18168,11 @@ class FreeAIHelper:
             # KHÔNG có section nào hiển thị bên ngoài collapse
             # ═══════════════════════════════════════════════════════════
             final_parts.append("\n<details>")
-            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE (nhấn để mở)</b></summary>\n")
+            final_parts.append(f"<summary><b>📖 XEM CHI TIẾT PHÂN TÍCH AI OFFLINE & 7 MẮT XÍCH CỔ THƯ (nhấn để mở)</b></summary>\n")
+            if locals().get('_connected_prose_fb'):
+                final_parts.append(_connected_prose_fb)
+            if locals().get('_t7_fb_html'):
+                final_parts.append(_t7_fb_html)
             
             # 1. Protocol 27 bước (NẾU CÓ)
             if v38_protocol_text:

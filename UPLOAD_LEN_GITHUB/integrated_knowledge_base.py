@@ -676,11 +676,10 @@ def compute_thong_quan_remedy(
         special_note = f"⚡ <b>Điền Thực / Xuất Không:</b> Hào Dụng Thần ({dt_chi}) đang Tuần Không, mọi việc chỉ thực sự ngã ngũ vào <b>Giờ/Ngày {dt_chi} (Thực Không)</b> hoặc <b>Giờ/Ngày {xung_chi} (Xung Không)</b>. "
 
     remedy_html = (
-        f"🛡️ <b>Pháp Quyết Hóa Giải & Vận Trù Thực Tế (Ngũ Hành Thông Quan & Kỳ Môn Trạch Cát):</b><br>"
-        f"&nbsp;&nbsp;• <b>Dụng Thần Thông Quan:</b> Bổ sung hành <b style='color:#fde047;'>{hanh_tq}</b> — {nguyen_ly_tq}.<br>"
-        f"&nbsp;&nbsp;• <b>Phương vị & Sắc thái trợ vận:</b> Ưu tiên hướng <b>{huong_tq}</b> (Màu hợp: <b>{mau_tq}</b>) | "
-        f"<b>Tam Cát Môn trên bàn Kỳ Môn hiện tại:</b> <span style='color:#4ade80;'>{km_cat_phuong_str}</span>.<br>"
-        f"&nbsp;&nbsp;• <b>Ứng dụng thực tế & Thời cơ:</b> {special_note}{hd_tq} (Khung giờ/ngày hợp khí nhất: <b>Giờ/Ngày {hop_chi} [Lục Hợp]</b> hoặc <b>{dt_chi}</b>)."
+        f"<div style='margin-top:6px;padding-top:6px;border-top:1px dashed rgba(52,211,153,0.35);font-size:0.92em;'>"
+        f"🛡️ <b>Thông Quan & Trạch Cát:</b> Bổ sung hành <b style='color:#fde047;'>{hanh_tq}</b> (Hướng <b>{huong_tq}</b> · Màu <b>{mau_tq}</b>) · "
+        f"Tam Cát Môn: <span style='color:#4ade80;'>{km_cat_phuong_str}</span> · Giờ/Ngày hợp khí: <b>{hop_chi}</b> hoặc <b>{dt_chi}</b>."
+        f"</div>"
     )
     return {
         "hanh_thong_quan": hanh_tq,
@@ -1151,32 +1150,54 @@ def compute_deep_interacting_factors_a_to_z(
         _extra_lh = tam_hop_found + am_dong_list + nguyet_pha_list
         am_dong_np_html = f"<br>&nbsp;&nbsp;• <b>Yếu tố tác động ngầm (Tam Hợp / Ám Động / Nguyệt Phá):</b> {' | '.join(_extra_lh)}."
 
-    nm_line_html = f"<br>&nbsp;&nbsp;• <b>Khớp Niên Mệnh Đích Danh (Mảnh ghép 2):</b> {univ_mat.get('nien_menh_summary')}" if univ_mat.get("nien_menh_summary") else ""
+    nm_line_html = f"<div style='margin-top:4px;color:#fde68a;'>• <b>Niên Mệnh Đích Danh:</b> {univ_mat.get('nien_menh_summary')}</div>" if univ_mat.get("nien_menh_summary") else ""
+    _tq_obj = univ_mat.get("thong_quan_remedy") or {}
+    _tq_hanh_s = _tq_obj.get("hanh_thong_quan", "Thổ")
+    _tq_huong_s = _tq_obj.get("huong_hoa_giai", "Đông Bắc / Tây Nam")
+    _tq_mau_s = _tq_obj.get("mau_sac", "Vàng, Nâu")
+    _tq_cat_s = _tq_obj.get("km_cat_phuong", "")
 
     deep_a_to_z_html = (
-        f'<div style="margin-top:10px;padding:12px 14px;background:rgba(15,23,42,0.92);border-radius:10px;border:1px solid rgba(251,191,36,0.45);font-size:0.93em;color:#f1f5f9;line-height:1.58;">'
-        f'<div style="font-weight:900;color:#fde047;font-size:1.0em;margin-bottom:8px;border-bottom:1px solid rgba(251,191,36,0.25);padding-bottom:5px;">'
-        f'🔬 BÓC TÁCH SÂU TỪ A ĐẾN Z MỌI YẾU TỐ TÁC ĐỘNG TRÊN QUẺ (LỤC HÀO · MAI HOA · KỲ MÔN · THIẾT BẢN & TỬ VI THIÊN KỶ)'
+        f'<div style="margin-top:12px;padding:14px 16px;background:rgba(15,23,42,0.88);border-radius:12px;border:1px solid rgba(56,189,248,0.35);">'
+        f'<div style="font-weight:900;color:#fde047;font-size:0.98em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
+        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ TÁC ĐỘNG A→Z (BỐ CỤC 4 TRỤ CỘT DỄ ĐỌC)</span>'
+        f'<span style="font-size:0.8em;color:#94a3b8;font-weight:600;">Lục Hào · Mai Hoa · Kỳ Môn · Thiết Bản & Thông Quan</span>'
         f'</div>'
-        f'<b>1️⃣ Bóc tách Lục Hào Kinh Dịch từ A đến Z (10 Tầng Tác Động):</b><br>'
-        f'&nbsp;&nbsp;• <b>Đặc tính Quẻ & Thế – Ứng:</b> {hex_trait_str}. Trục <b>Hào Thế (Hào {the_idx} {the_chi}-{the_nh}, Lục Thú: {the_luc_thu}) ↔ Hào Ứng (Hào {ung_idx} {ung_chi}-{ung_nh})</b>: {the_ung_rel}.<br>'
-        f'&nbsp;&nbsp;• <b>Dụng Thần, Hào Vị & Lục Thú:</b> Dụng Thần <b>{dung_than} tại Hào {dt_idx} ({dt_chi}-{dt_nh})</b> ({dt_vi_info.get("ten_hao", f"Hào {dt_idx}")}: <i>{dt_vi_info.get("dia_ly", "")} / {dt_vi_info.get("nhan_su", "")}</i>) lâm Lục Thú <b>{dt_luc_thu}</b> (<i>{dt_lthu_desc}</i>).<br>'
-        f'&nbsp;&nbsp;• <b>Nguyệt Lệnh ({chi_m}-{nh_m}), Nhật Thần ({chi_n}-{nh_n}), 12 Trường Sinh & Nhập Mộ:</b> Dụng Thần đạt trạng thái <b>{dt_season_state}</b>, trên Ngày {chi_n} lâm cung <b>{dt_ts_ngay}</b> (Hào Thế lâm <b>{the_ts_ngay}</b>). {mo_kho_note}.<br>'
-        f'&nbsp;&nbsp;• <b>Lực lượng Nguyên Thần ({ng_nh}) vs Kỵ Thần ({ky_nh}) & Nguồn Tiền (Thê Tài):</b> Nguyên Thần sinh trợ: <b>{", ".join(nguyen_than_list) or "Ẩn phục"}</b> | Kỵ Thần khắc chế: <b>{", ".join(ky_than_list) or "Không có"}</b> | Nguồn lực Thê Tài: <b>{univ_mat.get("the_tai_status_str", "")}</b>.<br>'
-        f'&nbsp;&nbsp;• <b>Phân tích Hào Động & Hào Biến (Tách Hiện Trạng vs Tiên Lượng):</b><br>{dong_hoa_html}'
-        f'{am_dong_np_html}<br>'
-        f'<b>2️⃣ Bóc tách Mai Hoa Dịch Số từ A đến Z (Tam Quái, Đảng Thể/Dụng & Vạn Vật Loại Tượng):</b><br>'
-        f'&nbsp;&nbsp;• <b>Trục Tam Quái:</b> Quẻ Chủ <b>{full_chu}</b> (Thượng {up_chu} · Hạ {lo_chu}) ➔ Quẻ Hỗ <b>{full_ho}</b> (Thượng Hỗ {up_ho} · Hạ Hỗ {lo_ho}) ➔ Quẻ Biến <b>{full_bien}</b> (Thượng Biến {up_bien} · Hạ Biến {lo_bien}).<br>'
-        f'&nbsp;&nbsp;• <b>Tương quan Thể – Dụng & Thời Lệnh:</b> Quẻ Thể <b>{the_quai} ({hanh_the} — {mh_the_season})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung} — {mh_dung_season})</b> đạt thế <b>{univ_mat.get("rel_chu_tag","")}</b> ({univ_mat.get("rel_chu_desc","")}); biến sang Quẻ Biến Dụng <b>{bien_dung_quai} ({hanh_bien_dung})</b> đạt thế <b>{univ_mat.get("rel_bien_tag","")}</b> ({univ_mat.get("rel_bien_desc","")}).<br>'
-        f'&nbsp;&nbsp;• <b>Tác động ngầm của Quẻ Hỗ (Đảng Thể vs Đảng Dụng):</b> {dang_ho_verdict}<br>'
-        f'<b>3️⃣ Bóc tách Kỳ Môn Độn Giáp từ A đến Z (Cung Chủ–Khách, Nội/Ngoại Bàn, Môn Bức & 81 Cách Cục):</b><br>'
-        f'&nbsp;&nbsp;• <b>Không gian Nội/Ngoại Bàn & Cung Chủ – Khách:</b> {noi_ngoai_ban_str}. {chu_khach_km_str}.<br>'
-        f'&nbsp;&nbsp;• <b>Tinh – Môn – Thần & Trạng thái Môn–Cung tại Cung {target_cung} ({quai_cung} — {huong_cung}):</b> Hội <b>Sao {sao_name}</b> ({univ_mat.get("sao_cat_lbl","")}: {univ_mat.get("sao_meaning","")}) · <b>Cửa {cua_name}</b> ({univ_mat.get("cua_cat_lbl","")}: {univ_mat.get("cua_meaning","")}) · <b>Thần {than_name}</b>. Trạng thái Môn–Cung: {mon_cung_state}.<br>'
-        f'&nbsp;&nbsp;• <b>Cách Cục Lưu Bá Ôn & Cục Diện Đặc Biệt:</b> {cach_cuc_81_str}. {km_special_flags_str}.{nm_line_html}<br>'
-        f'<b>4️⃣ Bóc tách Thiết Bản Thần Toán, Hoàng Cực Kinh Thế & Pháp Quyết Hóa Giải Thông Quan:</b><br>'
-        f'&nbsp;&nbsp;• <b>Thiết Bản Khấu Đinh Điều Văn:</b> {univ_mat.get("thiet_ban_luan_giai", "")}<br>'
-        f'&nbsp;&nbsp;• <b>Pháp Quyết Hóa Giải Thông Quan (Mảnh ghép 3):</b> Dụng Thần Thông Quan hành <b style="color:#fde047;">{(univ_mat.get("thong_quan_remedy") or {}).get("hanh_thong_quan", "Thổ")}</b> | Tam Cát Môn hiện tại: <b style="color:#4ade80;">{(univ_mat.get("thong_quan_remedy") or {}).get("km_cat_phuong", "")}</b>.'
+        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:10px;font-size:0.9em;line-height:1.52;color:#f1f5f9;">'
+        # Thẻ 1: Lục Hào
+        f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #38bdf8;">'
+        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO KINH DỊCH (10 Tầng Sâu)</div>'
+        f'• <b>Thế – Ứng:</b> {hex_trait_str}. Hào Thế (Hào {the_idx} {the_chi}-{the_nh}, {the_luc_thu}) ↔ Hào Ứng (Hào {ung_idx} {ung_chi}-{ung_nh}): {the_ung_rel}.<br>'
+        f'• <b>Dụng Thần:</b> <b>{dung_than} tại Hào {dt_idx} ({dt_chi}-{dt_nh})</b> ({dt_vi_info.get("ten_hao", f"Hào {dt_idx}")}) lâm <b>{dt_luc_thu}</b>.<br>'
+        f'• <b>Khí lực:</b> {dt_season_state} · Trường Sinh ngày {chi_n}: <b>{dt_ts_ngay}</b> · {mo_kho_note}.<br>'
+        f'• <b>Nguyên/Kỵ & Tài:</b> Nguyên Thần: <b>{", ".join(nguyen_than_list) or "Ẩn"}</b> | Kỵ Thần: <b>{", ".join(ky_than_list) or "Không"}</b> | {univ_mat.get("the_tai_status_str", "")}.<br>'
+        f'• <b>Hào Động/Biến:</b> {"; ".join(dong_hoa_details) if dong_hoa_details else "Quẻ Tĩnh (6 hào an tĩnh)"}{am_dong_np_html}'
         f'</div>'
+        # Thẻ 2: Mai Hoa
+        f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #f472b6;">'
+        f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:5px;">2️⃣ MAI HOA DỊCH SỐ (Tam Quái & Thể/Dụng)</div>'
+        f'• <b>Trục Tam Quái:</b> Quẻ Chủ <b>{full_chu}</b> ({up_chu}/{lo_chu}) ➔ Quẻ Hỗ <b>{full_ho}</b> ({up_ho}/{lo_ho}) ➔ Quẻ Biến <b>{full_bien}</b> ({up_bien}/{lo_bien}).<br>'
+        f'• <b>Thể – Dụng Chủ:</b> Quẻ Thể <b>{the_quai} ({hanh_the})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung})</b> ➔ <b>{univ_mat.get("rel_chu_tag","")}</b> ({univ_mat.get("rel_chu_desc","")}).<br>'
+        f'• <b>Thể – Dụng Biến:</b> Biến sang <b>{bien_dung_quai} ({hanh_bien_dung})</b> ➔ <b>{univ_mat.get("rel_bien_tag","")}</b> ({univ_mat.get("rel_bien_desc","")}).<br>'
+        f'• <b>Đảng Thể/Dụng (Quẻ Hỗ):</b> {dang_ho_verdict}'
+        f'</div>'
+        # Thẻ 3: Kỳ Môn
+        f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #fbbf24;">'
+        f'<div style="font-weight:800;color:#fde047;margin-bottom:5px;">3️⃣ KỲ MÔN ĐỘN GIÁP (Cung Chủ–Khách & Cách Cục)</div>'
+        f'• <b>Bàn & Chủ–Khách:</b> {noi_ngoai_ban_str}. {chu_khach_km_str}.<br>'
+        f'• <b>Cung {target_cung} ({quai_cung} — {huong_cung}):</b> Hội <b>Sao {sao_name}</b> · <b>Cửa {cua_name}</b> · <b>Thần {than_name}</b> ({mon_cung_state}).<br>'
+        f'• <b>Cách Cục Lưu Bá Ôn:</b> {cach_cuc_81_str}.<br>'
+        f'• <b>Cục diện:</b> {km_special_flags_str}.{nm_line_html}'
+        f'</div>'
+        # Thẻ 4: Thiết Bản & Pháp Quyết Thông Quan
+        f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #34d399;">'
+        f'<div style="font-weight:800;color:#6ee7b7;margin-bottom:5px;">4️⃣ THIẾT BẢN & PHÁP QUYẾT THÔNG QUAN</div>'
+        f'• <b>Thiết Bản Thần Toán:</b> {univ_mat.get("thiet_ban_luan_giai", "")}<br>'
+        f'• <b>Dụng Thần Thông Quan:</b> Bổ sung hành <b style="color:#fde047;">{_tq_hanh_s}</b> (Hướng hợp: <b>{_tq_huong_s}</b> · Màu sắc: <b>{_tq_mau_s}</b>).<br>'
+        f'• <b>Tam Cát Môn Kỳ Môn:</b> <span style="color:#4ade80;">{_tq_cat_s}</span>.<br>'
+        f'• <b>Thời điểm hợp khí:</b> Ưu tiên hành sự vào Giờ/Ngày <b>{_tq_obj.get("hop_chi", "Thìn")} (Lục Hợp)</b> hoặc <b>{_tq_obj.get("xung_chi", "Tuất")} (Xung mở cục)</b>.'
+        f'</div>'
+        f'</div></div>'
     )
 
     deep_a_to_z_prompt_text = (
