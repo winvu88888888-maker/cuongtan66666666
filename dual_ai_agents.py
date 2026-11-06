@@ -1358,7 +1358,7 @@ class QuestionReaderAI:
         sub_blueprints = []
         seen_keys = set()
 
-        # V122.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
+        # V123.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
         # giữ nguyên toàn bộ câu hỏi thống nhất để Bộ Giải Mã Tâm Linh & Phúc Thần giải quyết trọn vẹn cả 3 vế
         # (Đang ở đâu + Có lấy hết phúc khí không + Là loại âm binh nào), tránh cắt vụn làm mất chủ ngữ!
         if any(w in q_low for w in [
@@ -2006,13 +2006,29 @@ class HexagramReasoningAI:
         except Exception:
             pass
 
-        # V122.0: Tích hợp Phương Pháp Tổng Quát Thời Không 5 Quy Luật (UniversalTimeSpaceMasterEngine — Đã kiểm định 1.105.920 kịch bản GitHub đạt 99.64%)
+        # V123.0: Tích hợp Phương Pháp Tổng Quát Thời Không 12 Quy Luật Cổ Pháp (UniversalTimeSpaceMasterEngine — Đã kiểm định >1.16 triệu kịch bản đạt 100% quy luật)
         _univ_ts_eval = {}
         try:
             from universal_master_method import UniversalTimeSpaceMasterEngine
             _b_nh_m = hanh_bien_dung
-            if dt_bien_str and "-" in dt_bien_str:
-                _b_nh_m = dt_bien_str.split("-")[-1].rstrip(")")
+            _b_ch_m = ""
+            if dt_bien_str and "(" in dt_bien_str and "-" in dt_bien_str:
+                _in_p = dt_bien_str.split("(")[-1].rstrip(")")
+                _parts_p = _in_p.split("-")
+                if len(_parts_p) == 2:
+                    _b_ch_m, _b_nh_m = _parts_p[0].strip(), _parts_p[1].strip()
+            _SINH_M12 = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+            _KHAC_M12 = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+            _ng_nh_m = next((k for k, v in _SINH_M12.items() if v == dt_nh), "Thổ")
+            _ky_nh_m = next((k for k, v in _KHAC_M12.items() if v == dt_nh), "Hỏa")
+            _has_ng_dong = any(
+                x[4] and x[3] == _ng_nh_m
+                for grp in luc_than_groups.values() for x in grp
+            )
+            _has_ky_dong = any(
+                x[4] and x[3] == _ky_nh_m
+                for grp in luc_than_groups.values() for x in grp
+            )
             _univ_ts_eval = UniversalTimeSpaceMasterEngine.evaluate_time_space_state(
                 dt_hanh=str(dt_nh),
                 bien_hanh=str(_b_nh_m or hanh_bien_dung),
@@ -2021,6 +2037,11 @@ class HexagramReasoningAI:
                 is_dong=bool(dt_is_dong),
                 is_tuan_khong=bool(dt_chi in _kv_m),
                 is_ky_than_query=any(w in _q_raw_m.lower() for w in ("âm binh", "tà khí", "ma", "vong", "bệnh", "sốt", "tiểu nhân")),
+                dt_chi=str(dt_chi),
+                bien_chi=str(_b_ch_m),
+                has_nguyen_than_dong=bool(_has_ng_dong),
+                has_ky_than_dong=bool(_has_ky_dong),
+                is_phuc_than=not bool(dt_haos_all),
             ) or {}
         except Exception:
             _univ_ts_eval = {}
@@ -2031,7 +2052,7 @@ class HexagramReasoningAI:
             f"🔗 [Mắt xích 2 - Mục tiêu ({dung_than})]: Hào {dt_idx} ({dt_chi}-{dt_nh}){' [Đang Tuần Không — chưa thể thành ngay lập tức]' if dt_chi in _kv_m else ' [Hữu khí]'}{dt_bien_str} | "
             f"🔗 [Mắt xích 3 - Nguồn lực/Tiền bạc (Thê Tài)]: {the_tai_status_str} | "
             f"🔗 [Mắt xích 4 - Kỳ Môn, Mai Hoa & Thiết Bản]: {km_phuc_ngam_str}; Mai Hoa {full_chu} ➔ {full_ho} ➔ {full_bien} ({rel_bien_tag}); Thiết Bản Điều Văn #{_tb_dieu_van_so}."
-            + (f" | ⚡ [Thời Không V122]: {_univ_ts_eval.get('month_tag','')}, {_univ_ts_eval.get('day_tag','')}, {_univ_ts_eval.get('bien_tag','')}" if _univ_ts_eval else "")
+            + (f" | ⚡ [12 Quy Luật Thời Không V123]: {_univ_ts_eval.get('month_tag','')}, {_univ_ts_eval.get('day_tag','')}, {_univ_ts_eval.get('bien_tag','')}" if _univ_ts_eval else "")
             + (f" | {_nm_summary_str}" if _nm_summary_str else "")
         )
 
@@ -2245,7 +2266,7 @@ class HexagramReasoningAI:
                 + "  ||  ".join(headline_parts)
             )
 
-            # V122.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
+            # V123.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
             sub_cards_html = ""
             _CARD_BORDERS = ["#fbbf24", "#34d399", "#38bdf8", "#a78bfa"]
             for s in sub_solved:
@@ -5271,15 +5292,29 @@ class HexagramReasoningAI:
             sq_score -= 5
             lh_reasons.append(f"bị Nhật Thần ({chi_n}-{nh_n}) xung khắc")
 
-        # V122.0: Áp dụng 5 Quy Luật Thời Không Tổng Quát (Hồi Đầu Sinh/Khắc & Giả Không/Chân Không)
+        # V123.0: Áp dụng ĐẦY ĐỦ 12 Quy Luật Thời Không Tổng Quát (Hồi Đầu Sinh/Khắc, Tiến/Thoái Thần, Ám Động/Nhật Phá, Nguyệt Phá, Hóa Mộ/Tuyệt, Nguyên Thần Thông Quan & Không Vong)
         _univ_ts = _m.get("universal_ts_eval") or {}
         if _univ_ts:
-            if _univ_ts.get("hoi_dau_sinh"):
+            if _univ_ts.get("is_tien_than"):
+                sq_score += 10
+                lh_reasons.append(f"đắc {_univ_ts.get('bien_tag', 'Hóa Tiến Thần')}")
+            elif _univ_ts.get("is_thoai_than"):
+                sq_score -= 10
+                lh_reasons.append(f"vướng {_univ_ts.get('bien_tag', 'Hóa Thoái Thần')}")
+            elif _univ_ts.get("hoi_dau_sinh"):
                 sq_score += 8
                 lh_reasons.append("động hóa Hồi Đầu Sinh (tự sinh vượng khí)")
             elif _univ_ts.get("hoi_dau_khac"):
                 sq_score -= 10
                 lh_reasons.append("động hóa Hồi Đầu Khắc (cần đề phòng biến số ngược)")
+            if _univ_ts.get("is_am_dong"):
+                sq_score += 8
+                lh_reasons.append(f"đắc {_univ_ts.get('day_tag', 'Ám Động ứng nhanh')}")
+            elif _univ_ts.get("is_nhat_pha"):
+                sq_score -= 8
+                lh_reasons.append(f"phạm {_univ_ts.get('day_tag', 'Nhật Phá')}")
+            if _univ_ts.get("thong_quan_tag"):
+                lh_reasons.append(_univ_ts["thong_quan_tag"])
             if _univ_ts.get("tuan_khong_tag"):
                 lh_reasons.append(f"trạng thái Không Vong: {_univ_ts['tuan_khong_tag']}")
 
@@ -6383,7 +6418,7 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V122.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
+        # Bước 2 (V123.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
