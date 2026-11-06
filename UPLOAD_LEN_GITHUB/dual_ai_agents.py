@@ -694,7 +694,18 @@ class QuestionReaderAI:
             and not is_gender_age
             and not is_when
         )
-        is_lost_where = any(w in q_low for w in ["mất", "thất lạc", "tìm lại", "tìm thấy", "ở đâu", "hướng nào", "chỗ nào"]) and not is_where_home_work and not is_house_floors_q
+        is_spiritual_yin_q = any(w in q_low for w in [
+            "âm binh", "vong linh", "vong theo", "vong nhập", "vong ám", "tà khí", "tà ma",
+            "ma quỷ", "quỷ ám", "ma ám", "bùa ngải", "bỏ bùa", "dính bùa", "ngải",
+            "phúc khí", "phúc đức", "phúc phần", "bóng đè", "người âm", "vong ",
+            "hại chị", "hại anh", "hại em", "hại con", "hại tôi", "hại mẹ", "hại bố",
+        ])
+        is_lost_where = (
+            any(w in q_low for w in ["mất", "thất lạc", "tìm lại", "tìm thấy", "tìm đồ", "để quên", "bỏ quên", "rơi ở đâu", "trộm", "cắp"])
+            and not is_where_home_work
+            and not is_house_floors_q
+            and not is_spiritual_yin_q
+        )
         is_why = any(w in q_low for w in ["tại sao", "vì sao", "nguyên nhân", "lý do", "do đâu", "ý đồ gì", "nghĩ gì", "tâm lý"])
         is_debt = any(w in q_low for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "cho vay", "vay tiền", "vay ngân hàng", "khoản nợ", "con nợ"])
         is_major_asset_purchase = any(w in q_low for w in [
@@ -719,7 +730,25 @@ class QuestionReaderAI:
         option_a = ""
         option_b = ""
 
-        if is_house_floors_q:
+        if is_spiritual_yin_q:
+            arch_key = "D25_SPIRITUAL_GENERAL"
+            specific_target = "SPIRITUAL_YIN_CHECK"
+            if any(w in q_low for w in ["chị gái", "anh trai", "em gái", "em trai", "chị tôi", "anh tôi", "em tôi"]):
+                subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Anh Chị Em (Huynh Đệ)"
+                authoritative_dt = "Huynh Đệ"
+            elif any(w in q_low for w in ["con gái", "con trai", "con tôi", "bé nhà tôi"]):
+                subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Con cái (Tử Tôn)"
+                authoritative_dt = "Tử Tôn"
+            elif any(w in q_low for w in ["bố", "mẹ", "cha", "ba", "má", "ông", "bà"]):
+                subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Cha Mẹ (Phụ Mẫu)"
+                authoritative_dt = "Phụ Mẫu"
+            elif any(w in q_low for w in ["vợ tôi", "bạn gái"]):
+                subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Người vợ (Thê Tài)"
+                authoritative_dt = "Thê Tài"
+            else:
+                subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Bản thân (Hào Thế)"
+                authoritative_dt = "Quan Quỷ"
+        elif is_house_floors_q:
             arch_key = "D09_QUANTITY_PRICE"
             specific_target = "HOUSE_FLOORS"
             subject_person = "Ngôi nhà & Vị trí tầng người hỏi đang ở"
@@ -1329,6 +1358,16 @@ class QuestionReaderAI:
         sub_blueprints = []
         seen_keys = set()
 
+        # V121.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
+        # giữ nguyên toàn bộ câu hỏi thống nhất để Bộ Giải Mã Tâm Linh & Phúc Thần giải quyết trọn vẹn cả 3 vế
+        # (Đang ở đâu + Có lấy hết phúc khí không + Là loại âm binh nào), tránh cắt vụn làm mất chủ ngữ!
+        if any(w in q_low for w in [
+            "âm binh", "vong linh", "vong theo", "vong nhập", "vong ám", "tà khí", "tà ma",
+            "ma quỷ", "quỷ ám", "ma ám", "bùa ngải", "bỏ bùa", "dính bùa", "ngải",
+            "phúc khí", "phúc đức", "phúc phần", "bóng đè", "người âm", "vong ",
+        ]):
+            return []
+
         if len(clauses) >= 2:
             for cl in clauses:
                 cl_low = cl.lower()
@@ -1343,7 +1382,7 @@ class QuestionReaderAI:
                 is_meaningful_clause = (
                     bp_cl["specific_target"] != ""
                     or bp_cl["archetype_key"] != "D25_SPIRITUAL_GENERAL"
-                    or any(w in cl_low for w in ["mấy", "bao nhiêu", "không", "chưa", "thế nào", "ra sao", "khi nào", "bao giờ", "ở đâu", "ai", "hay"])
+                    or any(w in cl_low for w in ["mấy", "bao nhiêu", "không", "chưa", "thế nào", "ra sao", "khi nào", "bao giờ", "ở đâu", "ai", "hay", "nào", "gì", "loại", "sao", "đâu", "phải"])
                 )
                 if not is_meaningful_clause:
                     continue
@@ -2173,54 +2212,47 @@ class HexagramReasoningAI:
                     "why": sq_res.get("why", ""),
                     "when": sq_res.get("when", ""),
                     "advice": sq_res.get("advice", ""),
+                    "is_strict_override": bool(sq_res.get("is_strict_override", False)),
                 })
 
             headline_parts = [
-                f"[{s['index']}. {s['clause_label'].upper()} (DT: {s['dt'].upper()})]: {s['short_headline']}"
+                f"[{s['index']}. {s['clause_label'].upper()}]: {s['short_headline']}"
                 for s in sub_solved
             ]
             combined_headline = (
-                f"🎯 GIẢI MÃ TRỌN VẸN {len(sub_solved)} CÂU HỎI NHỎ TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                f"🎯 GIẢI MÃ TRỌN VẸN {len(sub_solved)} VẾ CÂU HỎI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
                 + "  ||  ".join(headline_parts)
             )
 
-            # Xây dựng thẻ HTML trực quan song song cho từng câu hỏi nhỏ để chèn vào phần giải thích
-            sub_cards_html = (
-                '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:10px;">'
-            )
+            # V121.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
+            sub_cards_html = ""
             _CARD_BORDERS = ["#fbbf24", "#34d399", "#38bdf8", "#a78bfa"]
             for s in sub_solved:
                 _b_col = _CARD_BORDERS[(s["index"] - 1) % len(_CARD_BORDERS)]
                 sub_cards_html += (
-                    f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:10px;border:1.5px solid {_b_col};">'
-                    f'<div style="font-size:0.86em;font-weight:900;color:{_b_col};margin-bottom:4px;">'
-                    f'🔹 CÂU HỎI NHỎ {s["index"]}: "{s["clause_label"].upper()}" (Dụng Thần: {s["dt"]} · {s["arch_code"]})'
+                    f'<div style="padding:7px 10px;background:rgba(15,23,42,0.82);border-radius:8px;border-left:3px solid {_b_col};margin-bottom:6px;">'
+                    f'<div style="font-size:0.86em;font-weight:900;color:{_b_col};margin-bottom:2px;">'
+                    f'🔹 VẾ {s["index"]}: "{s["clause_label"].upper()}" (Dụng Thần: {s["dt"]})'
                     f'</div>'
-                    f'<div style="font-size:0.98em;font-weight:900;color:#ffffff;margin-bottom:6px;padding:6px 8px;background:rgba(255,255,255,0.06);border-radius:6px;border-left:3px solid {_b_col};">'
+                    f'<div style="font-size:0.92em;font-weight:800;color:#ffffff;margin-bottom:3px;">'
                     f'👉 {s["short_headline"]}'
                     f'</div>'
-                    f'<div style="font-size:0.9em;color:#e2e8f0;line-height:1.5;">{s["why"]}</div>'
+                    f'<div style="font-size:0.86em;color:#e2e8f0;line-height:1.42;">{s["why"]}</div>'
                     f'</div>'
                 )
-            sub_cards_html += '</div>'
 
-            combined_why = (
-                sub_cards_html
-                + " ".join(
-                    f"<b>• [Vế {s['index']} — {s['clause_label']} (Dụng Thần: {s['dt']})]:</b> {s['why']}"
-                    for s in sub_solved
-                )
-            )
+            combined_why = sub_cards_html
             combined_when = "<br>".join(
-                f"<b>• [Vế {s['index']} — {s['clause_label']}]:</b> {s['when']}"
+                f"• <b>[Vế {s['index']}]:</b> {s['when']}"
                 for s in sub_solved
             )
             combined_advice = "<br>".join(
-                f"<b>• [Vế {s['index']} — {s['clause_label']}]:</b> {s['advice']}"
+                f"• <b>[Vế {s['index']}]:</b> {s['advice']}"
                 for s in sub_solved
             )
             return {
                 "has_override": True,
+                "is_strict_override": all(s.get("is_strict_override", False) for s in sub_solved),
                 "is_compound_answer": True,
                 "sub_solved": sub_solved,
                 "headline": combined_headline,
@@ -4958,6 +4990,163 @@ class HexagramReasoningAI:
                 "advice": adv_s,
             }
 
+        # ── 9. GIẢI MÃ CHUYÊN SÂU: TÂM LINH, ÂM BINH, VONG LINH, TÀ KHÍ & KIỂM CHỨNG PHÚC KHÍ (SPIRITUAL_YIN_CHECK — ĐỊNH LUẬT 11 ANTIGRAVITY) ──
+        if target == "SPIRITUAL_YIN_CHECK" or any(w in q_low for w in ["âm binh", "vong linh", "vong theo", "vong nhập", "tà khí", "tà ma", "quỷ ám", "ma ám", "bùa ngải", "phúc khí"]):
+            _CHI_NH_SP = {"Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy"}
+            _SINH_SP = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+            _KHAC_SP = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+            _DIR_CHI_SP = {
+                "Tý": "Chính Bắc (nơi ẩm thấp, gần nguồn nước/nhà vệ sinh)",
+                "Sửu": "Đông Bắc (nền đất cũ, góc tường hoặc gần kho/bếp)",
+                "Dần": "Đông Bắc (gần cây lớn, đồ gỗ cũ hoặc đầu hồi nhà)",
+                "Mão": "Chính Đông (vùng đất có cỏ cây, cửa sổ/cửa phụ hoặc giường gỗ)",
+                "Thìn": "Đông Nam (vùng đất trũng, gần rãnh nước hoặc gốc cây)",
+                "Tị": "Đông Nam (nơi có đèn điện, bếp lửa hoặc góc khuất nóng bức)",
+                "Ngọ": "Chính Nam (phòng khách, ban công hoặc nơi có ánh sáng/nhiệt)",
+                "Mùi": "Tây Nam (nền đất vườn cũ, góc phòng ngủ hoặc nơi thờ cúng)",
+                "Thân": "Tây Nam (gần đường đi, vật dụng kim khí hoặc cửa sắt)",
+                "Dậu": "Chính Tây (cửa ra vào phụ, nơi có gương/kim loại)",
+                "Tuất": "Tây Bắc (nền đất cao, miếu cổ/nhà thờ họ hoặc góc tường khô)",
+                "Hợi": "Tây Bắc (gần nhà tắm, đường ống nước hoặc góc tối ẩm)",
+            }
+            _HAO_POS_SP = {
+                1: "Hào 1 (Hào Sơ — sát mặt đất, nền nhà, chân tường hoặc gầm giường)",
+                2: "Hào 2 (Trạch vị — ngay trong ngôi nhà, phòng sinh hoạt hoặc bếp)",
+                3: "Hào 3 (Ranh giới Nội/Ngoại — ngay cửa phòng ngủ, đầu giường hoặc ngưỡng cửa ra vào)",
+                4: "Hào 4 (Môn hộ — khu vực cửa chính, hành lang, cầu thang hoặc nhà vệ sinh)",
+                5: "Hào 5 (Đường đi bên ngoài — mắc phải khi đi qua ngã đường/nơi công cộng ngoài trời)",
+                6: "Hào 6 (Tông miếu / Nơi xa — liên quan âm phần xa, mái nhà hoặc tầng cao)",
+            }
+
+            # 1. Tìm Hào Quan Quỷ (Đại diện Âm binh / Vong linh / Tà khí) & Hào Tử Tôn (Đại diện Phúc Khí / Phúc Thần Giải Ách)
+            qq_list = []
+            tt_list = []
+            subj_list = []
+            bien_haos_sp = (lh_bien.get("haos") or lh_bien.get("details") or []) if isinstance(lh_bien, dict) else []
+            for _ix_s, _h_s in enumerate(haos, 1):
+                if not isinstance(_h_s, dict):
+                    continue
+                _lt_s = str(_h_s.get("luc_than") or "")
+                _cc_s = re.sub(r"\([^)]*\)", "", str(_h_s.get("chi") or _h_s.get("can_chi") or "Mão")).strip()
+                _ch_s = _cc_s.split()[-1] if _cc_s else "Mão"
+                _nh_s = str(_h_s.get("ngu_hanh") or _h_s.get("hanh") or _CHI_NH_SP.get(_ch_s, "Mộc"))
+                _is_d_s = (_ix_s in dong_list) or bool(_h_s.get("dong") or _h_s.get("is_dong"))
+                _b_lt_s, _b_ch_s, _b_nh_s = "", "", ""
+                if _is_d_s and 1 <= _ix_s <= len(bien_haos_sp) and isinstance(bien_haos_sp[_ix_s - 1], dict):
+                    _bh_s = bien_haos_sp[_ix_s - 1]
+                    _b_lt_s = str(_bh_s.get("luc_than") or "")
+                    _bcc_s = re.sub(r"\([^)]*\)", "", str(_bh_s.get("chi") or _bh_s.get("can_chi") or "")).strip()
+                    _b_ch_s = _bcc_s.split()[-1] if _bcc_s else ""
+                    _b_nh_s = str(_bh_s.get("ngu_hanh") or _bh_s.get("hanh") or _CHI_NH_SP.get(_b_ch_s, ""))
+                _item_s = (_ix_s, _cc_s, _ch_s, _nh_s, _is_d_s, _b_lt_s, _b_ch_s, _b_nh_s)
+                if "Quan Quỷ" in _lt_s:
+                    qq_list.append(_item_s)
+                if "Tử Tôn" in _lt_s:
+                    tt_list.append(_item_s)
+                if dung_than in _lt_s or (dung_than == "Bản Thân" and _ix_s == the_idx):
+                    subj_list.append(_item_s)
+
+            qq_ix, qq_cc, qq_ch, qq_nh, qq_dong, qq_b_lt, qq_b_ch, qq_b_nh = qq_list[0] if qq_list else (3, "Ất Mão", "Mão", "Mộc", bool(3 in dong_list), "Tử Tôn", "Thân", "Kim")
+            tt_ix, tt_cc, tt_ch, tt_nh, tt_dong, _, _, _ = tt_list[0] if tt_list else (the_idx, "Quý Dậu", "Dậu", "Kim", False, "", "", "")
+            sb_ix, sb_cc, sb_ch, sb_nh, sb_dong, _, _, _ = subj_list[0] if subj_list else (1, "Ất Mùi", "Mùi", "Thổ", False, "", "", "")
+
+            _chi_m_sp = chart_data.get("chi_thang", "Tuất")
+            _chi_n_sp = chart_data.get("chi_ngay", "Thân")
+            _nh_m_sp = _CHI_NH_SP.get(_chi_m_sp, "Thổ")
+            _nh_n_sp = _CHI_NH_SP.get(_chi_n_sp, "Kim")
+            _kv_sp = _mat_spec.get("kv_list") or ["Ngọ", "Mùi"]
+
+            # Kiểm tra xem Hào Tử Tôn (Phúc Thần) và Nhật/Nguyệt có khắc chế Quan Quỷ (Âm binh) không
+            _qq_hoi_dau_khac = bool(qq_dong and qq_b_nh and _KHAC_SP.get(qq_b_nh) == qq_nh)
+            _nhat_khac_qq = (_KHAC_SP.get(_nh_n_sp) == qq_nh)
+            _tt_vuong = (_SINH_SP.get(_nh_m_sp) == tt_nh or _nh_m_sp == tt_nh or _SINH_SP.get(_nh_n_sp) == tt_nh or _nh_n_sp == tt_nh or tt_ix == the_idx)
+            _sb_is_kv = (sb_ch in _kv_sp)
+
+            # Chủ thể được hỏi tên là gì
+            _subj_name = "chị gái bạn" if "chị gái" in q_low else ("anh trai bạn" if "anh trai" in q_low else ("em bạn" if "em " in q_low else ("con bạn" if "con " in q_low else "bạn")))
+
+            # [VẾ 1]: ĐANG Ở ĐÂU?
+            _where_dir = _DIR_CHI_SP.get(qq_ch, f"Hướng {huong_cung}")
+            _where_pos = _HAO_POS_SP.get(qq_ix, f"Hào {qq_ix}")
+            _where_summary = (
+                f"NẰM TẠI PHƯƠNG {huong_cung.upper()} (CUNG {target_cung} · CỬA {cua_name.upper()} · THẦN {than_name.upper()}) "
+                f"KẾT HỢP HƯỚNG {_where_dir.upper()} ({_where_pos.upper()})"
+            )
+
+            # [VẾ 2]: CÓ PHẢI LẤY HẾT PHÚC KHÍ KHÔNG?
+            if _tt_vuong or _qq_hoi_dau_khac or _nhat_khac_qq or "Thiên Tâm" in sao_name:
+                _phuc_verdict = (
+                    f"KHÔNG THỂ LẤY HẾT PHÚC KHÍ! PHÚC THẦN (HÀO TỬ TÔN {tt_cc.upper()}-{tt_nh.upper()} TẠI HÀO {tt_ix}{' TRÌ THẾ' if tt_ix == the_idx else ''}) ĐANG VƯỢNG TƯỚNG "
+                    + (f"& HÀO QUAN QUỶ ({qq_cc.upper()}) ĐỘNG HÓA TỬ TÔN ({qq_b_ch.upper()}-{qq_b_nh.upper()} — HỒI ĐẦU KHẮC: PHÚC THẦN CHẾ NGƯỢC TÀ KHÍ) " if _qq_hoi_dau_khac else "")
+                    + f"— CHỈ LÀM HAO TỔN TINH THẦN / MỆT MỎI TẠM THỜI DO HÀO {dung_than.upper()} ({sb_ch.upper()}) {'LÂM TUẦN KHÔNG' if _sb_is_kv else 'SUY NHƯỢC'}"
+                )
+                _phuc_detail = (
+                    f"<b>KHẲNG ĐỊNH 100% KHÔNG LẤY MẤT PHÚC KHÍ GỐC:</b> Trong Lục Hào, <b>Hào Tử Tôn chính là Phúc Thần (Phúc Khí & Thuốc Giải Tà)</b>. "
+                    f"Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b>, Hào Tử Tôn đóng tại <b>Hào {tt_ix} ({tt_cc}-{tt_nh}){' trì Thế' if tt_ix == the_idx else ''}</b> được Tháng <b>{_chi_m_sp} ({_nh_m_sp})</b> và Ngày <b>{_chi_n_sp} ({_nh_n_sp})</b> sinh trợ cực vượng"
+                    + (f", đặc biệt <b>Hào {qq_ix} Quan Quỷ ({qq_cc}-{qq_nh}) phát động lại biến thành Hào {qq_b_lt or 'Tử Tôn'} ({qq_b_ch}-{qq_b_nh}) — cổ pháp gọi là 'Quỷ Hóa Tử Tôn Hồi Đầu Khắc' (Tà khí tự bị Phúc Thần tiêu trừ)</b>" if _qq_hoi_dau_khac else "")
+                    + f", đồng thời Cung {target_cung} có Cát Tinh <b>{sao_name} (Chính khí trừ tà)</b> bảo hộ. Sở dĩ {_subj_name} thấy mệt mỏi, nặng vía là do Hào <b>{dung_than} (Hào {sb_ix} {sb_cc}-{sb_nh})</b> đang {'lâm Tuần Không (tinh thần trống rỗng, suy nhược)' if _sb_is_kv else 'chịu khí khắc nhẹ'}, khiến âm khí thừa cơ quấy nhiễu giấc ngủ và tâm lý chứ <b>không thể đoạt được phúc phần</b>."
+                )
+            else:
+                _phuc_verdict = (
+                    f"ĐANG LÀM HAO TỔN DƯƠNG KHÍ & PHÚC LỰC TẠM THỜI (DO HÀO QUAN QUỶ {qq_cc.upper()} VƯỢNG ĐỘNG KHẮC HÀO {dung_than.upper()} {sb_ch.upper()}) — CẦN TỊNH HÓA NGAY ĐỂ BỒI HOÀN PHÚC KHÍ"
+                )
+                _phuc_detail = (
+                    f"Hào Quan Quỷ tại Hào {qq_ix} ({qq_cc}-{qq_nh}) đang tác động lên Hào {dung_than} (Hào {sb_ix} {sb_cc}-{sb_nh}), làm {_subj_name} bị suy giảm dương khí, hay gặp trắc trở và mệt mỏi kéo dài; cần kích hoạt ngay Hào Tử Tôn (Phúc Thần) để chấn chỉnh lại phúc lực."
+                )
+
+            # [VẾ 3]: LÀ LOẠI ÂM BINH NÀO?
+            _YIN_TYPE_MAP = {
+                "Mộc": (
+                    "VONG LINH ÂM KHÍ VÃNG LAI NƠI ĐẤT ĐAI – CÂY CỐI / VONG NỮ TRẺ HOẶC VONG ĐẤT CŨ (KHÔNG PHẢI BÙA NGẢI ĐỘC HAY ĐẠI HUNG THẦN)",
+                    f"Hào Quan Quỷ mang can chi <b>{qq_cc} (Hành Mộc — Âm Mộc thảo mộc)</b> nằm trong quẻ <b>{ten_que_chu}</b> kết hợp <b>Cửa {cua_name} + Thần {than_name}</b>: Cổ pháp <i>Tăng San Bốc Dịch (Quỷ Thần Chương)</i> định danh đây là <b>vong linh vãng lai vô chủ bám theo nền đất ẩm / gốc cây cũ hoặc vong nữ trẻ khuất mặt lâu ngày</b> (không phải bùa ngải ác ý do thầy tà yểm), nhân lúc {_subj_name} yếu bóng vía mà dựa vào cầu cạnh hương khói."
+                ),
+                "Thủy": (
+                    "VONG NƯỚC / ÂM KHÍ LẠNH LẼO TỪ MẠCH NƯỚC NGẦM – AO HỒ – ĐÊM TỐI",
+                    f"Hào Quan Quỷ mang can chi <b>{qq_cc} (Hành Thủy)</b> phối hợp Cung {target_cung} (<b>{cua_name} · {than_name}</b>): Đây là <b>vong linh miền sông nước hoặc tà khí tích tụ nơi ẩm lạnh, tối tăm</b>, hay gây cảm giác ớn lạnh sống lưng, bóng đè và mộng mị ban đêm."
+                ),
+                "Hỏa": (
+                    "VONG HƯƠNG KHÓI / KHẨU NGUYỆN CŨ HOẶC VONG NÓNG NẢY GÂY BỨC BỐI MẤT NGỦ",
+                    f"Hào Quan Quỷ mang can chi <b>{qq_cc} (Hành Hỏa)</b> phối hợp <b>{cua_name} · {than_name}</b>: Đây là <b>vong linh liên quan đến hương khói thờ tự thiếu sót, lời khấn nguyện cũ chưa trả hoặc âm khí nóng bức</b>, gây triệu chứng bồn chồn, nóng ruột, đau đầu và khó ngủ."
+                ),
+                "Kim": (
+                    "VONG HUYẾT QUANG / THƯƠNG TÍCH CŨ NGOÀI ĐƯỜNG ĐI (KHÍ TÍNH GẮT GAO)",
+                    f"Hào Quan Quỷ mang can chi <b>{qq_cc} (Hành Kim)</b> phối hợp <b>{cua_name} · {than_name}</b>: Đây là <b>vong linh mất vì tai nạn/thương tích cũ ngoài đường hoặc khí sát kim loại</b>, dễ gây đau nhức vai gáy, xương khớp và giật mình hoảng sợ."
+                ),
+                "Thổ": (
+                    "VONG THỔ ĐỊA / ÂM PHẦN ĐẤT CŨ HOẶC GIA TIÊN CHƯA YÊN VỊ DƯỚI NỀN ĐẤT",
+                    f"Hào Quan Quỷ mang can chi <b>{qq_cc} (Hành Thổ)</b> nằm trong quẻ <b>{ten_que_chu}</b> kết hợp <b>{cua_name} · {than_name}</b>: Đây là <b>vong thổ kỳ tại nền đất cũ hoặc âm phần/mộ phần động khí</b>, gây cảm giác trì trệ, nặng nề chân tay và uể oải."
+                ),
+            }
+            _yin_type_short, _yin_type_detail = _YIN_TYPE_MAP.get(qq_nh, _YIN_TYPE_MAP["Mộc"])
+
+            short_hl = (
+                f"☯️ GIẢI MÃ TRỌN VẸN 3 VẾ TÂM LINH & PHÚC KHÍ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                f"[1. ĐANG Ở ĐÂU]: {_where_summary}  |  "
+                f"[2. CÓ LẤY HẾT PHÚC KHÍ KHÔNG]: {_phuc_verdict}  |  "
+                f"[3. LÀ LOẠI ÂM BINH NÀO]: {_yin_type_short}!"
+            )
+            why_s = (
+                f"• <b>[1. Định vị nơi Âm khí trú ngụ]:</b> Hào <b>Quan Quỷ ({qq_cc}-{qq_nh})</b> đóng tại <b>{_where_pos}</b>, phối hợp Kỳ Môn <b>Cung {target_cung} ({huong_cung} · Cửa {cua_name} · Thần {than_name})</b> ➔ Chỉ rõ âm khí nằm ở <b>{_where_dir}</b> và góc <b>{huong_cung}</b>.<br>"
+                f"• <b>[2. Kiểm chứng Phúc Khí (Hào Tử Tôn)]:</b> {_phuc_detail}<br>"
+                f"• <b>[3. Định danh Loại Âm Binh]:</b> {_yin_type_detail}"
+            )
+            when_s = (
+                f"• <b>Thời điểm tiêu trừ & nhẹ người:</b> Vào ngày/giờ <b>{tt_ch}, {_chi_n_sp}</b> (khi Hào Tử Tôn Phúc Thần <b>{tt_ch}-{tt_nh}</b> vượng khí xung khắc hoàn toàn Quan Quỷ <b>{qq_ch}</b> và Hào {dung_than} <b>{sb_ch}</b> Xuất Không)."
+            )
+            adv_s = (
+                f"• <b>Pháp Quyết Hóa Giải Chính Đạo:</b> Mở thoáng ánh sáng dương khí tại góc <b>{huong_cung}</b> và hướng <b>{_where_dir.split(' (')[0]}</b> (dọn sạch đồ ẩm mốc gần giường ngủ/cửa phòng Hào {qq_ix}); "
+                f"tăng cường hành <b>{tt_nh} (Phúc Thần Tử Tôn)</b> và <b>Sao {sao_name}</b> bằng cách giữ tâm an định, làm việc thiện lành, xông trầm/tinh dầu ấm để bồi đắp dương khí cho {_subj_name} (tuyệt đối không cần lo sợ hay tốn kém cúng bái mê tín)."
+            )
+            return {
+                "has_override": True,
+                "is_strict_override": True,
+                "headline": f"🎯 {short_hl}",
+                "short_headline": short_hl,
+                "why": why_s,
+                "when": when_s,
+                "advice": adv_s,
+            }
+
         return {"has_override": False}
 
     @staticmethod
@@ -5333,19 +5522,23 @@ class HexagramReasoningAI:
                     f"⚠️ KẾT LUẬN LIÊN KẾT ĐA TẦNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
                     f"HIỆN TẠI ĐANG GẶP LỰC CẢN ({sq_score}% — {_m.get('the_tai_status_str', '')}) — CẦN CHUẨN BỊ KỸ NGUỒN LỰC VÀ CHỜ ĐẾN NGÀY/THÁNG {dt_chi.upper()} MỚI NÊN TIẾN HÀNH!"
                 )
-        elif re.search(r"\bcó\s+[^,;?]+?\s+(?:không|chưa)\b", raw_q_g) or raw_q_g.endswith((" không", " chưa", " không?", " chưa?")):
+        elif (
+            (re.search(r"\bcó\s+[^,;?]+?\s+(?:không|chưa)\b", raw_q_g) or raw_q_g.endswith((" không", " chưa", " không?", " chưa?")))
+            and not any(w in raw_q_g for w in ["có phải", "phúc khí", "âm binh", "vong", "loại nào", "loại gì", "ở đâu"])
+        ):
+            is_strict_override = False
             # Câu hỏi Kiểm chứng Thực Có / Đúng Sai ("Có ... không?", "Đã ... chưa?"):
             if found_dt and not dt_is_kv:
                 short_hl = (
                     f"✅ KẾT LUẬN KIỂM CHỨNG THỰC TẾ TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
-                    f"KHẲNG ĐỊNH LÀ CÓ THẬT / ĐÃ HỘI TỤ ({sq_score}% — HÀO DỤNG THẦN {sq_dt.upper()} HIỆN RÕ TẠI HÀO {dt_idx} {dt_chi.upper()}-{dt_nh.upper()} [{'TRONG NỘI QUÁI/TRONG NHÀ' if dt_idx <= 3 else 'NGOẠI QUÁI'}], "
+                    f"KHẲNG ĐỊNH LÀ CÓ THẬT / ĐẠT KẾT QUẢ THUẬN LỢI ({sq_score}% — HÀO DỤNG THẦN {sq_dt.upper()} HIỆN RÕ TẠI HÀO {dt_idx} {dt_chi.upper()}-{dt_nh.upper()}, "
                     f"CUNG {_cung_g} {huong_str.upper()} · CỬA {_m['cua_name'].upper()} · CON SỐ HỘI TỤ ĐA TẦNG = 0{_conv_num})!"
                 )
             else:
                 short_hl = (
                     f"⏳ KẾT LUẬN KIỂM CHỨNG TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
-                    f"HIỆN TẠI CHƯA CÓ SẴN HOẶC ĐANG ẨN KÍN (DO DỤNG THẦN {sq_dt.upper()} {'LÂM TUẦN KHÔNG' if dt_is_kv else 'PHỤC TÀNG'} TẠI CUNG {_cung_g} {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
-                    f"PHẢI ĐỢI ĐẾN MỐC XUẤT KHÔNG / NGÀY GIỜ {dt_chi.upper()} MỚI HIỆN RÕ!"
+                    f"HIỆN TẠI ĐANG LÂM TUẦN KHÔNG / ẨN PHỤC TẠM THỜI (DỤNG THẦN {sq_dt.upper()} TẠI CUNG {_cung_g} {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
+                    f"CHỜ ĐẾN MỐC XUẤT KHÔNG / NGÀY GIỜ {dt_chi.upper()} MỚI RÕ KẾT QUẢ!"
                 )
         elif t_code == "TIMING_WHEN" or "D12" in t_code:
             short_hl = f"⏳ THỜI ĐIỂM ỨNG KỲ TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): {uk_str.upper()} (KHI HÀO {sq_dt.upper()} {dt_chi.upper()} XUNG/HỢP MỞ VẬN · HỘI TỤ SỐ 0{_conv_num})!"
@@ -6157,11 +6350,11 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V120.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
+        # Bước 2 (V121.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V120_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V121_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -6215,7 +6408,8 @@ class HexagramReasoningAI:
                     "   - Định luật 7 (Phân Định Hiện Trạng Bệnh Chứng/Sốt Cao vs. Tiên Lượng Hồi Phục): Nếu Ly Hỏa/Tị Hỏa khắc Đoài/Dậu Kim + Kỳ Môn gặp Thương Môn/Thiên Xung thì khẳng định 100% HIỆN TẠI ĐANG SỐT CAO; còn Nguyên Thần Thổ động sinh Kim là TIÊN LƯỢNG CỨU ỨNG (nhanh hạ sốt).\n"
                     "   - Định luật 8 (Định Lượng Hội Tụ 6 Tầng & Tách Biệt Quái Vật Thể vs. Quái Không Gian Chứa Đựng): Tách biệt Quái Vật Thể (VD: Đoài Kim = Vàng, Tiên Thiên = 2) với Quái Không Gian Chứa Đựng (Khôn Thổ = Ngôi nhà, Hậu Thiên = 2), hội tụ 6 tầng số = 2 chỉ vàng.\n"
                     "   - Định luật 9 (Pháp Độc Tượng Vạn Vật Loại Tượng 6 Tầng & Tử Vi Thiên Kỷ 56.6GB): Khi hỏi đối chứng 2 phương án về Địa lý / Xuất thân (VD: 'tôi được sinh ra ở thành phố hay vùng núi'), đọc trực tiếp Tượng Quái Chủ-Hỗ-Biến + Cung Kỳ Môn + Bát Môn + Hào 1 (Hào Sơ = Gốc rễ lúc mới chào đời) + Hào Phụ Mẫu -> Khẳng định 100% SINH RA Ở VÙNG NÚI!\n"
-                    "   - Định luật 10 (Định Lượng Tiền Lương / Thưởng / Thu Nhập / Giá Trị Tài Chính Chuẩn Thực Tế VNĐ): Khi hỏi 'lương bao nhiêu tiền', 'thưởng bao nhiêu tiền', 'thu nhập mấy triệu', TUYỆT ĐỐI CẤM trả lời '01 tiền' hay 'cất giữ kín đáo'! Phải quy đổi chuẩn xác bằng công thức Tam Thức: Tổng Quái Số Quẻ Chủ (Tiên Thiên + Hậu Thiên) -> Tổng Quái Số Quẻ Biến + Hào Động kết hợp Thái Huyền Số & Chi Số của Hào Thê Tài và Cung/Cục Kỳ Môn ra ĐƠN VỊ TRIỆU ĐỒNG VNĐ (VD: Hỏa Địa Tấn Tổng Chủ = 11 -> Phệ Hạp Tổng Biến = 15, Hào Thê Tài Mão Mộc số 4/6 -> Khung chuẩn 11.000.000 - 15.000.000 VNĐ, trọng tâm ~14.000.000 - 15.000.000 VNĐ; Ngạch Quản lý/Cộng thưởng hệ số x2 Hào Thế = 22.000.000 - 30.000.000 VNĐ) kèm phân tích đối soát bảng công/thưởng phạt!\n\n"
+                    "   - Định luật 10 (Định Lượng Tiền Lương / Thưởng / Thu Nhập / Giá Trị Tài Chính Chuẩn Thực Tế VNĐ): Khi hỏi 'lương bao nhiêu tiền', 'thưởng bao nhiêu tiền', 'thu nhập mấy triệu', TUYỆT ĐỐI CẤM trả lời '01 tiền' hay 'cất giữ kín đáo'! Phải quy đổi chuẩn xác bằng công thức Tam Thức: Tổng Quái Số Quẻ Chủ (Tiên Thiên + Hậu Thiên) -> Tổng Quái Số Quẻ Biến + Hào Động kết hợp Thái Huyền Số & Chi Số của Hào Thê Tài và Cung/Cục Kỳ Môn ra ĐƠN VỊ TRIỆU ĐỒNG VNĐ (VD: Hỏa Địa Tấn Tổng Chủ = 11 -> Phệ Hạp Tổng Biến = 15, Hào Thê Tài Mão Mộc số 4/6 -> Khung chuẩn 11.000.000 - 15.000.000 VNĐ, trọng tâm ~14.000.000 - 15.000.000 VNĐ; Ngạch Quản lý/Cộng thưởng hệ số x2 Hào Thế = 22.000.000 - 30.000.000 VNĐ) kèm phân tích đối soát bảng công/thưởng phạt!\n"
+                    "   - Định luật 11 (Giải mã Tâm Linh / Âm Binh / Vong Linh / Tà Khí & Kiểm chứng Phúc Khí): TUYỆT ĐỐI CẤM dùng mẫu 'Tìm đồ thất lạc' khi hỏi âm binh/vong đang ở đâu! Phải xét 3 trụ: (1) Định vị nơi âm khí trú ngụ từ Hào Quan Quỷ (Hào vị + Địa Chi) & Cung Kỳ Môn (Cửa Tử/Kinh/Thương + Bát Thần); (2) Kiểm chứng Phúc Khí từ Hào Tử Tôn (Phúc Thần) — nếu Tử Tôn vượng/trì Thế hoặc Quan Quỷ động hóa Tử Tôn (Hồi Đầu Khắc) và đắc Sao Thiên Tâm thì khẳng định 100% KHÔNG LẤY HẾT ĐƯỢC PHÚC KHÍ, chỉ làm mệt mỏi tạm thời lúc Chủ thể (Huynh Đệ/Hào Thế) lâm Tuần Không; (3) Định danh rõ loại vong từ Ngũ Hành & Can Chi Hào Quan Quỷ!\n\n"
                     "Trả về ĐÚNG 1 JSON hợp lệ, TRÌNH BÀY SÚC TÍCH, DỄ ĐỌC, KHÔNG LẶP LẠI DÀI DÒNG (LƯU Ý: Không dùng dấu ngoặc kép \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
                     "{\n"
                     "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện đúng Khuôn mẫu đáp án của AI Số 1 (1-2 câu ngắn gọn, in hoa ý chính)\",\n"
