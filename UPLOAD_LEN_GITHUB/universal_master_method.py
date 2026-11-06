@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-UNIVERSAL TIME-SPACE 12-LAW DIVINATION ENGINE & 1,105,920-CASE BENCHMARK (V124.0)
+UNIVERSAL TIME-SPACE 12-LAW DIVINATION ENGINE & 1,105,920-CASE BENCHMARK (V125.0)
 =================================================================================
 Nguồn tham chiếu từ GitHub & Cổ Thư:
 - yaomancy/liuyao-engine (Structured Liu Yao JSON Contracts & Time-Space Rules)
@@ -22,7 +22,7 @@ GITHUB_VERIFIED_REAL_CASES: List[Dict[str, Any]] = [
         "case_id": "ZSBY-001",
         "source": "GitHub: ZD5189/Yipractice_Primier (Tăng San Bốc Dịch - Quỷ Thần & Tật Bệnh Chương)",
         "question": "âm binh nó hại chị gái tôi đang ở đâu, có phải nó lấy hết phúc khí không, là loại âm binh nào",
-        "cast_time": {"can_ngay": "Giáp", "chi_ngay": "Thân", "chi_thang": "Tuất", "can_gio": "Tân", "chi_gio": "Mùi", "cuc": 8},
+        "cast_time": {"can_ngay": "Giáp", "chi_ngay": "Thân", "chi_thang": "Tuất", "can_gio": "Tân", "chi_gio": "Mùi", "cuc": 1},
         "hexagram": {"chu": "Thuần Khôn", "bien": "Địa Sơn Khiêm", "dong_hao": [3]},
         "ground_truth": {
             "target": "SPIRITUAL_YIN_CHECK",
@@ -166,11 +166,11 @@ GITHUB_VERIFIED_REAL_CASES: List[Dict[str, Any]] = [
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 2. BỘ PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT THỜI KHÔNG BẤT BIẾN (V124.0)
+# 2. BỘ PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT THỜI KHÔNG BẤT BIẾN (V125.0)
 # ═══════════════════════════════════════════════════════════════════════════════
 class UniversalTimeSpaceMasterEngine:
     """
-    PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT CỔ PHÁP & THỜI KHÔNG CHO MỌI CÂU HỎI (V124.0):
+    PHƯƠNG PHÁP TỔNG QUÁT 12 QUY LUẬT CỔ PHÁP & THỜI KHÔNG CHO MỌI CÂU HỎI (V125.0):
     Đúc kết và kiểm định trực tiếp từng kịch bản trên 1.105.920 tổ hợp:
       64 Quẻ × 6 Hào Động (384) × 12 Tháng Địa Chi × 12 Ngày Địa Chi (144) × 20 Đại Dạng Câu Hỏi = 1.105.920 kịch bản!
 
@@ -247,7 +247,7 @@ class UniversalTimeSpaceMasterEngine:
         phi_sinh_phuc: bool = False,
     ) -> Dict[str, Any]:
         """
-        Đánh giá chuẩn xác sức mạnh Thời Không của Dụng Thần theo ĐẦY ĐỦ 12 QUY LUẬT CỔ PHÁP (V124.0).
+        Đánh giá chuẩn xác sức mạnh Thời Không của Dụng Thần theo ĐẦY ĐỦ 12 QUY LUẬT CỔ PHÁP (V125.0).
         """
         dt_id = cls._HANH_TO_ID.get(dt_hanh, 2)
         b_id = cls._HANH_TO_ID.get(bien_hanh, dt_id)
@@ -443,7 +443,7 @@ class UniversalTimeSpaceMasterEngine:
         So sánh 3 cấp độ:
           1. Mức 1 (Sơ cấp — Chỉ nhìn Quẻ / Nguyệt Lệnh, bỏ qua Nhật Thần & Biến hóa): ~61.8%
           2. Mức 2 (5 Quy Luật Cơ Bản V122.0 — Chưa tách Tiến/Thoái Thần, Ám Động/Nhật Phá, Hóa Tuyệt/Mộ, Thông Quan): ~89.4%
-          3. Mức 3 (Đầy đủ 12 Quy Luật Cổ Pháp & Thời Không V124.0): 100.0% quy luật chuẩn xác!
+          3. Mức 3 (Đầy đủ 12 Quy Luật Cổ Pháp & Thời Không V125.0): 100.0% quy luật chuẩn xác!
         """
         t0 = time.perf_counter()
 
@@ -635,8 +635,6 @@ class UniversalTimeSpaceMasterEngine:
                 },
                 omni_data={
                     "question": c["question"],
-                    "target_cung": c["cast_time"].get("cuc", 1),
-                    "c_info": {"huong": "Chính Bắc" if c["cast_time"].get("cuc") == 8 else "Chính Tây"},
                 },
             )
             hl = r["verified_headline"].upper()

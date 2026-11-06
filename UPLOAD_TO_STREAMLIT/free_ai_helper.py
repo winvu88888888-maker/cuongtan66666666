@@ -16283,22 +16283,52 @@ class FreeAIHelper:
             if _q_blueprint.get("authoritative_dt"):
                 dung_than = _q_blueprint["authoritative_dt"]
             _omni_data_for_dual = dict(_omniscient_res.get('data', {})) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict) else {}
-            if dung_than == "Thê Tài" and isinstance(chart_data, dict):
-                # Đồng bộ Cung Tài Sản / Sinh Môn trên bàn Kỳ Môn khi Dụng Thần là Thê Tài
+            if isinstance(chart_data, dict):
+                # V125.0: Đồng bộ ĐỘNG 100% Cung / Sao / Cửa / Thần trên bàn Kỳ Môn cho MỌI Dụng Thần (Thê Tài, Huynh Đệ, Phụ Mẫu, Tử Tôn, Quan Quỷ, Bản Thân)
                 _nb_d = chart_data.get('nhan_ban') or {}
                 _tb_d = chart_data.get('thien_ban') or {}
                 _thb_d = chart_data.get('than_ban') or {}
-                for _c_k, _c_v in _nb_d.items():
-                    if 'Sinh' in str(_c_v):
-                        _c_num = int(_c_k) if str(_c_k).isdigit() else 7
-                        _HUONG_MAP_D = {1: ("Chính Bắc", "Khảm"), 2: ("Tây Nam", "Khôn"), 3: ("Chính Đông", "Chấn"), 4: ("Đông Nam", "Tốn"), 6: ("Tây Bắc", "Càn"), 7: ("Chính Tây", "Đoài"), 8: ("Đông Bắc", "Cấn"), 9: ("Chính Nam", "Ly")}
-                        _h_d, _q_d = _HUONG_MAP_D.get(_c_num, ("Chính Tây", "Đoài"))
-                        _omni_data_for_dual['target_cung'] = _c_num
-                        _omni_data_for_dual['c_info'] = {'huong': _h_d, 'quai': _q_d}
-                        _omni_data_for_dual['sao_name'] = str(_tb_d.get(_c_k, _tb_d.get(str(_c_k), 'Thiên Phụ')))
-                        _omni_data_for_dual['cua_name'] = str(_c_v)
-                        _omni_data_for_dual['than_name'] = str(_thb_d.get(_c_k, _thb_d.get(str(_c_k), 'Huyền Vũ')))
-                        break
+                _ctb_d = chart_data.get('can_thien_ban') or {}
+                _HUONG_MAP_D = {1: ("Chính Bắc", "Khảm"), 2: ("Tây Nam", "Khôn"), 3: ("Chính Đông", "Chấn"), 4: ("Đông Nam", "Tốn"), 5: ("Tây Nam", "Khôn"), 6: ("Tây Bắc", "Càn"), 7: ("Chính Tây", "Đoài"), 8: ("Đông Bắc", "Cấn"), 9: ("Chính Nam", "Ly")}
+
+                def _find_can_cung_d(_c_val):
+                    _lu = str(chart_data.get('can_gio') or 'Mậu') if _c_val == 'Giáp' else str(_c_val or '')
+                    for _ck, _cv in _ctb_d.items():
+                        if str(_cv).strip() == _lu and str(_ck).isdigit():
+                            return 2 if int(_ck) == 5 else int(_ck)
+                    return 0
+
+                def _find_door_cung_d(_d_kw):
+                    for _ck, _cv in _nb_d.items():
+                        if _d_kw in str(_cv) and str(_ck).isdigit():
+                            return 2 if int(_ck) == 5 else int(_ck)
+                    return 0
+
+                _c_num = 0
+                if dung_than == "Thê Tài":
+                    _c_num = _find_door_cung_d("Sinh") or _find_can_cung_d("Mậu")
+                elif dung_than == "Huynh Đệ":
+                    _c_num = _find_can_cung_d(chart_data.get('can_thang'))
+                elif dung_than == "Phụ Mẫu":
+                    _c_num = _find_can_cung_d(chart_data.get('can_nam')) or _find_door_cung_d("Cảnh")
+                elif dung_than in ("Tử Tôn", "Quan Quỷ"):
+                    _c_num = _find_can_cung_d(chart_data.get('can_gio'))
+                else:
+                    _c_num = _find_can_cung_d(chart_data.get('can_ngay'))
+
+                if _c_num and 1 <= _c_num <= 9:
+                    _h_d, _q_d = _HUONG_MAP_D.get(_c_num, ("Chính Bắc", "Khảm"))
+                    _omni_data_for_dual['target_cung'] = _c_num
+                    _omni_data_for_dual['c_info'] = {'huong': _h_d, 'quai': _q_d}
+                    _omni_data_for_dual['sao_name'] = str(_tb_d.get(_c_num, _tb_d.get(str(_c_num), '')))
+                    _omni_data_for_dual['cua_name'] = str(_nb_d.get(_c_num, _nb_d.get(str(_c_num), '')))
+                    _omni_data_for_dual['than_name'] = str(_thb_d.get(_c_num, _thb_d.get(str(_c_num), '')))
+                    if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict):
+                        _omniscient_res['data']['target_cung'] = _c_num
+                        _omniscient_res['data']['c_info'] = {'huong': _h_d, 'quai': _q_d}
+                        _omniscient_res['data']['sao_name'] = _omni_data_for_dual['sao_name']
+                        _omniscient_res['data']['cua_name'] = _omni_data_for_dual['cua_name']
+                        _omniscient_res['data']['than_name'] = _omni_data_for_dual['than_name']
             _dual_verified = HexagramReasoningAI.cross_verify_and_reason(
                 blueprint=_q_blueprint,
                 dung_than=dung_than,

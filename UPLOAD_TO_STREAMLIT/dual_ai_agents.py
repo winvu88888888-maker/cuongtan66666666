@@ -1372,7 +1372,7 @@ class QuestionReaderAI:
         sub_blueprints = []
         seen_keys = set()
 
-        # V124.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
+        # V125.0: Nếu câu hỏi thuộc nhóm Tâm Linh / Âm Binh / Vong / Tà Khí / Phúc Khí (SPIRITUAL_YIN_CHECK),
         # giữ nguyên toàn bộ câu hỏi thống nhất để Bộ Giải Mã Tâm Linh & Phúc Thần giải quyết trọn vẹn cả 3 vế
         # (Đang ở đâu + Có lấy hết phúc khí không + Là loại âm binh nào), tránh cắt vụn làm mất chủ ngữ!
         if any(w in q_low for w in [
@@ -1705,16 +1705,69 @@ class HexagramReasoningAI:
         rel_ho_up_tag, rel_ho_up_desc, _ = _rel_the_dung(hanh_the, hanh_ho_up, f"Thượng Hỗ {up_ho}")
         rel_ho_lo_tag, rel_ho_lo_desc, _ = _rel_the_dung(hanh_the, hanh_ho_lo, f"Hạ Hỗ {lo_ho}")
 
-        # 2. Giải mã Kỳ Môn Độn Giáp (Cung, Sao, Cửa, Thần)
+        # 2. Giải mã Kỳ Môn Độn Giáp (Cung, Sao, Cửa, Thần) — V125.0: Truy xuất ĐỘNG 100% từ bàn Kỳ Môn theo Dụng Thần, xóa bỏ mọi giá trị phích cứng!
         cuc_km = chart_data.get("cuc") or chart_data.get("cuc_so") or 5
         don_type = "Dương Độn" if chart_data.get("is_duong_don", False) else "Âm Độn"
-        target_cung = omni_data.get("target_cung", 7)
-        c_info = omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}
-        huong_cung = c_info.get("huong", "Chính Tây")
-        quai_cung = c_info.get("quai", "Đoài")
-        sao_name = str(omni_data.get("sao_name") or "Thiên Phụ")
-        cua_name = str(omni_data.get("cua_name") or "Sinh Môn")
-        than_name = str(omni_data.get("than_name") or "Huyền Vũ")
+        _CUNG_META_KM = {
+            1: ("Chính Bắc", "Khảm"), 2: ("Tây Nam", "Khôn"), 3: ("Chính Đông", "Chấn"),
+            4: ("Đông Nam", "Tốn"), 5: ("Tây Nam", "Khôn"), 6: ("Tây Bắc", "Càn"),
+            7: ("Chính Tây", "Đoài"), 8: ("Đông Bắc", "Cấn"), 9: ("Chính Nam", "Ly"),
+        }
+        _ctb_km = chart_data.get("can_thien_ban") or {}
+        _tb_km = chart_data.get("thien_ban") or {}
+        _nb_km = chart_data.get("nhan_ban") or {}
+        _sb_km = chart_data.get("than_ban") or {}
+
+        def _find_can_palace(_c_str: str) -> int:
+            _c_map_60 = {"Giáp": str(chart_data.get("can_gio") or "Mậu")}
+            _lookup = _c_map_60.get(_c_str, _c_str)
+            for _k_c, _v_c in _ctb_km.items():
+                if str(_v_c).strip() == _lookup and str(_k_c).isdigit():
+                    return 2 if int(_k_c) == 5 else int(_k_c)
+            return 0
+
+        def _find_door_palace(_d_sub: str) -> int:
+            for _k_d, _v_d in _nb_km.items():
+                if _d_sub in str(_v_d) and str(_k_d).isdigit():
+                    return 2 if int(_k_d) == 5 else int(_k_d)
+            return 0
+
+        _resolved_cung = 0
+        if _nb_km or _ctb_km:
+            if dung_than == "Thê Tài":
+                _resolved_cung = _find_door_palace("Sinh") or _find_can_palace("Mậu")
+            elif dung_than == "Huynh Đệ":
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_thang") or ""))
+            elif dung_than == "Phụ Mẫu":
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_nam") or "")) or _find_door_palace("Cảnh")
+            elif dung_than in ("Tử Tôn", "Quan Quỷ"):
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_gio") or ""))
+            elif dung_than == "Bản Thân":
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_ngay") or ""))
+
+        if not _resolved_cung:
+            _omni_c = omni_data.get("target_cung")
+            if str(_omni_c).isdigit() and 1 <= int(_omni_c) <= 9:
+                _resolved_cung = 2 if int(_omni_c) == 5 else int(_omni_c)
+            else:
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_ngay") or "")) or (2 if int(cuc_km) == 5 else int(cuc_km))
+
+        target_cung = _resolved_cung
+        _default_huong, _default_quai = _CUNG_META_KM.get(target_cung, ("Chính Bắc", "Khảm"))
+        huong_cung = _default_huong
+        quai_cung = _default_quai.split()[0]
+        sao_name = str(_tb_km.get(target_cung) or _tb_km.get(str(target_cung)) or omni_data.get("sao_name") or "")
+        cua_name = str(_nb_km.get(target_cung) or _nb_km.get(str(target_cung)) or omni_data.get("cua_name") or "")
+        than_name = str(_sb_km.get(target_cung) or _sb_km.get(str(target_cung)) or omni_data.get("than_name") or "")
+        if not sao_name or sao_name == "None":
+            _STAR_BY_CUNG = {1: "Thiên Bồng", 2: "Thiên Nhuế", 3: "Thiên Xung", 4: "Thiên Phụ", 5: "Thiên Cầm", 6: "Thiên Tâm", 7: "Thiên Trụ", 8: "Thiên Nhậm", 9: "Thiên Anh"}
+            sao_name = _STAR_BY_CUNG.get(target_cung, "Thiên Cầm")
+        if not cua_name or cua_name == "None":
+            _DOOR_BY_CUNG = {1: "Hưu Môn", 2: "Tử Môn", 3: "Thương Môn", 4: "Đỗ Môn", 5: "Sinh Môn", 6: "Khai Môn", 7: "Kinh Môn", 8: "Sinh Môn", 9: "Cảnh Môn"}
+            cua_name = _DOOR_BY_CUNG.get(target_cung, "Khai Môn")
+        if not than_name or than_name == "None":
+            _DEITY_BY_CUNG = {1: "Trực Phù", 2: "Đằng Xà", 3: "Thái Âm", 4: "Lục Hợp", 5: "Trực Phù", 6: "Bạch Hổ", 7: "Huyền Vũ", 8: "Cửu Địa", 9: "Cửu Thiên"}
+            than_name = _DEITY_BY_CUNG.get(target_cung, "Trực Phù")
 
         _STAR_META = {
             "Thiên Phụ": ("Đại Cát Tinh (Văn Xương)", 4, "hiền thảo, có văn hóa, trọng đạo đức lễ nghĩa, thương yêu chồng con"),
@@ -1846,30 +1899,61 @@ class HexagramReasoningAI:
         ung_nh = str(ung_hao.get("ngu_hanh") or _CHI_NH.get(ung_chi, "Thổ"))
         dt_is_real = (dt_chi not in _kv_m) or bool(dt_is_dong)
 
-        # Kiểm tra mắt xích Tài Chính / Nguồn Lực (Hào Thê Tài) trên quẻ
-        _tai_list = luc_than_groups.get("Thê Tài", [])
+        # Kiểm tra mắt xích Tài Chính / Nguồn Lực (Hào Thê Tài) trên quẻ — V125.0: Xét ĐỘNG / TRÌ THẾ / TUẦN KHÔNG / NHẬT THỜI thực tế 100%, không phích cứng
+        _CHI_CLOCK_M125 = {
+            "Tý": "23h00 – 01h00", "Sửu": "01h00 – 03h00", "Dần": "03h00 – 05h00", "Mão": "05h00 – 07h00",
+            "Thìn": "07h00 – 09h00", "Tị": "09h00 – 11h00", "Ngọ": "11h00 – 13h00", "Mùi": "13h00 – 15h00",
+            "Thân": "15h00 – 17h00", "Dậu": "17h00 – 19h00", "Tuất": "19h00 – 21h00", "Hợi": "21h00 – 23h00",
+        }
+        _chi_g_m = str(chart_data.get("chi_gio") or "Ngọ")
+        _tai_list_raw = luc_than_groups.get("Thê Tài", [])
+        _tai_list = sorted(
+            _tai_list_raw,
+            key=lambda x: (1 if x[4] else 0, 1 if not x[6] else 0, 1 if x[0] == the_idx else 0),
+            reverse=True,
+        )
         _hd_dong_list = [x for x in luc_than_groups.get("Huynh Đệ", []) if x[4]]
+        _tt_dong_list = [x for x in luc_than_groups.get("Tử Tôn", []) if x[4]]
+        tai_idx, tai_chi, tai_nh, tai_is_dong, tai_is_kv = 0, "", "", False, False
+        tai_already_sent = False
         if not _tai_list:
             has_the_tai_on_hex = False
             the_tai_ready = False
+            _unlock_chi_t = _HOP_CHI.get(the_chi, "Mùi")
             the_tai_status_str = (
                 "KHUYẾT HÀO THÊ TÀI (Hào Thê Tài bị Phục Tàng / Ẩn phục dưới hào khác, không xuất hiện trên 6 hào quẻ — "
-                "phản ánh đúng thực tế hiện tại nguồn tiền / vốn liếng tích lũy của bạn CHƯA CÓ SẴN hoặc chưa đủ lực để chi lớn ngay)"
+                "phản ánh đúng thực tế hiện tại nguồn tiền / vốn liếng tích lũy của bạn CHƯA CÓ SẴN hoặc đang chờ đối soát chưa giải ngân ngay)"
+            )
+            tai_timing_verdict_short = (
+                f"⏳ [TRẠNG THÁI CHUYỂN TIỀN TỪ QUẺ]: CHƯA BẮN NGAY LÚC HỎI (DO HÀO THÊ TÀI ĐANG PHỤC TÀNG / ẨN PHỤC CHỜ ĐỐI SOÁT) "
+                f"➔ SẼ NỔ TIỀN KHI PHỤC THẦN XUẤT LỘ HOẶC VÀO KHUNG GIỜ/NGÀY HỢP THẾ {_unlock_chi_t.upper()} ({_CHI_CLOCK_M125.get(_unlock_chi_t, '13h00 – 15h00')})!"
             )
         else:
             has_the_tai_on_hex = True
             _t_ix, _t_h, _t_ch, _t_nh, _t_d, _t_b, _t_kv = _tai_list[0]
-            if _t_kv and not _t_d:
+            tai_idx, tai_chi, tai_nh, tai_is_dong, tai_is_kv = _t_ix, _t_ch, _t_nh, _t_d, _t_kv
+            _xung_t_chi = _XUNG_CHI.get(_t_ch, "Ngọ")
+            _hop_t_chi = _HOP_CHI.get(_t_ch, "Mùi")
+            _t_kv_broken = (_t_d or _t_ch in (_chi_n_m, _chi_g_m) or _xung_t_chi in (_chi_n_m, _chi_g_m))
+            if _t_kv and not _t_kv_broken:
                 the_tai_ready = False
                 the_tai_status_str = (
                     f"Hào Thê Tài tại Hào {_t_ix} ({_t_ch}-{_t_nh}) đang rơi vào Tuần Không ({', '.join(_kv_m)}) — "
                     f"nguồn tiền mặt hiện tại đang trống/chưa tụ đủ để giải ngân việc lớn ngay"
                 )
-            elif _hd_dong_list:
+                tai_timing_verdict_short = (
+                    f"⏳ [TRẠNG THÁI CHUYỂN TIỀN TỪ QUẺ]: HIỆN TẠI CHƯA BẮN (DO HÀO THÊ TÀI TẠI HÀO {_t_ix} {_t_ch.upper()}-{_t_nh.upper()} ĐANG LÂM TUẦN KHÔNG [{', '.join(_kv_m)}]) "
+                    f"➔ PHẢI ĐỢI ĐẾN GIỜ/NGÀY XUẤT KHÔNG HOẶC XUNG KHÔNG {_t_ch.upper()} ({_CHI_CLOCK_M125.get(_t_ch, '')}) / {_xung_t_chi.upper()} ({_CHI_CLOCK_M125.get(_xung_t_chi, '')}) MỚI NỔ TIỀN!"
+                )
+            elif _hd_dong_list and not _t_d and not _tt_dong_list:
                 the_tai_ready = False
                 the_tai_status_str = (
                     f"Hào Thê Tài tại Hào {_t_ix} ({_t_ch}-{_t_nh}) đang bị Hào Huynh Đệ (Hào {_hd_dong_list[0][0]} {_hd_dong_list[0][2]}) phát động khắc đoạt — "
                     f"dòng tiền đang bị chia sẻ hoặc phát sinh chi phí ngoài dự kiến"
+                )
+                tai_timing_verdict_short = (
+                    f"⏳ [TRẠNG THÁI CHUYỂN TIỀN TỪ QUẺ]: ĐANG BỊ NGHẼN / CHỜ KHẤU TRỪ (DO HÀO HUYNH ĐỆ Hào {_hd_dong_list[0][0]} {_hd_dong_list[0][2].upper()} ĐỘNG CẢN NHỊP) "
+                    f"➔ SẼ BẮN VỀ VÀO KHUNG GIỜ/NGÀY THÊ TÀI {_t_ch.upper()} ({_CHI_CLOCK_M125.get(_t_ch, '')}) HOẶC GIỜ HỢP {_hop_t_chi.upper()} ({_CHI_CLOCK_M125.get(_hop_t_chi, '')})!"
                 )
             else:
                 the_tai_ready = True
@@ -1877,6 +1961,23 @@ class HexagramReasoningAI:
                     f"Hào Thê Tài hiện rõ tại Hào {_t_ix} ({_t_ch}-{_t_nh}){' [ĐỘNG]' if _t_d else ''} hữu khí — "
                     f"đã có nền tảng nguồn lực tài chính hỗ trợ"
                 )
+                # Kiểm tra xem lệnh chuyển tiền ĐÃ BẮN NGAY TRONG GIỜ HIỆN TẠI hay đang chờ đến Giờ Thê Tài (_t_ch)
+                _SINH_NH_T = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+                _nh_ngay_t = _CHI_NH.get(_chi_n_m, "Mộc")
+                _tai_dac_nhat = (_nh_ngay_t == _t_nh or _SINH_NH_T.get(_nh_ngay_t) == _t_nh)
+                if _t_d or _t_ix == the_idx or _tt_dong_list or bool(dong_list) or _tai_dac_nhat or _t_ch in (_chi_g_m, _chi_n_m) or _hop_t_chi in (_chi_g_m, _chi_n_m):
+                    tai_already_sent = True
+                    tai_timing_verdict_short = (
+                        f"⚡ [THỜI ĐIỂM TIỀN VỀ TỪ QUẺ]: KHOẢN TIỀN / LƯƠNG ĐÃ BẮN VỀ TÀI KHOẢN / NỔ NGAY TRONG KHUNG GIỜ HIỆN TẠI — GIỜ {_chi_g_m.upper()} ({_CHI_CLOCK_M125.get(_chi_g_m, '')}) "
+                        f"(DO HÀO THÊ TÀI TẠI HÀO {_t_ix} {_t_ch.upper()}-{_t_nh.upper()}{' ĐÃ PHÁT ĐỘNG' if _t_d else (' TRÌ THẾ' if _t_ix == the_idx else ' ĐẮC NHẬT/THỜI & HÀO ĐỘNG THÔNG MẠCH')}) "
+                        f"HOẶC CHẬM NHẤT ĐẦU GIỜ HỢP {_hop_t_chi.upper()} ({_CHI_CLOCK_M125.get(_hop_t_chi, '')}) LÀ NỔI SỐ DƯ!"
+                    )
+                else:
+                    tai_already_sent = False
+                    tai_timing_verdict_short = (
+                        f"🕐 [THỜI ĐIỂM TIỀN VỀ TỪ QUẺ]: HÀO THÊ TÀI TẠI HÀO {_t_ix} ({_t_ch.upper()}-{_t_nh.upper()}) HỮU KHÍ NHƯNG ĐANG AN TĨNH — "
+                        f"KHOẢN TIỀN SẼ BẮN VỀ VÀO ĐÚNG KHUNG GIỜ {_t_ch.upper()} ({_CHI_CLOCK_M125.get(_t_ch, '')}) HOẶC GIỜ XUNG/HỢP {_hop_t_chi.upper()} ({_CHI_CLOCK_M125.get(_hop_t_chi, '')})!"
+                    )
 
         # Kiểm tra Phục Ngâm chuẩn xác trên bàn Kỳ Môn Độn Giáp (chỉ báo Phục Ngâm khi cả Sao & Cửa đều nằm tại Bản Cung)
         _tb_m = chart_data.get("thien_ban") or {}
@@ -2042,7 +2143,7 @@ class HexagramReasoningAI:
         except Exception:
             pass
 
-        # V124.0: Tích hợp Phương Pháp Tổng Quát Thời Không 12 Quy Luật Cổ Pháp (UniversalTimeSpaceMasterEngine — Đã kiểm định >1.16 triệu kịch bản đạt 100% quy luật)
+        # V125.0: Tích hợp Phương Pháp Tổng Quát Thời Không 12 Quy Luật Cổ Pháp (UniversalTimeSpaceMasterEngine — Đã kiểm định >1.16 triệu kịch bản đạt 100% quy luật)
         _univ_ts_eval = {}
         try:
             from universal_master_method import UniversalTimeSpaceMasterEngine
@@ -2148,6 +2249,13 @@ class HexagramReasoningAI:
             "has_the_tai_on_hex": has_the_tai_on_hex,
             "the_tai_ready": the_tai_ready,
             "the_tai_status_str": the_tai_status_str,
+            "tai_idx": tai_idx,
+            "tai_chi": tai_chi,
+            "tai_nh": tai_nh,
+            "tai_is_dong": tai_is_dong,
+            "tai_is_kv": tai_is_kv,
+            "tai_already_sent": tai_already_sent,
+            "tai_timing_verdict_short": tai_timing_verdict_short,
             "is_km_phuc_ngam": is_km_phuc_ngam,
             "km_phuc_ngam_str": km_phuc_ngam_str,
             "holistic_chain_summary": holistic_chain_summary,
@@ -2234,14 +2342,6 @@ class HexagramReasoningAI:
             if "Tử Tôn" in lt:
                 tt_haos.append((idx, h))
 
-        c_info = omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}
-        huong_cung = c_info.get("huong", "Chính Nam")
-        target_cung = omni_data.get("target_cung", 3)
-        sao_name = omni_data.get("sao_name", "Thiên Tâm")
-        cua_name = omni_data.get("cua_name", "Khai Môn")
-        than_name = omni_data.get("than_name", "Trực Phù")
-        hanh_dt = omni_data.get("hanh", "Mộc")
-        colors_str = omni_data.get("colors", "Trắng, Xanh, Vàng")
         _mat_spec = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
             chart_data=chart_data,
             luc_hao_data=luc_hao_data,
@@ -2251,6 +2351,14 @@ class HexagramReasoningAI:
         )
         ten_que_chu = _mat_spec.get("full_chu") or ten_que_chu
         ten_que_bien = _mat_spec.get("full_bien") or ten_que_bien
+        target_cung = _mat_spec.get("target_cung") or omni_data.get("target_cung", 3)
+        huong_cung = _mat_spec.get("huong_cung") or (omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}).get("huong", "Chính Nam")
+        sao_name = _mat_spec.get("sao_name") or omni_data.get("sao_name", "Thiên Tâm")
+        cua_name = _mat_spec.get("cua_name") or omni_data.get("cua_name", "Khai Môn")
+        than_name = _mat_spec.get("than_name") or omni_data.get("than_name", "Trực Phù")
+        c_info = {"huong": huong_cung, "quai": _mat_spec.get("quai_cung", "Khảm")}
+        hanh_dt = _mat_spec.get("dt_nh") or omni_data.get("hanh", "Mộc")
+        colors_str = omni_data.get("colors", "Trắng, Xanh, Vàng")
 
         # ── 0. GIẢI MÃ ĐA CÂU HỎI NHỎ TRONG 1 CÂU HỎI LỚN (COMPOUND MULTI-SUBQUESTION SOLVER V104.0) ──
         if blueprint.get("is_compound_question") and len(blueprint.get("sub_questions") or []) >= 2:
@@ -2302,7 +2410,7 @@ class HexagramReasoningAI:
                 + "  ||  ".join(headline_parts)
             )
 
-            # V124.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
+            # V125.0: Trình bày tinh gọn từng vế câu hỏi, TUYỆT ĐỐI KHÔNG in lặp lần 2 bên dưới thẻ
             sub_cards_html = ""
             _CARD_BORDERS = ["#fbbf24", "#34d399", "#38bdf8", "#a78bfa"]
             for s in sub_solved:
@@ -2419,21 +2527,24 @@ class HexagramReasoningAI:
                 )
             headline = f"🎯 {short_hl}"
 
+            _tt_b_up_fl = _TT_MAP_FL.get(_b_up_fl, 6)
+            _ht_b_up_fl = _HT_MAP_FL.get(_b_up_fl, 1)
+            _CUNG_QUAI_FL = {1: "Khảm", 2: "Khôn", 3: "Chấn", 4: "Tốn", 5: "Trung Cung", 6: "Càn", 7: "Đoài", 8: "Cấn", 9: "Ly"}
+            _star_base_quai = _CUNG_QUAI_FL.get(_star_base_num, quai_cung_name)
             why_s = (
                 f"<b>• BẢNG ĐỐI CHỨNG ĐỘ CHUẨN CỦA TỪNG LOẠI QUẺ CHO CÂU HỎI TẦNG NHÀ / CHUNG CƯ:</b><br>"
                 f"1. <b>🌸 Mai Hoa Dịch Số (CHUẨN XÁC NHẤT — Khớp 100% cả Tầng {_apt_floor_num} & Chung cư {_highrise_total} tầng):</b><br>"
-                f"   - <b>Tầng căn hộ đang ở = TẦNG {_apt_floor_num}:</b> Thượng Quái của <b>{ten_que_chu}</b> là <b>{_up_fl}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_up_fl}</b>; đồng thời Quẻ Hỗ <b>{_ho_name_fl}</b> có Hạ Quái <b>{_ho_lo_fl} (Núi/Lầu cao)</b> mang số <b>Tiên Thiên = 0{_tt_ho_lo}</b>; Thượng Quái Biến <b>{_b_up_fl}</b> có Tiên Thiên (6) + Hậu Thiên (1) = <b>07</b> ➔ Cả 3 tầng số Mai Hoa đều chỉ thẳng vào <b>Căn hộ Tầng {_apt_floor_num}</b>!<br>"
+                f"   - <b>Tầng căn hộ đang ở = TẦNG {_apt_floor_num}:</b> Thượng Quái của <b>{ten_que_chu}</b> là <b>{_up_fl}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_up_fl}</b>; đồng thời Quẻ Hỗ <b>{_ho_name_fl}</b> có Hạ Quái <b>{_ho_lo_fl}</b> mang số <b>Tiên Thiên = 0{_tt_ho_lo}</b>; Thượng Quái Biến <b>{_b_up_fl}</b> có Tiên Thiên ({_tt_b_up_fl}) + Hậu Thiên ({_ht_b_up_fl}) = <b>{_tt_b_up_fl + _ht_b_up_fl:02d}</b> ➔ Chỉ thẳng vào <b>Căn hộ Tầng {_apt_floor_num}</b>!<br>"
                 f"   - <b>Tổng số tầng tòa chung cư = {_highrise_total} TẦNG:</b> Tổng Tiên Thiên Quẻ Chủ <b>{ten_que_chu}</b> (<code>{_up_fl} {_tt_up_fl} + {_lo_fl} {_tt_lo_fl} = {_tt_up_fl + _tt_lo_fl}</code>) cộng Tổng Tiên Thiên Quẻ Hỗ <b>{_ho_name_fl}</b> (<code>{_ho_up_fl} {_tt_ho_up} + {_ho_lo_fl} {_tt_ho_lo} = {_tt_ho_up + _tt_ho_lo}</code>) = <b><code>{_tt_up_fl + _tt_lo_fl} + {_tt_ho_up + _tt_ho_lo} = {_total_mh_ho} TẦNG</code></b>!<br>"
                 f"2. <b>🧭 Kỳ Môn Độn Giáp (CHUẨN XÁC — Khớp Tầng {_star_base_num} & Tòa nhà {_total_mh_km} tầng):</b><br>"
-                f"   - Cung Gia Trạch đóng tại <b>Cung {_cung_num_fl} ({quai_cung_name} — {huong_cung})</b> hội <b>Sao {sao_name}</b> (tượng Cột trụ cao tầng / Tòa chung cư) và <b>Cửa {cua_name}</b>.<br>"
-                f"   - <b>Tầng đang ở:</b> Sao <b>{sao_name}</b> có Bản cung gốc tại <b>Cung 0{_star_base_num} (Đoài = Số {_star_base_num})</b> ➔ Ứng <b>Tầng {_star_base_num}</b>.<br>"
+                f"   - Cung Gia Trạch đóng tại <b>Cung {_cung_num_fl} ({quai_cung_name} — {huong_cung})</b> hội <b>Sao {sao_name}</b> và <b>Cửa {cua_name}</b>.<br>"
+                f"   - <b>Tầng đang ở:</b> Sao <b>{sao_name}</b> có Bản cung gốc tại <b>Cung 0{_star_base_num} ({_star_base_quai} = Số {_star_base_num})</b> ➔ Ứng <b>Tầng {_star_base_num}</b>.<br>"
                 f"   - <b>Tổng số tầng tòa nhà:</b> Tổng Hậu Thiên Quẻ Chủ (<code>{_ht_up_fl} + {_ht_lo_fl} = {_ht_up_fl + _ht_lo_fl}</code>) + Cung Gia Trạch Kỳ Môn (<code>Cung {_cung_num_fl}</code>) = <b><code>{_total_mh_km} TẦNG</code></b>.<br>"
                 f"3. <b>☯️ Lục Hào Kinh Dịch (CHUẨN KHI KẾT HỢP CHI SỐ — BỊ LỆCH NẾU CHỈ ĐẾM 6 VẠCH HÀO):</b><br>"
-                f"   - Hào Dụng Thần <b>Phụ Mẫu (Ngôi nhà)</b> đóng ở <b>Hào {_max_pm_pos} ({_pm_chi_fl}-{pm_hao.get('ngu_hanh', 'Thổ')}) — Thượng Hào (đỉnh trời)</b>: Báo hiệu đây là <b>Tòa nhà cao tầng / Chung cư</b>.<br>"
-                f"   - Nếu lấy <b>Chi số Hào {_max_pm_pos} Phụ Mẫu ({_pm_chi_fl} = {_pm_chi_num}) + Quái {_up_fl} ({_ht_up_fl}) = <code>{_total_lh_mh} TẦNG</code></b> (hoặc Hào 6 × Tam Tài 3 = <b>18 tầng</b>); và lấy <b>Chi số Hào Thế (Hào {the_idx} {_the_chi_fl} = {_the_chi_num}) + Tiên Thiên {_up_fl} ({_tt_up_fl}) = <code>TẦNG {_the_chi_num + _tt_up_fl}</code></b> thì khớp hoàn toàn!<br>"
-                f"   - <i>Lưu ý:</i> Sở dĩ bản cũ báo nhầm '3–4 tầng' là do chỉ đếm vị trí Hào 3–4 (vì Lục Hào chỉ có 6 hào từ 1 đến 6 cho nhà cổ đại thấp tầng) mà chưa nhân hệ số Cao Ốc khi Phụ Mẫu cư Hào 6.<br>"
+                f"   - Hào Dụng Thần <b>Phụ Mẫu (Ngôi nhà)</b> đóng ở <b>Hào {_max_pm_pos} ({_pm_chi_fl}-{pm_hao.get('ngu_hanh', 'Thổ')})</b>: Báo hiệu cấu trúc tầng cao.<br>"
+                f"   - Lấy <b>Chi số Hào {_max_pm_pos} Phụ Mẫu ({_pm_chi_fl} = {_pm_chi_num}) + Quái {_up_fl} ({_ht_up_fl}) = <code>{_total_lh_mh} TẦNG</code></b> (hoặc Hào {_max_pm_pos} × Tam Tài 3 = <b>{_max_pm_pos * 3} tầng</b>); và lấy <b>Chi số Hào Thế (Hào {the_idx} {_the_chi_fl} = {_the_chi_num}) + Tiên Thiên {_up_fl} ({_tt_up_fl}) = <code>TẦNG {_the_chi_num + _tt_up_fl}</code></b>.<br>"
                 f"4. <b>📜 Thiết Bản Thần Toán (CHUẨN XÁC):</b> Khảo khắc Gia Trạch lấy Quái số Hậu Thiên Thượng Quái <b>{_up_fl} = {_ht_up_fl} (Tầng {_ht_up_fl})</b> và tổng Quái Hỗ + Chủ = <b>{_total_mh_ho} tầng</b>.<br>"
-                f"5. <b>🌌 Đại Lục Nhâm & Thái Ất Thần Số:</b> Chuyên mạnh về định hướng cát hung, nhân sự và thời vận (Ứng kỳ), không dùng để đếm số tầng chung cư vượt quá 12 Địa Chi."
+                f"5. <b>🌌 Đại Lục Nhâm & Thái Ất Thần Số:</b> Chuyên mạnh về định hướng cát hung, nhân sự và thời vận (Ứng kỳ)."
             )
             when_s = (
                 f"<b>Đặc điểm nhận diện căn hộ Tầng {_apt_floor_num} / Tòa chung cư {_highrise_total} tầng ({huong_cung}):</b> "
@@ -2528,24 +2639,32 @@ class HexagramReasoningAI:
             )
             headline = f"🎯 {short_hl}"
 
+            _dong_hao_obj_sb = haos[_dong_num_sb - 1] if (1 <= _dong_num_sb <= len(haos) and isinstance(haos[_dong_num_sb - 1], dict)) else {}
+            _dong_lt_sb = str(_dong_hao_obj_sb.get("luc_than") or "Hào Động")
+            _dong_chi_sb = str(_dong_hao_obj_sb.get("chi") or _dong_hao_obj_sb.get("can_chi") or _hd_chi_sb).split()[-1]
+            _dong_nh_sb = str(_dong_hao_obj_sb.get("ngu_hanh") or _dong_hao_obj_sb.get("hanh") or _hd_nh_sb)
+            _gender_ratio_lbl = (
+                "Nữ giới (Chị/Em gái) chiếm đa số" if _sisters_cnt > _brothers_cnt else
+                ("Nam giới (Anh/Em trai) chiếm đa số" if _brothers_cnt > _sisters_cnt else "Nam và Nữ cân bằng nhau")
+            )
             why_s = (
                 f"<b>• ĐỐI CHỨNG ĐA HỆ THỐNG (MAI HOA + KỲ MÔN + LỤC HÀO + THIẾT BẢN) BÓC TÁCH CHI TIẾT 0{_sisters_cnt} CHỊ GÁI & 0{_brothers_cnt} ANH TRAI:</b><br>"
                 f"1. <b>🌸 Mai Hoa Dịch Số (Quẻ Chủ {ten_que_chu} ➔ Quẻ Hỗ {_ho_name_sb} ➔ Quẻ Biến {ten_que_bien} — CHUẨN XÁC 100%):</b><br>"
-                f"   - <b>Tổng số Anh Chị ruột = 0{_total_siblings_excl} NGƯỜI:</b> Hạ Quái <b>{_lo_sb}</b> (Quẻ Thể — gốc Huynh Đệ đồng khí) mang số <b>Tiên Thiên Bát Quái = 0{_tt_lo_sb}</b>, trùng khớp tuyệt đối với <b>Hào Động = Hào 0{_dong_num_sb}</b> ➔ Khẳng định bạn có chính xác <b>0{_total_siblings_excl} người Anh/Chị ruột</b>!<br>"
-                f"   - <b>Tách riêng Số Chị Gái (Nữ) = 0{_sisters_cnt} CHỊ GÁI:</b> Trên Quẻ Chủ <b>{ten_que_chu}</b> có chính xác <b>0{_yin_chu_cnt} Hào Âm (Nữ)</b> (Hào 2, Hào 3, Hào 6); trên Quẻ Hỗ <b>{_ho_name_sb}</b> cũng có chính xác <b>0{_yin_ho_cnt} Hào Âm (Nữ)</b>; đồng thời Hạ Quái <b>{_lo_sb}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_lo_sb}</b> giao hội Thượng Quái Chủ <b>{_up_sb} (Thiếu Nữ)</b> & Thượng Quái Hỗ <b>{_ho_up_sb} (Trưởng Nữ — Chị gái)</b> ➔ Chốt chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>!<br>"
-                f"   - <b>Tách riêng Số Anh Trai (Nam) = 0{_brothers_cnt} ANH TRAI:</b> Hạ Quái <b>{_lo_sb} (Trưởng Nam — Anh trai lớn)</b> chỉ có <b>duy nhất 0{_yang_lo_cnt} Hào Dương Nam</b> làm chủ dưới 2 hào Âm (<code>1,0,0</code>); đồng thời Thượng Quái Biến <b>{_b_up_sb} (Trung Nam — Anh trai)</b> trên quẻ <b>{ten_que_bien}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_b_up}</b> (và chỉ có <b>01 Hào Dương</b> ở giữa <code>0,1,0</code>) ➔ Chốt chính xác <b>0{_brothers_cnt} ANH TRAI</b>!<br>"
-                f"   - <b>Thứ bậc của bản thân bạn:</b> Cộng thêm <b>Bản thân bạn (+1)</b> thì đại gia đình có <b><code>0{_sisters_cnt} Chị gái + 0{_brothers_cnt} Anh trai + 01 Bản thân = 0{_total_siblings_incl} ANH CHỊ EM</code></b> (Khớp Tiên Thiên <b>{_lo_sb} 0{_tt_lo_sb}</b> + Hậu Thiên Biến <b>{_b_up_sb} 0{_ht_b_up}</b> = <b>0{_total_siblings_incl}</b>; bạn ứng vị trí <b>Con thứ {_total_siblings_incl} / Em út</b> sau 3 chị gái và 1 anh trai)!<br>"
+                f"   - <b>Tổng số Anh Chị ruột = 0{_total_siblings_excl} NGƯỜI:</b> Hạ Quái <b>{_lo_sb}</b> (Quẻ Thể — gốc Huynh Đệ đồng khí) mang số <b>Tiên Thiên Bát Quái = 0{_tt_lo_sb}</b>, kết hợp <b>Hào Động = Hào 0{_dong_num_sb}</b> ➔ Khẳng định bạn có chính xác <b>0{_total_siblings_excl} người Anh/Chị ruột</b>!<br>"
+                f"   - <b>Tách riêng Số Chị Gái (Nữ) = 0{_sisters_cnt} CHỊ GÁI:</b> Trên Quẻ Chủ <b>{ten_que_chu}</b> có chính xác <b>0{_yin_chu_cnt} Hào Âm (Nữ)</b>; trên Quẻ Hỗ <b>{_ho_name_sb}</b> có <b>0{_yin_ho_cnt} Hào Âm (Nữ)</b>; đồng thời Hạ Quái <b>{_lo_sb}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_lo_sb}</b> giao hội Thượng Quái Chủ <b>{_up_sb}</b> & Thượng Quái Hỗ <b>{_ho_up_sb}</b> ➔ Chốt chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>!<br>"
+                f"   - <b>Tách riêng Số Anh Trai (Nam) = 0{_brothers_cnt} ANH TRAI:</b> Hạ Quái <b>{_lo_sb}</b> có <b>0{_yang_lo_cnt} Hào Dương Nam</b>; đồng thời Thượng Quái Biến <b>{_b_up_sb}</b> trên quẻ <b>{ten_que_bien}</b> mang số <b>Hậu Thiên Lạc Thư = 0{_ht_b_up}</b> ➔ Chốt chính xác <b>0{_brothers_cnt} ANH TRAI</b>!<br>"
+                f"   - <b>Thứ bậc của bản thân bạn:</b> Cộng thêm <b>Bản thân bạn (+1)</b> thì đại gia đình có <b><code>0{_sisters_cnt} Chị gái + 0{_brothers_cnt} Anh trai + 01 Bản thân = 0{_total_siblings_incl} ANH CHỊ EM</code></b> (bạn ứng vị trí <b>Con thứ {_total_siblings_incl}</b> cùng {_sisters_cnt} chị gái và {_brothers_cnt} anh trai)!<br>"
                 f"2. <b>🧭 Kỳ Môn Độn Giáp (Cung Dụng Thần Huynh Đệ tại Cung {_cung_num_sb} {_quai_cung_sb} {huong_cung}: Sao {sao_name}, Cửa {cua_name}, Thần {than_name}):</b><br>"
-                f"   - Cung Huynh Đệ đóng tại <b>Cung {_cung_num_sb} ({_quai_cung_sb} — Thuần Âm Nữ)</b> đi cùng <b>Thần {than_name} (Thuần Âm)</b>: Báo hiệu trong hàng anh chị ruột, <b>Nữ giới (Chị gái) chiếm đa số áp đảo</b>.<br>"
-                f"   - <b>Sao {sao_name}</b> có <b>Bản cung gốc tại Cung 0{_star_base_sb} (Số 0{_star_base_sb})</b> bay về Cung Khôn Nữ ➔ Ứng chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>; đồng thời bản khí <b>Sao {sao_name}</b> thuộc quái <b>Chấn Mộc (Trưởng Nam — 01 ngôi sao Dương Mộc độc lập)</b> ➔ Ứng chính xác <b>0{_brothers_cnt} ANH TRAI</b> (Tổng hợp Cung 2 Khôn + Cung 3 Chấn = <b>0{_total_siblings_incl} anh chị em tính cả bản thân bạn</b>)!<br>"
+                f"   - Cung Huynh Đệ đóng tại <b>Cung {_cung_num_sb} ({_quai_cung_sb})</b> đi cùng <b>Thần {than_name}</b>: Báo hiệu trong hàng anh chị ruột, <b>{_gender_ratio_lbl}</b>.<br>"
+                f"   - <b>Sao {sao_name}</b> có <b>Bản cung gốc tại Cung 0{_star_base_sb} (Số 0{_star_base_sb})</b> đóng tại Cung {_cung_num_sb} {_quai_cung_sb} ➔ Ứng <b>0{_sisters_cnt} CHỊ GÁI</b> & <b>0{_brothers_cnt} ANH TRAI</b> (Tổng hợp = <b>0{_total_siblings_incl} anh chị em tính cả bản thân bạn</b>)!<br>"
                 f"3. <b>☯️ Lục Hào Kinh Dịch ({ten_que_chu} ➔ {ten_que_bien}, Động hào {_dong_num_sb}):</b><br>"
-                f"   - Trên Bản Quẻ xuất hiện <b>duy nhất 0{hd_count} Hào Dụng Thần Huynh Đệ</b> tại <b>Hào {_hd_pos_sb} ({_hd_chi_sb}-{_hd_nh_sb})</b> được <b>Hào {_dong_num_sb} Phụ Mẫu (Hợi-Thủy)</b> phát động nhị hợp & trường sinh (<code>Dần – Hợi lục hợp, Thủy sinh Mộc</code>):<br>"
-                f"   - <b>0{hd_count} Hào Huynh Đệ Dương Mộc độc lập</b> trên quẻ chính ứng <b>0{_brothers_cnt} ANH TRAI</b>; còn Địa Chi <b>{_hd_chi_sb}</b> mang số thứ tự Địa Chi = <b>0{_hd_chi_num}</b> (<i>Tý 1, Sửu 2, Dần 3</i>) kết hợp <b>0{_yin_chu_cnt} Hào Âm</b> trên Bản Quẻ ứng chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>; Hào Động thứ <b>0{_dong_num_sb}</b> khóa tổng <b>0{_total_siblings_excl} Anh Chị (0{_sisters_cnt} Chị gái + 0{_brothers_cnt} Anh trai)</b>!<br>"
-                f"4. <b>📜 Thiết Bản Thần Toán (Khảo khắc Lục Thân Huynh Đệ):</b> Khảo khắc theo Hạ Quái <b>{_lo_sb} (Hậu Thiên = 0{_ht_lo_sb} Chị gái)</b> + Quái Biến <b>{_b_up_sb} (Hậu Thiên = 0{_ht_b_up} Anh trai)</b> = <b>Tiên Thiên {_lo_sb} 0{_tt_lo_sb} Anh Chị</b>, bản thân người hỏi đứng sau thành <b>0{_total_siblings_incl} anh chị em</b>."
+                f"   - Trên Bản Quẻ xuất hiện <b>0{hd_count} Hào Dụng Thần Huynh Đệ</b> tại <b>Hào {_hd_pos_sb} ({_hd_chi_sb}-{_hd_nh_sb})</b> tương tác với <b>Hào {_dong_num_sb} {_dong_lt_sb} ({_dong_chi_sb}-{_dong_nh_sb})</b>:<br>"
+                f"   - <b>0{hd_count} Hào Huynh Đệ</b> trên quẻ chính ứng <b>0{_brothers_cnt} ANH TRAI</b>; còn Địa Chi <b>{_hd_chi_sb}</b> mang số thứ tự Địa Chi = <b>0{_hd_chi_num}</b> kết hợp <b>0{_yin_chu_cnt} Hào Âm</b> trên Bản Quẻ ứng chính xác <b>0{_sisters_cnt} CHỊ GÁI</b>; khóa tổng <b>0{_total_siblings_excl} Anh Chị (0{_sisters_cnt} Chị gái + 0{_brothers_cnt} Anh trai)</b>!<br>"
+                f"4. <b>📜 Thiết Bản Thần Toán (Khảo khắc Lục Thân Huynh Đệ):</b> Khảo khắc theo Hạ Quái <b>{_lo_sb} (Hậu Thiên = 0{_ht_lo_sb})</b> + Quái Biến <b>{_b_up_sb} (Hậu Thiên = 0{_ht_b_up})</b>, tổng cộng <b>0{_total_siblings_incl} anh chị em</b>."
             )
             when_s = (
                 f"<b>Mối quan hệ giữa bạn với 0{_sisters_cnt} Chị gái & 0{_brothers_cnt} Anh trai:</b> "
-                f"Hào 4 Phụ Mẫu (Hợi-Thủy) phát động sinh hợp trực tiếp cho Hào 2 Huynh Đệ ({_hd_chi_sb}-{_hd_nh_sb}), hội <b>Sao {sao_name}</b> và <b>Cửa {cua_name}</b> tại hướng <b>{huong_cung}</b> — "
+                f"Hào {_dong_num_sb} {_dong_lt_sb} ({_dong_chi_sb}-{_dong_nh_sb}) tương tác trực tiếp với Hào {_hd_pos_sb} Huynh Đệ ({_hd_chi_sb}-{_hd_nh_sb}), hội <b>Sao {sao_name}</b> và <b>Cửa {cua_name}</b> tại hướng <b>{huong_cung}</b> — "
                 f"anh chị em trong đại gia đình có tình cảm gắn bó, đùm bọc và nâng đỡ nhau rất tốt."
             )
             adv_s = (
@@ -2622,10 +2741,10 @@ class HexagramReasoningAI:
                 f"1. <b>Pháp Đếm Nhân Đinh Lục Thân (Lục Hào Bốc Phệ Chính Tông):</b><br>"
                 f"   - <b>[Thành viên 1 — Bản thân bạn]:</b> Ứng với <b>Hào Thế tại Hào {the_idx} ({_the_chi_hm}-{_the_nh_hm})</b> = <b>01 người</b>.<br>"
                 f"   - <b>[Thành viên 2 — Vợ / Phối ngẫu]:</b> Ứng với hào <b>Thê Tài ({_spouse_cite})</b> chính vị = <b>01 người</b>.<br>"
-                f"   - <b>[Thành viên 3 & 4 — Con cái (Tử tức)]:</b> Ứng với hào <b>Tử Tôn ({_child_cite})</b> hữu khí kết hợp Thượng Quái <b>{_up_hm} (Âm Nữ)</b> và Hạ Quái <b>{_lo_hm} (Dương Nam)</b> = <b>02 người con (01 Con Trai & 01 Con Gái)</b>.<br>"
-                f"   ➔ <b>Tổng cộng hộ gia đình nhỏ (Vợ chồng + Con cái):</b> <code>1 + 1 + 2 = 04 NGƯỜI</code> (Khớp hoàn toàn với Tiên Thiên Quái Số của Hạ Quái <b>{_lo_hm} = 04</b>!).<br>"
+                f"   - <b>[Thành viên Con cái (Tử tức)]:</b> Ứng với hào <b>Tử Tôn ({_child_cite})</b> hữu khí kết hợp Thượng Quái <b>{_up_hm}</b> và Hạ Quái <b>{_lo_hm}</b> = <b>0{_child_cnt} người con</b>.<br>"
+                f"   ➔ <b>Tổng cộng hộ gia đình nhỏ (Vợ chồng + Con cái):</b> <code>1 + 1 + {_child_cnt} = 0{_nuclear_total} NGƯỜI</code> (Tiên Thiên Quái Số Hạ Quái <b>{_lo_hm} = 0{_tt_lo_hm}</b>).<br>"
                 f"2. <b>Trường hợp tính mở rộng cả Bố Mẹ / Ông Bà (Đại gia đình):</b><br>"
-                f"   - Trên quẻ có thêm hào <b>Phụ Mẫu ({_parent_cite})</b> lâm Ứng vượng khí; đồng thời tổng Tiên Thiên Quái Số của <b>{_up_hm} ({_tt_up_hm}) + {_lo_hm} ({_tt_lo_hm}) = 0{_extended_max}</b> và Cục số Kỳ Môn là <b>Cục {chart_data.get('cuc', 5)}</b> ➔ Nếu tính gộp cả bậc sinh thành (Ông Bà / Bố Mẹ) thì tổng nhân khẩu là <b>0{_extended_min} – 0{_extended_max} người</b>."
+                f"   - Trên quẻ có thêm hào <b>Phụ Mẫu ({_parent_cite})</b>; đồng thời tổng Tiên Thiên Quái Số của <b>{_up_hm} ({_tt_up_hm}) + {_lo_hm} ({_tt_lo_hm}) = 0{_extended_max}</b> và Cục số Kỳ Môn là <b>Cục {chart_data.get('cuc', 5)}</b> ➔ Nếu tính gộp cả bậc sinh thành (Ông Bà / Bố Mẹ) thì tổng nhân khẩu là <b>0{_extended_min} – 0{_extended_max} người</b>."
             )
             when_s = (
                 f"<b>Vận khí Gia đạo (Cung {target_cung} — {huong_cung}):</b> Hội Sao <b>{sao_name}</b>, Cửa <b>{cua_name}</b> — "
@@ -3211,18 +3330,21 @@ class HexagramReasoningAI:
                 _active_opt = opt_b if _a_is_calm else opt_a
 
                 if not _focus_is_dong and (_has_water_dong or _has_sound_door):
-                    # Bản hào Tử Tôn đứng TĨNH (55%), nhưng Hào 3 Hợi Thủy động + Đoài/Kinh Môn (45%)
+                    _d_cry_ix = dong_list[0] if dong_list else 3
+                    _d_cry_h = haos[_d_cry_ix - 1] if (1 <= _d_cry_ix <= len(haos) and isinstance(haos[_d_cry_ix - 1], dict)) else {}
+                    _d_cry_chi = str(_d_cry_h.get("chi") or _d_cry_h.get("can_chi") or "Hợi").split()[-1]
+                    _d_cry_nh = str(_d_cry_h.get("ngu_hanh") or _d_cry_h.get("hanh") or _CHI_NH_AB.get(_d_cry_chi, "Thủy"))
                     _pct_calm, _pct_act = 55, 45
                     _pct_1 = _pct_calm if _a_is_calm else _pct_act
                     _pct_2 = _pct_act if _a_is_calm else _pct_calm
                     short_hl = (
                         f"⚖️ ĐỐI CHỨNG CẢ 2 PHƯƠNG ÁN: [PHƯƠNG ÁN 1 — {opt_a_up}]: {_pct_1}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_pct_2}% "
-                        f"➔ CHỐT THỰC TẾ: BẢN THỂ HIỆN TẠI LÀ «{_calm_opt.upper()} / ĐÃ YÊN» (DO HÀO {_focus_idx} {_focus_lt.upper()} ĐỨNG TĨNH & NHẬT CAN TUẦN KHÔNG HỎI THỬ), "
-                        f"CHỈ VỪA CÓ TIẾNG MẾU / NHÕNG NHẼO HOẶC TIẾNG ỒN THOÁNG QUA («{_active_opt.upper()}» — DO HÀO {dong_list[0] if dong_list else 3} HỢI THỦY ĐỘNG + CỬA {cua_name.upper()}) RỒI NÍN NGAY!"
+                        f"➔ CHỐT THỰC TẾ: BẢN THỂ HIỆN TẠI LÀ «{_calm_opt.upper()} / ĐÃ YÊN» (DO HÀO {_focus_idx} {_focus_lt.upper()} ĐỨNG TĨNH), "
+                        f"CHỈ VỪA CÓ TIẾNG MẾU / NHÕNG NHẼO HOẶC TIẾNG ỒN THOÁNG QUA («{_active_opt.upper()}» — DO HÀO {_d_cry_ix} {_d_cry_chi.upper()} {_d_cry_nh.upper()} ĐỘNG + CỬA {cua_name.upper()}) RỒI NÍN NGAY!"
                     )
                     why_s = (
-                        f"<b>• Xét Phương án «{_calm_opt}» ({_pct_calm}% — Bản thể hiện tại):</b> Hào Dụng Thần <b>{_focus_lt} tại Hào {_focus_idx} ({_focus_chi}-{_focus_nh}) hoàn toàn AN TĨNH (không phát động)</b>, lại lục hợp với Nguyệt Lệnh ({_chi_m_ab}) và Nhật Can ({_can_n_ab}) chạm Tuần Không (báo hiệu bạn biết rõ thực tế và đang hỏi thử quẻ) ➔ Khẳng định hiện tại cháu <b>không khóc dữ dội kéo dài (đang yên hoặc đã nín)</b>. "
-                        f"<b>• Xét Phương án «{_active_opt}» ({_pct_act}% — Biểu hiện thoáng qua):</b> Trên quẻ có <b>Hào {dong_list[0] if dong_list else 3} (Hợi-Thủy — tượng nước mắt/tiếng động)</b> phát động sinh Hào {_focus_idx}, đi cùng Thượng Quái <b>Đoài (cái miệng)</b> và Cửa <b>{cua_name} (âm thanh)</b> ➔ Báo hiệu trước đó hoặc vừa tức thì có tiếng mếu/nhõng nhẽo/làm ồn nhỏ rồi dứt ngay."
+                        f"<b>• Xét Phương án «{_calm_opt}» ({_pct_calm}% — Bản thể hiện tại):</b> Hào Dụng Thần <b>{_focus_lt} tại Hào {_focus_idx} ({_focus_chi}-{_focus_nh}) hoàn toàn AN TĨNH (không phát động)</b>, tương tác với Nguyệt Lệnh ({_chi_m_ab}) và Nhật Can ({_can_n_ab}) ➔ Khẳng định hiện tại <b>không khóc dữ dội kéo dài (đang yên hoặc đã nín)</b>. "
+                        f"<b>• Xét Phương án «{_active_opt}» ({_pct_act}% — Biểu hiện thoáng qua):</b> Trên quẻ có <b>Hào {_d_cry_ix} ({_d_cry_chi}-{_d_cry_nh})</b> phát động cùng Quái <b>{_chu_pair[0]}</b> và Cửa <b>{cua_name}</b> ➔ Báo hiệu trước đó hoặc vừa tức thì có tiếng mếu/nhõng nhẽo/làm ồn nhỏ rồi dứt ngay."
                     )
                 elif _focus_is_dong:
                     _pct_calm, _pct_act = 25, 75
@@ -3358,21 +3480,23 @@ class HexagramReasoningAI:
                     f"[PHƯƠNG ÁN 1 — {opt_a_up}]: {_score_a}%  ↔  [PHƯƠNG ÁN 2 — {opt_b_up}]: {_score_b}% "
                     f"➔ CHỐT DỨT KHOÁT THEO QUẺ (BẤT BIẾN DÙ ĐẢO VỊ TRÍ CÂU HỎI): «{_win_opt.upper()} / CÓ CƠ NGƠI & TÀI SẢN VỮNG CHẮC (TỰ LẬP ĐI LÊN)» ({_win_sc}% VS {_lose_sc}%)!"
                 )
+                _pm_chi_w = str(pm_hao.get("chi") or pm_hao.get("can_chi") or "Tuất").split()[-1] if pm_hao else "Tuất"
+                _pm_nh_w = str(pm_hao.get("ngu_hanh") or pm_hao.get("hanh") or _CHI_NH_W.get(_pm_chi_w, "Thổ")) if pm_hao else "Thổ"
                 why_s = (
-                    f"<b>• Nguyên tắc Suy Đoán Chuẩn Xác (Bất biến thứ tự câu hỏi):</b> Hệ thống lấy <b>Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản)</b> làm phương tiện suy đoán quyết định (các hệ Đại Lục Nhâm, Thái Ất, Tử Vi chỉ dùng tham khảo thời vận), chấm trực tiếp vào bản chất từng vế nên dù bạn hỏi <i>\"{opt_a} hay {opt_b}\"</i> hay đảo ngược thành <i>\"{opt_b} hay {opt_a}\"</i> thì kết quả vẫn giữ nguyên 100%:<br>"
+                    f"<b>• Nguyên tắc Suy Đoán Chuẩn Xác (Bất biến thứ tự câu hỏi):</b> Hệ thống lấy <b>Nhóm Quẻ Chính Xác Nhất (Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Lục Hào Kinh Dịch + Thiết Bản)</b> làm phương tiện suy đoán quyết định, chấm trực tiếp vào bản chất từng vế nên dù bạn hỏi <i>\"{opt_a} hay {opt_b}\"</i> hay đảo ngược thành <i>\"{opt_b} hay {opt_a}\"</i> thì kết quả vẫn giữ nguyên 100%:<br>"
                     f"<b>1. Xét Phương án «{_rich_opt}» ({_pct_rich}% — Thực lực Tài sản & Cơ ngơi trên 3 Quẻ Chủ Lực):</b><br>"
-                    f"&nbsp;&nbsp;+ <b>Lục Hào Kinh Dịch:</b> Hào Dụng Thần <b>Thê Tài tại Hào {_tai_idx} ({_tai_chi}-{_tai_nh}) {'trực tiếp TRÌ THẾ (tài sản nằm ngay trong tay gia chủ)' if _tai_trithe else 'hiện rõ trên quẻ'}</b>, hoàn toàn <b>KHÔNG phạm Tuần Không ({', '.join(_kv_ab)})</b>, lại được <b>Nhật Thần {_chi_n_ab} ({_nh_ngay_w}) tương sinh</b> và <b>Nguyệt Lệnh {_chi_m_ab} ({_nh_thang_w})</b> trợ lực; đi cùng <b>Hào 6 Phụ Mẫu (Tuất-Thổ)</b> lâm Ứng vượng tướng (nhà cửa/cơ ngơi cao ráo, có tài sản tích lũy vững chắc).<br>"
-                    f"&nbsp;&nbsp;+ <b>Mai Hoa Dịch Số:</b> Quẻ Chủ <b>{ten_que_chu}</b> chuyển sang Quẻ Biến <b>{ten_que_bien}</b> có Quẻ Biến Dụng <b>{_mat_ab['bien_dung_quai']} ({_mat_ab['hanh_bien_dung']}) tương sinh trực tiếp cho Quẻ Thể {_mat_ab['the_quai']} ({_mat_ab['hanh_the']}) — {_mat_ab['rel_bien_tag']}</b>; Quẻ Hỗ <b>{_mat_ab['full_ho']}</b> (Tốn Mộc tỷ hòa Chấn Mộc) chủ tích tiểu thành đại, kinh tế đi lên bền vững.<br>"
-                    f"&nbsp;&nbsp;+ <b>Kỳ Môn Độn Giáp & Thiết Bản:</b> Cung Tài Sản đắc <b>Cửa Sinh Môn (Tài sản/Điền trạch) & Sao Thiên Phụ (Đại Cát Tinh)</b> (Cung {target_cung}: Sao {sao_name} · Cửa {cua_name}) khẳng định gia đình thuộc diện <b>khá giả / có của ăn của để ({_pct_rich}%)</b>.<br>"
-                    f"<b>2. Xét Phương án «{_poor_opt}» ({_pct_poor}% — Vất vả tự lập & Chi tiêu):</b> Trên Quẻ Chủ <b>{ten_que_chu}</b>, Thượng Quái <b>{_mat_ab['dung_quai']} ({_mat_ab['hanh_dung']}) khắc Hạ Quái Thể {_mat_ab['the_quai']} ({_mat_ab['hanh_the']})</b> và Tháng Tuất xung nhẹ Hào Thìn chỉ phản ánh <b>thuở ban đầu tự lập vất vả, làm ra tiền nhưng hay phải lo toan/chi tiêu khoản lớn cho gia đình</b> (chiếm {_pct_poor}%), tuyệt đối không phải cảnh nghèo túng thiếu thốn!"
+                    f"&nbsp;&nbsp;+ <b>Lục Hào Kinh Dịch:</b> Hào Dụng Thần <b>Thê Tài tại Hào {_tai_idx} ({_tai_chi}-{_tai_nh}) {'trực tiếp TRÌ THẾ (tài sản nằm ngay trong tay gia chủ)' if _tai_trithe else 'hiện trên quẻ'}</b>, {'KHÔNG phạm Tuần Không' if _tai_not_kv else 'đang chờ Xuất Không'} ({', '.join(_kv_ab)}), tương tác với <b>Nhật Thần {_chi_n_ab} ({_nh_ngay_w})</b> và <b>Nguyệt Lệnh {_chi_m_ab} ({_nh_thang_w})</b>; đi cùng <b>Hào {pm_idx} Phụ Mẫu ({_pm_chi_w}-{_pm_nh_w})</b> đại diện cho nhà cửa/cơ ngơi.<br>"
+                    f"&nbsp;&nbsp;+ <b>Mai Hoa Dịch Số:</b> Quẻ Chủ <b>{ten_que_chu}</b> chuyển sang Quẻ Biến <b>{ten_que_bien}</b> có Quẻ Biến Dụng <b>{_mat_ab['bien_dung_quai']} ({_mat_ab['hanh_bien_dung']})</b> đối với Quẻ Thể <b>{_mat_ab['the_quai']} ({_mat_ab['hanh_the']}) — {_mat_ab['rel_bien_tag']}</b>; Quẻ Hỗ <b>{_mat_ab['full_ho']}</b> ({_mat_ab['up_ho']} {_mat_ab['hanh_ho_up']} / {_mat_ab['lo_ho']} {_mat_ab['hanh_ho_lo']}).<br>"
+                    f"&nbsp;&nbsp;+ <b>Kỳ Môn Độn Giáp & Thiết Bản:</b> Cung {target_cung} ({huong_cung}) hội <b>Cửa {cua_name} & Sao {sao_name}</b> định lượng tỷ lệ phương án này đạt <b>{_pct_rich}%</b>.<br>"
+                    f"<b>2. Xét Phương án «{_poor_opt}» ({_pct_poor}% — Áp lực chi tiêu & Vất vả):</b> Trên Quẻ Chủ <b>{ten_que_chu}</b>, tương quan giữa Quẻ Dụng <b>{_mat_ab['dung_quai']} ({_mat_ab['hanh_dung']})</b> và Quẻ Thể <b>{_mat_ab['the_quai']} ({_mat_ab['hanh_the']})</b> ({_mat_ab['rel_chu_tag']}) cùng Nguyệt Lệnh <b>{_chi_m_ab}</b> chiếm tỷ trọng <b>{_pct_poor}%</b>."
                 )
                 when_s = (
-                    f"Thời điểm tài chính & tích lũy vượng phát mạnh nhất: <b>{omni_data.get('exact_timestamp', 'Từ vận Quẻ Biến Thủy Lôi Truân & các tháng Thân – Dậu – Hợi – Tý')}</b> "
+                    f"Thời điểm tài chính & tích lũy vượng phát mạnh nhất: <b>{omni_data.get('exact_timestamp', f'Từ vận Quẻ Biến {ten_que_bien} & các tháng/ngày hợp hành {_tai_nh}')}</b> "
                     f"tại phương vị <b>{huong_cung}</b>."
                 )
                 adv_s = (
-                    f"Quẻ khẳng định rõ nền tảng kinh tế gia đình bạn nghiêng hẳn về <b>«{_win_opt.upper()} / KHÁ GIẢ» ({_win_sc}%)</b> nhờ <b>Thê Tài trì Thế hữu khí</b> và <b>Biến Quái Dụng sinh Thể</b>; "
-                    f"chỉ cần quản lý dòng tiền chặt chẽ trong tháng Tuất (tránh chi tiêu dàn trải) thì tài sản càng tích tụ bền vững."
+                    f"Quẻ khẳng định rõ nền tảng kinh tế nghiêng về <b>«{_win_opt.upper()}» ({_win_sc}%)</b> trên trục <b>{ten_que_chu} ➔ {ten_que_bien}</b>; "
+                    f"quản lý dòng tiền chặt chẽ trong tháng {_chi_m_ab} để tài sản tích tụ bền vững."
                 )
                 return {
                     "has_override": True,
@@ -4273,12 +4397,15 @@ class HexagramReasoningAI:
                     )
                 else:
                     _label_prefix = "MỨC LƯƠNG / THU NHẬP THỰC LĨNH" if any(w in q_low for w in ["lương", "thưởng", "thu nhập", "tháng"]) else "SỐ TIỀN ĐỊNH LƯỢNG TỪ QUẺ"
+                    _tai_timing_short = _mat_spec.get("tai_timing_verdict_short") or (
+                        f"⚡ [TRẠNG THÁI BẮN LƯƠNG]: KHOẢN TIỀN ĐÃ BẮN VỀ TÀI KHOẢN / NỔ NGAY TRONG KHUNG GIỜ HIỆN TẠI (GIỜ {_chi_gio_m.upper()} {_cur_clock_m})!"
+                    )
                     short_hl = (
                         f"💰 KẾT QUẢ {_label_prefix} ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
                         f"[BẬC 1 — LƯƠNG CƠ BẢN / ĐỢT 1 / SAU KHẤU TRỪ (ĐƠN QUÁI & HÀ ĐỒ HÀO TÀI {_tai_chi_m.upper()})]: {_tier1_low}.000.000 – {_tier1_high}.000.000 VNĐ (CON SỐ KHỚP TRỰC DIỆN: {_tier1_exact_str.upper()})  |  "
                         f"[BẬC 2 — TỔNG LƯƠNG + PHỤ CẤP (TỔNG QUÁI SỐ CHỦ–BIẾN)]: {_base_low}.000.000 – {_base_high}.000.000 VNĐ (CON SỐ KHỚP: {_tier2_exact_str.upper()}, TRỌNG TÂM ~{_base_mid_vnd} VNĐ)  |  "
                         f"[BẬC 3 — NGẠCH QUẢN LÝ / GỘP THƯỞNG (×2)]: {_high_tier_low}.000.000 – {_high_tier_high}.000.000 VNĐ  "
-                        f"⚡ [TRẠNG THÁI BẮN LƯƠNG]: KHOẢN TIỀN ĐÃ BẮN VỀ TÀI KHOẢN / NỔ NGAY TRONG KHUNG GIỜ HIỆN TẠI (GIỜ {_chi_gio_m.upper()} {_cur_clock_m}), KHÔNG BỊ TRỄ SANG CHIỀU MUỘN!"
+                        f"{_tai_timing_short}"
                     )
 
                 why_s = (
@@ -4288,11 +4415,18 @@ class HexagramReasoningAI:
                     f"&nbsp;&nbsp;3. <b>Bậc 3 — Hệ số Bội Thái Huyền (Ứng ngạch Quản lý / Kinh doanh / Gộp thưởng):</b> <b>{_high_tier_low}.000.000 – {_high_tier_high}.000.000 VNĐ</b>.<br>"
                     f"<b>• [Bước 2 — Bóc tách Yếu tố Tác động Thực tế lên Khoản Tiền]:</b> {_money_flow_note}"
                 )
-                when_s = (
-                    f"<b>• ⚡ Thời điểm Bắn Lương / Tiền Về Tài Khoản (Luật Đương Thời Ứng Nghiệm):</b><br>"
-                    f"&nbsp;&nbsp;1. <b>Trạng thái Tức Thời (Ngay lúc này — Giờ {_chi_gio_m} [{_cur_clock_m}], Ngày {_chi_ngay_m}):</b> Trên quẻ, Hào Động (Hào {_dong_val_q}) đã phát động và Hào Thê Tài ({_tai_chi_m}-{_tai_nh_m}) đã hiện rõ trên quẻ ➔ Theo <i>Tăng San Bốc Dịch (Đương Thời Đắc Tài)</i>, <b>LƯƠNG / KHOẢN TIỀN NÀY ĐÃ ĐƯỢC BẮN (ĐÃ CHUYỂN KHOẢN VỀ TÀI KHOẢN CỦA BẠN NGAY TRONG GIỜ {_chi_gio_m.upper()} [{_cur_clock_m}])</b>, không phải chờ tới chiều muộn 14h–16h!<br>"
-                    f"&nbsp;&nbsp;2. <b>Mốc Đối Soát / Chốt Giao Dịch Phụ:</b> Nếu kiểm tra biến động số dư hoặc nhận nốt phần phụ cấp/thưởng còn lại thì ứng ngay trong khung <b>Giờ {_chi_gio_m} ({_cur_clock_m}) – đầu Giờ {_hop_gio_m} ({_hop_clock_m})</b> hoặc ngày/giờ <b>{_tai_chi_m}</b>."
-                )
+                if _mat_spec.get("tai_already_sent", True):
+                    when_s = (
+                        f"<b>• ⚡ Thời điểm Bắn Lương / Tiền Về Tài Khoản (Luật Đương Thời Ứng Nghiệm):</b><br>"
+                        f"&nbsp;&nbsp;1. <b>Trạng thái Tức Thời (Ngay lúc này — Giờ {_chi_gio_m} [{_cur_clock_m}], Ngày {_chi_ngay_m}):</b> Trên quẻ, Hào Động (Hào {_dong_val_q}) đã phát động và Hào Thê Tài ({_tai_chi_m}-{_tai_nh_m}) hữu khí đắc thời ➔ Theo <i>Tăng San Bốc Dịch (Đương Thời Đắc Tài)</i>, <b>LƯƠNG / KHOẢN TIỀN NÀY ĐÃ ĐƯỢC BẮN (ĐÃ CHUYỂN KHOẢN VỀ TÀI KHOẢN CỦA BẠN NGAY TRONG GIỜ {_chi_gio_m.upper()} [{_cur_clock_m}])</b>!<br>"
+                        f"&nbsp;&nbsp;2. <b>Mốc Đối Soát / Chốt Giao Dịch Phụ:</b> Hoàn tất thông báo biến động số dư hoặc nhận nốt phần phụ cấp trong khung <b>Giờ {_chi_gio_m} ({_cur_clock_m}) – đầu Giờ {_hop_gio_m} ({_hop_clock_m})</b>."
+                    )
+                else:
+                    when_s = (
+                        f"<b>• 🕐 Thời điểm Bắn Lương / Tiền Về Tài Khoản (Căn cứ Trạng thái Hào Thê Tài {_tai_chi_m}-{_tai_nh_m}):</b><br>"
+                        f"&nbsp;&nbsp;1. <b>Trạng thái Hiện tại (Giờ {_chi_gio_m} [{_cur_clock_m}]):</b> {_mat_spec.get('the_tai_status_str', '')}.<br>"
+                        f"&nbsp;&nbsp;2. <b>Điểm rơi Nổ Tiền Chính Xác:</b> {_mat_spec.get('tai_timing_verdict_short', '')} (ứng trực diện khung <b>Giờ/Ngày {_tai_chi_m} [{_CHI_CLOCK_M.get(_tai_chi_m, '')}]</b> hoặc <b>Giờ Hợp {_HOP_MAP_M.get(_tai_chi_m, 'Mùi')}</b>)."
+                    )
                 adv_s = (
                     f"<b>• Chiến lược Tài chính & Hành động:</b> "
                     + (f"Do quẻ xuất hiện <b>{ten_que_bien}</b> và <b>Cửa {cua_name}</b>, bạn nên kiểm tra kỹ bảng chấm công/KPI/chứng từ (Hào Phụ Mẫu) trước kỳ chốt lương để đảm bảo không bị tính thiếu hoặc khấu trừ sai; " if _has_deduction_sign else "Dòng tiền đang thuận lợi, bạn có thể chủ động đề xuất thưởng/KPI; ")
@@ -4707,10 +4841,18 @@ class HexagramReasoningAI:
             _has_hung_door = any(m in cua_name for m in ("Thương", "Tử", "Kinh", "Đỗ"))
             _symptom_lbl = "ĐANG SỐT CAO / VIÊM NHIỆT CẤP TÍNH" if (_has_fire_attack and _dt_nh_md == "Kim") else ("ĐANG CÓ TRIỆU CHỨNG MỆT MỎI / PHÁT BỆNH" if _has_hung_door else "SỨC KHỎE ĐANG CẦN THEO DÕI & CHĂM SÓC")
 
+            _CHIS_BY_NH_MD = {
+                "Thổ": "Sửu · Thìn · Mùi · Tuất",
+                "Kim": "Thân · Dậu",
+                "Thủy": "Hợi · Tý",
+                "Mộc": "Dần · Mão",
+                "Hỏa": "Tị · Ngọ",
+            }
+            _relief_chis_md = f"{_CHIS_BY_NH_MD.get(_ng_nh_md, 'Thân · Dậu')} · {_dt_chi_md}"
             short_hl = (
                 f"🩺 KẾT LUẬN Y DỊCH TAM THỨC ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_md} {_dt_chi_md.upper()}-{_dt_nh_md.upper()}): "
                 f"HIỆN TRẠNG {_symptom_lbl} (DO HÀNH {_ky_nh_md.upper()} KHẮC {_dt_nh_md.upper()} TÁC ĐỘNG VÀO {_organ_str.upper()} CÙNG CỬA {cua_name.upper()} · SAO {sao_name.upper()}), "
-                f"NHƯNG TIÊN LƯỢNG LÀNH TÍNH — ĐẮC NGUYÊN THẦN HÀNH {_ng_nh_md.upper()} SINH TRỢ NÊN SẼ NHANH HẠ SỐT / BÌNH PHỤC TRONG 1 – 3 NGÀY TỚI (ỨNG GIỜ/NGÀY SỬU · THÌN · THÂN · DẬU)!"
+                f"NHƯNG TIÊN LƯỢNG LÀNH TÍNH — ĐẮC NGUYÊN THẦN HÀNH {_ng_nh_md.upper()} SINH TRỢ NÊN SẼ NHANH HẠ SỐT / BÌNH PHỤC TRONG 1 – 3 NGÀY TỚI (ỨNG GIỜ/NGÀY {_relief_chis_md.upper()})!"
             )
             why_s = (
                 f"<b>• Phân tích Ngũ Chẩn Y Dịch (Liên kết Mai Hoa Quan Vật + Lục Hào + Kỳ Môn Độn Giáp):</b><br>"
@@ -4719,7 +4861,7 @@ class HexagramReasoningAI:
                 f"3. <b>Tiên lượng Cứu Ứng (Nguyên Thần & Dược Thần):</b> Hào Dụng Thần không phạm Chân Không và có Hành <b>{_ng_nh_md}</b> thông quan sinh trợ (<i>{_ky_nh_md} sinh {_ng_nh_md}, {_ng_nh_md} sinh {_dt_nh_md}</i>), khẳng định cơ thể đáp ứng thuốc tốt và nhanh chóng hồi phục."
             )
             when_s = (
-                f"<b>Thời điểm hạ sốt / lui bệnh (Ứng kỳ Y Dịch):</b> Bắt đầu dịu nhiệt vào các khung <b>Giờ Thân – Dậu (15h–19h)</b>, <b>Giờ Hợi – Tý – Sửu (21h–03h)</b> và bình phục rõ rệt trong <b>1 – 3 ngày tới (ngày Sửu, Thìn, Thân, Dậu)</b>."
+                f"<b>Thời điểm hạ sốt / lui bệnh (Ứng kỳ Y Dịch):</b> Bắt đầu dịu triệu chứng vào các khung <b>Giờ {_relief_chis_md}</b> và bình phục rõ rệt trong <b>1 – 3 ngày tới (ngày {_relief_chis_md})</b>."
             )
             adv_s = (
                 f"<b>Pháp quyết chăm sóc:</b> Chú trọng chăm sóc vùng <b>{_organ_str}</b>, uống thuốc đúng chỉ dẫn, bù đủ nước ấm và nghỉ ngơi ở hướng thoáng mát (<b>{huong_cung}</b>, màu sắc trợ vận: <b>{colors_str}</b>)."
@@ -4880,45 +5022,103 @@ class HexagramReasoningAI:
 
                 _is_money_tm = any(w in _q_low_tm for w in ["lương", "tiền", "bắn", "chuyển khoản", "tài khoản", "nổ", "ting ting", "thưởng"])
                 if _is_money_tm:
-                    short_hl = (
-                        f"⚡ KẾT LUẬN THỜI ĐIỂM BẮN LƯƠNG / TIỀN VỀ CHO «{_raw_q_tm.upper()}» ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
-                        f"[1] ỨNG NGHIỆM TỨC THỜI (ĐƯƠNG THỜI ĐẮC TÀI): KHOẢN LƯƠNG / TIỀN ĐÃ BẮN VỀ TÀI KHOẢN NGAY TRONG KHUNG GIỜ HIỆN TẠI — GIỜ {chi_g.upper()} ({_cur_g_clock}) (DO HÀO ĐỘNG & DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_tm} {_dt_chi_tm.upper()}-{_dt_nh_tm.upper()} ĐÃ PHÁT ĐỘNG / ĐẮC KHÍ TRONG NGÀY {chi_n.upper()}) — KIỂM TRA SỐ DƯ NGAY!  |  "
-                        f"[2] NẾU NGÂN HÀNG XỬ LÝ LỆCH NHỊP LIÊN NGÂN HÀNG: CHẬM NHẤT ĐẦU GIỜ {_secondary_chi.upper()} ({_sec_peak}) LÀ NỔI TIỀN (TUYỆT ĐỐI KHÔNG BỊ TRỄ SANG CHIỀU MUỘN 14H–16H)!"
-                    )
-                    why_s = (
-                        f"<b>• Phân tích theo 12 Định Luật Thời-Không (Tăng San Bốc Dịch — Chương Ứng Kỳ Tài Phúc):</b><br>"
-                        f"1. <b>[Định luật Đương Thời Ứng Nghiệm]:</b> Quẻ lập tại Ngày <b>{can_n} {chi_n}</b> · Giờ <b>{can_g} {chi_g} ({_cur_g_clock})</b>. "
-                        f"Khi Hào Động ({_dong_desc_tm}) đã phát động rõ rệt và Dụng Thần <b>{dung_than}</b> tại Hào {_dt_idx_tm} (<b>{_dt_chi_tm}-{_dt_nh_tm}</b>) hữu khí, cổ pháp quyết định: <i>«Dụng Thần đắc thời phát động, tiền tài đương thời đã phát»</i> — tức là lệnh bắn lương/chuyển khoản <b>ĐÃ ĐƯỢC THỰC HIỆN NGAY TRONG GIỜ {chi_g.upper()} ({_cur_g_clock})</b> chứ không phải chờ sang khung giờ chiều muộn.<br>"
-                        f"2. <b>[Đối chứng Tam Thức (Mai Hoa – Kỳ Môn – Lục Hào)]:</b> Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_m_tm.get('rel_bien_tag', '')}); Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> xác nhận giao dịch đã thông suốt."
-                    )
-                    when_s = (
-                        f"<b>• Khung Giờ Chính Xác Trong Ngày ({_cur_solar}):</b><br>"
-                        f"&nbsp;&nbsp;1. <b>Mốc 1 (Đã bắn / Nổ ngay hiện tại):</b> <b>Giờ {chi_g} ({_cur_g_clock})</b> — Lệnh chuyển tiền đã khớp ngay tại thời điểm bạn gieo quẻ.<br>"
-                        f"&nbsp;&nbsp;2. <b>Mốc 2 (Khung giờ Lục Hợp / Hào Biến {_secondary_chi}):</b> <b>Đầu Giờ {_secondary_chi} ({_sec_peak})</b> — Hoàn tất 100% thông báo biến động số dư."
-                    )
+                    _tai_sent_tm = bool(_m_tm.get("tai_already_sent", True))
+                    _tai_verdict_tm = _m_tm.get("tai_timing_verdict_short") or ""
+                    if _tai_sent_tm:
+                        short_hl = (
+                            f"⚡ KẾT LUẬN THỜI ĐIỂM BẮN LƯƠNG / TIỀN VỀ CHO «{_raw_q_tm.upper()}» ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                            f"[1] ỨNG NGHIỆM TỨC THỜI (ĐƯƠNG THỜI ĐẮC TÀI): KHOẢN LƯƠNG / TIỀN ĐÃ BẮN VỀ TÀI KHOẢN NGAY TRONG KHUNG GIỜ HIỆN TẠI — GIỜ {chi_g.upper()} ({_cur_g_clock}) "
+                            f"(DO HÀO ĐỘNG & DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_tm} {_dt_chi_tm.upper()}-{_dt_nh_tm.upper()} ĐÃ PHÁT ĐỘNG / ĐẮC KHÍ TRONG NGÀY {chi_n.upper()}) — KIỂM TRA SỐ DƯ NGAY!  |  "
+                            f"[2] NẾU NGÂN HÀNG XỬ LÝ LỆCH NHỊP LIÊN NGÂN HÀNG: CHẬM NHẤT ĐẦU GIỜ {_secondary_chi.upper()} ({_sec_peak}) LÀ NỔI TIỀN!"
+                        )
+                        why_s = (
+                            f"<b>• Phân tích theo 12 Định Luật Thời-Không (Tăng San Bốc Dịch — Chương Ứng Kỳ Tài Phúc):</b><br>"
+                            f"1. <b>[Định luật Đương Thời Ứng Nghiệm]:</b> Quẻ lập tại Ngày <b>{can_n} {chi_n}</b> · Giờ <b>{can_g} {chi_g} ({_cur_g_clock})</b>. "
+                            f"Khi Hào Động ({_dong_desc_tm}) đã phát động rõ rệt và Dụng Thần <b>{dung_than}</b> tại Hào {_dt_idx_tm} (<b>{_dt_chi_tm}-{_dt_nh_tm}</b>) hữu khí, cổ pháp quyết định: <i>«Dụng Thần đắc thời phát động, tiền tài đương thời đã phát»</i> — tức là lệnh bắn lương/chuyển khoản <b>ĐÃ ĐƯỢC THỰC HIỆN NGAY TRONG GIỜ {chi_g.upper()} ({_cur_g_clock})</b>.<br>"
+                            f"2. <b>[Đối chứng Tam Thức (Mai Hoa – Kỳ Môn – Lục Hào)]:</b> Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_m_tm.get('rel_bien_tag', '')}); Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> xác nhận giao dịch đã thông suốt."
+                        )
+                        when_s = (
+                            f"<b>• Khung Giờ Chính Xác Trong Ngày ({_cur_solar}):</b><br>"
+                            f"&nbsp;&nbsp;1. <b>Mốc 1 (Đã bắn / Nổ ngay hiện tại):</b> <b>Giờ {chi_g} ({_cur_g_clock})</b> — Lệnh chuyển tiền đã khớp ngay tại thời điểm bạn gieo quẻ.<br>"
+                            f"&nbsp;&nbsp;2. <b>Mốc 2 (Khung giờ Lục Hợp / Hào Biến {_secondary_chi}):</b> <b>Đầu Giờ {_secondary_chi} ({_sec_peak})</b> — Hoàn tất 100% thông báo biến động số dư."
+                        )
+                    else:
+                        short_hl = (
+                            f"🕐 KẾT LUẬN THỜI ĐIỂM BẮN LƯƠNG / TIỀN VỀ CHO «{_raw_q_tm.upper()}» ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                            f"{_tai_verdict_tm}"
+                        )
+                        why_s = (
+                            f"<b>• Phân tích theo 12 Định Luật Thời-Không (Tăng San Bốc Dịch — Chương Ứng Kỳ Tài Phúc):</b><br>"
+                            f"1. <b>[Kiểm tra Trạng thái Hào Thê Tài / Dụng Thần]:</b> {_m_tm.get('the_tai_status_str', '')}.<br>"
+                            f"2. <b>[Quy luật Ứng Kỳ]:</b> Khi Hào Tài đang an tĩnh hoặc vướng Không/Phục/Huynh Đệ động, lệnh chuyển tiền chưa khớp ngay tại Giờ {chi_g} mà phải đợi đến đúng <b>Giờ/Ngày Địa Chi Hào Tài ({_dt_chi_tm}: {_dt_clock})</b> hoặc <b>Giờ Xung/Hợp ({_secondary_chi}: {_sec_clock})</b> mới thực sự nổi tiền."
+                        )
+                        when_s = (
+                            f"<b>• Khung Giờ Chính Xác Tiền Về ({_cur_solar}):</b><br>"
+                            f"&nbsp;&nbsp;1. <b>Mốc 1 (Ứng trực diện Chi Dụng Thần {_dt_chi_tm}):</b> <b>Giờ {_dt_chi_tm} ({_dt_clock}, trọng tâm {_dt_peak})</b>.<br>"
+                            f"&nbsp;&nbsp;2. <b>Mốc 2 (Ứng Chi Lục Hợp / Xung {_secondary_chi}):</b> <b>Giờ {_secondary_chi} ({_sec_clock}, trọng tâm {_sec_peak})</b>."
+                        )
                 else:
-                    # Câu hỏi Người di chuyển / Chị gái / Anh em / Bạn bè / Khách mấy giờ xuống, đến, về
+                    # Câu hỏi Người di chuyển / Chị gái / Anh em / Bạn bè / Khách mấy giờ xuống, đến, về — V125.0: Phân nhánh ĐỘNG vs TĨNH vs TUẦN KHÔNG 100% theo quẻ!
                     _person_lbl = "CHỊ GÁI BẠN" if "chị gái" in _q_low_tm else ("ANH TRAI BẠN" if "anh trai" in _q_low_tm else ("EM BẠN" if "em " in _q_low_tm else "NGƯỜI BẠN HỎI"))
-                    _is_already_moving = (_dt_is_moving_tm or _dt_chi_tm == chi_g or _HOP_CHI_TM.get(_dt_chi_tm) == chi_g)
-                    short_hl = (
-                        f"🕐 KẾT LUẬN CHÍNH XÁC MẤY GIỜ {_person_lbl} XUỐNG / TỚI NƠI ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_tm} {_dt_chi_tm.upper()}-{_dt_nh_tm.upper()}): "
-                        f"[MỐC 1 — ỨNG TRỰC DIỆN HÀO DỤNG THẦN ĐỘNG TẠI GIỜ {_dt_chi_tm.upper()}]: {_person_lbl} {'ĐÃ XUẤT PHÁT / ĐANG TRÊN ĐƯỜNG XUỐNG NGAY TRONG' if _is_already_moving else 'KHỞI HÀNH & XUỐNG TRONG'} KHUNG GIỜ {_dt_chi_tm.upper()} ({_dt_clock}, TRỌNG TÂM {_dt_peak})!  |  "
-                        f"[MỐC 2 — ĐIỂM CHẠM MẶT / TỚI NƠI THEO HÀO BIẾN & LỤC HỢP {_secondary_chi.upper()}]: CÓ MẶT TẠI CHỖ BẠN VÀO ĐẦU KHUNG GIỜ {_secondary_chi.upper()} ({_sec_clock}, TRỌNG TÂM {_sec_peak})!"
-                    )
-                    why_s = (
-                        f"<b>• Giải Mã Theo 12 Định Luật Thời-Không Cổ Pháp (Tăng San Bốc Dịch — Chương Hành Nhân Quy Kỳ):</b><br>"
-                        f"1. <b>[Xác định Dụng Thần & Vị thế Hào]:</b> Bạn hỏi về <b>«{_raw_q_tm}»</b> ➔ Dụng Thần chính xác là <b>{dung_than}</b>, đóng tại <b>Hào {_dt_idx_tm} ({_dt_chi_tm}-{_dt_nh_tm})</b> "
-                        f"{'(Hào 4 là <b>Hào Cửa Ngõ / Ngoại Quái giao Nội Quái</b> — tượng trưng người đã bước ra khỏi cửa và đang di chuyển trên đường xuống chỗ bạn)' if _dt_idx_tm in (3, 4) else f'(tương ứng trực tiếp với Hào Thế tại Hào {_the_idx_tm} {_the_chi_tm}-{_the_nh_tm})'}.<br>"
-                        f"2. <b>[Định luật Động – Biến – Lục Hợp & Tam Hợp Khóa Giờ]:</b> Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_dong_desc_tm}), Hào Dụng Thần <b>{dung_than} ({_dt_chi_tm}-{_dt_nh_tm})</b> "
-                        f"{f'<b>PHÁT ĐỘNG TRỰC TIẾP tại Hào {_dt_idx_tm}</b>, lại trùng/hợp với Ngày <b>{chi_n}</b> · Giờ <b>{chi_g}</b> và biến ra <b>{_bien_chi_tm}</b> (<b>{_dt_chi_tm} – {_bien_chi_tm} Lục Hợp</b>)' if _dt_is_moving_tm else f'tương tác chặt với Ngày <b>{chi_n}</b> · Giờ <b>{chi_g}</b> và Chi Lục Hợp/Xung <b>{_secondary_chi}</b>'}. "
-                        f"Cổ pháp Hành Nhân khẳng định: <i>«Dụng Thần động tại môn hộ, phùng Nhật Thời Tam Hợp / trị Giờ: Người đã lên đường ngay trong giờ đó; Hào Động biến Hợp: Giờ Hợp tức khắc tới nơi!»</i><br>"
-                        f"3. <b>[Đối chứng Mai Hoa & Kỳ Môn Độn Giáp]:</b> Quẻ Biến <b>{ten_que_bien}</b> ({'Gia Nhân = Người nhà sum họp' if 'Gia Nhân' in ten_que_bien else _m_tm.get('rel_bien_tag', 'Cát lợi')}), Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> xác nhận lộ trình di chuyển thông suốt."
-                    )
-                    when_s = (
-                        f"<b>• Chốt Khung Giờ Chính Xác Trong Ngày Hôm Nay ({_cur_solar} — Ngày {can_n} {chi_n}):</b><br>"
-                        f"&nbsp;&nbsp;1. <b>Khung giờ số 1 — Giờ {_dt_chi_tm} ({_dt_clock}, điểm rơi mạnh nhất {_dt_peak}):</b> Ứng trực tiếp Địa Chi Hào Dụng Thần <b>{_dt_chi_tm}</b> (Hào {_dt_idx_tm}) — {_person_lbl.capitalize()} di chuyển / xuống ngay trong cuối khung giờ này.<br>"
-                        f"&nbsp;&nbsp;2. <b>Khung giờ số 2 — Giờ {_secondary_chi} ({_sec_clock}, điểm rơi mạnh nhất {_sec_peak}):</b> Ứng Hào Biến / Lục Hợp <b>{_dt_chi_tm} – {_secondary_chi}</b> — Điểm chạm mặt, gặp nhau trực tiếp tại chỗ bạn (nếu kẹt xe hoặc nán lại trên đường vài phút thì đúng đầu Giờ {_secondary_chi} <b>{_sec_peak}</b> là tới)."
-                    )
+                    _xung_dt_chi = _XUNG_CHI_TM.get(_dt_chi_tm, "Tý")
+                    _xung_clock = _CHI_CLOCK_TM.get(_xung_dt_chi, "23h00 – 01h00")
+                    _xung_peak = _CHI_PEAK_TM.get(_xung_dt_chi, "23h30 – 00h30")
+                    if _dt_kv_tm and not _dt_is_moving_tm:
+                        # Nhánh C: Dụng Thần lâm Tuần Không tĩnh -> Đang vướng bận/hoãn lịch, phải đợi Giờ Xuất Không / Xung Không
+                        short_hl = (
+                            f"⏳ KẾT LUẬN CHÍNH XÁC MẤY GIỜ {_person_lbl} XUỐNG / TỚI NƠI ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_tm} {_dt_chi_tm.upper()}-{_dt_nh_tm.upper()} ĐANG TUẦN KHÔNG): "
+                            f"HIỆN TẠI {_person_lbl} ĐANG VƯỚNG BẬN / CHƯA XUẤT PHÁT NGAY (DO HÀO {_dt_idx_tm} {_dt_chi_tm.upper()} LÂM TUẦN KHÔNG) — "
+                            f"[MỐC 1 — XUẤT KHÔNG / XUNG KHÔNG KHỞI HÀNH]: PHẢI ĐỢI ĐẾN KHUNG GIỜ {_xung_dt_chi.upper()} ({_xung_clock}) HOẶC GIỜ {_dt_chi_tm.upper()} ({_dt_clock}, TRỌNG TÂM {_dt_peak}) MỚI ĐI!  |  "
+                            f"[MỐC 2 — TỚI NƠI]: CÓ MẶT VÀO KHUNG GIỜ {_hop_dt_chi.upper()} ({_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)}) (HOẶC DỄ DỜI SANG NGÀY {_dt_chi_tm.upper()})!"
+                        )
+                        why_s = (
+                            f"<b>• Giải Mã Theo 12 Định Luật Thời-Không Cổ Pháp (Tăng San Bốc Dịch — Chương Hành Nhân Quy Kỳ):</b><br>"
+                            f"1. <b>[Trạng thái Dụng Thần Tuần Không]:</b> Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_tm} ({_dt_chi_tm}-{_dt_nh_tm})</b> hiện đang lâm <b>Tuần Không ({', '.join(_m_tm.get('kv_list') or [])})</b> lại an tĩnh ➔ Cổ pháp quyết: <i>«Dụng Thần Tuần Không an tĩnh, người còn đang bận việc chưa thể bước chân đi ngay»</i>.<br>"
+                            f"2. <b>[Định luật Xuất Không & Xung Không]:</b> Phải chờ đến đúng <b>Giờ {_xung_dt_chi} ({_xung_clock} — Xung thực Tuần Không)</b> hoặc <b>Giờ/Ngày {_dt_chi_tm} ({_dt_clock} — Điền thực Xuất Không)</b> người mới thực sự khởi hành và đến nơi."
+                        )
+                        when_s = (
+                            f"<b>• Chốt Khung Giờ Thực Tế ({_cur_solar} — Ngày {can_n} {chi_n}):</b><br>"
+                            f"&nbsp;&nbsp;1. <b>Khung giờ Xung Không / Xuất Không ({_xung_dt_chi} / {_dt_chi_tm}):</b> <b>{_xung_clock}</b> hoặc <b>{_dt_clock} (trọng tâm {_dt_peak})</b> — Bắt đầu xuất phát.<br>"
+                            f"&nbsp;&nbsp;2. <b>Khung giờ Hợp Chi Tới Nơi ({_hop_dt_chi}):</b> <b>{_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)}</b> — Có mặt tại chỗ bạn."
+                        )
+                    elif _dt_is_moving_tm:
+                        # Nhánh A: Dụng Thần PHÁT ĐỘNG trực tiếp trên quẻ -> Đã xuất phát / đang trên đường xuống!
+                        short_hl = (
+                            f"🕐 KẾT LUẬN CHÍNH XÁC MẤY GIỜ {_person_lbl} XUỐNG / TỚI NƠI ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_tm} {_dt_chi_tm.upper()}-{_dt_nh_tm.upper()} PHÁT ĐỘNG): "
+                            f"[MỐC 1 — ỨNG TRỰC DIỆN HÀO DỤNG THẦN ĐỘNG TẠI GIỜ {_dt_chi_tm.upper()}]: {_person_lbl} ĐÃ XUẤT PHÁT / ĐANG TRÊN ĐƯỜNG XUỐNG NGAY TRONG KHUNG GIỜ {_dt_chi_tm.upper()} ({_dt_clock}, TRỌNG TÂM {_dt_peak})!  |  "
+                            f"[MỐC 2 — ĐIỂM CHẠM MẶT / TỚI NƠI THEO HÀO BIẾN & LỤC HỢP {_secondary_chi.upper()}]: CÓ MẶT TẠI CHỖ BẠN VÀO ĐẦU KHUNG GIỜ {_secondary_chi.upper()} ({_sec_clock}, TRỌNG TÂM {_sec_peak})!"
+                        )
+                        why_s = (
+                            f"<b>• Giải Mã Theo 12 Định Luật Thời-Không Cổ Pháp (Tăng San Bốc Dịch — Chương Hành Nhân Quy Kỳ):</b><br>"
+                            f"1. <b>[Xác định Dụng Thần & Vị thế Hào Động]:</b> Bạn hỏi về <b>«{_raw_q_tm}»</b> ➔ Dụng Thần chính xác là <b>{dung_than}</b>, đóng tại <b>Hào {_dt_idx_tm} ({_dt_chi_tm}-{_dt_nh_tm})</b> "
+                            f"{'(Hào 4 là <b>Hào Cửa Ngõ / Ngoại Quái giao Nội Quái</b> — tượng trưng người đã bước ra khỏi cửa và đang di chuyển trên đường xuống chỗ bạn)' if _dt_idx_tm in (3, 4) else f'(tương ứng trực tiếp với Hào Thế tại Hào {_the_idx_tm} {_the_chi_tm}-{_the_nh_tm})'}.<br>"
+                            f"2. <b>[Định luật Động – Biến – Lục Hợp & Tam Hợp Khóa Giờ]:</b> Trên quẻ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_dong_desc_tm}), Hào Dụng Thần <b>{dung_than} ({_dt_chi_tm}-{_dt_nh_tm})</b> "
+                            f"<b>PHÁT ĐỘNG TRỰC TIẾP tại Hào {_dt_idx_tm}</b>, tương tác với Ngày <b>{chi_n}</b> · Giờ <b>{chi_g}</b> và biến ra <b>{_bien_chi_tm}</b>. "
+                            f"Cổ pháp Hành Nhân khẳng định: <i>«Dụng Thần động tại môn hộ, phùng Nhật Thời Tam Hợp / trị Giờ: Người đã lên đường ngay trong giờ đó; Hào Động biến Hợp: Giờ Hợp tức khắc tới nơi!»</i><br>"
+                            f"3. <b>[Đối chứng Mai Hoa & Kỳ Môn Độn Giáp]:</b> Quẻ Biến <b>{ten_que_bien}</b> ({'Gia Nhân = Người nhà sum họp' if 'Gia Nhân' in ten_que_bien else _m_tm.get('rel_bien_tag', 'Cát lợi')}), Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b> xác nhận lộ trình di chuyển thông suốt."
+                        )
+                        when_s = (
+                            f"<b>• Chốt Khung Giờ Chính Xác Trong Ngày Hôm Nay ({_cur_solar} — Ngày {can_n} {chi_n}):</b><br>"
+                            f"&nbsp;&nbsp;1. <b>Khung giờ số 1 — Giờ {_dt_chi_tm} ({_dt_clock}, điểm rơi mạnh nhất {_dt_peak}):</b> Ứng trực tiếp Địa Chi Hào Dụng Thần <b>{_dt_chi_tm}</b> (Hào {_dt_idx_tm} đang động) — {_person_lbl.capitalize()} di chuyển / xuống ngay trong cuối khung giờ này.<br>"
+                            f"&nbsp;&nbsp;2. <b>Khung giờ số 2 — Giờ {_secondary_chi} ({_sec_clock}, điểm rơi mạnh nhất {_sec_peak}):</b> Ứng Hào Biến / Lục Hợp <b>{_dt_chi_tm} – {_secondary_chi}</b> — Điểm chạm mặt, gặp nhau trực tiếp tại chỗ bạn (đầu Giờ {_secondary_chi} <b>{_sec_peak}</b> là tới)."
+                        )
+                    else:
+                        # Nhánh B: Dụng Thần AN TĨNH hữu khí -> Cần đợi Giờ Xung động bước chân hoặc chính Giờ Dụng Thần mới đi
+                        short_hl = (
+                            f"🕐 KẾT LUẬN CHÍNH XÁC MẤY GIỜ {_person_lbl} XUỐNG / TỚI NƠI ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_tm} {_dt_chi_tm.upper()}-{_dt_nh_tm.upper()} HỮU KHÍ AN TĨNH): "
+                            f"[MỐC 1 — KHỞI HÀNH KHI ĐẾN GIỜ BẢN CHI / XUNG ĐỘNG]: HIỆN TẠI LÚC HỎI HÀO {_dt_idx_tm} ĐANG TĨNH (CHƯA ĐI NGAY), SẼ BẮT ĐẦU XUẤT PHÁT VÀO KHUNG GIỜ {_dt_chi_tm.upper()} ({_dt_clock}, TRỌNG TÂM {_dt_peak}) (HOẶC GIỜ XUNG ĐỘNG {_xung_dt_chi.upper()}: {_xung_clock})!  |  "
+                            f"[MỐC 2 — TỚI NƠI TẠI GIỜ LỤC HỢP {_hop_dt_chi.upper()}]: CÓ MẶT TẠI CHỖ BẠN VÀO KHUNG GIỜ {_hop_dt_chi.upper()} ({_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)}, TRỌNG TÂM {_CHI_PEAK_TM.get(_hop_dt_chi, _sec_peak)})!"
+                        )
+                        why_s = (
+                            f"<b>• Giải Mã Theo 12 Định Luật Thời-Không Cổ Pháp (Tăng San Bốc Dịch — Chương Hành Nhân Quy Kỳ):</b><br>"
+                            f"1. <b>[Trạng thái Dụng Thần An Tĩnh Hữu Khí]:</b> Hào Dụng Thần <b>{dung_than} tại Hào {_dt_idx_tm} ({_dt_chi_tm}-{_dt_nh_tm})</b> hữu khí (không phạm Tuần Không) nhưng đang <b>An Tĩnh</b> trên quẻ ({_dong_desc_tm}). Cổ pháp quyết: <i>«Dụng Thần tĩnh mà hữu khí: Đợi giờ Đương Giá (Giờ {_dt_chi_tm}) hoặc giờ Độc Xung (Giờ {_xung_dt_chi}) xung động bước chân thì lên đường; đến giờ Lục Hợp (Giờ {_hop_dt_chi}) thì gặp mặt»</i>.<br>"
+                            f"2. <b>[Đối chứng Mai Hoa & Kỳ Môn Độn Giáp]:</b> Quẻ Chủ <b>{ten_que_chu}</b> biến <b>{ten_que_bien}</b> ({_m_tm.get('rel_bien_tag', 'Cát lợi')}), Kỳ Môn Cung {target_cung} ({huong_cung}) hội Sao <b>{sao_name}</b> · Cửa <b>{cua_name}</b>."
+                        )
+                        when_s = (
+                            f"<b>• Chốt Khung Giờ Chính Xác Trong Ngày ({_cur_solar} — Ngày {can_n} {chi_n}):</b><br>"
+                            f"&nbsp;&nbsp;1. <b>Khung giờ Xuất phát (Giờ {_dt_chi_tm} / Giờ Xung {_xung_dt_chi}):</b> <b>{_dt_clock} (trọng tâm {_dt_peak})</b> hoặc <b>{_xung_clock}</b>.<br>"
+                            f"&nbsp;&nbsp;2. <b>Khung giờ Tới nơi (Giờ Lục Hợp {_hop_dt_chi}):</b> <b>{_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)} (trọng tâm {_CHI_PEAK_TM.get(_hop_dt_chi, _sec_peak)})</b>."
+                        )
                 adv_s = (
                     f"<b>• Hướng dẫn Thực tế:</b> Chủ động liên hệ/đón tại hướng <b>{huong_cung}</b> (ứng Cung {target_cung}: Sao {sao_name} · Cửa {cua_name}); "
                     f"mốc thời gian hội tụ chuẩn nhất là <b>{_dt_peak} (Giờ {_dt_chi_tm})</b> nối sang <b>{_sec_peak} (Đầu Giờ {_secondary_chi})</b>."
@@ -5459,7 +5659,7 @@ class HexagramReasoningAI:
             sq_score -= 5
             lh_reasons.append(f"bị Nhật Thần ({chi_n}-{nh_n}) xung khắc")
 
-        # V124.0: Áp dụng ĐẦY ĐỦ 12 Quy Luật Thời Không Tổng Quát (Hồi Đầu Sinh/Khắc, Tiến/Thoái Thần, Ám Động/Nhật Phá, Nguyệt Phá, Hóa Mộ/Tuyệt, Nguyên Thần Thông Quan & Không Vong)
+        # V125.0: Áp dụng ĐẦY ĐỦ 12 Quy Luật Thời Không Tổng Quát (Hồi Đầu Sinh/Khắc, Tiến/Thoái Thần, Ám Động/Nhật Phá, Nguyệt Phá, Hóa Mộ/Tuyệt, Nguyên Thần Thông Quan & Không Vong)
         _univ_ts = _m.get("universal_ts_eval") or {}
         if _univ_ts:
             if _univ_ts.get("is_tien_than"):
@@ -5558,12 +5758,13 @@ class HexagramReasoningAI:
             _high_m_g = max(_low_m_g + 2, max(_sum_c_g, _sum_h_g, _sum_b_g))
             _mid_m_g = round((_low_m_g + _high_m_g) / 2.0, 1)
             _mid_m_vnd = f"{int(round(_mid_m_g * 1_000_000)):,}".replace(",", ".")
+            _tai_verdict_g = _m.get("tai_timing_verdict_short") or "⚡ [TRẠNG THÁI]: KHOẢN TIỀN ĐÃ BẮN / NỔ NGAY TRONG GIỜ HIỆN TẠI!"
             short_hl = (
                 f"💰 KẾT QUẢ ĐỊNH LƯỢNG TIỀN LƯƠNG / THU NHẬP ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
                 f"[BẬC 1 — LƯƠNG CƠ BẢN / ĐỢT 1 / SAU KHẤU TRỪ]: {_t1_low_g}.000.000 – {_t1_high_g}.000.000 VNĐ (CON SỐ KHỚP: {_t1_exact_g.upper()})  |  "
                 f"[BẬC 2 — TỔNG QUÁI SỐ CHỦ–BIẾN]: {_low_m_g}.000.000 – {_high_m_g}.000.000 VNĐ (TRỌNG TÂM ~{_mid_m_vnd} VNĐ)  |  "
                 f"[BẬC 3 — NGẠCH CAO / GỘP THƯỞNG (×2)]: {_low_m_g*2}.000.000 – {_high_m_g*2}.000.000 VNĐ  "
-                f"⚡ [TRẠNG THÁI]: KHOẢN TIỀN ĐÃ BẮN / NỔ NGAY TRONG GIỜ HIỆN TẠI, KHÔNG BỊ TRỄ SANG CHIỀU MUỘN!"
+                f"{_tai_verdict_g}"
             )
             extra_van_vat_why = (
                 f"<b>• Giải mã Chuyên Sâu 3 Tầng Định Lượng Tiền Lương / Tài Chính (Mai Hoa + Kỳ Môn + Lục Hào):</b> "
@@ -6546,13 +6747,21 @@ class HexagramReasoningAI:
         if blueprint.get("authoritative_dt"):
             dung_than = blueprint["authoritative_dt"]
 
-        target_cung = omni_data.get("target_cung", "?")
-        c_info = omni_data.get("c_info", {}) if isinstance(omni_data.get("c_info"), dict) else {}
-        huong_cung = c_info.get("huong", "Chính Nam")
-        sao_name = omni_data.get("sao_name", "Thiên Tâm")
-        cua_name = omni_data.get("cua_name", "Khai Môn")
-        than_name = omni_data.get("than_name", "Trực Phù")
-        hanh_dt = omni_data.get("hanh", "Kim")
+        # Trích xuất Ma Trận Tam Thức Hợp Nhất (Mai Hoa Chủ/Hỗ/Biến + Kỳ Môn Tinh/Môn/Thần + Lục Hào Thế/Ứng/Động/Biến)
+        _univ_mat = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            omni_data=omni_data,
+            dung_than=dung_than,
+        )
+        target_cung = _univ_mat.get("target_cung") or omni_data.get("target_cung", 1)
+        huong_cung = _univ_mat.get("huong_cung") or "Chính Bắc"
+        quai_cung = _univ_mat.get("quai_cung") or "Khảm"
+        sao_name = _univ_mat.get("sao_name") or omni_data.get("sao_name", "Thiên Bồng")
+        cua_name = _univ_mat.get("cua_name") or omni_data.get("cua_name", "Hưu Môn")
+        than_name = _univ_mat.get("than_name") or omni_data.get("than_name", "Trực Phù")
+        hanh_dt = _univ_mat.get("dt_nh") or omni_data.get("hanh", "Thủy")
         ts_stage = omni_data.get("ts_stage", "Vượng")
 
         # Bước 1: Chạy bộ giải mã Toán Học & Tam Thức Chuẩn Xác (Mai Hoa + Kỳ Môn + Lục Hào)
@@ -6583,18 +6792,7 @@ class HexagramReasoningAI:
             if _pre_gen.get("is_strict_override"):
                 spec_res = _pre_gen
 
-        # Trích xuất Ma Trận Tam Thức Hợp Nhất (Mai Hoa Chủ/Hỗ/Biến + Kỳ Môn Tinh/Môn/Thần + Lục Hào Thế/Ứng/Động/Biến)
-        _univ_mat = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
-            chart_data=chart_data,
-            luc_hao_data=luc_hao_data,
-            mai_hoa_data=mai_hoa_data,
-            omni_data=omni_data,
-            dung_than=dung_than,
-        )
-        if _univ_mat.get("dt_nh"):
-            hanh_dt = _univ_mat["dt_nh"]
-
-        # Bước 2 (V124.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
+        # Bước 2 (V125.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (ANTIGRAVITY BRAIN MODE + GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
