@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V117.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Gemini Pro Deep-Reasoning 🤖 + Bóc Tách Sâu 24 Yếu Tố A→Z 🔬 + Khóa Chống Bịa Đặt 3 Lớp 🛡️ + Kho GitHub 56.6GB 📚)"
+APP_VERSION = "V118.0"
+APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Gemini Pro Deep-Reasoning 🤖 + Giải Mã Vạn Vật Loại Tượng 🎵 + Bóc Tách Sâu 24 Yếu Tố A→Z 🔬 + Khóa Chống Bịa Đặt 3 Lớp 🛡️)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V117.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V117.0"
+# V118.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V118.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [

@@ -5684,18 +5684,11 @@ class FreeAIHelper:
             deep_prompt = (
                 f"{_clk_on_prompt}"
                 f"<system_role>\n"
-                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V109.0 — TỔNG CÔNG TRÌNH SƯ GHÉP TRANH TOÀN CẢNH 14 HỆ THỐNG HUYỀN HỌC ĐÔNG - TÂY (ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
+                f"BẠN LÀ THIÊN CƠ ĐẠI SƯ V118.0 — ĐẠI SƯ AI CAO CẤP NHẤT GEMINI PRO LUẬN QUẺ CHUYÊN SÂU A→Z (MAI HOA DỊCH SỐ · KỲ MÔN ĐỘN GIÁP · LỤC HÀO KINH DỊCH · THIẾT BẢN THẦN TOÁN — ĐỒNG BỘ 100% THỜI GIAN THỰC).\n"
                 f"⛔ QUY TẮC TUYỆT ĐỐI:\n"
-                f"1. GHÉP CÁC PHƯƠNG PHÁP THÀNH MỘT BỨC TRANH THỐNG NHẤT (7 VỊ TRÍ TỌA ĐỘ): Không liệt kê rời rạc từng môn mà phải đặt mỗi phương pháp vào đúng vị trí sở trường tuyệt đối của nó:\n"
-                f"   - Vị trí 1 (Con người & Bản chất Thành/Bại): Dùng Lục Hào Nạp Giáp + Chiêm Tinh Horary Phương Tây.\n"
-                f"   - Vị trí 2 (Không gian, Phương hướng & Hiện trường): Dùng Kỳ Môn Độn Giáp + Huyền Không Phi Tinh Vận 9.\n"
-                f"   - Vị trí 3 (Trục thời gian Quá khứ -> Hiện tại -> Tương lai): Dùng Đại Lục Nhâm Tam Truyền + Mai Hoa Dịch Số.\n"
-                f"   - Vị trí 4 (Hình tướng, Tuổi tác, Đặc điểm & Số lượng): Dùng Vạn Vật Loại Tượng + Thiết Bản Thần Số + 12 Trường Sinh.\n"
-                f"   - Vị trí 5 (Đồng hồ Điểm hẹn Ứng kỳ): Dùng Động cơ Ứng Kỳ + Chiêm Tinh Vệ Đà Ấn Độ KP Sub-Lord.\n"
-                f"   - Vị trí 6 (Thời thế Vĩ mô & Chiến lược Công/Thủ): Dùng Thái Ất Thần Số + Tử Vi Đẩu Số + Trạch Cát.\n"
-                f"   - Vị trí 7 (Chìa khóa Hóa giải & Xác suất Bayes): Dùng Bát Tự Điều Hầu Cùng Thông Bảo Giám + Toán học Hội tụ Bayes.\n"
-                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT: Bắt buộc giữ nguyên kết luận '{_vb_prompt_str}' trong <verdict_block>. Nếu là câu hỏi Thực tế (A hay B, ở nhà hay ở công ty, Giới tính, Độ tuổi, Con cái) thì trả lời DỨT KHOÁT kết quả thực tế từ quẻ, CẤM TUYỆT ĐỐI ghi 'CẦN CÂN NHẮC — BÌNH' hay 'giằng co giữa A và B'.\n"
-                f"3. CHỐNG AI BỊA ĐẶT 100% (BÁM SÁT TỪNG HÀO QUẺ & CUNG KỲ MÔN): Tuyệt đối KHÔNG ĐƯỢC tự bịa lý do chung chung thoát ly khỏi quẻ. Trong mục 📋 VÌ SAO và 4 Thẻ Giải Mã, BẮT BUỘC phải trích dẫn đích danh tên Quẻ Chủ ➔ Quẻ Biến, Hào Thế/Ứng/Dụng Thần (ở hào mấy, can chi gì, vượng/suy/Tuần Không ra sao) và Cung Kỳ Môn (Sao, Cửa, Thần) từ <raw_chart_data>, đồng thời giải thích dễ hiểu bằng tiếng Việt đời thường.\n"
+                f"1. TRẢ LỜI TRÚNG ĐÍCH 100% CÂU HỎI CỤ THỂ CỦA NGƯỜI DÙNG: Đọc kỹ câu hỏi '{question}'. Nếu người dùng hỏi câu hỏi mở hoặc định danh Vạn Vật Loại Tượng (VD: đang nghe thể loại nhạc gì, ăn món gì, làm nghề gì, đồ vật gì, màu gì, tính cách ra sao, ở đâu, bao nhiêu...), BẠN BẮT BUỘC PHẢI ĐƯA RA ĐÁP ÁN CỤ THỂ TRỰC DIỆN TỪ TƯỢNG QUẺ (TUYỆT ĐỐI CẤM trả lời chung chung kiểu 'Hiện tại bạn đang ở trong giai đoạn thuận lợi về tinh thần và sự nghiệp'!).\n"
+                f"2. ĐỒNG BỘ 100% PHÁN QUYẾT & HỒ SƠ SONG NÃO AI: Bắt buộc giữ nguyên kết luận cốt lõi '{_vb_prompt_str}' và Hồ sơ bàn giao từ Hệ Thống Song Não AI trong <raw_chart_data> và <verdict_block>. CẤM TUYỆT ĐỐI ghi 'CẦN CÂN NHẮC — BÌNH' hay 'giằng co giữa A và B'.\n"
+                f"3. CHỐNG AI BỊA ĐẶT 100% & BÓC TÁCH SÂU TỪNG BƯỚC: Trong mục 📋 VÌ SAO và 4 Thẻ Giải Mã, BẮT BUỘC phải trích dẫn đích danh tên Quẻ Chủ ➔ Quẻ Hỗ ➔ Quẻ Biến (Thể/Dụng, Đảng Thể/Dụng), Hào Thế/Ứng/Dụng Thần (ở hào mấy, can chi gì, Lục Thú gì, vượng/suy/Tuần Không/Nguyệt Phá/12 Trường Sinh ra sao) và Cung Kỳ Môn (Sao, Cửa, Thần, Nội/Ngoại Bàn, Cách Cục) từ <raw_chart_data> để chứng minh cho câu trả lời.\n"
                 f"4. CẤM MỞ ĐẦU RƯỜM RÀ: Bắt đầu ngay lập tức bằng '### 🏆 KẾT LUẬN'.\n"
                 f"</system_role>\n\n"
                 
@@ -5713,12 +5706,12 @@ class FreeAIHelper:
                 f"</verdict_block>\n\n"
                 
                 f"<output_format>\n"
-                f"⛔ CẤM VIẾT ĐOẠN VĂN DÀI DÀY ĐẶC! BẮT BUỘC DỊCH TOÀN BỘ THUẬT NGỮ QUẺ RA NGÔN NGỮ ĐỜI THƯỜNG DỄ HIỂU CHO NGƯỜI KHÔNG CÓ CHUYÊN MÔN, CHIA NHỎ THÀNH CÁC Ý NGẮN GỌN (NÓI VỀ CÁI GÌ · CƠ HỘI GÌ · KHUYÊN GÌ & GIẢI PHÁP GÌ):\n\n"
+                f"BẮT BUỘC TRÌNH BÀY RÕ RÀNG, SÂU SẮC, BÁM SÁT TỪNG YẾU TỐ TRONG QUẺ ĐỂ TRẢ LỜI TRỰC DIỆN CÂU HỎI '{question}':\n\n"
                 f"### 🏆 KẾT LUẬN\n"
                 f"**📢 CÂU TRẢ LỜI:** [Trả lời TRỰC TIẾP, DỨT KHOÁT đúng trọng tâm câu hỏi '{question}' — Khẳng định rõ '{_vb_prompt_str}']\n"
-                f"**📋 VÌ SAO:** [Chỉ viết 2 câu ngắn gọn bằng ngôn ngữ đời thường dễ hiểu: giải thích thực trạng hiện tại đang thuận hay vướng ở đâu, giúp ích gì cho câu hỏi]\n"
-                f"**⏳ ỨNG KỲ:** [Chỉ viết 1-2 câu ngắn gọn: ghi rõ mốc giờ/ngày/tháng chuyển biến quan trọng nhất và ý nghĩa của mốc đó]\n"
-                f"**🔧 GIẢI PHÁP:** [Chỉ viết 2 câu ngắn gọn: khuyên người hỏi nên làm gì ngay, đi hướng nào, dùng màu sắc/con số nào để gặp may mắn]\n\n"
+                f"**📋 VÌ SAO:** [Phân tích sâu và rõ ràng trên 1 đoạn liền mạch: chỉ rõ Tượng Quẻ Mai Hoa (Chủ ➔ Hỗ ➔ Biến, Thể/Dụng), Hào Thế & Hào Dụng Thần Lục Hào (vị trí hào, Can Chi, Lục Thú, Vượng/Suy, Tuần Không) và Tinh - Môn - Thần Kỳ Môn Độn Giáp tại sao lại suy ra đáp án đó cho câu hỏi '{question}']\n"
+                f"**⏳ ỨNG KỲ:** [Ghi rõ mốc giờ/ngày/tháng ứng nghiệm hoặc thời điểm chuyển biến theo Nạp Giáp Can Chi (Xung Không / Xuất Không / Hợp Xung)]\n"
+                f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động thực tế sát với câu hỏi, Dụng Thần Thông Quan, phương hướng Tam Cát Môn và màu sắc/con số trợ vận]\n\n"
                 f"### 🔮 4 THẺ GIẢI MÃ TRỰC QUAN (DỄ ĐỌC CHO NGƯỜI KHÔNG CHUYÊN)\n"
                 f"#### 🎯 Thẻ 1 — Thực Lực Hiện Tại & Bản Chất Sự Việc (Lục Hào + Horary)\n"
                 f"- **📌 Nói về cái gì:** [Giải thích ngắn gọn 1 câu bằng tiếng Việt đời thường về tình hình thực tế của '{question}']\n"
@@ -16326,7 +16319,8 @@ class FreeAIHelper:
                     _omniscient_res['data']['binary_why_reasons'] = _dual_verified.get('verified_why') or _omniscient_res['data'].get('binary_why_reasons', '')
                     _omniscient_res['data']['binary_when_note'] = _dual_verified.get('verified_when') or _omniscient_res['data'].get('binary_when_note', '')
                     _omniscient_res['data']['binary_action_advice'] = _dual_verified.get('verified_advice') or _omniscient_res['data'].get('binary_action_advice', '')
-                    _omniscient_res['data']['is_binary_factual_q'] = True
+                    if _dual_verified.get('is_strict_override', True):
+                        _omniscient_res['data']['is_binary_factual_q'] = True
                     _omniscient_res['data']['dual_ai_verified_override'] = True
                 # Xây dựng lại _narrative_main và Vị trí 1 của 7 Mắt Xích khi có câu hỏi ghép / đối chứng 2 phương án
                 try:
@@ -16499,6 +16493,24 @@ class FreeAIHelper:
                     for _lbl in ['GIẢI PHÁP:', 'GIẢI PHÁP', 'LỜI KHUYÊN & PHÁP QUYẾT HÓA GIẢI:', 'LỜI KHUYÊN:']:
                         _cleaned_gp = _cleaned_gp.replace(_lbl, '')
                     _online_giaiphap = _cleaned_gp.strip(' :-•*')
+
+            # V118.0: Bóc tách trọn vẹn đoạn nhiều dòng (multi-line) của 📋 VÌ SAO, ⏳ ỨNG KỲ, 🔧 GIẢI PHÁP nếu AI Online trình bày nhiều câu/gạch đầu dòng
+            import re as _re_ml_v118
+            _m_vs_ml = _re_ml_v118.search(r'(?:📋\s*(?:\*\*)?\s*VÌ SAO:?|\*\*📋\s*VÌ SAO:\*\*)\s*([\s\S]+?)(?=(?:\n\s*(?:\*\*)?\s*(?:⏳|🔧|###)|\Z))', _norm_online, flags=_re_ml_v118.IGNORECASE)
+            if _m_vs_ml:
+                _vs_full = _m_vs_ml.group(1).replace('**', '').strip(' \n:-•*')
+                if len(_vs_full) > len(_online_visao):
+                    _online_visao = "<br>".join(ln.strip() for ln in _vs_full.splitlines() if ln.strip())
+            _m_uk_ml = _re_ml_v118.search(r'(?:⏳\s*(?:\*\*)?\s*ỨNG KỲ:?|\*\*⏳\s*ỨNG KỲ:\*\*)\s*([\s\S]+?)(?=(?:\n\s*(?:\*\*)?\s*(?:🔧|###)|\Z))', _norm_online, flags=_re_ml_v118.IGNORECASE)
+            if _m_uk_ml:
+                _uk_full = _m_uk_ml.group(1).replace('**', '').strip(' \n:-•*')
+                if len(_uk_full) > len(_online_ungky):
+                    _online_ungky = "<br>".join(ln.strip() for ln in _uk_full.splitlines() if ln.strip())
+            _m_gp_ml = _re_ml_v118.search(r'(?:🔧\s*(?:\*\*)?\s*GIẢI PHÁP:?|\*\*🔧\s*GIẢI PHÁP:\*\*)\s*([\s\S]+?)(?=(?:\n\s*(?:\*\*)?\s*###|\Z))', _norm_online, flags=_re_ml_v118.IGNORECASE)
+            if _m_gp_ml:
+                _gp_full = _m_gp_ml.group(1).replace('**', '').strip(' \n:-•*')
+                if len(_gp_full) > len(_online_giaiphap):
+                    _online_giaiphap = "<br>".join(ln.strip() for ln in _gp_full.splitlines() if ln.strip())
             
             if not _online_verdict_line:
                 for _line in _norm_online.split('\n'):
@@ -16556,7 +16568,11 @@ class FreeAIHelper:
             _is_bin_fact_box = bool(_omni_ch_data.get('is_binary_factual_q'))
             if _is_spec_override_box and locals().get('_dual_verified', {}).get('verified_headline'):
                 _dv_box = locals().get('_dual_verified', {})
-                _online_verdict_line = _dv_box['verified_headline']
+                _dv_hl_str = str(_dv_box['verified_headline'] or '')
+                if not _dv_box.get('is_strict_override', True) and _online_verdict_line and len(_online_verdict_line.strip()) > 15 and not any(g in _online_verdict_line.upper() for g in ['CẦN CÂN NHẮC', 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT', 'ĐẠI CÁT (', 'CÁT (', 'BÌNH (']):
+                    _online_verdict_line = f"{_online_verdict_line}  |  {_dv_hl_str}"
+                else:
+                    _online_verdict_line = _dv_hl_str
                 _v_why_dv = str(_dv_box.get('verified_why') or '')
                 if _online_visao and len(_online_visao.strip()) > 35 and _online_visao.strip() not in _v_why_dv:
                     _online_visao = (
@@ -16662,7 +16678,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#78350f,#92400e);padding:22px 24px;border-radius:16px;margin:16px 0;border:3px solid #f59e0b;box-shadow:0 4px 25px rgba(245,158,11,0.4);">'
-                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini Pro V117.0 — Đồng Bộ Thời Gian Thực, Khóa Chống Bịa Đặt 3 Lớp & Bóc Tách Sâu 24 Yếu Tố A→Z: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="font-size:1.05em;font-weight:800;color:#fde68a;margin-bottom:8px;">🌐 KẾT LUẬN AI ONLINE (Gemini Pro V118.0 — Đồng Bộ Thời Gian Thực, Giải Mã Vạn Vật Loại Tượng & Bóc Tách Sâu 24 Yếu Tố A→Z: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.35);border-radius:12px;border:1px solid rgba(251,191,36,0.5);font-size:1.48em;font-weight:900;color:#ffffff;line-height:1.35;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div>'

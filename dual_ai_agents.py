@@ -207,6 +207,66 @@ def _resolve_gemini_api_keys() -> List[str]:
                 parsed.append(p)
     return parsed
 
+def _robust_parse_ai_json(txt: str, question: str = "") -> Optional[Dict[str, Any]]:
+    """
+    V118.0: Bộ giải mã JSON siêu bền bỉ cho Con AI Số 1 & Con AI Số 2.
+    Xử lý triệt để trường hợp Gemini Pro sinh văn bản dài nhiều dòng hoặc chứa dấu ngoặc kép chưa escape trong `ai2_why`.
+    """
+    if not txt:
+        return None
+    cleaned = txt.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", cleaned, flags=re.IGNORECASE).strip()
+    m_json = re.search(r"\{[\s\S]*\}", cleaned)
+    raw_obj_str = m_json.group(0) if m_json else cleaned
+    parsed_obj: Optional[Dict[str, Any]] = None
+    try:
+        obj = json.loads(raw_obj_str, strict=False)
+        if isinstance(obj, dict):
+            parsed_obj = obj
+    except Exception:
+        parsed_obj = None
+
+    if not parsed_obj:
+        # Fallback bóc tách theo ranh giới khóa JSON khi chuỗi bên trong có dấu " hoặc xuống dòng thô
+        known_keys = [
+            "ai1_intent_summary",
+            "ai1_expected_answer_format",
+            "ai1_dung_than_guide",
+            "ai1_strict_instruction_to_ai2",
+            "ai2_headline",
+            "ai2_why",
+            "ai2_when",
+            "ai2_advice",
+        ]
+        extracted: Dict[str, Any] = {}
+        key_positions = []
+        for k in known_keys:
+            m_k = re.search(rf'"{k}"\s*:\s*"', raw_obj_str)
+            if m_k:
+                key_positions.append((m_k.start(), m_k.end(), k))
+        key_positions.sort(key=lambda x: x[0])
+        for idx, (k_start, val_start, k_name) in enumerate(key_positions):
+            if idx + 1 < len(key_positions):
+                next_k_start = key_positions[idx + 1][0]
+                segment = raw_obj_str[val_start:next_k_start]
+                segment = re.sub(r'"\s*,\s*$', "", segment.strip())
+            else:
+                segment = raw_obj_str[val_start:]
+                segment = re.sub(r'"\s*\}\s*$', "", segment.strip())
+            segment = segment.replace('\\"', '"').replace("\\n", "\n").strip()
+            extracted[k_name] = segment
+        if extracted:
+            parsed_obj = extracted
+
+    if isinstance(parsed_obj, dict) and parsed_obj:
+        for _k_p, _v_p in list(parsed_obj.items()):
+            if isinstance(_v_p, str):
+                parsed_obj[_k_p] = sanitize_outdated_years_text(_v_p, question=question)
+        return parsed_obj
+    return None
+
+
 def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 18, tier: str = 'cheapest_reader') -> Optional[Dict[str, Any]]:
     keys = _resolve_gemini_api_keys()
     if not keys:
@@ -217,8 +277,8 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 18, tier: str = 
         # Con AI Số 1 (Đọc hiểu câu hỏi & phân khu): Ưu tiên Gemini 2.5 Flash / Pro tốc độ cao
         models = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.5-flash-lite']
     else:
-        # V117.0 — Con AI Số 2 (ĐẠI SƯ LUẬN QUẺ CAO CẤP NHẤT): Bắt buộc ưu tiên dòng PRO cao cấp nhất (Gemini 3.1 Pro / Gemini 2.5 Pro có Deep Thinking)
-        models = ['gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-3.0-flash', 'gemini-2.5-flash', 'gemini-2.0-flash']
+        # V118.0 — Con AI Số 2 (ĐẠI SƯ LUẬN QUẺ CAO CẤP NHẤT): Ưu tiên gemini-2.5-pro ổn định nhất trên Cloud + gemini-3.1-pro-preview + gemini-2.5-flash
+        models = ['gemini-2.5-pro', 'gemini-3.1-pro-preview', 'gemini-2.5-flash', 'gemini-2.0-flash']
     safety = [
         {'category': 'HARM_CATEGORY_HARASSMENT', 'threshold': 'BLOCK_NONE'},
         {'category': 'HARM_CATEGORY_HATE_SPEECH', 'threshold': 'BLOCK_NONE'},
@@ -231,24 +291,19 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 18, tier: str = 
                 url = f'https://generativelanguage.googleapis.com/v1beta/models/{m_name}:generateContent?key={api_key}'
                 _is_pro_model = ('pro' in m_name)
                 gen_cfg: Dict[str, Any] = {
-                    'temperature': 0.18 if _is_pro_model else 0.15,
-                    'topP': 0.85,
+                    'temperature': 0.2 if _is_pro_model else 0.15,
+                    'topP': 0.88,
                     'maxOutputTokens': 8192 if tier != 'cheapest_reader' else 2048,
                     'responseMimeType': 'application/json',
                 }
-                if _is_pro_model and tier != 'cheapest_reader':
-                    gen_cfg['thinkingConfig'] = {'thinkingBudget': 1024}
-                elif '2.5-flash' in m_name:
-                    gen_cfg['thinkingConfig'] = {'thinkingBudget': 512 if tier != 'cheapest_reader' else 0}
                 payload = {
                     'contents': [{'parts': [{'text': _full_prompt_text}]}],
                     'generationConfig': gen_cfg,
                     'safetySettings': safety,
                 }
-                _req_timeout = max(timeout_sec, 28) if (_is_pro_model and tier != 'cheapest_reader') else timeout_sec
+                _req_timeout = max(timeout_sec, 25) if (_is_pro_model and tier != 'cheapest_reader') else timeout_sec
                 r = requests.post(url, json=payload, timeout=_req_timeout)
                 if r.status_code == 400:
-                    gen_cfg.pop('thinkingConfig', None)
                     gen_cfg.pop('responseMimeType', None)
                     r = requests.post(url, json=payload, timeout=_req_timeout)
                 if r.status_code != 200:
@@ -260,17 +315,9 @@ def _call_gemini_json_fast(prompt_text: str, timeout_sec: int = 18, tier: str = 
                 for pt in cands[0].get('content', {}).get('parts', []):
                     if not pt.get('thought', False) and pt.get('text'):
                         txt += pt['text']
-                txt = txt.strip()
-                if txt.startswith('```'):
-                    txt = re.sub(r'^```(?:json)?\s*|\s*```$', '', txt, flags=re.IGNORECASE).strip()
-                m_json = re.search(r'\{[\s\S]*\}', txt)
-                if m_json:
-                    parsed_obj = json.loads(m_json.group(0))
-                    if isinstance(parsed_obj, dict):
-                        for _k_p, _v_p in list(parsed_obj.items()):
-                            if isinstance(_v_p, str):
-                                parsed_obj[_k_p] = sanitize_outdated_years_text(_v_p, question=prompt_text)
-                        parsed_obj['_model_used'] = m_name
+                parsed_obj = _robust_parse_ai_json(txt, question=prompt_text)
+                if isinstance(parsed_obj, dict) and parsed_obj:
+                    parsed_obj['_model_used'] = m_name
                     return parsed_obj
             except Exception:
                 continue
@@ -4884,6 +4931,18 @@ class HexagramReasoningAI:
             )
 
         # 3. Giải mã chuyên sâu theo từng Đại Dạng Câu Hỏi Thực Tế (Không trả lời chung chung!)
+        is_strict_override = True
+        is_open_van_vat = False
+        extra_van_vat_why = ""
+
+        # Kiểm tra nhóm câu hỏi Mở — Giải mã Vạn Vật Loại Tượng (Thể loại nhạc, Món ăn/Đồ uống, Hoạt động đang làm, Ngành nghề, Tính cách/Ngoại hình, Đồ vật/Cái gì...)
+        _is_music_q = any(w in raw_q_g for w in ["nhạc", "bài hát", "ca khúc", "giai điệu", "nghe gì", "thể loại nhạc", "bản nhạc", "ca sĩ", "âm nhạc"])
+        _is_food_drink_q = any(w in raw_q_g for w in ["ăn gì", "món gì", "ăn món", "uống gì", "đồ uống", "nước gì", "vị gì", "bữa sáng", "bữa trưa", "bữa tối"])
+        _is_activity_q = any(w in raw_q_g for w in ["đang làm gì", "đang xem gì", "phim gì", "đọc gì", "sách gì", "đang nghĩ gì", "tâm trạng"])
+        _is_job_biz_q = any(w in raw_q_g for w in ["nghề gì", "ngành gì", "làm nghề", "kinh doanh gì", "buôn bán gì", "mặt hàng gì", "sản phẩm gì", "lĩnh vực gì"])
+        _is_trait_q = any(w in raw_q_g for w in ["tính cách", "ngoại hình", "dáng người", "hình dáng", "người như thế nào", "tính nết", "đặc điểm"])
+        _is_what_obj_q = any(w in raw_q_g for w in ["cái gì", "vật gì", "thứ gì", "đồ gì", "loại gì", "thể loại gì", "chất liệu gì", "kiểu gì"]) and not any(w in raw_q_g for w in ["mất", "thất lạc", "đòi nợ"])
+
         if t_code == "LOST_ITEM" or "D11" in t_code or any(w in raw_q_g for w in ["mất", "thất lạc", "tìm thấy", "tìm lại", "để quên"]):
             _pos_in_out = "TRONG NHÀ / NỘI THẤT (NỘI QUÁI HÀO 1–3)" if dt_idx <= 3 else "BÊN NGOÀI / NƠI LÀM VIỆC / DI CHUYỂN (NGOẠI QUÁI HÀO 4–6)"
             _height_lvl = "vị trí thấp (sát sàn/ngăn dưới/gầm tủ)" if dt_idx in (1, 2) else ("vị trí ngang tầm tay (trên bàn/ngăn kéo/trong túi/tủ giữa)" if dt_idx in (3, 4) else "vị trí cao (kệ trên/nóc tủ/ngăn trên)")
@@ -4899,6 +4958,170 @@ class HexagramReasoningAI:
                     f"ĐỒ VẬT ĐANG BỊ CHE KHUẤT SÂU HOẶC ĐÃ RỜI KHỎI VỊ TRÍ CŨ (DO DỤNG THẦN {sq_dt.upper()} CHẠM TUẦN KHÔNG / ẨN PHỤC TẠI HƯỚNG {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
                     f"CẦN TÌM KỸ Ở {_height_lvl.upper()} HƯỚNG {huong_str.upper()} VÀO NGÀY/GIỜ {dt_chi.upper()} MỚI LỘ DIỆN!"
                 )
+        elif _is_music_q:
+            is_open_van_vat = True
+            _trigs_active = [_m.get("up_chu", ""), _m.get("lo_chu", ""), _m.get("up_bien", ""), _m.get("lo_bien", ""), _m.get("up_ho", ""), _m.get("lo_ho", "")]
+            _sao_m = str(_m.get("sao_name", ""))
+            _cua_m = str(_m.get("cua_name", ""))
+            _than_m = str(_m.get("than_name", ""))
+            _music_scores = {
+                "NHẠC TRỮ TÌNH / BALLAD SÂU LẮNG / NHẠC XƯA – ACOUSTIC (Giai điệu du dương, giàu cảm xúc & hoài niệm)": 0,
+                "NHẠC SÔI ĐỘNG / REMIX – EDM – POP DANCE – ROCK (Tiết tấu mạnh, nhịp trống/beat dồn dập, bùng nổ)": 0,
+                "NHẠC KHÔNG LỜI / LOFI CHILL – PIANO – R&B TÂM TRẠNG (Êm dịu, sâu lắng, thư giãn nội tâm)": 0,
+                "NHẠC TRẺ THỊNH HÀNH / V-POP – US-UK – RAP MELODIC (Hiện đại, bắt tai, giàu tính giải trí)": 0,
+                "NHẠC QUÊ HƯƠNG / DÂN CA / TRUYỀN THỐNG – THIỀN TỊNH (Mộc mạc, sâu sắc, mang âm hưởng cội nguồn)": 0,
+            }
+            _k_ballad, _k_edm, _k_lofi, _k_pop, _k_folk = list(_music_scores.keys())
+            for _tg_i, _tg_w in [(_m.get("up_bien"), 4), (_m.get("lo_bien"), 3), (_m.get("up_chu"), 4), (_m.get("lo_chu"), 3), (_m.get("up_ho"), 2), (_m.get("lo_ho"), 2)]:
+                if _tg_i in ("Tốn", "Càn"):
+                    _music_scores[_k_ballad] += _tg_w
+                if _tg_i in ("Chấn", "Ly"):
+                    _music_scores[_k_edm] += _tg_w
+                if _tg_i == "Khảm":
+                    _music_scores[_k_lofi] += _tg_w + 1
+                if _tg_i == "Đoài":
+                    _music_scores[_k_pop] += _tg_w + 1
+                if _tg_i in ("Khôn", "Cấn"):
+                    _music_scores[_k_folk] += _tg_w
+            if "Thiên Phụ" in _sao_m or "Thiên Tâm" in _sao_m:
+                _music_scores[_k_ballad] += 5
+            if "Thiên Xung" in _sao_m or "Thiên Anh" in _sao_m:
+                _music_scores[_k_edm] += 5
+            if "Thiên Bồng" in _sao_m:
+                _music_scores[_k_lofi] += 5
+            if "Thiên Trụ" in _sao_m:
+                _music_scores[_k_pop] += 5
+            if any(s in _sao_m for s in ("Thiên Nhậm", "Thiên Nhuế", "Thiên Cầm")):
+                _music_scores[_k_folk] += 4
+            if "Thái Âm" in _than_m or "Lục Hợp" in _than_m:
+                _music_scores[_k_ballad] += 4
+            elif "Chu Tước" in _than_m or "Bạch Hổ" in _than_m or "Cửu Thiên" in _than_m:
+                _music_scores[_k_edm] += 3
+            elif "Huyền Vũ" in _than_m or "Đằng Xà" in _than_m:
+                _music_scores[_k_lofi] += 3
+            if "Khai" in _cua_m or "Hưu" in _cua_m:
+                _music_scores[_k_ballad] += 2
+                _music_scores[_k_lofi] += 2
+            elif "Cảnh" in _cua_m or "Thương" in _cua_m or "Kinh" in _cua_m:
+                _music_scores[_k_edm] += 2
+                _music_scores[_k_pop] += 2
+            _sorted_music = sorted(_music_scores.items(), key=lambda kv: kv[1], reverse=True)
+            _top_music, _top_m_pts = _sorted_music[0]
+            _sec_music, _sec_m_pts = _sorted_music[1]
+            _rhythm_detail = ""
+            if "Chấn" in _trigs_active and "Tốn" in _trigs_active:
+                _rhythm_detail = " — Kết hợp Hạ Quái Chấn Lôi (tiếng trống/nhịp beat rõ ràng ở phần nền) chuyển sang Thượng Quái Tốn Phong (giai điệu gió ngân nga, du dương, giàu chất tự sự)"
+            elif "Càn" in _trigs_active and "Chấn" in _trigs_active:
+                _rhythm_detail = " — Kết hợp Càn Kim (âm thanh kim khí/nhạc cụ dây – piano – guitar sắc nét) với Chấn Lôi (tiết tấu vang vọng)"
+            short_hl = (
+                f"🎵 KẾT LUẬN GIẢI MÃ VẠN VẬT LOẠI TƯỢNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"BẠN ĐANG NGHE «{_top_music}»"
+                + (f" KẾT HỢP ÂM HƯỞNG «{_sec_music.split(' (')[0]}»" if _sec_m_pts >= _top_m_pts - 3 else "")
+                + f" (ỨNG TƯỢNG QUẺ {_m['up_chu'].upper()}/{_m['lo_chu'].upper()} BIẾN {_m['up_bien'].upper()}/{_m['lo_bien'].upper()} · SAO {_sao_m.upper()} · CỬA {_cua_m.upper()} · THẦN {_than_m.upper()})!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Âm Nhạc & Thanh Âm (Mai Hoa + Kỳ Môn + Lục Hào):</b><br>"
+                f"&nbsp;&nbsp;🎵 <b>1. Tượng Quái Mai Hoa ({_m['full_chu']} ➔ Hỗ {_m['full_ho']} ➔ Biến {_m['full_bien']}):</b> Thượng Quái <b>{_m['up_chu']}</b> ({_TRIG_NH.get(_m['up_chu'], '')}) phối Hạ Quái <b>{_m['lo_chu']}</b> ({_TRIG_NH.get(_m['lo_chu'], '')}), biến sang <b>{_m['up_bien']}/{_m['lo_bien']}</b>{_rhythm_detail}. Quẻ Hỗ <b>{_m['full_ho']}</b> cho thấy mạch cảm xúc bài nhạc dẫn dắt từ từ, sâu lắng và thấm dần.<br>"
+                f"&nbsp;&nbsp;🧭 <b>2. Tinh – Môn – Thần Kỳ Môn Độn Giáp:</b> Cung {_m['target_cung']} ({huong_str}) hội <b>Sao {_sao_m}</b> (Văn Xương – nghệ thuật ca từ tinh tế, trữ tình), <b>Cửa {_cua_m}</b> và <b>Thần {_than_m}</b> (biểu trưng cho âm sắc sâu lắng, giàu cảm xúc nội tâm và hoài niệm).<br>"
+                f"&nbsp;&nbsp;☯️ <b>3. Lục Hào Nạp Giáp:</b> Hào Thế tại Hào {_m['the_idx']} ({_m['the_chi']}-{_m['the_nh']}) tương tác với Hào Dụng Thần tại Hào {dt_idx} ({dt_chi}-{dt_nh}){' [Đang lâm Tuần Không — tâm trí người nghe đang thả hồn thư giãn, phiêu theo giai điệu]' if dt_is_kv else ''} ➔ Khẳng định thể loại nhạc chủ đạo là <b>{_top_music}</b>.<br>"
+            )
+        elif _is_food_drink_q:
+            is_open_van_vat = True
+            _nh_flavor_map = {
+                "Mộc": ("VỊ CHUA DỊU / THANH MÁT — RAU CỦ QUẢ, TRÁI CÂY, TRÀ THẢO MỘC / NƯỚC ÉP, MÓN SỢI (BÚN/PHỞ/MÌ)", "Tốn/Chấn Mộc chủ thảo mộc, sợi dài, hương thơm tự nhiên"),
+                "Hỏa": ("ĐỒ NƯỚNG / CHIÊN XÀO NÓNG HỔI / CAY NỒNG HOẶC CÀ PHÊ – TRÀ NÓNG ĐẬM VỊ", "Ly/Đinh Bính Hỏa chủ nhiệt độ cao, món nướng/rang/chiên hoặc đồ uống pha nóng"),
+                "Thổ": ("VỊ NGỌT DỊU / BÉO BÙI — CƠM, BÁNH NGỌT, NGŨ CỐC, THỊT HẦM HOẶC TRÀ SỮA", "Khôn/Cấn Thổ chủ lương thực tinh bột, bánh trái, vị ngọt đậm đà"),
+                "Kim": ("VỊ CAY THE / ĐỒ LẠNH – ĐÁ MÁT / MÓN THỊT CẮT LÁT, GỎI HOẶC NƯỚC CÓ GA – ĐÁ LẠNH", "Càn/Đoài Kim chủ vị cay/mát lạnh, nước giải khát có đá hoặc món chế biến tinh kỹ"),
+                "Thủy": ("MÓN NƯỚC / CANH – SÚP – LẨU – HẢI SẢN HOẶC NƯỚC SUỐI / NƯỚC NGỌT GIẢI KHÁT MÁT LẠNH", "Khảm Thủy chủ chất lỏng, món có nước dùng đậm vị hoặc đồ uống giải khát"),
+            }
+            _dom_nh_food = _TRIG_NH.get(_m.get("up_bien") or _m.get("up_chu") or "Mộc", dt_nh)
+            _flv_title, _flv_desc = _nh_flavor_map.get(_dom_nh_food, _nh_flavor_map["Mộc"])
+            _sub_title, _ = _nh_flavor_map.get(dt_nh, _nh_flavor_map["Thổ"])
+            short_hl = (
+                f"🍽️ KẾT LUẬN GIẢI MÃ VẠN VẬT LOẠI TƯỢNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"«{_flv_title}»" + (f" KẾT HỢP «{_sub_title.split(' — ')[0]}»" if _dom_nh_food != dt_nh else "")
+                + f" (ỨNG QUẺ {_m['up_bien'].upper()} HÀNH {_dom_nh_nh if (_dom_nh_nh := _dom_nh_food) else ''} + DỤNG THẦN {dt_chi.upper()}-{dt_nh.upper()} & SAO {_m['sao_name'].upper()})!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Ẩm Thực & Đồ Uống:</b> Quẻ Chủ <b>{_m['full_chu']}</b> biến <b>{_m['full_bien']}</b> ({_flv_desc}), phối hợp Dụng Thần hành <b>{dt_nh}</b> tại Hào {dt_idx} ({dt_chi}) và Sao <b>{_m['sao_name']}</b> + Cửa <b>{_m['cua_name']}</b>.<br>"
+            )
+        elif _is_activity_q:
+            is_open_van_vat = True
+            _trig_act_map = {
+                "Càn": "ĐANG LÀM VIỆC TRÍ ÓC / QUẢN LÝ ĐIỀU HÀNH / SUY TÍNH KẾ HOẠCH LỚN TRÊN THIẾT BỊ CÔNG NGHỆ",
+                "Đoài": "ĐANG TRÒ CHUYỆN, TRAO ĐỔI, NGHE NHẠC/GIẢI TRÍ HOẶC THƯỞNG THỨC ẨM THỰC",
+                "Ly": "ĐANG XEM MÀN HÌNH ĐIỆN THOẠI / MÁY TÍNH, ĐỌC TÀI LIỆU HOẶC TÌM KIẾM THÔNG TIN TRỰC TUYẾN",
+                "Chấn": "ĐANG DI CHUYỂN, THAO TÁC NHANH, XỬ LÝ CÔNG VIỆC KHẨN TRƯƠNG HOẶC NGHE ÂM THANH SÔI ĐỘNG",
+                "Tốn": "ĐANG LƯỚT MẠNG, ĐỌC TIN TỨC, NGHE NHẠC/PODCAST HOẶC TRAO ĐỔI TIN NHẮN TỪ XA",
+                "Khảm": "ĐANG SUY TƯ SÂU LẮNG, NGHỈ NGƠI THƯ GIÃN HOẶC LÀM VIỆC ĐỘC LẬP TRONG KHÔNG GIAN YÊN TĨNH",
+                "Cấn": "ĐANG NGỒI YÊN TĨNH NGHỈ NGƠI, TẬP TRUNG QUAN SÁT HOẶC TẠM DỪNG ĐỂ CHIÊM NGHIỆM",
+                "Khôn": "ĐANG Ở TRONG KHÔNG GIAN QUEN THUỘC (NHÀ/PHÒNG RIÊNG), CHĂM SÓC GIA ĐÌNH HOẶC SẮP XẾP ĐỒ ĐẠC",
+            }
+            _act_primary = _trig_act_map.get(_m.get("up_bien") or _m.get("up_chu") or "Ly", "ĐANG TẬP TRUNG SUY NGHĨ & TRA CỨU THÔNG TIN")
+            short_hl = (
+                f"🎯 KẾT LUẬN GIẢI MÃ VẠN VẬT LOẠI TƯỢNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"{_act_primary} (ỨNG HÀO THẾ HÀO {_m['the_idx']} {_m['the_chi'].upper()}-{_m['the_nh'].upper()}, QUẺ BIẾN {_m['up_bien'].upper()}/{_m['lo_bien'].upper()}, SAO {_m['sao_name'].upper()} & CỬA {_m['cua_name'].upper()})!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Hoạt Động & Trạng Thái Hiện Tại:</b> Trục Hào Thế (Hào {_m['the_idx']} {_m['the_chi']}-{_m['the_nh']}) phối hợp Quẻ Chủ <b>{_m['full_chu']}</b> biến <b>{_m['full_bien']}</b>, Cung {_m['target_cung']} hội Sao <b>{_m['sao_name']}</b> – Cửa <b>{_m['cua_name']}</b> – Thần <b>{_m['than_name']}</b> phản ánh trực tiếp trạng thái hoạt động hiện tại.<br>"
+            )
+        elif _is_job_biz_q:
+            is_open_van_vat = True
+            _nh_job_map = {
+                "Kim": "TÀI CHÍNH – NGÂN HÀNG, CƠ KHÍ – KỸ THUẬT, CÔNG NGHỆ PHẦN CỨNG, QUẢN LÝ ĐIỀU HÀNH HOẶC KINH DOANH VÀNG BẠC / THIẾT BỊ",
+                "Mộc": "GIÁO DỤC – ĐÀO TẠO, VĂN HÓA – NGHỆ THUẬT, TRUYỀN THÔNG – SÁNG TẠO, NÔNG LÂM NGHIỆP, DƯỢC PHẨM HOẶC THỜI TRANG – NỘI THẤT",
+                "Thủy": "THƯƠNG MẠI – DỊCH VỤ, LOGISTICS – VẬN TẢI, XUẤT NHẬP KHẨU, DU LỊCH, ĐẦU TƯ LƯU ĐỘNG HOẶC ĐỒ UỐNG – THỦY HẢI SẢN",
+                "Hỏa": "CÔNG NGHỆ THÔNG TIN – AI – ĐIỆN TỬ, MARKETING – QUẢNG CÁO, NĂNG LƯỢNG, ẨM THỰC – NHÀ HÀNG HOẶC LÀM ĐẸP – NGHỆ THUẬT",
+                "Thổ": "BẤT ĐỘNG SẢN – XÂY DỰNG, KHO BÃI – SẢN XUẤT, QUẢN TRỊ HÀNH CHÍNH, NÔNG SẢN HOẶC KINH DOANH BỀN VỮNG",
+            }
+            _job_str = _nh_job_map.get(dt_nh, _nh_job_map["Kim"])
+            short_hl = (
+                f"💼 KẾT LUẬN GIẢI MÃ NGÀNH NGHỀ & LĨNH VỰC TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"THUỘC NHÓM NGÀNH «{_job_str}» (ỨNG DỤNG THẦN {sq_dt.upper()} HÀNH {dt_nh.upper()} TẠI HÀO {dt_idx} {dt_chi.upper()}, QUẺ {_m['up_chu'].upper()}/{_m['lo_chu'].upper()} & SAO {_m['sao_name'].upper()} · CỬA {_m['cua_name'].upper()})!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Ngành Nghề & Lĩnh Vực:</b> Dụng Thần <b>{sq_dt}</b> mang ngũ hành <b>{dt_nh}</b> ({dt_chi}) kết hợp Quẻ Chủ <b>{_m['full_chu']}</b> biến <b>{_m['full_bien']}</b> và Sao <b>{_m['sao_name']}</b> + Cửa <b>{_m['cua_name']}</b> định vị rõ lĩnh vực chuyên môn.<br>"
+            )
+        elif _is_trait_q:
+            is_open_van_vat = True
+            _trig_trait_map = {
+                "Càn": "Khí chất quyết đoán, nguyên tắc, tự trọng cao, có tố chất lãnh đạo; dáng người đĩnh đạc, khuôn mặt sáng",
+                "Đoài": "Tính tình vui vẻ, khéo ăn nói, giao tiếp linh hoạt, giàu sức hút; gương mặt tươi tắn, ưa sự tinh tế",
+                "Ly": "Thông minh, nhạy bén, nhiệt huyết, trọng danh dự và thẩm mỹ; ánh mắt sáng, phong thái nổi bật",
+                "Chấn": "Năng động, thẳng thắn, hành động nhanh gọn, dám nghĩ dám làm; dáng vẻ hoạt bát, giàu năng lượng",
+                "Tốn": "Tinh tế, sâu sắc, ứng xử mềm mỏng khéo léo, giàu tình cảm nội tâm; dáng người thanh nhã, lịch thiệp",
+                "Khảm": "Trí tuệ sâu sắc, kín đáo, giàu nghị lực và chiều sâu nội tâm; biết lắng nghe và suy tính thấu đáo",
+                "Cấn": "Điềm tĩnh, cẩn trọng, đáng tin cậy, giữ chữ tín và có lập trường vững vàng",
+                "Khôn": "Bao dung, chân thành, chu đáo, trọng tình nghĩa gia đình và sống thực tế, bền bỉ",
+            }
+            _tr_desc = _trig_trait_map.get(_m.get("up_bien") or _m.get("up_chu") or "Càn", "Thông minh, sâu sắc và chính trực")
+            short_hl = (
+                f"👤 KẾT LUẬN GIẢI MÃ TÍNH CÁCH & KHÍ CHẤT TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"{_tr_desc.upper()} (ỨNG QUẺ {_m['up_chu'].upper()}/{_m['up_bien'].upper()}, SAO {_m['sao_name'].upper()}, CỬA {_m['cua_name'].upper()} & THẦN {_m['than_name'].upper()})!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Tính Cách & Ngoại Hình:</b> {_tr_desc} (Hội tụ từ Quẻ {_m['full_chu']} ➔ {_m['full_bien']}, Sao {_m['sao_name']}, Cửa {_m['cua_name']}, Thần {_m['than_name']}).<br>"
+            )
+        elif _is_what_obj_q:
+            is_open_van_vat = True
+            _trig_obj_map = {
+                "Càn": "Vật thể kim loại / thiết bị công nghệ cao cấp / vật hình tròn cứng cáp, giá trị cao",
+                "Đoài": "Vật dụng kim khí tinh xảo / thiết bị phát âm thanh – giải trí / đồ trang sức hoặc dụng cụ có miệng mở",
+                "Ly": "Thiết bị điện tử có màn hình phát sáng (điện thoại/máy tính/đèn) / giấy tờ văn thư / vật phẩm nghệ thuật",
+                "Chấn": "Phương tiện di chuyển / thiết bị phát âm thanh – rung động / vật thể bằng gỗ hoặc cây xanh đang phát triển",
+                "Tốn": "Tài liệu – sách vở – hợp đồng / dây cáp – tín hiệu mạng / vật phẩm bằng gỗ, vải lụa hoặc hương liệu",
+                "Khảm": "Chất lỏng – đồ uống / thiết bị liên quan đến nước – mạch ngầm / vật thể mềm mại hoặc màu sẫm",
+                "Cấn": "Đồ nội thất vững chắc (bàn/tủ/kệ) / bất động sản / vật phẩm bằng đá – gốm sứ hoặc hộp chứa kín",
+                "Khôn": "Đồ dùng thiết yếu trong nhà / vải vóc – túi xách – hộp vuông / tài sản tích lũy hoặc thực phẩm",
+            }
+            _obj_desc = _trig_obj_map.get(_m.get("up_bien") or _m.get("up_chu") or "Càn", "Vật phẩm hữu dụng thực tế")
+            short_hl = (
+                f"🔮 KẾT LUẬN GIẢI MÃ VẠN VẬT LOẠI TƯỢNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"{_obj_desc.upper()} (HÀNH {dt_nh.upper()} · SAO {_m['sao_name'].upper()} · CỬA {_m['cua_name'].upper()} · THẦN {_m['than_name'].upper()} · SỐ HỘI TỤ 0{_conv_num})!"
+            )
+            extra_van_vat_why = (
+                f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Đặc Điểm Sự Vật:</b> {_obj_desc} (Quẻ Chủ {_m['full_chu']} biến {_m['full_bien']}, Dụng Thần {sq_dt} Hào {dt_idx} {dt_chi}-{dt_nh}, Cung {_m['target_cung']} Sao {_m['sao_name']} – Cửa {_m['cua_name']}).<br>"
+            )
         elif t_code == "DEBT_LOAN" or "D16" in t_code or any(w in raw_q_g for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "vay tiền", "cho vay"]):
             if _the_tai_ready and not dt_is_kv and not _is_phuc_ngam:
                 short_hl = (
@@ -4913,6 +5136,7 @@ class HexagramReasoningAI:
                     f"NHƯNG GỐC NỢ KHÔNG MẤT — SẼ THU HỒI ĐƯỢC THEO 0{_conv_num} ĐỢT KHI BƯỚC SANG NGÀY/THÁNG {dt_chi.upper()} (HÀNH {dt_nh.upper()} VƯỢNG)!"
                 )
         elif t_code in ("INVEST_PROFIT", "CAREER_WORK", "EXAM_VISA") or any(k in t_code for k in ("D14", "D15", "D20")):
+            is_strict_override = False
             if (_mh_under_attack or _km_hung_door or _is_phuc_ngam or dt_is_kv) and sq_score >= 48:
                 short_hl = (
                     f"⚖️ KẾT LUẬN LIÊN KẾT ĐA TẦNG ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
@@ -4946,13 +5170,17 @@ class HexagramReasoningAI:
         elif t_code == "TIMING_WHEN" or "D12" in t_code:
             short_hl = f"⏳ THỜI ĐIỂM ỨNG KỲ TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): {uk_str.upper()} (KHI HÀO {sq_dt.upper()} {dt_chi.upper()} XUNG/HỢP MỞ VẬN · HỘI TỤ SỐ 0{_conv_num})!"
         elif sq_score >= 54:
+            is_strict_override = False
             short_hl = f"✅ KẾT LUẬN LIÊN KẾT ĐA TẦNG (MAI HOA – KỲ MÔN – LỤC HÀO | {_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): THUẬN LỢI & ĐẠT KẾT QUẢ TỐT ({sq_score}% — CÁT: {_m['rel_bien_tag']}, ĐẮC SAO {_m['sao_name'].upper()} & CỬA {_m['cua_name'].upper()} · HỘI TỤ SỐ 0{_conv_num})!"
         elif sq_score >= 45:
+            is_strict_override = False
             short_hl = f"⚖️ KẾT LUẬN LIÊN KẾT ĐA TẦNG (MAI HOA – KỲ MÔN – LỤC HÀO | {_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): HIỆN TẠI CÒN VƯỚNG CẢN NHƯNG HẬU VẬN KHẢ QUAN ({sq_score}% — QUẺ BIẾN {_m['full_bien'].upper()} {_m['rel_bien_tag']} · HỘI TỤ SỐ 0{_conv_num})!"
         else:
+            is_strict_override = False
             short_hl = f"⚠️ KẾT LUẬN LIÊN KẾT ĐA TẦNG (MAI HOA – KỲ MÔN – LỤC HÀO | {_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): ĐANG GẶP LỰC CẢN LỚN — NÊN THẬN TRỌNG & CHỜ THỜI ({sq_score}% — HUNG)!"
 
         why_3sys = (
+            f"{extra_van_vat_why}"
             f"<b>• Mạng Lưới Liên Kết Mọi Yếu Tố Của Quẻ (Áp dụng đồng nhất 9 Định Luật & Kho Tàng Kinh Điển GitHub cho mọi câu hỏi):</b><br>"
             f"&nbsp;&nbsp;🔗 {_m.get('holistic_chain_summary', '')}<br>"
             f"1. <b>🌸 Mai Hoa Dịch Số (18 Chiêm Pháp — Chủ ➔ Hỗ ➔ Biến, Thể/Dụng & Tách Quái Vật Thể – Không Gian):</b> Quẻ Chủ <b>{_m['full_chu']}</b> (Thượng {_m['up_chu']} [Tiên Thiên={_TT_NUM.get(_up_g,2)}] · Hạ {_m['lo_chu']} [Hậu Thiên={_HT_NUM.get(_lo_g,2)}] — {_m['rel_chu_tag']}: {_m['rel_chu_desc']}) "
@@ -4965,6 +5193,8 @@ class HexagramReasoningAI:
 
         return {
             "has_override": True,
+            "is_strict_override": is_strict_override,
+            "is_open_van_vat": is_open_van_vat,
             "headline": f"🎯 [{c_lbl.upper()}]: {short_hl}" if sq_bp.get("clause_label") else f"🎯 {short_hl}",
             "short_headline": short_hl,
             "why": why_3sys,
@@ -5719,6 +5949,21 @@ class HexagramReasoningAI:
             auth_warnings=auth_warnings,
             is_fake=is_fake,
         )
+        if spec_res.get("has_override"):
+            spec_res.setdefault("is_strict_override", True)
+        else:
+            # Chạy trước bộ giải mã Vạn Vật Loại Tượng & Đa Tầng để kiểm tra xem câu hỏi có thuộc nhóm Giải Mã Cụ Thể (Nhạc gì, Món gì, Nghề gì, Cái gì...) không
+            _pre_gen = HexagramReasoningAI._deduce_general_clause_on_hexagram(
+                sq_bp=blueprint,
+                sq_dt=dung_than,
+                base_pct=weighted_pct,
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                omni_data=omni_data,
+            )
+            if _pre_gen.get("is_strict_override"):
+                spec_res = _pre_gen
 
         # Trích xuất Ma Trận Tam Thức Hợp Nhất (Mai Hoa Chủ/Hỗ/Biến + Kỳ Môn Tinh/Môn/Thần + Lục Hào Thế/Ứng/Động/Biến)
         _univ_mat = HexagramReasoningAI.extract_mai_hoa_ky_mon_luc_hao_matrix(
@@ -5731,11 +5976,11 @@ class HexagramReasoningAI:
         if _univ_mat.get("dt_nh"):
             hanh_dt = _univ_mat["dt_nh"]
 
-        # Bước 2 (V117.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
+        # Bước 2 (V118.0): KÍCH HOẠT ĐẠI SƯ AI CAO CẤP NHẤT (GEMINI PRO DEEP-REASONING) LUẬN QUẺ A→Z QUA 24 YẾU TỐ TÁC ĐỘNG SÂU
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V117_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V118_PRO_DUAL::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
 
         if _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -5756,6 +6001,11 @@ class HexagramReasoningAI:
             if not isinstance(_ai1_json, dict) or not _ai1_json.get("ai1_intent_summary"):
                 _ai1_json = _call_gemini_json_fast(_prompt_ai1, timeout_sec=10, tier="cheapest_reader")
             if isinstance(_ai1_json, dict) and _ai1_json.get("ai1_intent_summary"):
+                _spec_lock_line = (
+                    f"   - Kết quả giải mã toán học Tam Thức nội bộ (BẮT BUỘC ĐỒNG NHẤT 100% ĐÁP ÁN CỐT LÕI): {spec_res.get('headline', '')} | Ứng kỳ: {re.sub(r'<[^>]+>', '', str(spec_res.get('when', '')))[:350]} | Nguyên nhân: {re.sub(r'<[^>]+>', '', str(spec_res.get('why', '')))[:450]}\n\n"
+                    if spec_res.get("is_strict_override")
+                    else "   - MỆNH LỆNH TỐI THƯỢNG: Người dùng đang hỏi câu hỏi thực tế cần câu trả lời cụ thể theo đúng `Khuôn mẫu & Đơn vị đáp án bắt buộc` của CON AI SỐ 1. BẠN BẮT BUỘC PHẢI LUẬN QUẺ VẠN VẬT LOẠI TƯỢNG ĐỂ ĐƯA RA ĐÁP ÁN CỤ THỂ TRỰC DIỆN TRONG `ai2_headline` (TUYỆT ĐỐI CẤM trả lời chung chung kiểu 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT' khi người dùng hỏi 'cái gì / thể loại gì / món gì / ở đâu / như thế nào')!\n\n"
+                )
                 # --- GỌI CON AI SỐ 2 (ĐẠI SƯ AI CAO CẤP NHẤT GEMINI PRO — BÓC TÁCH SÂU 24 YẾU TỐ A→Z) ---
                 _prompt_ai2 = (
                     "Bạn là CON AI SỐ 2 (Đại Sư AI Cao Cấp Nhất Gemini Pro — Chuyên Gia Bóc Tách Sâu 24 Yếu Tố Tác Động A→Z của Lục Hào Kinh Dịch + Mai Hoa Dịch Số + Kỳ Môn Độn Giáp + Thiết Bản Thần Toán).\n"
@@ -5763,18 +6013,19 @@ class HexagramReasoningAI:
                     f"2. HỒ SƠ CHỈ THỊ TỪ CON AI SỐ 1:\n"
                     f"   - Ý nghĩa câu hỏi: {_ai1_json.get('ai1_intent_summary')}\n"
                     f"   - Khuôn mẫu & Đơn vị đáp án bắt buộc: {_ai1_json.get('ai1_expected_answer_format')}\n"
-                    f"   - Dụng Thần chỉ định: {_ai1_json.get('ai1_dung_than_guide')}\n\n"
+                    f"   - Dụng Thần chỉ định: {_ai1_json.get('ai1_dung_than_guide')}\n"
+                    f"   - Chỉ thị bắt buộc từ AI 1: {_ai1_json.get('ai1_strict_instruction_to_ai2')}\n\n"
                     f"3. {_univ_mat['matrix_prompt_block']}\n"
                     f"   - Chuỗi Liên Kết Mọi Yếu Tố Của Quẻ: {_univ_mat.get('holistic_chain_summary', '')}\n"
                     f"   - Tứ Trụ Thời Khắc: Năm {can_y} {chi_y}, Tháng {can_m} {chi_m}, Ngày {can_n} {chi_n}, Giờ {can_g} {chi_g}.\n"
-                    f"   - Kết quả giải mã toán học Tam Thức nội bộ (BẮT BUỘC ĐỒNG NHẤT 100% ĐÁP ÁN CỐT LÕI): {spec_res.get('headline', '')} | Ứng kỳ: {re.sub(r'<[^>]+>', '', str(spec_res.get('when', '')))[:350]} | Nguyên nhân: {re.sub(r'<[^>]+>', '', str(spec_res.get('why', '')))[:450]}\n\n"
+                    f"{_spec_lock_line}"
                     "4. QUY TRÌNH BÓC TÁCH SÂU TỪNG BƯỚC A→Z (24 YẾU TỐ TÁC ĐỘNG SÂU & ẨN NGẦM — BẮT BUỘC TRÌNH BÀY RÕ RÀNG TRONG `ai2_why`):\n"
                     "   - [Bước 1 - Lục Hào 10 Tầng Sâu]: Phân tích Cấu trúc Quẻ (Lục Xung/Hợp/Du Hồn/Quy Hồn), Thế-Ứng, Lục Thú lâm Dụng Thần & Thế (Thanh Long/Chu Tước/Câu Trần/Đằng Xà/Bạch Hổ/Huyền Vũ), Vượng-Tướng-Hưu-Tù-Tử dưới Nguyệt Lệnh, 12 Trường Sinh & Nhập Mộ trên Ngày, Nguyên Thần vs Kỵ Thần vs Cừu Thần, Phục Thần dưới Phi Thần, Ám Động & Nguyệt Phá, Tam Hợp Cục và Hào Động biến hóa (Tiến/Thoái/Hồi Đầu Sinh Khắc) cùng Hào Vị.\n"
                     "   - [Bước 2 - Mai Hoa 5 Tầng Sâu]: Phân tích Trục Tam Quái (Chủ -> Hỗ -> Biến), Thể-Dụng, Đắc Thời/Thất Thời theo Mùa, đặc biệt là ĐẢNG THỂ vs ĐẢNG DỤNG trên Quẻ Hỗ (Thượng Hỗ & Hạ Hỗ phe nào mạnh hơn) và Tách Quái Vật Thể vs Quái Không Gian.\n"
                     "   - [Bước 3 - Kỳ Môn 6 Tầng Sâu]: Phân tích Nội Bàn vs Ngoại Bàn (gần/nhanh vs xa/chậm), Tương quan Cung Chủ (Can Ngày) <-> Cung Khách (Can Giờ), Tinh-Môn-Thần, Trạng thái Môn Bức/Chế/Hòa/Nghĩa, 81 Cách Cục Lưu Bá Ôn (Thiên Bàn Can + Địa Bàn Can) và Ngũ Bất Ngộ Thời / Dịch Mã / Phục Phản Ngâm / Niên Mệnh.\n"
                     "   - [Bước 4 - Thiết Bản & Pháp Quyết Thông Quan]: Liên kết Thái Huyền Tứ Trụ Số, Điều Văn Thiết Bản, Nạp Âm 60 Giáp Tý và Dụng Thần Thông Quan hóa giải.\n\n"
                     "5. CHÍN ĐỊNH LUẬT LUẬN QUẺ CHUẨN XÁC ĐÃ KIỂM CHỨNG THỰC TẾ (BẮT BUỘC TUÂN THỦ):\n"
-                    "   - Định luật 1 (Đoán Màu sắc / Đồ vật / Thiết bị): Lấy Quẻ Biến Dụng Mai Hoa + Bát Thần Kỳ Môn + Nhật Can & Tam Hợp Lục Hào làm màu chủ đạo; Quẻ Dụng gốc làm màu chi tiết phụ.\n"
+                    "   - Định luật 1 (Đoán Màu sắc / Đồ vật / Thiết bị / Âm nhạc / Món ăn): Lấy Quẻ Biến Dụng & Quẻ Chủ Mai Hoa + Cửu Tinh/Bát Môn/Bát Thần Kỳ Môn + Lục Hào để định danh chính xác tên thể loại nhạc, món ăn, màu sắc, đồ vật cụ thể.\n"
                     "   - Định luật 2 (Đoán Vợ chồng / Nhân tình / Gia đạo): Khi Hào Thê Tài/Quan Quỷ trì Thế hoặc sinh hợp Thế, Quẻ Biến Dụng sinh Thể, Quẻ Hỗ là Tiệm/Gia Nhân, Kỳ Môn đắc Thiên Phụ + Sinh Môn thì khẳng định 100% vợ/chồng chung thủy.\n"
                     "   - Định luật 3 (Đoán Tầng nhà / Chung cư): Hậu Thiên Thượng Quái Mai Hoa + Tiên Thiên Hạ Quái Hỗ + Bản cung Sao Kỳ Môn = Vị trí tầng đang ở; Tổng Tiên Thiên Chủ + Hỗ = Tổng số tầng tòa chung cư.\n"
                     "   - Định luật 4 (Đoán Số người / Con cái / Anh chị em / Quãng đường km): Rút trích trực tiếp từ các hào Lục Thân hiện hữu và Quái số Tiên/Hậu Thiên Mai Hoa, tuyệt đối cấm tự bịa số.\n"
@@ -5783,9 +6034,9 @@ class HexagramReasoningAI:
                     "   - Định luật 7 (Phân Định Hiện Trạng Bệnh Chứng/Sốt Cao vs. Tiên Lượng Hồi Phục): Nếu Ly Hỏa/Tị Hỏa khắc Đoài/Dậu Kim + Kỳ Môn gặp Thương Môn/Thiên Xung thì khẳng định 100% HIỆN TẠI ĐANG SỐT CAO; còn Nguyên Thần Thổ động sinh Kim là TIÊN LƯỢNG CỨU ỨNG (nhanh hạ sốt).\n"
                     "   - Định luật 8 (Định Lượng Hội Tụ 6 Tầng & Tách Biệt Quái Vật Thể vs. Quái Không Gian Chứa Đựng): Tách biệt Quái Vật Thể (VD: Đoài Kim = Vàng, Tiên Thiên = 2) với Quái Không Gian Chứa Đựng (Khôn Thổ = Ngôi nhà, Hậu Thiên = 2), hội tụ 6 tầng số = 2 chỉ vàng.\n"
                     "   - Định luật 9 (Pháp Độc Tượng Vạn Vật Loại Tượng 6 Tầng & Tử Vi Thiên Kỷ 56.6GB): Khi hỏi đối chứng 2 phương án về Địa lý / Xuất thân (VD: 'tôi được sinh ra ở thành phố hay vùng núi'), đọc trực tiếp Tượng Quái Chủ-Hỗ-Biến + Cung Kỳ Môn + Bát Môn + Hào 1 (Hào Sơ = Gốc rễ lúc mới chào đời) + Hào Phụ Mẫu -> Khẳng định 100% SINH RA Ở VÙNG NÚI!\n\n"
-                    "Trả về ĐÚNG 1 JSON hợp lệ:\n"
+                    "Trả về ĐÚNG 1 JSON hợp lệ (LƯU Ý: Không dùng dấu ngoặc kép \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
                     "{\n"
-                    "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện, in hoa các ý chính, đồng nhất 100% đáp án cốt lõi và lộ trình thực tế từ Tam Thức\",\n"
+                    "  \"ai2_headline\": \"Câu trả lời chốt hạ trực diện đúng Khuôn mẫu đáp án của AI Số 1, in hoa các ý chính, nêu rõ đáp án cụ thể từ Tam Thức\",\n"
                     "  \"ai2_why\": \"Trình bày chi tiết từng bước (Bước 1 Lục Hào 10 yếu tố sâu -> Bước 2 Mai Hoa Tam Quái & Đảng Thể/Dụng -> Bước 3 Kỳ Môn Nội/Ngoại Bàn, Cung Chủ-Khách, Môn Bức & 81 Cách Cục -> Bước 4 Thiết Bản & Thông Quan)\",\n"
                     "  \"ai2_when\": \"Lộ trình & Thời điểm ứng nghiệm thực tế chi tiết (Nạp Giáp XungKhông/Xuất Không, Hợp Xung, Tiến/Thoái Thần)\",\n"
                     "  \"ai2_advice\": \"Lời khuyên hành động thực tế sát với câu hỏi, Dụng Thần Thông Quan và phương vị Tam Cát Môn\"\n"
@@ -5796,7 +6047,7 @@ class HexagramReasoningAI:
                     _real_ai_pair = {"ai1": _ai1_json, "ai2": _ai2_json}
                     _REAL_DUAL_AI_CACHE[_cache_sig] = _real_ai_pair
 
-        _ai2_model_used_badge = "GEMINI-3.1-PRO / GEMINI-2.5-PRO (DEEP-REASONING)"
+        _ai2_model_used_badge = "GEMINI-2.5-PRO / GEMINI-3.1-PRO (DEEP-REASONING)"
         if isinstance(_real_ai_pair, dict) and _real_ai_pair.get("ai1") and _real_ai_pair.get("ai2"):
             _r_ai1 = _real_ai_pair["ai1"]
             _r_ai2 = _real_ai_pair["ai2"]
@@ -5804,7 +6055,7 @@ class HexagramReasoningAI:
             _ai2_model_used_badge = f"{_m_used_raw} (ĐẠI SƯ AI CAO CẤP NHẤT)"
             blueprint["subject_person"] = f"{_r_ai1.get('ai1_intent_summary', blueprint['subject_person'])} — <b>Đơn vị/Khuôn đáp án:</b> {_r_ai1.get('ai1_expected_answer_format', '')}"
             blueprint["lh_dt_instruction"] = f"{_r_ai1.get('ai1_dung_than_guide', blueprint['lh_dt_instruction'])} | <b>Chỉ thị AI 1 ➔ Tam Thức & AI 2:</b> {_r_ai1.get('ai1_strict_instruction_to_ai2', '')}"
-            if not spec_res.get("has_override"):
+            if not spec_res.get("has_override") or not spec_res.get("is_strict_override"):
                 _fb_3sys = HexagramReasoningAI._deduce_general_clause_on_hexagram(
                     sq_bp=blueprint,
                     sq_dt=dung_than,
@@ -5815,7 +6066,9 @@ class HexagramReasoningAI:
                     omni_data=omni_data,
                 )
                 spec_res["has_override"] = True
-                spec_res["headline"] = _r_ai2.get("ai2_headline") or _fb_3sys.get("headline", "")
+                spec_res["is_strict_override"] = True
+                _ai2_hl_clean = str(_r_ai2.get("ai2_headline") or "").strip()
+                spec_res["headline"] = (f"🎯 {_ai2_hl_clean}" if _ai2_hl_clean and not _ai2_hl_clean.startswith("🎯") else _ai2_hl_clean) or _fb_3sys.get("headline", "")
                 _ai2_w = str(_r_ai2.get("ai2_why") or "").strip()
                 if _ai2_w:
                     spec_res["why"] = (
@@ -5828,8 +6081,10 @@ class HexagramReasoningAI:
                 spec_res["when"] = _r_ai2.get("ai2_when") or _fb_3sys.get("when", "")
                 spec_res["advice"] = _r_ai2.get("ai2_advice") or _fb_3sys.get("advice", "")
             else:
-                # V117.0: KHÔNG BAO GIỜ BỎ QUA LUẬN GIẢI CỦA CON AI CAO CẤP NHẤT (_r_ai2) KHI ĐÃ CÓ OVERRIDE!
-                # Kết hợp chặt chẽ Phán quyết Toán học Cốt lõi (spec_res) với Phân tích Sâu Đa Tầng của Đại Sư AI Pro (_r_ai2)
+                # V118.0: Kết hợp chặt chẽ Phán quyết Toán học Cốt lõi (spec_res) với Phân tích Sâu Đa Tầng của Đại Sư AI Pro (_r_ai2)
+                _ai2_hl_clean = str(_r_ai2.get("ai2_headline") or "").strip()
+                if spec_res.get("is_open_van_vat") and _ai2_hl_clean and _ai2_hl_clean[:40].upper() not in str(spec_res.get("headline", "")).upper():
+                    spec_res["headline"] = f"🎯 {_ai2_hl_clean}  |  {spec_res.get('short_headline', spec_res.get('headline', ''))}"
                 _ai2_w = str(_r_ai2.get("ai2_why") or "").strip()
                 if _ai2_w and _ai2_w not in str(spec_res.get("why", "")):
                     spec_res["why"] = (
@@ -5861,10 +6116,14 @@ class HexagramReasoningAI:
         when_proof = sanitize_outdated_years_text(spec_res.get("when") or omni_data.get("binary_when_note", ""), question=_raw_q_str)
         advice_proof = sanitize_outdated_years_text(spec_res.get("advice") or omni_data.get("binary_action_advice", ""), question=_raw_q_str)
 
-        # V117.0: LUÔN ĐÍNH KÈM BẢNG BÓC TÁCH TỪNG BƯỚC A→Z (24 YẾU TỐ TÁC ĐỘNG SÂU & ẨN NGẦM CỦA CÁC QUẺ) VÀO MỌI CÂU TRẢ LỜI
+        # V118.0: ĐẶT BẢNG BÓC TÁCH TỪNG BƯỚC A→Z (24 YẾU TỐ TÁC ĐỘNG SÂU & ẨN NGẦM CỦA CÁC QUẺ) LÊN ĐẦU HOẶC NGAY SAU PHẦN AI PRO ĐỂ HIỂN THỊ RÕ RÀNG
         _deep_a2z_block_html = str(_univ_mat.get("deep_a_to_z_html") or "")
         if _deep_a2z_block_html and "BÓC TÁCH SÂU TỪ A ĐẾN Z" not in why_proof:
-            why_proof = f"{why_proof}{_deep_a2z_block_html}"
+            _split_marker = "<b>• Mạng Lưới Liên Kết Mọi Yếu Tố Của Quẻ"
+            if _split_marker in why_proof:
+                why_proof = why_proof.replace(_split_marker, f"{_deep_a2z_block_html}<br>{_split_marker}", 1)
+            else:
+                why_proof = f"{_deep_a2z_block_html}{why_proof}"
         _tq_block_html = str(_univ_mat.get("thong_quan_html") or "")
         if _tq_block_html and "PHÁP QUYẾT HÓA GIẢI THÔNG QUAN" not in advice_proof:
             advice_proof = f"{advice_proof}{_tq_block_html}"
@@ -5985,7 +6244,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:16px 18px;border-radius:14px;margin-bottom:16px;border:2px solid #38bdf8;box-shadow:0 6px 22px rgba(56,189,248,0.22);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);padding-bottom:8px;">'
-            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V117.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z</div>'
+            f'<div style="font-size:1.06em;font-weight:900;color:#38bdf8;letter-spacing:0.3px;">🤖 HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V118.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv["solar_date_str"]}): GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:3px 10px;border-radius:12px;font-size:0.82em;font-weight:800;border:1px solid #38bdf8;">Khớp {blueprint["archetype_code"]}/25 Đại Dạng Toàn Cầu</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'
@@ -6015,7 +6274,7 @@ class HexagramReasoningAI:
 
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V117.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V118.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
@@ -6035,6 +6294,7 @@ class HexagramReasoningAI:
         return {
             "blueprint": blueprint,
             "has_specialized_override": bool(spec_res.get("has_override")),
+            "is_strict_override": bool(spec_res.get("is_strict_override", True)),
             "verified_headline": headline_ans,
             "verified_why": why_proof,
             "verified_when": when_proof,
