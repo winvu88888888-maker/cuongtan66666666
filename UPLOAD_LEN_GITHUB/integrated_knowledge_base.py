@@ -707,7 +707,7 @@ _LUC_XUNG_HEXAGRAMS = {
 }
 
 _LUC_HOP_HEXAGRAMS = {
-    "Địa Thiên Thái", "Thiên Địa Bĩ", "Trạch Lôi Tùy", "Sơn Phong Cổ",
+    "Địa Thiên Thái", "Thiên Địa Bĩ", "Trạch Thủy Khốn", "Sơn Hỏa Bí",
     "Địa Lôi Phục", "Lôi Địa Dự", "Thủy Trạch Tiết", "Hỏa Sơn Lữ",
 }
 
@@ -723,12 +723,12 @@ _QUY_HON_HEXAGRAMS = {
 
 _TIEN_THAN_PAIRS = {
     ("Hợi", "Tý"), ("Dần", "Mão"), ("Tị", "Ngọ"), ("Thân", "Dậu"),
-    ("Sửu", "Thìn"), ("Thìn", "Mùi"), ("Mùi", "Tuất"),
+    ("Sửu", "Thìn"), ("Mùi", "Tuất"),
 }
 
 _THOAI_THAN_PAIRS = {
     ("Tý", "Hợi"), ("Mão", "Dần"), ("Ngọ", "Tị"), ("Dậu", "Thân"),
-    ("Tuất", "Mùi"), ("Mùi", "Thìn"), ("Thìn", "Sửu"),
+    ("Tuất", "Mùi"), ("Thìn", "Sửu"),
 }
 
 _TAM_HOP_CUCS = [
@@ -749,7 +749,7 @@ _MO_KHO_BY_HANH = {
 _TRUONG_SINH_START = {
     "Mộc": "Hợi",
     "Hỏa": "Dần",
-    "Thổ": "Dần",
+    "Thổ": "Thân",
     "Kim": "Tị",
     "Thủy": "Thân",
 }
@@ -890,7 +890,11 @@ def compute_deep_interacting_factors_a_to_z(
         hex_special_traits.append(f"Quẻ Chủ <b>{full_chu}</b> thuộc thế <b>Du Hồn</b> (chủ sự dịch chuyển, đi xa, biến đổi không gian hoặc tâm tư còn phân vân)")
     elif full_chu in _QUY_HON_HEXAGRAMS:
         hex_special_traits.append(f"Quẻ Chủ <b>{full_chu}</b> thuộc thế <b>Quy Hồn</b> (chủ sự thu liễm về gốc, ở trong nhà, ổn định nội tại, giữ vững căn cơ)")
-    if full_bien in _LUC_XUNG_HEXAGRAMS and full_bien != full_chu:
+    if full_chu in _LUC_XUNG_HEXAGRAMS and full_bien in _LUC_HOP_HEXAGRAMS:
+        hex_special_traits.append(f"🌟 <b>Xung Trung Phùng Hợp ({full_chu} ➔ {full_bien})</b>: Trước trắc trở va chạm nhưng hậu vận gắn kết thành tựu viên mãn")
+    elif full_chu in _LUC_HOP_HEXAGRAMS and full_bien in _LUC_XUNG_HEXAGRAMS:
+        hex_special_traits.append(f"⚠️ <b>Hợp Xử Phùng Xung ({full_chu} ➔ {full_bien})</b>: Ban đầu thuận hòa nhưng về sau dễ rạn nứt/phân tán, cần giữ chữ tín")
+    elif full_bien in _LUC_XUNG_HEXAGRAMS and full_bien != full_chu:
         hex_special_traits.append(f"Quẻ Biến <b>{full_bien}</b> hóa <b>Lục Xung</b> (giai đoạn cuối có sự xung kích giải tỏa hoặc phân tách nhanh)")
     elif full_bien in _LUC_HOP_HEXAGRAMS and full_bien != full_chu:
         hex_special_traits.append(f"Quẻ Biến <b>{full_bien}</b> hóa <b>Lục Hợp</b> (kết cục cuối cùng gắn kết, thành tựu bền vững)")
@@ -1166,9 +1170,11 @@ def compute_deep_interacting_factors_a_to_z(
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:10px;font-size:0.9em;line-height:1.52;color:#f1f5f9;">'
         # Thẻ 1: Lục Hào
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #38bdf8;">'
-        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO KINH DỊCH (10 Tầng Sâu)</div>'
+        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO KINH DỊCH (12 Tầng Cổ Pháp V128.0)</div>'
         f'• <b>Thế – Ứng:</b> {hex_trait_str}. Hào Thế (Hào {the_idx} {the_chi}-{the_nh}, {the_luc_thu}) ↔ Hào Ứng (Hào {ung_idx} {ung_chi}-{ung_nh}): {the_ung_rel}.<br>'
-        f'• <b>Dụng Thần:</b> <b>{dung_than} tại Hào {dt_idx} ({dt_chi}-{dt_nh})</b> ({dt_vi_info.get("ten_hao", f"Hào {dt_idx}")}) lâm <b>{dt_luc_thu}</b>.<br>'
+        f'• <b>Dụng Thần:</b> <b>{dung_than} tại Hào {dt_idx} ({dt_chi}-{dt_nh})</b> ({dt_vi_info.get("ten_hao", f"Hào {dt_idx}")}) lâm <b>{dt_luc_thu}</b>'
+        + (f' · <span style="color:#fde047;">{univ_mat.get("dt_khong_phuc_note", "")}</span>' if univ_mat.get("dt_khong_phuc_note") else '')
+        + f'.<br>'
         f'• <b>Khí lực:</b> {dt_season_state} · Trường Sinh ngày {chi_n}: <b>{dt_ts_ngay}</b> · {mo_kho_note}.<br>'
         f'• <b>Nguyên/Kỵ & Tài:</b> Nguyên Thần: <b>{", ".join(nguyen_than_list) or "Ẩn"}</b> | Kỵ Thần: <b>{", ".join(ky_than_list) or "Không"}</b> | {univ_mat.get("the_tai_status_str", "")}.<br>'
         f'• <b>Hào Động/Biến:</b> {"; ".join(dong_hoa_details) if dong_hoa_details else "Quẻ Tĩnh (6 hào an tĩnh)"}{am_dong_np_html}'

@@ -134,7 +134,7 @@ GITHUB_VERIFIED_REAL_CASES: List[Dict[str, Any]] = [
         "hexagram": {"chu": "Hỏa Thiên Đại Hữu", "bien": "Thuần Càn", "dong_hao": [5]},
         "ground_truth": {
             "target": "INVEST_PROFIT",
-            "expected_keywords": ["HỎA THIÊN ĐẠI HỮU", "THUẦN CÀN"],
+            "expected_keywords": ["HỎA THIÊN ĐẠI HỮU", "CÀN VI THIÊN"],
             "forbidden_keywords": ["TÌM ĐỒ", "ÂM BINH"],
         },
     },
@@ -172,6 +172,18 @@ GITHUB_VERIFIED_REAL_CASES: List[Dict[str, Any]] = [
             "target": "GENDER_AGE",
             "expected_keywords": ["CHÍNH XÁC 85 TUỔI", "84 – 86 TUỔI"],
             "forbidden_keywords": ["1971 (55 TUỔI)", "1966 (60 TUỔI)", "50 – 78 TUỔI"],
+        },
+    },
+    {
+        "case_id": "ZSBY-014",
+        "source": "Thực Tế Kiểm Chứng & Mai Hoa Thanh Âm / Kỳ Môn Bát Thần (Hỏi Hiện Đang Nghe Nhạc Gì — Thiên Thủy Tụng ➔ Hỏa Thủy Vị Tế)",
+        "question": "tôi đang nghe nhạc gì , nhạc vui , buồn, nhạc phật, nhạc đám ma",
+        "cast_time": {"can_ngay": "Giáp", "chi_ngay": "Thân", "chi_thang": "Tuất", "can_gio": "Nhâm", "chi_gio": "Thân", "cuc": 6},
+        "hexagram": {"chu": "Thiên Thủy Tụng", "bien": "Hỏa Thủy Vị Tế", "dong_hao": [5]},
+        "ground_truth": {
+            "target": "VAN_VAT_OPEN",
+            "expected_keywords": ["ĐỐI CHỨNG 4 LOẠI NHẠC", "NHẠC PHẬT"],
+            "forbidden_keywords": ["CHƯA CÓ THẬT", "TÌM ĐỒ"],
         },
     },
 ]

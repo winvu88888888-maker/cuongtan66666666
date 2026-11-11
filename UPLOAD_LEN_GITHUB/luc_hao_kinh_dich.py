@@ -1,9 +1,10 @@
 import random
+from functools import lru_cache
 from datetime import datetime
 
 LUC_THAN = ["Huynh Đệ", "Phụ Mẫu", "Quan Quỷ", "Thê Tài", "Tử Tôn"]
 LUC_THU = ["Thanh Long", "Chu Tước", "Câu Trần", "Đằng Xà", "Bạch Hổ", "Huyền Vũ"]
-VERSION_LH = "2026.03.07.PRO_V4_FIX"
+VERSION_LH = "V128.0_TANG_SAN_BOC_DICH"
 PALACE_ELEMENTS = {"Càn":"Kim", "Đoài":"Kim", "Ly":"Hỏa", "Chấn":"Mộc", "Tốn":"Mộc", "Khảm":"Thủy", "Cấn":"Thổ", "Khôn":"Thổ"}
 
 # =====================================================
@@ -125,8 +126,6 @@ HEXAGRAM_NAMES = {
     (2, 1): "Trạch Thiên Quải", (2, 8): "Trạch Địa Tụy", (2, 3): "Trạch Hỏa Cách",
     (2, 4): "Trạch Lôi Tùy", (2, 6): "Trạch Thủy Khốn", (2, 7): "Trạch Sơn Hàm",
     (2, 5): "Trạch Phong Đại Quá",
-    # Thiên + X
-    (1, 6): "Thiên Thủy Tụng",
 }
 
 def lines_to_quai_num(lines):
@@ -138,6 +137,7 @@ def get_hex_name(lines):
     upper = lines_to_quai_num(lines[3:])
     return HEXAGRAM_NAMES.get((upper, lower), f"Quẻ {upper}-{lower}")
 
+@lru_cache(maxsize=256)
 def get_nap_giap_for_hexagram(lower_idx, upper_idx):
     """Get proper Nạp Giáp for a hexagram using inner/outer trigram rules.
     Inner trigram uses positions 1-3 (indices 0-2) of its NAP_GIAP_MAP.
@@ -176,6 +176,7 @@ def get_element_strength(h_element, month):
     }
     return strengths.get(m_el, {}).get(h_element, "Bình")
 
+@lru_cache(maxsize=256)
 def get_tuan_khong(can_ngay, chi_ngay):
     if chi_ngay == "Tỵ": chi_ngay = "Tị"
     can_map = {"Giáp":1, "Ất":2, "Bính":3, "Đinh":4, "Mậu":5, "Kỷ":6, "Canh":7, "Tân":8, "Nhâm":9, "Quý":10}
@@ -334,15 +335,40 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                    "Thìn":"Dậu", "Dậu":"Thìn", "Tị":"Thân", "Thân":"Tị", "Ngọ":"Mùi", "Mùi":"Ngọ"}
         return hop_map.get(chi1) == chi2
 
-    def is_mo(h_chi, n_chi):
-        mo_map = {
-            "Thân": "Sửu", "Dậu": "Sửu", "Tị": "Tuất", "Ngọ": "Tuất",
-            "Dần": "Mùi", "Mão": "Mùi", "Hợi": "Thìn", "Tý": "Thìn",
-            "Thìn": "Thìn", "Tuất": "Tuất", "Sửu": "Sửu", "Mùi": "Mùi"
-        }
-        return mo_map.get(h_chi) == n_chi
+    # V128.0 (Tăng San Bốc Dịch — Thủy Thổ đồng cung Nhập Mộ tại Thìn; không gán nhầm Tuất/Sửu/Mùi tự Mộ khi lâm Nhật/Nguyệt Kiến!)
+    _SINH_EL = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
+    _KHAC_EL = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+    _CHI_EL = {
+        "Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc",
+        "Thìn": "Thổ", "Tị": "Hỏa", "Ngọ": "Hỏa", "Mùi": "Thổ",
+        "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy",
+    }
+    _MO_BY_EL = {"Kim": "Sửu", "Mộc": "Mùi", "Thủy": "Thìn", "Thổ": "Thìn", "Hỏa": "Tuất"}
+    _TUYET_BY_EL = {"Kim": "Dần", "Mộc": "Thân", "Thủy": "Tị", "Thổ": "Tị", "Hỏa": "Hợi"}
+    _TIEN_PAIRS = {("Hợi", "Tý"), ("Dần", "Mão"), ("Tị", "Ngọ"), ("Thân", "Dậu"), ("Sửu", "Thìn"), ("Mùi", "Tuất")}
+    _THOAI_PAIRS = {("Tý", "Hợi"), ("Mão", "Dần"), ("Ngọ", "Tị"), ("Dậu", "Thân"), ("Thìn", "Sửu"), ("Tuất", "Mùi")}
+    _LUC_XUNG_SET = {
+        "Càn Vi Thiên", "Khôn Vi Địa", "Khảm Vi Thủy", "Ly Vi Hỏa",
+        "Chấn Vi Lôi", "Tốn Vi Phong", "Cấn Vi Sơn", "Đoài Vi Trạch",
+        "Lôi Thiên Đại Tráng", "Thiên Lôi Vô Vọng",
+    }
+    _LUC_HOP_SET = {
+        "Địa Thiên Thái", "Thiên Địa Bĩ", "Địa Lôi Phục", "Lôi Địa Dự",
+        "Hỏa Sơn Lữ", "Sơn Hỏa Bí", "Trạch Thủy Khốn", "Thủy Trạch Tiết",
+    }
 
-    # Build main hexagram details
+    def is_mo(h_chi, n_chi):
+        if not h_chi or not n_chi or h_chi == n_chi:
+            return False  # Lâm Nhật/Nguyệt Kiến là Trị Nhật/Nguyệt, tuyệt đối không phải Nhập Mộ!
+        h_el = _CHI_EL.get(h_chi, "")
+        return _MO_BY_EL.get(h_el) == n_chi
+
+    nhat_el = _CHI_EL.get(chi_ngay, "Thổ")
+    nguyet_el = _CHI_EL.get(chi_thang, "Thổ")
+    mv_cc_ban = nap_giap_ban[moving_idx - 1]
+    mv_el_ban = mv_cc_ban.split("-")[1]
+
+    # Build main hexagram details (V128.0: Ám Động vs Nhật Phá, Chân Không vs Giả Không, 6 Pháp Quyết Hào Biến)
     details_ban = []
     for i in range(6):
         cc = nap_giap_ban[i]
@@ -350,116 +376,214 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         c_element = cc.split("-")[1]
         lt = get_luc_than(c_element, p_element)
         strength = get_element_strength(c_element, chi_thang or lmonth)
-        
+        is_mv = (i + 1) == moving_idx
+        is_vuong_tuong = strength in ("Vượng", "Tướng")
+        dac_nhat_sinh = (_SINH_EL.get(nhat_el) == c_element) or (nhat_el == c_element)
+        dac_dong_sinh = (not is_mv) and (_SINH_EL.get(mv_el_ban) == c_element)
+
+        is_nguyet_pha_line = is_xung(c_branch, chi_thang) and (c_branch != chi_ngay)
+        is_nhat_xung_line = is_xung(c_branch, chi_ngay)
+        is_am_dong_line = False
+        is_nhat_pha_line = False
+        if not is_mv and is_nhat_xung_line:
+            if is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh:
+                is_am_dong_line = True
+            else:
+                is_nhat_pha_line = True
+
+        # Phân định Chân Không vs Giả Không (Tăng San Bốc Dịch — Tuần Không Chương)
+        is_void = c_branch in void_branches
+        khong_type = ""
+        if is_void:
+            if is_mv or is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh or is_nhat_xung_line:
+                khong_type = "GIA_KHONG"
+            else:
+                khong_type = "CHAN_KHONG"
+
         markers = []
-        if (i+1) == the_pos: markers.append("(Thế)")
-        if (i+1) == ung_pos: markers.append("(Ứng)")
-        if c_branch in void_branches: markers.append("(○)")
-        if c_branch == ma_branch: markers.append("(🐎)")
-        if is_xung(c_branch, chi_thang): markers.append("(Nguyệt Phá)")
-        if is_xung(c_branch, chi_ngay): markers.append("(Nhật Phá)")
-        if is_mo(c_branch, chi_thang) or is_mo(c_branch, chi_ngay): markers.append("(Mộ)")
-        
-        # Tiến Thoái thần for moving lines
-        if (i+1) == moving_idx:
-            # Need to compare with Biến line
+        if (i + 1) == the_pos:
+            markers.append("(Thế)")
+        if (i + 1) == ung_pos:
+            markers.append("(Ứng)")
+        if is_void:
+            markers.append("(Giả Không)" if khong_type == "GIA_KHONG" else "(Chân Không)")
+        if c_branch == ma_branch:
+            markers.append("(🐎)")
+        if is_nguyet_pha_line:
+            markers.append("(Nguyệt Phá)")
+        if is_am_dong_line:
+            markers.append("(Ám Động)")
+        elif is_nhat_pha_line:
+            markers.append("(Nhật Phá)")
+        if (not is_vuong_tuong) and (is_mo(c_branch, chi_thang) or is_mo(c_branch, chi_ngay)):
+            markers.append("(Mộ)")
+
+        hoa_flags = []
+        if is_mv:
             cc_bien = nap_giap_bien[i]
             bien_branch = cc_bien.split("-")[0]
-            if (c_branch, bien_branch) in [("Thân","Dậu"), ("Hợi","Tý"), ("Dần","Mão"), ("Tị","Ngọ"), ("Sửu","Thìn"), ("Thìn","Mùi"), ("Mùi","Tuất"), ("Tuất","Sửu")]:
+            bien_el = cc_bien.split("-")[1]
+            if (c_branch, bien_branch) in _TIEN_PAIRS:
                 markers.append("(Tiến)")
-            elif (c_branch, bien_branch) in [("Dậu","Thân"), ("Tý","Hợi"), ("Mão","Dần"), ("Ngọ","Tị"), ("Thìn","Sửu"), ("Mùi","Thìn"), ("Tuất","Mùi"), ("Sửu","Tuất")]:
+                hoa_flags.append("HOA_TIEN")
+            elif (c_branch, bien_branch) in _THOAI_PAIRS:
                 markers.append("(Thoái)")
+                hoa_flags.append("HOA_THOAI")
+            if _SINH_EL.get(bien_el) == c_element:
+                markers.append("(Hồi Đầu Sinh)")
+                hoa_flags.append("HOI_DAU_SINH")
+            elif _KHAC_EL.get(bien_el) == c_element:
+                markers.append("(Hồi Đầu Khắc)")
+                hoa_flags.append("HOI_DAU_KHAC")
+            if bien_branch in void_branches:
+                hoa_flags.append("HOA_KHONG")
+            if bien_branch == _MO_BY_EL.get(c_element):
+                markers.append("(Hóa Mộ)")
+                hoa_flags.append("HOA_MO")
+            if bien_branch == _TUYET_BY_EL.get(c_element):
+                markers.append("(Hóa Tuyệt)")
+                hoa_flags.append("HOA_TUYET")
+            if is_xung(c_branch, bien_branch):
+                markers.append("(Phản Ngâm)")
+                hoa_flags.append("PHAN_NGAM_HAO")
+            elif c_branch == bien_branch:
+                markers.append("(Phục Ngâm)")
+                hoa_flags.append("PHUC_NGAM_HAO")
 
         details_ban.append({
-            'hao': i+1, 'line': ban_lines[i], 'is_moving': (i+1) == moving_idx,
-            'dong': (i+1) == moving_idx,
+            'hao': i + 1, 'line': ban_lines[i], 'is_moving': is_mv,
+            'dong': is_mv,
             'luc_than': lt, 'can_chi': cc, 'chi': c_branch, 'ngu_hanh': c_element,
-            'luc_thu': LUC_THU[(start_thu+i)%6],
+            'luc_thu': LUC_THU[(start_thu + i) % 6],
             'strength': strength, 'vuong_suy': strength,
-            'the_ung': 'Thế' if (i+1) == the_pos else ('Ứng' if (i+1) == ung_pos else ''),
+            'the_ung': 'Thế' if (i + 1) == the_pos else ('Ứng' if (i + 1) == ung_pos else ''),
             'am_duong': 'Dương' if ban_lines[i] == 1 else 'Âm',
+            'is_void': is_void,
+            'khong_type': khong_type,
+            'is_am_dong': is_am_dong_line,
+            'is_nhat_pha': is_nhat_pha_line,
+            'is_nguyet_pha': is_nguyet_pha_line,
+            'hoa_flags': hoa_flags,
             'marker': " ".join(markers)
         })
-        
+
     # Build biến hexagram details (uses biến's own trigrams for nạp giáp, but main palace for lục thân)
     details_bien = []
     for i in range(6):
         cc = nap_giap_bien[i]
         c_branch = cc.split("-")[0]
         c_element = cc.split("-")[1]
-        lt = get_luc_than(c_element, p_element)  # Still uses MAIN palace
+        lt = get_luc_than(c_element, p_element)
         strength = get_element_strength(c_element, chi_thang or lmonth)
-        
+
         markers_b = []
-        if c_branch in void_branches: markers_b.append("(○)")
-        if c_branch == ma_branch: markers_b.append("(🐎)")
-        
+        if c_branch in void_branches:
+            markers_b.append("(○)")
+        if c_branch == ma_branch:
+            markers_b.append("(🐎)")
+
         details_bien.append({
-            'hao': i+1, 'line': bien_lines[i], 'is_moving': False,
+            'hao': i + 1, 'line': bien_lines[i], 'is_moving': False,
             'luc_than': lt, 'can_chi': cc, 'chi': c_branch, 'ngu_hanh': c_element,
-            'luc_thu': LUC_THU[(start_thu+i)%6],
+            'luc_thu': LUC_THU[(start_thu + i) % 6],
             'strength': strength, 'vuong_suy': strength,
             'am_duong': 'Dương' if bien_lines[i] == 1 else 'Âm',
             'marker': " ".join(markers_b)
         })
-        
+
     # ============================================
-    # V12.2: PHỤC THẦN (伏神) — Lục Thân ẩn
+    # V128.0: PHỤC THẦN (伏神) — Xét ĐẮC XUẤT vs TUYỆT LỘ (Tăng San Bốc Dịch)
     # ============================================
-    # 1. Tìm Lục Thân nào THIẾU trong quẻ chủ
     present_luc_than = set(d['luc_than'] for d in details_ban)
     missing_luc_than = [lt for lt in LUC_THAN if lt not in present_luc_than]
-    
+
     phuc_than_list = []
-    
+
     if missing_luc_than:
-        # 2. Lấy quẻ Bát Thuần (quẻ gốc) của cung hiện tại
-        # Bát Thuần = cung nào thì quẻ thuần đó (VD: Càn → Càn Vi Thiên)
         bat_thuan_name = {
             "Càn": "Càn Vi Thiên", "Khôn": "Khôn Vi Địa",
             "Chấn": "Chấn Vi Lôi", "Tốn": "Tốn Vi Phong",
             "Khảm": "Khảm Vi Thủy", "Ly": "Ly Vi Hỏa",
             "Cấn": "Cấn Vi Sơn", "Đoài": "Đoài Vi Trạch"
         }
-        
-        # Quẻ Bát Thuần: inner = outer = cung trigram
         palace_trigram_idx = {v: k for k, v in QUAI_IDX_TO_NAME.items()}.get(palace, 1)
         bt_nap_giap = get_nap_giap_for_hexagram(palace_trigram_idx, palace_trigram_idx)
-        
-        # 3. Tính Lục Thân cho Bát Thuần
+
         bt_details = []
         for i in range(6):
             cc = bt_nap_giap[i]
+            c_branch = cc.split("-")[0]
             c_element = cc.split("-")[1]
             lt = get_luc_than(c_element, p_element)
-            bt_details.append({'hao': i+1, 'can_chi': cc, 'luc_than': lt, 'element': c_element})
-        
-        # 4. Với mỗi Lục Thân thiếu, tìm vị trí trong Bát Thuần
+            bt_details.append({'hao': i + 1, 'can_chi': cc, 'chi': c_branch, 'luc_than': lt, 'element': c_element})
+
         for missing_lt in missing_luc_than:
             for bt_d in bt_details:
                 if bt_d['luc_than'] == missing_lt:
                     hao_pos = bt_d['hao']
-                    # Phi Thần = hào tại vị trí tương ứng trong quẻ chủ
                     phi_than = details_ban[hao_pos - 1]
-                    
+                    phuc_el = bt_d['element']
+                    phuc_chi = bt_d['chi']
+                    phi_el = phi_than['ngu_hanh']
+                    phi_sinh_phuc = (_SINH_EL.get(phi_el) == phuc_el)
+                    phi_khac_phuc = (_KHAC_EL.get(phi_el) == phuc_el)
+                    phi_khong_pha = bool(phi_than.get('is_void') or phi_than.get('is_nguyet_pha') or phi_than.get('is_nhat_pha'))
+                    phuc_strength = get_element_strength(phuc_el, chi_thang or lmonth)
+                    phuc_dac_nhat = (_SINH_EL.get(nhat_el) == phuc_el) or (nhat_el == phuc_el)
+                    dac_xuat = bool(phi_sinh_phuc or phi_khong_pha or phuc_strength in ("Vượng", "Tướng") or phuc_dac_nhat)
+                    if dac_xuat:
+                        phuc_status = "DAC_XUAT"
+                        phuc_desc = (
+                            f"Phục Thần Đắc Xuất ({'Phi sinh Phục' if phi_sinh_phuc else ('Phi Không/Phá lộ Phục' if phi_khong_pha else 'Đắc Nhật/Nguyệt vượng khí')}) — "
+                            f"tạm ẩn dưới Hào {hao_pos} {phi_than['luc_than']} ({phi_than['chi']}), đến ngày/giờ {phuc_chi} hoặc xung Phi ({phi_than['chi']}) sẽ lộ rõ!"
+                        )
+                    else:
+                        phuc_status = "TUYET_LO" if phi_khac_phuc else "AN_PHUC"
+                        phuc_desc = (
+                            f"Phục Thần Bị Đè Nén ({'Phi Thần khắc Phục Thần' if phi_khac_phuc else 'Hưu tù vô khí'}) dưới Hào {hao_pos} {phi_than['luc_than']} ({phi_than['chi']}) — "
+                            f"hiện tại rất khó lộ diện ngay, cần chờ vận sinh trợ hành {phuc_el}."
+                        )
+
                     phuc_info = {
                         'luc_than': missing_lt,
                         'can_chi': bt_d['can_chi'],
-                        'element': bt_d['element'],
+                        'chi': phuc_chi,
+                        'element': phuc_el,
                         'hao_pos': hao_pos,
                         'phi_than_luc_than': phi_than['luc_than'],
                         'phi_than_can_chi': phi_than['can_chi'],
-                        'strength': get_element_strength(bt_d['element'], chi_thang or lmonth),
+                        'phi_sinh_phuc': phi_sinh_phuc,
+                        'phi_khac_phuc': phi_khac_phuc,
+                        'phi_khong_pha': phi_khong_pha,
+                        'dac_xuat': dac_xuat,
+                        'phuc_status': phuc_status,
+                        'phuc_desc': phuc_desc,
+                        'strength': phuc_strength,
                         'bat_thuan': bat_thuan_name.get(palace, '?'),
                     }
                     phuc_than_list.append(phuc_info)
-                    break  # Chỉ lấy hào đầu tiên match
-    
+                    break
+
+    # Kiểm tra Tùy Quỷ Nhập Mộ (Hào Thế lâm Quan Quỷ Nhập Mộ hoặc Quan Quỷ động hóa Mộ kèm Thế suy) & Tương Hóa Xung-Hợp
+    the_detail = details_ban[the_pos - 1]
+    tuy_quy_nhap_mo = bool(
+        the_detail['luc_than'] == "Quan Quỷ"
+        and the_detail['strength'] in ("Hưu", "Tù", "Tử")
+        and (_MO_BY_EL.get(the_detail['ngu_hanh']) in (chi_ngay, chi_thang) or "HOA_MO" in the_detail.get('hoa_flags', []))
+    )
+    xung_hop_transition = ""
+    if ban_name in _LUC_XUNG_SET and bien_name in _LUC_HOP_SET:
+        xung_hop_transition = "XUNG_HOA_HOP"
+    elif ban_name in _LUC_HOP_SET and bien_name in _LUC_XUNG_SET:
+        xung_hop_transition = "HOP_HOA_XUNG"
+
     return {
         'ban': {'name': ban_name, 'lines': ban_lines, 'details': details_ban, 'haos': details_ban, 'palace': palace},
         'bien': {'name': bien_name, 'lines': bien_lines, 'details': details_bien, 'haos': details_bien},
         'dong_hao': [moving_idx],
         'phuc_than': phuc_than_list,
+        'tuy_quy_nhap_mo': tuy_quy_nhap_mo,
+        'xung_hop_transition': xung_hop_transition,
         'conclusion': f"Quẻ {ban_name} biến {bien_name}. {topic} có biến tại hào {moving_idx}.",
         'the_ung': f"Thế hào {the_pos}, Ứng hào {ung_pos}",
         'can_ngay': can_ngay,

@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V127.0"
+APP_VERSION = "V128.0"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Antigravity Brain Mode 🧠 + Gemini Pro Deep-Reasoning 🤖 + Giải Mã Tâm Linh & Phúc Khí ☯️ + Bố Cục Tinh Gọn 4 Trụ Cột 2×2 ✨)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -20,7 +20,7 @@ import traceback
 import re
 
 # V126.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V127.0"
+_CODE_BUILD_VERSION = "V128.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2392,7 +2392,7 @@ def render_master_unified_qa_box(location_key="main"):
     <div style='background:linear-gradient(135deg,#0f172a,#1e1b4b,#064e3b);padding:18px 22px;border-radius:16px;
                 border:2px solid #34d399;margin:14px 0;box-shadow:0 6px 24px rgba(16,185,129,0.22);'>
         <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:8px;'>
-            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V127.0 — GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z)
+            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V128.0 — ĐẠI TÔNG SƯ DỊCH HỌC: 12 TẦNG CỔ PHÁP & TỰ HỌC TRỌNG SỐ)
         </div>
         <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:6px;'>
             <div style='padding:10px 14px;background:rgba(16,185,129,0.14);border-radius:10px;border-left:4px solid #34d399;'>
@@ -2805,14 +2805,16 @@ def render_master_unified_qa_box(location_key="main"):
                             has_custom_xn=_has_custom_xn,
                             use_online_api=_want_online,
                         )
-                        # Chỉ cache khi kết quả đã có Online (nếu bật Online) hoặc khi chạy chế độ Offline
-                        if not _use_rnd and (not _want_online or 'KẾT LUẬN AI ONLINE' in str(combined_answer)):
+                        # V128.0: Cache chính xác kết quả Online hoặc Offline để truy xuất tức thì (< 5 ms)
+                        if not _use_rnd and (not _want_online or 'XEM CHI TIẾT PHÂN TÍCH AI ONLINE' in str(combined_answer)):
                             if len(_cache_store) > 30:
                                 _cache_store.clear()
                             _cache_store[_cache_key] = combined_answer
 
                     _elapsed_sec = _time_perf.perf_counter() - _t_start
                     st.session_state['master_qa_last_result'] = combined_answer
+                    st.session_state['master_qa_last_meta'] = getattr(offline_ai, '_last_qa_meta', {}) or {}
+                    st.session_state['master_qa_feedback_done'] = False
                     st.session_state['master_qa_last_question'] = user_question.strip()
                     st.session_state['master_qa_elapsed_ms'] = _elapsed_sec * 1000.0
 
@@ -2841,6 +2843,57 @@ def render_master_unified_qa_box(location_key="main"):
             unsafe_allow_html=True
         )
         display_ai_result(st.session_state['master_qa_last_result'], key_prefix=f"master_{location_key}")
+
+        # ── V128.0: THANH KIỂM CHỨNG THỰC NGHIỆM & TỰ HỌC TRỌNG SỐ 4 PHƯƠNG PHÁP (BẢO MẬT 100% — KHÔNG LƯU CÂU HỎI) ──
+        try:
+            from adaptive_calibration import record_empirical_feedback, get_calibration_summary
+            _qa_meta_now = st.session_state.get('master_qa_last_meta') or {}
+            _arch_k_now = str(_qa_meta_now.get('archetype_key') or 'D0_GENERAL')
+            _cal_sum = get_calibration_summary(_arch_k_now)
+            with st.container():
+                _fb_c1, _fb_c2, _fb_c3 = st.columns([1.15, 1.15, 2.3])
+                with _fb_c1:
+                    if st.button(
+                        "✅ Nghiệm chứng: ĐÚNG THỰC TẾ",
+                        key=f"cal_ok_{location_key}",
+                        use_container_width=True,
+                        disabled=bool(st.session_state.get('master_qa_feedback_done', False)),
+                        help="Xác nhận kết luận khớp thực tế để hệ thống thưởng trọng số cho phương pháp đoán trúng (Bảo mật 100%: tuyệt đối không lưu nội dung câu hỏi)."
+                    ):
+                        _cal_sum = record_empirical_feedback(
+                            archetype_key=_arch_k_now,
+                            verdicts=_qa_meta_now.get('verdicts') or {},
+                            overall_pct=int(_qa_meta_now.get('weighted_pct') or 50),
+                            is_correct=True,
+                        )
+                        st.session_state['master_qa_feedback_done'] = True
+                        st.toast(f"✅ Đã cập nhật trọng số thực nghiệm ({_cal_sum['badge_str']})!", icon="🎯")
+                with _fb_c2:
+                    if st.button(
+                        "⚖️ Lệch thực tế — Tự hiệu chỉnh",
+                        key=f"cal_fix_{location_key}",
+                        use_container_width=True,
+                        disabled=bool(st.session_state.get('master_qa_feedback_done', False)),
+                        help="Báo hệ thống tự động điều chỉnh lại tỷ trọng Mai Hoa · Lục Hào · Kỳ Môn · Thiết Bản cho dạng câu hỏi này (Không lưu câu hỏi)."
+                    ):
+                        _cal_sum = record_empirical_feedback(
+                            archetype_key=_arch_k_now,
+                            verdicts=_qa_meta_now.get('verdicts') or {},
+                            overall_pct=int(_qa_meta_now.get('weighted_pct') or 50),
+                            is_correct=False,
+                        )
+                        st.session_state['master_qa_feedback_done'] = True
+                        st.toast(f"⚖️ Đã tinh chỉnh lại trọng số 4 phương pháp ({_cal_sum['badge_str']})!", icon="🔧")
+                with _fb_c3:
+                    _acc_txt = f" · Tỷ lệ chuẩn thực nghiệm: <b>{_cal_sum['accuracy_pct']}%</b> ({_cal_sum['correct_feedback']}/{_cal_sum['total_feedback']} ca)" if _cal_sum['total_feedback'] > 0 else " · Sẵn sàng tự học trọng số thực tế"
+                    st.markdown(
+                        f"<div style='padding:7px 12px;background:rgba(30,41,59,0.75);border:1px solid rgba(148,163,184,0.28);border-radius:8px;font-size:0.82rem;color:#cbd5e1;line-height:1.45;'>"
+                        f"🧠 <b>Trọng số thực nghiệm ({_arch_k_now}):</b> <span style='color:#fde68a;'>{_cal_sum['badge_str']}</span>{_acc_txt}"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+        except Exception:
+            pass
 
     # ── HIỂN THỊ TRỰC TIẾP PHẦN II: 3 TAB PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP NGAY DƯỚI Ô HỎI ĐÁP (V106.0) ──
     with st.expander("🏛️ MỞ XEM TRỰC TIẾP PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày Giờ Đẹp)", expanded=True):

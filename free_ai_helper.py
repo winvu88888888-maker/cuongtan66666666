@@ -16180,6 +16180,30 @@ class FreeAIHelper:
             )
             if _q_blueprint.get("authoritative_dt"):
                 dung_than = _q_blueprint["authoritative_dt"]
+            # V128.0: Áp dụng Trọng Số Tự Học Thực Nghiệm (Adaptive Bayesian Calibration — Bảo mật 100%)
+            try:
+                from adaptive_calibration import apply_calibrated_weighted_pct
+                weighted_pct = apply_calibrated_weighted_pct(
+                    base_pct=weighted_pct,
+                    archetype_key=str(_q_blueprint.get("archetype_key", "D0_GENERAL")),
+                    mai_hoa_verdict=str(mai_hoa_verdict or ""),
+                    ky_mon_verdict=str(ky_mon_verdict or ""),
+                    luc_hao_verdict=str(luc_hao_verdict or ""),
+                    thiet_ban_verdict=str(thiet_ban_verdict or ""),
+                )
+            except Exception:
+                pass
+            self._last_qa_meta = {
+                "archetype_key": str(_q_blueprint.get("archetype_key", "D0_GENERAL")),
+                "archetype_label": str(_q_blueprint.get("archetype_label", "")),
+                "weighted_pct": int(weighted_pct or 50),
+                "verdicts": {
+                    "mai_hoa": str(mai_hoa_verdict or ""),
+                    "ky_mon": str(ky_mon_verdict or ""),
+                    "luc_hao": str(luc_hao_verdict or ""),
+                    "thiet_ban": str(thiet_ban_verdict or ""),
+                },
+            }
             _omni_data_for_dual = dict(_omniscient_res.get('data', {})) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict) else {}
             if isinstance(chart_data, dict):
                 # V126.0: Đồng bộ ĐỘNG 100% Cung / Sao / Cửa / Thần trên bàn Kỳ Môn cho MỌI Dụng Thần (Thê Tài, Huynh Đệ, Phụ Mẫu, Tử Tôn, Quan Quỷ, Bản Thân)
@@ -16567,7 +16591,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & PHÂN TÍCH 24 YẾU TỐ (Antigravity Brain Mode V127.0 — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & PHÂN TÍCH 24 YẾU TỐ (Antigravity Brain Mode V128.0 — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_grid_html
@@ -18077,18 +18101,54 @@ class FreeAIHelper:
                 except Exception:
                     _connected_prose_fb = _off2_summary
 
-                _dv_grid_fb = str((locals().get('_dual_verified') or {}).get('deep_a_to_z_grid_html') or '')
-                final_parts.append(
-                    f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:20px 22px;border-radius:16px;margin:14px 0;border:2px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
-                    f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'
-                    f'<span style="font-size:1.05em;font-weight:800;color:#6ee7b7;">🔮 ĐẠI PHÁN QUYẾT TỪ 4 PHƯƠNG PHÁP CHUẨN XÁC (V127.0: MAI HOA · KỲ MÔN · LỤC HÀO · THIẾT BẢN | BỐ CỤC TINH GỌN 4 TRỤ CỘT)</span>'
-                    f'<span style="font-size:1.0em;font-weight:900;padding:4px 12px;background:rgba(0,0,0,0.35);color:{"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};border-radius:20px;border:1px solid {"#fbbf24" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else _off2_v_color};">{"🎯 GIẢI MÃ SÁT QUẺ THỰC TẾ" if (("👉 ⚖️" in _main_focus_reply or "👉 🎯" in _main_focus_reply or "👉 🏠" in _main_focus_reply or "👉 👧👦" in _main_focus_reply) or any(w in (question.lower() if question else "") for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con", "nam hay nữ", "trai hay gái", "giới tính", "bao nhiêu tuổi", "mấy tuổi"])) else f"{_off2_v_icon} {_off2_v_label} ({weighted_pct}%)"}</span>'
-                    f'</div>'
-                    + _combined_direct_html
-                    + _dv_grid_fb
-                    + _comp_detail_html
-                    + f'</div>'
-                )
+                _dv_fb_obj = locals().get('_dual_verified') or {}
+                _dv_grid_fb = str(_dv_fb_obj.get('deep_a_to_z_grid_html') or '')
+                if _dv_fb_obj.get('verified_headline'):
+                    _fb_hl = str(_dv_fb_obj.get('verified_headline') or '')
+                    _fb_why = str(_dv_fb_obj.get('verified_why') or '')
+                    _fb_when = str(_dv_fb_obj.get('verified_when') or '')
+                    _fb_adv = str(_dv_fb_obj.get('verified_advice') or '')
+                    _fb_cards = []
+                    if _fb_why:
+                        _fb_cards.append(
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #38bdf8;">'
+                            f'<div style="font-weight:800;color:#38bdf8;font-size:0.92em;margin-bottom:5px;">🔍 VÌ SAO (NGUYÊN NHÂN CỐT LÕI)</div>'
+                            f'<div style="color:#f1f5f9;font-size:0.93em;line-height:1.52;">{_fb_why.rstrip(".")}</div></div>'
+                        )
+                    if _fb_when:
+                        _fb_cards.append(
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #fbbf24;">'
+                            f'<div style="font-weight:800;color:#fbbf24;font-size:0.92em;margin-bottom:5px;">⏰ KHI NÀO (THỜI ĐIỂM ỨNG KỲ)</div>'
+                            f'<div style="color:#fef3c7;font-size:0.93em;line-height:1.52;">{_fb_when.rstrip(".")}</div></div>'
+                        )
+                    if _fb_adv:
+                        _fb_cards.append(
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #34d399;">'
+                            f'<div style="font-weight:800;color:#34d399;font-size:0.92em;margin-bottom:5px;">🧭 LÀM GÌ (PHÁP QUYẾT HÀNH ĐỘNG)</div>'
+                            f'<div style="color:#ecfdf5;font-size:0.93em;line-height:1.52;">{_fb_adv.rstrip(".")}</div></div>'
+                        )
+                    _fb_cards_html = (
+                        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px;">'
+                        + "".join(_fb_cards)
+                        + '</div>'
+                    ) if _fb_cards else ''
+                    final_parts.append(
+                        f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
+                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & PHÂN TÍCH 24 YẾU TỐ (Antigravity Brain Mode V128.0 — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                        f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
+                        + _fb_cards_html
+                        + _dv_grid_fb
+                        + _comp_detail_html
+                        + f'</div>'
+                    )
+                else:
+                    final_parts.append(
+                        f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:20px 22px;border-radius:16px;margin:14px 0;border:2px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
+                        + _combined_direct_html
+                        + _dv_grid_fb
+                        + _comp_detail_html
+                        + f'</div>'
+                    )
             final_parts.append("")
             
             # ═══════════════════════════════════════════════════════════
@@ -18120,7 +18180,7 @@ class FreeAIHelper:
                 final_parts.append(_t3_fb_thoan)
             
             final_parts.append("\n</details>")
-            final_parts.append(f"\n💡 Để dùng AI thông minh hơn, nhập API Key tại [Google AI Studio](https://aistudio.google.com/).")
+            # V128.0: Đã đồng nhất Khung Hoàng Kim 3 Thẻ + Lưới 4 Trụ Cột 2x2 ngay cả khi không dùng API Key
             if auth_html: final_parts.insert(0, auth_html)
             if locals().get('_dual_agent_banner_html'): final_parts.insert(0, _dual_agent_banner_html)
             return "\n".join(final_parts)
