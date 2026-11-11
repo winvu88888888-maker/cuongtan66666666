@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V126.0"
+APP_VERSION = "V127.0"
 APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Antigravity Brain Mode 🧠 + Gemini Pro Deep-Reasoning 🤖 + Giải Mã Tâm Linh & Phúc Khí ☯️ + Bố Cục Tinh Gọn 4 Trụ Cột 2×2 ✨)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -20,7 +20,7 @@ import traceback
 import re
 
 # V126.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V126.0"
+_CODE_BUILD_VERSION = "V127.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2392,7 +2392,7 @@ def render_master_unified_qa_box(location_key="main"):
     <div style='background:linear-gradient(135deg,#0f172a,#1e1b4b,#064e3b);padding:18px 22px;border-radius:16px;
                 border:2px solid #34d399;margin:14px 0;box-shadow:0 6px 24px rgba(16,185,129,0.22);'>
         <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:8px;'>
-            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V117.0 — GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z)
+            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V127.0 — GEMINI PRO DEEP-REASONING & BÓC TÁCH SÂU 24 YẾU TỐ A→Z)
         </div>
         <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:6px;'>
             <div style='padding:10px 14px;background:rgba(16,185,129,0.14);border-radius:10px;border-left:4px solid #34d399;'>
@@ -2723,35 +2723,45 @@ def render_master_unified_qa_box(location_key="main"):
                             )
                             st.session_state.luc_hao_result = luc_hao_for_q
 
-                            # Hoạt Lạc Kỳ Môn theo Quái Số câu hỏi khi xem nhiều câu trong cùng 1 giờ (tránh kẹt cứng 1 bàn Phục Ngâm)
-                            try:
-                                from qmdg_data import an_bai_luc_nghi as _ab_q, lap_ban_qmdg as _lb_q
-                                _base_cuc = int(chart_for_q.get('cuc') or 5)
-                                _q_cuc = ((_base_cuc + _u_q + _l_q - 1) % 9) + 1
-                                _q_duong = bool(chart_for_q.get('is_duong_don', True))
-                                _q_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
-                                _q_doors = ["Hưu Môn", "Tử Môn", "Thương Môn", "Đỗ Môn", "Khai Môn", "Kinh Môn", "Sinh Môn", "Cảnh Môn"]
-                                _q_tp = _q_stars[(_u_q + _d_q - 1) % len(_q_stars)]
-                                _q_ts = _q_doors[(_l_q + _d_q - 1) % len(_q_doors)]
-                                _q_can_gio = _cans_rq[(_cans_rq.index(chart_for_q.get('can_gio', 'Giáp')) + _u_q + _l_q) % 10] if chart_for_q.get('can_gio') in _cans_rq else chart_for_q.get('can_gio', 'Bính')
-                                _q_chi_gio = _chis_rq[(_chis_rq.index(chart_for_q.get('chi_gio', 'Tý')) + _d_q) % 12] if chart_for_q.get('chi_gio') in _chis_rq else chart_for_q.get('chi_gio', 'Ngọ')
-                                _q_dia = _ab_q(_q_cuc, _q_duong)
-                                _q_tb, _q_ctb, _q_nb, _q_sb, _ = _lb_q(_q_cuc, _q_tp, _q_ts, _q_can_gio, _q_chi_gio, _q_duong)
-                                chart_for_q.update({
-                                    'thien_ban': _q_tb,
-                                    'can_thien_ban': _q_ctb,
-                                    'nhan_ban': _q_nb,
-                                    'than_ban': _q_sb,
-                                    'dia_can': _q_dia,
-                                    'dia_ban': _q_dia,
-                                    'cuc': _q_cuc,
-                                    'am_duong_don': f"{'Dương' if _q_duong else 'Âm'} Độn {_q_cuc} Cục",
-                                    'truc_phu': _q_tp,
-                                    'truc_su': _q_ts,
-                                })
-                                st.session_state.chart_data = chart_for_q
-                            except Exception:
-                                pass
+                            # V127.0: Ở lần gieo đầu tiên trong khung giờ (_prev_tuple is None), giữ nguyên 100% Bàn Kỳ Môn Thời Gian Thực chính thống!
+                            # Chỉ khi hỏi liên tiếp nhiều câu trong cùng 1 giờ (_prev_tuple is not None), mới kích hoạt Kỳ Môn Hoạt Bàn Đa Vấn Pháp
+                            # và dịch đồng thời Can-Chi Giờ theo đúng bước 60 Hoa Giáp (bảo toàn 100% quy tắc Dương Can đi Dương Chi, Âm Can đi Âm Chi),
+                            # tuyệt đối không ghi đè làm hỏng st.session_state.chart_data gốc của màn hình chính!
+                            if _prev_tuple is not None:
+                                try:
+                                    from qmdg_data import an_bai_luc_nghi as _ab_q, lap_ban_qmdg as _lb_q
+                                    _base_cuc = int(chart_for_q.get('cuc') or 5)
+                                    _q_cuc = ((_base_cuc + _u_q + _l_q - 1) % 9) + 1
+                                    _q_duong = bool(chart_for_q.get('is_duong_don', True))
+                                    _q_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
+                                    _q_doors = ["Hưu Môn", "Tử Môn", "Thương Môn", "Đỗ Môn", "Khai Môn", "Kinh Môn", "Sinh Môn", "Cảnh Môn"]
+                                    _q_tp = _q_stars[(_u_q + _d_q - 1) % len(_q_stars)]
+                                    _q_ts = _q_doors[(_l_q + _d_q - 1) % len(_q_doors)]
+                                    _step60 = (_u_q + _l_q + _d_q + _q_salt)
+                                    _c0_idx = _cans_rq.index(chart_for_q.get('can_gio', 'Giáp')) if chart_for_q.get('can_gio') in _cans_rq else 0
+                                    _ch0_idx = _chis_rq.index(chart_for_q.get('chi_gio', 'Tý')) if chart_for_q.get('chi_gio') in _chis_rq else 0
+                                    if (_c0_idx % 2) != (_ch0_idx % 2):
+                                        _ch0_idx = (_ch0_idx + 1) % 12
+                                    _q_can_gio = _cans_rq[(_c0_idx + _step60) % 10]
+                                    _q_chi_gio = _chis_rq[(_ch0_idx + _step60) % 12]
+                                    _q_dia = _ab_q(_q_cuc, _q_duong)
+                                    _q_tb, _q_ctb, _q_nb, _q_sb, _ = _lb_q(_q_cuc, _q_tp, _q_ts, _q_can_gio, _q_chi_gio, _q_duong)
+                                    chart_for_q.update({
+                                        'thien_ban': _q_tb,
+                                        'can_thien_ban': _q_ctb,
+                                        'nhan_ban': _q_nb,
+                                        'than_ban': _q_sb,
+                                        'dia_can': _q_dia,
+                                        'dia_ban': _q_dia,
+                                        'can_gio': _q_can_gio,
+                                        'chi_gio': _q_chi_gio,
+                                        'cuc': _q_cuc,
+                                        'am_duong_don': f"{'Dương' if _q_duong else 'Âm'} Độn {_q_cuc} Cục",
+                                        'truc_phu': _q_tp,
+                                        'truc_su': _q_ts,
+                                    })
+                                except Exception:
+                                    pass
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')
                             luc_hao_for_q = st.session_state.get('luc_hao_result')
@@ -2826,7 +2836,7 @@ def render_master_unified_qa_box(location_key="main"):
         _ms = st.session_state.get('master_qa_elapsed_ms', 40.0)
         st.markdown(
             f"<div style='background:rgba(16,185,129,0.12);border:1px solid #10b981;padding:6px 14px;border-radius:8px;margin-top:8px;font-size:0.85rem;color:#6ee7b7;'>"
-            f"⚡ <b>Tốc độ giải mã Siêu Tốc (V117.0): {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã phân khu: <b>Phần I (4 Phương Pháp Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản — Bóc tách sâu 24 yếu tố A→Z)</b> & <b>Phần II (Các Mảng Chuyên Biệt Độc Lập)</b>"
+            f"⚡ <b>Tốc độ giải mã Siêu Tốc ({APP_VERSION}): {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã phân khu: <b>Phần I (4 Phương Pháp Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản — Bóc tách sâu 24 yếu tố A→Z)</b> & <b>Phần II (Các Mảng Chuyên Biệt Độc Lập)</b>"
             f"</div>",
             unsafe_allow_html=True
         )

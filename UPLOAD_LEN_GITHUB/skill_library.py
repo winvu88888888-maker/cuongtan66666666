@@ -73,7 +73,7 @@ CORE_CONCEPTS = {
     "bệnh": {
         "summary": "Bệnh tật và chữa trị.",
         "details": [
-            "- **Thiên Nhu:** Ngôi sao đại diện cho bệnh tật.",
+            "- **Thiên Nhuế:** Ngôi sao đại diện cho bệnh tật.",
             "- **Tử Môn:** Cửa chết, tình trạng nguy kịch.",
             "- **Ất/Thiên Tâm:** Bác sĩ, thuốc men chữa trị."
         ]
@@ -286,7 +286,7 @@ CORE_CONCEPTS = {
     "người ghét": {"ref": "dụng thần"},
     "kẻ thù": {"ref": "dụng thần"},
     "đối thủ": {"ref": "dụng thần"},
-    "bệnh": {"ref": "dụng thần"},
+    "dụng thần bệnh": {"ref": "dụng thần"},
     "vợ": {"ref": "dụng thần"},
     "chồng": {"ref": "dụng thần"},
     "con": {"ref": "dụng thần"},

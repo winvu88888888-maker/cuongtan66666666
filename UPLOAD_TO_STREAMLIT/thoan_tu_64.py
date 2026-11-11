@@ -32,8 +32,8 @@ QUE_THOAN_64 = {
     'Sơn Thiên Đại Súc': {'thoan': 'Lợi trinh, bất gia thực cát — Tích lũy lớn, nuôi dưỡng hiền tài', 'dai_tuong': 'Trời trong núi, quân tử học cổ nhân', 'lk': 'Tích lũy, học hỏi, nuôi chí lớn'},
     'Sơn Trạch Tổn': {'thoan': 'Có phu, nguyên cát — Giảm bớt dưới bổ sung trên', 'dai_tuong': 'Dưới núi có đầm, quân tử trừng giận bớt dục', 'lk': 'Bớt dưới thêm trên, hy sinh vì đại nghĩa'},
     'Hỏa Trạch Khuê': {'thoan': 'Tiểu sự cát — Trái ngược, mâu thuẫn nhưng có thể hợp', 'dai_tuong': 'Lửa lên đầm xuống, quân tử đồng mà khác', 'lk': 'Bất đồng, nhưng tìm điểm chung'},
-    'Thiên Lôi Vô Vọng': {'thoan': 'Nguyên hanh lợi trinh — Không vọng tưởng, thuận theo tự nhiên', 'dai_tuong': 'Dưới trời có sấm, vạn vật thuận tính', 'lk': 'Chân thật, không mưu tính sẽ tốt'},
-    'Phong Lôi Ích': {'thoan': 'Lợi hữu du vãng, lợi thiệp đại xuyên — Thêm vào, tăng trưởng', 'dai_tuong': 'Gió sấm, quân tử thấy thiện thì làm, có lỗi thì sửa', 'lk': 'Tăng trưởng, bổ sung, phát triển'},
+    'Thiên Trạch Lý': {'thoan': 'Lý hổ vĩ, bất điệt nhân, hanh — Giữ lễ nghĩa khuôn phép, dẫm đuôi hổ chẳng bị cắn', 'dai_tuong': 'Trên trời dưới đầm, quân tử biện trên dưới định chí dân', 'lk': 'Giữ đúng lễ nghĩa và chừng mực sẽ bình an hanh thông'},
+    'Phong Trạch Trung Phu': {'thoan': 'Đồn ngư cát, lợi thiệp đại xuyên — Lòng chí thành cảm hóa tới cả loài vật, vượt sông lớn lợi', 'dai_tuong': 'Trên đầm có gió, quân tử bàn việc hình ngục mà khoan dung', 'lk': 'Lấy chữ Tín và lòng chân thành làm gốc sẽ đại cát'},
     'Phong Sơn Tiệm': {'thoan': 'Nữ quy cát, lợi trinh — Tiến dần từng bước', 'dai_tuong': 'Trên núi có gió, quân tử ở hiền đức', 'lk': 'Tiến từ từ, không vội, tuần tự'},
 
     # ══════ CUNG CHẤN (8 quẻ) ══════
@@ -86,3 +86,19 @@ QUE_THOAN_64 = {
     'Lôi Sơn Tiểu Quá': {'thoan': 'Hanh lợi trinh, tiểu sự cát — Vượt quá chút ít', 'dai_tuong': 'Trên núi có sấm, quân tử hành quá cung kính', 'lk': 'Hơi quá mức, nên khiêm tốn'},
     'Lôi Trạch Quy Muội': {'thoan': 'Chinh hung, vô du lợi — Cô gái về nhà chồng, không thuận', 'dai_tuong': 'Trên đầm có sấm, quân tử biết tệ mà trọn', 'lk': 'Hôn nhân, nhưng cần thận trọng'},
 }
+
+# V127.0: Đồng bộ ánh xạ hai chiều cho 8 Bát Thuần Quái ("Càn Vi Thiên" <-> "Thuần Càn")
+_BAT_THUAN_ALIASES = {
+    'Càn Vi Thiên': 'Thuần Càn',
+    'Khôn Vi Địa': 'Thuần Khôn',
+    'Chấn Vi Lôi': 'Thuần Chấn',
+    'Tốn Vi Phong': 'Thuần Tốn',
+    'Khảm Vi Thủy': 'Thuần Khảm',
+    'Ly Vi Hỏa': 'Thuần Ly',
+    'Cấn Vi Sơn': 'Thuần Cấn',
+    'Đoài Vi Trạch': 'Thuần Đoài',
+}
+for _alias_k, _canon_k in _BAT_THUAN_ALIASES.items():
+    if _canon_k in QUE_THOAN_64 and _alias_k not in QUE_THOAN_64:
+        QUE_THOAN_64[_alias_k] = QUE_THOAN_64[_canon_k]
+

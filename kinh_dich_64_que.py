@@ -663,9 +663,26 @@ MAI_HOA_UNG_KY = {
 # ======================================================================
 # 5. HÀM HELPER — Tra cứu nhanh
 # ======================================================================
+_BAT_THUAN_ALIASES_KD = {
+    "Càn Vi Thiên": "Thuần Càn",
+    "Khôn Vi Địa": "Thuần Khôn",
+    "Chấn Vi Lôi": "Thuần Chấn",
+    "Tốn Vi Phong": "Thuần Tốn",
+    "Khảm Vi Thủy": "Thuần Khảm",
+    "Ly Vi Hỏa": "Thuần Ly",
+    "Cấn Vi Sơn": "Thuần Cấn",
+    "Đoài Vi Trạch": "Thuần Đoài",
+}
+for _al_kd, _cn_kd in _BAT_THUAN_ALIASES_KD.items():
+    if _cn_kd in KINH_DICH_64 and _al_kd not in KINH_DICH_64:
+        KINH_DICH_64[_al_kd] = KINH_DICH_64[_cn_kd]
+
 def tra_kinh_dich(ten_que):
-    """Trả về dict ý nghĩa từ tên quẻ. None nếu không tìm thấy."""
-    return KINH_DICH_64.get(ten_que, None)
+    """Trả về dict ý nghĩa từ tên quẻ (hỗ trợ cả 'Thuần Càn' và 'Càn Vi Thiên'). None nếu không tìm thấy."""
+    if not ten_que:
+        return None
+    _k = str(ten_que).strip()
+    return KINH_DICH_64.get(_k) or KINH_DICH_64.get(_BAT_THUAN_ALIASES_KD.get(_k, ""), None)
 
 def tra_nap_am(can_chi):
     """Trả về dict Nạp Âm từ Can Chi (VD: 'Giáp Tý'). None nếu không tìm thấy."""
