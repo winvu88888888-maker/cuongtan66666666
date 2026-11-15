@@ -13127,7 +13127,7 @@ class FreeAIHelper:
                 )
                 
                 # Tạo dia_ban từ qmdg_calc
-                from qmdg_data import an_bai_luc_nghi
+                from qmdg_data import an_bai_luc_nghi, enrich_qimen_chart_dict, tinh_khong_vong, tinh_dich_ma
                 _dia_ban = an_bai_luc_nghi(_params['cuc'], _params['is_duong_don'])
                 
                 chart_data = {
@@ -13150,8 +13150,12 @@ class FreeAIHelper:
                     'nhan_ban': _nhan_ban,
                     'than_ban': _than_ban,
                     'dia_ban': _dia_ban,
+                    'dia_can': _dia_ban,
+                    'khong_vong': tinh_khong_vong(_params['can_ngay'], _params['chi_ngay']),
+                    'dich_ma': tinh_dich_ma(_params['chi_ngay']),
                     '_auto_generated': True
                 }
+                enrich_qimen_chart_dict(chart_data)
                 self.log_step("V32.5 AutoCast", "CHART_FULL", 
                     f"9 Cung OK | Can={_params['can_ngay']} {_params['chi_ngay']} | "
                     f"Cục={_params['cuc']} | TK={_params['tiet_khi']}")
@@ -16213,7 +16217,17 @@ class FreeAIHelper:
                 _ctb_d = chart_data.get('can_thien_ban') or {}
                 _HUONG_MAP_D = {1: ("Chính Bắc", "Khảm"), 2: ("Tây Nam", "Khôn"), 3: ("Chính Đông", "Chấn"), 4: ("Đông Nam", "Tốn"), 5: ("Tây Nam", "Khôn"), 6: ("Tây Bắc", "Càn"), 7: ("Chính Tây", "Đoài"), 8: ("Đông Bắc", "Cấn"), 9: ("Chính Nam", "Ly")}
 
-                def _find_can_cung_d(_c_val):
+                try:
+                    from qmdg_data import enrich_qimen_chart_dict as _enr_fah_v130, find_qimen_stem_palace as _f_stem_fah_v130
+                    _enr_fah_v130(chart_data)
+                except Exception:
+                    _f_stem_fah_v130 = None
+
+                def _find_can_cung_d(_c_val, _chi_val=""):
+                    if callable(_f_stem_fah_v130):
+                        _pf, _, _ = _f_stem_fah_v130(chart_data, _c_val, _chi_val or chart_data.get('chi_gio', 'Tý'), "heaven")
+                        if _pf:
+                            return _pf
                     _lu = str(chart_data.get('can_gio') or 'Mậu') if _c_val == 'Giáp' else str(_c_val or '')
                     for _ck, _cv in _ctb_d.items():
                         if str(_cv).strip() == _lu and str(_ck).isdigit():
@@ -16230,13 +16244,13 @@ class FreeAIHelper:
                 if dung_than == "Thê Tài":
                     _c_num = _find_door_cung_d("Sinh") or _find_can_cung_d("Mậu")
                 elif dung_than == "Huynh Đệ":
-                    _c_num = _find_can_cung_d(chart_data.get('can_thang'))
+                    _c_num = _find_can_cung_d(chart_data.get('can_thang'), chart_data.get('chi_thang'))
                 elif dung_than == "Phụ Mẫu":
-                    _c_num = _find_can_cung_d(chart_data.get('can_nam')) or _find_door_cung_d("Cảnh")
+                    _c_num = _find_can_cung_d(chart_data.get('can_nam'), chart_data.get('chi_nam')) or _find_door_cung_d("Cảnh")
                 elif dung_than in ("Tử Tôn", "Quan Quỷ"):
-                    _c_num = _find_can_cung_d(chart_data.get('can_gio'))
+                    _c_num = _find_can_cung_d(chart_data.get('can_gio'), chart_data.get('chi_gio'))
                 else:
-                    _c_num = _find_can_cung_d(chart_data.get('can_ngay'))
+                    _c_num = _find_can_cung_d(chart_data.get('can_ngay'), chart_data.get('chi_ngay'))
 
                 if _c_num and 1 <= _c_num <= 9:
                     _h_d, _q_d = _HUONG_MAP_D.get(_c_num, ("Chính Bắc", "Khảm"))
@@ -16591,7 +16605,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & ĐẠI TIÊN TRI GITHUB (Antigravity Brain Mode V129.0 — 384 Hào Chu Dịch · Tăng San Lục Hào · Mai Hoa 18 Chiêm · KinQiMen)</div>'
+                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & SƠ ĐỒ MŨI TÊN NHÂN QUẢ VI MÔ (Antigravity Brain Mode V130.0 — Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn · 384 Hào · Mai Hoa)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_grid_html
@@ -18134,7 +18148,7 @@ class FreeAIHelper:
                     ) if _fb_cards else ''
                     final_parts.append(
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & ĐẠI TIÊN TRI GITHUB (Antigravity Brain Mode V129.0 — 384 Hào Chu Dịch · Tăng San Lục Hào · Mai Hoa 18 Chiêm · KinQiMen)</div>'
+                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & SƠ ĐỒ MŨI TÊN NHÂN QUẢ VI MÔ (Antigravity Brain Mode V130.0 — Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn · 384 Hào · Mai Hoa)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_grid_fb

@@ -1132,11 +1132,25 @@ def compute_deep_interacting_factors_a_to_z(
 
     cung_can_ngay = target_cung
     cung_can_gio = target_cung
-    for _ck, _cv in ctb.items():
-        if str(_cv).strip() == can_n_res and str(_ck).isdigit():
-            cung_can_ngay = int(_ck)
-        if str(_cv).strip() == can_g_res and str(_ck).isdigit():
-            cung_can_gio = int(_ck)
+    try:
+        from qmdg_data import enrich_qimen_chart_dict as _enr_km_v130, find_qimen_stem_palace as _f_stem_v130
+        _enr_km_v130(chart_data)
+        _cn_p, _cn_ky, _ = _f_stem_v130(chart_data, can_n, chi_n, "heaven")
+        _cg_p, _cg_ky, _ = _f_stem_v130(chart_data, can_g, chi_g, "heaven")
+        if _cn_p:
+            cung_can_ngay = _cn_p
+            if _cn_ky:
+                can_n_lbl = f"{can_n_lbl}·Ký Cung"
+        if _cg_p:
+            cung_can_gio = _cg_p
+            if _cg_ky:
+                can_g_lbl = f"{can_g_lbl}·Ký Cung"
+    except Exception:
+        for _ck, _cv in ctb.items():
+            if str(_cv).strip() == can_n_res and str(_ck).isdigit():
+                cung_can_ngay = int(_ck)
+            if str(_cv).strip() == can_g_res and str(_ck).isdigit():
+                cung_can_gio = int(_ck)
     _, huong_cn, hanh_cung_cn = _CUNG_HUONG_MAP.get(cung_can_ngay, ("Khôn", "Tây Nam", "Thổ"))
     _, huong_cg, hanh_cung_cg = _CUNG_HUONG_MAP.get(cung_can_gio, ("Cấn", "Đông Bắc", "Thổ"))
     if cung_can_ngay == cung_can_gio:
@@ -1199,16 +1213,37 @@ def compute_deep_interacting_factors_a_to_z(
     _tq_mau_s = _tq_obj.get("mau_sac", "Vàng, Nâu")
     _tq_cat_s = _tq_obj.get("km_cat_phuong", "")
 
+    # V130.0: MẠNG LƯỚI MŨI TÊN NHÂN QUẢ ĐA TẦNG & KIỂM KÊ VI MÔ 100% DẤU HIỆU QUẺ (Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn)
+    _micro_graph_res = {}
+    _micro_flow_html = ""
+    _micro_flow_prompt = ""
+    try:
+        from chinese_master_micro_graph import build_unified_causal_diagram_and_micro_audit
+        _micro_graph_res = build_unified_causal_diagram_and_micro_audit(
+            chart_data=chart_data,
+            luc_hao_data=luc_hao_data,
+            mai_hoa_data=mai_hoa_data,
+            dung_than=dung_than,
+            topic=question,
+            question=question,
+            target_cung=target_cung,
+        ) or {}
+        _micro_flow_html = str(_micro_graph_res.get("visual_flowchart_html") or "")
+        _micro_flow_prompt = str(_micro_graph_res.get("prompt_micro_chain_text") or "")
+    except Exception:
+        _micro_graph_res = {}
+
     deep_a_to_z_html = (
-        f'<div style="margin-top:12px;padding:14px 16px;background:rgba(15,23,42,0.88);border-radius:12px;border:1px solid rgba(56,189,248,0.35);">'
+        _micro_flow_html
+        + f'<div style="margin-top:12px;padding:14px 16px;background:rgba(15,23,42,0.88);border-radius:12px;border:1px solid rgba(56,189,248,0.35);">'
         f'<div style="font-weight:900;color:#fde047;font-size:0.98em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ & ĐẠI TIÊN TRI GITHUB V129.0 (BỐ CỤC 4 TRỤ CỘT)</span>'
-        f'<span style="font-size:0.8em;color:#94a3b8;font-weight:600;">384 Hào Chu Dịch · Tăng San Lục Hào · Mai Hoa 18 Chiêm · KinQiMen</span>'
+        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ & ĐẠI TIÊN TRI VI MÔ V130.0 (BỐ CỤC 4 TRỤ CỘT)</span>'
+        f'<span style="font-size:0.8em;color:#94a3b8;font-weight:600;">Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn · 384 Hào · Mai Hoa 18 Chiêm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:10px;font-size:0.9em;line-height:1.52;color:#f1f5f9;">'
         # Thẻ 1: Lục Hào + 384 Hào Chu Dịch
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #38bdf8;">'
-        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO TĂNG SAN & 384 HÀO CHU DỊCH (V129.0)</div>'
+        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO TĂNG SAN & 384 HÀO CHU DỊCH (V130.0)</div>'
         f'• <b>Thế – Ứng:</b> {hex_trait_str}. Hào Thế (Hào {the_idx} {the_chi}-{the_nh}, {the_luc_thu}) ↔ Hào Ứng (Hào {ung_idx} {ung_chi}-{ung_nh}): {the_ung_rel}.<br>'
         f'• <b>Dụng Thần:</b> <b>{dung_than} tại Hào {dt_idx} ({dt_chi}-{dt_nh})</b> ({dt_vi_info.get("ten_hao", f"Hào {dt_idx}")}) lâm <b>{dt_luc_thu}</b>'
         + (f' · <span style="color:#fde047;">{univ_mat.get("dt_khong_phuc_note", "")}</span>' if univ_mat.get("dt_khong_phuc_note") else '')
@@ -1219,7 +1254,7 @@ def compute_deep_interacting_factors_a_to_z(
         f'</div>'
         # Thẻ 2: Mai Hoa 18 Loại Chiêm
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #f472b6;">'
-        f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:5px;">2️⃣ MAI HOA DỊCH SỐ & 18 LOẠI CHIÊM (V129.0)</div>'
+        f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:5px;">2️⃣ MAI HOA DỊCH SỐ & 18 LOẠI CHIÊM (V130.0)</div>'
         f'• <b>Trục Tam Quái:</b> Quẻ Chủ <b>{full_chu}</b> ({up_chu}/{lo_chu}) ➔ Quẻ Hỗ <b>{full_ho}</b> ({up_ho}/{lo_ho}) ➔ Quẻ Biến <b>{full_bien}</b> ({up_bien}/{lo_bien}).<br>'
         f'• <b>Thể – Dụng Theo Mùa:</b> Quẻ Thể <b>{the_quai} ({hanh_the} — {mh_the_season.split("(")[0].strip()})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung} — {mh_dung_season.split("(")[0].strip()})</b> ➔ <b>{univ_mat.get("rel_chu_tag","")}</b> ({univ_mat.get("rel_chu_desc","")}).<br>'
         f'• <b>Thể – Dụng Biến:</b> Biến sang <b>{bien_dung_quai} ({hanh_bien_dung})</b> ➔ <b>{univ_mat.get("rel_bien_tag","")}</b> ({univ_mat.get("rel_bien_desc","")}).<br>'
@@ -1227,7 +1262,7 @@ def compute_deep_interacting_factors_a_to_z(
         f'</div>'
         # Thẻ 3: Kỳ Môn KinQiMen
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #fbbf24;">'
-        f'<div style="font-weight:800;color:#fde047;margin-bottom:5px;">3️⃣ KỲ MÔN ĐỘN GIÁP KINQIMEN (Cửu Độn · Kích Hình · Nhập Mộ)</div>'
+        f'<div style="font-weight:800;color:#fde047;margin-bottom:5px;">3️⃣ KỲ MÔN VẤN CHÂN & KINQIMEN (Ký Cung · Ám Can · Tứ Hại · Lật Cung)</div>'
         f'• <b>Bàn & Độn Giáp Chủ–Khách:</b> {noi_ngoai_ban_str}. {chu_khach_km_str}.<br>'
         f'• <b>Cung {target_cung} ({quai_cung} — {huong_cung}):</b> Hội <b>Sao {sao_name}{km_star_st}</b> · <b>Cửa {cua_name}</b> · <b>Thần {than_name}</b> ({mon_cung_state}).<br>'
         f'• <b>Cách Cục Lưu Bá Ôn:</b> {cach_cuc_81_str}.<br>'
@@ -1245,7 +1280,7 @@ def compute_deep_interacting_factors_a_to_z(
     )
 
     deep_a_to_z_prompt_text = (
-        f"=== HỒ SƠ 24 YẾU TỐ & ĐẠI TIÊN TRI GITHUB V129.0 (BẮT BUỘC ĐỐI CHIẾU ĐẦY ĐỦ) ===\n"
+        f"=== HỒ SƠ 24 YẾU TỐ & MẠNG LƯỚI VI MÔ V130.0 (BẮT BUỘC ĐỐI CHIẾU ĐẦY ĐỦ KHÔNG BỎ SÓT CHI TIẾT) ===\n"
         f"1. [LỤC HÀO TĂNG SAN & 384 HÀO CHU DỊCH]:\n"
         f"   - Đặc tính Quẻ: {re.sub(r'<[^>]+>', '', hex_trait_str)}\n"
         f"   - Tương quan Thế (Hào {the_idx} {the_chi}-{the_nh}, {the_luc_thu}) ↔ Ứng (Hào {ung_idx} {ung_chi}-{ung_nh}): {re.sub(r'<[^>]+>', '', the_ung_rel)}\n"
@@ -1262,6 +1297,7 @@ def compute_deep_interacting_factors_a_to_z(
         f"   - Nội/Ngoại Bàn: {re.sub(r'<[^>]+>', '', noi_ngoai_ban_str)}\n"
         f"   - Độn Giáp Cung Can Ngày ({can_n_lbl}) ↔ Cung Can Giờ ({can_g_lbl}): {re.sub(r'<[^>]+>', '', chu_khach_km_str)}\n"
         f"   - Trạng thái Môn-Cung & Cửu Tinh ({sao_name}{km_star_st}): {re.sub(r'<[^>]+>', '', mon_cung_state)} | Cách Cục: {re.sub(r'<[^>]+>', '', cach_cuc_81_str)} | Hình–Mộ–Cửu Độn: {re.sub(r'<[^>]+>', '', km_special_flags_str)}\n"
+        + (f"4. {_micro_flow_prompt}\n" if _micro_flow_prompt else "")
     )
 
     return {
@@ -1286,6 +1322,7 @@ def compute_deep_interacting_factors_a_to_z(
         "liuyao_deep": _ly_deep,
         "meihua_deep": _mh_deep,
         "kinqimen_deep": _km_deep,
+        "micro_graph": _micro_graph_res,
         "deep_a_to_z_html": deep_a_to_z_html,
         "deep_a_to_z_prompt_text": deep_a_to_z_prompt_text,
     }

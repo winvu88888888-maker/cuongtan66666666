@@ -1747,10 +1747,20 @@ class HexagramReasoningAI:
         _nb_km = chart_data.get("nhan_ban") or {}
         _sb_km = chart_data.get("than_ban") or {}
 
+        try:
+            from qmdg_data import enrich_qimen_chart_dict as _enr_d_v130, find_qimen_stem_palace as _f_stem_d_v130
+            _enr_d_v130(chart_data)
+        except Exception:
+            _f_stem_d_v130 = None
+
         def _find_can_palace(_c_str: str, _chi_str: str = "") -> int:
             _c_clean = str(_c_str or "").strip()
             if not _c_clean:
                 return 0
+            if callable(_f_stem_d_v130):
+                _p_found, _, _ = _f_stem_d_v130(chart_data, _c_clean, _chi_str or str(chart_data.get("chi_gio") or "Tý"), "heaven")
+                if _p_found:
+                    return _p_found
             if _c_clean == "Giáp":
                 try:
                     from github_prophecy_engine import resolve_qimen_stem
@@ -7022,17 +7032,23 @@ class HexagramReasoningAI:
         _quai_so_sum = int(_meta_up[1]) + int(_meta_lo[1])
 
         _chain_items = [p.strip() for p in str(univ_mat.get("holistic_chain_summary", "")).split(" | ") if p.strip()]
-        _chain_pills_html = "".join(
-            f'<div style="padding:7px 10px;background:rgba(30,41,59,0.85);border-radius:8px;border-left:3px solid #fbbf24;font-size:0.86em;color:#f1f5f9;line-height:1.42;">{it}</div>'
-            for it in _chain_items
-        )
+        _chain_pills_list = []
+        for _idx_ci, it in enumerate(_chain_items):
+            _chain_pills_list.append(
+                f'<div style="flex:1 1 215px;padding:7px 10px;background:rgba(30,41,59,0.88);border-radius:8px;border-left:3px solid #fbbf24;font-size:0.85em;color:#f1f5f9;line-height:1.42;">{it}</div>'
+            )
+            if _idx_ci + 1 < len(_chain_items):
+                _chain_pills_list.append(
+                    '<div style="display:flex;align-items:center;justify-content:center;color:#fbbf24;font-weight:900;font-size:1.05em;padding:0 2px;">━━►</div>'
+                )
+        _chain_pills_html = "".join(_chain_pills_list)
 
         return (
             f'<div style="margin-top:10px;padding:10px 12px;background:rgba(9,13,22,0.85);border-radius:12px;border:1px solid rgba(251,191,36,0.4);">'
             f'<div style="font-size:0.92em;font-weight:800;color:#fde047;margin-bottom:6px;">'
-            f'🔗 CHUỖI LIÊN KẾT 4 MẮT XÍCH CỐT LÕI (BẢN THÂN ↔ DỤNG THẦN ↔ NGUỒN TIỀN ↔ KỲ MÔN & MAI HOA)'
+            f'🏹 CHUỖI MŨI TÊN LIÊN KẾT MẮT XÍCH CỐT LÕI (BẢN THÂN ━━► DỤNG THẦN ━━► NGUỒN LỰC ━━► KỲ MÔN · MAI HOA · VI MÔ V130.0)'
             f'</div>'
-            f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-bottom:8px;">'
+            f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:6px;margin-bottom:8px;">'
             f'{_chain_pills_html}'
             f'</div>'
             f'<details style="background:rgba(15,23,42,0.9);border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:8px 12px;">'
@@ -7447,7 +7463,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:14px 16px;border-radius:14px;margin-bottom:14px;border:2px solid #38bdf8;box-shadow:0 4px 18px rgba(56,189,248,0.2);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:6px;">'
-            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V129.0 — {_clk_cv["solar_date_str"]}): ĐỌC HIỂU CÂU HỎI & ĐỐI CHỨNG ĐẠI TIÊN TRI GITHUB</div>'
+            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V130.0 — {_clk_cv["solar_date_str"]}): MẠNG LƯỚI MŨI TÊN NHÂN QUẢ VI MÔ & ĐẠI TIÊN TRI</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:2px 9px;border-radius:12px;font-size:0.8em;font-weight:800;border:1px solid #38bdf8;">{blueprint["archetype_code"]} — {blueprint["archetype_name"]}</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'

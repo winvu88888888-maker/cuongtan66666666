@@ -644,12 +644,42 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         xung_hop_transition = "HOP_HOA_XUNG"
 
     dong_desc = f"biến tại hào {', '.join(map(str, dong_list))}" if dong_list else "Quẻ Tĩnh (0 hào động)"
+    # V130.0: Bổ sung Quái Thân (卦身), Thế Thân (世身) & 12 Thần Sát Thực Chiến lên từng hào (chuẩn Nguyên Hanh Lợi Trinh & Vấn Chân Lục Hào)
+    quai_than_info = {}
+    the_than_info = {}
+    shensha_12_info = {}
+    try:
+        from chinese_master_micro_graph import compute_liuyao_shensha_and_bodies
+        _b_ss = compute_liuyao_shensha_and_bodies(
+            can_ngay=can_ngay,
+            chi_ngay=chi_ngay,
+            chi_thang=chi_thang,
+            ban_lines=ban_lines,
+            the_pos=the_pos,
+            p_element=p_element,
+            details_ban=details_ban,
+        )
+        quai_than_info = _b_ss.get("quai_than", {})
+        the_than_info = _b_ss.get("the_than", {})
+        shensha_12_info = _b_ss.get("shensha_dict", {})
+        _stars_fn_lh = _b_ss.get("stars_for_branch")
+        if callable(_stars_fn_lh):
+            for _d_item in details_ban:
+                _d_item["than_sat"] = _stars_fn_lh(_d_item.get("chi", ""))
+            for _db_item in details_bien:
+                _db_item["than_sat"] = _stars_fn_lh(_db_item.get("chi", ""))
+    except Exception:
+        pass
+
     return {
         'ban': {'name': ban_name, 'lines': ban_lines, 'details': details_ban, 'haos': details_ban, 'palace': palace},
         'bien': {'name': bien_name, 'lines': bien_lines, 'details': details_bien, 'haos': details_bien},
         'dong_hao': dong_list,
         'hao_results': hao_results,
         'phuc_than': phuc_than_list,
+        'quai_than': quai_than_info,
+        'the_than': the_than_info,
+        'shensha_12': shensha_12_info,
         'tuy_quy_nhap_mo': tuy_quy_nhap_mo,
         'xung_hop_transition': xung_hop_transition,
         'conclusion': f"Quẻ {ban_name} biến {bien_name}. {topic} ({dong_desc}).",

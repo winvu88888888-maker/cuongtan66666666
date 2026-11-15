@@ -794,6 +794,173 @@ def lap_ban_qmdg(cuc, truc_phu_star, truc_su_door, can_gio, chi_gio, is_duong_do
     return thien_ban, can_thien_ban, nhan_ban, than_ban, cung_dich_truc_phu
 
 
+def resolve_six_jia_stem(can: str, chi: str = "Tý") -> str:
+    """
+    V130.0: Giải Độn Giáp Lục Nghi chuẩn xác 100% cho mọi cặp Can Chi (chuẩn Nguyên Hanh Lợi Trinh & Vấn Chân Kỳ Môn).
+    """
+    c_clean = str(can or "").strip()
+    ch_clean = str(chi or "Tý").strip().replace("Tỵ", "Tị")
+    if not c_clean:
+        return "Mậu"
+    if c_clean != "Giáp":
+        return c_clean
+    CAN_L = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+    CHI_L = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+    LUC_GIAP = {"Tý": "Mậu", "Tuất": "Kỷ", "Thân": "Canh", "Ngọ": "Tân", "Thìn": "Nhâm", "Dần": "Quý"}
+    if ch_clean in LUC_GIAP:
+        return LUC_GIAP[ch_clean]
+    if ch_clean in CHI_L:
+        tuan_chi = CHI_L[CHI_L.index(ch_clean) % 12]
+        return LUC_GIAP.get(tuan_chi, "Mậu")
+    return "Mậu"
+
+
+def compute_qimen_micro_plates(
+    cuc: int,
+    truc_phu_star: str,
+    truc_su_door: str,
+    can_gio: str,
+    chi_gio: str,
+    is_duong_don: bool,
+    dia_ban: dict = None,
+    thien_ban: dict = None,
+    can_thien_ban: dict = None,
+    nhan_ban: dict = None,
+) -> dict:
+    """
+    V130.0 (Chuẩn Vấn Chân Kỳ Môn & Nguyên Hanh Lợi Trinh):
+    1. Khôi phục Can thứ 9 tại Trung Cung 5 (Ký Khôn Nhị Cung):
+       - ky_can_dia_ban: {2: dia_ban[5]}
+       - ky_can_thien_ban: {p_nhue_cam: dia_ban[5]} (bay cùng Thiên Nhuế/Cầm trên Thiên Bàn!)
+    2. An Ám Can (暗干 / Ẩn Can 9 Cung):
+       - Lấy Can Giờ (đã độn Lục Nghi nếu là Giáp) đặt vào cung Trực Sử Môn hiện tại.
+       - Nếu Can Giờ trùng Địa Bàn Can tại cung Trực Sử (Phục Ngâm Can) thì nhập Trung Cung 5 khởi bay.
+       - Dương Độn bay thuận Lạc Thư (1->2->3->4->5->6->7->8->9), Âm Độn bay nghịch (9->8->7->6->5->4->3->2->1)
+         theo chuỗi Mậu -> Kỷ -> Canh -> Tân -> Nhâm -> Quý -> Đinh -> Bính -> Ất.
+    """
+    cuc_int = int(cuc) if str(cuc).isdigit() and 1 <= int(cuc) <= 9 else 5
+    is_dd = bool(is_duong_don)
+    if not isinstance(dia_ban, dict) or not dia_ban:
+        dia_ban = an_bai_luc_nghi(cuc_int, is_dd)
+    if not isinstance(thien_ban, dict) or not thien_ban or not isinstance(can_thien_ban, dict) or not can_thien_ban or not isinstance(nhan_ban, dict) or not nhan_ban:
+        _tb, _ctb, _nb, _, _ = lap_ban_qmdg(
+            cuc_int, truc_phu_star or "Thiên Cầm", truc_su_door or "Tử Môn",
+            can_gio or "Giáp", chi_gio or "Tý", is_dd
+        )
+        thien_ban = thien_ban or _tb
+        can_thien_ban = can_thien_ban or _ctb
+        nhan_ban = nhan_ban or _nb
+
+    stem_5 = str(dia_ban.get(5) or dia_ban.get("5") or "Mậu").strip()
+    ky_can_dia_ban = {2: stem_5}
+
+    p_nhue_cam = 2
+    for p_k, s_val in (thien_ban or {}).items():
+        if str(p_k).isdigit() and int(p_k) != 5 and ("Nhuế" in str(s_val) or "Cầm" in str(s_val)):
+            p_nhue_cam = int(p_k)
+            break
+    ky_can_thien_ban = {p_nhue_cam: stem_5}
+
+    # Tìm cung hiện tại của Trực Sử Môn
+    t_door_clean = str(truc_su_door or "Tử").replace(" Môn", "").strip()
+    cung_dich_truc_su = 2
+    for p_k, m_val in (nhan_ban or {}).items():
+        if str(p_k).isdigit() and int(p_k) != 5 and t_door_clean and t_door_clean in str(m_val):
+            cung_dich_truc_su = int(p_k)
+            break
+
+    stem_gio = resolve_six_jia_stem(can_gio, chi_gio)
+    STEM_RING_9 = ["Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý", "Đinh", "Bính", "Ất"]
+    if stem_gio not in STEM_RING_9:
+        stem_gio = "Mậu"
+
+    dia_at_ts = str(dia_ban.get(cung_dich_truc_su) or dia_ban.get(str(cung_dich_truc_su)) or "").strip()
+    ky_at_ts = ky_can_dia_ban.get(cung_dich_truc_su, "")
+    start_p_am = 5 if (stem_gio == dia_at_ts or (ky_at_ts and stem_gio == ky_at_ts)) else cung_dich_truc_su
+
+    LAC_THU = [1, 2, 3, 4, 5, 6, 7, 8, 9] if is_dd else [9, 8, 7, 6, 5, 4, 3, 2, 1]
+    start_lt_idx = LAC_THU.index(start_p_am) if start_p_am in LAC_THU else 0
+    start_st_idx = STEM_RING_9.index(stem_gio)
+    am_can = {}
+    for step in range(9):
+        p_cur = LAC_THU[(start_lt_idx + step) % 9]
+        am_can[p_cur] = STEM_RING_9[(start_st_idx + step) % 9]
+
+    khong_vong_gio = tinh_khong_vong(can_gio or "Giáp", (chi_gio or "Tý").replace("Tỵ", "Tị"))
+    dich_ma_gio = tinh_dich_ma((chi_gio or "Tý").replace("Tỵ", "Tị"))
+
+    return {
+        "stem_trung_cung_5": stem_5,
+        "p_nhue_cam": p_nhue_cam,
+        "ky_can_dia_ban": ky_can_dia_ban,
+        "ky_can_thien_ban": ky_can_thien_ban,
+        "cung_dich_truc_su": cung_dich_truc_su,
+        "am_can": am_can,
+        "khong_vong_gio": khong_vong_gio,
+        "dich_ma_gio": dich_ma_gio,
+    }
+
+
+def enrich_qimen_chart_dict(chart_dict: dict) -> dict:
+    """
+    V130.0: Bổ sung đầy đủ Ký Can Thiên/Địa Bàn (Can thứ 9 Trung Cung), Ám Can 9 Cung,
+    Tuần Không Giờ & Dịch Mã Giờ vào từ điển chart_data mà không phá vỡ bất kỳ khóa cũ nào.
+    """
+    if not isinstance(chart_dict, dict):
+        return {}
+    try:
+        micro = compute_qimen_micro_plates(
+            cuc=chart_dict.get("cuc") or chart_dict.get("cuc_so") or 5,
+            truc_phu_star=chart_dict.get("truc_phu") or "Thiên Cầm",
+            truc_su_door=chart_dict.get("truc_su") or "Tử Môn",
+            can_gio=chart_dict.get("can_gio") or "Giáp",
+            chi_gio=chart_dict.get("chi_gio") or "Tý",
+            is_duong_don=chart_dict.get("is_duong_don", True),
+            dia_ban=chart_dict.get("dia_ban") or chart_dict.get("dia_can"),
+            thien_ban=chart_dict.get("thien_ban"),
+            can_thien_ban=chart_dict.get("can_thien_ban"),
+            nhan_ban=chart_dict.get("nhan_ban"),
+        )
+        chart_dict.update(micro)
+    except Exception:
+        pass
+    return chart_dict
+
+
+def find_qimen_stem_palace(chart_dict: dict, stem: str, chi: str = "", plate: str = "heaven") -> tuple:
+    """
+    V130.0: Định vị chính xác Cung chứa Thiên Can (bao gồm cả Giáp độn Lục Nghi VÀ Can thứ 9 Ký Cung Thiên Cầm/Khôn 2!).
+    Trả về: (palace_int_1_to_9_except_5, is_ky_cung_bool, resolved_stem_str)
+    """
+    if not isinstance(chart_dict, dict):
+        return (0, False, str(stem or ""))
+    if "ky_can_thien_ban" not in chart_dict or "ky_can_dia_ban" not in chart_dict:
+        enrich_qimen_chart_dict(chart_dict)
+    res_stem = resolve_six_jia_stem(stem, chi or chart_dict.get("chi_gio", "Tý"))
+    if plate == "earth":
+        db = chart_dict.get("dia_ban") or chart_dict.get("dia_can") or {}
+        kdb = chart_dict.get("ky_can_dia_ban") or {}
+        for pk, pv in db.items():
+            if str(pk).isdigit() and int(pk) != 5 and str(pv).strip() == res_stem:
+                return (int(pk), False, res_stem)
+        for pk, pv in kdb.items():
+            if str(pk).isdigit() and str(pv).strip() == res_stem:
+                return (2 if int(pk) == 5 else int(pk), True, res_stem)
+        if str(db.get(5) or db.get("5") or "").strip() == res_stem:
+            return (2, True, res_stem)
+        return (0, False, res_stem)
+
+    ctb = chart_dict.get("can_thien_ban") or {}
+    kctb = chart_dict.get("ky_can_thien_ban") or {}
+    for pk, pv in ctb.items():
+        if str(pk).isdigit() and int(pk) != 5 and str(pv).strip() == res_stem:
+            return (int(pk), False, res_stem)
+    for pk, pv in kctb.items():
+        if str(pk).isdigit() and str(pv).strip() == res_stem:
+            return (2 if int(pk) == 5 else int(pk), True, res_stem)
+    return (0, False, res_stem)
+
+
 def lap_ban_qmdg_thủ_công(sao_cung_1, cua_cung_1, can_thien_cung_1, than_cung_1):
     """
     Lập bàn QMDG thủ công (giữ nguyên logic cũ).

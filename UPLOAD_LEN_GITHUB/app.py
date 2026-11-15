@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V129.0"
-APP_VERSION_FULL = f"{APP_VERSION} — ĐẠI TIÊN TRI TOÀN THƯ GITHUB (384 Hào Chu Dịch · Tăng San Bốc Dịch · Mai Hoa 18 Chiêm · KinQiMen Cửu Độn ✨)"
+APP_VERSION = "V130.0"
+APP_VERSION_FULL = f"{APP_VERSION} — SƠ ĐỒ MŨI TÊN NHÂN QUẢ VI MÔ & ĐỐI CHUẨN NGUYÊN HANH LỢI TRINH · VẤN CHÂN (Ám Can · Ký Cung · Lật Cung 4 Trạm · Quái Thân · 12 Thần Sát ✨)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,15 +19,16 @@ import os
 import traceback
 import re
 
-# V129.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V129.0"
+# V130.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V130.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
-        "github_zhouyi_384_data",
-        "github_prophecy_engine",
         "qmdg_calc",
         "qmdg_data",
+        "github_zhouyi_384_data",
+        "github_prophecy_engine",
+        "chinese_master_micro_graph",
         "mai_hoa_dich_so",
         "luc_hao_kinh_dich",
         "dai_luc_nham",
@@ -2329,7 +2330,7 @@ if USE_MULTI_LAYER_ANALYSIS:
 # ═══ GLOBAL SYNC HUB: Tự động đồng bộ dữ liệu liên kết giữa tất cả 13 mục theo Thời Gian & Chủ Đề ═══
 if params:
     try:
-        from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg, tinh_khong_vong, tinh_dich_ma
+        from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg, tinh_khong_vong, tinh_dich_ma, enrich_qimen_chart_dict
         _g_can_gio = params['can_gio']
         _g_dia_can = an_bai_luc_nghi(params['cuc'], params['is_duong_don'])
         _g_tb, _g_ctb, _g_nb, _g_sb, _g_tpc = lap_ban_qmdg(
@@ -2343,6 +2344,8 @@ if params:
             'than_ban': _g_sb,
             'dia_can': _g_dia_can,
             'dia_ban': _g_dia_can,
+            'khong_vong': tinh_khong_vong(params['can_ngay'], params['chi_ngay']),
+            'dich_ma': tinh_dich_ma(params['chi_ngay']),
             'khong_vong_4': params.get('khong', {}),
             'dich_ma_4': params.get('ma', {}),
             'can_gio': _g_can_gio,
@@ -2367,6 +2370,7 @@ if params:
             'hour': selected_datetime.hour,
             'minute': selected_datetime.minute,
         }
+        enrich_qimen_chart_dict(st.session_state.chart_data)
         if USE_MAI_HOA and not st.session_state.get('mai_hoa_result'):
             _g_mh = tinh_qua_theo_thoi_gian(selected_datetime.year, selected_datetime.month, selected_datetime.day, selected_datetime.hour)
             _g_mh['interpretation'] = giai_qua(_g_mh, selected_topic)
@@ -2644,7 +2648,7 @@ def render_master_unified_qa_box(location_key="main"):
 
                             # Đồng bộ Bàn Kỳ Môn 9 Cung ngẫu nhiên theo quẻ vừa gieo
                             try:
-                                from qmdg_data import an_bai_luc_nghi as _ab_rnd, lap_ban_qmdg as _lb_rnd
+                                from qmdg_data import an_bai_luc_nghi as _ab_rnd, lap_ban_qmdg as _lb_rnd, enrich_qimen_chart_dict as _enr_rnd
                                 _r_cuc = ((_u_rnd + _l_rnd + _d_rnd - 1) % 9) + 1
                                 _r_duong = bool((_u_rnd + _d_rnd) % 2 == 1)
                                 _r_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
@@ -2671,6 +2675,7 @@ def render_master_unified_qa_box(location_key="main"):
                                     'truc_su': _r_ts,
                                     '_random_cast': True,
                                 })
+                                _enr_rnd(chart_for_q)
                                 st.session_state.chart_data = chart_for_q
                             except Exception:
                                 pass
@@ -2731,7 +2736,7 @@ def render_master_unified_qa_box(location_key="main"):
                             # tuyệt đối không ghi đè làm hỏng st.session_state.chart_data gốc của màn hình chính!
                             if _prev_tuple is not None:
                                 try:
-                                    from qmdg_data import an_bai_luc_nghi as _ab_q, lap_ban_qmdg as _lb_q
+                                    from qmdg_data import an_bai_luc_nghi as _ab_q, lap_ban_qmdg as _lb_q, enrich_qimen_chart_dict as _enr_q
                                     _base_cuc = int(chart_for_q.get('cuc') or 5)
                                     _q_cuc = ((_base_cuc + _u_q + _l_q - 1) % 9) + 1
                                     _q_duong = bool(chart_for_q.get('is_duong_don', True))
@@ -2762,6 +2767,7 @@ def render_master_unified_qa_box(location_key="main"):
                                         'truc_phu': _q_tp,
                                         'truc_su': _q_ts,
                                     })
+                                    _enr_q(chart_for_q)
                                 except Exception:
                                     pass
                         except Exception:
@@ -2963,7 +2969,7 @@ if st.session_state.current_view == "ky_mon":
             can_gio = params['can_gio']
             
             # Calculate boards
-            from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg, tinh_khong_vong, tinh_dich_ma
+            from qmdg_data import an_bai_luc_nghi, lap_ban_qmdg, tinh_khong_vong, tinh_dich_ma, enrich_qimen_chart_dict
             
             dia_can = an_bai_luc_nghi(params['cuc'], params['is_duong_don'])
             thien_ban, can_thien_ban, nhan_ban, than_ban, truc_phu_cung = lap_ban_qmdg(
@@ -3013,6 +3019,7 @@ if st.session_state.current_view == "ky_mon":
                 'hour': selected_datetime.hour,
                 'minute': selected_datetime.minute,
             }
+            enrich_qimen_chart_dict(st.session_state.chart_data)
             
         except Exception as e:
             st.error(f"Lỗi tính toán bàn: {e}")
@@ -3223,6 +3230,13 @@ if st.session_state.current_view == "ky_mon":
                             pass
 
                         marker_display_html = "".join(m_html)
+                        _ky_t_disp = (chart.get("ky_can_thien_ban") or {}).get(curr_p_int, "")
+                        _ky_d_disp = (chart.get("ky_can_dia_ban") or {}).get(curr_p_int, "")
+                        _am_can_disp = (chart.get("am_can") or {}).get(curr_p_int, "")
+                        _thien_card_lbl = f"{can_thien}<span style='font-size:0.72em;color:#fde047;'>+{_ky_t_disp}</span>" if (_ky_t_disp and _ky_t_disp != can_thien) else can_thien
+                        _dia_card_lbl = f"{can_dia}<span style='font-size:0.72em;color:#a7f3d0;'>+{_ky_d_disp}</span>" if (_ky_d_disp and _ky_d_disp != can_dia) else can_dia
+                        if _am_can_disp:
+                            marker_display_html = f'<div class="marker-badge" style="background:rgba(15,23,42,0.88);border:1px solid #c084fc;color:#e9d5ff;">🕵️ Ám Can: {_am_can_disp}</div>' + marker_display_html
 
                         # Palace Name & Alignment Refinement
                         p_full_name = f"{palace_num} {QUAI_TUONG.get(palace_num, '')}"
@@ -3242,8 +3256,8 @@ if st.session_state.current_view == "ky_mon":
     <div class="than-corner" style="color: {c_than};">{than}</div>
     <div class="sao-corner" style="color: {c_sao};">{sao.replace('Thiên ', '')}</div>
     <div class="mon-corner" style="color: {c_cua};">{cua.replace(' Môn', '')}</div>
-    <div class="thien-corner" style="color: {c_thien};">{can_thien}</div>
-    <div class="dia-corner" style="color: {c_dia};">{can_dia}</div>
+    <div class="thien-corner" style="color: {c_thien};">{_thien_card_lbl}</div>
+    <div class="dia-corner" style="color: {c_dia};">{_dia_card_lbl}</div>
 </div>
 <div class="palace-markers">
     {marker_display_html}
@@ -3346,6 +3360,10 @@ if st.session_state.current_view == "ky_mon":
                                 _km_deep_card = analyze_kinqimen_deep_patterns(chart, target_cung=object_palace, topic=selected_topic)
                                 if _km_deep_card and _km_deep_card.get("panel_html"):
                                     st.markdown(_km_deep_card["panel_html"], unsafe_allow_html=True)
+                                from chinese_master_micro_graph import analyze_qimen_exhaustive_micro_graph
+                                _km_micro_card = analyze_qimen_exhaustive_micro_graph(chart, target_cung=object_palace, topic=selected_topic)
+                                if _km_micro_card and _km_micro_card.get("flowchart_html"):
+                                    st.markdown(_km_micro_card["flowchart_html"], unsafe_allow_html=True)
                             except Exception:
                                 pass
 
@@ -3486,6 +3504,14 @@ if st.session_state.current_view == "ky_mon":
         
         if luan_giai:
             st.info(f"**Gợi ý luận giải:** {luan_giai}")
+        try:
+            if st.session_state.get("chart_data"):
+                from chinese_master_micro_graph import analyze_qimen_exhaustive_micro_graph
+                _km_board_graph = analyze_qimen_exhaustive_micro_graph(st.session_state.chart_data, topic=selected_topic)
+                if _km_board_graph and _km_board_graph.get("flowchart_html"):
+                    st.markdown(_km_board_graph["flowchart_html"], unsafe_allow_html=True)
+        except Exception:
+            pass
         
         # Display detailed Dụng Thần from 200+ database
         if USE_200_TOPICS:
@@ -3737,6 +3763,10 @@ elif st.session_state.current_view == "mai_hoa":
             _mh_deep_view = analyze_meihua_18_categories_deep(res, chart_data=st.session_state.get('chart_data'), topic=selected_topic)
             if _mh_deep_view and _mh_deep_view.get("panel_html"):
                 st.markdown(_mh_deep_view["panel_html"], unsafe_allow_html=True)
+            from chinese_master_micro_graph import analyze_meihua_exhaustive_micro_graph
+            _mh_micro_view = analyze_meihua_exhaustive_micro_graph(res, chart_data=st.session_state.get('chart_data'), topic=selected_topic)
+            if _mh_micro_view and _mh_micro_view.get("flowchart_html"):
+                st.markdown(_mh_micro_view["flowchart_html"], unsafe_allow_html=True)
         except Exception:
             pass
 
@@ -3985,6 +4015,13 @@ elif st.session_state.current_view == "luc_hao":
 
         if _ly_deep_tab and _ly_deep_tab.get("panel_html"):
             st.markdown(_ly_deep_tab["panel_html"], unsafe_allow_html=True)
+        try:
+            from chinese_master_micro_graph import analyze_liuyao_exhaustive_micro_graph
+            _ly_micro_tab = analyze_liuyao_exhaustive_micro_graph(res, dung_than=_dt_lh_tab, topic=selected_topic, chart_data=st.session_state.get('chart_data'))
+            if _ly_micro_tab and _ly_micro_tab.get("flowchart_html"):
+                st.markdown(_ly_micro_tab["flowchart_html"], unsafe_allow_html=True)
+        except Exception:
+            pass
         
         # ========== V12.2: PHỤC THẦN (伏神) — Lục Thân ẩn ==========
         phuc_than_data = res.get('phuc_than', [])
