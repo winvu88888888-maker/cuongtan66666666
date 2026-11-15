@@ -284,9 +284,26 @@ def build_res(upper, lower, dong_hao):
 
     res['the_dung_rel'] = _calc_the_dung_relation(res['hanh_the'], res['hanh_dung'])
     res['the_bien_rel'] = _calc_the_dung_relation(res['hanh_the'], res['hanh_bien_dung'])
+
+    # V129.0: Gắn trực tiếp Hào Từ Động Hào (Chu Dịch 384 Hào) & Cao Đảo Dịch Đoán từ kho GitHub
+    try:
+        from github_zhouyi_384_data import get_zhouyi_line as _mh_zy_line, get_zhouyi_hexagram as _mh_zy_hex
+        _zy_l = _mh_zy_line(res['ten'], dong_hao) or {}
+        _zy_h = _mh_zy_hex(res['ten']) or {}
+        res['dong_hao_tu_hv'] = _zy_l.get('hao_title_hv', '')
+        res['dong_hao_tu_zh'] = _zy_l.get('hao_tu_zh', '')
+        res['dong_hao_tu_vn'] = _zy_l.get('luan_giai_vn', '')
+        res['gaodao_tong_luan'] = _zy_h.get('gaodao_tong_luan', '')
+    except Exception:
+        res['dong_hao_tu_hv'] = ''
+        res['dong_hao_tu_zh'] = ''
+        res['dong_hao_tu_vn'] = ''
+        res['gaodao_tong_luan'] = ''
+
+    _hao_suffix = f" | {res['dong_hao_tu_hv']}: {res['dong_hao_tu_vn']}" if res.get('dong_hao_tu_hv') else ""
     res['interpretation'] = (
         f"Quẻ Chủ {res['ten']} ({res['nghĩa']}) ➔ Quẻ Hỗ {res['ten_ho']} ➔ Quẻ Biến {res['ten_qua_bien']} "
-        f"(Động hào {dong_hao}: Thể {res['the_quai']} hành {res['hanh_the']} — Dụng {res['dung_quai']} hành {res['hanh_dung']}: {res['the_dung_rel']})."
+        f"(Động hào {dong_hao}: Thể {res['the_quai']} hành {res['hanh_the']} — Dụng {res['dung_quai']} hành {res['hanh_dung']}: {res['the_dung_rel']}){_hao_suffix}."
     )
     return res
 
@@ -308,7 +325,26 @@ def get_bien_lines(lines, dong_hao):
     return bien
 
 
-def giai_qua(res, topic="Chung"):
+def giai_qua(res, topic="Chung", chart_data=None, question=""):
+    """
+    V129.0: Luận giải chuyên sâu Mai Hoa Dịch Số chuẩn Thiệu Khang Tiết (18 Loại Chiêm + Tam Quái + 384 Hào Từ).
+    """
+    try:
+        import re as _re_mh
+        from github_prophecy_engine import analyze_meihua_18_categories_deep
+        deep_mh = analyze_meihua_18_categories_deep(res, chart_data=chart_data, topic=topic, question=question)
+        if deep_mh:
+            clean_cat = _re_mh.sub(r"<[^>]+>", "", deep_mh.get("cat_verdict", ""))
+            clean_uk = _re_mh.sub(r"<[^>]+>", "", deep_mh.get("ung_ky_mh", ""))
+            return (
+                f"[{deep_mh['verdict_tag']} — {deep_mh['mh_score']}%] Quẻ {res.get('ten')} ➔ Hỗ {res.get('ten_ho')} ➔ Biến {res.get('ten_qua_bien')} "
+                f"(Động hào {res.get('dong_hao')} — {res.get('dong_hao_tu_hv', '')}: {res.get('dong_hao_tu_vn', '')}). "
+                f"Thể {deep_mh['the_q']} ({deep_mh['h_the']}, mùa {deep_mh['the_state']}) ↔ Dụng {deep_mh['dung_q']} ({deep_mh['h_dung']}, mùa {deep_mh['dung_state']}): "
+                f"Sơ kỳ {deep_mh['rel_chu_tag']} ➔ Chung kỳ {deep_mh['rel_bien_tag']}. "
+                f"{clean_cat} | Ứng kỳ: {clean_uk}"
+            )
+    except Exception:
+        pass
     return (
         f"Quẻ {res.get('ten')} biến {res.get('ten_qua_bien')} (Động hào {res.get('dong_hao')}): "
         f"{res.get('nghĩa')} | Tương quan Thể-Dụng: {res.get('the_dung_rel', '')}"

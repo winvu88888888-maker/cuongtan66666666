@@ -1747,11 +1747,18 @@ class HexagramReasoningAI:
         _nb_km = chart_data.get("nhan_ban") or {}
         _sb_km = chart_data.get("than_ban") or {}
 
-        def _find_can_palace(_c_str: str) -> int:
-            _c_map_60 = {"Giáp": str(chart_data.get("can_gio") or "Mậu")}
-            _lookup = _c_map_60.get(_c_str, _c_str)
+        def _find_can_palace(_c_str: str, _chi_str: str = "") -> int:
+            _c_clean = str(_c_str or "").strip()
+            if not _c_clean:
+                return 0
+            if _c_clean == "Giáp":
+                try:
+                    from github_prophecy_engine import resolve_qimen_stem
+                    _c_clean = resolve_qimen_stem("Giáp", _chi_str or str(chart_data.get("chi_gio") or "Tý"))[0]
+                except Exception:
+                    _c_clean = "Mậu"
             for _k_c, _v_c in _ctb_km.items():
-                if str(_v_c).strip() == _lookup and str(_k_c).isdigit():
+                if str(_v_c).strip() == _c_clean and str(_k_c).isdigit():
                     return 2 if int(_k_c) == 5 else int(_k_c)
             return 0
 
@@ -1766,20 +1773,20 @@ class HexagramReasoningAI:
             if dung_than == "Thê Tài":
                 _resolved_cung = _find_door_palace("Sinh") or _find_can_palace("Mậu")
             elif dung_than == "Huynh Đệ":
-                _resolved_cung = _find_can_palace(str(chart_data.get("can_thang") or ""))
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_thang") or ""), str(chart_data.get("chi_thang") or ""))
             elif dung_than == "Phụ Mẫu":
-                _resolved_cung = _find_can_palace(str(chart_data.get("can_nam") or "")) or _find_door_palace("Cảnh")
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_nam") or ""), str(chart_data.get("chi_nam") or "")) or _find_door_palace("Cảnh")
             elif dung_than in ("Tử Tôn", "Quan Quỷ"):
-                _resolved_cung = _find_can_palace(str(chart_data.get("can_gio") or ""))
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_gio") or ""), str(chart_data.get("chi_gio") or ""))
             elif dung_than == "Bản Thân":
-                _resolved_cung = _find_can_palace(str(chart_data.get("can_ngay") or ""))
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_ngay") or ""), str(chart_data.get("chi_ngay") or ""))
 
         if not _resolved_cung:
             _omni_c = omni_data.get("target_cung")
             if str(_omni_c).isdigit() and 1 <= int(_omni_c) <= 9:
                 _resolved_cung = 2 if int(_omni_c) == 5 else int(_omni_c)
             else:
-                _resolved_cung = _find_can_palace(str(chart_data.get("can_ngay") or "")) or (2 if int(cuc_km) == 5 else int(cuc_km))
+                _resolved_cung = _find_can_palace(str(chart_data.get("can_ngay") or ""), str(chart_data.get("chi_ngay") or "")) or (2 if int(cuc_km) == 5 else int(cuc_km))
 
         target_cung = _resolved_cung
         _default_huong, _default_quai = _CUNG_META_KM.get(target_cung, ("Chính Bắc", "Khảm"))
@@ -1901,19 +1908,18 @@ class HexagramReasoningAI:
                 if _lt_k in lt:
                     luc_than_groups[_lt_k].append((ix, h, ch, nh, is_d, b_str, is_kv_line))
 
-        # Ưu tiên chọn Hào Dụng Thần ĐỘNG (Tăng San Bốc Dịch: Dụng Thần lưỡng hiện, thủ Động hào), sau đó Trì Thế hoặc Hào 5
+        # V129.0: Quy tắc 'Dụng Thần Lưỡng Hiện' chuẩn Tăng San Bốc Dịch (5 tầng ưu tiên: Động/Ám Động -> Bất Phá -> Bất Chân Không -> Vượng Tướng -> Thế/Ứng/Hào 5)
         if dt_haos_all:
-            dong_matches = [item for item in dt_haos_all if item[4]]
-            tri_the_matches = [item for item in dt_haos_all if item[0] == the_idx]
-            hao5_matches = [item for item in dt_haos_all if item[0] == 5]
-            if dong_matches:
-                chosen_dt = dong_matches[0]
-            elif tri_the_matches:
-                chosen_dt = tri_the_matches[0]
-            elif dung_than in ("Phụ Mẫu", "Quan Quỷ") and hao5_matches:
-                chosen_dt = hao5_matches[0]
-            else:
-                chosen_dt = dt_haos_all[0]
+            def _dt_rank_key(_it):
+                _ix, _hd, _ch, _nh, _is_d, _bs = _it
+                _is_active = 1 if (_is_d or (isinstance(_hd, dict) and _hd.get("is_am_dong"))) else 0
+                _not_pha = 0 if (isinstance(_hd, dict) and (_hd.get("is_nguyet_pha") or _hd.get("is_nhat_pha"))) else 1
+                _not_ck = 0 if ((isinstance(_hd, dict) and _hd.get("khong_type") == "CHAN_KHONG") or (_ch in _kv_m and not _is_active)) else 1
+                _is_vt = 1 if (isinstance(_hd, dict) and _hd.get("strength") in ("Vượng", "Tướng")) else 0
+                _pos_pri = 3 if _ix == the_idx else (2 if _ix == ung_idx else (1 if (_ix == 5 and dung_than in ("Phụ Mẫu", "Quan Quỷ")) else 0))
+                return (_is_active, _not_pha, _not_ck, _is_vt, _pos_pri)
+
+            chosen_dt = sorted(dt_haos_all, key=_dt_rank_key, reverse=True)[0]
             dt_idx, dt_hao, dt_chi, dt_nh, dt_is_dong, dt_bien_str = chosen_dt
         _phuc_dt_obj = None
         if not dt_haos_all and isinstance(luc_hao_data, dict):
@@ -7441,7 +7447,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:14px 16px;border-radius:14px;margin-bottom:14px;border:2px solid #38bdf8;box-shadow:0 4px 18px rgba(56,189,248,0.2);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:6px;">'
-            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V128.0 — {_clk_cv["solar_date_str"]}): ĐỌC HIỂU CÂU HỎI & ĐỐI CHỨNG TAM THỨC</div>'
+            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V129.0 — {_clk_cv["solar_date_str"]}): ĐỌC HIỂU CÂU HỎI & ĐỐI CHỨNG ĐẠI TIÊN TRI GITHUB</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:2px 9px;border-radius:12px;font-size:0.8em;font-weight:800;border:1px solid #38bdf8;">{blueprint["archetype_code"]} — {blueprint["archetype_name"]}</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
@@ -7467,7 +7473,7 @@ class HexagramReasoningAI:
 
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V128.0 — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
+            f"=== HỒ SƠ BÀN GIAO TỪ HỆ THỐNG SONG NÃO AI CAO CẤP NHẤT (V129.0 — ĐẠI TIÊN TRI GITHUB — ĐỒNG BỘ THỜI GIAN THỰC {_clk_cv['solar_date_str']} — BẮT BUỘC TUÂN THỦ 100%) ===\n"
             f"1. [CON AI SỐ 1 (FLASH-LITE) - ĐỌC HIỂU CÂU HỎI & GIAO NHIỆM VỤ]:\n"
             f"   - Câu hỏi thuộc: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi người dùng muốn hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"

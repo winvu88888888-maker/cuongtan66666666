@@ -85,6 +85,18 @@ NAP_GIAP_MAP = {
     "Tốn":["Sửu-Thổ", "Hợi-Thủy", "Dậu-Kim", "Mùi-Thổ", "Tị-Hỏa", "Mão-Mộc"]
 }
 
+# V129.0: Kinh Phòng Thiên Can Nạp Giáp (Nội quái hào 1-3, Ngoại quái hào 4-6) chuẩn thangnc/i-ching-plugins & yaomancy/liuyao-engine
+NAP_GIAP_CAN_MAP = {
+    "Càn": ("Giáp", "Nhâm"),
+    "Khôn": ("Ất", "Quý"),
+    "Cấn": ("Bính", "Bính"),
+    "Đoài": ("Đinh", "Đinh"),
+    "Khảm": ("Mậu", "Mậu"),
+    "Ly": ("Kỷ", "Kỷ"),
+    "Chấn": ("Canh", "Canh"),
+    "Tốn": ("Tân", "Tân"),
+}
+
 # Map trigram index to name
 QUAI_IDX_TO_NAME = {1: "Càn", 2: "Đoài", 3: "Ly", 4: "Chấn", 5: "Tốn", 6: "Khảm", 7: "Cấn", 8: "Khôn"}
 
@@ -153,26 +165,40 @@ def get_nap_giap_for_hexagram(lower_idx, upper_idx):
     result = lower_nap_giap[:3] + upper_nap_giap[3:]
     return result
 
+@lru_cache(maxsize=256)
+def get_nap_giap_can_for_hexagram(lower_idx, upper_idx):
+    """Lấy Thiên Can Nạp Giáp chuẩn Kinh Phòng cho 6 hào (hào 1-3 Nội quái, hào 4-6 Ngoại quái)."""
+    lower_name = QUAI_IDX_TO_NAME.get(lower_idx, "Càn")
+    upper_name = QUAI_IDX_TO_NAME.get(upper_idx, "Càn")
+    can_in = NAP_GIAP_CAN_MAP.get(lower_name, ("Giáp", "Nhâm"))[0]
+    can_out = NAP_GIAP_CAN_MAP.get(upper_name, ("Giáp", "Nhâm"))[1]
+    return [can_in, can_in, can_in, can_out, can_out, can_out]
+
 def get_element_strength(h_element, month):
-    chi_element_map = {"Dần": "Mộc", "Mão": "Mộc", "Tị": "Hỏa", "Tỵ": "Hỏa", "Ngọ": "Hỏa", "Thân": "Kim", "Dậu": "Kim", "Hợi": "Thủy", "Tý": "Thủy", "Thìn": "Thổ", "Tuất": "Thổ", "Sửu": "Thổ", "Mùi": "Thổ"}
+    """
+    V129.0 FIX CHUẨN NGŨ HÀNH ĐẠI NGHĨA & TĂNG SAN BỐC DỊCH (thangnc/i-ching-plugins):
+    Đương lệnh giả Vượng, Lệnh sinh giả Tướng, Sinh lệnh giả Hưu, Khắc lệnh giả Tù, Lệnh khắc giả Tử!
+    """
+    chi_element_map = {
+        "Dần": "Mộc", "Mão": "Mộc", "Tị": "Hỏa", "Tỵ": "Hỏa", "Ngọ": "Hỏa",
+        "Thân": "Kim", "Dậu": "Kim", "Hợi": "Thủy", "Tý": "Thủy",
+        "Thìn": "Thổ", "Tuất": "Thổ", "Sửu": "Thổ", "Mùi": "Thổ",
+    }
+    month_element_map = {
+        1: "Mộc", 2: "Mộc", 4: "Hỏa", 5: "Hỏa", 7: "Kim", 8: "Kim",
+        10: "Thủy", 11: "Thủy", 3: "Thổ", 6: "Thổ", 9: "Thổ", 12: "Thổ",
+    }
     if isinstance(month, str) and month in chi_element_map:
         m_el = chi_element_map[month]
     else:
-        month_element_map = {1: "Mộc", 2: "Mộc", 4: "Hỏa", 5: "Hỏa", 7: "Kim", 8: "Kim", 10: "Thủy", 11: "Thủy", 3: "Thổ", 6: "Thổ", 9: "Thổ", 12: "Thổ"}
-        m_el = m_el if 'm_el' in locals() else month_element_map.get(month, "Thổ")
-        pass
-    month_element_map = {
-        1: "Mộc", 2: "Mộc", 4: "Hỏa", 5: "Hỏa", 7: "Kim", 8: "Kim", 10: "Thủy", 11: "Thủy",
-        3: "Thổ", 6: "Thổ", 9: "Thổ", 12: "Thổ"
-    }
-    m_el = m_el if 'm_el' in locals() else month_element_map.get(month, "Thổ")
-    
+        m_el = month_element_map.get(month, "Thổ")
+
     strengths = {
-        "Mộc": {"Mộc": "Vượng", "Hỏa": "Tướng", "Thủy": "Hưu", "Thổ": "Tù", "Kim": "Tử"},
-        "Hỏa": {"Hỏa": "Vượng", "Thổ": "Tướng", "Mộc": "Hưu", "Kim": "Tù", "Thủy": "Tử"},
-        "Thổ": {"Thổ": "Vượng", "Kim": "Tướng", "Hỏa": "Hưu", "Thủy": "Tù", "Mộc": "Tử"},
-        "Kim": {"Kim": "Vượng", "Thủy": "Tướng", "Thổ": "Hưu", "Mộc": "Tù", "Hỏa": "Tử"},
-        "Thủy": {"Thủy": "Vượng", "Mộc": "Tướng", "Kim": "Hưu", "Hỏa": "Tù", "Thổ": "Tử"},
+        "Mộc": {"Mộc": "Vượng", "Hỏa": "Tướng", "Thủy": "Hưu", "Kim": "Tù", "Thổ": "Tử"},
+        "Hỏa": {"Hỏa": "Vượng", "Thổ": "Tướng", "Mộc": "Hưu", "Thủy": "Tù", "Kim": "Tử"},
+        "Thổ": {"Thổ": "Vượng", "Kim": "Tướng", "Hỏa": "Hưu", "Mộc": "Tù", "Thủy": "Tử"},
+        "Kim": {"Kim": "Vượng", "Thủy": "Tướng", "Thổ": "Hưu", "Hỏa": "Tù", "Mộc": "Tử"},
+        "Thủy": {"Thủy": "Vượng", "Mộc": "Tướng", "Kim": "Hưu", "Thổ": "Tù", "Hỏa": "Tử"},
     }
     return strengths.get(m_el, {}).get(h_element, "Bình")
 
@@ -268,27 +294,39 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
     
     upper_idx = int(_up_ov_lh) if _up_ov_lh in (1, 2, 3, 4, 5, 6, 7, 8) else (((total_upper - 1) % 8) + 1)
     lower_idx = int(_lo_ov_lh) if _lo_ov_lh in (1, 2, 3, 4, 5, 6, 7, 8) else (((total_lower - 1) % 8) + 1)
-    moving_idx = int(_mv_ov_lh) if _mv_ov_lh in (1, 2, 3, 4, 5, 6) else (((total_lower + _dong_off_lh - 1) % 6) + 1) # 1-indexed
+    moving_idx = int(_mv_ov_lh) if _mv_ov_lh in (1, 2, 3, 4, 5, 6) else (((total_lower + _dong_off_lh - 1) % 6) + 1)  # 1-indexed
 
     # Convert trigram index to lines
     trigrams = {
         1: [1, 1, 1], 2: [1, 1, 0], 3: [1, 0, 1], 4: [1, 0, 0],
         5: [0, 1, 1], 6: [0, 1, 0], 7: [0, 0, 1], 8: [0, 0, 0]
     }
-    
-    ban_lines = trigrams[lower_idx] + trigrams[upper_idx]
-    
-    # Calculate Moving results for display
-    hao_results = []
-    for i in range(1, 7):
-        if i == moving_idx:
-            hao_type = 9 if ban_lines[i-1] == 1 else 6
-        else:
-            hao_type = 7 if ban_lines[i-1] == 1 else 8
-        hao_results.append(hao_type)
 
-    bien_lines = list(ban_lines)
-    bien_lines[moving_idx - 1] = 0 if ban_lines[moving_idx - 1] == 1 else 1
+    _coin_throws = kwargs.get("coin_throws", None)
+    _mv_list_ov = kwargs.get("moving_list_override", None)
+
+    if isinstance(_coin_throws, (list, tuple)) and len(_coin_throws) == 6 and all(x in (6, 7, 8, 9) for x in _coin_throws):
+        hao_results = [int(x) for x in _coin_throws]
+        ban_lines = [1 if x in (7, 9) else 0 for x in hao_results]
+        bien_lines = [0 if x == 9 else (1 if x == 6 else (1 if x == 7 else 0)) for x in hao_results]
+        dong_list = [idx + 1 for idx, x in enumerate(hao_results) if x in (6, 9)]
+        lower_idx = lines_to_quai_num(ban_lines[:3])
+        upper_idx = lines_to_quai_num(ban_lines[3:])
+    else:
+        ban_lines = trigrams[lower_idx] + trigrams[upper_idx]
+        if isinstance(_mv_list_ov, (list, tuple)):
+            dong_list = sorted({int(x) for x in _mv_list_ov if str(x).isdigit() and 1 <= int(x) <= 6})
+        else:
+            dong_list = [moving_idx]
+        hao_results = []
+        bien_lines = list(ban_lines)
+        for i in range(1, 7):
+            if i in dong_list:
+                hao_type = 9 if ban_lines[i - 1] == 1 else 6
+                bien_lines[i - 1] = 0 if ban_lines[i - 1] == 1 else 1
+            else:
+                hao_type = 7 if ban_lines[i - 1] == 1 else 8
+            hao_results.append(hao_type)
 
     ban_name = get_hex_name(ban_lines)
     bien_name = get_hex_name(bien_lines)
@@ -297,8 +335,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
     palace = HEXAGRAM_PALACES.get(ban_name, "Càn")
     p_element = PALACE_ELEMENTS.get(palace, "Kim")
     
-    # === FIX 2: Lục Thú - Corrected mapping (was broken by can_ngay[0]) ===
-    # Standard: Giáp/Ất→Thanh Long, Bính/Đinh→Chu Tước, Mậu→Câu Trần, Kỷ→Đằng Xà, Canh/Tân→Bạch Hổ, Nhâm/Quý→Huyền Vũ
+    # === FIX 2: Lục Thú - Corrected mapping ===
     start_thu = {
         "Giáp": 0, "Ất": 0, 
         "Bính": 1, "Đinh": 1, 
@@ -306,15 +343,24 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         "Kỷ": 3, 
         "Canh": 4, "Tân": 4, 
         "Nhâm": 5, "Quý": 5
-    }.get(can_ngay, 0)  # FIX: was can_ngay[0] which never matched!
+    }.get(can_ngay, 0)
     
-    # === FIX 3: Nạp Giáp - Use inner/outer trigram, not palace ===
+    # === FIX 3: Nạp Giáp Địa Chi + Thiên Can Kinh Phòng + 60 Nạp Âm (V129.0) ===
     nap_giap_ban = get_nap_giap_for_hexagram(lower_idx, upper_idx)
+    nap_giap_can_ban = get_nap_giap_can_for_hexagram(lower_idx, upper_idx)
     
     # Biến hexagram trigrams for separate nạp giáp
     bien_lower_idx = lines_to_quai_num(bien_lines[:3])
     bien_upper_idx = lines_to_quai_num(bien_lines[3:])
     nap_giap_bien = get_nap_giap_for_hexagram(bien_lower_idx, bien_upper_idx)
+    nap_giap_can_bien = get_nap_giap_can_for_hexagram(bien_lower_idx, bien_upper_idx)
+
+    try:
+        from github_prophecy_engine import NAP_AM_60 as _NAP_AM_60
+        from github_zhouyi_384_data import get_zhouyi_line as _get_zy_line
+    except Exception:
+        _NAP_AM_60 = {}
+        _get_zy_line = lambda _h, _p: {}
     
     # === FIX 4: Thế/Ứng - Complete lookup table ===
     the_pos = THE_POSITION.get(ban_name, 3)
@@ -335,7 +381,6 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                    "Thìn":"Dậu", "Dậu":"Thìn", "Tị":"Thân", "Thân":"Tị", "Ngọ":"Mùi", "Mùi":"Ngọ"}
         return hop_map.get(chi1) == chi2
 
-    # V128.0 (Tăng San Bốc Dịch — Thủy Thổ đồng cung Nhập Mộ tại Thìn; không gán nhầm Tuất/Sửu/Mùi tự Mộ khi lâm Nhật/Nguyệt Kiến!)
     _SINH_EL = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
     _KHAC_EL = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
     _CHI_EL = {
@@ -365,21 +410,25 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
 
     nhat_el = _CHI_EL.get(chi_ngay, "Thổ")
     nguyet_el = _CHI_EL.get(chi_thang, "Thổ")
-    mv_cc_ban = nap_giap_ban[moving_idx - 1]
-    mv_el_ban = mv_cc_ban.split("-")[1]
+    moving_els_ban = {nap_giap_ban[m_idx - 1].split("-")[1] for m_idx in dong_list if 1 <= m_idx <= 6}
 
-    # Build main hexagram details (V128.0: Ám Động vs Nhật Phá, Chân Không vs Giả Không, 6 Pháp Quyết Hào Biến)
+    # Build main hexagram details (V129.0: Kinh Phòng Can Chi + 60 Nạp Âm + Chu Dịch 384 Hào Từ + 0..6 Hào Động)
     details_ban = []
     for i in range(6):
         cc = nap_giap_ban[i]
+        t_can = nap_giap_can_ban[i]
         c_branch = cc.split("-")[0]
         c_element = cc.split("-")[1]
+        cc_full = f"{t_can} {cc}"
+        nap_am_str = _NAP_AM_60.get(f"{t_can} {c_branch}", "")
+        zy_ln = _get_zy_line(ban_name, i + 1) or {}
+
         lt = get_luc_than(c_element, p_element)
         strength = get_element_strength(c_element, chi_thang or lmonth)
-        is_mv = (i + 1) == moving_idx
+        is_mv = (i + 1) in dong_list
         is_vuong_tuong = strength in ("Vượng", "Tướng")
         dac_nhat_sinh = (_SINH_EL.get(nhat_el) == c_element) or (nhat_el == c_element)
-        dac_dong_sinh = (not is_mv) and (_SINH_EL.get(mv_el_ban) == c_element)
+        dac_dong_sinh = (not is_mv) and any(_SINH_EL.get(m_el) == c_element for m_el in moving_els_ban)
 
         is_nguyet_pha_line = is_xung(c_branch, chi_thang) and (c_branch != chi_ngay)
         is_nhat_xung_line = is_xung(c_branch, chi_ngay)
@@ -453,7 +502,9 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         details_ban.append({
             'hao': i + 1, 'line': ban_lines[i], 'is_moving': is_mv,
             'dong': is_mv,
-            'luc_than': lt, 'can_chi': cc, 'chi': c_branch, 'ngu_hanh': c_element,
+            'luc_than': lt, 'can_chi': cc, 'thien_can': t_can, 'can_chi_full': cc_full,
+            'nap_am': nap_am_str,
+            'chi': c_branch, 'ngu_hanh': c_element,
             'luc_thu': LUC_THU[(start_thu + i) % 6],
             'strength': strength, 'vuong_suy': strength,
             'the_ung': 'Thế' if (i + 1) == the_pos else ('Ứng' if (i + 1) == ung_pos else ''),
@@ -464,6 +515,10 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
             'is_nhat_pha': is_nhat_pha_line,
             'is_nguyet_pha': is_nguyet_pha_line,
             'hoa_flags': hoa_flags,
+            'hao_tu_hv': zy_ln.get('hao_title_hv', ''),
+            'hao_tu_zh': zy_ln.get('hao_tu_zh', ''),
+            'hao_tu_vn': zy_ln.get('luan_giai_vn', ''),
+            'hao_tu_verdict': zy_ln.get('verdict', 'BÌNH'),
             'marker': " ".join(markers)
         })
 
@@ -471,8 +526,11 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
     details_bien = []
     for i in range(6):
         cc = nap_giap_bien[i]
+        t_can_b = nap_giap_can_bien[i]
         c_branch = cc.split("-")[0]
         c_element = cc.split("-")[1]
+        cc_full_b = f"{t_can_b} {cc}"
+        nap_am_b = _NAP_AM_60.get(f"{t_can_b} {c_branch}", "")
         lt = get_luc_than(c_element, p_element)
         strength = get_element_strength(c_element, chi_thang or lmonth)
 
@@ -484,7 +542,9 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
 
         details_bien.append({
             'hao': i + 1, 'line': bien_lines[i], 'is_moving': False,
-            'luc_than': lt, 'can_chi': cc, 'chi': c_branch, 'ngu_hanh': c_element,
+            'luc_than': lt, 'can_chi': cc, 'thien_can': t_can_b, 'can_chi_full': cc_full_b,
+            'nap_am': nap_am_b,
+            'chi': c_branch, 'ngu_hanh': c_element,
             'luc_thu': LUC_THU[(start_thu + i) % 6],
             'strength': strength, 'vuong_suy': strength,
             'am_duong': 'Dương' if bien_lines[i] == 1 else 'Âm',
@@ -492,7 +552,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         })
 
     # ============================================
-    # V128.0: PHỤC THẦN (伏神) — Xét ĐẮC XUẤT vs TUYỆT LỘ (Tăng San Bốc Dịch)
+    # V129.0: PHỤC THẦN (伏神) — Xét ĐẮC XUẤT vs TUYỆT LỘ (Tăng San Bốc Dịch) + Thiên Can Nạp Giáp
     # ============================================
     present_luc_than = set(d['luc_than'] for d in details_ban)
     missing_luc_than = [lt for lt in LUC_THAN if lt not in present_luc_than]
@@ -508,14 +568,19 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         }
         palace_trigram_idx = {v: k for k, v in QUAI_IDX_TO_NAME.items()}.get(palace, 1)
         bt_nap_giap = get_nap_giap_for_hexagram(palace_trigram_idx, palace_trigram_idx)
+        bt_nap_can = get_nap_giap_can_for_hexagram(palace_trigram_idx, palace_trigram_idx)
 
         bt_details = []
         for i in range(6):
             cc = bt_nap_giap[i]
+            tc_p = bt_nap_can[i]
             c_branch = cc.split("-")[0]
             c_element = cc.split("-")[1]
             lt = get_luc_than(c_element, p_element)
-            bt_details.append({'hao': i + 1, 'can_chi': cc, 'chi': c_branch, 'luc_than': lt, 'element': c_element})
+            bt_details.append({
+                'hao': i + 1, 'can_chi': cc, 'can_chi_full': f"{tc_p} {cc}",
+                'chi': c_branch, 'luc_than': lt, 'element': c_element
+            })
 
         for missing_lt in missing_luc_than:
             for bt_d in bt_details:
@@ -547,6 +612,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                     phuc_info = {
                         'luc_than': missing_lt,
                         'can_chi': bt_d['can_chi'],
+                        'can_chi_full': bt_d['can_chi_full'],
                         'chi': phuc_chi,
                         'element': phuc_el,
                         'hao_pos': hao_pos,
@@ -564,7 +630,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                     phuc_than_list.append(phuc_info)
                     break
 
-    # Kiểm tra Tùy Quỷ Nhập Mộ (Hào Thế lâm Quan Quỷ Nhập Mộ hoặc Quan Quỷ động hóa Mộ kèm Thế suy) & Tương Hóa Xung-Hợp
+    # Kiểm tra Tùy Quỷ Nhập Mộ & Tương Hóa Xung-Hợp
     the_detail = details_ban[the_pos - 1]
     tuy_quy_nhap_mo = bool(
         the_detail['luc_than'] == "Quan Quỷ"
@@ -577,14 +643,16 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
     elif ban_name in _LUC_HOP_SET and bien_name in _LUC_XUNG_SET:
         xung_hop_transition = "HOP_HOA_XUNG"
 
+    dong_desc = f"biến tại hào {', '.join(map(str, dong_list))}" if dong_list else "Quẻ Tĩnh (0 hào động)"
     return {
         'ban': {'name': ban_name, 'lines': ban_lines, 'details': details_ban, 'haos': details_ban, 'palace': palace},
         'bien': {'name': bien_name, 'lines': bien_lines, 'details': details_bien, 'haos': details_bien},
-        'dong_hao': [moving_idx],
+        'dong_hao': dong_list,
+        'hao_results': hao_results,
         'phuc_than': phuc_than_list,
         'tuy_quy_nhap_mo': tuy_quy_nhap_mo,
         'xung_hop_transition': xung_hop_transition,
-        'conclusion': f"Quẻ {ban_name} biến {bien_name}. {topic} có biến tại hào {moving_idx}.",
+        'conclusion': f"Quẻ {ban_name} biến {bien_name}. {topic} ({dong_desc}).",
         'the_ung': f"Thế hào {the_pos}, Ứng hào {ung_pos}",
         'can_ngay': can_ngay,
         'chi_ngay': chi_ngay,
@@ -593,3 +661,29 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         'nhat_than': chi_ngay,
         'nguyet_lenh': chi_thang
     }
+
+
+def gieo_dong_xu_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi_ngay="Tý", can_thang=None, chi_thang=None, **kwargs):
+    """
+    V129.0: Gieo Quẻ Kim Tiền (Tung 3 đồng xu × 6 lần chuẩn cổ pháp Văn Vương / yaomancy/liuyao-engine).
+    Mỗi mặt Ngửa = 3, mặt Sấp = 2 -> Tổng 1 lần tung thuộc {6 (Lão Âm), 7 (Thiếu Dương), 8 (Thiếu Âm), 9 (Lão Dương)}
+    Xác suất thực tế: 6 (1/8), 7 (3/8), 8 (3/8), 9 (1/8) -> Hỗ trợ chuẩn 0..6 Hào Động!
+    """
+    import secrets
+    coin_throws = []
+    coin_log = []
+    for idx in range(1, 7):
+        c1, c2, c3 = (2 + secrets.randbelow(2)), (2 + secrets.randbelow(2)), (2 + secrets.randbelow(2))
+        s = c1 + c2 + c3
+        coin_throws.append(s)
+        lbl = {6: "Lão Âm ⚋✕ (Động)", 7: "Thiếu Dương ⚊", 8: "Thiếu Âm ⚋", 9: "Lão Dương ⚊○ (Động)"}[s]
+        coin_log.append(f"Hào {idx}: {c1}+{c2}+{c3}={s} ({lbl})")
+    res = lap_qua_luc_hao(
+        year, month, day, hour, topic=topic,
+        can_ngay=can_ngay, chi_ngay=chi_ngay,
+        can_thang=can_thang, chi_thang=chi_thang,
+        coin_throws=coin_throws, **kwargs
+    )
+    res["coin_log"] = coin_log
+    res["cast_method"] = "KIM_TIEN_3_XU"
+    return res

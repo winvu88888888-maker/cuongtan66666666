@@ -906,9 +906,14 @@ def compute_deep_interacting_factors_a_to_z(
     dt_ts_ngay = _calc_12_truong_sinh(dt_nh, chi_n)
     the_ts_ngay = _calc_12_truong_sinh(the_nh, chi_n)
     dt_mo_kho = _MO_KHO_BY_HANH.get(dt_nh, "Thìn")
-    is_dt_nhap_mo = (chi_n == dt_mo_kho) or (chi_m == dt_mo_kho) or any(
-        1 <= d <= len(bien_haos) and isinstance(bien_haos[d - 1], dict) and str(bien_haos[d - 1].get("chi", "")).split()[-1] == dt_mo_kho
-        for d in dong_list if d == dt_idx
+    is_dt_vt = (dt_nh == nh_m) or (_SINH_ELEMENT_MAP.get(nh_m) == dt_nh)
+    is_dt_nhap_mo = (
+        ((not is_dt_vt) and ((chi_n == dt_mo_kho and dt_chi != chi_n) or (chi_m == dt_mo_kho and dt_chi != chi_m)))
+        or any(
+            1 <= d <= len(bien_haos) and isinstance(bien_haos[d - 1], dict)
+            and str(bien_haos[d - 1].get("chi", "")).split("-")[0].split()[-1] == dt_mo_kho
+            for d in dong_list if d == dt_idx
+        )
     )
     mo_kho_note = (
         f"⚠️ <b>Tác động Nhập Mộ (Mộ Khố {dt_mo_kho}):</b> Dụng Thần ({dt_chi}-{dt_nh}) đang gặp Mộ khố tại <b>{dt_mo_kho}</b> (chủ sự cất giấu kín đáo, thu liễm vào kho, hoặc năng lượng đang bị khóa tạm thời chờ ngày Xung Mộ <b>{_XUNG_CHI_MAP.get(dt_mo_kho, 'Tuất')}</b> mới bung ra)"
@@ -928,19 +933,19 @@ def compute_deep_interacting_factors_a_to_z(
     dong_hoa_details = []
     dt_luc_thu = "Thanh Long"
     the_luc_thu = "Chu Tước"
+    # V129.0 FIX CHUẨN TĂNG SAN BỐC DỊCH: Tam Hợp Cục CHỈ được tính từ Hào Động + Hào Ám Động + Hào Biến + Nhật/Nguyệt!
     all_active_chis = {chi_m, chi_n}
+    moving_line_chis = set()
 
     for ix, h in enumerate(haos, 1):
         if not isinstance(h, dict):
             continue
         lt = str(h.get("luc_than") or "")
-        ch = str(h.get("chi") or h.get("can_chi") or "").split()[-1]
+        ch = str(h.get("chi") or h.get("can_chi") or "").split("-")[0].split()[-1]
         nh = str(h.get("ngu_hanh") or h.get("hanh") or _CHI_HANH_MAP.get(ch, ""))
         lthu = str(h.get("luc_thu") or "")
-        is_d = (ix in dong_list) or bool(h.get("dong") or h.get("is_dong"))
+        is_d = (ix in dong_list) or bool(h.get("dong") or h.get("is_dong") or h.get("is_moving"))
         is_kv = ch in kv_list
-        if ch:
-            all_active_chis.add(ch)
         if ix == dt_idx and lthu:
             dt_luc_thu = lthu
         if ix == the_idx and lthu:
@@ -948,28 +953,34 @@ def compute_deep_interacting_factors_a_to_z(
 
         # Nguyên Thần & Kỵ Thần
         if nh == ng_nh:
-            nguyen_than_list.append(f"Hào {ix} {lt} ({ch}-{nh}){' [ĐỘNG]' if is_d else ''}{' [Tuần Không]' if is_kv else ''}")
+            nguyen_than_list.append(f"Hào {ix} {lt} ({h.get('can_chi_full') or f'{ch}-{nh}'}){' [ĐỘNG]' if is_d else ''}{' [Tuần Không]' if is_kv else ''}")
         elif nh == ky_nh:
-            ky_than_list.append(f"Hào {ix} {lt} ({ch}-{nh}){' [ĐỘNG]' if is_d else ''}{' [Tuần Không]' if is_kv else ''}")
+            ky_than_list.append(f"Hào {ix} {lt} ({h.get('can_chi_full') or f'{ch}-{nh}'}){' [ĐỘNG]' if is_d else ''}{' [Tuần Không]' if is_kv else ''}")
 
-        # Nguyệt Phá (Bị Chi Tháng lục xung)
-        if _XUNG_CHI_MAP.get(chi_m) == ch:
+        # Nguyệt Phá (Bị Chi Tháng lục xung và không lâm Nhật Kiến)
+        if _XUNG_CHI_MAP.get(chi_m) == ch and ch != chi_n:
             nguyet_pha_list.append(f"Hào {ix} {lt} ({ch}-{nh}) bị Nguyệt Lệnh ({chi_m}) xung ➔ <b>Nguyệt Phá</b>")
 
-        # Ám Động (Hào tĩnh, có khí dưới Nguyệt Lệnh, bị Chi Ngày lục xung)
+        # Ám Động (Hào tĩnh, có khí dưới Nguyệt Lệnh/Nhật Thần, bị Chi Ngày lục xung)
         if not is_d and _XUNG_CHI_MAP.get(chi_n) == ch:
-            is_vuong_tuong = (nh == nh_m) or (_SINH_ELEMENT_MAP.get(nh_m) == nh) or (nh == nh_n)
-            if is_vuong_tuong and not is_kv:
+            is_vuong_tuong = (nh == nh_m) or (_SINH_ELEMENT_MAP.get(nh_m) == nh) or (nh == nh_n) or (_SINH_ELEMENT_MAP.get(nh_n) == nh)
+            if is_vuong_tuong and h.get("khong_type") != "CHAN_KHONG":
                 am_dong_list.append(f"Hào {ix} {lt} ({ch}-{nh}) được Nhật Thần ({chi_n}) xung khi đang hữu khí ➔ <b>ÁM ĐỘNG (Tác động ngầm cực mạnh)</b>")
+                if ch:
+                    moving_line_chis.add(ch)
+                    all_active_chis.add(ch)
             else:
                 am_dong_list.append(f"Hào {ix} {lt} ({ch}-{nh}) bị Nhật Thần ({chi_n}) xung ➔ <b>Nhật Phá / Xung Không</b>")
 
         # Chi tiết Hào Động & Hào Biến (Hồi đầu sinh/khắc, Hóa Tiến/Thoái, Hóa Không, Hóa Mộ)
         if is_d:
+            if ch:
+                moving_line_chis.add(ch)
+                all_active_chis.add(ch)
             b_ch, b_nh, b_lt = "", "", ""
             if 1 <= ix <= len(bien_haos) and isinstance(bien_haos[ix - 1], dict):
                 bh = bien_haos[ix - 1]
-                b_ch = str(bh.get("chi") or bh.get("can_chi") or "").split()[-1]
+                b_ch = str(bh.get("chi") or bh.get("can_chi") or "").split("-")[0].split()[-1]
                 b_nh = str(bh.get("ngu_hanh") or bh.get("hanh") or _CHI_HANH_MAP.get(b_ch, ""))
                 b_lt = str(bh.get("luc_than") or "")
                 if b_ch:
@@ -992,23 +1003,25 @@ def compute_deep_interacting_factors_a_to_z(
             elif _XUNG_CHI_MAP.get(ch) == b_ch:
                 hoa_tags.append("<b>PHẢN NGÂM HÀO (Động hóa Lục Xung)</b> (Biến động lật ngược/lặp đi lặp lại)")
             hv_info = LUC_HAO_6_VI_TUONG_PHAP.get(ix, {})
+            cc_disp = h.get("can_chi_full") or f"{ch}-{nh}"
             dong_hoa_details.append(
-                f"<b>Hào {ix} ({hv_info.get('ten_hao', f'Hào {ix}')}) — {lt} ({ch}-{nh}, Lục Thú: {lthu})</b> phát động biến thành "
+                f"<b>Hào {ix} ({hv_info.get('ten_hao', f'Hào {ix}')}) — {lt} ({cc_disp}, Lục Thú: {lthu})</b> phát động biến thành "
                 f"<b>{b_lt} ({b_ch}-{b_nh})</b>"
                 + (f" ➔ {', '.join(hoa_tags)}" if hoa_tags else " (Biến hóa thuận chiều)")
                 + f" [<i>Tượng hào vị: Địa lý={hv_info.get('dia_ly','')}; Nhân sự={hv_info.get('nhan_su','')}; Cơ thể={hv_info.get('co_the','')}</i>]"
             )
 
-    # 4. Kiểm tra Tam Hợp Cục trên quẻ
+    # 4. Kiểm tra Chân Tam Hợp Cục trên quẻ (BẮT BUỘC có Hào Động / Ám Động tham gia!)
     tam_hop_found = []
-    for cuc_set, cuc_hanh, cuc_desc in _TAM_HOP_CUCS:
-        if cuc_set.issubset(all_active_chis):
-            rel_cuc_dt = (
-                f"sinh trợ trực tiếp Dụng Thần ({dt_nh})" if _SINH_ELEMENT_MAP.get(cuc_hanh) == dt_nh
-                else (f"đồng hành Tỷ Hòa với Dụng Thần ({dt_nh})" if cuc_hanh == dt_nh
-                      else (f"khắc chế Dụng Thần ({dt_nh})" if _KHAC_ELEMENT_MAP.get(cuc_hanh) == dt_nh else f"tiết khí/tương tác với Dụng Thần ({dt_nh})"))
-            )
-            tam_hop_found.append(f"🌟 <b>Đắc {cuc_desc}</b> — Cục {cuc_hanh} {rel_cuc_dt}")
+    if moving_line_chis:
+        for cuc_set, cuc_hanh, cuc_desc in _TAM_HOP_CUCS:
+            if cuc_set.issubset(all_active_chis) and (cuc_set & moving_line_chis):
+                rel_cuc_dt = (
+                    f"sinh trợ trực tiếp Dụng Thần ({dt_nh})" if _SINH_ELEMENT_MAP.get(cuc_hanh) == dt_nh
+                    else (f"đồng hành Tỷ Hòa với Dụng Thần ({dt_nh})" if cuc_hanh == dt_nh
+                          else (f"khắc chế Dụng Thần ({dt_nh})" if _KHAC_ELEMENT_MAP.get(cuc_hanh) == dt_nh else f"tiết khí/tương tác với Dụng Thần ({dt_nh})"))
+                )
+                tam_hop_found.append(f"🌟 <b>Đắc Chân {cuc_desc}</b> — Cục {cuc_hanh} {rel_cuc_dt}")
 
     # 5. Tương quan Thế – Ứng chuyên sâu
     if _SINH_ELEMENT_MAP.get(ung_nh) == the_nh:
@@ -1095,30 +1108,49 @@ def compute_deep_interacting_factors_a_to_z(
     else:
         mon_cung_state = f"✅ <b>Môn – Cung Tỷ Hòa ({hanh_cua_dt} đồng hành {hanh_cung_dt}):</b> Khí lực thông suốt"
 
-    # 3. Tương quan Cung Can Ngày (Chủ thể) ↔ Cung Can Giờ (Sự việc) & Cách Cục Thiên+Địa Can
+    # 3. Tương quan Cung Can Ngày (Chủ thể) ↔ Cung Can Giờ (Sự việc) & Cách Cục Thiên+Địa Can (V129.0 FIX ĐỘN GIÁP ẨN LỤC NGHI)
     ctb = chart_data.get("can_thien_ban") or {}
     cdb = chart_data.get("dia_can") or chart_data.get("dia_ban") or {}
+    try:
+        from github_prophecy_engine import (
+            resolve_qimen_stem as _res_qm_stem,
+            analyze_zhouyi_384_prophecy as _zy384_fn,
+            analyze_liuyao_zengshan_deep as _ly_deep_fn,
+            analyze_meihua_18_categories_deep as _mh_deep_fn,
+            analyze_kinqimen_deep_patterns as _km_deep_fn,
+        )
+        can_n_res, can_n_lbl = _res_qm_stem(can_n, chi_n)
+        can_g_res, can_g_lbl = _res_qm_stem(can_g, chi_g)
+        _zy_deep = _zy384_fn(full_chu, full_bien, dong_list, topic=question)
+        _ly_deep = _ly_deep_fn(luc_hao_data, dung_than=dung_than, question=question, chart_data=chart_data)
+        _mh_deep = _mh_deep_fn(mai_hoa_data, chart_data=chart_data, question=question)
+        _km_deep = _km_deep_fn(chart_data, target_cung=target_cung, question=question)
+    except Exception:
+        can_n_res, can_n_lbl = can_n, can_n
+        can_g_res, can_g_lbl = can_g, can_g
+        _zy_deep, _ly_deep, _mh_deep, _km_deep = {}, {}, {}, {}
+
     cung_can_ngay = target_cung
     cung_can_gio = target_cung
     for _ck, _cv in ctb.items():
-        if str(_cv).strip() == can_n:
-            cung_can_ngay = int(_ck) if str(_ck).isdigit() else target_cung
-        if str(_cv).strip() == can_g:
-            cung_can_gio = int(_ck) if str(_ck).isdigit() else target_cung
+        if str(_cv).strip() == can_n_res and str(_ck).isdigit():
+            cung_can_ngay = int(_ck)
+        if str(_cv).strip() == can_g_res and str(_ck).isdigit():
+            cung_can_gio = int(_ck)
     _, huong_cn, hanh_cung_cn = _CUNG_HUONG_MAP.get(cung_can_ngay, ("Khôn", "Tây Nam", "Thổ"))
     _, huong_cg, hanh_cung_cg = _CUNG_HUONG_MAP.get(cung_can_gio, ("Cấn", "Đông Bắc", "Thổ"))
     if cung_can_ngay == cung_can_gio:
-        chu_khach_km_str = f"<b>Can Ngày ({can_n}) và Can Giờ ({can_g}) ĐỒNG CUNG tại Cung {cung_can_ngay} ({huong_cn}):</b> Bản thân người hỏi và sự việc đang gắn chặt làm một, trực tiếp đối diện và quyết định ngay tại chỗ"
+        chu_khach_km_str = f"<b>Can Ngày ({can_n_lbl}) và Can Giờ ({can_g_lbl}) ĐỒNG CUNG tại Cung {cung_can_ngay} ({huong_cn}):</b> Bản thân người hỏi và sự việc đang gắn chặt làm một, trực tiếp đối diện và quyết định ngay tại chỗ"
     elif _SINH_ELEMENT_MAP.get(hanh_cung_cg) == hanh_cung_cn:
-        chu_khach_km_str = f"<b>Cung Sự Việc (Can Giờ {can_g} tại Cung {cung_can_gio} [{hanh_cung_cg}]) tương sinh Cung Bản Thân (Can Ngày {can_n} tại Cung {cung_can_ngay} [{hanh_cung_cn}]):</b> Sự việc mang lại lợi ích thuận lợi cho bạn"
+        chu_khach_km_str = f"<b>Cung Sự Việc (Can Giờ {can_g_lbl} tại Cung {cung_can_gio} [{hanh_cung_cg}]) tương sinh Cung Bản Thân (Can Ngày {can_n_lbl} tại Cung {cung_can_ngay} [{hanh_cung_cn}]):</b> Sự việc mang lại lợi ích thuận lợi cho bạn"
     elif _KHAC_ELEMENT_MAP.get(hanh_cung_cg) == hanh_cung_cn:
-        chu_khach_km_str = f"<b>Cung Sự Việc (Can Giờ {can_g} tại Cung {cung_can_gio} [{hanh_cung_cg}]) khắc Cung Bản Thân (Can Ngày {can_n} tại Cung {cung_can_ngay} [{hanh_cung_cn}]):</b> Sự việc đang tạo áp lực trực tiếp lên bạn, cần dùng Thông Quan hóa giải"
+        chu_khach_km_str = f"<b>Cung Sự Việc (Can Giờ {can_g_lbl} tại Cung {cung_can_gio} [{hanh_cung_cg}]) khắc Cung Bản Thân (Can Ngày {can_n_lbl} tại Cung {cung_can_ngay} [{hanh_cung_cn}]):</b> Sự việc đang tạo áp lực trực tiếp lên bạn, cần dùng Thông Quan hóa giải"
     elif _KHAC_ELEMENT_MAP.get(hanh_cung_cn) == hanh_cung_cg:
-        chu_khach_km_str = f"<b>Cung Bản Thân (Can Ngày {can_n} tại Cung {cung_can_ngay} [{hanh_cung_cn}]) khắc Cung Sự Việc (Can Giờ {can_g} tại Cung {cung_can_gio} [{hanh_cung_cg}]):</b> Bạn hoàn toàn làm chủ và kiểm soát được sự việc"
+        chu_khach_km_str = f"<b>Cung Bản Thân (Can Ngày {can_n_lbl} tại Cung {cung_can_ngay} [{hanh_cung_cn}]) khắc Cung Sự Việc (Can Giờ {can_g_lbl} tại Cung {cung_can_gio} [{hanh_cung_cg}]):</b> Bạn hoàn toàn làm chủ và kiểm soát được sự việc"
     else:
-        chu_khach_km_str = f"<b>Cung Bản Thân (Can Ngày {can_n} tại Cung {cung_can_ngay}) & Cung Sự Việc (Can Giờ {can_g} tại Cung {cung_can_gio}) tương thông ({hanh_cung_cn} ↔ {hanh_cung_cg})</b>"
+        chu_khach_km_str = f"<b>Cung Bản Thân (Can Ngày {can_n_lbl} tại Cung {cung_can_ngay}) & Cung Sự Việc (Can Giờ {can_g_lbl} tại Cung {cung_can_gio}) tương thông ({hanh_cung_cn} ↔ {hanh_cung_cg})</b>"
 
-    can_thien_dt = str(ctb.get(target_cung) or ctb.get(str(target_cung)) or can_n).strip()
+    can_thien_dt = str(ctb.get(target_cung) or ctb.get(str(target_cung)) or can_n_res).strip()
     can_dia_dt = str(cdb.get(target_cung) or cdb.get(str(target_cung)) or can_m).strip()
     cach_cuc_81_str = f"Thiên Bàn Can <b>{can_thien_dt}</b> + Địa Bàn Can <b>{can_dia_dt}</b>"
     try:
@@ -1129,12 +1161,16 @@ def compute_deep_interacting_factors_a_to_z(
     except Exception:
         pass
 
-    # Kiểm tra Ngũ Bất Ngộ Thời & Dịch Mã / Tuần Không Cung
+    # Kiểm tra Ngũ Bất Ngộ Thời & Dịch Mã / Tuần Không Cung + Cửu Độn / Kích Hình / Nhập Mộ (KinQiMen GitHub)
     _NGU_BAT_NGO = {("Giáp", "Canh"), ("Ất", "Tân"), ("Bính", "Nhâm"), ("Đinh", "Quý"), ("Mậu", "Giáp"), ("Kỷ", "Ất"), ("Canh", "Bính"), ("Tân", "Đinh"), ("Nhâm", "Mậu"), ("Quý", "Kỷ")}
     is_ngu_bat_ngo = (can_n, can_g) in _NGU_BAT_NGO
     dich_ma_cung = chart_data.get("dich_ma")
     kv_cung_list = chart_data.get("khong_vong") or []
     km_special_flags = []
+    if _km_deep.get("auspicious"):
+        km_special_flags.extend(_km_deep["auspicious"])
+    if _km_deep.get("inauspicious"):
+        km_special_flags.extend(_km_deep["inauspicious"])
     if is_ngu_bat_ngo:
         km_special_flags.append("⚠️ <b>Phạm Ngũ Bất Ngộ Thời</b> (Can Giờ khắc Can Ngày đồng âm dương: cần hết sức bình tĩnh, tránh nóng vội)")
     if str(dich_ma_cung) == str(target_cung):
@@ -1143,16 +1179,18 @@ def compute_deep_interacting_factors_a_to_z(
         km_special_flags.append("💀 <b>Cung Dụng Thần lâm Tuần Không trên bàn Kỳ Môn</b> (Chứa yếu tố ẩn tàng, giảm một nửa thực lực hiện tại hoặc chờ Xuất Không)")
     if univ_mat.get("is_km_phuc_ngam"):
         km_special_flags.append("🔒 <b>Cục diện Phục Ngâm</b> (Sao & Cửa nằm tại bản cung: mọi việc đang giậm chân tại chỗ hoặc cất giữ cố định)")
-    km_special_flags_str = " | ".join(km_special_flags) if km_special_flags else "Bàn Kỳ Môn không phạm Ngũ Bất Ngộ Thời, khí cục vận chuyển thông suốt"
+    km_special_flags_str = " | ".join(km_special_flags) if km_special_flags else "Bàn Kỳ Môn thanh thuần (không phạm Kích Hình, Nhập Mộ hay Ngũ Bất Ngộ Thời), khí cục vận chuyển thông suốt"
 
     # -------------------------------------------------------------------------
-    # IV. TỔNG HỢP BẢN PHÂN TÍCH A→Z TỪNG BƯỚC (HTML & TEXT CHO AI PRO)
+    # IV. TỔNG HỢP BẢN PHÂN TÍCH A→Z TỪNG BƯỚC (HTML & TEXT CHO AI PRO — V129.0 GITHUB EDITION)
     # -------------------------------------------------------------------------
-    dong_hoa_html = "<br>".join(f"&nbsp;&nbsp;&nbsp;&nbsp;▸ {d}" for d in dong_hoa_details) if dong_hoa_details else "&nbsp;&nbsp;&nbsp;&nbsp;▸ Quẻ Tĩnh (6 hào an tĩnh, lấy Hào Thế, Hào Dụng Thần và Nhật/Nguyệt làm trọng tâm)."
     am_dong_np_html = ""
-    if am_dong_list or nguyet_pha_list or tam_hop_found:
-        _extra_lh = tam_hop_found + am_dong_list + nguyet_pha_list
-        am_dong_np_html = f"<br>&nbsp;&nbsp;• <b>Yếu tố tác động ngầm (Tam Hợp / Ám Động / Nguyệt Phá):</b> {' | '.join(_extra_lh)}."
+    if am_dong_list or nguyet_pha_list or tam_hop_found or _ly_deep.get("lien_hoan_note"):
+        _extra_lh = ([_ly_deep["lien_hoan_note"]] if _ly_deep.get("lien_hoan_note") else []) + tam_hop_found + am_dong_list + nguyet_pha_list
+        am_dong_np_html = f"<br>• <b>Thông Quan / Tam Hợp / Ám Động:</b> {' | '.join(_extra_lh)}."
+    zy_line_html = f"<br>• <b>Chu Dịch 384 Hào & Cao Đảo:</b> {_zy_deep.get('line_summary_html', '')}" if _zy_deep.get("line_summary_html") else ""
+    mh_18_html = f"<br>• <b>18 Loại Chiêm ({_mh_deep.get('cat_title', '')}):</b> {_mh_deep.get('cat_verdict', '')}" if _mh_deep.get("cat_verdict") else ""
+    km_star_st = f" ({_km_deep.get('star_strength', 'Bình')})" if _km_deep.get("star_strength") else ""
 
     nm_line_html = f"<div style='margin-top:4px;color:#fde68a;'>• <b>Niên Mệnh Đích Danh:</b> {univ_mat.get('nien_menh_summary')}</div>" if univ_mat.get("nien_menh_summary") else ""
     _tq_obj = univ_mat.get("thong_quan_remedy") or {}
@@ -1164,40 +1202,40 @@ def compute_deep_interacting_factors_a_to_z(
     deep_a_to_z_html = (
         f'<div style="margin-top:12px;padding:14px 16px;background:rgba(15,23,42,0.88);border-radius:12px;border:1px solid rgba(56,189,248,0.35);">'
         f'<div style="font-weight:900;color:#fde047;font-size:0.98em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ TÁC ĐỘNG A→Z (BỐ CỤC 4 TRỤ CỘT DỄ ĐỌC)</span>'
-        f'<span style="font-size:0.8em;color:#94a3b8;font-weight:600;">Lục Hào · Mai Hoa · Kỳ Môn · Thiết Bản & Thông Quan</span>'
+        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ & ĐẠI TIÊN TRI GITHUB V129.0 (BỐ CỤC 4 TRỤ CỘT)</span>'
+        f'<span style="font-size:0.8em;color:#94a3b8;font-weight:600;">384 Hào Chu Dịch · Tăng San Lục Hào · Mai Hoa 18 Chiêm · KinQiMen</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:10px;font-size:0.9em;line-height:1.52;color:#f1f5f9;">'
-        # Thẻ 1: Lục Hào
+        # Thẻ 1: Lục Hào + 384 Hào Chu Dịch
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #38bdf8;">'
-        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO KINH DỊCH (12 Tầng Cổ Pháp V128.0)</div>'
+        f'<div style="font-weight:800;color:#7dd3fc;margin-bottom:5px;">1️⃣ LỤC HÀO TĂNG SAN & 384 HÀO CHU DỊCH (V129.0)</div>'
         f'• <b>Thế – Ứng:</b> {hex_trait_str}. Hào Thế (Hào {the_idx} {the_chi}-{the_nh}, {the_luc_thu}) ↔ Hào Ứng (Hào {ung_idx} {ung_chi}-{ung_nh}): {the_ung_rel}.<br>'
         f'• <b>Dụng Thần:</b> <b>{dung_than} tại Hào {dt_idx} ({dt_chi}-{dt_nh})</b> ({dt_vi_info.get("ten_hao", f"Hào {dt_idx}")}) lâm <b>{dt_luc_thu}</b>'
         + (f' · <span style="color:#fde047;">{univ_mat.get("dt_khong_phuc_note", "")}</span>' if univ_mat.get("dt_khong_phuc_note") else '')
         + f'.<br>'
         f'• <b>Khí lực:</b> {dt_season_state} · Trường Sinh ngày {chi_n}: <b>{dt_ts_ngay}</b> · {mo_kho_note}.<br>'
         f'• <b>Nguyên/Kỵ & Tài:</b> Nguyên Thần: <b>{", ".join(nguyen_than_list) or "Ẩn"}</b> | Kỵ Thần: <b>{", ".join(ky_than_list) or "Không"}</b> | {univ_mat.get("the_tai_status_str", "")}.<br>'
-        f'• <b>Hào Động/Biến:</b> {"; ".join(dong_hoa_details) if dong_hoa_details else "Quẻ Tĩnh (6 hào an tĩnh)"}{am_dong_np_html}'
+        f'• <b>Hào Động/Biến:</b> {"; ".join(dong_hoa_details) if dong_hoa_details else "Quẻ Tĩnh (6 hào an tĩnh)"}{am_dong_np_html}{zy_line_html}'
         f'</div>'
-        # Thẻ 2: Mai Hoa
+        # Thẻ 2: Mai Hoa 18 Loại Chiêm
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #f472b6;">'
-        f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:5px;">2️⃣ MAI HOA DỊCH SỐ (Tam Quái & Thể/Dụng)</div>'
+        f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:5px;">2️⃣ MAI HOA DỊCH SỐ & 18 LOẠI CHIÊM (V129.0)</div>'
         f'• <b>Trục Tam Quái:</b> Quẻ Chủ <b>{full_chu}</b> ({up_chu}/{lo_chu}) ➔ Quẻ Hỗ <b>{full_ho}</b> ({up_ho}/{lo_ho}) ➔ Quẻ Biến <b>{full_bien}</b> ({up_bien}/{lo_bien}).<br>'
-        f'• <b>Thể – Dụng Chủ:</b> Quẻ Thể <b>{the_quai} ({hanh_the})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung})</b> ➔ <b>{univ_mat.get("rel_chu_tag","")}</b> ({univ_mat.get("rel_chu_desc","")}).<br>'
+        f'• <b>Thể – Dụng Theo Mùa:</b> Quẻ Thể <b>{the_quai} ({hanh_the} — {mh_the_season.split("(")[0].strip()})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung} — {mh_dung_season.split("(")[0].strip()})</b> ➔ <b>{univ_mat.get("rel_chu_tag","")}</b> ({univ_mat.get("rel_chu_desc","")}).<br>'
         f'• <b>Thể – Dụng Biến:</b> Biến sang <b>{bien_dung_quai} ({hanh_bien_dung})</b> ➔ <b>{univ_mat.get("rel_bien_tag","")}</b> ({univ_mat.get("rel_bien_desc","")}).<br>'
-        f'• <b>Đảng Thể/Dụng (Quẻ Hỗ):</b> {dang_ho_verdict}'
+        f'• <b>Đảng Thể/Dụng (Quẻ Hỗ):</b> {dang_ho_verdict}{mh_18_html}'
         f'</div>'
-        # Thẻ 3: Kỳ Môn
+        # Thẻ 3: Kỳ Môn KinQiMen
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #fbbf24;">'
-        f'<div style="font-weight:800;color:#fde047;margin-bottom:5px;">3️⃣ KỲ MÔN ĐỘN GIÁP (Cung Chủ–Khách & Cách Cục)</div>'
-        f'• <b>Bàn & Chủ–Khách:</b> {noi_ngoai_ban_str}. {chu_khach_km_str}.<br>'
-        f'• <b>Cung {target_cung} ({quai_cung} — {huong_cung}):</b> Hội <b>Sao {sao_name}</b> · <b>Cửa {cua_name}</b> · <b>Thần {than_name}</b> ({mon_cung_state}).<br>'
+        f'<div style="font-weight:800;color:#fde047;margin-bottom:5px;">3️⃣ KỲ MÔN ĐỘN GIÁP KINQIMEN (Cửu Độn · Kích Hình · Nhập Mộ)</div>'
+        f'• <b>Bàn & Độn Giáp Chủ–Khách:</b> {noi_ngoai_ban_str}. {chu_khach_km_str}.<br>'
+        f'• <b>Cung {target_cung} ({quai_cung} — {huong_cung}):</b> Hội <b>Sao {sao_name}{km_star_st}</b> · <b>Cửa {cua_name}</b> · <b>Thần {than_name}</b> ({mon_cung_state}).<br>'
         f'• <b>Cách Cục Lưu Bá Ôn:</b> {cach_cuc_81_str}.<br>'
-        f'• <b>Cục diện:</b> {km_special_flags_str}.{nm_line_html}'
+        f'• <b>Cửu Độn / Hình–Mộ–Bức:</b> {km_special_flags_str}.{nm_line_html}'
         f'</div>'
         # Thẻ 4: Thiết Bản & Pháp Quyết Thông Quan
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #34d399;">'
-        f'<div style="font-weight:800;color:#6ee7b7;margin-bottom:5px;">4️⃣ THIẾT BẢN & PHÁP QUYẾT THÔNG QUAN</div>'
+        f'<div style="font-weight:800;color:#6ee7b7;margin-bottom:5px;">4️⃣ THIẾT BẢN HOÀNG CỰC & PHÁP QUYẾT THÔNG QUAN</div>'
         f'• <b>Thiết Bản Thần Toán:</b> {univ_mat.get("thiet_ban_luan_giai", "")}<br>'
         f'• <b>Dụng Thần Thông Quan:</b> Bổ sung hành <b style="color:#fde047;">{_tq_hanh_s}</b> (Hướng hợp: <b>{_tq_huong_s}</b> · Màu sắc: <b>{_tq_mau_s}</b>).<br>'
         f'• <b>Tam Cát Môn Kỳ Môn:</b> <span style="color:#4ade80;">{_tq_cat_s}</span>.<br>'
@@ -1207,21 +1245,23 @@ def compute_deep_interacting_factors_a_to_z(
     )
 
     deep_a_to_z_prompt_text = (
-        f"=== HỒ SƠ 24 YẾU TỐ TÁC ĐỘNG SÂU & ẨN NGẦM TRÊN QUẺ (V117.0 — BẮT BUỘC PHÂN TÍCH ĐẦY ĐỦ) ===\n"
-        f"1. [LỤC HÀO CHUYÊN SÂU]:\n"
+        f"=== HỒ SƠ 24 YẾU TỐ & ĐẠI TIÊN TRI GITHUB V129.0 (BẮT BUỘC ĐỐI CHIẾU ĐẦY ĐỦ) ===\n"
+        f"1. [LỤC HÀO TĂNG SAN & 384 HÀO CHU DỊCH]:\n"
         f"   - Đặc tính Quẻ: {re.sub(r'<[^>]+>', '', hex_trait_str)}\n"
         f"   - Tương quan Thế (Hào {the_idx} {the_chi}-{the_nh}, {the_luc_thu}) ↔ Ứng (Hào {ung_idx} {ung_chi}-{ung_nh}): {re.sub(r'<[^>]+>', '', the_ung_rel)}\n"
         f"   - Dụng Thần [{dung_than}] tại Hào {dt_idx} ({dt_chi}-{dt_nh}, Lục Thú: {dt_luc_thu} [{dt_lthu_desc}]): {dt_season_state} | Vòng 12 Trường Sinh ngày {chi_n}: {dt_ts_ngay} | {re.sub(r'<[^>]+>', '', mo_kho_note)}\n"
-        f"   - Nguyên Thần ({ng_nh}): {', '.join(nguyen_than_list) or 'Ẩn phục'} | Kỵ Thần ({ky_nh}): {', '.join(ky_than_list) or 'Không có'}\n"
-        f"   - Chi tiết Động/Biến (Hồi đầu sinh/khắc, Hóa Tiến/Thoái): {'; '.join(re.sub(r'<[^>]+>', '', x) for x in dong_hoa_details) or 'Quẻ Tĩnh'}\n"
-        f"   - Tam Hợp Cục / Ám Động / Nguyệt Phá: {'; '.join(re.sub(r'<[^>]+>', '', x) for x in (tam_hop_found + am_dong_list + nguyet_pha_list)) or 'Không phạm'}\n"
-        f"2. [MAI HOA CHUYÊN SÂU]:\n"
+        f"   - Nguyên Thần ({ng_nh}): {', '.join(nguyen_than_list) or 'Ẩn phục'} | Kỵ Thần ({ky_nh}): {', '.join(ky_than_list) or 'Không có'} | {re.sub(r'<[^>]+>', '', _ly_deep.get('lien_hoan_note', ''))}\n"
+        f"   - Chi tiết Động/Biến: {'; '.join(re.sub(r'<[^>]+>', '', x) for x in dong_hoa_details) or 'Quẻ Tĩnh'}\n"
+        f"   - Chu Dịch 384 Hào & Cao Đảo Dịch Đoán: {re.sub(r'<[^>]+>', '', _zy_deep.get('khai_mong_rule', ''))} | {re.sub(r'<[^>]+>', '', _zy_deep.get('line_summary_html', ''))}\n"
+        f"   - Chân Tam Hợp Cục / Ám Động / Nguyệt Phá: {'; '.join(re.sub(r'<[^>]+>', '', x) for x in (tam_hop_found + am_dong_list + nguyet_pha_list)) or 'Không phạm'}\n"
+        f"2. [MAI HOA DỊCH SỐ & 18 LOẠI CHIÊM]:\n"
         f"   - Quẻ Thể {the_quai} ({hanh_the}: {mh_the_season}) ↔ Quẻ Dụng {dung_quai} ({hanh_dung}: {mh_dung_season})\n"
         f"   - Đảng Thể vs Đảng Dụng trên Quẻ Hỗ ({full_ho}): {re.sub(r'<[^>]+>', '', dang_ho_verdict)}\n"
-        f"3. [KỲ MÔN CHUYÊN SÂU]:\n"
+        f"   - 18 Loại Chiêm ({_mh_deep.get('cat_title', '')}): {re.sub(r'<[^>]+>', '', _mh_deep.get('cat_verdict', ''))}\n"
+        f"3. [KỲ MÔN KINQIMEN]:\n"
         f"   - Nội/Ngoại Bàn: {re.sub(r'<[^>]+>', '', noi_ngoai_ban_str)}\n"
-        f"   - Tương quan Cung Can Ngày ({can_n}) ↔ Cung Can Giờ ({can_g}): {re.sub(r'<[^>]+>', '', chu_khach_km_str)}\n"
-        f"   - Trạng thái Môn-Cung: {re.sub(r'<[^>]+>', '', mon_cung_state)} | Cách Cục Lưu Bá Ôn: {re.sub(r'<[^>]+>', '', cach_cuc_81_str)} | Cục diện: {re.sub(r'<[^>]+>', '', km_special_flags_str)}\n"
+        f"   - Độn Giáp Cung Can Ngày ({can_n_lbl}) ↔ Cung Can Giờ ({can_g_lbl}): {re.sub(r'<[^>]+>', '', chu_khach_km_str)}\n"
+        f"   - Trạng thái Môn-Cung & Cửu Tinh ({sao_name}{km_star_st}): {re.sub(r'<[^>]+>', '', mon_cung_state)} | Cách Cục: {re.sub(r'<[^>]+>', '', cach_cuc_81_str)} | Hình–Mộ–Cửu Độn: {re.sub(r'<[^>]+>', '', km_special_flags_str)}\n"
     )
 
     return {
@@ -1242,6 +1282,10 @@ def compute_deep_interacting_factors_a_to_z(
         "chu_khach_km_str": chu_khach_km_str,
         "cach_cuc_81_str": cach_cuc_81_str,
         "km_special_flags_str": km_special_flags_str,
+        "zhouyi_384": _zy_deep,
+        "liuyao_deep": _ly_deep,
+        "meihua_deep": _mh_deep,
+        "kinqimen_deep": _km_deep,
         "deep_a_to_z_html": deep_a_to_z_html,
         "deep_a_to_z_prompt_text": deep_a_to_z_prompt_text,
     }

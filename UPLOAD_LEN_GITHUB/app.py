@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V128.0"
-APP_VERSION_FULL = f"{APP_VERSION} — THIÊN CƠ ĐẠI SƯ (Antigravity Brain Mode 🧠 + Gemini Pro Deep-Reasoning 🤖 + Giải Mã Tâm Linh & Phúc Khí ☯️ + Bố Cục Tinh Gọn 4 Trụ Cột 2×2 ✨)"
+APP_VERSION = "V129.0"
+APP_VERSION_FULL = f"{APP_VERSION} — ĐẠI TIÊN TRI TOÀN THƯ GITHUB (384 Hào Chu Dịch · Tăng San Bốc Dịch · Mai Hoa 18 Chiêm · KinQiMen Cửu Độn ✨)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,11 +19,13 @@ import os
 import traceback
 import re
 
-# V126.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V128.0"
+# V129.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V129.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
+        "github_zhouyi_384_data",
+        "github_prophecy_engine",
         "qmdg_calc",
         "qmdg_data",
         "mai_hoa_dich_so",
@@ -2392,7 +2394,7 @@ def render_master_unified_qa_box(location_key="main"):
     <div style='background:linear-gradient(135deg,#0f172a,#1e1b4b,#064e3b);padding:18px 22px;border-radius:16px;
                 border:2px solid #34d399;margin:14px 0;box-shadow:0 6px 24px rgba(16,185,129,0.22);'>
         <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:8px;'>
-            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V128.0 — ĐẠI TÔNG SƯ DỊCH HỌC: 12 TẦNG CỔ PHÁP & TỰ HỌC TRỌNG SỐ)
+            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V129.0 — ĐẠI TIÊN TRI TOÀN THƯ GITHUB: 384 HÀO CHU DỊCH · TĂNG SAN · MAI HOA 18 CHIÊM · KINQIMEN)
         </div>
         <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:6px;'>
             <div style='padding:10px 14px;background:rgba(16,185,129,0.14);border-radius:10px;border-left:4px solid #34d399;'>
@@ -3070,12 +3072,21 @@ if st.session_state.current_view == "ky_mon":
                             clean_cua = cua.replace(" Môn", "")
                             has_dung_than = any(dt in [clean_cua] for dt in resolved_dt)
                         
-                        # Determine Strength based on month
-                        now_dt = dt_module.datetime.now()
-                        month = now_dt.month
+                        # V129.0 FIX: Xét Vượng Tướng Hưu Tù Tử theo đúng Tiết Lệnh Tháng của giờ lập quẻ (chi_thang), không dùng datetime.now()!
+                        _chi_m_km = str(chart.get("chi_thang") or "").strip()
+                        _chi_season_map = {
+                            "Dần": "Xuân", "Mão": "Xuân", "Thìn": "Tứ Quý",
+                            "Tị": "Hạ", "Tỵ": "Hạ", "Ngọ": "Hạ", "Mùi": "Tứ Quý",
+                            "Thân": "Thu", "Dậu": "Thu", "Tuất": "Tứ Quý",
+                            "Hợi": "Đông", "Tý": "Đông", "Sửu": "Tứ Quý",
+                        }
                         season_map = {1:"Xuân", 2:"Xuân", 3:"Xuân", 4:"Hạ", 5:"Hạ", 6:"Hạ", 7:"Thu", 8:"Thu", 9:"Thu", 10:"Đông", 11:"Đông", 12:"Đông"}
-                        current_season = season_map.get(month, "Xuân")
-                        strength = phan_tich_yeu_to_thoi_gian(hanh, current_season) if USE_MULTI_LAYER_ANALYSIS else "Bình"
+                        current_season = _chi_season_map.get(_chi_m_km) or season_map.get(selected_datetime.month, "Xuân")
+                        try:
+                            from github_prophecy_engine import get_seasonal_state as _gpe_season
+                            strength = _gpe_season(hanh, _chi_m_km) if _chi_m_km else (phan_tich_yeu_to_thoi_gian(hanh, current_season) if USE_MULTI_LAYER_ANALYSIS else "Bình")
+                        except Exception:
+                            strength = phan_tich_yeu_to_thoi_gian(hanh, current_season) if USE_MULTI_LAYER_ANALYSIS else "Bình"
                         
                         strength_color = {
                             "Vượng": "#ef4444", "Tướng": "#f59e0b", "Hưu": "#10b981", "Tù": "#3b82f6", "Tử": "#64748b"
@@ -3290,20 +3301,27 @@ if st.session_state.current_view == "ky_mon":
                             # --- PART 1: RELATIONSHIP ANALYSIS (SUBJECT VS OBJECT) ---
                             st.subheader("🎯 Phân tích Tương tác Dụng Thần")
                             
-                            # Determine Subject (Bản thân) Stem Palace
+                            # Determine Subject (Bản thân) Stem Palace — V129.0 FIX: Giải Độn Giáp Lục Nghi khi Can Ngày = Giáp & tra Thiên Bàn Can chuẩn KinQiMen!
                             subject_palace = 0
-                            # Assuming 'dia_can' holds the Earth Stems for each palace
-                            # We need to find the palace where the 'can_ngay' (subject's stem) resides
-                            for p_num, d_can in chart['dia_can'].items():
-                                if d_can == actual_can_ngay:
-                                    subject_palace = p_num
+                            try:
+                                from github_prophecy_engine import resolve_qimen_stem, analyze_kinqimen_deep_patterns
+                                _sub_stem_res, _sub_stem_lbl = resolve_qimen_stem(actual_can_ngay, chart.get('chi_ngay', 'Tý'))
+                            except Exception:
+                                _sub_stem_res, _sub_stem_lbl = actual_can_ngay, actual_can_ngay
+                            for p_num, t_can in (chart.get('can_thien_ban') or {}).items():
+                                if str(t_can).strip() == _sub_stem_res and str(p_num).isdigit():
+                                    subject_palace = 2 if int(p_num) == 5 else int(p_num)
                                     break
-                            
+                            if not subject_palace:
+                                for p_num, d_can in (chart.get('dia_can') or {}).items():
+                                    if str(d_can).strip() == _sub_stem_res and str(p_num).isdigit():
+                                        subject_palace = 2 if int(p_num) == 5 else int(p_num)
+                                        break
+                            if not subject_palace:
+                                subject_palace = 2
+
                             # Determine Object (Dụng Thần) Palace (Current Palace)
                             object_palace = palace_num
-                            
-                            s_hanh = CUNG_NGU_HANH.get(subject_palace, "Thổ")
-                            o_hanh = CUNG_NGU_HANH.get(object_palace, "Thổ")
                             
                             s_hanh = CUNG_NGU_HANH.get(subject_palace, "Thổ")
                             o_hanh = CUNG_NGU_HANH.get(object_palace, "Thổ")
@@ -3313,7 +3331,7 @@ if st.session_state.current_view == "ky_mon":
                             # Visual Interaction Report
                             col_rel1, col_rel2, col_rel3 = st.columns([2, 1, 2])
                             with col_rel1:
-                                st.info(f"👥 **Bản thân**\n\nCung {subject_palace} ({s_hanh})")
+                                st.info(f"👥 **Bản thân ({_sub_stem_lbl})**\n\nCung {subject_palace} ({s_hanh})")
                             with col_rel2:
                                 st.markdown(f"<div style='text-align:center; font-size:1.5rem; padding-top:10px;'>{'➡️' if 'Sinh' in interaction else '⚔️' if 'Khắc' in interaction else '🤝'}</div>", unsafe_allow_html=True)
                                 st.caption(f"<div style='text-align:center;'>{interaction}</div>", unsafe_allow_html=True)
@@ -3323,6 +3341,13 @@ if st.session_state.current_view == "ky_mon":
                             st.write(f"**Kết luận nhanh:** {rel_label} và Đối tượng có mối quan hệ **{interaction}**. " + 
                                      ("Đây là dấu hiệu thuận lợi, năng lượng lưu thông." if "Sinh" in interaction or "Bình" in interaction 
                                       else "Cần thận trọng vì có sự xung đột hoặc cản trở về mặt năng lượng."))
+
+                            try:
+                                _km_deep_card = analyze_kinqimen_deep_patterns(chart, target_cung=object_palace, topic=selected_topic)
+                                if _km_deep_card and _km_deep_card.get("panel_html"):
+                                    st.markdown(_km_deep_card["panel_html"], unsafe_allow_html=True)
+                            except Exception:
+                                pass
 
                             st.markdown("---")
                             
@@ -3707,6 +3732,13 @@ elif st.session_state.current_view == "mai_hoa":
                 st.markdown('</div>', unsafe_allow_html=True)
         
         st.info(f"💡 **Luận giải chi tiết:** {res.get('interpretation', 'Đang phân tích...')}")
+        try:
+            from github_prophecy_engine import analyze_meihua_18_categories_deep
+            _mh_deep_view = analyze_meihua_18_categories_deep(res, chart_data=st.session_state.get('chart_data'), topic=selected_topic)
+            if _mh_deep_view and _mh_deep_view.get("panel_html"):
+                st.markdown(_mh_deep_view["panel_html"], unsafe_allow_html=True)
+        except Exception:
+            pass
 
         # V13.0: Removed AI Luận Mai Hoa button (dùng LỤC THUẬT HỢP NHẤT thay thế)
         st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")
@@ -3742,12 +3774,18 @@ elif st.session_state.current_view == "luc_hao":
     nhat_than = f"{chi_ngay}"
     nguyet_lenh = f"{chi_thang}"
     
-    # V110.0: Hiển thị quẻ Lục Hào đang hoạt động (Ngẫu nhiên hoặc Động tâm theo câu hỏi) + Nút Gieo Ngẫu Nhiên Mới
+    # V129.0: Hiển thị quẻ Lục Hào đang hoạt động + 2 Chế độ Gieo Quẻ (Đồng bộ Mai Hoa hoặc Kim Tiền Quái 3 Đồng Xu 0–6 Hào Động)
     _lh_existing = st.session_state.get('luc_hao_result')
-    if st.button("🎲 Gieo Quẻ Lục Hào Ngẫu Nhiên Mới (Đồng bộ Mai Hoa & Lục Hào)", key="btn_lh_tab_rnd"):
+    _col_lh_b1, _col_lh_b2 = st.columns(2)
+    with _col_lh_b1:
+        _btn_rnd_sync = st.button("🎲 Gieo Quẻ Đồng Bộ Mai Hoa & Lục Hào", key="btn_lh_tab_rnd", use_container_width=True)
+    with _col_lh_b2:
+        _btn_kim_tien = st.button("🪙 Tung 3 Đồng Xu 6 Lần (Kim Tiền Quái 0–6 Hào Động)", key="btn_lh_kim_tien", use_container_width=True)
+
+    if _btn_rnd_sync:
         _prev_t = st.session_state.get('_last_cast_tuple')
         _mh_r = tinh_qua_ngau_nhien(prev_tuple=_prev_t)
-        _mh_r['interpretation'] = giai_qua(_mh_r, selected_topic)
+        _mh_r['interpretation'] = giai_qua(_mh_r, selected_topic, chart_data=st.session_state.get('chart_data'))
         _mh_r['_random_cast'] = True
         st.session_state.mai_hoa_result = _mh_r
         st.session_state['_last_cast_tuple'] = (_mh_r['upper'], _mh_r['lower'], _mh_r['dong_hao'])
@@ -3763,8 +3801,22 @@ elif st.session_state.current_view == "luc_hao":
             moving_override=_mh_r['dong_hao'],
         )
         st.session_state.luc_hao_result['_random_cast'] = True
+    elif _btn_kim_tien:
+        from luc_hao_kinh_dich import gieo_dong_xu_luc_hao
+        st.session_state.luc_hao_result = gieo_dong_xu_luc_hao(
+            dt.year, dt.month, dt.day, dt.hour,
+            topic=selected_topic,
+            can_ngay=can_ngay,
+            chi_ngay=chi_ngay,
+            can_thang=can_thang,
+            chi_thang=chi_thang,
+        )
+        st.session_state.luc_hao_result['_random_cast'] = True
     elif _lh_existing and isinstance(_lh_existing, dict) and (_lh_existing.get('_random_cast') or st.session_state.get('mai_hoa_result', {}).get('cast_mode') == 'question_time_resonance'):
-        st.info("🎲 Đang hiển thị quẻ Lục Hào vừa gieo (đồng bộ 100% với Mai Hoa Dịch Số).")
+        if _lh_existing.get("coin_log"):
+            st.success("🪙 Kết quả Tung 3 Đồng Xu 6 Lần: " + " | ".join(_lh_existing["coin_log"]))
+        else:
+            st.info("🎲 Đang hiển thị quẻ Lục Hào vừa gieo (đồng bộ 100% với Mai Hoa Dịch Số).")
     else:
         try:
             st.session_state.luc_hao_result = lap_qua_luc_hao(
@@ -3893,16 +3945,19 @@ elif st.session_state.current_view == "luc_hao":
                 else:
                     hao_label += f" <b style='color:#b91c1c;'>{marker}</b>"
             
+            cc_ban_disp = db.get('can_chi_full') or db.get('can_chi', '')
+            cc_bien_disp = dbi.get('can_chi_full') or dbi.get('can_chi', '')
+            na_tip = f' title="{db.get("nap_am", "")}"' if db.get("nap_am") else ""
             table_html += f"""<tr style="{row_bg}">
                 <td>{hao_label}</td>
                 <td>{ban_sym}</td>
                 <td>{db.get('luc_than', '')}</td>
-                <td><b>{db.get('can_chi', '')}</b></td>
+                <td{na_tip}><b>{cc_ban_disp}</b></td>
                 <td>{db.get('luc_thu', '')}</td>
                 <td>{s_html}</td>
                 <td>{bien_sym}</td>
                 <td>{dbi.get('luc_than', '')}</td>
-                <td><b>{dbi.get('can_chi', '')}</b></td>
+                <td><b>{cc_bien_disp}</b></td>
                 <td>{dbi.get('luc_thu', '')}</td>
                 <td>{sb_html}</td>
             </tr>"""
@@ -3910,14 +3965,26 @@ elif st.session_state.current_view == "luc_hao":
         table_html += "</table>"
         st.markdown(table_html, unsafe_allow_html=True)
         
-        # ========== FOOTER INFO ==========
+        # ========== FOOTER INFO & V129.0 DEEP ZENGSHAN + ZHOUYI 384 PANEL ==========
+        try:
+            from github_prophecy_engine import resolve_luc_hao_dung_than, analyze_liuyao_zengshan_deep
+            _dt_lh_tab = resolve_luc_hao_dung_than(topic=selected_topic)
+            _ly_deep_tab = analyze_liuyao_zengshan_deep(res, dung_than=_dt_lh_tab, topic=selected_topic, chart_data=st.session_state.get('chart_data'))
+        except Exception:
+            _dt_lh_tab = res['ban']['details'][2]['luc_than']
+            _ly_deep_tab = {}
+
+        _dong_lbl_tab = ', '.join([str(h) for h in moving_hao]) if moving_hao else "Quẻ Tĩnh (0 hào động)"
         st.markdown(f"""
         <div style="background:rgba(22,33,62,0.8); border-radius:8px; padding:8px 12px; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
             <span>💡 {res['the_ung']}</span>
-            <span>📝 Dụng Thần: {res['ban']['details'][2]['luc_than']}</span>
-            <span>🔄 Động hào: {', '.join([str(h) for h in moving_hao])}</span>
+            <span>📝 Dụng Thần theo chủ đề ({selected_topic}): <b>{_dt_lh_tab}</b></span>
+            <span>🔄 Động hào: <b>{_dong_lbl_tab}</b></span>
         </div>
         """, unsafe_allow_html=True)
+
+        if _ly_deep_tab and _ly_deep_tab.get("panel_html"):
+            st.markdown(_ly_deep_tab["panel_html"], unsafe_allow_html=True)
         
         # ========== V12.2: PHỤC THẦN (伏神) — Lục Thân ẩn ==========
         phuc_than_data = res.get('phuc_than', [])
@@ -4004,14 +4071,50 @@ elif st.session_state.current_view == "thiet_ban":
         st.warning(f"**☀️ Trụ Ngày (Chủ Sự): {ngay_tru}**\n- **Nạp Âm:** {na_ngay_obj.get('Nạp_Âm', 'Không rõ')} ({na_ngay_obj.get('Hành', '?')})\n- **Ý nghĩa:** {na_ngay_obj.get('Ý_Nghĩa', '')}")
         st.info(f"**⏰ Trụ Giờ (Biến Hóa): {gio_tru}**\n- **Nạp Âm:** {na_gio_obj.get('Nạp_Âm', 'Không rõ')} ({na_gio_obj.get('Hành', '?')})\n- **Ý nghĩa:** {na_gio_obj.get('Ý_Nghĩa', '')}")
         
-    st.markdown(f'''
-    <div style="background:#1e293b; padding:15px; border-radius:10px; color:white; border-left:4px solid #f59e0b; margin-top:20px;">
-        <h4>🔍 TÍCH HỢP ĐẠI TIÊN TRI</h4>
-        - Thiết Bản Thần Toán là môn thuật số đề cao Nạp Âm của Năm và Ngày để định đoạt cát hung đại cục.<br>
-        - AI Tiên Tri đã được trang bị toàn bộ hơn 100 quy tắc Phản Ngâm, Phục Ngâm, Trường Sinh 12 Giai Đoạn, và Thần Sát của Thiết Bản.<br>
-        👉 Hãy chuyển sang Tab <b>"🤖 Hỏi Gemini AI"</b> và chọn <b>"🌟 LỤC THUẬT HỢP NHẤT"</b> để dung hợp Kỳ Môn + Mai Hoa + Lục Hào + Thiết Bản vào một câu trả lời duy nhất!
-    </div>
-    ''', unsafe_allow_html=True)
+    # V129.0: Tính thực tế Điều Văn Thiết Bản Thần Toán & Thái Huyền Tứ Trụ Định Số chuẩn Thiệu Khang Tiết!
+    _tb_deep_box = ""
+    try:
+        from integrated_knowledge_base import synthesize_github_canon_evidence
+        from github_prophecy_engine import NAP_AM_60
+        _mh_cur = st.session_state.get("mai_hoa_result") or {}
+        _gh_tb = synthesize_github_canon_evidence(
+            ten_que_chu=str(_mh_cur.get("ten") or "Càn Vi Thiên"),
+            ten_que_ho=str(_mh_cur.get("ten_ho") or "Càn Vi Thiên"),
+            ten_que_bien=str(_mh_cur.get("ten_qua_bien") or "Càn Vi Thiên"),
+            up_chu=str(_mh_cur.get("ten_thuong") or "Càn"),
+            lo_chu=str(_mh_cur.get("ten_ha") or "Càn"),
+            dong_hao=int(_mh_cur.get("dong_hao") or 1),
+            target_cung=5,
+            sao_name="Thiên Cầm",
+            cua_name="Khai Môn",
+            than_name="Trực Phù",
+            can_y=str(params.get('can_nam', 'Bính')),
+            chi_y=str(params.get('chi_nam', 'Ngọ')),
+            can_m=str(params.get('can_thang', 'Mậu')),
+            chi_m=str(params.get('chi_thang', 'Tuất')),
+            can_n=str(params.get('can_ngay', 'Giáp')),
+            chi_n=str(params.get('chi_ngay', 'Tý')),
+            can_g=str(params.get('can_gio', 'Bính')),
+            chi_g=str(params.get('chi_gio', 'Thân')),
+        ) or {}
+        _tb_c = _gh_tb.get("thiet_ban") or {}
+        _th_4 = _tb_c.get("thai_huyen_tu_tru") or {}
+        _tb_deep_box = (
+            f'<div style="background:linear-gradient(135deg,#0f172a,#1e293b); padding:16px 18px; border-radius:12px; color:#f8fafc; border:1.5px solid #34d399; margin-top:16px; line-height:1.6;">'
+            f'<div style="font-weight:900; font-size:15px; color:#6ee7b7; margin-bottom:8px;">📜 ĐIỀU VĂN THIẾT BẢN THẦN TOÁN & THÁI HUYỀN ĐỊNH SỐ (V129.0 GitHub Engine)</div>'
+            f'• <b>Thái Huyền Tứ Trụ Định Số:</b> Năm <b>{nam_tru} ({_th_4.get("nam", 10)})</b> · Tháng <b>{thang_tru} ({_th_4.get("thang", 10)})</b> · '
+            f'Ngày <b>{ngay_tru} ({_th_4.get("ngay", 10)})</b> · Giờ <b>{gio_tru} ({_th_4.get("gio", 10)})</b>.<br>'
+            f'• <b>Nạp Âm Lục Thập Hoa Giáp Chuẩn:</b> Năm <i>{NAP_AM_60.get(nam_tru, "")}</i> · Tháng <i>{NAP_AM_60.get(thang_tru, "")}</i> · '
+            f'Ngày <i>{NAP_AM_60.get(ngay_tru, "")}</i> · Giờ <i>{NAP_AM_60.get(gio_tru, "")}</i>.<br>'
+            f'• <b>Điều Văn Định Số #<span style="color:#fde047;font-size:16px;">{_tb_c.get("dieu_van_so", 1001)}</span>:</b> '
+            f'<span style="color:#a7f3d0;font-weight:700;">«{_tb_c.get("dieu_van_text", "")}»</span> ({_tb_c.get("dieu_van_num_hint", "")}).'
+            f'</div>'
+        )
+    except Exception:
+        _tb_deep_box = ""
+
+    if _tb_deep_box:
+        st.markdown(_tb_deep_box, unsafe_allow_html=True)
     
     # V13.0: Removed AI Luận Thiết Bản button (dùng LỤC THUẬT HỢP NHẤT thay thế)
     st.info("💡 Để AI luận quẻ chuyên sâu → sang tab **'🤖 Hỏi Gemini AI'** → **'🌟 LỤC THUẬT HỢP NHẤT'**")

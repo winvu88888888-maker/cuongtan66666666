@@ -16591,7 +16591,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & PHÂN TÍCH 24 YẾU TỐ (Antigravity Brain Mode V128.0 — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & ĐẠI TIÊN TRI GITHUB (Antigravity Brain Mode V129.0 — 384 Hào Chu Dịch · Tăng San Lục Hào · Mai Hoa 18 Chiêm · KinQiMen)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_grid_html
@@ -18134,7 +18134,7 @@ class FreeAIHelper:
                     ) if _fb_cards else ''
                     final_parts.append(
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & PHÂN TÍCH 24 YẾU TỐ (Antigravity Brain Mode V128.0 — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)</div>'
+                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & ĐẠI TIÊN TRI GITHUB (Antigravity Brain Mode V129.0 — 384 Hào Chu Dịch · Tăng San Lục Hào · Mai Hoa 18 Chiêm · KinQiMen)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_grid_fb
