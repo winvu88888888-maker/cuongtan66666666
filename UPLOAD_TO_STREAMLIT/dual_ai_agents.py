@@ -7369,9 +7369,12 @@ class HexagramReasoningAI:
                     "   - [Bí pháp 6 - Mai Hoa Vạn Vật Loại Tượng & Đa Phương Án (2..N lựa chọn)]: Xét 4 chặng Bản -> Hạ Hỗ -> Thượng Hỗ -> Biến Quái. Nếu người dùng đưa ra 2, 3, 4+ lựa chọn (ví dụ nhạc vui, nhạc buồn, nhạc Phật, nhạc đám ma; hoặc món ăn/vị trí/màu sắc), BẮT BUỘC đối chiếu tượng Quẻ Động/Biến + Lục Thú + Tinh/Môn/Thần với từng phương án để CHỐT ĐÍCH DANH 1 PHƯƠNG ÁN TRÚNG TƯỢNG NHẤT!\n"
                     "   - [Bí pháp 7 - Thọ Nguyên & Định Lượng Cổ Pháp]: Khi hỏi tuổi tác / thọ nguyên, phải kết hợp Vai Vế thực tế (ông bà/cha mẹ/trung niên/con cái) với Khí Lực Dụng Thần (Thượng Thọ 80-96+, Trung Thọ 65-79...) và Quái Số Tiên-Hậu Thiên + Địa Chi năm sinh; TUYỆT ĐỐI KHÔNG bao giờ áp trần tuổi máy móc 31-45 hay 56-65!\n"
                     "   - [Bí pháp 8 - Bệnh Dược Ứng Kỳ Pháp (病药应期)]: Tìm đúng 'Bệnh' của quẻ để định 'Dược' mở khóa thời điểm ứng nghiệm chính xác.\n\n"
-                    "BẮT BUỘC SUY LUẬN THẤU ĐÁO TỪNG BƯỚC TRƯỚC (`ai2_step1_dung_than_and_xi_ji` -> `ai2_step2_causal_chain_synthesis` -> `ai2_when` -> `ai2_advice`) RỒI MỚI CHỐT `ai2_headline` Ở CUỐI CÙNG! Trả về ĐÚNG 1 JSON hợp lệ (không dùng dấu \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
+                    "BẮT BUỘC SUY LUẬN THẤU ĐÁO TỪNG BƯỚC TRƯỚC (`ai2_step1_dung_than_and_xi_ji` -> `ai2_liuyao_verdict_box` -> `ai2_qimen_verdict_box` -> `ai2_meihua_verdict_box` -> `ai2_step2_causal_chain_synthesis` -> `ai2_when` -> `ai2_advice`) RỒI MỚI CHỐT `ai2_headline` Ở CUỐI CÙNG! Trả về ĐÚNG 1 JSON hợp lệ (không dùng dấu \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
                     "{\n"
                     "  \"ai2_step1_dung_than_and_xi_ji\": \"Xác định rõ Dụng Thần Lục Hào & Kỳ Môn, phân định Hỷ/Kỵ và Thời thái thực tế\",\n"
+                    "  \"ai2_liuyao_verdict_box\": \"Ô Kết Quả Lục Hào giải đáp câu hỏi chính: Chỉ rõ Nguyệt/Nhật -> Hào Động/Biến -> Thế/Dụng tác động nhau như thế nào để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
+                    "  \"ai2_qimen_verdict_box\": \"Ô Kết Quả Kỳ Môn giải đáp câu hỏi chính: Chỉ rõ Cung Chủ/Khách, Sao, Cửa, Thần, Ám Can, Tứ Hại, Lật Cung tác động nhau như thế nào để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
+                    "  \"ai2_meihua_verdict_box\": \"Ô Kết Quả Mai Hoa giải đáp câu hỏi chính: Chỉ rõ Quẻ Thể, Quẻ Dụng, Hỗ Quái, Biến Quái & Vạn Vật Loại Tượng tác động nhau như thế nào để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
                     "  \"ai2_step2_causal_chain_synthesis\": \"Phân tích sâu sắc 3 hệ thống theo sách bí truyền: (1) Chuỗi sinh khắc 4 tầng Lục Hào (Nguyệt/Nhật, Động/Biến, Không/Mộ/Hợp/Phá) -> (2) Chủ-Khách, Tinh-Môn-Thần, Tứ Hại & Ám Can Kỳ Môn -> (3) Thể-Dụng & Vạn Vật Loại Tượng Mai Hoa (khoảng 180-320 từ, lập luận sắc bén từng chi tiết)\",\n"
                     "  \"ai2_when\": \"Chẩn đoán Bệnh-Dược Ứng Kỳ cụ thể (nêu rõ vì sao ứng vào giờ/ngày/tháng Can Chi đó)\",\n"
                     "  \"ai2_advice\": \"Pháp quyết hành động thực tế sát đúng hoàn cảnh câu hỏi\",\n"
@@ -7474,8 +7477,39 @@ class HexagramReasoningAI:
         when_proof = sanitize_outdated_years_text(spec_res.get("when") or omni_data.get("binary_when_note", ""), question=_raw_q_str)
         advice_proof = sanitize_outdated_years_text(spec_res.get("advice") or omni_data.get("binary_action_advice", ""), question=_raw_q_str)
 
-        # V120.0: Tách riêng Bảng Lưới 4 Thẻ Bóc Tách 24 Yếu Tố A→Z (hiển thị toàn chiều rộng bên dưới 3 thẻ tóm tắt, KHÔNG nhét chèn ép vào cột nhỏ 250px!)
+        # V133.2: Đồng bộ 100% Đáp Án Chốt Hạ + Giải Đáp Từng Loại Quẻ vào ngay 4 Ô '══► KẾT QUẢ' trên Sơ Đồ Mũi Tên!
         _deep_a2z_block_html = str(_univ_mat.get("deep_a_to_z_html") or "")
+        try:
+            from chinese_master_micro_graph import build_unified_causal_diagram_and_micro_audit as _rebuild_ug_fn
+            _ai_ov_boxes = {
+                "headline": headline_ans,
+                "when": re.sub(r"<[^>]+>", "", str(when_proof or "")).strip(),
+            }
+            if _ai2_online_succeeded and isinstance(_real_ai_pair, dict) and isinstance(_real_ai_pair.get("ai2"), dict):
+                _r2_b = _real_ai_pair["ai2"]
+                if _r2_b.get("ai2_liuyao_verdict_box"):
+                    _ai_ov_boxes["liuyao_box"] = sanitize_outdated_years_text(str(_r2_b["ai2_liuyao_verdict_box"]).strip(), question=_raw_q_str)
+                if _r2_b.get("ai2_qimen_verdict_box"):
+                    _ai_ov_boxes["qimen_box"] = sanitize_outdated_years_text(str(_r2_b["ai2_qimen_verdict_box"]).strip(), question=_raw_q_str)
+                if _r2_b.get("ai2_meihua_verdict_box"):
+                    _ai_ov_boxes["meihua_box"] = sanitize_outdated_years_text(str(_r2_b["ai2_meihua_verdict_box"]).strip(), question=_raw_q_str)
+            _ug_refreshed = _rebuild_ug_fn(
+                chart_data=chart_data,
+                luc_hao_data=luc_hao_data,
+                mai_hoa_data=mai_hoa_data,
+                dung_than=dung_than,
+                topic=_raw_q_str,
+                question=_raw_q_str,
+                target_cung=target_cung,
+                ai_verdict_overrides=_ai_ov_boxes,
+            ) or {}
+            _new_flow_html = str(_ug_refreshed.get("visual_flowchart_html") or "")
+            if _new_flow_html and "<!-- MICRO_FLOW_START -->" in _deep_a2z_block_html and "<!-- MICRO_FLOW_END -->" in _deep_a2z_block_html:
+                _pre_mf, _rest_mf = _deep_a2z_block_html.split("<!-- MICRO_FLOW_START -->", 1)
+                _, _post_mf = _rest_mf.split("<!-- MICRO_FLOW_END -->", 1)
+                _deep_a2z_block_html = _pre_mf + _new_flow_html + _post_mf
+        except Exception:
+            pass
         _tq_block_html = str(_univ_mat.get("thong_quan_html") or "")
         if _tq_block_html and "Thông Quan & Trạch Cát" not in advice_proof:
             advice_proof = f"{advice_proof}{_tq_block_html}"

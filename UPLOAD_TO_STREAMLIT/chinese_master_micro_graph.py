@@ -498,12 +498,17 @@ def _render_node_box(tier_badge: str, title: str, subtitle: str, badges: List[st
     )
 
 
-def _render_outcome_box(title: str, detail: str, verdict_color: str = "#fbbf24") -> str:
+def _render_outcome_box(
+    title: str,
+    detail: str,
+    verdict_color: str = "#fbbf24",
+    header_badge: str = "══► KẾT QUẢ GIẢI ĐÁP CÂU HỎI CHÍNH",
+) -> str:
     return (
-        f'<div style="flex:1.2 1 210px;min-width:190px;padding:9px 12px;background:linear-gradient(135deg,rgba(30,41,59,0.96),rgba(15,23,42,0.96));border:2px solid {verdict_color};border-radius:10px;box-shadow:0 3px 14px rgba(251,191,36,0.2);">'
-        f'<div style="font-size:0.74em;font-weight:900;color:{verdict_color};margin-bottom:2px;">══► KẾT QUẢ THỰC TẾ CHI TIẾT</div>'
-        f'<div style="font-size:0.89em;font-weight:900;color:#ffffff;line-height:1.34;">{title}</div>'
-        f'<div style="font-size:0.79em;color:#fef3c7;margin-top:3px;line-height:1.4;">{detail}</div>'
+        f'<div style="flex:1.35 1 235px;min-width:210px;padding:9px 12px;background:linear-gradient(135deg,rgba(30,41,59,0.97),rgba(15,23,42,0.97));border:2px solid {verdict_color};border-radius:10px;box-shadow:0 3px 14px rgba(251,191,36,0.22);">'
+        f'<div style="font-size:0.74em;font-weight:900;color:{verdict_color};margin-bottom:3px;letter-spacing:0.2px;">{header_badge}</div>'
+        f'<div style="font-size:0.89em;font-weight:900;color:#ffffff;line-height:1.35;">{title}</div>'
+        f'<div style="font-size:0.79em;color:#fef3c7;margin-top:4px;line-height:1.44;">{detail}</div>'
         f'</div>'
     )
 
@@ -909,18 +914,24 @@ def analyze_liuyao_exhaustive_micro_graph(
     )
     out_node_lh = _render_outcome_box(out_title_lh, out_detail_lh, "#22c55e" if lh_verdict_good else "#f59e0b")
 
-    flowchart_html = (
-        f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:11px;border:1px solid rgba(56,189,248,0.35);margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#7dd3fc;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
-        f'<span>☯️ SƠ ĐỒ MŨI TÊN LỤC HÀO 4 TẦNG TÁC ĐỘNG (Chuẩn Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào)</span>'
-        f'<span style="color:#fde68a;font-size:0.88em;">Quái Thân: {bodies_ss["quai_than"]["chi"]}-{bodies_ss["quai_than"]["luc_than"]} | Thế Thân: Hào {bodies_ss["the_than"]["hao"]}</span>'
-        f'</div>'
-        f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
-        f'{t1_node}{_render_svg_arrow(arrow_12_lbl, "#38bdf8")}{t2_node}{_render_svg_arrow(arrow_23_lbl, arrow_23_col)}{t3_node}{_render_svg_arrow("Hội tụ Nhân Quả", "#fbbf24")}{out_node_lh}'
-        f'</div></div>'
-    )
+    def _build_lh_flowchart(custom_out_node: Optional[str] = None) -> str:
+        _onode = custom_out_node or out_node_lh
+        return (
+            f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:11px;border:1px solid rgba(56,189,248,0.35);margin-bottom:8px;">'
+            f'<div style="font-size:0.86em;font-weight:900;color:#7dd3fc;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
+            f'<span>☯️ SƠ ĐỒ 1 · LỤC HÀO 4 TẦNG TÁC ĐỘNG ══► GIẢI ĐÁP CÂU HỎI TỪ TÁC ĐỘNG CÁC HÀO</span>'
+            f'<span style="color:#fde68a;font-size:0.88em;">Quái Thân: {bodies_ss["quai_than"]["chi"]}-{bodies_ss["quai_than"]["luc_than"]} | Thế Thân: Hào {bodies_ss["the_than"]["hao"]}</span>'
+            f'</div>'
+            f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
+            f'{t1_node}{_render_svg_arrow(arrow_12_lbl, "#38bdf8")}{t2_node}{_render_svg_arrow(arrow_23_lbl, arrow_23_col)}{t3_node}{_render_svg_arrow("Tác động ra Kết Quả", "#fbbf24")}{_onode}'
+            f'</div></div>'
+        )
+
+    flowchart_html = _build_lh_flowchart()
 
     return {
+        "ban_name": ban_name,
+        "bien_name": bien_name,
         "quai_than": bodies_ss["quai_than"],
         "the_than": bodies_ss["the_than"],
         "shensha_dict": bodies_ss["shensha_dict"],
@@ -931,6 +942,7 @@ def analyze_liuyao_exhaustive_micro_graph(
         "the_pos": the_pos,
         "ung_pos": ung_pos,
         "flowchart_html": flowchart_html,
+        "render_flowchart_fn": _build_lh_flowchart,
     }
 
 
@@ -1161,26 +1173,36 @@ def analyze_qimen_exhaustive_micro_graph(
     _ar_km_1 = _render_svg_arrow(f"Can {st_cur['can_thien']} bay tới", "#94a3b8")
     _ar_km_2 = _render_svg_arrow(f"Lật Can {st_cur['can_dia']}", "#38bdf8")
     _ar_km_3 = _render_svg_arrow(f"Lật Can {st_n1['can_dia']}", "#fbbf24")
-    flowchart_html = (
-        f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:11px;border:1px solid rgba(251,191,36,0.35);margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#fde047;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
-        f'<span>🧭 SƠ ĐỒ MŨI TÊN KỲ MÔN LẬT CUNG 4 TRẠM & ÁM CAN — TỨ HẠI (Chuẩn Vấn Chân Kỳ Môn)</span>'
-        f'<span style="color:#a7f3d0;font-size:0.88em;">Chủ: Cung {cung_chu} ({stem_chu}) ↔ Sự việc: Cung {cung_khach} ({stem_khach}) | Ký Cung 5: {cd.get("stem_trung_cung_5", "Mậu")}➔Cung {cd.get("p_nhue_cam", 2)}</span>'
-        f'</div>'
-        f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
-        f'{n1_box}{_ar_km_1}{n2_box}{_ar_km_2}{n3_box}{_ar_km_3}{out_km}'
-        f'</div></div>'
-    )
+
+    def _build_km_flowchart(custom_out_node: Optional[str] = None) -> str:
+        _onode_k = custom_out_node or out_km
+        return (
+            f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:11px;border:1px solid rgba(251,191,36,0.35);margin-bottom:8px;">'
+            f'<div style="font-size:0.86em;font-weight:900;color:#fde047;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
+            f'<span>🧭 SƠ ĐỒ 2 · KỲ MÔN CHỦ–KHÁCH & LẬT CUNG 4 TRẠM ══► GIẢI ĐÁP CÂU HỎI TỪ TÁC ĐỘNG CỬU CUNG</span>'
+            f'<span style="color:#a7f3d0;font-size:0.88em;">Chủ: Cung {cung_chu} ({stem_chu}) ↔ Sự việc: Cung {tc} ({st_cur["can_thien_disp"]}) | Ký Cung 5: {cd.get("stem_trung_cung_5", "Mậu")}➔Cung {cd.get("p_nhue_cam", 2)}</span>'
+            f'</div>'
+            f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
+            f'{n1_box}{_ar_km_1}{n2_box}{_ar_km_2}{n3_box}{_ar_km_3}{_onode_k}'
+            f'</div></div>'
+        )
+
+    flowchart_html = _build_km_flowchart()
 
     return {
         "target_cung": tc,
         "cung_chu": cung_chu,
         "cung_khach": cung_khach,
         "cung_truc_su": cung_truc_su,
+        "stem_chu": stem_chu,
+        "stem_khach": stem_khach,
+        "ck_rel": ck_rel,
+        "ck_desc": ck_desc,
         "phien_cung_chain": [p_past, tc, p_next1, p_next2],
         "palace_micro_audit": palace_micro_audit,
         "directed_edges": qimen_edges,
         "flowchart_html": flowchart_html,
+        "render_flowchart_fn": _build_km_flowchart,
     }
 
 
@@ -1189,12 +1211,15 @@ def analyze_meihua_exhaustive_micro_graph(
     chart_data: Optional[Dict[str, Any]] = None,
     topic: str = "Chung",
     question: str = "",
+    luc_hao_data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
-    V130.0: Phân tích Mai Hoa Dịch Số 4 Chặng Tiến Hóa (Bản Quái ──► Hạ Hỗ [2-3-4] ──► Thượng Hỗ [3-4-5] ──► Biến Quái + Hào Từ).
+    V133.2: Phân tích Mai Hoa Dịch Số 4 Chặng Tiến Hóa (Bản Quái ──► Hạ Hỗ [2-3-4] ──► Thượng Hỗ [3-4-5] ──► Biến Quái + Hào Từ).
+    Đồng bộ hoàn toàn với Lục Hào Đa Hào Động (0..6 hào động) để Quẻ Biến trên sơ đồ Mai Hoa và Lục Hào khớp 100%!
     """
     mh = mai_hoa_data if isinstance(mai_hoa_data, dict) else {}
     cd = chart_data if isinstance(chart_data, dict) else {}
+    lh = luc_hao_data if isinstance(luc_hao_data, dict) else {}
     chi_thang = _norm_chi(cd.get("chi_thang") or "Tuất") or "Tuất"
     nguyet_el = CHI_ELEMENT.get(chi_thang, "Thổ")
 
@@ -1212,18 +1237,30 @@ def analyze_meihua_exhaustive_micro_graph(
     if not (1 <= dong_hao <= 6):
         dong_hao = 4
 
+    lh_dong = lh.get("dong_hao") if isinstance(lh.get("dong_hao"), list) else []
+    dong_list_mh = [int(x) for x in lh_dong if str(x).isdigit() and 1 <= int(x) <= 6] or [dong_hao]
+
     lines6 = list(TRIGRAM_META_8[lo_q][0]) + list(TRIGRAM_META_8[up_q][0])
     lines_bien = list(lines6)
-    lines_bien[dong_hao - 1] = 0 if lines_bien[dong_hao - 1] == 1 else 1
+    for d_idx in dong_list_mh:
+        lines_bien[d_idx - 1] = 0 if lines_bien[d_idx - 1] == 1 else 1
 
     ha_ho = BIN_TO_TRIGRAM_8.get(tuple(lines6[1:4]), "Cấn")
     thuong_ho = BIN_TO_TRIGRAM_8.get(tuple(lines6[2:5]), "Tốn")
     lo_bien = BIN_TO_TRIGRAM_8.get(tuple(lines_bien[:3]), lo_q)
     up_bien = BIN_TO_TRIGRAM_8.get(tuple(lines_bien[3:]), up_q)
 
-    the_q = up_q if dong_hao <= 3 else lo_q
-    dung_q = lo_q if dong_hao <= 3 else up_q
-    bien_dung_q = lo_bien if dong_hao <= 3 else up_bien
+    # Nếu cả Thượng và Hạ đều có hào động, lấy quẻ ít hào động hơn (hoặc quẻ chứa Hào Thế) làm Thể
+    low_mv_cnt = sum(1 for x in dong_list_mh if x <= 3)
+    up_mv_cnt = sum(1 for x in dong_list_mh if x >= 4)
+    if low_mv_cnt <= up_mv_cnt and up_mv_cnt > 0:
+        the_q = lo_q
+        dung_q = up_q
+        bien_dung_q = up_bien if up_bien != up_q else lo_bien
+    else:
+        the_q = up_q
+        dung_q = lo_q
+        bien_dung_q = lo_bien if lo_bien != lo_q else up_bien
 
     el_the = TRIGRAM_META_8[the_q][3]
     el_dung = TRIGRAM_META_8[dung_q][3]
@@ -1247,11 +1284,14 @@ def analyze_meihua_exhaustive_micro_graph(
     r3_lbl, r3_col, r3_desc = _td_arrow(f"Thượng Hỗ {thuong_ho}", el_thuongho)
     r4_lbl, r4_col, r4_desc = _td_arrow(f"Biến Dụng {bien_dung_q}", el_biendung)
 
-    ten_chu = str(mh.get("ten") or mh.get("ten_que") or f"{up_q}/{lo_q}")
+    lh_ban_nm = str((lh.get("ban") or {}).get("name") or "")
+    lh_bien_nm = str((lh.get("bien") or {}).get("name") or "")
+    ten_chu = lh_ban_nm or str(mh.get("ten") or mh.get("ten_que") or f"{up_q}/{lo_q}")
     ten_ho = str(mh.get("ten_ho") or f"{thuong_ho}/{ha_ho}")
-    ten_bien = str(mh.get("ten_qua_bien") or f"{up_bien}/{lo_bien}")
+    ten_bien = lh_bien_nm or str(mh.get("ten_qua_bien") or f"{up_bien}/{lo_bien}")
     sum_tien_thien = TRIGRAM_META_8[up_q][1] + TRIGRAM_META_8[lo_q][1]
     sum_hau_thien = TRIGRAM_META_8[up_q][2] + TRIGRAM_META_8[lo_q][2]
+    dong_disp_mh = ", ".join(map(str, dong_list_mh))
 
     mh_edges = [
         {"tier": "Mai Hoa · Chặng 1 (Khởi sự)", "src": f"Quẻ Dụng {dung_q} ({el_dung})", "rel": r1_lbl, "color": r1_col, "dst": f"Quẻ Thể {the_q} ({el_the})", "outcome": r1_desc},
@@ -1282,30 +1322,45 @@ def analyze_meihua_exhaustive_micro_graph(
         r3_col,
     )
     m4_out = _render_outcome_box(
-        f"Chặng 4 Kết Cục: {ten_bien} (Động Hào {dong_hao})",
+        f"Chặng 4 Kết Cục: {ten_bien} (Động Hào {dong_disp_mh})",
         f"{r4_desc} Định lượng Quái số: Tiên Thiên = {sum_tien_thien}, Hậu Thiên = {sum_hau_thien}.",
         r4_col,
     )
 
-    flowchart_html = (
-        f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:11px;border:1px solid rgba(244,114,182,0.35);margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#f9a8d4;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
-        f'<span>🌸 SƠ ĐỒ MŨI TÊN MAI HOA 4 CHẶNG TIẾN HÓA (Bản Quái ➔ Hạ Hỗ ➔ Thượng Hỗ ➔ Biến Quái)</span>'
-        f'<span style="color:#fbcfe8;font-size:0.88em;">Thể: {the_q} ({el_the}) | Động Hào {dong_hao} ({HAO_VI_MEANING.get(dong_hao, ("", ""))[0]})</span>'
-        f'</div>'
-        f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
-        f'{m1}{_render_svg_arrow(r1_lbl, r1_col)}{m2}{_render_svg_arrow(r2_lbl, r2_col)}{m3}{_render_svg_arrow(r4_lbl, r4_col)}{m4_out}'
-        f'</div></div>'
-    )
+    def _build_mh_flowchart(custom_out_node: Optional[str] = None) -> str:
+        _onode_m = custom_out_node or m4_out
+        return (
+            f'<div style="padding:10px 12px;background:rgba(15,23,42,0.88);border-radius:11px;border:1px solid rgba(244,114,182,0.35);margin-bottom:8px;">'
+            f'<div style="font-size:0.86em;font-weight:900;color:#f9a8d4;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
+            f'<span>🌸 SƠ ĐỒ 3 · MAI HOA THỂ–DỤNG 4 CHẶNG ══► GIẢI ĐÁP CÂU HỎI TỪ TƯỢNG QUÁI & BIẾN QUÁI</span>'
+            f'<span style="color:#fbcfe8;font-size:0.88em;">Thể: {the_q} ({el_the}) | Động Hào {dong_disp_mh}</span>'
+            f'</div>'
+            f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
+            f'{m1}{_render_svg_arrow(r1_lbl, r1_col)}{m2}{_render_svg_arrow(r2_lbl, r2_col)}{m3}{_render_svg_arrow(r4_lbl, r4_col)}{_onode_m}'
+            f'</div></div>'
+        )
+
+    flowchart_html = _build_mh_flowchart()
 
     return {
+        "ten_chu": ten_chu,
+        "ten_ho": ten_ho,
+        "ten_bien": ten_bien,
+        "dong_disp": dong_disp_mh,
         "the_quai": the_q,
         "dung_quai": dung_q,
         "ha_ho": ha_ho,
         "thuong_ho": thuong_ho,
         "bien_dung_quai": bien_dung_q,
+        "r1_lbl": r1_lbl,
+        "r4_lbl": r4_lbl,
+        "r4_desc": r4_desc,
+        "r4_col": r4_col,
+        "sum_tien_thien": sum_tien_thien,
+        "sum_hau_thien": sum_hau_thien,
         "directed_edges": mh_edges,
         "flowchart_html": flowchart_html,
+        "render_flowchart_fn": _build_mh_flowchart,
     }
 
 
@@ -2035,15 +2090,17 @@ def build_unified_causal_diagram_and_micro_audit(
     topic: str = "Chung",
     question: str = "",
     target_cung: Optional[int] = None,
+    ai_verdict_overrides: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """
-    V130.0 MASTER SYNTHESIS:
-    Kết nối đồng bộ toàn bộ dấu hiệu vi mô của Lục Hào + Kỳ Môn + Mai Hoa thành:
-    1. Sơ đồ Mũi Tên Tác Động Nhân Quả Đa Tầng trực quan (HTML + SVG).
-    2. Bảng Mũi Tên Vi Mô Từng Cặp Yếu Tố ([Nguồn] ──[Cơ chế]──► [Đích] ══► [Hệ quả chi tiết]).
-    3. Sổ Kiểm Kê 100% Dấu Hiệu Không Bỏ Sót (Đủ 6/6 Hào Lục Hào & 9/9 Cung Kỳ Môn).
-    4. Văn bản cấu trúc chuẩn cho AI Online & AI Offline suy luận không bỏ sót chi tiết nào.
+    V133.2 MASTER SYNTHESIS:
+    Biến ô '══► KẾT QUẢ' cuối mỗi Sơ Đồ Mũi Tên (Lục Hào · Kỳ Môn · Mai Hoa + Sơ Đồ Hợp Nhất Tam Thức)
+    thành PHẦN TRỰC TIẾP GIẢI ĐÁP CÂU HỎI CHÍNH thông qua cơ chế tác động nhân quả từng yếu tố của từng loại quẻ!
     """
+    import re as _re_ug
+    ai_ov = ai_verdict_overrides if isinstance(ai_verdict_overrides, dict) else {}
+    q_clean_disp = _html.escape(str(question or "").strip())
+
     ly_res = analyze_liuyao_exhaustive_micro_graph(
         luc_hao_data or {}, dung_than=dung_than, topic=topic, question=question, chart_data=chart_data
     )
@@ -2051,7 +2108,7 @@ def build_unified_causal_diagram_and_micro_audit(
         chart_data or {}, target_cung=target_cung, dung_than=dung_than, topic=topic, question=question
     )
     mh_res = analyze_meihua_exhaustive_micro_graph(
-        mai_hoa_data or {}, chart_data=chart_data, topic=topic, question=question
+        mai_hoa_data or {}, chart_data=chart_data, topic=topic, question=question, luc_hao_data=luc_hao_data
     )
 
     all_edges = list(ly_res["directed_edges"]) + list(qm_res["directed_edges"]) + list(mh_res["directed_edges"])
@@ -2064,13 +2121,144 @@ def build_unified_causal_diagram_and_micro_audit(
         question=question,
     )
 
-    # Giao thoa Tín Hiệu Vi Mô Tam Thức (Cross-System Micro Resonance)
-    resonances: List[str] = []
     tc = qm_res["target_cung"]
     qm_tc_audit = qm_res["palace_micro_audit"].get(tc, {})
+    p_end_km = qm_res["phien_cung_chain"][-1]
+    qm_end_audit = qm_res["palace_micro_audit"].get(p_end_km, qm_tc_audit)
     dt_idx = ly_res["dt_hao_idx"]
     ly_dt_audit = ly_res["line_micro_audit"][dt_idx - 1]
+    the_audit = ly_res["line_micro_audit"][ly_res["the_pos"] - 1]
 
+    # ── XÂY DỰNG 4 Ô '══► KẾT QUẢ GIẢI ĐÁP CÂU HỎI CHÍNH' CHO TỪNG LOẠI QUẺ & TAM THỨC HỢP NHẤT ──
+    lh_sc = int(deep_syn["lh_score"])
+    qm_sc = int(deep_syn["qm_score"])
+    mh_sc = int(deep_syn["mh_score"])
+    comp_sc = int(deep_syn["composite_score"])
+
+    raw_final_hl = str(ai_ov.get("headline") or deep_syn.get("direct_headline") or "").strip()
+    clean_final_hl = _re_ug.sub(r"<[^>]+>", "", raw_final_hl).strip()
+    if not clean_final_hl:
+        if comp_sc >= 60:
+            clean_final_hl = f"THUẬN LỢI / ĐẮC QUẺ ({comp_sc}%) — Tín hiệu 3 quẻ nâng đỡ rõ rệt cho câu hỏi!"
+        elif comp_sc >= 46:
+            clean_final_hl = f"CÓ CƠ HỘI NHƯNG CẦN ĐÚNG THỜI ĐIỂM MỞ KHÓA ({comp_sc}%)!"
+        else:
+            clean_final_hl = f"ĐANG VƯỚNG LỰC CẢN / CHƯA THÀNH NGAY ({comp_sc}%) — Cần hóa giải điểm nghẽn trước!"
+
+    # 1) Ô Kết Quả Sơ Đồ 1 — Lục Hào giải đáp câu hỏi như thế nào?
+    lh_col = "#22c55e" if lh_sc >= 56 else ("#fbbf24" if lh_sc >= 45 else "#ef4444")
+    lh_stance = "BÁO THUẬN / THÀNH" if lh_sc >= 56 else ("BÁO CHỜ THỜI MỞ NÚT THẮT" if lh_sc >= 45 else "BÁO CẢN TRỞ / NGƯỢC Ý")
+    lh_ans_title = f"Luận giải Lục Hào ({lh_sc}/100 — {lh_stance}): {ly_res['ban_name']} ➔ {ly_res['bien_name']}"
+    if ai_ov.get("liuyao_box"):
+        lh_ans_detail = f"<b>Tác động hào giải đáp câu hỏi:</b> {ai_ov['liuyao_box']}"
+    else:
+        lh_chain_short = " ➔ ".join(deep_syn["lh_chain_notes"][:3])
+        lh_ans_detail = (
+            f"<b>Cơ chế tác động trả lời câu hỏi:</b> {lh_chain_short}. "
+            + (f"<b>Liên kết nổi bật:</b> {ly_res['global_formations'][0]}. " if ly_res["global_formations"] else "")
+            + f"<b>Chốt ứng kỳ Lục Hào:</b> {deep_syn['duoc_ung_ky']}."
+        )
+    custom_lh_out = _render_outcome_box(
+        lh_ans_title,
+        lh_ans_detail,
+        lh_col,
+        header_badge="══► KẾT QUẢ LỤC HÀO GIẢI ĐÁP CÂU HỎI CHÍNH",
+    )
+
+    # 2) Ô Kết Quả Sơ Đồ 2 — Kỳ Môn giải đáp câu hỏi như thế nào?
+    qm_col = "#22c55e" if qm_sc >= 56 else ("#fbbf24" if qm_sc >= 45 else "#ef4444")
+    qm_stance = "CỬA THÔNG / ĐẮC LỢI" if qm_sc >= 56 else ("CẦN LÁCH TỨ HẠI / CHỜ THỜI" if qm_sc >= 45 else "CỬA NGHẼN / NHIỀU LỰC ÉP")
+    qm_ans_title = (
+        f"Luận giải Kỳ Môn ({qm_sc}/100 — {qm_stance}): Cung {tc} {qm_tc_audit.get('door','')} ➔ Hạ màn Cung {p_end_km} {qm_end_audit.get('door','')}"
+    )
+    if ai_ov.get("qimen_box"):
+        qm_ans_detail = f"<b>Tác động Cửu Cung giải đáp câu hỏi:</b> {ai_ov['qimen_box']}"
+    else:
+        qm_chain_short = " · ".join(deep_syn["qm_notes"][:2]) if deep_syn["qm_notes"] else qm_res["ck_desc"]
+        qm_ans_detail = (
+            f"<b>Cơ chế Chủ–Khách & Tinh–Môn trả lời câu hỏi:</b> {qm_chain_short}. "
+            f"Cung sự việc hội <b>{qm_tc_audit.get('star','')} · {qm_tc_audit.get('door','')} · {qm_tc_audit.get('deity','')}</b>, "
+            f"Ám Can <b>[{qm_tc_audit.get('am_can','')}]</b> ({qm_tc_audit.get('am_can_meaning','')}), lật 4 trạm chốt về <b>Cung {p_end_km} ({qm_end_audit.get('door','')})</b>."
+        )
+    custom_km_out = _render_outcome_box(
+        qm_ans_title,
+        qm_ans_detail,
+        qm_col,
+        header_badge="══► KẾT QUẢ KỲ MÔN GIẢI ĐÁP CÂU HỎI CHÍNH",
+    )
+
+    # 3) Ô Kết Quả Sơ Đồ 3 — Mai Hoa giải đáp câu hỏi như thế nào?
+    mh_col = "#22c55e" if mh_sc >= 56 else ("#fbbf24" if mh_sc >= 45 else "#ef4444")
+    mh_stance = "DỤNG TRỢ THỂ (CÁT)" if mh_sc >= 56 else ("THẾ CÂN BẰNG / CẦN NỖ LỰC" if mh_sc >= 45 else "DỤNG HAO/KHẮC THỂ (KHÓ)")
+    mh_ans_title = f"Luận giải Mai Hoa ({mh_sc}/100 — {mh_stance}): {mh_res['ten_chu']} ➔ {mh_res['ten_bien']}"
+    if ai_ov.get("meihua_box"):
+        mh_ans_detail = f"<b>Tác động Thể–Dụng & Quái Tượng giải đáp câu hỏi:</b> {ai_ov['meihua_box']}"
+    else:
+        mh_tuong_the = TRIGRAM_META_8.get(mh_res["the_quai"], TRIGRAM_META_8["Càn"])[4]
+        mh_tuong_bien = TRIGRAM_META_8.get(mh_res["bien_dung_quai"], TRIGRAM_META_8["Càn"])[4]
+        mh_ans_detail = (
+            f"<b>Cơ chế Thể–Dụng 4 chặng trả lời câu hỏi:</b> Khởi đầu <b>{mh_res['r1_lbl']}</b> ➔ trung gian Hỗ Quái <b>{mh_res['ten_ho']}</b> "
+            f"➔ kết cục <b>{mh_res['r4_lbl']}</b> ({mh_res['r4_desc']}) "
+            f"Tượng quẻ ứng thực tế: Thể {mh_res['the_quai']} ({mh_tuong_the}) gặp Biến {mh_res['bien_dung_quai']} ({mh_tuong_bien}); Quái số Tiên/Hậu Thiên = {mh_res['sum_tien_thien']}/{mh_res['sum_hau_thien']}."
+        )
+    custom_mh_out = _render_outcome_box(
+        mh_ans_title,
+        mh_ans_detail,
+        mh_col,
+        header_badge="══► KẾT QUẢ MAI HOA GIẢI ĐÁP CÂU HỎI CHÍNH",
+    )
+
+    ly_flow_html = ly_res["render_flowchart_fn"](custom_lh_out)
+    qm_flow_html = qm_res["render_flowchart_fn"](custom_km_out)
+    mh_flow_html = mh_res["render_flowchart_fn"](custom_mh_out)
+
+    # 4) SƠ ĐỒ 4 — HỢP LỰC TAM THỨC (LỤC HÀO 50% + KỲ MÔN 30% + MAI HOA 20%) ══► GIẢI ĐÁP CHỐT HẠ CÂU HỎI CHÍNH
+    syn_n1 = _render_node_box(
+        "Trụ Cột 1 · Lục Hào (50%)",
+        f"{lh_sc}/100 điểm · {ly_dt_audit['luc_than']} ({ly_dt_audit['chi']}-{ly_dt_audit['ngu_hanh']})",
+        f"Thế Hào {ly_res['the_pos']} ({the_audit['chi']}) · Khí {ly_dt_audit['vuong_suy']} · {ly_dt_audit['luc_thu']}",
+        [lh_stance],
+        lh_col,
+    )
+    syn_n2 = _render_node_box(
+        "Trụ Cột 2 · Kỳ Môn (30%)",
+        f"{qm_sc}/100 điểm · Cung {tc} ({qm_tc_audit.get('quai','')})",
+        f"{qm_tc_audit.get('door','')} · {qm_tc_audit.get('star','')} · {qm_tc_audit.get('deity','')}",
+        [qm_res["ck_rel"]],
+        qm_col,
+    )
+    syn_n3 = _render_node_box(
+        "Trụ Cột 3 · Mai Hoa (20%)",
+        f"{mh_sc}/100 điểm · Thể {mh_res['the_quai']} ↔ Biến {mh_res['bien_dung_quai']}",
+        f"{mh_res['ten_chu']} ➔ {mh_res['ten_bien']}",
+        [mh_res["r4_lbl"]],
+        mh_col,
+    )
+    when_final_disp = str(ai_ov.get("when") or deep_syn["duoc_ung_ky"]).strip()
+    comp_col = "#22c55e" if comp_sc >= 56 else ("#fbbf24" if comp_sc >= 45 else "#ef4444")
+    syn_final_out = _render_outcome_box(
+        f"{clean_final_hl}",
+        (
+            (f"<b>Câu hỏi gốc:</b> «{q_clean_disp}»<br>" if q_clean_disp else "")
+            + f"<b>Hợp lực 3 loại quẻ ({comp_sc}/100):</b> Lục Hào định gốc sinh khắc ({lh_sc}đ) + Kỳ Môn định không gian/nhân sự ({qm_sc}đ) + Mai Hoa định tượng biến hóa ({mh_sc}đ).<br>"
+            + f"<b>Bệnh – Dược Ứng Kỳ:</b> {when_final_disp}"
+        ),
+        comp_col,
+        header_badge="🎯 TỔNG HỢP 3 QUẺ GIẢI ĐÁP TRỰC DIỆN CÂU HỎI CHÍNH",
+    )
+    unified_4th_flowchart_html = (
+        f'<div style="padding:11px 13px;background:linear-gradient(135deg,rgba(69,26,3,0.72),rgba(15,23,42,0.95));border-radius:11px;border:2px solid #f59e0b;margin-bottom:8px;box-shadow:0 3px 16px rgba(245,158,11,0.22);">'
+        f'<div style="font-size:0.88em;font-weight:900;color:#fde68a;margin-bottom:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">'
+        f'<span>🏆 SƠ ĐỒ 4 · HỘI TỤ TÁC ĐỘNG CẢ 3 LOẠI QUẺ (LỤC HÀO + KỲ MÔN + MAI HOA) ══► GIẢI ĐÁP CHỐT HẠ CÂU HỎI CHÍNH</span>'
+        f'<span style="color:#fef08a;font-size:0.86em;">Hợp nhất Khí Lực Tam Thức: {comp_sc}/100</span>'
+        f'</div>'
+        f'<div style="display:flex;align-items:stretch;flex-wrap:wrap;gap:4px;">'
+        f'{syn_n1}{_render_svg_arrow("Cộng hưởng", "#38bdf8")}{syn_n2}{_render_svg_arrow("Đối chứng", "#f472b6")}{syn_n3}{_render_svg_arrow("Chốt Đáp Án", "#fbbf24")}{syn_final_out}'
+        f'</div></div>'
+    )
+
+    # Giao thoa Tín Hiệu Vi Mô Tam Thức (Cross-System Micro Resonance)
+    resonances: List[str] = []
     if ly_dt_audit["is_void"] and any("Tuần Không" in x for x in qm_tc_audit.get("tu_hai", [])):
         resonances.append("🔔 <b>Đồng bộ Không Vong Kép (Lục Hào + Kỳ Môn cùng báo Không):</b> Cả Hào Dụng Thần lẫn Cung Dụng Thần đều lâm Tuần Không — hiện trạng chưa chín muồi hoặc thông tin chưa có thật 100%, bắt buộc đợi ngày Xuất/Xung Không mới thành thực chất.")
     if ("Dịch Mã" in ly_dt_audit["shensha"] or ly_dt_audit["is_moving"] or ly_dt_audit["is_am_dong"]) and any("Dịch Mã" in x for x in qm_tc_audit.get("good_signs", [])):
@@ -2125,7 +2313,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V131.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V133.2 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Dược ứng kỳ:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn["duoc_ung_ky"]}</span>'
@@ -2135,12 +2323,13 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & LUẬN GIẢI BIỆN CHỨNG TẦNG SÂU (V131.0)</span>'
-        f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn 元亨利贞 china95 · 问真六爻/奇门 · Bệnh–Dược Cổ Pháp</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V133.2)</span>'
+        f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Dịch Số</span>'
         f'</div>'
-        f'{ly_res["flowchart_html"]}'
-        f'{qm_res["flowchart_html"]}'
-        f'{mh_res["flowchart_html"]}'
+        f'{ly_flow_html}'
+        f'{qm_flow_html}'
+        f'{mh_flow_html}'
+        f'{unified_4th_flowchart_html}'
         f'{_bd_box_html}'
         f'<div style="padding:9px 12px;background:rgba(15,23,42,0.9);border-radius:9px;border-left:4px solid #a78bfa;margin-bottom:8px;">'
         f'<div style="font-size:0.85em;font-weight:900;color:#c4b5fd;margin-bottom:3px;">🔎 TỔNG HỢP TÍN HIỆU VI MÔ & GIAO THOA TAM THỨC TRÊN QUẺ NÀY</div>'

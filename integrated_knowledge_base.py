@@ -1234,10 +1234,10 @@ def compute_deep_interacting_factors_a_to_z(
         _micro_graph_res = {}
 
     deep_a_to_z_html = (
-        _micro_flow_html
+        "<!-- MICRO_FLOW_START -->" + _micro_flow_html + "<!-- MICRO_FLOW_END -->"
         + f'<div style="margin-top:12px;padding:14px 16px;background:rgba(15,23,42,0.88);border-radius:12px;border:1px solid rgba(56,189,248,0.35);">'
         f'<div style="font-weight:900;color:#fde047;font-size:0.98em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ & ĐẠI TIÊN TRI VI MÔ V130.0 (BỐ CỤC 4 TRỤ CỘT)</span>'
+        f'<span>🔬 BẢNG BÓC TÁCH SÂU 24 YẾU TỐ & ĐẠI TIÊN TRI VI MÔ V133.2 (BỐ CỤC 4 TRỤ CỘT)</span>'
         f'<span style="font-size:0.8em;color:#94a3b8;font-weight:600;">Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn · 384 Hào · Mai Hoa 18 Chiêm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:10px;font-size:0.9em;line-height:1.52;color:#f1f5f9;">'
