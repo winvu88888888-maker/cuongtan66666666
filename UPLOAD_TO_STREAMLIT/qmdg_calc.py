@@ -70,63 +70,66 @@ def get_can_chi_hour(day_can, hour):
     return CAN[hour_can_idx], CHI[hour_idx]
 
 
+_SOLAR_TERMS_BY_LON = [
+    "Xuân Phân", "Thanh Minh", "Cốc Vũ", "Lập Hạ", "Tiểu Mãn", "Mang Chủng",
+    "Hạ Chí", "Tiểu Thử", "Đại Thử", "Lập Thu", "Xử Thử", "Bạch Lộ",
+    "Thu Phân", "Hàn Lộ", "Sương Giáng", "Lập Đông", "Tiểu Tuyết", "Đại Tuyết",
+    "Đông Chí", "Tiểu Hàn", "Đại Hàn", "Lập Xuân", "Vũ Thủy", "Kinh Trập"
+]
+
+
+def _solar_longitude_deg_utc(dt_utc: datetime.datetime) -> float:
+    """
+    V133.0: Tính Kinh độ Hoàng đạo biểu kiến của Mặt Trời (Apparent Solar Longitude λ☉, 0°..360°)
+    theo thuật toán thiên văn Jean Meeus (Astronomical Algorithms, Ch. 25 — sai số < 1 phút cung).
+    Đảm bảo chuyển giao 24 Tiết Khí chuẩn xác tới từng Giờ:Phút cho MỌI NĂM (1800–2200).
+    """
+    y = dt_utc.year
+    m = dt_utc.month
+    d = dt_utc.day + (
+        dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0
+    ) / 24.0
+    if m <= 2:
+        y -= 1
+        m += 12
+    a_val = y // 100
+    b_val = 2 - a_val + (a_val // 4)
+    jd = int(365.25 * (y + 4716)) + int(30.6001 * (m + 1)) + d + b_val - 1524.5
+    # Hiệu chỉnh ΔT xấp xỉ cho lịch hiện đại (~69 giây quanh thế kỷ 21)
+    delta_t_days = (64.0 + 0.3 * (dt_utc.year - 2005)) / 86400.0
+    t_cent = (jd + delta_t_days - 2451545.0) / 36525.0
+
+    l0 = (280.46646 + 36000.76983 * t_cent + 0.0003032 * t_cent * t_cent) % 360.0
+    m_anom = (357.52911 + 35999.05029 * t_cent - 0.0001537 * t_cent * t_cent) % 360.0
+    m_rad = math.radians(m_anom)
+    c_eq = (
+        (1.914602 - 0.004817 * t_cent - 0.000014 * t_cent * t_cent) * math.sin(m_rad)
+        + (0.019993 - 0.000101 * t_cent) * math.sin(2.0 * m_rad)
+        + 0.000289 * math.sin(3.0 * m_rad)
+    )
+    true_lon = l0 + c_eq
+    omega = 125.04 - 1934.136 * t_cent
+    app_lon = (true_lon - 0.00569 - 0.00478 * math.sin(math.radians(omega))) % 360.0
+    return app_lon
+
+
 def get_tiet_khi(dt):
-    """Calculate Solar Term (Precise for 2026, Astronomical approximation for other years)."""
-    if dt.tzinfo is not None:
-        dt = dt.replace(tzinfo=None)
-    year = dt.year
-
-    # Precise astronomical data for 2026
-    if year == 2026:
-        terms_2026 = [
-            (1, 5, "Tiểu Hàn"), (1, 20, "Đại Hàn"),
-            (2, 4, "Lập Xuân"), (2, 19, "Vũ Thủy"),
-            (3, 5, "Kinh Trập"), (3, 20, "Xuân Phân"),
-            (4, 5, "Thanh Minh"), (4, 20, "Cốc Vũ"),
-            (5, 5, "Lập Hạ"), (5, 21, "Tiểu Mãn"),
-            (6, 5, "Mang Chủng"), (6, 21, "Hạ Chí"),
-            (7, 7, "Tiểu Thử"), (7, 22, "Đại Thử"),
-            (8, 7, "Lập Thu"), (8, 23, "Xử Thử"),
-            (9, 7, "Bạch Lộ"), (9, 23, "Thu Phân"),
-            (10, 8, "Hàn Lộ"), (10, 23, "Sương Giáng"),
-            (11, 7, "Lập Đông"), (11, 22, "Tiểu Tuyết"),
-            (12, 7, "Đại Tuyết"), (12, 22, "Đông Chí")
-        ]
-        current_term = "Đông Chí"
-        for m, d, name in terms_2026:
-            if dt.month > m or (dt.month == m and dt.day >= d):
-                current_term = name
-        return current_term
-
-    # Approximate calculation for other years
-    base_dates = {
-        "Xuân Phân": (3, 20.6), "Thanh Minh": (4, 4.8), "Cốc Vũ": (4, 20.1),
-        "Lập Hạ": (5, 5.5), "Tiểu Mãn": (5, 21.1), "Mang Chủng": (6, 5.7),
-        "Hạ Chí": (6, 21.3), "Tiểu Thử": (7, 7.3), "Đại Thử": (7, 22.8),
-        "Lập Thu": (8, 7.5), "Xử Thử": (8, 23.1), "Bạch Lộ": (9, 7.7),
-        "Thu Phân": (9, 22.9), "Hàn Lộ": (10, 8.3), "Sương Giáng": (10, 23.4),
-        "Lập Đông": (11, 7.3), "Tiểu Tuyết": (11, 22.3), "Đại Tuyết": (12, 7.1),
-        "Đông Chí": (12, 21.8), "Tiểu Hàn": (1, 5.4), "Đại Hàn": (1, 20.1),
-        "Lập Xuân": (2, 4.2), "Vũ Thủy": (2, 18.9), "Kinh Trập": (3, 5.6)
-    }
-    terms = []
-    for name, (month, day_ref) in base_dates.items():
-        y_offset = (year - 2024) * 0.2422
-        day = int(day_ref + y_offset)
-        t_dt = datetime.datetime(year, month, day)
-        terms.append((t_dt, name))
-    terms.sort()
-
-    current_term = terms[-1][1]
-    if dt < terms[0][0]:
-        current_term = "Đông Chí"
-    else:
-        for t_dt, name in terms:
-            if dt >= t_dt:
-                current_term = name
-            else:
-                break
-    return current_term
+    """
+    V133.0: Tính chính xác 24 Tiết Khí tới từng Giờ:Phút theo Kinh độ Mặt Trời Jean Meeus (UTC+7).
+    Phục vụ chuẩn xác Chiết Bổ Pháp (拆補法) của Ngự Định Kỳ Môn Bảo Giám & Nguyệt Kiến Lục Hào.
+    """
+    if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime):
+        dt = datetime.datetime(dt.year, dt.month, dt.day, 12, 0, 0)
+    elif dt.tzinfo is not None:
+        try:
+            vn_tz = datetime.timezone(datetime.timedelta(hours=7))
+            dt = dt.astimezone(vn_tz).replace(tzinfo=None)
+        except Exception:
+            dt = dt.replace(tzinfo=None)
+    dt_utc = dt - datetime.timedelta(hours=7)
+    lam = _solar_longitude_deg_utc(dt_utc)
+    term_idx = int((lam % 360.0) // 15.0) % 24
+    return _SOLAR_TERMS_BY_LON[term_idx]
 
 
 def get_can_chi_month(year_can, tiet_khi):

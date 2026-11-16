@@ -696,27 +696,46 @@ def lap_ban_qmdg(cuc, truc_phu_star, truc_su_door, can_gio, chi_gio, is_duong_do
     # 1. Lập Địa Bàn
     dia_ban = an_bai_luc_nghi(cuc, is_duong_don)
 
-    # 2. Tìm vị trí gốc
+    # 2. Tìm vị trí gốc & Tuần Thủ thực tế (V133.0: Chuẩn Ngự Định Kỳ Môn Bảo Giám khi Tuần Thủ nhập Trung Cung 5)
+    CAN_L = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+    CHI_L = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+    cg_clean = str(can_gio or "Giáp").strip()
+    chg_clean = str(chi_gio or "Tý").strip().replace("Tỵ", "Tị")
+    idx_can_h = CAN_L.index(cg_clean) if cg_clean in CAN_L else 0
+    idx_chi_h = CHI_L.index(chg_clean) if chg_clean in CHI_L else 0
+    leader_chi_idx = (idx_chi_h - idx_can_h) % 12
+    steps = (idx_chi_h - leader_chi_idx) % 12
+    lead_map = {0: "Mậu", 10: "Kỷ", 8: "Canh", 6: "Tân", 4: "Nhâm", 2: "Quý"}
+    tuan_thu_stem = lead_map.get(leader_chi_idx, "Mậu")
+    is_trung_cung_leader = (str(dia_ban.get(5, "")).strip() == tuan_thu_stem) or ("Cầm" in str(truc_phu_star or ""))
+
     t_star = truc_phu_star.split('/')[0] if '/' in truc_phu_star else truc_phu_star
-    cung_goc_truc_phu = 0
-    for c, s in SAO_GOC.items():
-        if s == t_star:
-            cung_goc_truc_phu = c
-            break
-    
+    cung_goc_truc_phu = 5 if is_trung_cung_leader else 0
+    if not cung_goc_truc_phu:
+        for c, s in SAO_GOC.items():
+            if s == t_star:
+                cung_goc_truc_phu = c
+                break
+
     t_door = truc_su_door.replace(" Môn", "")
     cung_goc_truc_su = 0
     for c, m in MON_GOC.items():
         if m == t_door:
             cung_goc_truc_su = c
             break
-    if not cung_goc_truc_su and t_door == "Tử": cung_goc_truc_su = 2
+    if not cung_goc_truc_su and t_door == "Tử":
+        cung_goc_truc_su = 2
+
+    # Khi Tuần Thủ tại Trung Cung 5: Trực Sử (Tử Môn) BẮT BUỘC khởi đếm bước Lạc Thư từ Cung 5 (Dương tiến 5->6->7..., Âm lùi 5->4->3...),
+    # chỉ khi điểm đích trùng Cung 5 (steps=0 hoặc 9) mới ký sang Khôn 2; còn trên vòng xoay 8 cung ngoài (RING), gốc Tử Môn đặt tại Cung 2!
+    cung_goc_truc_su_lt = 5 if is_trung_cung_leader else (cung_goc_truc_su or 2)
+    cung_goc_truc_su_ring = 2 if (is_trung_cung_leader or cung_goc_truc_su in (0, 5)) else cung_goc_truc_su
 
     # 3. An Thiên Bàn (Heaven Plate)
-    target_stem = can_gio
+    target_stem = cg_clean
     if target_stem == "Giáp":
         map_giap = {"Tý":"Mậu", "Tuất":"Kỷ", "Thân":"Canh", "Ngọ":"Tân", "Thìn":"Nhâm", "Dần":"Quý"}
-        target_stem = map_giap.get(chi_gio, "Mậu")
+        target_stem = map_giap.get(chg_clean, "Mậu")
         
     cung_dich_truc_phu = 0
     for c, can in dia_ban.items():
@@ -750,27 +769,21 @@ def lap_ban_qmdg(cuc, truc_phu_star, truc_su_door, can_gio, chi_gio, is_duong_do
             can_thien_ban[p_moi] = can_goc
     except: pass
 
-    # 4. An Nhân Bàn (Human Plate)
-    CAN_L = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
-    CHI_L = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
-    idx_can_h = CAN_L.index(can_gio)
-    idx_chi_h = CHI_L.index(chi_gio)
-    leader_chi_idx = (idx_chi_h - idx_can_h) % 12
-    steps = (idx_chi_h - leader_chi_idx) % 12
-    
+    # 4. An Nhân Bàn (Human Plate — Chuẩn Chuyển Bàn Ký Khôn Nhị Cung)
     LAC_THU = [1, 2, 3, 4, 5, 6, 7, 8, 9] if is_duong_don else [9, 8, 7, 6, 5, 4, 3, 2, 1]
     
     try:
-        start_idx = LAC_THU.index(cung_goc_truc_su)
+        start_idx = LAC_THU.index(cung_goc_truc_su_lt)
         dst_idx_lt = (start_idx + steps) % 9
         cung_dich_truc_su = LAC_THU[dst_idx_lt]
-        if cung_dich_truc_su == 5: cung_dich_truc_su = 2
+        if cung_dich_truc_su == 5:
+            cung_dich_truc_su = 2
     except:
-        cung_dich_truc_su = cung_goc_truc_su
+        cung_dich_truc_su = cung_goc_truc_su_ring
 
     nhan_ban = {}
     try:
-        idx_src_m = RING.index(cung_goc_truc_su)
+        idx_src_m = RING.index(cung_goc_truc_su_ring)
         idx_dst_m = RING.index(cung_dich_truc_su)
         offset_m = idx_dst_m - idx_src_m
         

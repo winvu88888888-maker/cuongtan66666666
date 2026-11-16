@@ -16394,9 +16394,19 @@ class FreeAIHelper:
             _flush_grid()
             return "\n".join(_out_lines)
 
-        # V99.9: Mặc định LUÔN BẬT AI Online (use_online_api=True) kết hợp 10 Hệ Thống + 40 Chuyên Gia AI
+        # V133.0: Ưu tiên tuyệt đối kết quả suy luận chuyên sâu của CON AI SỐ 2 (Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa);
+        # TUYỆT ĐỐI KHÔNG gọi lặp lần thứ 3 vào bộ V36 cũ (_try_online_ai) để tránh ghi đè sai kết luận, tiết kiệm 50% thời gian & API!
         online_result = None
-        if kwargs.get('use_online_api', True):
+        _dv_pre_check = locals().get('_dual_verified') if isinstance(locals().get('_dual_verified'), dict) else {}
+        if _dv_pre_check.get('ai2_online_succeeded') and _dv_pre_check.get('verified_headline'):
+            online_result = (
+                _dv_pre_check.get('ai2_markdown_report')
+                or f"📢 **CÂU TRẢ LỜI:** {_dv_pre_check.get('verified_headline', '')}\n"
+                   f"📋 **VÌ SAO:** {_dv_pre_check.get('verified_why', '')}\n"
+                   f"⏳ **ỨNG KỲ:** {_dv_pre_check.get('verified_when', '')}\n"
+                   f"🔧 **GIẢI PHÁP:** {_dv_pre_check.get('verified_advice', '')}"
+            )
+        elif kwargs.get('use_online_api', True):
             online_result = self._try_online_ai(
                 question=question,
                 chart_data=chart_data,
@@ -16498,26 +16508,33 @@ class FreeAIHelper:
             if _is_spec_override_box and locals().get('_dual_verified', {}).get('verified_headline'):
                 _dv_box = locals().get('_dual_verified', {})
                 _dv_hl_str = str(_dv_box['verified_headline'] or '')
-                if not _dv_box.get('is_strict_override', False) and _online_verdict_line and len(_online_verdict_line.strip()) > 18 and not any(g in _online_verdict_line.upper() for g in ['CẦN CÂN NHẮC', 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT', 'ĐẠI CÁT (', 'CÁT (', 'BÌNH (', 'HUNG (']):
-                    _online_verdict_line = _online_verdict_line.strip()
-                else:
+                if _dv_box.get('ai2_online_succeeded', False) or _dv_box.get('is_strict_override', False):
+                    # V133.0: Giữ nguyên 100% đáp án tinh hoa của Con AI Số 2 — tuyệt đối không bị bộ lọc cũ ghi đè!
                     _online_verdict_line = _dv_hl_str
-                _v_why_dv = str(_dv_box.get('verified_why') or '')
-                if _online_visao and len(_online_visao.strip()) > 35 and "Tóm Tắt]:" not in _v_why_dv:
-                    _short_on_vs = _online_visao.strip()
-                    if len(_short_on_vs) > 260:
-                        _short_on_vs = _short_on_vs[:260].rsplit(" ", 1)[0] + "..."
-                    _online_visao = (
-                        f'<div style="padding:6px 10px;background:rgba(56,189,248,0.12);border-left:3px solid #38bdf8;border-radius:6px;margin-bottom:6px;">'
-                        f'<b style="color:#7dd3fc;">🌐 [AI Online Tóm Tắt]:</b> {_short_on_vs}</div>'
-                        f'{_v_why_dv}'
-                    )
+                    _online_visao = str(_dv_box.get('verified_why') or '') or _online_visao
+                    _online_ungky = str(_dv_box.get('verified_when') or '') or _online_ungky
+                    _online_giaiphap = str(_dv_box.get('verified_advice') or '') or _online_giaiphap
                 else:
-                    _online_visao = _v_why_dv or _online_visao
-                _v_when_dv = str(_dv_box.get('verified_when') or '')
-                _online_ungky = _v_when_dv or _online_ungky
-                _v_adv_dv = str(_dv_box.get('verified_advice') or '')
-                _online_giaiphap = _v_adv_dv or _online_giaiphap
+                    if _online_verdict_line and len(_online_verdict_line.strip()) > 18 and not any(g in _online_verdict_line.upper() for g in ['CẦN CÂN NHẮC', 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT', 'ĐẠI CÁT (', 'CÁT (', 'BÌNH (', 'HUNG (']):
+                        _online_verdict_line = _online_verdict_line.strip()
+                    else:
+                        _online_verdict_line = _dv_hl_str
+                    _v_why_dv = str(_dv_box.get('verified_why') or '')
+                    if _online_visao and len(_online_visao.strip()) > 35 and "Tóm Tắt]:" not in _v_why_dv:
+                        _short_on_vs = _online_visao.strip()
+                        if len(_short_on_vs) > 260:
+                            _short_on_vs = _short_on_vs[:260].rsplit(" ", 1)[0] + "..."
+                        _online_visao = (
+                            f'<div style="padding:6px 10px;background:rgba(56,189,248,0.12);border-left:3px solid #38bdf8;border-radius:6px;margin-bottom:6px;">'
+                            f'<b style="color:#7dd3fc;">🌐 [AI Online Tóm Tắt]:</b> {_short_on_vs}</div>'
+                            f'{_v_why_dv}'
+                        )
+                    else:
+                        _online_visao = _v_why_dv or _online_visao
+                    _v_when_dv = str(_dv_box.get('verified_when') or '')
+                    _online_ungky = _v_when_dv or _online_ungky
+                    _v_adv_dv = str(_dv_box.get('verified_advice') or '')
+                    _online_giaiphap = _v_adv_dv or _online_giaiphap
             elif _is_bin_fact_box and _omni_ch_data.get('binary_verdict_headline'):
                 _online_verdict_line = _omni_ch_data['binary_verdict_headline']
                 _online_visao = _omni_ch_data.get('binary_why_reasons') or _online_visao
@@ -16606,7 +16623,7 @@ class FreeAIHelper:
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V132.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V133.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Bí Truyền)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
@@ -18153,7 +18170,7 @@ class FreeAIHelper:
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V132.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V133.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Bí Truyền)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
@@ -18992,27 +19009,10 @@ class FreeAIHelper:
                         lines.append(f"  - Dùng Quái bản thân {quai} (Tiên Thiên = {TIEN_THIEN[quai]})")
                         lines.append(f"  - → **Số lượng ước tính: khoảng {count_num}**")
             
-            # Tuổi — V32.6: Dùng Trường Sinh stage thay vì Tiên Thiên × 3/5
+            # Tuổi — V133.0: Dùng Thọ Nguyên & Quái Khí Gia Bội Pháp (bỏ hoàn toàn ép trần tuổi 31-65 cũ)
             if is_age:
-                # Xác định Ngũ Khí trạng thái → Trường Sinh stage → tuổi
-                if 'ĐƯỢC SINH' in relation or 'Tỷ' in relation:
-                    km_age_stage = 'Đế Vượng'  # Vượng → 31-45
-                elif 'BỊ SINH' in relation:
-                    km_age_stage = 'Lâm Quan'  # Tướng → 16-30
-                elif 'BỊ KHẮC' in relation:
-                    km_age_stage = 'Suy'  # Suy → 46-55
-                elif 'KHẮC' in relation:
-                    km_age_stage = 'Bệnh'  # Bệnh → 56-65
-                else:
-                    km_age_stage = 'Quan Đới'  # Trung bình → 8-15
-                
-                ts_data = TRUONG_SINH_POWER.get(km_age_stage, {})
-                tuoi_min = ts_data.get('tuoi_min', 0)
-                tuoi_max = ts_data.get('tuoi_max', 0)
-                age_num = (tuoi_min + tuoi_max) // 2
                 tt_num = TIEN_THIEN.get(quai, 0) if quai else 0
-                lines.append(f"  - Trường Sinh: **{km_age_stage}** → {tuoi_min}-{tuoi_max} tuổi")
-                lines.append(f"  - Tiên Thiên {quai}={tt_num} (tham khảo)")
+                lines.append(f"  - Khí lực Cung ({relation}) · Tiên Thiên {quai}={tt_num} (kết hợp vai vế thực tế & Thọ Nguyên Thượng/Trung/Hạ Thọ để định tuổi)")
                 lines.append(f"  - → **Tuổi ước tính (KM): khoảng {tuoi_min}-{tuoi_max} tuổi**")
             
             # Tìm đồ
@@ -19579,28 +19579,9 @@ class FreeAIHelper:
                     count_num = 1
                     lines.append(f"- Không có Huynh Đệ → Ít anh em, khoảng 1")
             
-            # Tuổi — V32.6: Dùng Trường Sinh stage
+            # Tuổi — V133.0: Theo Tăng San Bốc Dịch Thọ Nguyên Chương (bỏ ép trần tuổi 31-65 máy móc)
             if is_age and the_hao:
-                vuong_str = str(vuong)
-                lh_age_stage = ''
-                for stage_name in TRUONG_SINH_POWER:
-                    if stage_name in vuong_str:
-                        lh_age_stage = stage_name
-                        break
-                if not lh_age_stage:
-                    if 'Vượng' in vuong_str: lh_age_stage = 'Đế Vượng'
-                    elif 'Tướng' in vuong_str: lh_age_stage = 'Lâm Quan'
-                    elif 'Hưu' in vuong_str: lh_age_stage = 'Suy'
-                    elif 'Tù' in vuong_str: lh_age_stage = 'Bệnh'
-                    elif 'Tử' in vuong_str: lh_age_stage = 'Tử'
-                    else: lh_age_stage = 'Quan Đới'
-                
-                ts_d = TRUONG_SINH_POWER.get(lh_age_stage, {})
-                t_min = ts_d.get('tuoi_min', 0)
-                t_max = ts_d.get('tuoi_max', 0)
-                age_num = (t_min + t_max) // 2
-                lines.append(f"- Trường Sinh DT: **{lh_age_stage}** → {t_min}-{t_max} tuổi")
-                lines.append(f"- → **Tuổi ước tính (LH): khoảng {t_min}-{t_max} tuổi**")
+                lines.append(f"- Khí lực Dụng Thần: **{vuong}** (đối chiếu vai vế thực tế & Thọ Nguyên Thượng/Trung/Hạ Thọ để luận tuổi)")
         else:
             lines.append("- Không tìm thấy Dụng Thần trong quẻ.")
             reasons_list.append("Thiếu Dụng Thần")
@@ -19683,12 +19664,15 @@ class FreeAIHelper:
             if ho_yn:
                 lines.append(f"  - Ý nghĩa ẩn: {ho_yn.get('tuong', '')} — {ho_yn.get('tc', '')}")
         elif len(hao_list) >= 6:
-            # Hỗ Quái: Hạ Hỗ = Hào 2,3,4; Thượng Hỗ = Hào 3,4,5
-            ha_ho = (hao_list[1], hao_list[2], hao_list[3])
-            thuong_ho = (hao_list[2], hao_list[3], hao_list[4])
-            # Convert to quái number
-            ha_ho_num = ha_ho[0] + ha_ho[1]*2 + ha_ho[2]*4
-            thuong_ho_num = thuong_ho[0] + thuong_ho[1]*2 + thuong_ho[2]*4
+            # Hỗ Quái: Hạ Hỗ = Hào 2,3,4; Thượng Hỗ = Hào 3,4,5 (V133.0: Chuẩn Tiên Thiên Bát Quái lines_to_quai)
+            try:
+                from mai_hoa_dich_so import lines_to_quai as _l2q_mh_fix
+            except Exception:
+                _l2q_mh_fix = lambda t: {(1,1,1):1,(1,1,0):2,(1,0,1):3,(1,0,0):4,(0,1,1):5,(0,1,0):6,(0,0,1):7,(0,0,0):8}.get(tuple(t), 1)
+            ha_ho = [int(hao_list[1]), int(hao_list[2]), int(hao_list[3])]
+            thuong_ho = [int(hao_list[2]), int(hao_list[3]), int(hao_list[4])]
+            ha_ho_num = _l2q_mh_fix(ha_ho)
+            thuong_ho_num = _l2q_mh_fix(thuong_ho)
             ha_ho_name = QUAI_NAMES.get(ha_ho_num, '?')
             thuong_ho_name = QUAI_NAMES.get(thuong_ho_num, '?')
             ha_ho_el = QUAI_ELEMENTS.get(ha_ho_num, '?')

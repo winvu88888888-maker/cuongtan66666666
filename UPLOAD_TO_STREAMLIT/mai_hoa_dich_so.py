@@ -4,7 +4,7 @@ import random
 import secrets
 import hashlib
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from qmdg_calc import solar_to_lunar
 
 _SYS_RNG_MH = secrets.SystemRandom()
@@ -154,8 +154,10 @@ def tinh_qua_theo_thoi_gian(
     lower_override=None,
     dong_override=None,
 ):
-    dt = datetime(year, month, day, hour)
-    lday, lmonth, lyear, is_leap = solar_to_lunar(dt)
+    dt = datetime(year, month, day, hour, int(minute or 0), int(second or 0))
+    # V133.0: Đồng bộ Giờ Tý muộn (Dạ Tý 23:00-23:59) sang ngày âm lịch kế tiếp chuẩn Thiệu Khang Tiết & Kỳ Môn
+    dt_lunar = dt + timedelta(days=1) if hour == 23 else dt
+    lday, lmonth, lyear, is_leap = solar_to_lunar(dt_lunar)
 
     # Year Chi index: Tý=1, Sửu=2, ..., Hợi=12
     lyear_chi_idx = (lyear - 4) % 12 + 1

@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V132.0"
-APP_VERSION_FULL = f"{APP_VERSION} — KẾT LUẬN LÊN ĐẦU TRANG TRÊN CÙNG · ĐẠI SƯ BIỆN CHỨNG TẦNG SÂU · BỆNH–DƯỢC CỔ PHÁP ✨"
+APP_VERSION = "V133.0"
+APP_VERSION_FULL = f"{APP_VERSION} — CHUẨN 100% KHỞI QUẺ THIÊN VĂN & LUẬN QUẺ BÍ TRUYỀN TRUNG HOA · KẾT LUẬN ĐẦU TRANG ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V132.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V132.0"
+# V133.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V133.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2643,64 +2643,41 @@ def render_master_unified_qa_box(location_key="main"):
                             mai_hoa_for_q['_random_cast'] = True
                             st.session_state.mai_hoa_result = mai_hoa_for_q
 
-                            # Bàn Kỳ Môn Báo Số Khởi Cục chuẩn thiên văn (Trực Phù & Trực Sử tính đúng 100% từ Tuần Thủ!)
+                            # V133.0: Chuẩn Kỳ Môn Báo Số Pháp (Trương Chí Xuân / Ngự Định Kỳ Môn Bảo Giám):
+                            # GIỮ NGUYÊN 100% Bàn Kỳ Môn Thời Gia thiên văn thực tế của giờ hiện tại (tuyệt đối không chế Cục giả đè mất bàn thật!),
+                            # đồng thời lưu Cung Báo Số (_r_cuc = 1..9) vào bao_so_cung để đối chiếu Lạc Cung Ngoại Ứng!
                             try:
-                                from qmdg_data import (
-                                    an_bai_luc_nghi as _ab_rnd,
-                                    lap_ban_qmdg as _lb_rnd,
-                                    enrich_qimen_chart_dict as _enr_rnd,
-                                    compute_truc_phu_truc_su as _calc_tpts_rnd,
-                                )
+                                from qmdg_data import enrich_qimen_chart_dict as _enr_rnd
                                 _r_cuc = ((_u_rnd + _l_rnd + _d_rnd - 1) % 9) + 1
-                                _r_duong = bool(chart_for_q.get('is_duong_don', True))
-                                _r_can_gio = chart_for_q.get('can_gio') or 'Giáp'
-                                _r_chi_gio = chart_for_q.get('chi_gio') or 'Tý'
-                                _r_dia = _ab_rnd(_r_cuc, _r_duong)
-                                _r_tp, _r_ts, _r_tt, _ = _calc_tpts_rnd(_r_cuc, _r_duong, _r_can_gio, _r_chi_gio, _r_dia)
-                                _r_tb, _r_ctb, _r_nb, _r_sb, _ = _lb_rnd(_r_cuc, _r_tp, _r_ts, _r_can_gio, _r_chi_gio, _r_duong)
-                                chart_for_q.update({
-                                    'thien_ban': _r_tb,
-                                    'can_thien_ban': _r_ctb,
-                                    'nhan_ban': _r_nb,
-                                    'than_ban': _r_sb,
-                                    'dia_can': _r_dia,
-                                    'dia_ban': _r_dia,
-                                    'cuc': _r_cuc,
-                                    'is_duong_don': _r_duong,
-                                    'am_duong_don': f"{'Dương' if _r_duong else 'Âm'} Độn {_r_cuc} Cục (Báo Số)",
-                                    'tuan_thu': _r_tt,
-                                    'truc_phu': _r_tp,
-                                    'truc_su': _r_ts,
-                                    '_random_cast': True,
-                                })
+                                chart_for_q['bao_so_cung'] = _r_cuc
+                                chart_for_q['_random_cast'] = True
                                 _enr_rnd(chart_for_q)
                                 st.session_state.chart_data = chart_for_q
                             except Exception:
                                 pass
                             _mv_toast = f"Động hào {', '.join(map(str, _mv_6))}" if _mv_6 else "Quẻ Tĩnh (0 hào động)"
                             st.toast(
-                                f"🎲 Đã gieo 6 đồng xu Lục Hào thật: {luc_hao_for_q['ban']['name']} ➔ {luc_hao_for_q['bien']['name']} ({_mv_toast})!",
+                                f"🎲 Đã gieo 6 đồng xu Văn Vương Lục Hào thật: {luc_hao_for_q['ban']['name']} ➔ {luc_hao_for_q['bien']['name']} ({_mv_toast}) · Giữ chuẩn Bàn Kỳ Môn Thời Gia!",
                                 icon="🎲"
                             )
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')
                             luc_hao_for_q = st.session_state.get('luc_hao_result')
                     else:
-                        # Chế độ Chính Thống Thời Gian Thực (V131.0 — Khớp 100% Nguyên Hanh Lợi Trinh china95.net & Vấn Chân iwzwh.com):
-                        # - Ở câu hỏi đầu tiên (_prev_tuple is None): Lập đúng 100% Quẻ Niên-Nguyệt-Nhật-Thời cổ điển (cast_salt = 0)
-                        #   và GIỮ NGUYÊN 100% Bàn Kỳ Môn Thời Gia chính thống của giờ hiện tại (tuyệt đối không chế cục giả!).
-                        # - Khi hỏi tiếp câu thứ 2+ trong cùng canh giờ (_prev_tuple is not None): Dùng Ngoại Ứng Tự Chiêm Gia Số Pháp
-                        #   (đếm âm tiết thực tế câu hỏi, 0% md5) để khởi quẻ mới cho câu hỏi mới mà vẫn giữ nguyên Bàn Kỳ Môn Thời Gia thật!
+                        # Chế độ Chính Thống Thời Gian Thực (V133.0 — Khớp 100% Nguyên Hanh Lợi Trinh china95.net & Vấn Chân iwzwh.com):
+                        # - Ở câu hỏi đầu tiên (_prev_tuple is None) HOẶC khi người dùng đang kiểm tra Ngày/Giờ Cố Định (not use_current_time):
+                        #   Bắt buộc cast_salt = 0 để lập đúng 100% Quẻ Niên-Nguyệt-Nhật-Thời cổ điển và Bàn Kỳ Môn Thời Gia thiên văn!
                         try:
                             from qmdg_data import enrich_qimen_chart_dict as _enr_real_q
                             _enr_real_q(chart_for_q)
-                            _q_salt = 0 if _prev_tuple is None else _cast_seq
+                            _is_fixed_manual_dt = not bool(st.session_state.get('use_current_time', True))
+                            _q_salt = 0 if (_prev_tuple is None or _is_fixed_manual_dt) else _cast_seq
                             mai_hoa_for_q = tinh_qua_theo_thoi_gian(
                                 dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                 minute=dt_now.minute, second=dt_now.second,
                                 question_text=_q_clean_now, cast_salt=_q_salt
                             )
-                            while _prev_tuple and (mai_hoa_for_q['upper'], mai_hoa_for_q['lower'], mai_hoa_for_q['dong_hao']) == tuple(_prev_tuple) and _q_salt < _cast_seq + 8:
+                            while (not _is_fixed_manual_dt) and _prev_tuple and (mai_hoa_for_q['upper'], mai_hoa_for_q['lower'], mai_hoa_for_q['dong_hao']) == tuple(_prev_tuple) and _q_salt < _cast_seq + 8:
                                 _q_salt += 1
                                 mai_hoa_for_q = tinh_qua_theo_thoi_gian(
                                     dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
