@@ -16603,14 +16603,18 @@ class FreeAIHelper:
             ) if _on_cards else ''
             _dv_grid_html = str(locals().get('_dual_verified', {}).get('deep_a_to_z_grid_html') or '')
 
-            final_parts.append(
-                f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & LUẬN GIẢI BIỆN CHỨNG TẦNG SÂU (Antigravity Brain Mode V131.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
-                f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
+            final_parts.insert(
+                0,
+                f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V132.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
+                f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
-                + _dv_grid_html
-                + f'</div>'
+                + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
             )
+            if _dv_grid_html:
+                final_parts.append(_dv_grid_html)
+            if locals().get('_dual_agent_banner_html'):
+                final_parts.append(_dual_agent_banner_html)
             
             # Chi tiết phân tích Online → đóng mặc định để màn hình chính cực kỳ gọn đẹp
             final_parts.append("\n<details>")
@@ -17353,8 +17357,8 @@ class FreeAIHelper:
             final_parts.append("\n</details>")
             final_parts.append("")
             
-            if auth_html: final_parts.insert(0, auth_html)
-            if locals().get('_dual_agent_banner_html'): final_parts.insert(0, _dual_agent_banner_html)
+            if auth_html:
+                final_parts.append(auth_html)
             return "\n".join(final_parts)
         else:
             # AI Online không khả dụng → Hiện KếT LUẬN trực tiếp, offline chi tiết ẩn sau
@@ -18146,23 +18150,33 @@ class FreeAIHelper:
                         + "".join(_fb_cards)
                         + '</div>'
                     ) if _fb_cards else ''
-                    final_parts.append(
-                        f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & LUẬN GIẢI BIỆN CHỨNG TẦNG SÂU (Antigravity Brain Mode V131.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
-                        f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
+                    final_parts.insert(
+                        0,
+                        f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V132.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
+                        f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
-                        + _dv_grid_fb
-                        + _comp_detail_html
-                        + f'</div>'
+                        + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
                     )
+                    if _dv_grid_fb:
+                        final_parts.append(_dv_grid_fb)
+                    if locals().get('_dual_agent_banner_html'):
+                        final_parts.append(_dual_agent_banner_html)
+                    if _comp_detail_html:
+                        final_parts.append(_comp_detail_html)
                 else:
-                    final_parts.append(
-                        f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:20px 22px;border-radius:16px;margin:14px 0;border:2px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
+                    final_parts.insert(
+                        0,
+                        f'<div style="background:linear-gradient(135deg,#064e3b,#065f46);padding:18px 20px;border-radius:16px;margin:4px 0 10px 0;border:2px solid {_off2_v_color};box-shadow:0 4px 25px rgba(16,185,129,0.35);">'
                         + _combined_direct_html
-                        + _dv_grid_fb
-                        + _comp_detail_html
-                        + f'</div>'
+                        + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
                     )
+                    if _dv_grid_fb:
+                        final_parts.append(_dv_grid_fb)
+                    if locals().get('_dual_agent_banner_html'):
+                        final_parts.append(_dual_agent_banner_html)
+                    if _comp_detail_html:
+                        final_parts.append(_comp_detail_html)
             final_parts.append("")
             
             # ═══════════════════════════════════════════════════════════
@@ -18195,8 +18209,8 @@ class FreeAIHelper:
             
             final_parts.append("\n</details>")
             # V128.0: Đã đồng nhất Khung Hoàng Kim 3 Thẻ + Lưới 4 Trụ Cột 2x2 ngay cả khi không dùng API Key
-            if auth_html: final_parts.insert(0, auth_html)
-            if locals().get('_dual_agent_banner_html'): final_parts.insert(0, _dual_agent_banner_html)
+            if auth_html:
+                final_parts.append(auth_html)
             return "\n".join(final_parts)
 
 

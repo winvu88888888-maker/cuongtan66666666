@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V131.0"
-APP_VERSION_FULL = f"{APP_VERSION} — ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU · BỆNH–DƯỢC CỔ PHÁP · SƠ ĐỒ MŨI TÊN VI MÔ (Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn ✨)"
+APP_VERSION = "V132.0"
+APP_VERSION_FULL = f"{APP_VERSION} — KẾT LUẬN LÊN ĐẦU TRANG TRÊN CÙNG · ĐẠI SƯ BIỆN CHỨNG TẦNG SÂU · BỆNH–DƯỢC CỔ PHÁP ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V131.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V131.0"
+# V132.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V132.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -1856,339 +1856,340 @@ if 'gemini_helper' not in st.session_state:
             st.session_state.api_status_msg = "Offline Mode"
 
 # === SIDEBAR DISPLAY (Always runs, NOT inside the guard above) ===
-# AI Status Display with LED Indicator
-ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
+with st.sidebar:
+    # AI Status Display with LED Indicator
+    ai_status = st.session_state.get('ai_type', 'Chưa sẵn sàng')
 
-# Initialize status if not exists
-if 'api_status_ok' not in st.session_state:
-    st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
-    st.session_state.api_status_msg = "Chưa kiểm tra"
+    # Initialize status if not exists
+    if 'api_status_ok' not in st.session_state:
+        st.session_state.api_status_ok = None  # None = chưa check, True = OK, False = Lỗi
+        st.session_state.api_status_msg = "Chưa kiểm tra"
 
-# LED Indicator Colors
-if st.session_state.api_status_ok is True:
-    led_color = "🟢"  # Xanh = OK
-    status_color = "#10b981"
-    status_text = "HOẠT ĐỘNG TỐT"
-elif st.session_state.api_status_ok is False:
-    led_color = "🔴"  # Đỏ = Lỗi
-    status_color = "#ef4444"
-    status_text = "LỖI KẾT NỐI"
-else:
-    led_color = "🟡"  # Vàng = Chưa check
-    status_color = "#f59e0b"
-    status_text = "CHƯA KIỂM TRA"
+    # LED Indicator Colors
+    if st.session_state.api_status_ok is True:
+        led_color = "🟢"  # Xanh = OK
+        status_color = "#10b981"
+        status_text = "HOẠT ĐỘNG TỐT"
+    elif st.session_state.api_status_ok is False:
+        led_color = "🔴"  # Đỏ = Lỗi
+        status_color = "#ef4444"
+        status_text = "LỖI KẾT NỐI"
+    else:
+        led_color = "🟡"  # Vàng = Chưa check
+        status_color = "#f59e0b"
+        status_text = "CHƯA KIỂM TRA"
 
-# Display with LED & Unified Configuration
-_err_msg = ""
-if st.session_state.api_status_ok is False:
-    _err_msg = str(st.session_state.api_status_msg).replace('<','&lt;').replace('>','&gt;')
+    # Display with LED & Unified Configuration
+    _err_msg = ""
+    if st.session_state.api_status_ok is False:
+        _err_msg = str(st.session_state.api_status_msg).replace('<','&lt;').replace('>','&gt;')
 
-# AI Status Display - Clean HTML (no nesting issues)
-_status_html = f'<div style="background:linear-gradient(135deg,{status_color}22 0%,{status_color}11 100%);border-left:4px solid {status_color};padding:15px;border-radius:8px;margin-bottom:10px;">'
-_status_html += f'<div style="display:flex;align-items:center;gap:10px;">'
-_status_html += f'<span style="font-size:24px;">{led_color}</span>'
-_status_html += f'<div style="flex:1;">'
-_status_html += f'<div style="font-weight:800;color:{status_color};font-size:0.9rem;">{status_text}</div>'
-_status_html += f'<div style="font-weight:600;color:#475569;font-size:0.85rem;">🤖 {ai_status}</div>'
-if _err_msg:
-    _status_html += f'<div style="font-size:0.75rem;color:#dc2626;margin-top:5px;font-style:italic;">{_err_msg}</div>'
-_status_html += '</div></div></div>'
-st.markdown(_status_html, unsafe_allow_html=True)
+    # AI Status Display - Clean HTML (no nesting issues)
+    _status_html = f'<div style="background:linear-gradient(135deg,{status_color}22 0%,{status_color}11 100%);border-left:4px solid {status_color};padding:15px;border-radius:8px;margin-bottom:10px;">'
+    _status_html += f'<div style="display:flex;align-items:center;gap:10px;">'
+    _status_html += f'<span style="font-size:24px;">{led_color}</span>'
+    _status_html += f'<div style="flex:1;">'
+    _status_html += f'<div style="font-weight:800;color:{status_color};font-size:0.9rem;">{status_text}</div>'
+    _status_html += f'<div style="font-weight:600;color:#475569;font-size:0.85rem;">🤖 {ai_status}</div>'
+    if _err_msg:
+        _status_html += f'<div style="font-size:0.75rem;color:#dc2626;margin-top:5px;font-style:italic;">{_err_msg}</div>'
+    _status_html += '</div></div></div>'
+    st.markdown(_status_html, unsafe_allow_html=True)
 
-# --- DEFERRED AI INITIALIZATION (Because classes are defined above) ---
-if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_api_key'):
-    try:
-        temp_helper = GeminiQMDGHelper(st.session_state._resolved_api_key)
-        st.session_state.gemini_helper = temp_helper
-        st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
-        st.session_state.api_status_ok = True
-        st.session_state.api_status_msg = "Sẵn sàng"
-    except Exception as e:
-        st.session_state.api_status_ok = False
-        st.session_state.api_status_msg = str(e)
-        if FREE_AI_AVAILABLE:
-            st.session_state.gemini_helper = FreeAIHelper(api_key=st.session_state.get('_resolved_api_key'))
+    # --- DEFERRED AI INITIALIZATION (Because classes are defined above) ---
+    if 'gemini_helper' not in st.session_state and st.session_state.get('_resolved_api_key'):
+        try:
+            temp_helper = GeminiQMDGHelper(st.session_state._resolved_api_key)
+            st.session_state.gemini_helper = temp_helper
+            st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+            st.session_state.api_status_ok = True
+            st.session_state.api_status_msg = "Sẵn sàng"
+        except Exception as e:
+            st.session_state.api_status_ok = False
+            st.session_state.api_status_msg = str(e)
+            if FREE_AI_AVAILABLE:
+                st.session_state.gemini_helper = FreeAIHelper(api_key=st.session_state.get('_resolved_api_key'))
 
-# UNIFIED SETTINGS (One place for everything)
-is_connected = st.session_state.get("api_status_ok", False) is True
-# UNIFIED API KEY INPUT (ONE PLACE ONLY)
-_key_led_main = "🟢" if is_connected else "🔴"
-_key_label = f"{_key_led_main} API Key đang hoạt động tốt" if is_connected else f"{_key_led_main} Chưa có Key / Key hỏng — Bấm để dán Key mới"
-expander_title = f"🔑 {_key_label}"
+    # UNIFIED SETTINGS (One place for everything)
+    is_connected = st.session_state.get("api_status_ok", False) is True
+    # UNIFIED API KEY INPUT (ONE PLACE ONLY)
+    _key_led_main = "🟢" if is_connected else "🔴"
+    _key_label = f"{_key_led_main} API Key đang hoạt động tốt" if is_connected else f"{_key_led_main} Chưa có Key / Key hỏng — Bấm để dán Key mới"
+    expander_title = f"🔑 {_key_label}"
 
-with st.expander(expander_title, expanded=not is_connected):
-    # 1. Connection Controls (Only if connected)
-    if is_connected:
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            if st.button("🔄 Test Kết Nối Lại", key="test_ai_conn_unified", use_container_width=True):
-                with st.spinner("Đang thử kết nối..."):
-                    success, msg = st.session_state.gemini_helper.test_connection()
-                    st.session_state.api_status_ok = success
-                    st.session_state.api_status_msg = msg
+    with st.expander(expander_title, expanded=not is_connected):
+        # 1. Connection Controls (Only if connected)
+        if is_connected:
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if st.button("🔄 Test Kết Nối Lại", key="test_ai_conn_unified", use_container_width=True):
+                    with st.spinner("Đang thử kết nối..."):
+                        success, msg = st.session_state.gemini_helper.test_connection()
+                        st.session_state.api_status_ok = success
+                        st.session_state.api_status_msg = msg
+                        st.rerun()
+            with col2:
+                if st.button("R", key="force_refresh_unified", help="Reload App", use_container_width=True):
                     st.rerun()
-        with col2:
-            if st.button("R", key="force_refresh_unified", help="Reload App", use_container_width=True):
-                st.rerun()
                 
-        st.markdown("---")
+            st.markdown("---")
 
-    # 2. UNIFIED KEY INPUT — 1 Ô Duy Nhất
-    st.markdown("👉 [Lấy Gemini API Key miễn phí](https://aistudio.google.com/app/apikey)")
+        # 2. UNIFIED KEY INPUT — 1 Ô Duy Nhất
+        st.markdown("👉 [Lấy Gemini API Key miễn phí](https://aistudio.google.com/app/apikey)")
     
-    user_api_input = st.text_area("📋 Dán API Key vào đây:", height=80, key="input_api_key_smart_unified", placeholder="AIzaSy... hoặc AQ.Ab8... (hỗ trợ dán nhiều key cùng lúc)")
+        user_api_input = st.text_area("📋 Dán API Key vào đây:", height=80, key="input_api_key_smart_unified", placeholder="AIzaSy... hoặc AQ.Ab8... (hỗ trợ dán nhiều key cùng lúc)")
     
-    # --- 2 NÚT HÀNH ĐỘNG ---
-    btn_col1, btn_col2 = st.columns(2)
+        # --- 2 NÚT HÀNH ĐỘNG ---
+        btn_col1, btn_col2 = st.columns(2)
     
-    with btn_col1:
-        btn_activate = st.button("⚡ KÍCH HOẠT + LƯU VĨNH VIỄN", type="primary", use_container_width=True, help="Kích hoạt key ngay + tự lưu lên GitHub vĩnh viễn")
+        with btn_col1:
+            btn_activate = st.button("⚡ KÍCH HOẠT + LƯU VĨNH VIỄN", type="primary", use_container_width=True, help="Kích hoạt key ngay + tự lưu lên GitHub vĩnh viễn")
     
-    with btn_col2:
-        btn_clear_keys = st.button("🗑️ XÓA KEY CŨ", use_container_width=True, help="Xóa tất cả API key hết quota để nhập key mới")
+        with btn_col2:
+            btn_clear_keys = st.button("🗑️ XÓA KEY CŨ", use_container_width=True, help="Xóa tất cả API key hết quota để nhập key mới")
     
-    # --- XỬ LÝ: XÓA KEY CŨ ---
-    if btn_clear_keys:
-        with st.spinner("🗑️ Đang xóa API key cũ từ tất cả nơi lưu trữ..."):
-            cleared = []
-            for k in ['api_key', 'gemini_key', 'gemini_helper', 'ai_orchestrator', 'api_status_ok', 'api_status_msg']:
-                if k in st.session_state:
-                    del st.session_state[k]
-            cleared.append("Session")
-            try:
-                data = load_custom_data()
-                if data.get("GEMINI_API_KEY"):
-                    data["GEMINI_API_KEY"] = ""
-                    save_custom_data(data)
-                    cleared.append("custom_data.json")
-            except: pass
-            try:
-                import json as _json
-                fc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_hub', 'factory_config.json')
-                if os.path.exists(fc_path):
-                    with open(fc_path, 'r', encoding='utf-8') as f:
-                        fc = _json.load(f)
-                    if fc.get("api_key"):
-                        fc["api_key"] = ""
-                        with open(fc_path, 'w', encoding='utf-8') as f:
-                            _json.dump(fc, f, indent=2)
-                        cleared.append("factory_config.json")
-            except: pass
-            try:
-                cookie_manager.set("GEMINI_API_KEY", "", expires_at=dt_module.datetime.now() + dt_module.timedelta(days=-1))
-                cleared.append("Cookie")
-            except: pass
-            st.success(f"✅ ĐÃ XÓA SẠCH API KEY CŨ từ: {', '.join(cleared)}")
-            st.info("👉 Giờ hãy dán API Key mới vào ô trên → bấm **⚡ KÍCH HOẠT + LƯU VĨNH VIỄN**")
-            time.sleep(2)
-            st.rerun()
-    
-    # --- XỬ LÝ: KÍCH HOẠT + TỰ ĐỘNG LƯU VĨNH VIỄN ---
-    if btn_activate:
-        if not user_api_input:
-            st.warning("⚠️ Dán Key vào ô trên trước!")
-        else:
-            with st.spinner("🤖 Đang kích hoạt + lưu vĩnh viễn..."):
+        # --- XỬ LÝ: XÓA KEY CŨ ---
+        if btn_clear_keys:
+            with st.spinner("🗑️ Đang xóa API key cũ từ tất cả nơi lưu trữ..."):
+                cleared = []
+                for k in ['api_key', 'gemini_key', 'gemini_helper', 'ai_orchestrator', 'api_status_ok', 'api_status_msg']:
+                    if k in st.session_state:
+                        del st.session_state[k]
+                cleared.append("Session")
                 try:
-                    # Bước 1: Kích hoạt ngay trong session
-                    temp_helper = GeminiQMDGHelper(user_api_input)
-                    if not temp_helper.api_keys:
-                        st.error("❌ Không tìm thấy API Key hợp lệ. Key phải dài ít nhất 20 ký tự.")
-                    else:
-                        success, msg = temp_helper.test_connection()
-                        st.session_state.gemini_helper = temp_helper
-                        st.session_state.gemini_key = temp_helper.api_key
-                        st.session_state.ai_type = f"Gemini (Updated)"
-                        st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+                    data = load_custom_data()
+                    if data.get("GEMINI_API_KEY"):
+                        data["GEMINI_API_KEY"] = ""
+                        save_custom_data(data)
+                        cleared.append("custom_data.json")
+                except: pass
+                try:
+                    import json as _json
+                    fc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_hub', 'factory_config.json')
+                    if os.path.exists(fc_path):
+                        with open(fc_path, 'r', encoding='utf-8') as f:
+                            fc = _json.load(f)
+                        if fc.get("api_key"):
+                            fc["api_key"] = ""
+                            with open(fc_path, 'w', encoding='utf-8') as f:
+                                _json.dump(fc, f, indent=2)
+                            cleared.append("factory_config.json")
+                except: pass
+                try:
+                    cookie_manager.set("GEMINI_API_KEY", "", expires_at=dt_module.datetime.now() + dt_module.timedelta(days=-1))
+                    cleared.append("Cookie")
+                except: pass
+                st.success(f"✅ ĐÃ XÓA SẠCH API KEY CŨ từ: {', '.join(cleared)}")
+                st.info("👉 Giờ hãy dán API Key mới vào ô trên → bấm **⚡ KÍCH HOẠT + LƯU VĨNH VIỄN**")
+                time.sleep(2)
+                st.rerun()
+    
+        # --- XỬ LÝ: KÍCH HOẠT + TỰ ĐỘNG LƯU VĨNH VIỄN ---
+        if btn_activate:
+            if not user_api_input:
+                st.warning("⚠️ Dán Key vào ô trên trước!")
+            else:
+                with st.spinner("🤖 Đang kích hoạt + lưu vĩnh viễn..."):
+                    try:
+                        # Bước 1: Kích hoạt ngay trong session
+                        temp_helper = GeminiQMDGHelper(user_api_input)
+                        if not temp_helper.api_keys:
+                            st.error("❌ Không tìm thấy API Key hợp lệ. Key phải dài ít nhất 20 ký tự.")
+                        else:
+                            success, msg = temp_helper.test_connection()
+                            st.session_state.gemini_helper = temp_helper
+                            st.session_state.gemini_key = temp_helper.api_key
+                            st.session_state.ai_type = f"Gemini (Updated)"
+                            st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
                         
-                        _final_key = temp_helper.api_key or ",".join(temp_helper.api_keys)
+                            _final_key = temp_helper.api_key or ",".join(temp_helper.api_keys)
                         
-                        # Bước 2: Lưu local (custom_data + cookie + factory_config)
-                        try:
-                            data = load_custom_data()
-                            data["GEMINI_API_KEY"] = _final_key
-                            save_custom_data(data)
-                            cookie_manager.set("GEMINI_API_KEY", _final_key, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
-                        except: pass
-                        try:
-                            import json as _json
-                            fc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_hub', 'factory_config.json')
-                            if os.path.exists(fc_path):
-                                with open(fc_path, 'r', encoding='utf-8') as f:
-                                    fc = _json.load(f)
-                                fc["api_key"] = _final_key
-                                with open(fc_path, 'w', encoding='utf-8') as f:
-                                    _json.dump(fc, f, indent=2)
-                        except: pass
-                        
-                        # Bước 3: TỰ ĐỘNG push lên GitHub (vĩnh viễn)
-                        _pat = ""
-                        try: _pat = st.secrets.get("GITHUB_PAT", "")
-                        except: pass
-                        if not _pat:
-                            _pat = st.session_state.get("github_pat", "")
-                        if not _pat:
-                            try: _pat = cookie_manager.get("GITHUB_PAT") or ""
+                            # Bước 2: Lưu local (custom_data + cookie + factory_config)
+                            try:
+                                data = load_custom_data()
+                                data["GEMINI_API_KEY"] = _final_key
+                                save_custom_data(data)
+                                cookie_manager.set("GEMINI_API_KEY", _final_key, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
+                            except: pass
+                            try:
+                                import json as _json
+                                fc_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_hub', 'factory_config.json')
+                                if os.path.exists(fc_path):
+                                    with open(fc_path, 'r', encoding='utf-8') as f:
+                                        fc = _json.load(f)
+                                    fc["api_key"] = _final_key
+                                    with open(fc_path, 'w', encoding='utf-8') as f:
+                                        _json.dump(fc, f, indent=2)
                             except: pass
                         
-                        if _pat:
-                            # Có PAT → auto push
-                            st.session_state._push_cloud_key = _final_key
-                            st.session_state._push_cloud_pat = _pat
-                        else:
-                            # Chưa có PAT → yêu cầu 1 lần
-                            st.session_state._need_pat_for_activate = _final_key
+                            # Bước 3: TỰ ĐỘNG push lên GitHub (vĩnh viễn)
+                            _pat = ""
+                            try: _pat = st.secrets.get("GITHUB_PAT", "")
+                            except: pass
+                            if not _pat:
+                                _pat = st.session_state.get("github_pat", "")
+                            if not _pat:
+                                try: _pat = cookie_manager.get("GITHUB_PAT") or ""
+                                except: pass
                         
-                        if success:
-                            st.session_state.api_status_ok = True
-                            st.session_state.api_status_msg = "Kết nối thành công"
-                            st.success(f"✅ ĐÃ KÍCH HOẠT: {len(temp_helper.api_keys)} Key")
-                        else:
-                            st.session_state.api_status_ok = False
-                            st.session_state.api_status_msg = f"Lưu OK, test lỗi: {msg}"
-                            st.warning(f"⚠️ Đã lưu, nhưng kết nối chập chờn: {msg}")
+                            if _pat:
+                                # Có PAT → auto push
+                                st.session_state._push_cloud_key = _final_key
+                                st.session_state._push_cloud_pat = _pat
+                            else:
+                                # Chưa có PAT → yêu cầu 1 lần
+                                st.session_state._need_pat_for_activate = _final_key
                         
-                        if not _pat:
-                            st.info("⚠️ Để lưu VĨNH VIỄN, cần nhập GitHub Token **1 lần duy nhất** bên dưới ↓")
-                        time.sleep(1)
-                        if _pat:
-                            st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Lỗi: {e}")
+                            if success:
+                                st.session_state.api_status_ok = True
+                                st.session_state.api_status_msg = "Kết nối thành công"
+                                st.success(f"✅ ĐÃ KÍCH HOẠT: {len(temp_helper.api_keys)} Key")
+                            else:
+                                st.session_state.api_status_ok = False
+                                st.session_state.api_status_msg = f"Lưu OK, test lỗi: {msg}"
+                                st.warning(f"⚠️ Đã lưu, nhưng kết nối chập chờn: {msg}")
+                        
+                            if not _pat:
+                                st.info("⚠️ Để lưu VĨNH VIỄN, cần nhập GitHub Token **1 lần duy nhất** bên dưới ↓")
+                            time.sleep(1)
+                            if _pat:
+                                st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Lỗi: {e}")
     
-    # --- YÊU CẦU GITHUB PAT (1 lần duy nhất) ---
-    if st.session_state.get("_need_pat_for_activate"):
-        st.markdown("---")
-        st.warning("🔐 **LẦN ĐẦU:** Nhập GitHub Token để lưu key vĩnh viễn (chỉ cần 1 lần, sau đó tự động)")
-        st.markdown("👉 [Lấy GitHub Token tại đây](https://github.com/settings/tokens) → **Generate new token (classic)** → chọn scope **`repo`** → Copy token")
-        _pat_input = st.text_input("GitHub Token:", type="password", placeholder="ghp_xxxxx...", key="github_pat_input_activate")
-        if st.button("✅ LƯU VĨNH VIỄN", type="primary", use_container_width=True, key="confirm_pat_activate"):
-            if _pat_input:
-                _gemini_key = st.session_state.pop("_need_pat_for_activate", "")
-                st.session_state.github_pat = _pat_input
-                # Lưu PAT vào cookie → không bao giờ cần nhập lại
-                try:
-                    cookie_manager.set("GITHUB_PAT", _pat_input, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
-                except: pass
-                st.session_state._push_cloud_key = _gemini_key
-                st.session_state._push_cloud_pat = _pat_input
-                st.rerun()
-            else:
-                st.error("❌ Dán GitHub Token vào!")
-    
-    # V13.0: Old LƯU LÊN CLOUD handler removed — merged into KÍCH HOẠT + LƯU VĨNH VIỄN above
-    
-    # --- THỰC HIỆN PUSH (chung cho cả 2 flow) ---
-    if st.session_state.get("_push_cloud_key") and st.session_state.get("_push_cloud_pat"):
-        _gemini_key = st.session_state.pop("_push_cloud_key")
-        _pat = st.session_state.pop("_push_cloud_pat")
-        
-        with st.spinner("🚀 Đang push lên GitHub → Streamlit Cloud..."):
-            try:
-                import base64
-                _GH_OWNER = "winvu88888888-maker"
-                _GH_REPO = "cuongtan66666666"
-                _GH_FILE = ".streamlit/secrets.toml"
-                _GH_API = f"https://api.github.com/repos/{_GH_OWNER}/{_GH_REPO}/contents/{_GH_FILE}"
-                _headers = {"Authorization": f"token {_pat}", "Accept": "application/vnd.github.v3+json"}
-                
-                _secrets_content = f'GEMINI_API_KEY = "{_gemini_key}"\nGITHUB_PAT = "{_pat}"\n'
-                _encoded = base64.b64encode(_secrets_content.encode()).decode()
-                
-                # Get current file SHA
-                _sha = None
-                try:
-                    _resp_get = requests.get(_GH_API, headers=_headers)
-                    if _resp_get.status_code == 200:
-                        _sha = _resp_get.json().get("sha")
-                except: pass
-                
-                _payload = {"message": "auto: update API key from app UI", "content": _encoded, "branch": "main"}
-                if _sha:
-                    _payload["sha"] = _sha
-                
-                _resp_put = requests.put(_GH_API, headers=_headers, json=_payload)
-                
-                if _resp_put.status_code in [200, 201]:
-                    st.session_state.github_pat = _pat
-                    # Also activate immediately
+        # --- YÊU CẦU GITHUB PAT (1 lần duy nhất) ---
+        if st.session_state.get("_need_pat_for_activate"):
+            st.markdown("---")
+            st.warning("🔐 **LẦN ĐẦU:** Nhập GitHub Token để lưu key vĩnh viễn (chỉ cần 1 lần, sau đó tự động)")
+            st.markdown("👉 [Lấy GitHub Token tại đây](https://github.com/settings/tokens) → **Generate new token (classic)** → chọn scope **`repo`** → Copy token")
+            _pat_input = st.text_input("GitHub Token:", type="password", placeholder="ghp_xxxxx...", key="github_pat_input_activate")
+            if st.button("✅ LƯU VĨNH VIỄN", type="primary", use_container_width=True, key="confirm_pat_activate"):
+                if _pat_input:
+                    _gemini_key = st.session_state.pop("_need_pat_for_activate", "")
+                    st.session_state.github_pat = _pat_input
+                    # Lưu PAT vào cookie → không bao giờ cần nhập lại
                     try:
-                        temp_helper = GeminiQMDGHelper(_gemini_key)
-                        st.session_state.gemini_helper = temp_helper
-                        st.session_state.gemini_key = _gemini_key
-                        st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+                        cookie_manager.set("GITHUB_PAT", _pat_input, expires_at=dt_module.datetime.now() + dt_module.timedelta(days=365))
                     except: pass
-                    st.success("✅ ĐÃ PUSH & KÍCH HOẠT! Cloud sẽ tự deploy lại ~1-2 phút.")
-                    st.balloons()
+                    st.session_state._push_cloud_key = _gemini_key
+                    st.session_state._push_cloud_pat = _pat_input
+                    st.rerun()
                 else:
-                    _err = _resp_put.json().get("message", _resp_put.text[:200])
-                    st.error(f"❌ Lỗi GitHub: {_err}")
-            except Exception as e:
-                st.error(f"❌ Lỗi: {str(e)}")
+                    st.error("❌ Dán GitHub Token vào!")
+    
+        # V13.0: Old LƯU LÊN CLOUD handler removed — merged into KÍCH HOẠT + LƯU VĨNH VIỄN above
+    
+        # --- THỰC HIỆN PUSH (chung cho cả 2 flow) ---
+        if st.session_state.get("_push_cloud_key") and st.session_state.get("_push_cloud_pat"):
+            _gemini_key = st.session_state.pop("_push_cloud_key")
+            _pat = st.session_state.pop("_push_cloud_pat")
+        
+            with st.spinner("🚀 Đang push lên GitHub → Streamlit Cloud..."):
+                try:
+                    import base64
+                    _GH_OWNER = "winvu88888888-maker"
+                    _GH_REPO = "cuongtan66666666"
+                    _GH_FILE = ".streamlit/secrets.toml"
+                    _GH_API = f"https://api.github.com/repos/{_GH_OWNER}/{_GH_REPO}/contents/{_GH_FILE}"
+                    _headers = {"Authorization": f"token {_pat}", "Accept": "application/vnd.github.v3+json"}
+                
+                    _secrets_content = f'GEMINI_API_KEY = "{_gemini_key}"\nGITHUB_PAT = "{_pat}"\n'
+                    _encoded = base64.b64encode(_secrets_content.encode()).decode()
+                
+                    # Get current file SHA
+                    _sha = None
+                    try:
+                        _resp_get = requests.get(_GH_API, headers=_headers)
+                        if _resp_get.status_code == 200:
+                            _sha = _resp_get.json().get("sha")
+                    except: pass
+                
+                    _payload = {"message": "auto: update API key from app UI", "content": _encoded, "branch": "main"}
+                    if _sha:
+                        _payload["sha"] = _sha
+                
+                    _resp_put = requests.put(_GH_API, headers=_headers, json=_payload)
+                
+                    if _resp_put.status_code in [200, 201]:
+                        st.session_state.github_pat = _pat
+                        # Also activate immediately
+                        try:
+                            temp_helper = GeminiQMDGHelper(_gemini_key)
+                            st.session_state.gemini_helper = temp_helper
+                            st.session_state.gemini_key = _gemini_key
+                            st.session_state.ai_orchestrator = PhoenixOrchestrator(temp_helper)
+                        except: pass
+                        st.success("✅ ĐÃ PUSH & KÍCH HOẠT! Cloud sẽ tự deploy lại ~1-2 phút.")
+                        st.balloons()
+                    else:
+                        _err = _resp_put.json().get("message", _resp_put.text[:200])
+                        st.error(f"❌ Lỗi GitHub: {_err}")
+                except Exception as e:
+                    st.error(f"❌ Lỗi: {str(e)}")
 
-# n8n Configuration
-with st.expander("🔗 Kết nối n8n (Advanced AI)"):
-    n8n_url = ""
-    try:
-        n8n_url = st.secrets.get("N8N_WEBHOOK_URL", "")
-    except Exception:
-        pass
-    n8n_input = st.text_input("n8n Webhook URL:", value=st.session_state.get('n8n_url', n8n_url))
-    if n8n_input:
-        st.session_state.n8n_url = n8n_input
-        if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'set_n8n_url'):
-            st.session_state.gemini_helper.set_n8n_url(n8n_input)
-
-st.markdown("---")
-
-st.markdown("---")
-
-# Time controls (GLOBAL for all views)
-st.markdown("### 🕒 Thời Gian")
-
-use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
-
-# Timezone handling (Robust Purification)
-vn_tz = None
-if pytz is not None:
-    try:
-        vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-    except:
-        pass
-
-if vn_tz is None:
-    try:
-        import zoneinfo
-        vn_tz = zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh")
-    except:
+    # n8n Configuration
+    with st.expander("🔗 Kết nối n8n (Advanced AI)"):
+        n8n_url = ""
         try:
-            from zoneinfo import ZoneInfo
-            vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+            n8n_url = st.secrets.get("N8N_WEBHOOK_URL", "")
+        except Exception:
+            pass
+        n8n_input = st.text_input("n8n Webhook URL:", value=st.session_state.get('n8n_url', n8n_url))
+        if n8n_input:
+            st.session_state.n8n_url = n8n_input
+            if 'gemini_helper' in st.session_state and hasattr(st.session_state.gemini_helper, 'set_n8n_url'):
+                st.session_state.gemini_helper.set_n8n_url(n8n_input)
+
+    st.markdown("---")
+
+    st.markdown("---")
+
+    # Time controls (GLOBAL for all views)
+    st.markdown("### 🕒 Thời Gian")
+
+    use_current_time = st.checkbox("Sử dụng giờ hiện tại", value=True)
+
+    # Timezone handling (Robust Purification)
+    vn_tz = None
+    if pytz is not None:
+        try:
+            vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
         except:
-            vn_tz = dt_module.timezone.utc
+            pass
 
-if use_current_time:
-    now = dt_module.datetime.now(vn_tz)
-    selected_datetime = now
-else:
-    now_vn = dt_module.datetime.now(vn_tz)
-    selected_date = st.date_input("Chọn ngày:", now_vn.date())
-    selected_time = st.time_input("Chọn giờ:", now_vn.time())
-    selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
+    if vn_tz is None:
+        try:
+            import zoneinfo
+            vn_tz = zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh")
+        except:
+            try:
+                from zoneinfo import ZoneInfo
+                vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+            except:
+                vn_tz = dt_module.timezone.utc
 
-# Calculate QMDG parameters (Always calculate to show in sidebar)
-params = None
-try:
-    import qmdg_calc
-    params = qmdg_calc.calculate_qmdg_params(selected_datetime)
+    if use_current_time:
+        now = dt_module.datetime.now(vn_tz)
+        selected_datetime = now
+    else:
+        now_vn = dt_module.datetime.now(vn_tz)
+        selected_date = st.date_input("Chọn ngày:", now_vn.date())
+        selected_time = st.time_input("Chọn giờ:", now_vn.time())
+        selected_datetime = dt_module.datetime.combine(selected_date, selected_time, tzinfo=vn_tz)
+
+    # Calculate QMDG parameters (Always calculate to show in sidebar)
+    params = None
+    try:
+        import qmdg_calc
+        params = qmdg_calc.calculate_qmdg_params(selected_datetime)
     
-    # Calculate Lunar Date for display — V42.8 FIX: Use Hồ Ngọc Đức algorithm (accurate)
-    from xem_ngay_dep import solar2lunar as _s2l_sidebar
-    lday, lmonth, lyear, is_leap = _s2l_sidebar(selected_datetime.day, selected_datetime.month, selected_datetime.year)
-    l_year_can, l_year_chi = qmdg_calc.get_can_chi_year(lyear)
-    l_year_name = f"{l_year_can} {l_year_chi}"
+        # Calculate Lunar Date for display — V42.8 FIX: Use Hồ Ngọc Đức algorithm (accurate)
+        from xem_ngay_dep import solar2lunar as _s2l_sidebar
+        lday, lmonth, lyear, is_leap = _s2l_sidebar(selected_datetime.day, selected_datetime.month, selected_datetime.year)
+        l_year_can, l_year_chi = qmdg_calc.get_can_chi_year(lyear)
+        l_year_name = f"{l_year_can} {l_year_chi}"
     
-    st.info(f"""
+        st.info(f"""
     **Thời gian:** {selected_datetime.strftime("%H:%M - %d/%m/%Y")}
     
     **Âm lịch:**
@@ -2199,129 +2200,129 @@ try:
     
     **Cục:** {params['cuc']} ({'Dương' if params.get('is_duong_don', True) else 'Âm'} Độn)
     """)
-except Exception as e:
-    st.error(f"Lỗi tính toán: {e}")
+    except Exception as e:
+        st.error(f"Lỗi tính toán: {e}")
 
-st.markdown("---")
-
-# Topic selection
-st.markdown("### 🎯 Chủ Đề Chính")
-
-# Dynamic Topic Refresh
-# Dynamic Topic Refresh with Categories
-core_topics = list(TOPIC_INTERPRETATIONS.keys())
-
-# Get standard categories from Strategist
-from ai_modules.mining_strategist import MiningStrategist
-standard_categories = list(MiningStrategist().categories.keys()) + ["Kiáº¿n Thá»©c", "KhÃ¡c"]
-
-hub_entries = []
-try:
-    from ai_modules.shard_manager import search_index
-    hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
-except Exception as _hub_err:
-    # V35.8-FIX: Show warning instead of silent fail
-    try:
-        st.warning(f"⚠️ Dữ liệu hub đang được sửa chữa tự động. Chi tiết: {str(_hub_err)[:100]}")
-    except: pass
-
-# Store full entry list for filtering
-st.session_state.hub_entries = hub_entries
-
-# Filter topics logic simplified for selectbox — safe access with fallback
-all_titles = sorted(list(set(core_topics + [e.get('title', '') for e in hub_entries if isinstance(e, dict) and e.get('title')])))
-st.session_state.all_topics_full = all_titles
-
-
-search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
-
-# NEW: Topic Counter Button
-if st.button("📊 Đếm tổng số chủ đề đang có"):
-    total_count = len(st.session_state.all_topics_full)
-    st.success(f"📈 Hiện hệ thống đang có tổng cộng: **{total_count}** chủ đề tri thức!")
-
-with st.expander("✍️ Đặt câu hỏi riêng & Kích hoạt AI Mining"):
-    with st.form("custom_topic_form"):
-        new_q = st.text_area("Nhập vấn đề/câu hỏi bạn đang quan tâm:", placeholder="Ví dụ: Đầu tư vàng năm 2026, Phân tích quẻ gieo cho sức khỏe bố mẹ...")
-        if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
-            if new_q:
-                try:
-                    from ai_modules.shard_manager import add_entry
-                    # Save as a SEED topic
-                    id = add_entry(
-                        title=new_q, 
-                        content=f"Câu hỏi gốc người dùng: {new_q}\n(Chủ đề này đã được nạp làm hạt giống để AI quân đoàn đi khai thác Internet.)",
-                        category="Kiến Thức",
-                        source="User Inquiry"
-                    )
-                    if id:
-                        st.success(f"✅ Đã nạp thành công! AI sẽ bắt đầu tìm kiếm thông tin liên quan cho bạn.")
-                        st.session_state.chu_de_hien_tai = new_q
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Lỗi nạp chủ đề: {e}")
-
-# 1. Select Standard Category (Chủ đề chuẩn)
-standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
-
-selected_cat = st.selectbox(
-    "📂 Lọc theo Phân loại chuẩn:",
-    standard_categories,
-    index=0
-)
-
-# 2. Filter topics based on category
-available_topics = []
-divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
-
-if selected_cat == "Tất cả":
-    # Default view: Only core topics + specific divination hub topics
-    hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
-    available_topics = sorted(list(set(core_topics + hub_divination)))
-else:
-    # Get hub topics in this specific category
-    available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
-    
-# Search Filter
-if search_term:
-    available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
-
-if not available_topics:
-    available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
-
-selected_topic = st.selectbox(
-    "Chọn chủ đề chi tiết:",
-    available_topics,
-    index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
-)
-
-
-st.session_state.chu_de_hien_tai = selected_topic
-
-st.info(f"📌 Đã chọn: **{selected_topic}**")
-
-# Multi-layer analysis (if available)
-if USE_MULTI_LAYER_ANALYSIS:
     st.markdown("---")
-    st.markdown("### 🎯 Đối Tượng (Lục Thân)")
+
+    # Topic selection
+    st.markdown("### 🎯 Chủ Đề Chính")
+
+    # Dynamic Topic Refresh
+    # Dynamic Topic Refresh with Categories
+    core_topics = list(TOPIC_INTERPRETATIONS.keys())
+
+    # Get standard categories from Strategist
+    from ai_modules.mining_strategist import MiningStrategist
+    standard_categories = list(MiningStrategist().categories.keys()) + ["Kiáº¿n Thá»©c", "KhÃ¡c"]
+
+    hub_entries = []
+    try:
+        from ai_modules.shard_manager import search_index
+        hub_entries = search_index() # Returns list of dicts with 'title' and 'category'
+    except Exception as _hub_err:
+        # V35.8-FIX: Show warning instead of silent fail
+        try:
+            st.warning(f"⚠️ Dữ liệu hub đang được sửa chữa tự động. Chi tiết: {str(_hub_err)[:100]}")
+        except: pass
+
+    # Store full entry list for filtering
+    st.session_state.hub_entries = hub_entries
+
+    # Filter topics logic simplified for selectbox — safe access with fallback
+    all_titles = sorted(list(set(core_topics + [e.get('title', '') for e in hub_entries if isinstance(e, dict) and e.get('title')])))
+    st.session_state.all_topics_full = all_titles
+
+
+    search_term = st.text_input("🔍 Tìm kiếm chủ đề:", "")
+
+    # NEW: Topic Counter Button
+    if st.button("📊 Đếm tổng số chủ đề đang có"):
+        total_count = len(st.session_state.all_topics_full)
+        st.success(f"📈 Hiện hệ thống đang có tổng cộng: **{total_count}** chủ đề tri thức!")
+
+    with st.expander("✍️ Đặt câu hỏi riêng & Kích hoạt AI Mining"):
+        with st.form("custom_topic_form"):
+            new_q = st.text_area("Nhập vấn đề/câu hỏi bạn đang quan tâm:", placeholder="Ví dụ: Đầu tư vàng năm 2026, Phân tích quẻ gieo cho sức khỏe bố mẹ...")
+            if st.form_submit_button("🚀 Gửi & Lưu làm Chủ đề mới"):
+                if new_q:
+                    try:
+                        from ai_modules.shard_manager import add_entry
+                        # Save as a SEED topic
+                        id = add_entry(
+                            title=new_q, 
+                            content=f"Câu hỏi gốc người dùng: {new_q}\n(Chủ đề này đã được nạp làm hạt giống để AI quân đoàn đi khai thác Internet.)",
+                            category="Kiến Thức",
+                            source="User Inquiry"
+                        )
+                        if id:
+                            st.success(f"✅ Đã nạp thành công! AI sẽ bắt đầu tìm kiếm thông tin liên quan cho bạn.")
+                            st.session_state.chu_de_hien_tai = new_q
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Lỗi nạp chủ đề: {e}")
+
+    # 1. Select Standard Category (Chủ đề chuẩn)
+    standard_categories = ["Tất cả"] + list(MiningStrategist().categories.keys()) + ["Kiến Thức", "Lưu Trữ (Sách)", "Khác"]
+
+    selected_cat = st.selectbox(
+        "📂 Lọc theo Phân loại chuẩn:",
+        standard_categories,
+        index=0
+    )
+
+    # 2. Filter topics based on category
+    available_topics = []
+    divination_categories = ["Kỳ Môn Độn Giáp", "Kinh Dịch & Dự Đoán", "Phong Thủy & Địa Lý"]
+
+    if selected_cat == "Tất cả":
+        # Default view: Only core topics + specific divination hub topics
+        hub_divination = [e['title'] for e in st.session_state.hub_entries if e['category'] in divination_categories]
+        available_topics = sorted(list(set(core_topics + hub_divination)))
+    else:
+        # Get hub topics in this specific category
+        available_topics = [e['title'] for e in st.session_state.hub_entries if e['category'] == selected_cat]
     
-    doi_tuong_options = [
-        "👤 Bản thân",
-        "👨‍👩‍👧 Anh chị em",
-        "👴👵 Bố mẹ",
-        "👶 Con cái",
-        "🤝 Người lạ (theo Can sinh)"
-    ]
+    # Search Filter
+    if search_term:
+        available_topics = [t for t in available_topics if search_term.lower() in t.lower()]
+
+    if not available_topics:
+        available_topics = ["(Chưa có dữ liệu cho phân loại này)"]
+
+    selected_topic = st.selectbox(
+        "Chọn chủ đề chi tiết:",
+        available_topics,
+        index=0 if "Tổng Quát" not in available_topics else available_topics.index("Tổng Quát")
+    )
+
+
+    st.session_state.chu_de_hien_tai = selected_topic
+
+    st.info(f"📌 Đã chọn: **{selected_topic}**")
+
+    # Multi-layer analysis (if available)
+    if USE_MULTI_LAYER_ANALYSIS:
+        st.markdown("---")
+        st.markdown("### 🎯 Đối Tượng (Lục Thân)")
     
-    selected_doi_tuong = st.selectbox("Chọn đối tượng:", doi_tuong_options, index=0)
+        doi_tuong_options = [
+            "👤 Bản thân",
+            "👨‍👩‍👧 Anh chị em",
+            "👴👵 Bố mẹ",
+            "👶 Con cái",
+            "🤝 Người lạ (theo Can sinh)"
+        ]
     
-    target_stem_name = "Giáp" # Default
-    if selected_doi_tuong == "🤝 Người lạ (theo Can sinh)":
-        target_stem_name = st.selectbox("Chọn Thiên Can năm sinh của người đó:", 
-                                       ["Không rõ (Dùng Can Giờ)", "Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"])
+        selected_doi_tuong = st.selectbox("Chọn đối tượng:", doi_tuong_options, index=0)
     
-    st.session_state.selected_doi_tuong = selected_doi_tuong
-    st.session_state.target_stem_name_custom = target_stem_name
+        target_stem_name = "Giáp" # Default
+        if selected_doi_tuong == "🤝 Người lạ (theo Can sinh)":
+            target_stem_name = st.selectbox("Chọn Thiên Can năm sinh của người đó:", 
+                                           ["Không rõ (Dùng Can Giờ)", "Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"])
+    
+        st.session_state.selected_doi_tuong = selected_doi_tuong
+        st.session_state.target_stem_name_custom = target_stem_name
 
 # ======================================================================
 # MAIN CONTENT
@@ -2390,48 +2391,37 @@ if params:
 
 def render_master_unified_qa_box(location_key="main"):
     """
-    1 Ô HỎI ĐÁP HỢP NHẤT DUY NHẤT TOÀN HỆ THỐNG (V106.0):
-    Phân tách rạch ròi PHẦN I (4 Phương Pháp Chuẩn Xác Nhất: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)
-    và PHẦN II (Các Phân Khu Chuyên Biệt Độc Lập: Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày Giờ).
+    V132.0 — Ô HỎI ĐÁP & KẾT LUẬN NGAY ĐẦU TRANG TRÊN CÙNG (0PX SCROLL):
+    1. Container kết luận ghim ngay vị trí số 1 trên cùng (không cần kéo xuống!).
+    2. Ô nhập câu hỏi gọn gàng ngay bên dưới.
+    3. Sơ đồ mũi tên nhân quả vi mô, Bảng 24 yếu tố, Song Não AI & Bàn Kỳ Môn nằm phía dưới để tra cứu sâu.
     """
-    st.markdown("""
-    <div style='background:linear-gradient(135deg,#0f172a,#1e1b4b,#064e3b);padding:18px 22px;border-radius:16px;
-                border:2px solid #34d399;margin:14px 0;box-shadow:0 6px 24px rgba(16,185,129,0.22);'>
-        <div style='color:#6ee7b7;font-weight:900;font-size:1.22rem;margin-bottom:8px;'>
-            🔮 TRUNG TÂM HỎI ĐÁP PHÂN KHU CHUYÊN BIỆT (V129.0 — ĐẠI TIÊN TRI TOÀN THƯ GITHUB: 384 HÀO CHU DỊCH · TĂNG SAN · MAI HOA 18 CHIÊM · KINQIMEN)
-        </div>
-        <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:6px;'>
+    _top_conclusion_slot = st.container()
+
+    with st.expander("🗂️ Chọn Phân Khu Xem & Giới Thiệu 10 Hệ Thống (Mặc định: Phần I — Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)", expanded=False):
+        st.markdown("""
+        <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:8px;'>
             <div style='padding:10px 14px;background:rgba(16,185,129,0.14);border-radius:10px;border-left:4px solid #34d399;'>
-                <div style='color:#4ade80;font-weight:900;font-size:0.95rem;'>🎯 PHẦN I — 4 PHƯƠNG PHÁP LUẬN QUẺ CHUẨN XÁC NHẤT (QUYẾT ĐỊNH 100% CÂU HỎI THỰC TẾ)</div>
-                <div style='color:#e2e8f0;font-size:0.88rem;margin-top:4px;line-height:1.5;'>
-                    <b style='color:#fde68a;'>🌸 Mai Hoa Dịch Số · 🏯 Kỳ Môn Độn Giáp · 📿 Lục Hào Kinh Dịch · 📜 Thiết Bản Thần Toán</b><br>
-                    Chuyên giải mã trực tiếp mọi câu hỏi về Gia đình, Nhà cửa, Tài chính, Hôn nhân, Con cái, Đồ vật, Công việc.
-                </div>
+                <div style='color:#4ade80;font-weight:900;font-size:0.92rem;'>🎯 PHẦN I — 4 PHƯƠNG PHÁP CHUẨN XÁC NHẤT</div>
+                <div style='color:#e2e8f0;font-size:0.85rem;margin-top:3px;'>🌸 Mai Hoa · 🏯 Kỳ Môn · 📿 Lục Hào · 📜 Thiết Bản</div>
             </div>
             <div style='padding:10px 14px;background:rgba(139,92,246,0.14);border-radius:10px;border-left:4px solid #a78bfa;'>
-                <div style='color:#c4b5fd;font-weight:900;font-size:0.95rem;'>🏛️ PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (CHỈ XEM RIÊNG ĐÚNG PHẦN ĐÓ)</div>
-                <div style='color:#e2e8f0;font-size:0.88rem;margin-top:4px;line-height:1.5;'>
-                    • <b style='color:#d8b4fe;'>🔯 Tử Vi Đẩu Số:</b> Chỉ xem riêng về <b>Cả Cuộc Đời & Mệnh Cục 12 Cung</b>.<br>
-                    • <b style='color:#fca5a5;'>⚔️ Thái Ất Thần Số:</b> Chỉ xem riêng về <b>Vận Quốc Gia, Thế Giới & Vĩ Mô</b>.<br>
-                    • <b style='color:#5eead4;'>📅 Xem Ngày & Đại Lục Nhâm:</b> Chỉ xem riêng về <b>Chọn Ngày Giờ & Lộ Trình</b>.
-                </div>
+                <div style='color:#c4b5fd;font-weight:900;font-size:0.92rem;'>🏛️ PHẦN II — CÁC MẢNG CHUYÊN BIỆT ĐỘC LẬP</div>
+                <div style='color:#e2e8f0;font-size:0.85rem;margin-top:3px;'>🔯 Tử Vi Đẩu Số · ⚔️ Thái Ất Quốc Vận · 📅 Xem Ngày Đẹp</div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── BỘ CHỌN PHÂN KHU CHUYÊN TRÁCH NGAY TRÊN Ô HỎI ĐÁP (V106.0) ──
-    _domain_mode = st.radio(
-        "🗂️ Chọn Phân Khu Xem (Hoặc để Mặc định ở Phần I để dùng 4 Phương Pháp Chuẩn Xác Nhất):",
-        [
-            "🎯 PHẦN I (Mặc định): Luận Quẻ Thực Tế Bằng 4 Phương Pháp Chuẩn Xác (Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)",
-            "🔯 PHẦN II — Mảng Riêng 1: Xem Về Cả Cuộc Đời & Số Mệnh Trọn Đời (Tử Vi Đẩu Số)",
-            "⚔️ PHẦN II — Mảng Riêng 2: Xem Về Vận Quốc Gia, Thế Giới & Đại Cục Vĩ Mô (Thái Ất Thần Số)",
-            "📅 PHẦN II — Mảng Riêng 3: Xem Về Chọn Ngày Giờ Tốt Xấu Hành Sự (Trạch Nhật Xem Ngày Đẹp)",
-        ],
-        index=0,
-        key=f"qa_domain_partition_{location_key}"
-    )
+        """, unsafe_allow_html=True)
+        _domain_mode = st.radio(
+            "🗂️ Chọn Phân Khu Xem:",
+            [
+                "🎯 PHẦN I (Mặc định): Luận Quẻ Thực Tế Bằng 4 Phương Pháp Chuẩn Xác (Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản)",
+                "🔯 PHẦN II — Mảng Riêng 1: Xem Về Cả Cuộc Đời & Số Mệnh Trọn Đời (Tử Vi Đẩu Số)",
+                "⚔️ PHẦN II — Mảng Riêng 2: Xem Về Vận Quốc Gia, Thế Giới & Đại Cục Vĩ Mô (Thái Ất Thần Số)",
+                "📅 PHẦN II — Mảng Riêng 3: Xem Về Chọn Ngày Giờ Tốt Xấu Hành Sự (Trạch Nhật Xem Ngày Đẹp)",
+            ],
+            index=0,
+            key=f"qa_domain_partition_{location_key}"
+        )
 
     # ── BỘ CHỌN CHẾ ĐỘ GIEO QUẺ TRỰC QUAN NGAY TRÊN Ô NHẬP CÂU HỎI (V110.0) ──
     c_cast1, c_cast2 = st.columns([1.2, 1.2])
@@ -2808,16 +2798,29 @@ def render_master_unified_qa_box(location_key="main"):
         else:
             st.warning("⚠️ Vui lòng nhập câu hỏi vào ô bên trên.")
 
-    # ── HIỂN THỊ KẾT QUẢ PHÂN TÍCH HỢP NHẤT ──
+    # ── V132.0: ĐƯA PHẦN KẾT LUẬN LÊN ĐẦU TRANG TRÊN CÙNG (_top_conclusion_slot) ĐỂ KHÔNG CẦN KÉO XUỐNG! ──
     if st.session_state.get('master_qa_last_result'):
         _ms = st.session_state.get('master_qa_elapsed_ms', 40.0)
-        st.markdown(
-            f"<div style='background:rgba(16,185,129,0.12);border:1px solid #10b981;padding:6px 14px;border-radius:8px;margin-top:8px;font-size:0.85rem;color:#6ee7b7;'>"
-            f"⚡ <b>Tốc độ giải mã Siêu Tốc ({APP_VERSION}): {_ms:.0f} ms ({_ms/1000.0:.2f} giây)</b> — Đã phân khu: <b>Phần I (4 Phương Pháp Chuẩn: Mai Hoa · Kỳ Môn · Lục Hào · Thiết Bản — Bóc tách sâu 24 yếu tố A→Z)</b> & <b>Phần II (Các Mảng Chuyên Biệt Độc Lập)</b>"
-            f"</div>",
-            unsafe_allow_html=True
-        )
-        display_ai_result(st.session_state['master_qa_last_result'], key_prefix=f"master_{location_key}")
+        _full_ans_str = str(st.session_state['master_qa_last_result'])
+        _last_q_asked = str(st.session_state.get('master_qa_last_question') or '')
+        if "<!-- SPLIT_TOP_VERDICT_END -->" in _full_ans_str:
+            _top_verdict_html, _deep_below_html = _full_ans_str.split("<!-- SPLIT_TOP_VERDICT_END -->", 1)
+        else:
+            _top_verdict_html, _deep_below_html = _full_ans_str, ""
+
+        with _top_conclusion_slot:
+            st.markdown(
+                f"<div style='background:rgba(16,185,129,0.15);border:1px solid #10b981;padding:6px 14px;border-radius:8px;margin-bottom:4px;font-size:0.86rem;color:#a7f3d0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;'>"
+                f"<span>💬 <b>Câu hỏi vừa luận:</b> <i style='color:#fde68a;'>\"{_last_q_asked}\"</i></span>"
+                f"<span>⚡ <b>{APP_VERSION} ({_ms/1000.0:.2f}s)</b> · Đã ghim Kết Luận ngay đầu trang</span>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            display_ai_result(_top_verdict_html, key_prefix=f"top_verdict_{location_key}")
+
+        if _deep_below_html.strip():
+            st.markdown("#### 🗺️ Sơ Đồ Mũi Tên Nhân Quả Chi Tiết · Bảng 24 Yếu Tố & Đối Chứng Song Não AI")
+            display_ai_result(_deep_below_html, key_prefix=f"master_{location_key}")
 
         # ── V128.0: THANH KIỂM CHỨNG THỰC NGHIỆM & TỰ HỌC TRỌNG SỐ 4 PHƯƠNG PHÁP (BẢO MẬT 100% — KHÔNG LƯU CÂU HỎI) ──
         try:
@@ -2870,8 +2873,8 @@ def render_master_unified_qa_box(location_key="main"):
         except Exception:
             pass
 
-    # ── HIỂN THỊ TRỰC TIẾP PHẦN II: 3 TAB PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP NGAY DƯỚI Ô HỎI ĐÁP (V106.0) ──
-    with st.expander("🏛️ MỞ XEM TRỰC TIẾP PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày Giờ Đẹp)", expanded=True):
+    # ── HIỂN THỊ TRỰC TIẾP PHẦN II: 3 TAB PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP NGAY DƯỚI Ô HỎI ĐÁP (ĐÓNG MẶC ĐỊNH ĐỂ GỌN MÀN HÌNH) ──
+    with st.expander("🏛️ MỞ XEM TRỰC TIẾP PHẦN II — CÁC PHÂN KHU CHUYÊN BIỆT ĐỘC LẬP (Tử Vi Cả Cuộc Đời · Thái Ất Quốc Gia · Xem Ngày Giờ Đẹp)", expanded=False):
         _tab_tv, _tab_ta, _tab_xn = st.tabs([
             "🔯 1. Tử Vi Đẩu Số (Chuyên Xem Cả Cuộc Đời)",
             "⚔️ 2. Thái Ất Thần Số (Chuyên Xem Vận Quốc Gia & Thế Giới)",
@@ -2992,6 +2995,11 @@ if st.session_state.current_view == "ky_mon":
             st.error(f"Lỗi tính toán bàn: {e}")
             st.session_state.chart_data = None
         
+        # V132.0: ĐẶT Ô HỎI ĐÁP & KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG TRÊN CÙNG (TRƯỚC BÀN 9 CUNG KỲ MÔN — KHÔNG CẦN CUỘN CHUỘT!)
+        if st.session_state.chart_data:
+            render_master_unified_qa_box(location_key="kymon_main")
+            st.markdown("---")
+
         # Display 9 palaces grid with full information
         if st.session_state.chart_data:
             st.markdown("### 📊 Chín Cung Kỳ Môn")
@@ -3599,11 +3607,6 @@ if st.session_state.current_view == "ky_mon":
                         
                 except Exception as e:
                     st.error(f"Lỗi so sánh: {e}")
-        
-        # ===== HỆ THỐNG HỎI ĐÁP HỢP NHẤT DUY NHẤT (1 Ô HỎI ĐÁP) =====
-        if st.session_state.chart_data:
-            st.markdown("---")
-            render_master_unified_qa_box(location_key="kymon_main")
 
 
 elif st.session_state.current_view == "mai_hoa":
