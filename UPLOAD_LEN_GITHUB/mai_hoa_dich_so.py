@@ -109,35 +109,35 @@ def _calc_the_dung_relation(hanh_the, hanh_dung):
 
 def _compute_question_resonance_offsets(question_text="", minute=0, second=0, cast_salt=0):
     """
-    V110.0 — Pháp Tự Khởi Quái & Đa Vấn Nhất Thời Chiêm Pháp (Thiệu Khang Tiết - Mai Hoa Dịch Số):
-    - Khi hỏi nhiều câu hỏi khác nhau hoặc hỏi lại nhiều câu tương tự trong cùng một khung giờ:
-      + Chia câu hỏi làm 2 nửa âm tiết (Thượng Thanh -> Thượng Quái, Hạ Thanh -> Hạ Quái)
-      + Cộng thêm khắc/phút hiện tại (minute, second) và số thứ tự lần động tâm (cast_salt)
-      => Đảm bảo mỗi câu hỏi khác nhau hoặc mỗi lần gieo lại đều ra quẻ biến thiên sống động, tuyệt đối không bị đơ/lặp lại 1 quẻ cố định!
+    V131.0 — Chuẩn Chính Thống Thiệu Khang Tiết (Mai Hoa Dịch Số Quyển 1 — Niên Nguyệt Nhật Thời & Đa Vấn Gia Số Pháp):
+    - Ở lần gieo chính thống theo giờ (cast_salt == 0): Giữ nguyên 100% công thức Niên + Nguyệt + Nhật + Thời cổ điển
+      (trùng khớp tuyệt đối với Nguyên Hanh Lợi Trinh china95.net & Vấn Chân iwzwh.com, TUYỆT ĐỐI KHÔNG cộng md5 hay mã UTF-8!).
+    - Chỉ khi hỏi liên tiếp nhiều câu trong cùng 1 canh giờ (cast_salt > 0 — Đa Vấn Nhất Thời Chiêm Pháp):
+      Dùng đúng Ngoại Ứng Tự Chiêm Pháp cổ điển: đếm số âm tiết thực tế nửa đầu (Thượng Thanh) và nửa sau (Hạ Thanh)
+      cộng khắc/phút hiện tại (minute) để sinh quẻ riêng minh bạch 100%, không bao giờ dùng băm md5.
     """
-    q_norm = str(question_text or "").strip().lower()
-    min_v = int(minute or 0)
-    sec_v = int(second or 0)
     salt_v = int(cast_salt or 0)
-    if not q_norm and min_v == 0 and sec_v == 0 and salt_v == 0:
+    if salt_v <= 0:
         return 0, 0, 0
 
-    words = [w for w in re.findall(r"\w+", q_norm) if w]
+    q_norm = str(question_text or "").strip()
+    min_v = int(minute or 0)
+    words = [w for w in re.findall(r"[0-9A-Za-zÀ-ỹ]+", q_norm) if w]
     if words:
         half = max(1, len(words) // 2)
         w_upper = words[:half]
         w_lower = words[half:] if len(words) > half else words
-        up_char_sum = sum(sum(ord(c) for c in w) + len(w) * 7 for w in w_upper)
-        lo_char_sum = sum(sum(ord(c) * (idx + 1) for idx, c in enumerate(w)) + len(w) * 11 for w in w_lower)
-        q_md5 = int(hashlib.md5(f"{q_norm}|{min_v}|{sec_v}|{salt_v}".encode("utf-8")).hexdigest()[:8], 16)
+        up_word_cnt = len(w_upper)
+        lo_word_cnt = len(w_lower)
+        total_letters = sum(len(w) for w in words)
     else:
-        up_char_sum = 0
-        lo_char_sum = 0
-        q_md5 = min_v * 31 + sec_v * 7 + salt_v * 13
+        up_word_cnt = salt_v
+        lo_word_cnt = salt_v * 2
+        total_letters = salt_v * 3
 
-    up_offset = (up_char_sum + (min_v // 3) + salt_v * 3) % 64
-    lo_offset = (lo_char_sum + min_v + (sec_v // 4) + salt_v * 5) % 64
-    dong_offset = (q_md5 + min_v + sec_v + salt_v) % 6
+    up_offset = up_word_cnt + (min_v // 15) + (salt_v - 1)
+    lo_offset = lo_word_cnt + (min_v % 15) + (salt_v - 1) * 2
+    dong_offset = total_letters + min_v + salt_v
     return up_offset, lo_offset, dong_offset
 
 

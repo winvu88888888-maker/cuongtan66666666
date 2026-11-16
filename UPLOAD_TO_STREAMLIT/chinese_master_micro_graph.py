@@ -92,6 +92,7 @@ TS_STAGES = [
     "Đế Vượng", "Suy", "Bệnh", "Tử", "Mộ", "Tuyệt", "Thai", "Dưỡng"
 ]
 TS_START_BY_EL = {"Mộc": "Hợi", "Hỏa": "Dần", "Thổ": "Thân", "Kim": "Tị", "Thủy": "Thân"}
+MO_BY_EL = {"Kim": "Sửu", "Mộc": "Mùi", "Thủy": "Thìn", "Thổ": "Thìn", "Hỏa": "Tuất"}
 
 HAO_VI_MEANING = {
     1: ("Hào Sơ (Chân/Nền móng/Khởi đầu)", "Gốc rễ ban đầu, tâm tư thầm kín, bước chân đầu tiên, nền nhà/làng xóm"),
@@ -1268,6 +1269,594 @@ def analyze_meihua_exhaustive_micro_graph(
     }
 
 
+def score_option_classical_imagery(
+    option_text: str,
+    ly_res: Dict[str, Any],
+    qm_res: Dict[str, Any],
+    mh_res: Dict[str, Any],
+    option_index: int = 1,
+) -> Tuple[int, List[str]]:
+    """
+    V131.0: Chấm điểm Vạn Vật Loại Tượng Thực Chiến (8 Quái × 5 Hành × 6 Lục Thân × 6 Hào Vị × 9 Tinh × 8 Môn × 8 Thần).
+    TUYỆT ĐỐI KHÔNG DÙNG hashlib.md5! Mọi điểm số đều bắt nguồn 100% từ tượng quẻ thật.
+    """
+    t = str(option_text or "").lower().strip()
+    pts = 0
+    evs: List[str] = []
+
+    tc = qm_res.get("target_cung", 2)
+    pa = (qm_res.get("palace_micro_audit") or {}).get(tc, {})
+    door = str(pa.get("door") or "")
+    star = str(pa.get("star") or "")
+    deity = str(pa.get("deity") or "")
+    quai_cung = str(pa.get("quai") or "")
+    am_can = str(pa.get("am_can") or "")
+
+    the_q = str(mh_res.get("the_quai") or "Càn")
+    dung_q = str(mh_res.get("dung_quai") or "Chấn")
+    haho_q = str(mh_res.get("ha_ho") or "Cấn")
+    thuongho_q = str(mh_res.get("thuong_ho") or "Tốn")
+    biendung_q = str(mh_res.get("bien_dung_quai") or dung_q)
+    active_trigs = [dung_q, biendung_q, the_q, haho_q, thuongho_q, quai_cung]
+    focus_trigs = (dung_q, biendung_q, quai_cung)
+
+    dt_idx = int(ly_res.get("dt_hao_idx") or 3)
+    lines = ly_res.get("line_micro_audit") or []
+    dt_ln = lines[dt_idx - 1] if 1 <= dt_idx <= len(lines) else {}
+    dt_chi = str(dt_ln.get("chi") or "")
+    dt_el = str(dt_ln.get("ngu_hanh") or "")
+    moving_lines = [ln for ln in lines if ln.get("is_moving") or ln.get("is_am_dong")]
+    moving_els = {str(ln.get("ngu_hanh") or "") for ln in moving_lines}
+    moving_chis = {str(ln.get("chi") or "") for ln in moving_lines}
+    moving_lts = {str(ln.get("luc_than") or "") for ln in moving_lines}
+
+    def _has_kw(*kws: str) -> bool:
+        for kw in kws:
+            if re.search(rf"(?<![a-zA-ZÀ-ỹ]){re.escape(kw)}(?![a-zA-ZÀ-ỹ])", t):
+                return True
+        return False
+
+    import re
+
+    # 1. ẨM THỰC: MÓN NƯỚC (Phở, Bún, Miến, Mì nước, Cháo, Súp, Canh, Lẩu, Đồ uống) vs MÓN KHÔ (Cơm, Xôi, Bánh mì, Nướng, Chiên)
+    if _has_kw("phở", "bún", "miến", "hủ tiếu", "bánh canh", "cháo", "súp", "canh", "lẩu", "mì nước", "món nước", "trà", "cà phê", "bia", "nước ngọt", "sữa"):
+        w_cnt = sum(2 for q in focus_trigs if q in ("Khảm", "Đoài")) + sum(1 for q in active_trigs if q in ("Khảm", "Đoài"))
+        if w_cnt > 0:
+            pts += w_cnt * 9
+            evs.append(f"Tượng Thủy/Trạch ({', '.join(q for q in focus_trigs if q in ('Khảm', 'Đoài')) or 'Khảm/Đoài'}) chủ món nước, canh thang, chất lỏng (ứng Phở/Bún/Lẩu)")
+        if dt_el == "Thủy" or "Thủy" in moving_els or any(c in ("Tý", "Hợi") for c in moving_chis | {dt_chi}):
+            pts += 18
+            evs.append(f"Lục Hào vượng Thủy khí ({dt_chi or 'Hợi/Tý'}) ứng trực tiếp món có nước dùng nóng hổi")
+        if "Hưu" in door or "Bồng" in star or am_can in ("Nhâm", "Quý"):
+            pts += 14
+            evs.append(f"Kỳ Môn hội {door}/{star} (Thủy khí) xác nhận món nước")
+
+    if _has_kw("cơm", "cơm tấm", "cơm rang", "cơm văn phòng", "xôi", "bánh mì", "bánh bao", "đồ khô", "nướng", "chiên", "rán", "thịt quay"):
+        d_cnt = sum(2 for q in focus_trigs if q in ("Khôn", "Cấn", "Ly")) + sum(1 for q in active_trigs if q in ("Khôn", "Cấn", "Ly"))
+        if d_cnt > 0:
+            pts += d_cnt * 8
+            evs.append(f"Tượng Thổ/Hỏa ({', '.join(q for q in focus_trigs if q in ('Khôn', 'Cấn', 'Ly')) or 'Khôn/Ly'}) chủ hạt gạo chín khô, cơm tấm, đồ nướng/chiên")
+        if dt_el in ("Thổ", "Hỏa") and "Khảm" not in (dung_q, biendung_q):
+            pts += 15
+            evs.append(f"Hào Dụng Thần mang hành {dt_el} (khô ráo/nhiệt Hỏa-Thổ), không phải món nước")
+        if any(x in door for x in ("Sinh", "Tử", "Cảnh")) or "Anh" in star or "Nhậm" in star:
+            pts += 12
+            evs.append(f"Kỳ Môn hội {door}/{star} (Thổ/Hỏa) ứng món cơm/nướng khô")
+
+    # 2. THỰC PHẨM CỤ THỂ: THỊT LỢN/HEO vs CÁ/HẢI SẢN vs BÒ vs GÀ vs RAU CỦ
+    if _has_kw("thịt lợn", "thịt heo", "lợn", "heo", "sườn", "ba chỉ", "giò"):
+        if "Khảm" in active_trigs or "Hợi" in (moving_chis | {dt_chi}):
+            pts += 24
+            evs.append("Quẻ Khảm / Địa Chi Hợi trong Vạn Vật Loại Tượng đích danh là Lợn (Thủy súc / Hợi Trư)")
+        elif "Khôn" in focus_trigs or "Đoài" in focus_trigs:
+            pts += 10
+            evs.append("Tượng Khôn/Đoài ứng thịt gia súc cắt miếng")
+    if _has_kw("cá", "hải sản", "tôm", "cua", "mực", "ốc"):
+        if "Tốn" in active_trigs or ("Khảm" in active_trigs and "Tốn" in active_trigs) or any(c in ("Thìn", "Tị") for c in (moving_chis | {dt_chi})):
+            pts += 25
+            evs.append("Quẻ Tốn (Thuyết Quái Truyện: Tốn vi Ngư = Con Cá) / Thìn Thủy khố ứng đích danh Cá & Hải sản")
+        elif "Đoài" in focus_trigs or "Hưu" in door:
+            pts += 12
+            evs.append("Đoài Trạch / Hưu Môn (ao đầm sông nước) ứng thủy sản, tôm cá")
+    if _has_kw("bò", "thịt bò", "phở bò", "bít tết", "trâu"):
+        if "Khôn" in active_trigs or "Sửu" in (moving_chis | {dt_chi}):
+            pts += 20
+            evs.append("Quẻ Khôn (Khôn vi Tử Mẫu Ngưu = Con Bò) / Địa Chi Sửu ứng thịt bò")
+    if _has_kw("gà", "thịt gà", "vịt", "ngan", "chim", "trứng"):
+        if "Đoài" in active_trigs or "Dậu" in (moving_chis | {dt_chi}) or "Ly" in focus_trigs:
+            pts += 22
+            evs.append("Địa Chi Dậu / Đoài-Ly (Dậu Kê = Gà, gia cầm có cánh) ứng thịt gà/vịt")
+    if _has_kw("rau", "củ", "quả", "trái cây", "chay", "đậu"):
+        if any(q in ("Chấn", "Tốn") for q in focus_trigs) or dt_el == "Mộc":
+            pts += 22
+            evs.append("Tượng Chấn/Tốn Thảo Mộc ứng rau củ quả, đồ chay thanh đạm")
+
+    # 3. VỊ TRÍ TRONG NHÀ / ĐỒ VẬT: GIƯỜNG / PHÒNG NGỦ / TRONG TÚI vs BÀN PHÒNG KHÁCH / NGOÀI SẢNH
+    if _has_kw("giường", "trên giường", "phòng ngủ", "chăn", "gối", "nệm", "đệm", "trong phòng", "trong tủ", "trong túi", "ngăn kéo"):
+        if dt_idx in (1, 2, 3):
+            pts += 20
+            evs.append(f"Dụng Thần đóng tại Hào {dt_idx} (Nội Quái = phòng riêng tư bên trong, giường ngủ/ngăn kín)")
+        if any(q in ("Khôn", "Cấn", "Tốn") for q in focus_trigs) or any(d in door for d in ("Hưu", "Đỗ", "Tử")) or any(s in deity for s in ("Thái Âm", "Lục Hợp", "Cửu Địa")):
+            pts += 18
+            evs.append(f"Tượng Cấn/Khôn/Tốn (Cấn vi Sàng = Giường nằm) kết hợp {door} · {deity} (nơi nghỉ ngơi kín đáo)")
+    if _has_kw("phòng khách", "ngoài bàn", "trên bàn", "bàn làm việc", "ngoài sảnh", "ngoài sân", "ngoài cửa", "kệ tivi", "bên ngoài"):
+        if dt_idx in (4, 5, 6):
+            pts += 20
+            evs.append(f"Dụng Thần đóng tại Hào {dt_idx} (Ngoại Quái = không gian sinh hoạt chung bên ngoài / phòng khách)")
+        if any(q in ("Càn", "Ly", "Chấn", "Đoài") for q in focus_trigs) or any(d in door for d in ("Khai", "Cảnh", "Thương")) or any(s in deity for s in ("Trực Phù", "Cửu Thiên", "Chu Tước")):
+            pts += 18
+            evs.append(f"Tượng {dung_q}/{biendung_q} phối {door} · {deity} chủ nơi sáng sủa, mặt bàn rộng mở ngoài phòng khách")
+
+    # 4. THỜI TIẾT: MƯA / ẨM vs NẮNG / TẠNH RÁO (Tăng San Bốc Dịch · Thiên Thời Chương)
+    _is_negated_rain = _has_kw("không mưa", "tạnh mưa", "hết mưa", "tạnh ráo")
+    if _has_kw("mưa", "trời mưa", "mây ẩm", "giông", "bão", "ướt") and not _is_negated_rain:
+        if "Phụ Mẫu" in moving_lts or (dt_ln.get("luc_than") == "Phụ Mẫu" and dt_ln.get("vuong_suy") in ("Vượng", "Tướng")):
+            pts += 28
+            evs.append("Lục Hào Thiên Thời: Hào Phụ Mẫu vượng/phát động chủ Vũ Thủy (trời đổ mưa)")
+        if any(q == "Khảm" for q in focus_trigs) or ("Đoài" in focus_trigs and "Khảm" in active_trigs):
+            pts += 22
+            evs.append("Quẻ Khảm Thủy / Đoài Trạch hiện rõ tượng mây mưa ẩm ướt")
+        if "Bồng" in star or "Trụ" in star or ("Hưu" in door and am_can in ("Nhâm", "Quý")):
+            pts += 15
+            evs.append(f"Kỳ Môn hội {star}/{door} chủ vũ lộ")
+        if "Tử Tôn" in moving_lts or all(q in ("Càn", "Ly", "Tốn") for q in (dung_q, biendung_q)):
+            pts -= 24
+            evs.append("Quẻ toàn Càn/Ly/Tốn khô ráo hoặc Tử Tôn động (Nhật Nguyệt quang minh) bác bỏ khả năng mưa")
+
+    if _has_kw("nắng", "trời nắng", "quang đãng", "tạnh", "tạnh ráo", "không mưa", "khô ráo"):
+        if "Tử Tôn" in moving_lts or "Thê Tài" in moving_lts:
+            pts += 28
+            evs.append("Lục Hào Thiên Thời: Tử Tôn / Thê Tài phát động khắc chế Phụ Mẫu chủ trời quang mây tạnh")
+        if any(q in ("Càn", "Ly", "Tốn") for q in focus_trigs) and "Khảm" not in focus_trigs:
+            pts += 24
+            evs.append(f"Quẻ {dung_q}/{biendung_q} (Càn Trời trong / Ly Nắng sáng / Tốn Gió tạnh, vắng bóng Khảm Thủy) báo trời không mưa, tạnh ráo")
+        if "Cảnh" in door or "Khai" in door or "Anh" in star:
+            pts += 15
+            evs.append(f"Kỳ Môn đắc {door}/{star} chủ quang tạnh sáng sủa")
+
+    # 5. ÂM NHẠC: NHẠC VUI vs NHẠC BUỒN vs NHẠC PHẬT vs NHẠC ĐÁM MA
+    if _has_kw("nhạc phật", "tụng kinh", "nhạc thiền", "chú đại bi", "nhạc tâm linh"):
+        if any("Hoa Cái" in ln.get("shensha", []) for ln in lines) or dt_ln.get("is_void") or any(q in ("Cấn", "Càn", "Khôn") for q in focus_trigs):
+            pts += 24
+            evs.append("Quẻ hội Cấn Sơn (chùa chiền/tĩnh tu) + Hoa Cái / Tuần Không (tâm không thanh tịnh) ứng Nhạc Phật / Thiền")
+        if any(x in deity for x in ("Thái Âm", "Cửu Địa", "Trực Phù")) or "Đỗ" in door or "Hưu" in door:
+            pts += 14
+            evs.append(f"Kỳ Môn hội {deity} · {door} mang khí thiền định tĩnh lặng")
+    if _has_kw("nhạc đám ma", "đám ma", "nhạc hiếu", "kèn đám ma", "bi ai"):
+        if ("Bạch Hổ" in deity or dt_ln.get("luc_thu") == "Bạch Hổ") and ("Tử" in door or "Kinh" in door) and "Quan Quỷ" in moving_lts:
+            pts += 30
+            evs.append("Bạch Hổ + Tử/Kinh Môn + Quan Quỷ động đồng hiện ứng âm thanh tang hiếu")
+        else:
+            pts -= 15
+    if _has_kw("nhạc buồn", "trữ tình", "bolero", "sâu lắng", "tâm trạng", "ballad"):
+        if any(q in ("Khảm", "Đoài", "Tốn") for q in focus_trigs) or any(x in deity for x in ("Thái Âm", "Huyền Vũ", "Lục Hợp")) or "Hưu" in door:
+            pts += 22
+            evs.append("Tượng Khảm/Đoài/Tốn phối Thái Âm/Hưu Môn chủ giai điệu da diết, sâu lắng, trữ tình")
+    if _has_kw("nhạc vui", "sôi động", "remix", "nhạc trẻ", "edm", "hào hứng"):
+        if any(q in ("Chấn", "Ly") for q in focus_trigs) or any(x in deity for x in ("Cửu Thiên", "Chu Tước")) or "Cảnh" in door or "Thương" in door:
+            pts += 24
+            evs.append("Tượng Chấn Lôi (tiết tấu mạnh) / Ly Hỏa (rực rỡ) phối Cảnh Môn / Chu Tước chủ nhạc vui sôi động")
+
+    # 6. TƯ THẾ, ĐỊA ĐIỂM NHÀ/CÔNG TY, THẬT/GIẢ, RỒI/CHƯA
+    if _has_kw("ở nhà", "tại gia", "trong nhà"):
+        if dt_idx <= 3 or any(d in door for d in ("Hưu", "Đỗ", "Tử", "Sinh")):
+            pts += 22
+            evs.append(f"Nội Quái (Hào {dt_idx}) & Cửa tĩnh ({door}) khẳng định đang ở tại nhà")
+    if _has_kw("công ty", "cơ quan", "văn phòng", "ngoài đường"):
+        if dt_idx >= 4 or any(d in door for d in ("Khai", "Cảnh", "Thương", "Kinh")):
+            pts += 22
+            evs.append(f"Ngoại Quái (Hào {dt_idx}) & Cửa động ({door}) khẳng định đang ở công ty/bên ngoài")
+    if _has_kw("ngồi", "nằm", "nghỉ", "ngủ"):
+        if not moving_lines or any(q in ("Cấn", "Khôn") for q in (the_q, dung_q)) or any(d in door for d in ("Hưu", "Tử", "Đỗ")):
+            pts += 22
+            evs.append("Quẻ thiên Tĩnh (Cấn/Khôn, Cửa Tĩnh) ứng tư thế ngồi/nằm nghỉ")
+    if _has_kw("đứng", "đi", "di chuyển", "thức"):
+        if len(moving_lines) >= 1 and (any(q in ("Chấn", "Càn", "Tốn") for q in (the_q, dung_q, biendung_q)) or any(d in door for d in ("Thương", "Khai", "Cảnh", "Kinh"))):
+            pts += 22
+            evs.append("Quẻ phát động (Chấn Túc/Càn Hành, Cửa Động) ứng trạng thái đứng/di chuyển/thức")
+
+    # 7. MÀU SẮC TRỰC TIẾP
+    _COLOR_RULES = (
+        (("đen", "xám đen", "xanh đen"), "Thủy", ("Khảm",), ("Huyền Vũ",)),
+        (("trắng", "bạc", "xám", "ánh kim"), "Kim", ("Càn", "Đoài"), ("Bạch Hổ", "Thái Âm")),
+        (("đỏ", "hồng", "cam", "tím"), "Hỏa", ("Ly",), ("Chu Tước", "Cửu Thiên")),
+        (("xanh lá", "xanh lục", "xanh ngọc"), "Mộc", ("Chấn", "Tốn"), ("Lục Hợp",)),
+        (("vàng", "nâu", "kem", "be"), "Thổ", ("Khôn", "Cấn"), ("Trực Phù", "Cửu Địa")),
+    )
+    for c_kws, c_el, c_trigs, c_deities in _COLOR_RULES:
+        if _has_kw(*c_kws):
+            if dt_el == c_el or any(q in c_trigs for q in focus_trigs) or any(d in deity for d in c_deities):
+                pts += 22
+                evs.append(f"Sắc tướng Ngũ Hành {c_el} ({dung_q}➔{biendung_q}, Thần {deity}) khớp trực tiếp màu sắc")
+
+    return pts, evs
+
+
+def synthesize_deep_classical_verdict(
+    ly_res: Dict[str, Any],
+    qm_res: Dict[str, Any],
+    mh_res: Dict[str, Any],
+    chart_data: Optional[Dict[str, Any]] = None,
+    dung_than: str = "Bản Thân",
+    question: str = "",
+    option_a: str = "",
+    option_b: str = "",
+) -> Dict[str, Any]:
+    """
+    V131.0 — BỘ ĐỘNG CƠ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU (DEEP CLASSICAL SYNTHESIS ENGINE — 7 TÂM PHÁP ĐẠI SƯ):
+    Kết tinh trực tiếp từ Tăng San Bốc Dịch (Dã Hạc Lão Nhân), Bốc Phệ Chính Tông, Vấn Chân Kỳ Môn & Mai Hoa Dịch Số:
+    1. Phân định Hỷ Dụng Thần vs Ưu/Kỵ Dụng Thần (Thiên thời mưa/nắng, Bệnh tật, Thật/Giả, Đã xong/Chưa xong, Tài lộc).
+    2. Lượng hóa Chuỗi Truyền Lực 4 Tầng Lục Hào (Nguyệt/Nhật -> Động [Tham Sinh Quên Khắc / Tam Hợp] -> Hồi Đầu Sinh Khắc / Tiến Thoái -> Thế/Dụng).
+    3. Lượng hóa Chủ-Khách Kỳ Môn (Can Ngày vs Cung Sự Việc), Tứ Hại (Không, Mộ, Kích, Bức) & Ngũ Bất Ngộ Thời.
+    4. Lượng hóa Đảng Thể vs Đảng Dụng Mai Hoa 4 chặng.
+    5. Bệnh – Dược Ứng Kỳ Pháp (Tìm đúng Bệnh của quẻ để chỉ đúng Dược thời gian ứng nghiệm).
+    6. Phân xử lựa chọn A hay B bằng Vạn Vật Loại Tượng & Thế-Ứng Chủ-Khách (0% băm md5).
+    """
+    import re
+
+    cd = chart_data if isinstance(chart_data, dict) else {}
+    q_low = str(question or "").lower().strip()
+    lines = ly_res.get("line_micro_audit") or []
+    dt_idx = int(ly_res.get("dt_hao_idx") or 3)
+    the_pos = int(ly_res.get("the_pos") or 3)
+    ung_pos = int(ly_res.get("ung_pos") or 6)
+    dt_ln = lines[dt_idx - 1] if 1 <= dt_idx <= len(lines) else {}
+    the_ln = lines[the_pos - 1] if 1 <= the_pos <= len(lines) else {}
+    ung_ln = lines[ung_pos - 1] if 1 <= ung_pos <= len(lines) else {}
+
+    # ── TÂM PHÁP 1: NHẬN DIỆN HỶ/KỴ & THỜI THÁI CÂU HỎI ──
+    is_weather_q = any(w in q_low for w in ("mưa", "nắng", "thời tiết", "giông", "bão", "tạnh"))
+    is_worry_q = any(w in q_low for w in ("bệnh", "ốm", "sốt", "đau", "tai nạn", "nguy hiểm", "âm binh", "vong", "tà khí", "bị kiện", "mất trộm"))
+    is_done_yet_q = any(w in q_low for w in ("đã bắn", "bắn chưa", "về chưa", "đến chưa", "tới chưa", "đi chưa", "ăn chưa", "xong chưa", "rồi hay chưa", "chưa hay rồi"))
+    is_truth_q = any(w in q_low for w in ("thật hay giả", "nói thật", "nói dối", "có thật không", "tin được không", "lừa"))
+    is_wealth_q = any(w in q_low for w in ("tiền", "lương", "thưởng", "tài chính", "lãi", "lời", "vốn", "giá", "bán", "mua", "đầu tư", "nợ", "tờ tiền", "triệu", "tỷ"))
+
+    # ── TÂM PHÁP 2: CHẤM ĐIỂM CHUỖI TRUYỀN LỰC 4 TẦNG LỤC HÀO (-100 .. +100 -> chuẩn hóa 0..100) ──
+    lh_pts = 0
+    lh_chain_notes: List[str] = []
+    dt_el = str(dt_ln.get("ngu_hanh") or "Thổ")
+    dt_chi = str(dt_ln.get("chi") or "Thìn")
+    the_el = str(the_ln.get("ngu_hanh") or "Thổ")
+    the_chi = str(the_ln.get("chi") or "Thìn")
+    vs = str(dt_ln.get("vuong_suy") or "Bình")
+
+    vs_map = {"Vượng": 22, "Tướng": 15, "Bình": 2, "Hưu": -7, "Tù": -13, "Tử": -19}
+    lh_pts += vs_map.get(vs, 0)
+    lh_chain_notes.append(f"Nguyệt Lệnh định khí Dụng Thần Hào {dt_idx} {dt_ln.get('luc_than','')} ({dt_chi}-{dt_el}) ở bậc {vs}")
+
+    if dt_ln.get("is_nguyet_pha"):
+        lh_pts -= 26
+        lh_chain_notes.append("Phạm Nguyệt Phá (tháng xung vỡ gốc hào — tổn lực nghiêm trọng)")
+    if dt_ln.get("is_am_dong"):
+        lh_pts += 18
+        lh_chain_notes.append("Đắc Nhật Xung Ám Động (hào vượng được ngày kích hoạt chạy ngầm cực nhanh)")
+    elif dt_ln.get("is_nhat_pha"):
+        lh_pts -= 24
+        lh_chain_notes.append("Phạm Nhật Phá (hào suy bị ngày xung tan rã)")
+
+    chi_ngay = _norm_chi(cd.get("chi_ngay") or "Tý") or "Tý"
+    chi_gio = _norm_chi(cd.get("chi_gio") or "Tý") or "Tý"
+    nhat_el = CHI_ELEMENT.get(chi_ngay, "Thủy")
+    if dt_chi == chi_ngay:
+        lh_pts += 22
+        lh_chain_notes.append(f"Dụng Thần Lâm Nhật Kiến ({chi_ngay}) — bất khả xâm phạm, ứng cực mạnh")
+    elif SINH_EL.get(nhat_el) == dt_el:
+        lh_pts += 15
+        lh_chain_notes.append(f"Được Nhật Thần ({chi_ngay}-{nhat_el}) tương sinh tiếp sức")
+    elif KHAC_EL.get(nhat_el) == dt_el and not dt_ln.get("is_moving"):
+        lh_pts -= 13
+        lh_chain_notes.append(f"Bị Nhật Thần ({chi_ngay}-{nhat_el}) khắc chế")
+
+    # Quét Nguyên Thần Động vs Kỵ Thần Động (Tham Sinh Quên Khắc / Thông Quan)
+    ng_el = next((k for k, v in SINH_EL.items() if v == dt_el), "")
+    ky_el = next((k for k, v in KHAC_EL.items() if v == dt_el), "")
+    moving_others = [ln for ln in lines if ln.get("hao") != dt_idx and (ln.get("is_moving") or ln.get("is_am_dong"))]
+    ng_movers = [ln for ln in moving_others if ln.get("ngu_hanh") == ng_el and "HOI_DAU_KHAC" not in (ln.get("hoa_flags") or []) and ln.get("khong_type") != "CHAN_KHONG"]
+    ky_movers = [ln for ln in moving_others if ln.get("ngu_hanh") == ky_el and "HOI_DAU_KHAC" not in (ln.get("hoa_flags") or []) and not ln.get("is_nhat_pha") and not ln.get("is_nguyet_pha")]
+    ky_broken = [ln for ln in moving_others if ln.get("ngu_hanh") == ky_el and ("HOI_DAU_KHAC" in (ln.get("hoa_flags") or []) or ln.get("is_nhat_pha") or ln.get("is_nguyet_pha"))]
+
+    if ng_movers and ky_movers:
+        lh_pts += 25
+        lh_chain_notes.append(f"Đại Cát Tham Sinh Quên Khắc: Kỵ Thần Hào {ky_movers[0]['hao']} động nhưng sinh qua Nguyên Thần Hào {ng_movers[0]['hao']} ──► dồn lực sinh Dụng Thần (chuyển nguy thành an!)")
+    elif ng_movers:
+        lh_pts += 20
+        lh_chain_notes.append(f"Nguyên Thần Hào {ng_movers[0]['hao']} ({ng_movers[0]['chi']}-{ng_el}) phát động sinh phù trực tiếp Dụng Thần (nguồn lực dồi dào)")
+    elif ky_movers:
+        lh_pts -= 24
+        lh_chain_notes.append(f"Kỵ Thần Hào {ky_movers[0]['hao']} ({ky_movers[0]['chi']}-{ky_el}) độc phát khắc thẳng vào Dụng Thần mà thiếu Nguyên Thần thông quan")
+    elif ky_broken:
+        lh_pts += 10
+        lh_chain_notes.append(f"Kỵ Thần Hào {ky_broken[0]['hao']} động nhưng tự bị Hồi Đầu Khắc / Xung Phá — kẻ cản đường tự suy bại")
+
+    # Xét Hào Biến của chính Dụng Thần
+    h_flags = set(dt_ln.get("hoa_flags") or [])
+    if "HOI_DAU_SINH" in h_flags:
+        lh_pts += 22
+        lh_chain_notes.append("Dụng Thần động hóa Hồi Đầu Sinh (càng về sau càng vượng, tự sinh tài lực)")
+    if "HOA_TIEN" in h_flags:
+        lh_pts += 18
+        lh_chain_notes.append("Dụng Thần động Hóa Tiến Thần (khí thế tiến bước mạnh mẽ)")
+    if "HOI_DAU_KHAC" in h_flags:
+        lh_pts -= 28
+        lh_chain_notes.append("Dụng Thần động hóa Hồi Đầu Khắc (đầu xuôi đuôi ngược, tự hủy kết quả ở phút chót!)")
+    if "HOA_THOAI" in h_flags:
+        lh_pts -= 18
+        lh_chain_notes.append("Dụng Thần động Hóa Thoái Thần (lực suy giảm dần, dễ bỏ dở hoặc hụt kỳ vọng)")
+    if "HOA_MO" in h_flags:
+        lh_pts -= 14
+        lh_chain_notes.append("Dụng Thần động Hóa Nhập Mộ (tạm thời bị giam hãm, đình trệ)")
+    if "HOA_TUYET" in h_flags and "HOI_DAU_SINH" not in h_flags:
+        lh_pts -= 18
+        lh_chain_notes.append("Dụng Thần động Hóa Tuyệt địa (sức kiệt giữa chừng)")
+    if "PHAN_NGAM_HAO" in h_flags:
+        lh_pts -= 15
+        lh_chain_notes.append("Hào phạm Phản Ngâm (lật đi lật lại, biến động bất thường)")
+
+    # Xét Không Vong & Phục Thần
+    if dt_ln.get("khong_type") == "CHAN_KHONG":
+        lh_pts -= 30
+        lh_chain_notes.append(f"Dụng Thần rơi vào Chân Không ({dt_chi} tĩnh vô khí) — hiện tại rỗng không, khó thành thực chất")
+    elif dt_ln.get("khong_type") == "GIA_KHONG":
+        lh_pts -= 4
+        lh_chain_notes.append(f"Dụng Thần lâm Giả Không ({dt_chi} hữu khí/động) — trước nghẽn nhẹ nhưng Xuất Không chắc chắn ứng nghiệm!")
+
+    # Xét Thế – Dụng tương tác (Tăng San Bốc Dịch: Tài khắc Thế đắc Tài!)
+    if dt_idx == the_pos:
+        lh_pts += 12
+        lh_chain_notes.append("Dụng Thần Trì Thế (việc nằm ngay trong tầm tay bản thân)")
+    elif SINH_EL.get(dt_el) == the_el or LUC_HOP.get(dt_chi, ("", ""))[0] == the_chi:
+        lh_pts += 14
+        lh_chain_notes.append(f"Dụng Thần ({dt_chi}-{dt_el}) tương sinh / lục hợp Hào Thế ({the_chi}-{the_el}) — sự việc chủ động tìm đến người hỏi, dễ thành")
+    elif KHAC_EL.get(dt_el) == the_el:
+        if is_wealth_q and dt_ln.get("luc_than") == "Thê Tài" and the_ln.get("vuong_suy") in ("Vượng", "Tướng", "Bình"):
+            lh_pts += 14
+            lh_chain_notes.append("Đắc cách cổ pháp 'Tài Khắc Thế Tất Đắc Tài' (Thê Tài tìm đến gõ cửa người hỏi, tiền về nhanh!)")
+        else:
+            lh_pts -= 14
+            lh_chain_notes.append("Dụng Thần khắc Hào Thế (sự việc gây áp lực nặng lên bản thân)")
+    elif SINH_EL.get(the_el) == dt_el:
+        lh_pts -= 5
+        lh_chain_notes.append("Hào Thế sinh xuất cho Dụng Thần (bản thân phải bỏ nhiều tâm sức/chi phí theo đuổi)")
+
+    lh_norm = max(8, min(95, 52 + int(round(lh_pts * 0.65))))
+
+    # ── TÂM PHÁP 3: KỲ MÔN CHỦ-KHÁCH, TỨ HẠI & NGŨ BẤT NGỘ THỜI ──
+    tc = int(qm_res.get("target_cung") or 2)
+    cung_chu = int(qm_res.get("cung_chu") or 2)
+    pa_tc = (qm_res.get("palace_micro_audit") or {}).get(tc, {})
+    pa_chu = (qm_res.get("palace_micro_audit") or {}).get(cung_chu, {})
+    el_tc = str(pa_tc.get("ngu_hanh") or "Thổ")
+    el_chu = str(pa_chu.get("ngu_hanh") or "Thổ")
+    door_tc = str(pa_tc.get("door") or "")
+    star_tc = str(pa_tc.get("star") or "")
+    deity_tc = str(pa_tc.get("deity") or "")
+    tu_hai_tc = pa_tc.get("tu_hai") or []
+
+    qm_pts = 0
+    qm_notes: List[str] = []
+    if tc == cung_chu:
+        qm_pts += 12
+        qm_notes.append(f"Cung Sự Việc và Cung Người Hỏi đồng hội tại Cung {tc} (việc gắn sát thân, ứng nhanh)")
+    elif SINH_EL.get(el_tc) == el_chu:
+        qm_pts += 18
+        qm_notes.append(f"Cung Sự Việc ({tc}-{el_tc}) tương sinh Cung Người Hỏi ({cung_chu}-{el_chu}) — thiên thời địa lợi nâng đỡ")
+    elif KHAC_EL.get(el_chu) == el_tc:
+        qm_pts += 7
+        qm_notes.append(f"Cung Người Hỏi ({cung_chu}-{el_chu}) chế phục Cung Sự Việc ({tc}-{el_tc}) — chủ động nỗ lực sẽ kiểm soát được")
+    elif KHAC_EL.get(el_tc) == el_chu:
+        qm_pts -= 18
+        qm_notes.append(f"Cung Sự Việc ({tc}-{el_tc}) khắc ngược Cung Người Hỏi ({cung_chu}-{el_chu}) — ngoại cảnh chèn ép, nhiều lực cản")
+    elif SINH_EL.get(el_chu) == el_tc:
+        qm_pts -= 6
+        qm_notes.append(f"Cung Người Hỏi sinh xuất cho Cung Sự Việc — hao tâm tốn sức")
+
+    if any(d in door_tc for d in ("Khai", "Hưu", "Sinh")):
+        qm_pts += 14
+    elif "Cảnh" in door_tc:
+        qm_pts += 4
+    elif any(d in door_tc for d in ("Tử", "Kinh", "Thương", "Đỗ")):
+        qm_pts -= 12
+
+    if any(s in star_tc for s in ("Tâm", "Phụ", "Nhậm", "Cầm", "Xung")):
+        qm_pts += 8
+    elif any(s in star_tc for s in ("Nhuế", "Bồng", "Trụ")):
+        qm_pts -= 8
+
+    for th in tu_hai_tc:
+        if "Môn Bức" in th:
+            qm_pts -= 14
+            qm_notes.append(f"Phạm Môn Bức tại Cung {tc} (cửa cát mất nửa lực, cửa hung càng thêm hung)")
+        elif "Kích Hình" in th:
+            qm_pts -= 14
+            qm_notes.append(f"Phạm Lục Nghi Kích Hình ({th}) — dễ va vấp thủ tục/tổn hao")
+        elif "Nhập Mộ" in th:
+            qm_pts -= 12
+            qm_notes.append(f"Thiên Can Nhập Mộ tại Cung {tc} — bế tắc tạm thời, chưa thông suốt")
+        elif "Tuần Không" in th:
+            qm_pts -= 10
+            qm_notes.append(f"Cung {tc} lâm Tuần Không — thông tin/kết quả còn bỏ ngỏ")
+
+    # Kiểm tra Ngũ Bất Ngộ Thời (Can Giờ khắc Can Ngày đồng tính Âm Dương)
+    can_n = str(cd.get("can_ngay") or "Giáp").strip()
+    can_g = str(cd.get("can_gio") or "Giáp").strip()
+    NGU_BAT_NGO = {
+        ("Giáp", "Canh"), ("Ất", "Tân"), ("Bính", "Nhâm"), ("Đinh", "Quý"), ("Mậu", "Giáp"),
+        ("Kỷ", "Ất"), ("Canh", "Bính"), ("Tân", "Đinh"), ("Nhâm", "Mậu"), ("Quý", "Kỷ"),
+    }
+    is_nbnt = (can_n, can_g) in NGU_BAT_NGO
+    if is_nbnt:
+        qm_pts -= 22
+        qm_notes.append(f"Cảnh báo đại kỵ Kỳ Môn: Phạm NGŨ BẤT NGỘ THỜI (Giờ {can_g} khắc Ngày {can_n}) — mưu sự dễ trục trặc trái ý")
+
+    qm_norm = max(10, min(94, 52 + int(round(qm_pts * 0.72))))
+
+    # ── TÂM PHÁP 4: MAI HOA ĐẢNG THỂ VS ĐẢNG DỤNG 4 CHẶNG ──
+    el_the_mh = TRIGRAM_META_8.get(mh_res.get("the_quai", "Càn"), TRIGRAM_META_8["Càn"])[3]
+    stages_mh = [
+        (mh_res.get("dung_quai", "Chấn"), 1.0),
+        (mh_res.get("ha_ho", "Cấn"), 0.8),
+        (mh_res.get("thuong_ho", "Tốn"), 0.9),
+        (mh_res.get("bien_dung_quai", "Chấn"), 1.8),
+    ]
+    mh_pts = 0.0
+    for q_nm, w_st in stages_mh:
+        q_el = TRIGRAM_META_8.get(q_nm, TRIGRAM_META_8["Càn"])[3]
+        if SINH_EL.get(q_el) == el_the_mh:
+            mh_pts += 14 * w_st
+        elif q_el == el_the_mh:
+            mh_pts += 9 * w_st
+        elif KHAC_EL.get(el_the_mh) == q_el:
+            mh_pts += 4 * w_st
+        elif SINH_EL.get(el_the_mh) == q_el:
+            mh_pts -= 8 * w_st
+        elif KHAC_EL.get(q_el) == el_the_mh:
+            mh_pts -= 15 * w_st
+    mh_norm = max(12, min(92, 50 + int(round(mh_pts * 0.65))))
+
+    # Điểm hợp nhất Tam Thức có trọng số thực chiến: Lục Hào 50% + Kỳ Môn 30% + Mai Hoa 20%
+    composite_score = int(round(lh_norm * 0.50 + qm_norm * 0.30 + mh_norm * 0.20))
+
+    # ── TÂM PHÁP 5: BỆNH – DƯỢC ỨNG KỲ PHÁP (病药应期法) ──
+    CHI_CLOCK = {
+        "Tý": "23h–01h", "Sửu": "01h–03h", "Dần": "03h–05h", "Mão": "05h–07h",
+        "Thìn": "07h–09h", "Tị": "09h–11h", "Ngọ": "11h–13h", "Mùi": "13h–15h",
+        "Thân": "15h–17h", "Dậu": "17h–19h", "Tuất": "19h–21h", "Hợi": "21h–23h",
+    }
+    xung_dt = LUC_XUNG.get(dt_chi, "Ngọ")
+    hop_dt = LUC_HOP.get(dt_chi, ("Mùi", ""))[0]
+    is_hop_bound = dt_ln.get("is_moving") and (hop_dt == chi_ngay)
+
+    already_happened = bool(
+        (dt_ln.get("is_moving") or dt_ln.get("is_am_dong") or dt_chi in (chi_ngay, chi_gio))
+        and not dt_ln.get("is_void")
+        and "HOA_MO" not in h_flags
+        and "HOI_DAU_KHAC" not in h_flags
+        and not is_hop_bound
+        and not any("Tuần Không" in x or "Nhập Mộ" in x for x in tu_hai_tc)
+    )
+
+    if dt_ln.get("is_void"):
+        benh_quai = f"Bệnh tại Dụng Thần lâm Tuần Không ({dt_chi} — {dt_ln.get('khong_type')})"
+        duoc_ung_ky = f"Ứng vào Ngày/Giờ XUẤT KHÔNG hoặc XUNG KHÔNG: {dt_chi} ({CHI_CLOCK.get(dt_chi,'')}) hoặc {xung_dt} ({CHI_CLOCK.get(xung_dt,'')})"
+    elif "HOA_MO" in h_flags or any("Nhập Mộ" in x for x in tu_hai_tc):
+        mo_chi = MO_BY_EL.get(dt_el, "Thìn")
+        xung_mo = LUC_XUNG.get(mo_chi, "Tuất")
+        benh_quai = f"Bệnh tại Dụng Thần Nhập Mộ ({mo_chi})"
+        duoc_ung_ky = f"Ứng vào Ngày/Giờ XUNG KHAI MỘ KHỐ: {xung_mo} ({CHI_CLOCK.get(xung_mo,'')}) hoặc trực {dt_chi}"
+    elif is_hop_bound:
+        benh_quai = f"Bệnh tại Hào Động phùng Hợp trói ({dt_chi} hợp {hop_dt})"
+        duoc_ung_ky = f"Ứng vào Ngày/Giờ XUNG MỞ HỢP: {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc {LUC_XUNG.get(hop_dt,'')}"
+    elif ky_movers and not ng_movers:
+        k_chi = ky_movers[0]["chi"]
+        xung_k = LUC_XUNG.get(k_chi, "Thân")
+        benh_quai = f"Bệnh tại Kỵ Thần Hào {ky_movers[0]['hao']} ({k_chi}) độc phát khắc Dụng"
+        duoc_ung_ky = f"Ứng khi chế phục Kỵ Thần vào Ngày/Giờ {xung_k} ({CHI_CLOCK.get(xung_k,'')}) hoặc khi Nguyên Thần {ng_el} đắc lệnh"
+    elif dt_ln.get("is_nguyet_pha") or dt_ln.get("is_nhat_pha"):
+        benh_quai = f"Bệnh tại Dụng Thần bị Xung Phá ({dt_chi})"
+        duoc_ung_ky = f"Cần đợi Ngày/Giờ THỰC PHÁ ({dt_chi} — {CHI_CLOCK.get(dt_chi,'')}) hoặc HỢP PHÁ ({hop_dt} — {CHI_CLOCK.get(hop_dt,'')}) mới hàn gắn"
+    elif already_happened and is_done_yet_q:
+        benh_quai = "Quẻ Thông Mạch Hoàn Toàn (Dụng Thần hữu khí đã phát động / lâm Nhật Thời, không vướng Không-Mộ-Hợp)"
+        duoc_ung_ky = f"Sự việc ĐÃ XẢY RA / ĐÃ NỔ NGAY TRONG KHUNG GIỜ HIỆN TẠI ({chi_gio} — {CHI_CLOCK.get(chi_gio,'')}) hoặc vừa hoàn tất trước đó!"
+    elif dt_ln.get("is_moving"):
+        benh_quai = f"Dụng Thần ({dt_chi}) đang phát động mạnh ('Động nhi phùng Hợp tắc ứng')"
+        duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ LỤC HỢP {hop_dt} ({CHI_CLOCK.get(hop_dt,'')}) hoặc chính vị {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
+    else:
+        benh_quai = f"Dụng Thần ({dt_chi}) hữu khí nhưng đang An Tĩnh ('Tĩnh nhi phùng Xung tắc động')"
+        duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ XUNG ĐỘNG {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc trực {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
+
+    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ (THỜI TIẾT · ĐÃ XONG CHƯA · THẬT GIẢ · BỆNH TẬT · LỰA CHỌN A/B) ──
+    special_mode = "STANDARD"
+    verdict_polarity = "POSITIVE" if composite_score >= 55 else ("NEUTRAL" if composite_score >= 45 else "NEGATIVE")
+    direct_headline = ""
+
+    if is_weather_q and not (option_a and option_b and "mưa" not in option_a.lower() and "mưa" not in option_b.lower()):
+        special_mode = "WEATHER"
+        rain_pts, rain_evs = score_option_classical_imagery("trời mưa giông ẩm ướt", ly_res, qm_res, mh_res, 1)
+        sun_pts, sun_evs = score_option_classical_imagery("trời nắng quang đãng tạnh ráo", ly_res, qm_res, mh_res, 2)
+        if rain_pts > sun_pts + 4:
+            verdict_polarity = "RAIN"
+            direct_headline = f"🌧️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: CÓ MƯA / TRỜI NHIỀU MÂY ẨM ƯỚT ({min(88, 55 + (rain_pts - sun_pts) // 2)}%) — {rain_evs[0] if rain_evs else 'Thủy khí & Phụ Mẫu vượng động'}!"
+        else:
+            verdict_polarity = "CLEAR"
+            direct_headline = f"☀️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: KHÔNG MƯA — TRỜI TẠNH RÁO / QUANG ĐÃNG ({min(88, 56 + max(4, sun_pts - rain_pts) // 2)}%) — {sun_evs[0] if sun_evs else 'Quẻ khô ráo, vắng bóng Thủy khí phát động'}!"
+    elif is_done_yet_q:
+        special_mode = "DONE_YET"
+        if already_happened:
+            verdict_polarity = "DONE"
+            direct_headline = f"✅ KẾT LUẬN THỜI THÁI THỰC TẾ: ĐÃ XẢY RA / ĐÃ HOÀN TẤT RỒI! ({benh_quai})"
+        else:
+            verdict_polarity = "NOT_YET"
+            direct_headline = f"⏳ KẾT LUẬN THỜI THÁI THỰC TẾ: HIỆN TẠI CHƯA XẢY RA ({benh_quai}) ➔ {duoc_ung_ky}!"
+    elif is_truth_q:
+        special_mode = "TRUTH_CHECK"
+        deceit_flags = (
+            dt_ln.get("is_void")
+            or ung_ln.get("is_void")
+            or dt_ln.get("luc_thu") in ("Huyền Vũ", "Đằng Xà")
+            or ung_ln.get("luc_thu") in ("Huyền Vũ", "Đằng Xà")
+            or deity_tc in ("Huyền Vũ", "Đằng Xà")
+            or any("Tuần Không" in x for x in tu_hai_tc)
+        )
+        if deceit_flags and composite_score < 58:
+            verdict_polarity = "FALSE"
+            direct_headline = f"🚨 KIỂM ĐỊNH THỰC HƯ CỔ PHÁP: KHÔNG ĐÁNG TIN / THÔNG TIN SAI LỆCH HOẶC NÓI DỐI (Ứng/Dụng vướng Không Vong · Huyền Vũ/Đằng Xà)!"
+        else:
+            verdict_polarity = "TRUE"
+            direct_headline = f"✅ KIỂM ĐỊNH THỰC HƯ CỔ PHÁP: ĐÂY LÀ SỰ THẬT / ĐÁNG TIN CẬY ({composite_score}% — Hào Ứng & Dụng Thần hữu khí, minh bạch)!"
+    elif option_a and option_b:
+        special_mode = "CHOICE_AB"
+        pa_pts, pa_evs = score_option_classical_imagery(option_a, ly_res, qm_res, mh_res, 1)
+        pb_pts, pb_evs = score_option_classical_imagery(option_b, ly_res, qm_res, mh_res, 2)
+        if pa_pts == pb_pts:
+            # Không dùng md5! Dùng Trục Thế-Ứng & Chủ-Khách: Phương án 1 ứng Thế/Chủ, Phương án 2 ứng Ứng/Khách
+            the_vs = vs_map.get(str(the_ln.get("vuong_suy") or "Bình"), 0) + (8 if not the_ln.get("is_void") else -12)
+            ung_vs = vs_map.get(str(ung_ln.get("vuong_suy") or "Bình"), 0) + (8 if not ung_ln.get("is_void") else -12)
+            if the_vs >= ung_vs:
+                pa_pts += 14
+                pa_evs.append(f"Trục Thế–Ứng Chủ–Khách: Phương án 1 (ứng Hào Thế {the_chi}-{the_el} / Cung Chủ {cung_chu}) vượng khí vượt trội Hào Ứng ({ung_ln.get('chi','')})")
+            else:
+                pb_pts += 14
+                pb_evs.append(f"Trục Thế–Ứng Chủ–Khách: Phương án 2 (ứng Hào Ứng {ung_ln.get('chi','')}-{ung_ln.get('ngu_hanh','')} / Cung Khách) vượng khí áp đảo Hào Thế")
+        diff_ab = pa_pts - pb_pts
+        sc_a = max(18, min(85, 50 + int(round(diff_ab * 0.7))))
+        if sc_a == 50:
+            sc_a = 64 if diff_ab >= 0 else 36
+        sc_b = 100 - sc_a
+        win_opt = option_a if sc_a >= sc_b else option_b
+        win_sc = max(sc_a, sc_b)
+        win_ev = (pa_evs if sc_a >= sc_b else pb_evs)
+        direct_headline = (
+            f"⚖️ ĐỐI CHỨNG VẠN VẬT LOẠI TƯỢNG & TAM THỨC: CHỐT «{win_opt.upper()}» ({win_sc}% vs {100 - win_sc}%) — "
+            f"{win_ev[0] if win_ev else 'Khớp trực tiếp khí lực Thế-Ứng & Tinh-Môn'}!"
+        )
+
+    prompt_synthesis_block = (
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V131.0 (TĂNG SAN BỐC DỊCH · VẤN CHÂN KỲ MÔN · MAI HOA — THAM MƯU CỐT LÕI) ===\n"
+        f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
+        f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào]: {' | '.join(lh_chain_notes)}.\n"
+        f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
+        f"4. [Chẩn Đoán BỆNH – DƯỢC ỨNG KỲ PHÁP (病药应期)]: {benh_quai} ══► {duoc_ung_ky}.\n"
+        + (f"5. [Phân Xử Chuyên Biệt ({special_mode})]: {direct_headline}\n" if direct_headline else "")
+    )
+
+    return {
+        "special_mode": special_mode,
+        "verdict_polarity": verdict_polarity,
+        "composite_score": composite_score,
+        "lh_score": lh_norm,
+        "qm_score": qm_norm,
+        "mh_score": mh_norm,
+        "already_happened": already_happened,
+        "is_wealth_q": is_wealth_q,
+        "benh_quai": benh_quai,
+        "duoc_ung_ky": duoc_ung_ky,
+        "lh_chain_notes": lh_chain_notes,
+        "qm_notes": qm_notes,
+        "direct_headline": direct_headline,
+        "prompt_synthesis_block": prompt_synthesis_block,
+    }
+
+
 def build_unified_causal_diagram_and_micro_audit(
     chart_data: Optional[Dict[str, Any]],
     luc_hao_data: Optional[Dict[str, Any]],
@@ -1296,6 +1885,14 @@ def build_unified_causal_diagram_and_micro_audit(
     )
 
     all_edges = list(ly_res["directed_edges"]) + list(qm_res["directed_edges"]) + list(mh_res["directed_edges"])
+    deep_syn = synthesize_deep_classical_verdict(
+        ly_res=ly_res,
+        qm_res=qm_res,
+        mh_res=mh_res,
+        chart_data=chart_data,
+        dung_than=dung_than,
+        question=question,
+    )
 
     # Giao thoa Tín Hiệu Vi Mô Tam Thức (Cross-System Micro Resonance)
     resonances: List[str] = []
@@ -1356,16 +1953,25 @@ def build_unified_causal_diagram_and_micro_audit(
     )
 
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
+    _bd_box_html = (
+        f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V131.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
+        f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
+        f'• <b>Chìa khóa mở khóa / Dược ứng kỳ:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn["duoc_ung_ky"]}</span>'
+        f'</div></div>'
+    )
 
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & KIỂM KÊ VI MÔ 100% DẤU HIỆU QUẺ (V130.0)</span>'
-        f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn 元亨利贞 china95 · 问真六爻/奇门 · Không bỏ sót 1 chi tiết nhỏ</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & LUẬN GIẢI BIỆN CHỨNG TẦNG SÂU (V131.0)</span>'
+        f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn 元亨利贞 china95 · 问真六爻/奇门 · Bệnh–Dược Cổ Pháp</span>'
         f'</div>'
         f'{ly_res["flowchart_html"]}'
         f'{qm_res["flowchart_html"]}'
         f'{mh_res["flowchart_html"]}'
+        f'{_bd_box_html}'
         f'<div style="padding:9px 12px;background:rgba(15,23,42,0.9);border-radius:9px;border-left:4px solid #a78bfa;margin-bottom:8px;">'
         f'<div style="font-size:0.85em;font-weight:900;color:#c4b5fd;margin-bottom:3px;">🔎 TỔNG HỢP TÍN HIỆU VI MÔ & GIAO THOA TAM THỨC TRÊN QUẺ NÀY</div>'
         f'{res_items_html}'
@@ -1395,7 +2001,8 @@ def build_unified_causal_diagram_and_micro_audit(
         for e in all_edges[:14]
     ]
     prompt_micro_chain_text = (
-        "=== MẠNG LƯỚI MŨI TÊN NHÂN QUẢ VI MÔ V130.0 (CHUẨN NGUYÊN HANH LỢI TRINH & VẤN CHÂN — BẮT BUỘC DÙNG ĐỂ LUẬN SÂU KHÔNG BỎ SÓT CHI TIẾT) ===\n"
+        f"{deep_syn['prompt_synthesis_block']}\n"
+        "=== MẠNG LƯỚI MŨI TÊN NHÂN QUẢ VI MÔ V131.0 (CHUẨN NGUYÊN HANH LỢI TRINH & VẤN CHÂN — BẮT BUỘC DÙNG ĐỂ LUẬN SÂU KHÔNG BỎ SÓT CHI TIẾT) ===\n"
         f"- Quái Thân Lục Hào: {ly_res['quai_than']['status_str']} ({ly_res['quai_than']['meaning']}) | Thế Thân: {ly_res['the_than']['status_str']}.\n"
         f"- Kỳ Môn Ký Cung & Ám Can: Cung Dụng Thần {tc} có Thiên/Địa Can {qm_tc_audit.get('can_thien_disp','')}/{qm_tc_audit.get('can_dia_disp','')}, Ám Can [{qm_tc_audit.get('am_can','')}] ({qm_tc_audit.get('am_can_meaning','')}), Tứ Hại: {', '.join(qm_tc_audit.get('tu_hai',[])) or 'Không phạm'}.\n"
         f"- Chuỗi Lật Cung Kỳ Môn 4 Trạm (Quá khứ -> Hiện tại -> Kế tiếp -> Kết cục): {' ──► '.join('Cung ' + str(x) + ' (' + qm_res['palace_micro_audit'][x]['door'] + ')' for x in qm_res['phien_cung_chain'])}.\n"
@@ -1407,6 +2014,7 @@ def build_unified_causal_diagram_and_micro_audit(
         "liuyao_micro": ly_res,
         "qimen_micro": qm_res,
         "meihua_micro": mh_res,
+        "deep_synthesis": deep_syn,
         "all_directed_edges": all_edges,
         "resonances": resonances,
         "visual_flowchart_html": visual_flowchart_html,

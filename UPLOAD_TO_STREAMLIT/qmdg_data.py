@@ -927,6 +927,41 @@ def enrich_qimen_chart_dict(chart_dict: dict) -> dict:
     return chart_dict
 
 
+def compute_truc_phu_truc_su(cuc: int, is_duong_don: bool, can_gio: str, chi_gio: str, dia_ban: dict = None) -> tuple:
+    """
+    V131.0: Tính chính xác Sao Trực Phù, Cửa Trực Sử, Tuần Thủ & Cung Tuần Thủ từ (cuc, is_duong_don, can_gio, chi_gio)
+    theo đúng chuẩn thiên văn Chuyển Bàn Kỳ Môn Ký Khôn Nhị Cung (không bao giờ gán bừa sao/cửa ngoài Tuần Thủ).
+    Trả về: (truc_phu_star, truc_su_door, tuan_thu_stem, leader_palace)
+    """
+    CAN_10 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+    CHI_12 = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+    SAO_GOC = {
+        1: "Thiên Bồng", 2: "Thiên Nhuế", 3: "Thiên Xung", 4: "Thiên Phụ", 5: "Thiên Cầm",
+        6: "Thiên Tâm", 7: "Thiên Trụ", 8: "Thiên Nhậm", 9: "Thiên Anh",
+    }
+    MON_GOC = {
+        1: "Hưu Môn", 2: "Tử Môn", 3: "Thương Môn", 4: "Đỗ Môn", 5: "Tử Môn",
+        6: "Khai Môn", 7: "Kinh Môn", 8: "Sinh Môn", 9: "Cảnh Môn",
+    }
+    cuc_v = int(cuc) if str(cuc).isdigit() and 1 <= int(cuc) <= 9 else 5
+    db = dia_ban if isinstance(dia_ban, dict) and dia_ban else an_bai_luc_nghi(cuc_v, bool(is_duong_don))
+    cg = str(can_gio or "Giáp").strip()
+    chg = str(chi_gio or "Tý").strip().replace("Tỵ", "Tị")
+    idx_c = CAN_10.index(cg) if cg in CAN_10 else 0
+    idx_ch = CHI_12.index(chg) if chg in CHI_12 else 0
+    leader_chi_idx = (idx_ch - idx_c) % 12
+    lead_map = {0: "Mậu", 10: "Kỷ", 8: "Canh", 6: "Tân", 4: "Nhâm", 2: "Quý"}
+    tuan_thu = lead_map.get(leader_chi_idx, "Mậu")
+    leader_palace = 1
+    for pk, pv in db.items():
+        if str(pk).isdigit() and str(pv).strip() == tuan_thu:
+            leader_palace = int(pk)
+            break
+    truc_phu = SAO_GOC.get(leader_palace, "Thiên Cầm")
+    truc_su = MON_GOC.get(leader_palace, "Tử Môn")
+    return (truc_phu, truc_su, tuan_thu, leader_palace)
+
+
 def find_qimen_stem_palace(chart_dict: dict, stem: str, chi: str = "", plate: str = "heaven") -> tuple:
     """
     V130.0: Định vị chính xác Cung chứa Thiên Can (bao gồm cả Giáp độn Lục Nghi VÀ Can thứ 9 Ký Cung Thiên Cầm/Khôn 2!).

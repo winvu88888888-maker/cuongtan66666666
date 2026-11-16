@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V130.0"
-APP_VERSION_FULL = f"{APP_VERSION} — SƠ ĐỒ MŨI TÊN NHÂN QUẢ VI MÔ & ĐỐI CHUẨN NGUYÊN HANH LỢI TRINH · VẤN CHÂN (Ám Can · Ký Cung · Lật Cung 4 Trạm · Quái Thân · 12 Thần Sát ✨)"
+APP_VERSION = "V131.0"
+APP_VERSION_FULL = f"{APP_VERSION} — ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU · BỆNH–DƯỢC CỔ PHÁP · SƠ ĐỒ MŨI TÊN VI MÔ (Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn ✨)"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V130.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V130.0"
+# V131.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V131.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2604,58 +2604,69 @@ def render_master_unified_qa_box(location_key="main"):
                     _chis_rq = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tị', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']
                     chart_for_q = dict(st.session_state.get('chart_data') or {})
 
-                    # 1. V110.0: GIEO QUẺ ĐỒNG BỘ 100% MAI HOA + LỤC HÀO + KỲ MÔN (KHÔNG TRÙNG LẶP GIỮA CÁC CÂU HỎI)
+                    # 1. V131.0: KHỞI QUẺ CHÍNH THỐNG 100% CHUẨN CỔ PHÁP TRUNG HOA (LỤC HÀO 6 ĐỒNG XU THẬT 0..6 HÀO ĐỘNG · MAI HOA CHÍNH TÔNG · KỲ MÔN TUẦN THỦ CHUẨN THIÊN VĂN)
                     if _use_rnd:
                         try:
                             import secrets as _sec_mod
+                            from mai_hoa_dich_so import build_res as _mh_build_res
+                            from luc_hao_kinh_dich import lines_to_quai_num as _lh_l2q
                             _sys_rng = _sec_mod.SystemRandom()
-                            mai_hoa_for_q = tinh_qua_ngau_nhien(prev_tuple=_prev_tuple)
-                            mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
-                            mai_hoa_for_q['_random_cast'] = True
-                            st.session_state.mai_hoa_result = mai_hoa_for_q
 
-                            _u_rnd = mai_hoa_for_q['upper']
-                            _l_rnd = mai_hoa_for_q['lower']
-                            _d_rnd = mai_hoa_for_q['dong_hao']
+                            # Gieo 6 hào bằng 3 đồng xu cổ pháp thật sự (xác suất chuẩn: 6=Lão Âm [1/8], 7=Thiếu Dương [3/8], 8=Thiếu Âm [3/8], 9=Lão Dương [1/8])
+                            # Giữ nguyên Nhật Thần & Nguyệt Kiến thực tế của ngày hôm nay theo đúng chuẩn Vấn Chân Lục Hào!
+                            _coin_6 = [sum(2 if _sys_rng.randint(0, 1) == 0 else 3 for _ in range(3)) for _ in range(6)]
+                            _ban_l6 = [1 if x in (7, 9) else 0 for x in _coin_6]
+                            _l_rnd = _lh_l2q(_ban_l6[:3])
+                            _u_rnd = _lh_l2q(_ban_l6[3:])
+                            _mv_6 = [idx + 1 for idx, x in enumerate(_coin_6) if x in (6, 9)]
+                            _d_rnd = _mv_6[0] if _mv_6 else (((_u_rnd + _l_rnd + dt_now.hour) % 6) + 1)
+
+                            if _prev_tuple and (_u_rnd, _l_rnd, _d_rnd) == tuple(_prev_tuple):
+                                _coin_6 = [sum(2 if _sys_rng.randint(0, 1) == 0 else 3 for _ in range(3)) for _ in range(6)]
+                                _ban_l6 = [1 if x in (7, 9) else 0 for x in _coin_6]
+                                _l_rnd = _lh_l2q(_ban_l6[:3])
+                                _u_rnd = _lh_l2q(_ban_l6[3:])
+                                _mv_6 = [idx + 1 for idx, x in enumerate(_coin_6) if x in (6, 9)]
+                                _d_rnd = _mv_6[0] if _mv_6 else (((_u_rnd + _l_rnd + dt_now.hour) % 6) + 1)
+
                             st.session_state['_last_cast_tuple'] = (_u_rnd, _l_rnd, _d_rnd)
 
-                            # Tạo cặp Can-Chi hợp lệ trong 60 Hoa Giáp (Can Dương đi với Chi Dương, Can Âm đi với Chi Âm)
-                            def _roll_valid_canchi():
-                                _ci = _sys_rng.randint(0, 9)
-                                _chi_candidates = [idx for idx in range(12) if (idx % 2) == (_ci % 2)]
-                                _chi_i = _sys_rng.choice(_chi_candidates)
-                                return _cans_rq[_ci], _chis_rq[_chi_i]
+                            _real_can_ngay = chart_for_q.get('can_ngay') or 'Giáp'
+                            _real_chi_ngay = chart_for_q.get('chi_ngay') or 'Tý'
+                            _real_can_thang = chart_for_q.get('can_thang') or 'Giáp'
+                            _real_chi_thang = chart_for_q.get('chi_thang') or 'Tý'
 
-                            _r_can_ngay, _r_chi_ngay = _roll_valid_canchi()
-                            _r_can_gio, _r_chi_gio = _roll_valid_canchi()
-                            _r_can_thang = chart_for_q.get('can_thang') or _cans_rq[(_u_rnd + _l_rnd) % 10]
-                            _r_chi_thang = chart_for_q.get('chi_thang') or _chis_rq[(dt_now.month + 1) % 12]
-
-                            # Lục Hào dùng ĐÚNG CÙNG (upper, lower, dong_hao) với Mai Hoa -> Đồng bộ 100%!
                             luc_hao_for_q = lap_qua_luc_hao(
                                 dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                 topic=selected_topic,
-                                can_ngay=_r_can_ngay,
-                                chi_ngay=_r_chi_ngay,
-                                can_thang=_r_can_thang,
-                                chi_thang=_r_chi_thang,
-                                upper_override=_u_rnd,
-                                lower_override=_l_rnd,
-                                moving_override=_d_rnd,
+                                can_ngay=_real_can_ngay,
+                                chi_ngay=_real_chi_ngay,
+                                can_thang=_real_can_thang,
+                                chi_thang=_real_chi_thang,
+                                coin_throws=_coin_6,
                             )
                             luc_hao_for_q['_random_cast'] = True
                             st.session_state.luc_hao_result = luc_hao_for_q
 
-                            # Đồng bộ Bàn Kỳ Môn 9 Cung ngẫu nhiên theo quẻ vừa gieo
+                            mai_hoa_for_q = _mh_build_res(_u_rnd, _l_rnd, _d_rnd)
+                            mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
+                            mai_hoa_for_q['_random_cast'] = True
+                            st.session_state.mai_hoa_result = mai_hoa_for_q
+
+                            # Bàn Kỳ Môn Báo Số Khởi Cục chuẩn thiên văn (Trực Phù & Trực Sử tính đúng 100% từ Tuần Thủ!)
                             try:
-                                from qmdg_data import an_bai_luc_nghi as _ab_rnd, lap_ban_qmdg as _lb_rnd, enrich_qimen_chart_dict as _enr_rnd
+                                from qmdg_data import (
+                                    an_bai_luc_nghi as _ab_rnd,
+                                    lap_ban_qmdg as _lb_rnd,
+                                    enrich_qimen_chart_dict as _enr_rnd,
+                                    compute_truc_phu_truc_su as _calc_tpts_rnd,
+                                )
                                 _r_cuc = ((_u_rnd + _l_rnd + _d_rnd - 1) % 9) + 1
-                                _r_duong = bool((_u_rnd + _d_rnd) % 2 == 1)
-                                _r_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
-                                _r_doors = ["Hưu Môn", "Tử Môn", "Thương Môn", "Đỗ Môn", "Khai Môn", "Kinh Môn", "Sinh Môn", "Cảnh Môn"]
-                                _r_tp = _r_stars[(_u_rnd - 1) % len(_r_stars)]
-                                _r_ts = _r_doors[(_l_rnd - 1) % len(_r_doors)]
+                                _r_duong = bool(chart_for_q.get('is_duong_don', True))
+                                _r_can_gio = chart_for_q.get('can_gio') or 'Giáp'
+                                _r_chi_gio = chart_for_q.get('chi_gio') or 'Tý'
                                 _r_dia = _ab_rnd(_r_cuc, _r_duong)
+                                _r_tp, _r_ts, _r_tt, _ = _calc_tpts_rnd(_r_cuc, _r_duong, _r_can_gio, _r_chi_gio, _r_dia)
                                 _r_tb, _r_ctb, _r_nb, _r_sb, _ = _lb_rnd(_r_cuc, _r_tp, _r_ts, _r_can_gio, _r_chi_gio, _r_duong)
                                 chart_for_q.update({
                                     'thien_ban': _r_tb,
@@ -2664,13 +2675,10 @@ def render_master_unified_qa_box(location_key="main"):
                                     'than_ban': _r_sb,
                                     'dia_can': _r_dia,
                                     'dia_ban': _r_dia,
-                                    'can_ngay': _r_can_ngay,
-                                    'chi_ngay': _r_chi_ngay,
-                                    'can_gio': _r_can_gio,
-                                    'chi_gio': _r_chi_gio,
                                     'cuc': _r_cuc,
                                     'is_duong_don': _r_duong,
-                                    'am_duong_don': f"{'Dương' if _r_duong else 'Âm'} Độn {_r_cuc} Cục",
+                                    'am_duong_don': f"{'Dương' if _r_duong else 'Âm'} Độn {_r_cuc} Cục (Báo Số)",
+                                    'tuan_thu': _r_tt,
                                     'truc_phu': _r_tp,
                                     'truc_su': _r_ts,
                                     '_random_cast': True,
@@ -2679,25 +2687,29 @@ def render_master_unified_qa_box(location_key="main"):
                                 st.session_state.chart_data = chart_for_q
                             except Exception:
                                 pass
+                            _mv_toast = f"Động hào {', '.join(map(str, _mv_6))}" if _mv_6 else "Quẻ Tĩnh (0 hào động)"
                             st.toast(
-                                f"🎲 Đã gieo quẻ ngẫu nhiên mới: {mai_hoa_for_q.get('ten')} ➔ {mai_hoa_for_q.get('ten_qua_bien')} (Động hào {_d_rnd})!",
+                                f"🎲 Đã gieo 6 đồng xu Lục Hào thật: {luc_hao_for_q['ban']['name']} ➔ {luc_hao_for_q['bien']['name']} ({_mv_toast})!",
                                 icon="🎲"
                             )
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')
                             luc_hao_for_q = st.session_state.get('luc_hao_result')
                     else:
-                        # Chế độ Thời Gian + Thanh Âm Câu Hỏi (Đa Vấn Nhất Thời Chiêm Pháp):
-                        # Mỗi câu hỏi khác nhau (hoặc khi bấm hỏi lại) sẽ cộng hưởng chữ & khắc/phút để sinh quẻ riêng,
-                        # tuyệt đối không bị đơ/lặp lại cùng 1 quẻ cho nhiều câu hỏi trong cùng khung giờ!
+                        # Chế độ Chính Thống Thời Gian Thực (V131.0 — Khớp 100% Nguyên Hanh Lợi Trinh china95.net & Vấn Chân iwzwh.com):
+                        # - Ở câu hỏi đầu tiên (_prev_tuple is None): Lập đúng 100% Quẻ Niên-Nguyệt-Nhật-Thời cổ điển (cast_salt = 0)
+                        #   và GIỮ NGUYÊN 100% Bàn Kỳ Môn Thời Gia chính thống của giờ hiện tại (tuyệt đối không chế cục giả!).
+                        # - Khi hỏi tiếp câu thứ 2+ trong cùng canh giờ (_prev_tuple is not None): Dùng Ngoại Ứng Tự Chiêm Gia Số Pháp
+                        #   (đếm âm tiết thực tế câu hỏi, 0% md5) để khởi quẻ mới cho câu hỏi mới mà vẫn giữ nguyên Bàn Kỳ Môn Thời Gia thật!
                         try:
-                            _q_salt = _cast_seq if _is_repeat_same_q else 0
+                            from qmdg_data import enrich_qimen_chart_dict as _enr_real_q
+                            _enr_real_q(chart_for_q)
+                            _q_salt = 0 if _prev_tuple is None else _cast_seq
                             mai_hoa_for_q = tinh_qua_theo_thoi_gian(
                                 dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                 minute=dt_now.minute, second=dt_now.second,
                                 question_text=_q_clean_now, cast_salt=_q_salt
                             )
-                            # Nếu câu hỏi mới vô tình trùng bộ (upper, lower, dong_hao) với câu vừa hỏi trước đó, tự động nhảy sang biến số kế tiếp
                             while _prev_tuple and (mai_hoa_for_q['upper'], mai_hoa_for_q['lower'], mai_hoa_for_q['dong_hao']) == tuple(_prev_tuple) and _q_salt < _cast_seq + 8:
                                 _q_salt += 1
                                 mai_hoa_for_q = tinh_qua_theo_thoi_gian(
@@ -2723,53 +2735,8 @@ def render_master_unified_qa_box(location_key="main"):
                                 upper_override=_u_q,
                                 lower_override=_l_q,
                                 moving_override=_d_q,
-                                question_text=_q_clean_now,
-                                minute=dt_now.minute,
-                                second=dt_now.second,
-                                cast_salt=_q_salt,
                             )
                             st.session_state.luc_hao_result = luc_hao_for_q
-
-                            # V127.0: Ở lần gieo đầu tiên trong khung giờ (_prev_tuple is None), giữ nguyên 100% Bàn Kỳ Môn Thời Gian Thực chính thống!
-                            # Chỉ khi hỏi liên tiếp nhiều câu trong cùng 1 giờ (_prev_tuple is not None), mới kích hoạt Kỳ Môn Hoạt Bàn Đa Vấn Pháp
-                            # và dịch đồng thời Can-Chi Giờ theo đúng bước 60 Hoa Giáp (bảo toàn 100% quy tắc Dương Can đi Dương Chi, Âm Can đi Âm Chi),
-                            # tuyệt đối không ghi đè làm hỏng st.session_state.chart_data gốc của màn hình chính!
-                            if _prev_tuple is not None:
-                                try:
-                                    from qmdg_data import an_bai_luc_nghi as _ab_q, lap_ban_qmdg as _lb_q, enrich_qimen_chart_dict as _enr_q
-                                    _base_cuc = int(chart_for_q.get('cuc') or 5)
-                                    _q_cuc = ((_base_cuc + _u_q + _l_q - 1) % 9) + 1
-                                    _q_duong = bool(chart_for_q.get('is_duong_don', True))
-                                    _q_stars = ["Thiên Bồng", "Thiên Nhuế", "Thiên Xung", "Thiên Phụ", "Thiên Cầm", "Thiên Tâm", "Thiên Trụ", "Thiên Nhậm", "Thiên Anh"]
-                                    _q_doors = ["Hưu Môn", "Tử Môn", "Thương Môn", "Đỗ Môn", "Khai Môn", "Kinh Môn", "Sinh Môn", "Cảnh Môn"]
-                                    _q_tp = _q_stars[(_u_q + _d_q - 1) % len(_q_stars)]
-                                    _q_ts = _q_doors[(_l_q + _d_q - 1) % len(_q_doors)]
-                                    _step60 = (_u_q + _l_q + _d_q + _q_salt)
-                                    _c0_idx = _cans_rq.index(chart_for_q.get('can_gio', 'Giáp')) if chart_for_q.get('can_gio') in _cans_rq else 0
-                                    _ch0_idx = _chis_rq.index(chart_for_q.get('chi_gio', 'Tý')) if chart_for_q.get('chi_gio') in _chis_rq else 0
-                                    if (_c0_idx % 2) != (_ch0_idx % 2):
-                                        _ch0_idx = (_ch0_idx + 1) % 12
-                                    _q_can_gio = _cans_rq[(_c0_idx + _step60) % 10]
-                                    _q_chi_gio = _chis_rq[(_ch0_idx + _step60) % 12]
-                                    _q_dia = _ab_q(_q_cuc, _q_duong)
-                                    _q_tb, _q_ctb, _q_nb, _q_sb, _ = _lb_q(_q_cuc, _q_tp, _q_ts, _q_can_gio, _q_chi_gio, _q_duong)
-                                    chart_for_q.update({
-                                        'thien_ban': _q_tb,
-                                        'can_thien_ban': _q_ctb,
-                                        'nhan_ban': _q_nb,
-                                        'than_ban': _q_sb,
-                                        'dia_can': _q_dia,
-                                        'dia_ban': _q_dia,
-                                        'can_gio': _q_can_gio,
-                                        'chi_gio': _q_chi_gio,
-                                        'cuc': _q_cuc,
-                                        'am_duong_don': f"{'Dương' if _q_duong else 'Âm'} Độn {_q_cuc} Cục",
-                                        'truc_phu': _q_tp,
-                                        'truc_su': _q_ts,
-                                    })
-                                    _enr_q(chart_for_q)
-                                except Exception:
-                                    pass
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')
                             luc_hao_for_q = st.session_state.get('luc_hao_result')

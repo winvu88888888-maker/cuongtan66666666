@@ -16498,8 +16498,8 @@ class FreeAIHelper:
             if _is_spec_override_box and locals().get('_dual_verified', {}).get('verified_headline'):
                 _dv_box = locals().get('_dual_verified', {})
                 _dv_hl_str = str(_dv_box['verified_headline'] or '')
-                if not _dv_box.get('is_strict_override', True) and _online_verdict_line and len(_online_verdict_line.strip()) > 15 and not any(g in _online_verdict_line.upper() for g in ['CẦN CÂN NHẮC', 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT', 'ĐẠI CÁT (', 'CÁT (', 'BÌNH (']):
-                    _online_verdict_line = f"{_online_verdict_line}  |  {_dv_hl_str}"
+                if not _dv_box.get('is_strict_override', False) and _online_verdict_line and len(_online_verdict_line.strip()) > 18 and not any(g in _online_verdict_line.upper() for g in ['CẦN CÂN NHẮC', 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT', 'ĐẠI CÁT (', 'CÁT (', 'BÌNH (', 'HUNG (']):
+                    _online_verdict_line = _online_verdict_line.strip()
                 else:
                     _online_verdict_line = _dv_hl_str
                 _v_why_dv = str(_dv_box.get('verified_why') or '')
@@ -16605,7 +16605,7 @@ class FreeAIHelper:
 
             final_parts.append(
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & SƠ ĐỒ MŨI TÊN NHÂN QUẢ VI MÔ (Antigravity Brain Mode V130.0 — Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn · 384 Hào · Mai Hoa)</div>'
+                f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & LUẬN GIẢI BIỆN CHỨNG TẦNG SÂU (Antigravity Brain Mode V131.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_grid_html
@@ -18148,7 +18148,7 @@ class FreeAIHelper:
                     ) if _fb_cards else ''
                     final_parts.append(
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:18px 20px;border-radius:16px;margin:12px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.32);">'
-                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & SƠ ĐỒ MŨI TÊN NHÂN QUẢ VI MÔ (Antigravity Brain Mode V130.0 — Nguyên Hanh Lợi Trinh · Vấn Chân Lục Hào/Kỳ Môn · 384 Hào · Mai Hoa)</div>'
+                        f'<div style="font-size:1.0em;font-weight:800;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM & LUẬN GIẢI BIỆN CHỨNG TẦNG SÂU (Antigravity Brain Mode V131.0 — Tăng San Bốc Dịch · Vấn Chân Lục Hào/Kỳ Môn · Bệnh–Dược Cổ Pháp)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.42);border-radius:12px;border:1.5px solid rgba(251,191,36,0.65);font-size:1.26em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_grid_fb
