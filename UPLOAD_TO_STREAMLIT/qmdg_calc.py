@@ -263,7 +263,8 @@ def calculate_qmdg_params(dt=None):
     hour_can, hour_chi = get_can_chi_hour(day_can, dt.hour)
     month_can, month_chi = get_can_chi_month(year_can, tiet_khi)
 
-    lday, lmonth, lyear, is_leap = solar_to_lunar(dt)
+    # V133.0: Đồng bộ ngày Âm lịch lúc Dạ Tý (23:00-23:59) với dt_for_day để Mai Hoa · Lục Hào · Kỳ Môn khớp 100%
+    lday, lmonth, lyear, is_leap = solar_to_lunar(dt_for_day)
 
     yang_terms = [
         "Đông Chí", "Tiểu Hàn", "Đại Hàn", "Lập Xuân", "Vũ Thủy", "Kinh Trập",

@@ -1,23 +1,37 @@
 import os
 import json
 import uuid
+import tempfile
 from datetime import datetime
 
 class FeedbackRAG:
     """
-    V25.0 Feedback RAG 
+    V133.0 Feedback RAG — An toàn tuyệt đối với mọi thư mục làm việc & môi trường Cloud Read-Only.
     Quản lý bộ nhớ kinh nghiệm thực tế của người dùng.
     """
-    def __init__(self, db_path="data_hub/user_experience_db.json"):
+    def __init__(self, db_path=None):
+        if not db_path:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            db_path = os.path.join(base_dir, "data_hub", "user_experience_db.json")
         self.db_path = db_path
         self._ensure_db_exists()
 
     def _ensure_db_exists(self):
-        if not os.path.exists("data_hub"):
-            os.makedirs("data_hub", exist_ok=True)
-        if not os.path.exists(self.db_path):
-            with open(self.db_path, "w", encoding="utf-8") as f:
-                json.dump([], f, ensure_ascii=False, indent=4)
+        try:
+            parent_dir = os.path.dirname(os.path.abspath(self.db_path))
+            if parent_dir and not os.path.exists(parent_dir):
+                os.makedirs(parent_dir, exist_ok=True)
+            if not os.path.exists(self.db_path):
+                with open(self.db_path, "w", encoding="utf-8") as f:
+                    json.dump([], f, ensure_ascii=False, indent=4)
+        except OSError:
+            self.db_path = os.path.join(tempfile.gettempdir(), "qmdg_user_experience_db.json")
+            try:
+                if not os.path.exists(self.db_path):
+                    with open(self.db_path, "w", encoding="utf-8") as f:
+                        json.dump([], f, ensure_ascii=False, indent=4)
+            except OSError:
+                pass
 
     def save_feedback(self, question, dung_than, result_status, feedback_text, user_analysis="", chart_summary=""):
         """

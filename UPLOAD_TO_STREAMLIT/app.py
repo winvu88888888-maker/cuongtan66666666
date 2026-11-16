@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V133.0"
+APP_VERSION = "V133.1"
 APP_VERSION_FULL = f"{APP_VERSION} — CHUẨN 100% KHỞI QUẺ THIÊN VĂN & LUẬN QUẺ BÍ TRUYỀN TRUNG HOA · KẾT LUẬN ĐẦU TRANG ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V133.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V133.0"
+# V133.1: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V133.1"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2183,9 +2183,10 @@ with st.sidebar:
         import qmdg_calc
         params = qmdg_calc.calculate_qmdg_params(selected_datetime)
     
-        # Calculate Lunar Date for display — V42.8 FIX: Use Hồ Ngọc Đức algorithm (accurate)
+        # Calculate Lunar Date for display — V133.0 FIX: Use Hồ Ngọc Đức algorithm + đồng bộ Dạ Tý (23:00-23:59)
         from xem_ngay_dep import solar2lunar as _s2l_sidebar
-        lday, lmonth, lyear, is_leap = _s2l_sidebar(selected_datetime.day, selected_datetime.month, selected_datetime.year)
+        _dt_lunar_sb = selected_datetime + dt_module.timedelta(days=1) if selected_datetime.hour == 23 else selected_datetime
+        lday, lmonth, lyear, is_leap = _s2l_sidebar(_dt_lunar_sb.day, _dt_lunar_sb.month, _dt_lunar_sb.year)
         l_year_can, l_year_chi = qmdg_calc.get_can_chi_year(lyear)
         l_year_name = f"{l_year_can} {l_year_chi}"
     

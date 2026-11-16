@@ -16276,6 +16276,7 @@ class FreeAIHelper:
                 auth_warnings=locals().get('auth_warnings', []),
                 is_fake=locals().get('is_fake', False),
                 narrative_summary=_narrative_main,
+                use_online_api=bool(kwargs.get('use_online_api', True)),
             )
             _dual_agent_banner_html = _dual_verified.get("dual_agent_html", "")
             if _dual_verified.get("has_specialized_override") and _dual_verified.get("verified_headline"):
@@ -19013,7 +19014,6 @@ class FreeAIHelper:
             if is_age:
                 tt_num = TIEN_THIEN.get(quai, 0) if quai else 0
                 lines.append(f"  - Khí lực Cung ({relation}) · Tiên Thiên {quai}={tt_num} (kết hợp vai vế thực tế & Thọ Nguyên Thượng/Trung/Hạ Thọ để định tuổi)")
-                lines.append(f"  - → **Tuổi ước tính (KM): khoảng {tuoi_min}-{tuoi_max} tuổi**")
             
             # Tìm đồ
             if is_find:

@@ -7218,6 +7218,7 @@ class HexagramReasoningAI:
         auth_warnings: list = None,
         is_fake: bool = False,
         narrative_summary: str = "",
+        use_online_api: bool = True,
     ) -> dict:
         chart_data = chart_data or {}
         luc_hao_data = luc_hao_data or {}
@@ -7325,9 +7326,9 @@ class HexagramReasoningAI:
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
         _cache_sig = "V133_CANON_MASTER::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
-        _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig)
+        _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig) if use_online_api else None
 
-        if _real_ai_pair is None and len(_raw_q_str) >= 4:
+        if use_online_api and _real_ai_pair is None and len(_raw_q_str) >= 4:
             # --- GỌI CON AI SỐ 1 THỰC TẾ (CHUYÊN GIA ĐỌC HIỂU CÂU HỎI & XÁC ĐỊNH HỶ/KỴ DỤNG THẦN) ---
             _prompt_ai1 = (
                 "Bạn là CON AI SỐ 1 (Chuyên Gia Đọc Hiểu Ý Định & Pháp Lấy Dụng Thần Chuẩn Tăng San Bốc Dịch & Ngự Định Kỳ Môn Bảo Giám).\n"
@@ -7433,7 +7434,7 @@ class HexagramReasoningAI:
             _ai2_md_report = (
                 f"### 🔮 BẢN LUẬN GIẢI CHUYÊN SÂU TỪ ĐẠI SƯ {_m_used_raw} (V133.0)\n"
                 f"#### Đoàn 1: Pháp Định Dụng Thần & Thời Thái Câu Hỏi\n"
-                f"- {_step1_note or _ai1_json.get('ai1_dung_than_guide', '')}\n"
+                f"- {_step1_note or _r_ai1.get('ai1_dung_than_guide', '')}\n"
                 f"#### Đoàn 2: Chuỗi Nhân Quả Tam Thức (Lục Hào · Kỳ Môn · Mai Hoa)\n"
                 f"- {_full_why_for_md}\n"
                 f"#### Đoàn 3: Chẩn Đoán Bệnh – Dược Ứng Kỳ & Pháp Quyết Hành Động\n"
