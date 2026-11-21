@@ -1879,16 +1879,17 @@ def synthesize_deep_classical_verdict(
                 phuc_chi_p = _norm_chi(str(dt_phuc_obj.get("chi") or ""))
                 tri_set_pf = {phi_chi_p, phuc_chi_p, chi_ngay}
                 is_pf_tam_hinh = (tri_set_pf == {"Dần", "Tị", "Thân"}) or (tri_set_pf == {"Sửu", "Tuất", "Mùi"})
-                is_phuc_void_unclashed = bool(dt_phuc_obj.get("is_void") and LUC_XUNG.get(phuc_chi_p) != chi_ngay)
+                phuc_has_root = (vs in ("Vượng", "Tướng") or SINH_EL.get(nhat_el) == dt_el or phuc_chi_p in (chi_ngay, chi_thang))
+                is_phuc_void_unclashed = bool(dt_phuc_obj.get("is_void") and LUC_XUNG.get(phuc_chi_p) != chi_ngay and not phuc_has_root)
                 if is_pf_tam_hinh or is_phuc_void_unclashed:
                     phuc_blocked_fatal = True
                     lh_pts -= 34
                     lh_chain_notes.append(
-                        f"Phi Phục Chương (Thiên Kim Phú): Dụng Thần ({dt_clean_ly}) {'phạm Tam Hình Phi–Phục–Nhật' if is_pf_tam_hinh else 'Phục Cư Không Địa (ẩn phục lại lâm Tuần Không)'} — sự dữ tâm vi, mưu cầu bất thành!"
+                        f"Phi Phục Chương (Thiên Kim Phú): Dụng Thần ({dt_clean_ly}) {'phạm Tam Hình Phi–Phục–Nhật' if is_pf_tam_hinh else 'Phục Cư Không Địa (ẩn phục vô khí lại lâm Chân Không)'} — sự dữ tâm vi, mưu cầu bất thành!"
                     )
-                elif dt_phuc_obj.get("dac_xuat"):
-                    lh_pts += 6
-                    lh_chain_notes.append(f"Dụng Thần ẩn phục dưới Hào {dt_idx} nhưng Đắc Xuất ({dt_phuc_obj.get('can_chi_full','')})")
+                elif dt_phuc_obj.get("dac_xuat") or phuc_has_root:
+                    lh_pts += 12 if phuc_has_root else 6
+                    lh_chain_notes.append(f"Phi Phục Chương: Dụng Thần ẩn phục dưới Hào {dt_idx} nhưng Đắc Nguyệt/Nhật Sinh Vượng — Xuất Không/Xung Phi tất đắc ({dt_phuc_obj.get('can_chi_full','')})")
                 else:
                     lh_pts -= 32
                     lh_chain_notes.append(f"Phi Đè Phục: Dụng Thần ({dt_clean_ly}) ẩn phục vô lực, mưu cầu khó thành")
@@ -2171,13 +2172,17 @@ def synthesize_deep_classical_verdict(
                 lh_pts -= 30
                 lh_chain_notes.append(f"Dụng Thần rơi vào Chân Không ({dt_chi} tĩnh vô khí) — rỗng không khó thành")
             elif dt_ln.get("khong_type") == "GIA_KHONG":
-                lh_pts -= 3
-                lh_chain_notes.append(f"Dụng Thần lâm Giả Không ({dt_chi} hữu khí/động) — Xuất Không ắt ứng nghiệm!")
+                if not dt_ln.get("is_moving") and not dt_ln.get("is_am_dong") and KHAC_EL.get(nhat_el) == dt_el and not ng_movers and not is_recent_illness:
+                    lh_pts -= 24
+                    lh_chain_notes.append(f"Tuần Không Chương: Dụng Thần tĩnh Tuần Không lại bị Nhật ({chi_ngay}) khắc ('Không nhi hựu bị khắc' — xuất Không thụ chế, mưu cầu vô đắc)!")
+                else:
+                    lh_pts -= 3
+                    lh_chain_notes.append(f"Dụng Thần lâm Giả Không ({dt_chi} hữu khí/động) — Xuất Không ắt ứng nghiệm!")
 
         # 2.6 Xét Đại Tượng Quái Biến, Lục Xung / Lục Hợp, Phục Ngâm & Tam Hình Toàn Cục (Tăng San Bốc Dịch)
         has_any_moving = any(x.get("is_moving") for x in lines)
         if qb_rel == "QUAI_HOA_HOI_DAU_KHAC":
-            lh_pts -= 34
+            lh_pts = min(lh_pts - 34, -18)
             lh_chain_notes.append("Đại Tượng Quái Biến Hồi Đầu Khắc (Toàn quái biến khắc ngược gốc — bất luận Dụng Thần suy vượng đều chủ đại hung!)")
         elif xh_trans == "XUNG_HOA_HOP" and not is_chronic_illness:
             lh_pts += 28
@@ -2296,7 +2301,7 @@ def synthesize_deep_classical_verdict(
 
         # (b2) Chuyên Chương Xu Tị Phòng Hại, Thọ Nguyên & Xuất Hành Bình An (Tăng San Bốc Dịch Quyển 3 Chương 39–40 & Quyển 4 Chương 91):
         # Lưu ý cổ pháp: 'Tử Tôn trì Thế bách vô ưu' chỉ ứng cho TỰ CHIÊM BẢN THÂN (is_self_dt_ly), tuyệt đối không lấy Thế Tử Tôn che cho Hành Nhân/Lục Thân khác đang bị Kỵ Thần khắc thương!
-        if ((is_safety_worry_q and not is_traveler_q) or (is_travel_any and is_self_dt_ly)) and not is_illness_q:
+        if ((is_safety_worry_q and not is_traveler_q and not is_age_longevity_q) or (is_travel_any and is_self_dt_ly)) and not is_illness_q:
             has_tu_ton_guard = (
                 (is_self_dt_ly and the_ln.get("luc_than") == "Tử Tôn" and "HOI_DAU_KHAC" not in the_flags and not the_ln.get("is_nhat_pha"))
                 or (not (ky_movers and not real_ng_movers) and any(ln.get("luc_than") == "Tử Tôn" and ln.get("is_moving") and "HOI_DAU_KHAC" not in (ln.get("hoa_flags") or []) and ln.get("bien_luc_than") != "Quan Quỷ" for ln in lines))
@@ -2308,8 +2313,11 @@ def synthesize_deep_classical_verdict(
         if is_age_longevity_q and is_self_dt_ly and ("bình an" in q_low or "trường thọ" in q_low or "qua khỏi" in q_low):
             # Thọ Nguyên Chương: 'Nguyên thần nghi tĩnh bất nghi động, Kỵ thần tối phạ động dao'
             if real_ng_movers and not real_ky_movers:
-                lh_pts -= 34
+                lh_pts = min(lh_pts - 42, -16)
                 lh_chain_notes.append("Thọ Nguyên Chương: 'Chiêm thọ Nguyên Thần nghi tĩnh bất nghi động' — Nguyên Thần phát động báo hiệu có niên hạn nhập Mộ/Tuyệt!")
+
+        if qb_rel == "QUAI_HOA_HOI_DAU_KHAC":
+            lh_pts = min(lh_pts, -18)
 
         # (b3) Chuyên Chương Hôn Nhân (Tăng San Bốc Dịch Quyển 4 Chương 82):
         if is_marriage_q:
@@ -2381,7 +2389,10 @@ def synthesize_deep_classical_verdict(
                     bound_by_other_hop = True
                     lh_pts -= 36
                     lh_chain_notes.append(f"Hành Nhân Chương: Hào {ln_other['hao']} ({ln_other['chi']}) động hóa {dt_clean_ly} ({ln_other.get('bien_chi','')}) LỤC HỢP TRÓI CHẶT ('Bị hợp bất lai')!")
-            if bound_by_other_hop or "HOA_HOP" in h_flags or hop_st == "HOP_TRU":
+            if dt_idx == the_pos and dt_ln.get("is_moving") and "HOI_DAU_KHAC" not in h_flags:
+                lh_pts += 18
+                lh_chain_notes.append("Hành Nhân Chương: 'Dụng Thần trì Thế phát động, xuất Không tức chí' — người đi xa về thẳng tới nhà!")
+            elif bound_by_other_hop or "HOA_HOP" in h_flags or hop_st == "HOP_TRU":
                 lh_pts = min(lh_pts, -14)
 
         if veto_sinh_ung_only or veto_the_pha_khac:
@@ -2731,6 +2742,9 @@ def synthesize_deep_classical_verdict(
                     if is_real_mv and (blt_w in ("Thê Tài", "Tử Tôn") or "HOA_THOAI" in lf_w):
                         sun_pts += 36
                         sun_evs.append(f"Hào {ln_w['hao']} Huynh Đệ hóa {blt_w or 'Thoái'} ('Vân trung biến xuất nhật sắc / Đệ hóa Tôn vân khai nhật xuất')")
+                    elif is_real_mv and "HOA_TIEN" in lf_w:
+                        rain_pts += 22
+                        rain_evs.append(f"Hào {ln_w['hao']} Huynh Đệ độc phát Hóa Tiến Thần chủ phong vân tế nhật (mây mù âm u che khuất)")
 
             # Bổ sung Tam Hợp Cục Thiên Thời ('Tam hợp Tài/Tử cục chủ Tình, Tam hợp Phụ cục chủ Vũ')
             for th_it in (ly_res.get("tam_hop_cuc") or []):

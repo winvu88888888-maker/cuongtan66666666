@@ -734,19 +734,19 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay=None, chi_ng
     lo_b1, up_b1 = lines_to_quai_num(ban_lines[:3]), lines_to_quai_num(ban_lines[3:])
     lo_b2, up_b2 = lines_to_quai_num(bien_lines[:3]), lines_to_quai_num(bien_lines[3:])
     quai_bien_rel = ""
-    if set(dong_list) >= {1, 2, 3, 4, 5, 6} and lo_b1 == up_b1 and lo_b2 == up_b2:
+    if len(dong_list) >= 2 and lo_b1 == up_b1 and lo_b2 == up_b2 and lo_b1 != lo_b2:
         e1, e2 = _TRIG_EL.get(lo_b1, ""), _TRIG_EL.get(lo_b2, "")
         if _KHAC_EL.get(e2) == e1:
             quai_bien_rel = "QUAI_HOA_HOI_DAU_KHAC"
         elif _SINH_EL.get(e2) == e1:
             quai_bien_rel = "QUAI_HOA_HOI_DAU_SINH"
-    elif set(dong_list) == {1, 2, 3}:
+    elif dong_list and set(dong_list) <= {1, 2, 3} and lo_b1 != lo_b2:
         e1, e2 = _TRIG_EL.get(lo_b1, ""), _TRIG_EL.get(lo_b2, "")
         if _KHAC_EL.get(e2) == e1:
             quai_bien_rel = "NOI_QUAI_HOA_KHAC"
         elif _SINH_EL.get(e2) == e1:
             quai_bien_rel = "NOI_QUAI_HOA_SINH"
-    elif set(dong_list) == {4, 5, 6}:
+    elif dong_list and set(dong_list) <= {4, 5, 6} and up_b1 != up_b2:
         e1, e2 = _TRIG_EL.get(up_b1, ""), _TRIG_EL.get(up_b2, "")
         if _KHAC_EL.get(e2) == e1:
             quai_bien_rel = "NGOAI_QUAI_HOA_KHAC"
