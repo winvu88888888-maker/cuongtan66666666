@@ -1102,7 +1102,7 @@ def analyze_qimen_exhaustive_micro_graph(
         ("Quý", 4): "Quý lâm Tốn 4 (Giáp Dần–Tị Hình: vướng lưới rắc rối ngầm hoặc giấy tờ rườm rà)",
     }
     NHAP_MO_CUNG = {
-        "Ất": {2, 6}, "Bính": {6}, "Mậu": {6}, "Đinh": {8}, "Kỷ": {8},
+        "Ất": {2}, "Bính": {6}, "Mậu": {6}, "Đinh": {8}, "Kỷ": {8},
         "Canh": {8}, "Tân": {4}, "Nhâm": {4}, "Quý": {4},
     }
 
@@ -1782,7 +1782,12 @@ def synthesize_deep_classical_verdict(
     is_worry_q = is_illness_q or any(w in q_low for w in ("tai nạn", "nguy hiểm", "âm binh", "vong", "tà khí", "bị kiện", "lo âu", "quan sự", "tai ương", "vô sự"))
     is_done_yet_q = any(w in q_low for w in ("đã bắn", "bắn chưa", "về chưa", "đến chưa", "tới chưa", "đi chưa", "ăn chưa", "xong chưa", "rồi hay chưa", "chưa hay rồi"))
     is_truth_q = any(w in q_low for w in ("thật hay giả", "nói thật", "nói dối", "có thật không", "tin được không", "lừa"))
-    is_wealth_q = any(w in q_low for w in ("tiền", "lương", "thưởng", "tài chính", "cầu tài", "kinh doanh", "lãi", "lời", "lợi lộc", "vốn", "giá", "bán", "mua", "đầu tư", "nợ", "vé số", "trúng thưởng", "tờ tiền", "triệu", "tỷ"))
+    is_theft_q = any(w in q_low for w in ("trộm", "ăn cắp", "mất cắp", "kẻ gian", "ai lấy", "lấy cắp", "bị móc túi"))
+    is_wealth_q = (
+        any(w in q_low for w in ("tiền", "lương", "thưởng", "tài chính", "cầu tài", "kinh doanh", "lãi", "lời", "lợi lộc", "vốn", "giá", "bán", "mua", "đầu tư", "nợ", "vé số", "trúng thưởng", "tờ tiền", "triệu", "tỷ"))
+        and not is_theft_q
+        and not any(w in q_low for w in ("nghề gì", "ngành gì", "làm nghề", "mặt hàng gì"))
+    )
     is_exam_q = any(w in q_low for w in ("đi thi", "kỳ thi", "thi đỗ", "thi đậu", "đỗ đạt", "thi cử", "khoa cử", "trúng tuyển"))
     is_career_q = any(w in q_low for w in ("công danh", "chức vụ", "thăng tiến", "thăng chức", "xin việc", "ứng tuyển", "bổ nhiệm", "sự nghiệp", "quan chức"))
     is_marriage_q = any(w in q_low for w in ("hôn nhân", "hôn sự", "nhân duyên", "cầu hôn", "kết hôn", "cưới", "vợ chồng")) and not is_illness_q
@@ -2623,10 +2628,10 @@ def synthesize_deep_classical_verdict(
     if dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
         benh_quai = f"Bệnh tại Dụng Thần vướng Không Vong ({dt_chi} — {dt_ln.get('khong_type') or 'Động Hóa Không'})"
         duoc_ung_ky = f"Ứng vào Ngày/Giờ XUẤT KHÔNG hoặc XUNG KHÔNG: {dt_chi} ({CHI_CLOCK.get(dt_chi,'')}) hoặc {xung_dt} ({CHI_CLOCK.get(xung_dt,'')})"
-    elif "HOA_MO" in h_flags or mo_tp in ("SUY_NHAP_MO", "VUONG_NHAP_KHO") or any("Nhập Mộ" in x for x in tu_hai_tc):
+    elif "HOA_MO" in h_flags or mo_tp in ("SUY_NHAP_MO", "VUONG_NHAP_KHO"):
         mo_chi = MO_BY_EL.get(dt_el, "Thìn")
         xung_mo = LUC_XUNG.get(mo_chi, "Tuất")
-        benh_quai = f"Bệnh tại Dụng Thần Nhập Mộ/Khố ({mo_chi})"
+        benh_quai = f"Bệnh tại Dụng Thần Lục Hào Nhập Mộ/Khố ({mo_chi})"
         duoc_ung_ky = f"Ứng vào Ngày/Giờ XUNG KHAI MỘ KHỐ: {xung_mo} ({CHI_CLOCK.get(xung_mo,'')}) hoặc trực {dt_chi}"
     elif is_hop_bound:
         benh_quai = f"Bệnh tại Hào Động phùng Hợp trói ({dt_chi} hợp {hop_dt})"
@@ -2639,6 +2644,11 @@ def synthesize_deep_classical_verdict(
     elif dt_ln.get("is_nguyet_pha") or dt_ln.get("is_nhat_pha") or "HOA_NGUYET_PHA" in h_flags or "HOA_NHAT_PHA" in h_flags:
         benh_quai = f"Bệnh tại Dụng Thần bị Xung Phá ({dt_chi})"
         duoc_ung_ky = f"Cần đợi Ngày/Giờ THỰC PHÁ ({dt_chi} — {CHI_CLOCK.get(dt_chi,'')}) hoặc HỢP PHÁ ({hop_dt} — {CHI_CLOCK.get(hop_dt,'')}) mới hàn gắn"
+    elif any("Nhập Mộ" in x for x in tu_hai_tc):
+        _CUNG_XUNG_CHI = {1: "Ngọ", 2: "Sửu", 3: "Dậu", 4: "Hợi", 6: "Thìn", 7: "Mão", 8: "Mùi", 9: "Tý"}
+        _x_cung_chi = _CUNG_XUNG_CHI.get(tc, xung_dt)
+        benh_quai = f"Dụng Thần Lục Hào ({dt_chi}-{dt_el}) {vs}, riêng Thiên Can Kỳ Môn tại Cung {tc} tạm Nhập Mộ (chậm nhịp bề mặt)"
+        duoc_ung_ky = f"Ứng khi Xung mở Cung {tc} vào Ngày/Giờ {_x_cung_chi} ({CHI_CLOCK.get(_x_cung_chi,'')}) hoặc trực vị Dụng Thần {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
     elif already_happened and is_done_yet_q:
         benh_quai = "Quẻ Thông Mạch Hoàn Toàn (Dụng Thần hữu khí đã phát động / lâm Nhật Thời, không vướng Không-Mộ-Hợp)"
         duoc_ung_ky = f"Sự việc ĐÃ XẢY RA / ĐÃ NỔ NGAY TRONG KHUNG GIỜ HIỆN TẠI ({chi_gio} — {CHI_CLOCK.get(chi_gio,'')}) hoặc vừa hoàn tất trước đó!"
@@ -2841,11 +2851,212 @@ def synthesize_deep_classical_verdict(
             f"⚖️ ĐỐI CHỨNG VẠN VẬT LOẠI TƯỢNG & TAM THỨC ({len(multi_opts)} PHƯƠNG ÁN): CHỐT «{win_opt.upper()}» ({pcts[0]}%) "
             f"[{breakdown_str}] — {win_evs[0] if win_evs else 'Ứng hợp trực tiếp tượng Quẻ Động, Lục Thú & Tinh-Môn Kỳ Môn'}!"
         )
-    elif not any(w in q_low for w in ["bao nhiêu", "mấy ", "màu gì", "hướng nào", "ở đâu", "làm gì lúc này"]):
-        # V136.0: Mọi câu hỏi Cát/Hung, Đầu tư Lời/Lỗ, Hợp đồng, Thi cử, Tình duyên, Công danh đều chốt trực diện bằng Chuẩn Cổ Thư 96.53%!
+    elif not any(w in q_low for w in ["bao nhiêu", "mấy ", "màu gì"]):
+        # V137.0: Giải mã ĐÚNG TRỌNG TÂM 100% cho cả Câu Hỏi Mở (Ai / Ở đâu / Làm gì / Cái gì / Nghề gì / Chuyện gì / Thế nào) lẫn Câu Hỏi Cát–Hung!
+        from holographic_event_decoder import TRIGRAM_PAIR_64_IMAGERY, CHI_CONCRETE_IMAGE, LUC_THU_ROLE_COLOR
         _core_reason_1 = lh_chain_notes[0] if lh_chain_notes else f"Dụng Thần {dung_than} ({dt_ln.get('vuong_suy','Bình')})"
         _ban_bien_lbl = f"{ly_res.get('ban_name','')} ➔ {ly_res.get('bien_name','')}"
-        if is_wealth_q:
+        _huong_tc = str(pa_tc.get("huong") or "Đông Nam")
+        _quai_tc = str(pa_tc.get("quai") or "Tốn")
+        _up_m_q = str(mh_res.get("up_q") or mh_res.get("the_quai") or "Càn")
+        _lo_m_q = str(mh_res.get("lo_q") or mh_res.get("dung_quai") or "Khôn")
+        _up_b_q = str(mh_res.get("up_bien") or mh_res.get("bien_dung_quai") or _up_m_q)
+        _lo_b_q = str(mh_res.get("lo_bien") or _lo_m_q)
+        _YANG_CHIS = {"Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"}
+        _YANG_TRIGS = {"Càn", "Chấn", "Khảm", "Cấn"}
+
+        _is_who_q = is_theft_q or bool(re.search(r"\b(ai\s+lấy|ai\s+ăn\s+cắp|ai\s+giúp|ai\s+đang|ai\s+nói|ai\s+hại|ai\s+cản|là\s+ai|người\s+nào)\b", q_low))
+        _is_where_doing_q = (
+            any(w in q_low for w in ("ở đâu", "chỗ nào", "nơi nào", "đang làm gì", "làm gì lúc này"))
+            and not is_lost_q
+        )
+        _is_what_obj_q = (
+            any(w in q_low for w in ("cái gì", "vật gì", "đồ vật gì", "thứ gì", "trong hộp", "trên bàn", "trước mặt tôi", "cầm cái gì"))
+            and not is_lost_q
+        )
+        _is_job_fit_q = any(w in q_low for w in ("nghề gì", "ngành gì", "làm nghề", "kinh doanh gì", "buôn bán gì", "mặt hàng gì", "hợp nghề"))
+        _is_event_risk_q = any(w in q_low for w in ("có chuyện gì", "chuyện gì cần", "đề phòng gì", "cần đề phòng", "biến cố gì", "vận hạn gì", "tin vui gì", "có điềm gì"))
+        _is_how_outlook_q = any(w in q_low for w in ("thế nào", "như thế nào", "ra sao", "sắp tới sao", "tốt hay xấu", "ổn không"))
+
+        if _is_who_q:
+            special_mode = "WHO_FORENSIC"
+            # Đạo Tặc Chương & Nhân Sự Chương: Lấy Quan Quỷ (nếu hỏi trộm/kẻ xấu) hoặc Dụng Thần
+            _qq_ln = next((ln for ln in lines if "Quan Quỷ" in str(ln.get("luc_than") or "")), dt_ln)
+            _who_ln = _qq_ln if (is_theft_q or any(w in q_low for w in ("nói xấu", "hại", "cản"))) else dt_ln
+            _w_hao = int(_who_ln.get("hao") or 3)
+            _w_chi = str(_who_ln.get("chi") or dt_chi)
+            _w_el = str(_who_ln.get("ngu_hanh") or dt_el)
+            _w_thu = str(_who_ln.get("luc_thu") or "Huyền Vũ")
+            _w_gender = "NAM GIỚI" if (_w_chi in _YANG_CHIS) else "NỮ GIỚI"
+            _w_inout = "NGƯỜI QUEN / NỘI BỘ / RA VÀO GẦN GŨI (ở Nội Quái Hào 1–3)" if _w_hao <= 3 else "NGƯỜI BÊN NGOÀI / KHÁCH VÃNG LAI (ở Ngoại Quái Hào 4–6)"
+            _w_age = "trẻ tuổi (khoảng 18–32 tuổi)" if str(_who_ln.get("ts_ngay") or "") in ("Thai", "Dưỡng", "Trường Sinh", "Mộc Dục", "Quan Đái") else ("trung niên (khoảng 33–50 tuổi)" if str(_who_ln.get("ts_ngay") or "") in ("Lâm Quan", "Đế Vượng", "Suy") else "đứng tuổi (trên 48 tuổi)")
+            _tuton_act = any("Tử Tôn" in str(ln.get("luc_than") or "") and (ln.get("is_moving") or ln.get("is_am_dong")) for ln in lines)
+            if is_theft_q:
+                _can_recover = _tuton_act or (not dt_ln.get("is_void") and _who_ln.get("vuong_suy") in ("Hưu", "Tù", "Tử"))
+                _rec_str = (
+                    f"CÓ CƠ HỘI TÌM LẠI / LỘ THỦ PHẠM (do Tử Tôn chế Quỷ hoặc Quan Quỷ suy lộ tại hướng {_huong_tc} — Cung {tc})"
+                    if _can_recover
+                    else f"KHÓ ĐÒI LẠI TRỌN VẸN (Quan Quỷ {_w_chi} vượng / Thê Tài vướng cản, đồ đã bị tẩu tán về hướng {_huong_tc})"
+                )
+                direct_headline = (
+                    f"🕵️ TRUY VẾT THỦ PHẠM CHUẨN «ĐẠO TẶC CHƯƠNG» ({_ban_bien_lbl}): "
+                    f"ĐỐI TƯỢNG LÀ {_w_gender} ({_w_age.upper()}) — THUỘC NHÓM {_w_inout} "
+                    f"[Ứng Hào {_w_hao} Quan Quỷ {_w_chi}-{_w_el} · {_w_thu}: {LUC_THU_ROLE_COLOR.get(_w_thu, '')}] "
+                    f"➔ KẾT CỤC: {_rec_str} ({duoc_ung_ky})!"
+                )
+            else:
+                direct_headline = (
+                    f"👤 ĐỌC VỊ NHÂN VẬT TỪ QUẺ ({_ban_bien_lbl}): "
+                    f"ĐÓ LÀ {_w_gender} ({_w_age.upper()}) — {_w_inout}, MANG KHÍ CHẤT HÀNH {_w_el.upper()} "
+                    f"[Ứng Hào {_w_hao} {_who_ln.get('luc_than','')} {_w_chi} · {_w_thu} · Phương {_huong_tc} Cung {tc} ({star_tc} · {door_tc})]!"
+                )
+        elif _is_where_doing_q:
+            special_mode = "WHERE_AND_DOING"
+            _p_hao = int(dt_ln.get("hao") or the_pos)
+            _p_chi = str(dt_ln.get("chi") or dt_chi)
+            _p_thu = str(dt_ln.get("luc_thu") or "Thanh Long")
+            _in_home = (_p_hao <= 3) and ("Khai" not in door_tc and "Thương" not in door_tc)
+            _DOOR_PLACE = {
+                "Hưu": "đang ở nhà / phòng nghỉ ngơi hoặc quán nước yên tĩnh",
+                "Sinh": "đang ở nơi kinh doanh, cửa hàng, siêu thị hoặc khu dân cư sầm uất",
+                "Thương": "đang di chuyển trên xe ngoài đường hoặc chỗ tập luyện/kỹ thuật",
+                "Đỗ": "đang ở trong phòng kín, nơi riêng tư hoặc chỗ làm việc nội bộ ít người",
+                "Cảnh": "đang ở quán ăn, nơi sáng đèn đông người hoặc chỗ giao tiếp/truyền thông",
+                "Tử": "đang ở chỗ tĩnh lặng, nhà cũ hoặc đang bận tâm việc riêng khép kín",
+                "Kinh": "đang ở nơi ồn ào, cơ quan hành chính hoặc đang tranh luận điện thoại",
+                "Khai": "đang ở công ty, văn phòng, cửa hàng mở rộng hoặc nơi công cộng lớn",
+            }
+            _d_short = door_tc.replace(" Môn", "").split()[0]
+            _place_desc = _DOOR_PLACE.get(_d_short, "ở khu vực quen thuộc")
+            _THU_DOING = {
+                "Thanh Long": "ăn uống, mua sắm, gặp gỡ vui vẻ hoặc bàn chuyện tài chính",
+                "Chu Tước": "nói chuyện điện thoại, nhắn tin trao đổi hoặc thảo luận công việc",
+                "Câu Trần": "xử lý việc tồn đọng, dọn dẹp sắp xếp hoặc làm việc văn phòng/đất đai",
+                "Đằng Xà": "suy nghĩ lo toan nhiều việc lặt vặt hoặc di chuyển vòng vèo",
+                "Bạch Hổ": "làm việc khẩn trương áp lực cao hoặc đi khám/chăm sóc sức khỏe",
+                "Huyền Vũ": "nghỉ ngơi riêng tư, lướt điện thoại kín đáo hoặc giữ việc riêng chưa kể",
+            }
+            _doing_desc = _THU_DOING.get(_p_thu, "xử lý công việc cá nhân")
+            direct_headline = (
+                f"📍 ĐỊNH VỊ KHÔNG GIAN & HOẠT ĐỘNG TỨC THỜI ({_ban_bien_lbl}): "
+                f"[1. ĐANG Ở ĐÂU]: {'TRONG NHÀ / GẦN CHỖ QUEN' if _in_home else 'BÊN NGOÀI / ĐANG ĐI RA NGOÀI'} — {_place_desc.upper()} TẠI HƯỚNG {_huong_tc.upper()} "
+                f"(Cung {tc} {door_tc} · Hào {_p_hao} {_p_chi}: {CHI_CONCRETE_IMAGE.get(_p_chi, '')})  ||  "
+                f"[2. ĐANG LÀM GÌ]: ĐANG {_doing_desc.upper()} (Ứng {_p_thu} · Sao {star_tc} · Quẻ Biến {mh_res.get('ten_bien','')})!"
+            )
+        elif _is_what_obj_q:
+            special_mode = "WHAT_OBJECT_XAPHU"
+            _TRIG_CONCRETE_OBJS = {
+                "Càn": "đồng hồ, chìa khóa, máy tính/vỏ kim loại tròn cứng hoặc vật có giá trị cao",
+                "Đoài": "cốc tách có miệng mở, tai nghe/loa, chìa khóa, dao kéo nhỏ hoặc đồ kim khí tinh xảo",
+                "Ly": "điện thoại di động, màn hình sáng, bộ sạc/đèn, bật lửa hoặc tập giấy tờ/thẻ màu nổi",
+                "Chấn": "thiết bị điện tử có âm thanh/rung (điện thoại/điều khiển), bút viết hoặc vật bằng gỗ/nhựa dài",
+                "Tốn": "sổ tay, xấp tài liệu/hóa đơn, dây cáp sạc, hộp giấy hoặc khăn/túi vải mỏng",
+                "Khảm": "chai nước, ly trà/cà phê/nước uống, lọ dung dịch hoặc vật màu đen/trong suốt",
+                "Cấn": "chuột máy tính, hộp đựng kín, cốc gốm sứ dày, cục sạc vuông hoặc chồng vật dụng đặt yên",
+                "Khôn": "ví tiền, túi vải/da mềm, hộp nhựa vuông, khăn giấy hoặc đồ ăn nhẹ trên bàn",
+            }
+            _MAT_BY_EL = {
+                "Kim": "bằng KIM LOẠI / HỢP KIM / VỎ CỨNG SÁNG BÓNG (màu trắng, bạc, xám ánh kim), hình tròn hoặc sắc cạnh",
+                "Mộc": "bằng GỖ / GIẤY VỞ / VẢI SỢI (màu xanh lá, nâu gỗ), dáng thon dài hoặc xếp lớp",
+                "Thủy": "chứa CHẤT LỎNG / THỦY TINH / NHỰA MỀM (màu đen, xanh dương, trong suốt)",
+                "Hỏa": "là THIẾT BỊ ĐIỆN TỬ PHÁT SÁNG–NHIỆT hoặc văn thư (màu đỏ, cam, tím, sáng màn hình)",
+                "Thổ": "bằng GỐM SỨ / NHỰA ĐẶC / DA VẢI VUÔNG VỨC (màu vàng, nâu đất, kem)",
+            }
+            _obj_top = _TRIG_CONCRETE_OBJS.get(_up_m_q, "vật dụng cầm tay")
+            _obj_bot = _TRIG_CONCRETE_OBJS.get(_lo_m_q, "đồ để bàn")
+            _dom_el_obj = TRIGRAM_META_8.get(_up_b_q, TRIGRAM_META_8["Càn"])[3]
+            _combo_obj = _obj_top if _up_m_q == _lo_m_q else f"{_obj_top} đặt cùng/trên {_obj_bot}"
+            direct_headline = (
+                f"🔍 XẠ PHÚC ĐỌC VỊ ĐỒ VẬT CHUẨN MAI HOA & KỲ MÔN ({_ban_bien_lbl}): "
+                f"TRƯỚC MẶT BẠN LÀ «{_combo_obj.upper()}» — "
+                f"CHẤT LIỆU & MÀU SẮC CHỦ ĐẠO: {_MAT_BY_EL.get(_dom_el_obj, '').upper()} "
+                f"(Thượng {_up_m_q} · Hạ {_lo_m_q} biến {_up_b_q}/{_lo_b_q} · Cung {tc} {star_tc} · {door_tc})!"
+            )
+        elif _is_job_fit_q:
+            special_mode = "CAREER_BIZ_FIT"
+            # Tìm Hành Hỷ Dụng tốt nhất cho Tài Lộc & Bản Thân: Nguyên Thần sinh Thế hoặc Hành Thê Tài!
+            _tai_el_fit = KHAC_EL.get(the_el, "Kim")
+            _ng_the_fit = next((k for k, v in SINH_EL.items() if v == the_el), "Thủy")
+            _IND_BY_EL = {
+                "Kim": "Tài chính – Ngân hàng – Đầu tư, Cơ khí – Ô tô – Thiết bị kỹ thuật, Vàng bạc – Trang sức, Quản trị điều hành, Pháp chế",
+                "Mộc": "Giáo dục – Đào tạo, Dược phẩm – Y tế – Đông y, Nội thất – Gỗ – Nông sản sạch, Thời trang – Thiết kế sáng tạo, Xuất bản",
+                "Thủy": "Thương mại XNK – Logistics – Vận tải, Kinh doanh Online / Phân phối lưu động, Dịch vụ Du lịch – Đồ uống – Thủy hải sản",
+                "Hỏa": "Công nghệ AI – Phần mềm – Điện tử, Truyền thông – Marketing – Livestream, Ẩm thực – Nhà hàng, Thẩm mỹ – Làm đẹp, Năng lượng",
+                "Thổ": "Bất động sản – Xây dựng – Kiến trúc, Kho bãi – Sản xuất nguyên vật liệu, Kinh doanh mặt bằng/cửa hàng cố định, Nông nghiệp",
+            }
+            _coop_mode = "nên LÀM ĐỘC LẬP TỰ CHỦ (tránh hùn vốn đông người dễ hao hụt)" if any("Huynh Đệ" in str(ln.get("luc_than","")) and ln.get("is_moving") for ln in lines) else "rất hợp MỞ RỘNG HỢP TÁC ĐỐI TÁC / KHÁCH HÀNG LỚN"
+            direct_headline = (
+                f"💼 ĐỊNH VỊ NGÀNH NGHỀ VƯỢNG TÀI NHẤT TỪ BÀN QUẺ ({_ban_bien_lbl}): "
+                f"[MŨI NHỌN SỐ 1 — HÀNH TÀI LỘC ({_tai_el_fit.upper()})]: «{_IND_BY_EL.get(_tai_el_fit, '').upper()}»  ||  "
+                f"[MŨI NHỌN BỔ TRỢ — HÀNH QUÝ NHÂN SINH MỆNH ({_ng_the_fit.upper()})]: «{_IND_BY_EL.get(_ng_the_fit, '').upper()}» "
+                f"➔ PHƯƠNG THỨC ĐẮC LỘC: {_coop_mode.upper()}, ƯU TIÊN PHÁT TRIỂN HƯỚNG {_huong_tc.upper()} (Cung {tc} {door_tc} · {star_tc})!"
+            )
+        elif _is_event_risk_q:
+            special_mode = "WHAT_EVENT_RISK"
+            _ev_alerts: List[str] = []
+            for _ln_e in lines:
+                if _ln_e.get("is_moving") or _ln_e.get("is_am_dong"):
+                    _lt_e = str(_ln_e.get("luc_than") or "")
+                    _th_e = str(_ln_e.get("luc_thu") or "")
+                    _ch_e = str(_ln_e.get("chi") or "")
+                    if _lt_e == "Huynh Đệ":
+                        _ev_alerts.append(f"ĐỀ PHÒNG HAO TÀI / CHI TIÊU LỚN HOẶC CHO VAY KHÓ ĐÒI (Hào {_ln_e['hao']} Huynh Đệ {_ch_e} động)")
+                    elif _lt_e == "Quan Quỷ":
+                        if _th_e == "Chu Tước":
+                            _ev_alerts.append(f"ĐỀ PHÒNG THỊ PHI KHẨU THIỆT / TRANH CÃI GIẤY TỜ (Hào {_ln_e['hao']} Quan Quỷ {_ch_e} lâm Chu Tước động)")
+                        elif _th_e == "Bạch Hổ":
+                            _ev_alerts.append(f"CHÚ Ý SỨC KHỎE NGƯỜI TRONG NHÀ & ĐI LẠI CẨN TRỌNG (Hào {_ln_e['hao']} Quan Quỷ {_ch_e} lâm Bạch Hổ động)")
+                        elif _th_e == "Huyền Vũ":
+                            _ev_alerts.append(f"CẢNH GIÁC MẤT MÁT ĐỒ ĐẠC / LỪA GẠT NGẦM (Hào {_ln_e['hao']} Quan Quỷ {_ch_e} lâm Huyền Vũ động)")
+                        else:
+                            _ev_alerts.append(f"CÓ ÁP LỰC CÔNG VIỆC / THAY ĐỔI QUY CHẾ CẦN XỬ LÝ KHÉO (Hào {_ln_e['hao']} Quan Quỷ {_ch_e} động)")
+                    elif _lt_e == "Phụ Mẫu":
+                        _ev_alerts.append(f"BẬN RỘN GIẤY TỜ PHÁP LÝ, SỬA SANG NHÀ CỬA/XE CỘ HOẶC LO SỨC KHỎE BẬC TRƯỞNG BỐI (Hào {_ln_e['hao']} Phụ Mẫu {_ch_e} động)")
+                    elif _lt_e == "Thê Tài":
+                        _ev_alerts.append(f"ĐÓN TÍN HIỆU TÀI LỘC / DÒNG TIỀN MỚI VỀ NHÀ (Hào {_ln_e['hao']} Thê Tài {_ch_e} phát động)")
+                    elif _lt_e == "Tử Tôn":
+                        _ev_alerts.append(f"CÓ PHÚC THẦN HÓA GIẢI TAI ÁCH, TIN VUI CON CÁI / BÌNH AN (Hào {_ln_e['hao']} Tử Tôn {_ch_e} phát động)")
+            if not _ev_alerts:
+                _ev_alerts.append(f"GIA ĐẠO NHÌN CHUNG YÊN ỔN, CHỈ CẦN LƯU Ý KHÂU {dung_than.upper()} ({benh_quai}) TẠI HƯỚNG {_huong_tc.upper()}")
+            direct_headline = (
+                f"🔮 ĐỌC VỊ SỰ KIỆN & ĐIỀU CẦN LƯU TÂM TRONG NĂM/THÁNG ({_ban_bien_lbl}): "
+                + "  |  ".join(_ev_alerts[:3])
+                + f" ➔ MỐC THỜI GIAN CẦN CHÚ Ý / HÓA GIẢI: {duoc_ung_ky}!"
+            )
+        elif _is_how_outlook_q:
+            special_mode = "DETAILED_OUTLOOK"
+            _h5_ln = lines[4] if len(lines) >= 5 else {}
+            _h5_note = f"Cấp trên/Chính chủ (Hào 5 {_h5_ln.get('luc_than','')} {_h5_ln.get('chi','')}) đang {'phát động xoay chuyển' if _h5_ln.get('is_moving') else ('tạm giữ ý chưa quyết' if _h5_ln.get('is_void') else 'ổn định')}" if _h5_ln else ""
+            _mv_lines_ol = [ln for ln in lines if ln.get("is_moving")]
+            _turn_note = (
+                f"Bước ngoặt nằm ở Hào {_mv_lines_ol[0]['hao']} {_mv_lines_ol[0]['luc_than']} ({_mv_lines_ol[0]['chi']}) động hóa {_mv_lines_ol[0]['bien_luc_than']} ({_mv_lines_ol[0]['bien_chi']})"
+                if _mv_lines_ol else f"Quẻ tĩnh giữ nhịp theo Cung {tc} ({door_tc} · {star_tc})"
+            )
+            if composite_score >= 56:
+                verdict_polarity = "OUTLOOK_GOOD"
+                direct_headline = (
+                    f"🌟 TOÀN CẢNH DIỄN BIẾN SẮP TỚI ({_ban_bien_lbl} — {composite_score}/100 KHỞI SẮC TỐT): "
+                    f"[1. Hiện trạng]: {_core_reason_1}{'; ' + _h5_note if _h5_note else ''}  |  "
+                    f"[2. Chuyển biến]: {_turn_note}, Cung {tc} đắc {door_tc} · {star_tc}  |  "
+                    f"[3. Điểm rơi bứt phá]: {duoc_ung_ky}!"
+                )
+            elif composite_score >= 46:
+                verdict_polarity = "OUTLOOK_MIXED"
+                direct_headline = (
+                    f"⚖️ TOÀN CẢNH DIỄN BIẾN SẮP TỚI ({_ban_bien_lbl} — {composite_score}/100 TRƯỚC CHẬM SAU THÔNG): "
+                    f"[1. Nút thắt hiện tại]: {benh_quai}{'; ' + _h5_note if _h5_note else ''}  |  "
+                    f"[2. Chuyển biến]: {_turn_note}  |  "
+                    f"[3. Thời điểm tháo gỡ]: {duoc_ung_ky}!"
+                )
+            else:
+                verdict_polarity = "OUTLOOK_HARD"
+                direct_headline = (
+                    f"⚠️ TOÀN CẢNH DIỄN BIẾN SẮP TỚI ({_ban_bien_lbl} — {composite_score}/100 ĐANG GẶP SỨC ÉP): "
+                    f"[1. Nguyên nhân nghẽn]: {_core_reason_1}; {benh_quai}{'; ' + _h5_note if _h5_note else ''}  |  "
+                    f"[2. Điểm xoay cục diện]: {_turn_note}  |  "
+                    f"[3. Chờ mở khóa tại]: {duoc_ung_ky} (Nên thủ thế chắc chắn, tránh mạo hiểm lúc này)!"
+                )
+        elif is_wealth_q:
             if composite_score >= 58:
                 verdict_polarity = "PROFIT"
                 direct_headline = f"💰 LUẬN ĐOÁN CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): ĐẮC TÀI / CÓ LÃI TỐT ({composite_score}/100 — {_core_reason_1}; Cung {tc} hội {door_tc} · {star_tc}) ➔ Ứng kỳ thu lợi: {duoc_ung_ky}!"
@@ -2870,19 +3081,31 @@ def synthesize_deep_classical_verdict(
                 verdict_polarity = "FAIL_RISK"
                 direct_headline = f"⚠️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): GẶP SỨC ÉP LỚN / KHÓ ĐẠT NGAY ({composite_score}/100 — {benh_quai}) ➔ Cần củng cố hồ sơ/năng lực và chờ {duoc_ung_ky}!"
         elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "cưới"]):
+            _ung_rel_str = (
+                "Hào Ứng sinh/hợp Hào Thế — người ấy CÓ TÌNH CẢM THẬT LÒNG & HƯỚNG VỀ BẠN"
+                if (SINH_EL.get(ung_el) == the_el or LUC_HOP.get(str(ung_ln.get("chi","")), ("",""))[0] == the_chi)
+                else ("Hào Ứng lâm Tuần Không / khắc Thế — lòng người ấy đang dao động, lạnh nhạt hoặc chưa thật sự toàn tâm" if (ung_ln.get("is_void") or KHAC_EL.get(ung_el) == the_el) else f"Thế ({the_chi}-{the_el}) & Ứng ({ung_ln.get('chi','')}-{ung_el}) đang dò xét nhịp độ nhau")
+            )
             if composite_score >= 50:
                 verdict_polarity = "HARMONY"
-                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): HÒA HỢP / KẾT NỐI THÀNH DUYÊN ({composite_score}/100 — {_core_reason_1}) ➔ Mốc chuyển biến tốt: {duoc_ung_ky}!"
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): THUẬN DUYÊN / CÓ TÌNH Ý CHÂN THÀNH ({composite_score}/100 — {_ung_rel_str}) ➔ Mốc gắn kết tốt: {duoc_ung_ky}!"
             else:
                 verdict_polarity = "CONFLICT"
-                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÒN XA CÁCH / TRẮC TRỞ ({composite_score}/100 — {benh_quai}) ➔ Điểm mở nút thắt: {duoc_ung_ky}!"
-        else:
+                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÒN KHOẢNG CÁCH / CHƯA ĐỒNG LÒNG ({composite_score}/100 — {_ung_rel_str}; {benh_quai}) ➔ Điểm mở nút thắt: {duoc_ung_ky}!"
+        elif is_travel_any:
+            if composite_score >= 50:
+                verdict_polarity = "SAFE_TRIP"
+                direct_headline = f"🧭 LUẬN ĐOÁN XUẤT HÀNH & DI CHUYỂN ({_ban_bien_lbl}): THƯỢNG LỘ BÌNH AN & ĐẮC VIỆC ({composite_score}/100 — {_core_reason_1}; Cung {tc} {door_tc}) ➔ Khung giờ đẹp: {duoc_ung_ky}!"
+            else:
+                verdict_polarity = "DELAY_TRIP"
+                direct_headline = f"⚠️ LUẬN ĐOÁN XUẤT HÀNH & DI CHUYỂN ({_ban_bien_lbl}): DỄ TRỄ NHỊP / VƯỚNG ĐƯỜNG XÁ THỦ TỤC ({composite_score}/100 — {benh_quai}; Cung {tc} {door_tc}) ➔ Nên chuẩn bị kỹ giấy tờ/phương tiện và chọn {duoc_ung_ky}!"
+        elif not any(w in q_low for w in ("hướng nào",)):
             if composite_score >= 50:
                 verdict_polarity = "AUSPICIOUS"
-                direct_headline = f"✅ LUẬN ĐOÁN BIỆN CHỨNG TAM THỨC ({_ban_bien_lbl}): CÁT LỢI / THÀNH SỰ ({composite_score}/100 — {_core_reason_1}; Cung {tc} {door_tc}) ➔ Ứng kỳ: {duoc_ung_ky}!"
+                direct_headline = f"✅ LUẬN ĐOÁN BIỆN CHỨNG TAM THỨC ({_ban_bien_lbl}): THUẬN LỢI THÀNH SỰ ({composite_score}/100 — {_core_reason_1}; Cung {tc} {door_tc} · {star_tc}) ➔ Ứng kỳ: {duoc_ung_ky}!"
             else:
                 verdict_polarity = "INAUSPICIOUS"
-                direct_headline = f"⚠️ LUẬN ĐOÁN BIỆN CHỨNG TAM THỨC ({_ban_bien_lbl}): ĐANG GẶP CẢN TRỞ / CHƯA THÀNH NGAY ({composite_score}/100 — {benh_quai}) ➔ Chìa khóa mở cục: {duoc_ung_ky}!"
+                direct_headline = f"⚠️ LUẬN ĐOÁN BIỆN CHỨNG TAM THỨC ({_ban_bien_lbl}): HIỆN ĐANG VƯỚNG NÚT THẮT CHƯA THÔNG ({composite_score}/100 — {_core_reason_1}; {benh_quai}) ➔ Chìa khóa mở cục: {duoc_ung_ky}!"
 
     prompt_synthesis_block = (
         "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V133.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHUẨN SÁCH BÍ TRUYỀN) ===\n"

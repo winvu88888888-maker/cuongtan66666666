@@ -1023,14 +1023,20 @@ class QuestionReaderAI:
             subject_person = "Đồ vật / Thiết bị / Vạn vật Loại tượng (Dụng Thần: Phụ Mẫu)"
             authoritative_dt = "Phụ Mẫu"
         elif is_lost_where:
-            arch_key = "D11_LOST_ITEM_WHERE"
-            specific_target = "LOST_ITEM"
-            if _has_word("giấy tờ", "căn cước", "chứng minh", "hộ chiếu", "bằng cấp", "bằng lái", "hồ sơ", "hợp đồng", "sách", "vở", "xe", "ô tô", "xe máy", "áo", "quần", "túi xách", "cặp", "điện thoại"):
-                authoritative_dt = "Phụ Mẫu"
-                subject_person = "Vật thất lạc thuộc nhóm Giấy tờ / Phương tiện / Y phục / Thiết bị che chở (Dụng Thần: Phụ Mẫu)"
+            if any(w in q_low for w in ["ai lấy", "ai ăn cắp", "lấy trộm", "kẻ trộm", "kẻ gian", "bị trộm"]):
+                arch_key = "D08_PERSON_PROFILE"
+                specific_target = ""
+                authoritative_dt = "Quan Quỷ"
+                subject_person = "Truy vết Kẻ gian / Thủ phạm lấy trộm & Khả năng tìm lại tài sản (Đạo Tặc Chương — Dụng Thần: Quan Quỷ & Thê Tài)"
             else:
-                authoritative_dt = "Thê Tài"
-                subject_person = "Vật thất lạc thuộc nhóm Tài sản / Tiền bạc / Chìa khóa / Đồ dùng giá trị (Dụng Thần: Thê Tài)"
+                arch_key = "D11_LOST_ITEM_WHERE"
+                specific_target = "LOST_ITEM"
+                if _has_word("giấy tờ", "căn cước", "chứng minh", "hộ chiếu", "bằng cấp", "bằng lái", "hồ sơ", "hợp đồng", "sách", "vở", "xe", "ô tô", "xe máy", "áo", "quần", "túi xách", "cặp", "điện thoại"):
+                    authoritative_dt = "Phụ Mẫu"
+                    subject_person = "Vật thất lạc thuộc nhóm Giấy tờ / Phương tiện / Y phục / Thiết bị che chở (Dụng Thần: Phụ Mẫu)"
+                else:
+                    authoritative_dt = "Thê Tài"
+                    subject_person = "Vật thất lạc thuộc nhóm Tài sản / Tiền bạc / Chìa khóa / Đồ dùng giá trị (Dụng Thần: Thê Tài)"
         elif is_when and (
             any(w in q_low for w in ["mấy giờ", "giờ nào", "lúc mấy giờ", "lúc nào", "mấy phút", "xuống", "lên", "đến", "tới", "về", "bắn"])
             or not (is_career or is_invest or is_love or is_health)
@@ -1504,15 +1510,22 @@ class QuestionReaderAI:
         if any(w in q_low for w in ["anh chị em", "anh em ruột", "chị em ruột", "mấy anh em", "mấy chị em"]) and not any(w in q_low for w in ["mấy đứa con", "mấy người con", "con cái", "lương", "tiền"]):
             return []
 
+        # V137.0: Giữ nguyên câu hỏi Số con kèm hỏi "trai hay gái / mấy trai mấy gái" (khi không hỏi tuổi) để CHILDREN_COUNT giải trọn gói cả số lượng lẫn giới tính các con!
+        if _has_child_cnt_kw and any(w in q_low for w in ["trai hay gái", "gái hay trai", "nam hay nữ", "mấy trai", "mấy gái"]) and not _has_age_kw:
+            return []
+
         if len(clauses) >= 2:
-            for cl in clauses:
+            _first_cl_low = clauses[0].lower()
+            for idx_cl_i, cl in enumerate(clauses):
                 cl_low = cl.lower()
-                # Bổ sung ngữ cảnh nếu vế 2 viết tắt như "mấy đứa con" hoặc "bao nhiêu tuổi"
+                # Bổ sung ngữ cảnh nếu vế 2 viết tắt như "mấy đứa con", "bao nhiêu tuổi", hoặc "bao giờ trả"
                 cl_expanded = cl
                 if cl_low in ("mấy đứa", "mấy đứa con", "bao nhiêu con", "mấy con", "mấy người con"):
                     cl_expanded = f"tôi có {cl}"
                 elif any(w in cl_low for w in ["bao nhiêu tuổi", "mấy tuổi"]) and _has_child_ref and not any(w in cl_low for w in ["con", "tôi", "vợ", "chồng", "bố", "mẹ"]):
                     cl_expanded = f"các con tôi {cl}"
+                elif idx_cl_i >= 1 and any(w in cl_low for w in ["bao giờ trả", "khi nào trả", "bao giờ thu", "khi nào đòi"]) and any(w in _first_cl_low for w in ["nợ", "vay", "tiền", "triệu", "tỷ"]):
+                    cl_expanded = f"tiền nợ {cl}"
                 bp_cl = QuestionReaderAI.analyze_question(cl_expanded, dung_than_hint="__SINGLE_CLAUSE__", category_hint=category_hint)
                 # Chỉ coi là 1 câu hỏi nhỏ hợp lệ nếu nhận diện được chủ đề rõ ràng (không phải D25 mặc định vô nghĩa từ mảnh câu cụt)
                 is_meaningful_clause = (
@@ -3524,11 +3537,17 @@ class HexagramReasoningAI:
                 _center_a_ga = 52 + ((_sum_chu_ga % 4) * 4)
                 _a_role_prefix = "TRUNG NIÊN – TRƯỞNG BỐI"
             else:
-                _base_tens_u = min(5, max(2, _tt_the_ga if 2 <= _tt_the_ga <= 5 else (_sum_chu_ga // 2)))
-                _center_a_ga = _base_tens_u * 10 + _TT_GA.get(_dung_ga, 4)
-                _min_a_ga = max(18, _center_a_ga - 10)
-                _max_a_ga = min(62, _center_a_ga + 10)
-                _a_role_prefix = "KHUNG ĐỘ TUỔI TỪ QUÁI SỐ & ĐỊA CHI"
+                _ts_self_ga = str(omni_data.get("ts_stage") or "Quan Đái")
+                if _ts_self_ga in ("Thai", "Dưỡng", "Trường Sinh", "Mộc Dục", "Quan Đái"):
+                    _center_a_ga = 24 + (_TT_GA.get(_dung_ga, 4) % 9)
+                    _min_a_ga, _max_a_ga = 18, 38
+                elif _ts_self_ga in ("Lâm Quan", "Đế Vượng"):
+                    _center_a_ga = 33 + (_TT_GA.get(_dung_ga, 4) % 9)
+                    _min_a_ga, _max_a_ga = 24, 48
+                else:
+                    _center_a_ga = 38 + (_TT_GA.get(_dung_ga, 4) % 9)
+                    _min_a_ga, _max_a_ga = 28, 54
+                _a_role_prefix = "KHUNG ĐỘ TUỔI TỪ 12 TRƯỜNG SINH & ĐỊA CHI HÀO DỤNG THẦN"
 
             # Ưu tiên số 1: Các năm sinh khớp CHÍNH XÁC Địa Chi Hào Dụng Thần (_dt_chi_ga), sau đó mới tới Hào Biến / Lục Hợp
             _pri_ages_ga = []
@@ -6613,7 +6632,7 @@ class HexagramReasoningAI:
                 f"<b>• Giải mã Chuyên Sâu Vạn Vật Loại Tượng — Đặc Điểm Sự Vật:</b> {_obj_desc} (Quẻ Chủ {_m['full_chu']} biến {_m['full_bien']}, Dụng Thần {sq_dt} Hào {dt_idx} {dt_chi}-{dt_nh}, Cung {_m['target_cung']} Sao {_m['sao_name']} – Cửa {_m['cua_name']}).<br>"
             )
         elif t_code == "DEBT_LOAN" or "D16" in t_code or any(w in raw_q_g for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "vay tiền", "cho vay"]):
-            if _the_tai_ready and not dt_is_kv and not _is_phuc_ngam:
+            if _the_tai_ready and not dt_is_kv and not _is_phuc_ngam and sq_score >= 50:
                 short_hl = (
                     f"💰 KẾT LUẬN CÔNG NỢ & VAY MƯỢN ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
                     f"THU HỒI / GIẢI NGÂN ĐƯỢC ({sq_score}% — HÀO THÊ TÀI HỮU KHÍ TẠI HÀO {dt_idx} {dt_chi.upper()}-{dt_nh.upper()}), "
@@ -6622,8 +6641,8 @@ class HexagramReasoningAI:
             else:
                 short_hl = (
                     f"⏳ KẾT LUẬN CÔNG NỢ & VAY MƯỢN ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
-                    f"HIỆN TẠI ĐỐI PHƯƠNG CHƯA CÓ SẴN TIỀN TRẢ NGAY 1 LẦN (DO {_m.get('the_tai_status_str', 'Thê Tài vướng cản').upper()}{' & KỲ MÔN PHỤC NGÂM' if _is_phuc_ngam else ''}), "
-                    f"NHƯNG GỐC NỢ KHÔNG MẤT — SẼ THU HỒI ĐƯỢC THEO 0{_conv_num} ĐỢT KHI BƯỚC SANG NGÀY/THÁNG {dt_chi.upper()} (HÀNH {dt_nh.upper()} VƯỢNG)!"
+                    f"KHÓ ĐÒI ĐỦ NGAY 1 LẦN / ĐỐI PHƯƠNG ĐANG KẸT VỐN KHẤT HẸN ({sq_score}% — {_m.get('the_tai_status_str', 'Thê Tài vướng cản').upper()}{' & KỲ MÔN PHỤC NGÂM' if _is_phuc_ngam else ''}), "
+                    f"CẦN TÁCH NHỎ THEO 0{_conv_num} ĐỢT VÀ ĐỢI ĐÚNG NGÀY/THÁNG {dt_chi.upper()} (HÀNH {dt_nh.upper()} VƯỢNG) MỚI THU VỀ ĐƯỢC!"
                 )
         elif t_code in ("INVEST_PROFIT", "CAREER_WORK", "EXAM_VISA") or any(k in t_code for k in ("D14", "D15", "D20")):
             is_strict_override = False
@@ -7541,7 +7560,7 @@ class HexagramReasoningAI:
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V136_HOLOGRAPHIC_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V137_HOLOGRAPHIC_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig) if use_online_api else None
 
         if use_online_api and _real_ai_pair is None and len(_raw_q_str) >= 4:

@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V136.0"
-APP_VERSION_FULL = f"{APP_VERSION} — BIỆN CHỨNG CỔ PHÁP 7 TẦNG & ĐỌC VỊ SỰ KIỆN TOÀN TỨC 12 TẦNG 100% YẾU TỐ QUẺ · TEST MÙ 96.5% · KẾT LUẬN ĐẦU TRANG ✨"
+APP_VERSION = "V137.0"
+APP_VERSION_FULL = f"{APP_VERSION} — ĐỌC VỊ ĐÚNG TRỌNG TÂM MỌI CÂU HỎI (AI · Ở ĐÂU · LÀM GÌ · VẬT GÌ · NGHỀ GÌ · CÁT HUNG) · TEST MÙ 96.5% ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V136.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V136.0"
+# V137.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V137.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2670,9 +2670,24 @@ def render_master_unified_qa_box(location_key="main"):
                         # - Ở câu hỏi đầu tiên (_prev_tuple is None) HOẶC khi người dùng đang kiểm tra Ngày/Giờ Cố Định (not use_current_time):
                         #   Bắt buộc cast_salt = 0 để lập đúng 100% Quẻ Niên-Nguyệt-Nhật-Thời cổ điển và Bàn Kỳ Môn Thời Gia thiên văn!
                         try:
-                            from qmdg_data import enrich_qimen_chart_dict as _enr_real_q
-                            _enr_real_q(chart_for_q)
+                            import hashlib as _hl_cast
+                            from qmdg_data import an_bai_luc_nghi as _abl_q, lap_ban_qmdg as _lb_q, tinh_khong_vong as _tkv_q, tinh_dich_ma as _tdm_q, enrich_qimen_chart_dict as _enr_real_q
                             _is_fixed_manual_dt = not bool(st.session_state.get('use_current_time', True))
+                            # Làm mới Bàn Kỳ Môn Thời Gia nếu người dùng để tab sang khung giờ/ngày mới!
+                            if (not _is_fixed_manual_dt) and (chart_for_q.get('hour') != dt_now.hour or chart_for_q.get('day') != dt_now.day or not chart_for_q.get('can_ngay')):
+                                _p_fresh = calculate_qmdg_params(dt_now)
+                                _dia_fr = _abl_q(_p_fresh['cuc'], _p_fresh['is_duong_don'])
+                                _tb_fr, _ctb_fr, _nb_fr, _sb_fr, _ = _lb_q(_p_fresh['cuc'], _p_fresh['truc_phu'], _p_fresh['truc_su'], _p_fresh['can_gio'], _p_fresh['chi_gio'], _p_fresh['is_duong_don'])
+                                chart_for_q.update(_p_fresh)
+                                chart_for_q.update({
+                                    'thien_ban': _tb_fr, 'can_thien_ban': _ctb_fr, 'nhan_ban': _nb_fr, 'than_ban': _sb_fr,
+                                    'dia_can': _dia_fr, 'dia_ban': _dia_fr,
+                                    'khong_vong': _tkv_q(_p_fresh['can_ngay'], _p_fresh['chi_ngay']),
+                                    'dich_ma': _tdm_q(_p_fresh['chi_ngay']),
+                                    'year': dt_now.year, 'month': dt_now.month, 'day': dt_now.day, 'hour': dt_now.hour, 'minute': dt_now.minute,
+                                })
+                                st.session_state.chart_data = chart_for_q
+                            _enr_real_q(chart_for_q)
                             _q_salt = 0 if (_prev_tuple is None or _is_fixed_manual_dt) else _cast_seq
                             mai_hoa_for_q = tinh_qua_theo_thoi_gian(
                                 dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
@@ -2694,17 +2709,33 @@ def render_master_unified_qa_box(location_key="main"):
                             _d_q = mai_hoa_for_q['dong_hao']
                             st.session_state['_last_cast_tuple'] = (_u_q, _l_q, _d_q)
 
-                            luc_hao_for_q = lap_qua_luc_hao(
-                                dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
-                                topic=selected_topic,
-                                can_ngay=chart_for_q.get('can_ngay', 'Giáp'),
-                                chi_ngay=chart_for_q.get('chi_ngay', 'Tý'),
-                                can_thang=chart_for_q.get('can_thang', 'Giáp'),
-                                chi_thang=chart_for_q.get('chi_thang', 'Tý'),
-                                upper_override=_u_q,
-                                lower_override=_l_q,
-                                moving_override=_d_q,
-                            )
+                            if _is_fixed_manual_dt:
+                                luc_hao_for_q = lap_qua_luc_hao(
+                                    dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
+                                    topic=selected_topic,
+                                    can_ngay=chart_for_q.get('can_ngay', 'Giáp'),
+                                    chi_ngay=chart_for_q.get('chi_ngay', 'Tý'),
+                                    can_thang=chart_for_q.get('can_thang', 'Giáp'),
+                                    chi_thang=chart_for_q.get('chi_thang', 'Tý'),
+                                    upper_override=_u_q,
+                                    lower_override=_l_q,
+                                    moving_override=_d_q,
+                                )
+                            else:
+                                # V137.0: Lục Hào khởi độc lập bằng xác suất 3 đồng xu Văn Vương thật (6=Lão Âm [1/8], 7=Thiếu Dương [3/8], 8=Thiếu Âm [3/8], 9=Lão Dương [1/8])
+                                # cảm ứng theo Thời Khắc + Tâm Niệm Câu Hỏi để có đủ Quẻ Tĩnh (0 hào động), Độc Phát (1 hào), Lưỡng/Tam Động Thông Quan (2-3 hào)!
+                                _seed_b = _hl_cast.sha256(f"{dt_now:%Y%m%d%H%M}::{_q_clean_now.lower()}::{_q_salt}".encode("utf-8")).digest()
+                                _COIN_DIST_8 = (6, 7, 7, 7, 8, 8, 8, 9)
+                                _lh_coins_6 = [_COIN_DIST_8[_seed_b[i] & 7] for i in range(6)]
+                                luc_hao_for_q = lap_qua_luc_hao(
+                                    dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
+                                    topic=selected_topic,
+                                    can_ngay=chart_for_q.get('can_ngay', 'Giáp'),
+                                    chi_ngay=chart_for_q.get('chi_ngay', 'Tý'),
+                                    can_thang=chart_for_q.get('can_thang', 'Giáp'),
+                                    chi_thang=chart_for_q.get('chi_thang', 'Tý'),
+                                    coin_throws=_lh_coins_6,
+                                )
                             st.session_state.luc_hao_result = luc_hao_for_q
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')
