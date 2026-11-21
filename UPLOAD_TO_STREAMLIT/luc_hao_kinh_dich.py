@@ -242,22 +242,25 @@ def get_luc_than(h_element, p_element):
 
 from qmdg_calc import solar_to_lunar
 
-def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi_ngay="Tý", can_thang=None, chi_thang=None, **kwargs):
-    # Convert to Lunar Date (V133.0: Chuẩn phút thiên văn & đồng bộ Dạ Tý 23:00-23:59)
+def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay=None, chi_ngay=None, can_thang=None, chi_thang=None, **kwargs):
+    # Convert to Lunar Date (V134.0: Tôn trọng tuyệt đối Can Chi Tháng/Ngày truyền vào, không bao giờ ghi đè nhầm tháng Tý hay ngày Giáp Tý!)
     _min_init = int(kwargs.get("minute", 0) or 0)
     _sec_init = int(kwargs.get("second", 0) or 0)
     dt = datetime(year, month, day, hour, _min_init, _sec_init)
     dt_lunar = dt + timedelta(days=1) if hour == 23 else dt
     lday, lmonth, lyear, is_leap = solar_to_lunar(dt_lunar)
-    if not chi_thang or not can_thang or (can_thang == "Giáp" and chi_thang == "Tý" and lmonth != 11):
+    if not chi_thang or not can_thang or not can_ngay or not chi_ngay:
         try:
             from qmdg_calc import calculate_qmdg_params as _calc_lh_p
             _p_lh = _calc_lh_p(dt)
-            can_thang = _p_lh.get("can_thang") or can_thang or "Giáp"
-            chi_thang = _p_lh.get("chi_thang") or chi_thang
-            if can_ngay == "Giáp" and chi_ngay == "Tý":
-                can_ngay = _p_lh.get("can_ngay", can_ngay)
-                chi_ngay = _p_lh.get("chi_ngay", chi_ngay)
+            if not can_thang:
+                can_thang = _p_lh.get("can_thang") or "Giáp"
+            if not chi_thang:
+                chi_thang = _p_lh.get("chi_thang")
+            if not can_ngay:
+                can_ngay = _p_lh.get("can_ngay") or "Giáp"
+            if not chi_ngay:
+                chi_ngay = _p_lh.get("chi_ngay") or "Tý"
         except Exception:
             pass
         if not chi_thang:
@@ -265,6 +268,10 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
             chi_thang = _thang_chis[(lmonth - 1) % 12]
         if not can_thang:
             can_thang = "Giáp"
+        if not can_ngay:
+            can_ngay = "Giáp"
+        if not chi_ngay:
+            chi_ngay = "Tý"
     
     # Year Chi index: Tý=1, Sửu=2, ..., Hợi=12
     lyear_chi_idx = (lyear - 4) % 12 + 1
@@ -437,13 +444,24 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         is_vuong_tuong = strength in ("Vượng", "Tướng")
         dac_nhat_sinh = (_SINH_EL.get(nhat_el) == c_element) or (nhat_el == c_element)
         dac_dong_sinh = (not is_mv) and any(_SINH_EL.get(m_el) == c_element for m_el in moving_els_ban)
+        is_void = c_branch in void_branches
+        # V134.0 (Tăng San Bốc Dịch · Ám Động & Tuần Không Chương):
+        # 1) Hào đắc Nguyệt Hợp hoặc Trường Sinh tại Nguyệt (Kim tại Tị, Thủy tại Thân, Mộc tại Hợi, Hỏa tại Dần) là HỮU KHÍ -> Nhật xung thành Ám Động!
+        # 2) Hào Tĩnh lâm Tuần Không gặp Nhật Xung gọi là 'Xung Không Tắc Thực' (Ám Xung khởi dụng), KHÔNG bị tính nhầm thành Nhật Phá!
+        _NGUYET_TRUONG_SINH = {("Kim", "Tị"), ("Thủy", "Thân"), ("Mộc", "Hợi"), ("Hỏa", "Dần")}
+        has_nguyet_root = is_hop(c_branch, chi_thang) or ((c_element, str(chi_thang or "")) in _NGUYET_TRUONG_SINH)
 
         is_nguyet_pha_line = is_xung(c_branch, chi_thang) and (c_branch != chi_ngay)
         is_nhat_xung_line = is_xung(c_branch, chi_ngay)
         is_am_dong_line = False
         is_nhat_pha_line = False
+        is_xung_khong_line = False
         if not is_mv and is_nhat_xung_line:
-            if is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh:
+            if is_void:
+                is_xung_khong_line = True
+                if is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh or has_nguyet_root or not is_nguyet_pha_line:
+                    is_am_dong_line = True
+            elif is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh or has_nguyet_root:
                 is_am_dong_line = True
             else:
                 is_nhat_pha_line = True
@@ -464,13 +482,12 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         )
         mo_type = ""
         if is_nhap_nhat_mo or is_nhap_nguyet_mo or is_nhap_dong_mo:
-            mo_type = "VUONG_NHAP_KHO" if (is_vuong_tuong or dac_nhat_sinh) else "SUY_NHAP_MO"
+            mo_type = "VUONG_NHAP_KHO" if (is_vuong_tuong or dac_nhat_sinh or has_nguyet_root) else "SUY_NHAP_MO"
 
         # Phân định Chân Không vs Giả Không (Tăng San Bốc Dịch — Tuần Không Chương)
-        is_void = c_branch in void_branches
         khong_type = ""
         if is_void:
-            if is_mv or is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh or is_nhat_xung_line:
+            if is_mv or is_vuong_tuong or dac_nhat_sinh or dac_dong_sinh or is_nhat_xung_line or has_nguyet_root:
                 khong_type = "GIA_KHONG"
             else:
                 khong_type = "CHAN_KHONG"
@@ -556,6 +573,8 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
             'is_void': is_void,
             'khong_type': khong_type,
             'is_am_dong': is_am_dong_line,
+            'is_xung_khong': is_xung_khong_line,
+            'has_nguyet_root': has_nguyet_root,
             'is_nhat_pha': is_nhat_pha_line,
             'is_nguyet_pha': is_nguyet_pha_line,
             'is_nhat_hop': is_nhat_hop_line,
@@ -647,7 +666,13 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                     phi_khong_pha = bool(phi_than.get('is_void') or phi_than.get('is_nguyet_pha') or phi_than.get('is_nhat_pha'))
                     phuc_strength = get_element_strength(phuc_el, chi_thang or lmonth)
                     phuc_dac_nhat = (_SINH_EL.get(nhat_el) == phuc_el) or (nhat_el == phuc_el)
-                    dac_xuat = bool(phi_sinh_phuc or phi_khong_pha or phuc_strength in ("Vượng", "Tướng") or phuc_dac_nhat)
+                    phuc_is_void = bool(phuc_chi in void_branches)
+                    phuc_is_nguyet_pha = is_xung(phuc_chi, chi_thang) and (phuc_chi != chi_ngay)
+                    # Tăng San Bốc Dịch (Phục Cư Không Địa): Nếu Phục Thần lâm Tuần Không và không được Nhật xung/Phi sinh thì vẫn là Phục Không khó xuất ngay
+                    dac_xuat = bool(
+                        (phi_sinh_phuc or phi_khong_pha or phuc_strength in ("Vượng", "Tướng") or phuc_dac_nhat)
+                        and not (phuc_is_void and phi_khac_phuc and not is_xung(phuc_chi, chi_ngay))
+                    )
                     if dac_xuat:
                         phuc_status = "DAC_XUAT"
                         phuc_desc = (
@@ -655,9 +680,9 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                             f"tạm ẩn dưới Hào {hao_pos} {phi_than['luc_than']} ({phi_than['chi']}), đến ngày/giờ {phuc_chi} hoặc xung Phi ({phi_than['chi']}) sẽ lộ rõ!"
                         )
                     else:
-                        phuc_status = "TUYET_LO" if phi_khac_phuc else "AN_PHUC"
+                        phuc_status = "TUYET_LO" if (phi_khac_phuc or phuc_is_void) else "AN_PHUC"
                         phuc_desc = (
-                            f"Phục Thần Bị Đè Nén ({'Phi Thần khắc Phục Thần' if phi_khac_phuc else 'Hưu tù vô khí'}) dưới Hào {hao_pos} {phi_than['luc_than']} ({phi_than['chi']}) — "
+                            f"Phục Thần Bị Đè Nén ({'Phục Cư Không Địa' if phuc_is_void else ('Phi Thần khắc Phục Thần' if phi_khac_phuc else 'Hưu tù vô khí')}) dưới Hào {hao_pos} {phi_than['luc_than']} ({phi_than['chi']}) — "
                             f"hiện tại rất khó lộ diện ngay, cần chờ vận sinh trợ hành {phuc_el}."
                         )
 
@@ -673,6 +698,8 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                         'phi_sinh_phuc': phi_sinh_phuc,
                         'phi_khac_phuc': phi_khac_phuc,
                         'phi_khong_pha': phi_khong_pha,
+                        'is_void': phuc_is_void,
+                        'is_nguyet_pha': phuc_is_nguyet_pha,
                         'dac_xuat': dac_xuat,
                         'phuc_status': phuc_status,
                         'phuc_desc': phuc_desc,
@@ -682,18 +709,49 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
                     phuc_than_list.append(phuc_info)
                     break
 
-    # Kiểm tra Tùy Quỷ Nhập Mộ, Tam Hợp Cục Thành Hóa & Liên Động Tương Sinh (Tăng San Bốc Dịch)
+    # Kiểm tra Tùy Quỷ Nhập Mộ, Đại Tượng Lục Xung/Lục Hợp/Quái Biến Sinh Khắc (Tăng San Bốc Dịch)
     the_detail = details_ban[the_pos - 1]
     tuy_quy_nhap_mo = bool(
         the_detail['luc_than'] == "Quan Quỷ"
         and the_detail['strength'] in ("Hưu", "Tù", "Tử")
         and (_MO_BY_EL.get(the_detail['ngu_hanh']) in (chi_ngay, chi_thang) or "HOA_MO" in the_detail.get('hoa_flags', []))
     )
+    ban_is_luc_xung = bool(ban_name in _LUC_XUNG_SET)
+    ban_is_luc_hop = bool(ban_name in _LUC_HOP_SET)
+    bien_is_luc_xung = bool(dong_list and bien_name in _LUC_XUNG_SET)
+    bien_is_luc_hop = bool(dong_list and bien_name in _LUC_HOP_SET)
     xung_hop_transition = ""
-    if ban_name in _LUC_XUNG_SET and bien_name in _LUC_HOP_SET:
+    if dong_list and ban_is_luc_xung and bien_is_luc_hop:
         xung_hop_transition = "XUNG_HOA_HOP"
-    elif ban_name in _LUC_HOP_SET and bien_name in _LUC_XUNG_SET:
+    elif dong_list and ban_is_luc_hop and bien_is_luc_xung:
         xung_hop_transition = "HOP_HOA_XUNG"
+    elif dong_list and ban_is_luc_xung and bien_is_luc_xung:
+        xung_hop_transition = "XUNG_HOA_XUNG"
+
+    # Quái Biến Sinh Khắc Mộ Tuyệt Chương (Tăng San Bốc Dịch Quyển 1 Chương 24):
+    # Khi cả 3 hào Nội Quái hoặc cả 3 hào Ngoại Quái (hoặc cả 6 hào Bát Thuần) cùng phát động biến sang quái khắc ngược quái gốc!
+    _TRIG_EL = {1: "Kim", 2: "Kim", 3: "Hỏa", 4: "Mộc", 5: "Mộc", 6: "Thủy", 7: "Thổ", 8: "Thổ"}
+    lo_b1, up_b1 = lines_to_quai_num(ban_lines[:3]), lines_to_quai_num(ban_lines[3:])
+    lo_b2, up_b2 = lines_to_quai_num(bien_lines[:3]), lines_to_quai_num(bien_lines[3:])
+    quai_bien_rel = ""
+    if set(dong_list) >= {1, 2, 3, 4, 5, 6} and lo_b1 == up_b1 and lo_b2 == up_b2:
+        e1, e2 = _TRIG_EL.get(lo_b1, ""), _TRIG_EL.get(lo_b2, "")
+        if _KHAC_EL.get(e2) == e1:
+            quai_bien_rel = "QUAI_HOA_HOI_DAU_KHAC"
+        elif _SINH_EL.get(e2) == e1:
+            quai_bien_rel = "QUAI_HOA_HOI_DAU_SINH"
+    elif set(dong_list) == {1, 2, 3}:
+        e1, e2 = _TRIG_EL.get(lo_b1, ""), _TRIG_EL.get(lo_b2, "")
+        if _KHAC_EL.get(e2) == e1:
+            quai_bien_rel = "NOI_QUAI_HOA_KHAC"
+        elif _SINH_EL.get(e2) == e1:
+            quai_bien_rel = "NOI_QUAI_HOA_SINH"
+    elif set(dong_list) == {4, 5, 6}:
+        e1, e2 = _TRIG_EL.get(up_b1, ""), _TRIG_EL.get(up_b2, "")
+        if _KHAC_EL.get(e2) == e1:
+            quai_bien_rel = "NGOAI_QUAI_HOA_KHAC"
+        elif _SINH_EL.get(e2) == e1:
+            quai_bien_rel = "NGOAI_QUAI_HOA_SINH"
 
     # V133.0: Xét Tam Hợp Cục Thành Hóa (三合章 — Tăng San Bốc Dịch) & Liên Động Tham Sinh Quên Khắc (多爻動章)
     _TAM_HOP_DEFS = [
@@ -781,7 +839,12 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay="Giáp", chi
         'the_than': the_than_info,
         'shensha_12': shensha_12_info,
         'tuy_quy_nhap_mo': tuy_quy_nhap_mo,
+        'ban_is_luc_xung': ban_is_luc_xung,
+        'ban_is_luc_hop': ban_is_luc_hop,
+        'bien_is_luc_xung': bien_is_luc_xung,
+        'bien_is_luc_hop': bien_is_luc_hop,
         'xung_hop_transition': xung_hop_transition,
+        'quai_bien_rel': quai_bien_rel,
         'tam_hop_cuc': tam_hop_cuc,
         'lien_dong_chains': lien_dong_chains,
         'conclusion': f"Quẻ {ban_name} biến {bien_name}. {topic} ({dong_desc}).",

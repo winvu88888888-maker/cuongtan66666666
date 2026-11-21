@@ -565,22 +565,46 @@ def analyze_liuyao_exhaustive_micro_graph(
     )
     stars_fn = bodies_ss["stars_for_branch"]
 
-    # Định vị Hào Dụng Thần (hoặc Phục Thần nếu Dụng Thần ẩn!)
+    # Định vị Hào Dụng Thần (hoặc Phục Thần nếu Dụng Thần ẩn!) — V134.0 Chuẩn Tăng San Bốc Dịch · Dụng Thần Lưỡng Hiện Chương
     dt_clean = str(dung_than or "Bản Thân").strip()
+    is_self_dt = dt_clean in ("Bản Thân", "Hào Thế", "Dụng Thần", "")
     dt_hao_idx = the_pos
     dt_candidates = []
     for idx_h, h_obj in enumerate(haos_ban[:6], 1):
         lt_h = str(h_obj.get("luc_than") or "")
-        if dt_clean != "Bản Thân" and (lt_h == dt_clean or dt_clean in lt_h):
+        if not is_self_dt and (lt_h == dt_clean or dt_clean in lt_h):
             dt_candidates.append(idx_h)
     if dt_candidates:
-        # Ưu tiên hào Động -> Trì Thế -> Trì Ứng -> gần Thế nhất
-        dt_candidates.sort(key=lambda ix: (0 if ix in dong_set else 1, 0 if ix == the_pos else (1 if ix == ung_pos else 2), abs(ix - the_pos)))
-        dt_hao_idx = dt_candidates[0]
+        _vs_rank = {"Vượng": 0, "Tướng": 1, "Bình": 2, "Hưu": 3, "Tù": 4, "Tử": 5}
+
+        def _dt_cand_priority(ix: int):
+            ho = haos_ban[ix - 1]
+            ch_c = _norm_chi(ho.get("chi") or str(ho.get("can_chi", "")).split("-")[0])
+            hf_c = set(ho.get("hoa_flags") or [])
+            is_act = (ix in dong_set) or bool(ho.get("is_am_dong"))
+            is_self_destruct = ("HOI_DAU_KHAC" in hf_c) or ("HOA_THOAI" in hf_c)
+            is_broken_static = (not is_act) and (
+                bool(ho.get("is_nguyet_pha")) or bool(ho.get("is_nhat_pha")) or ho.get("khong_type") == "CHAN_KHONG"
+            )
+            lam_cal = 0 if ch_c in (chi_thang, chi_ngay) else 1
+            vs_r = _vs_rank.get(str(ho.get("strength") or ho.get("vuong_suy") or "Bình"), 2)
+            pos_r = 0 if ix == the_pos else (1 if ix == ung_pos else 2)
+            # Xếp hạng: (1) Không bị Tĩnh Phá/Chân Không khi có hào lành lặn khác, (2) Động hữu lực, (3) Lâm Nhật/Nguyệt, (4) Thế/Ứng, (5) Vượng Suy, (6) Gần Thế
+            return (
+                1 if is_broken_static else 0,
+                0 if (is_act and not is_self_destruct) else (1 if is_act else 2),
+                lam_cal,
+                pos_r,
+                vs_r,
+                abs(ix - the_pos),
+            )
+
+        dt_candidates_sorted = sorted(dt_candidates, key=_dt_cand_priority)
+        dt_hao_idx = dt_candidates_sorted[0]
 
     phuc_list = lh.get("phuc_than") or []
     dt_phuc_obj = None
-    if dt_clean != "Bản Thân" and not dt_candidates:
+    if not is_self_dt and not dt_candidates:
         for pt in phuc_list:
             if isinstance(pt, dict) and str(pt.get("luc_than", "")) == dt_clean:
                 dt_phuc_obj = pt
@@ -792,6 +816,10 @@ def analyze_liuyao_exhaustive_micro_graph(
             + (f"Chu Dịch Hào Từ: {zy_txt}" if zy_txt and (is_mv or idx_h in (the_pos, dt_hao_idx)) else f"Phản ánh mảng: {vi_desc}.")
         )
 
+        ch_bien_ln = _norm_chi(hb_obj.get("chi") or str(hb_obj.get("can_chi", "")).split("-")[0]) if (is_mv and hb_obj) else ""
+        el_bien_ln = str(hb_obj.get("ngu_hanh") or CHI_ELEMENT.get(ch_bien_ln, "")) if (is_mv and hb_obj) else ""
+        lt_bien_ln = str(hb_obj.get("luc_than") or "") if (is_mv and hb_obj) else ""
+
         line_micro_audit.append({
             "hao": idx_h,
             "roles": role_tags,
@@ -807,6 +835,8 @@ def analyze_liuyao_exhaustive_micro_graph(
             "shensha": ss_list,
             "is_moving": is_mv,
             "is_am_dong": is_ad,
+            "is_xung_khong": bool(h_obj.get("is_xung_khong")),
+            "has_nguyet_root": bool(h_obj.get("has_nguyet_root")),
             "is_void": is_void,
             "khong_type": k_type,
             "is_nguyet_pha": bool(h_obj.get("is_nguyet_pha")),
@@ -815,6 +845,9 @@ def analyze_liuyao_exhaustive_micro_graph(
             "mo_type": str(h_obj.get("mo_type") or ""),
             "is_tao_tho_thoi_kim": bool(h_obj.get("is_tao_tho_thoi_kim")),
             "hoa_flags": list(h_obj.get("hoa_flags") or []),
+            "bien_chi": ch_bien_ln,
+            "bien_el": el_bien_ln,
+            "bien_luc_than": lt_bien_ln,
             "bien_summary": bien_summary,
             "incoming_arrows": incoming_arrows,
             "outgoing_arrows": outgoing_arrows,
@@ -932,6 +965,21 @@ def analyze_liuyao_exhaustive_micro_graph(
     return {
         "ban_name": ban_name,
         "bien_name": bien_name,
+        "palace": palace,
+        "palace_el": p_el,
+        "chi_thang": chi_thang,
+        "chi_ngay": chi_ngay,
+        "dt_clean": dt_clean,
+        "is_self_dt": is_self_dt,
+        "dt_candidates": dt_candidates,
+        "dt_phuc_obj": dt_phuc_obj,
+        "ban_is_luc_xung": bool(lh.get("ban_is_luc_xung")),
+        "ban_is_luc_hop": bool(lh.get("ban_is_luc_hop")),
+        "bien_is_luc_xung": bool(lh.get("bien_is_luc_xung")),
+        "bien_is_luc_hop": bool(lh.get("bien_is_luc_hop")),
+        "xung_hop_transition": str(lh.get("xung_hop_transition") or ""),
+        "quai_bien_rel": str(lh.get("quai_bien_rel") or ""),
+        "tam_hop_cuc": list(lh.get("tam_hop_cuc") or []),
         "quai_than": bodies_ss["quai_than"],
         "the_than": bodies_ss["the_than"],
         "shensha_dict": bodies_ss["shensha_dict"],
@@ -987,11 +1035,58 @@ def analyze_qimen_exhaustive_micro_graph(
     cung_chu = cung_chu or 2
     cung_khach = cung_khach or 8
 
+    def _find_outer_by(src_map: Dict[Any, Any], kw: str) -> int:
+        for _p in (1, 2, 3, 4, 6, 7, 8, 9):
+            _v = str(src_map.get(_p) or src_map.get(str(_p)) or "")
+            if kw in _v:
+                return _p
+        return 0
+
+    p_sinh = _find_outer_by(nb, "Sinh")
+    p_khai = _find_outer_by(nb, "Khai")
+    p_canh = _find_outer_by(nb, "Cảnh")
+    p_thuong = _find_outer_by(nb, "Thương")
+    p_nhue = _find_outer_by(tb, "Nhuế")
+    p_tam = _find_outer_by(tb, "Tâm")
+    p_luchop = _find_outer_by(sb, "Hợp")
+    p_mau, _, _ = find_qimen_stem_palace(cd, "Mậu", chi_gio, "heaven")
+    p_mau = p_mau or cung_chu
+
+    # Kiểm tra Đại Cục Phục Ngâm / Phản Ngâm chuẩn《御定奇门宝鉴》&《神奇之门》:
+    is_mon_phuc_ngam = (p_khai == 6 or p_sinh == 8)
+    is_mon_phan_ngam = (p_khai == 4 or p_sinh == 2)
+    is_tinh_phuc_ngam = (_find_outer_by(tb, "Tâm") == 6 or _find_outer_by(tb, "Bồng") == 1)
+    is_tinh_phan_ngam = (_find_outer_by(tb, "Tâm") == 4 or _find_outer_by(tb, "Bồng") == 9)
+
+    q_qm = f"{question} {topic}".lower()
+    qm_dt_role = "GENERAL"
     tc = int(target_cung) if str(target_cung).isdigit() and 1 <= int(target_cung) <= 9 else 0
     if tc == 5:
         tc = int(cd.get("p_nhue_cam") or 2)
     if not tc:
-        tc = cung_khach if dung_than != "Bản Thân" else cung_chu
+        # Phân luồng Dụng Thần Kỳ Môn chuẩn《御定奇门宝鉴》& Vấn Chân Kỳ Môn (qm_router):
+        # Nhật Can (cung_chu) = Người hỏi; Thời Can (cung_khach) = Sự việc/Hành trình; kết hợp Chuyên Đề Dụng Thần:
+        if any(w in q_qm for w in ("đòi nợ", "thu nợ", "khoản nợ", "thu hồi nợ", "công nợ")):
+            qm_dt_role = "DEBT"
+            tc = cung_khach
+        elif any(w in q_qm for w in ("tiền", "tài lộc", "lãi", "lời", "đầu tư", "kinh doanh", "mở xưởng", "mua lô hàng", "mua hàng", "doanh thu", "lợi nhuận", "buôn bán", "thương vụ", "cầu tài", "hợp tác làm ăn")):
+            qm_dt_role = "WEALTH"
+            tc = p_sinh or cung_khach
+        elif any(w in q_qm for w in ("xin việc", "ứng tuyển", "chức vụ", "thăng chức", "bổ nhiệm", "công danh", "tuyển dụng", "sự nghiệp")):
+            qm_dt_role = "CAREER"
+            tc = p_khai or cung_khach
+        elif any(w in q_qm for w in ("thi cử", "khoa cử", "đỗ đạt", "văn thư", "giấy tờ", "chứng chỉ", "bằng cấp", "visa", "ký hợp đồng")):
+            qm_dt_role = "EXAM"
+            tc = p_canh or cung_khach
+        elif any(w in q_qm for w in ("hôn sự", "kết hôn", "cưới", "nhân duyên", "tình cảm", "hẹn hò")):
+            qm_dt_role = "MARRIAGE"
+            tc = p_luchop or cung_khach
+        elif any(w in q_qm for w in ("bệnh", "ốm", "điều trị", "chữa", "phẫu thuật")):
+            qm_dt_role = "ILLNESS"
+            tc = p_tam or cung_khach
+        else:
+            qm_dt_role = "GENERAL"
+            tc = cung_khach
 
     kv_ngay = {int(x) for x in (cd.get("khong_vong") or []) if str(x).isdigit()}
     kv_gio = {int(x) for x in (cd.get("khong_vong_gio") or []) if str(x).isdigit()}
@@ -1191,9 +1286,23 @@ def analyze_qimen_exhaustive_micro_graph(
 
     return {
         "target_cung": tc,
+        "qm_dt_role": qm_dt_role,
         "cung_chu": cung_chu,
         "cung_khach": cung_khach,
         "cung_truc_su": cung_truc_su,
+        "p_sinh": p_sinh,
+        "p_khai": p_khai,
+        "p_canh": p_canh,
+        "p_thuong": p_thuong,
+        "p_nhue": p_nhue,
+        "p_tam": p_tam,
+        "p_luchop": p_luchop,
+        "p_mau": p_mau,
+        "is_mon_phuc_ngam": is_mon_phuc_ngam,
+        "is_mon_phan_ngam": is_mon_phan_ngam,
+        "is_tinh_phuc_ngam": is_tinh_phuc_ngam,
+        "is_tinh_phan_ngam": is_tinh_phan_ngam,
+        "truc_su_door": str(cd.get("truc_su") or ""),
         "stem_chu": stem_chu,
         "stem_khach": stem_khach,
         "ck_rel": ck_rel,
@@ -1661,219 +1770,754 @@ def synthesize_deep_classical_verdict(
     the_ln = lines[the_pos - 1] if 1 <= the_pos <= len(lines) else {}
     ung_ln = lines[ung_pos - 1] if 1 <= ung_pos <= len(lines) else {}
 
-    # ── TÂM PHÁP 1: NHẬN DIỆN HỶ/KỴ, THỌ NGUYÊN & THỜI THÁI CÂU HỎI ──
+    # ── TÂM PHÁP 1: NHẬN DIỆN HỶ/KỴ, BỆNH TRÌNH, THỌ NGUYÊN & THỜI THÁI CÂU HỎI (V134.0) ──
     is_weather_q = any(w in q_low for w in ("mưa", "nắng", "thời tiết", "giông", "bão", "tạnh"))
-    is_worry_q = any(w in q_low for w in ("bệnh", "ốm", "sốt", "đau", "tai nạn", "nguy hiểm", "âm binh", "vong", "tà khí", "bị kiện", "mất trộm"))
+    is_illness_q = any(w in q_low for w in ("bệnh", "ốm", "sốt", "đau", "viêm", "nhập viện", "cấp cứu", "phẫu thuật", "mổ", "bình phục", "qua khỏi", "mang thai", "sinh nở", "phương thuốc", "bài thuốc"))
+    is_recent_illness = is_illness_q and any(w in q_low for w in ("mới phát", "gần đây", "mới bị", "mới ốm", "mới sốt", "cấp tính", "cảm mạo"))
+    is_chronic_illness = is_illness_q and any(w in q_low for w in ("lâu ngày", "bệnh nặng lâu", "mãn tính", "kinh niên", "nhiều năm", "ung thư"))
+    is_worry_q = is_illness_q or any(w in q_low for w in ("tai nạn", "nguy hiểm", "âm binh", "vong", "tà khí", "bị kiện", "lo âu", "quan sự", "tai ương", "vô sự"))
     is_done_yet_q = any(w in q_low for w in ("đã bắn", "bắn chưa", "về chưa", "đến chưa", "tới chưa", "đi chưa", "ăn chưa", "xong chưa", "rồi hay chưa", "chưa hay rồi"))
     is_truth_q = any(w in q_low for w in ("thật hay giả", "nói thật", "nói dối", "có thật không", "tin được không", "lừa"))
-    is_wealth_q = any(w in q_low for w in ("tiền", "lương", "thưởng", "tài chính", "lãi", "lời", "vốn", "giá", "bán", "mua", "đầu tư", "nợ", "tờ tiền", "triệu", "tỷ"))
-    is_age_longevity_q = any(w in q_low for w in ("bao nhiêu tuổi", "mấy tuổi", "thọ bao nhiêu", "hưởng thọ", "hưởng dương", "sống tới", "tuổi thọ", "sinh năm"))
+    is_wealth_q = any(w in q_low for w in ("tiền", "lương", "thưởng", "tài chính", "cầu tài", "kinh doanh", "lãi", "lời", "lợi lộc", "vốn", "giá", "bán", "mua", "đầu tư", "nợ", "vé số", "trúng thưởng", "tờ tiền", "triệu", "tỷ"))
+    is_exam_q = any(w in q_low for w in ("đi thi", "kỳ thi", "thi đỗ", "thi đậu", "đỗ đạt", "thi cử", "khoa cử", "trúng tuyển"))
+    is_career_q = any(w in q_low for w in ("công danh", "chức vụ", "thăng tiến", "thăng chức", "xin việc", "ứng tuyển", "bổ nhiệm", "sự nghiệp", "quan chức"))
+    is_marriage_q = any(w in q_low for w in ("hôn nhân", "hôn sự", "nhân duyên", "cầu hôn", "kết hôn", "cưới", "vợ chồng")) and not is_illness_q
+    is_lost_q = any(w in q_low for w in ("mất", "thất lạc", "tìm lại", "tìm thấy", "đánh rơi", "bỏ quên", "để quên"))
+    is_travel_any = any(w in q_low for w in ("xuất hành", "đi xa", "trở về", "quay về", "đến lớp", "tới lớp", "chuyến đi", "qua trạm", "công tác"))
+    dt_clean_ly = str(ly_res.get("dt_clean") or dung_than or "Bản Thân").strip()
+    is_self_dt_ly = bool(ly_res.get("is_self_dt", dt_clean_ly in ("Bản Thân", "Hào Thế", "Dụng Thần", "")))
+    is_traveler_q = is_travel_any and (not is_self_dt_ly or any(w in q_low for w in ("trở về", "đến lớp", "bao giờ về")))
+    is_safety_worry_q = (
+        any(w in q_low for w in ("bình an", "vô sự", "qua trạm", "lo âu", "tai ương", "kiện tụng"))
+        and not is_career_q and not is_exam_q and not is_marriage_q and not is_wealth_q
+    )
+    is_age_longevity_q = any(w in q_low for w in ("bao nhiêu tuổi", "mấy tuổi", "thọ bao nhiêu", "hưởng thọ", "hưởng dương", "sống tới", "tuổi thọ", "thọ mệnh", "trường thọ", "sinh năm"))
 
-    # ── TÂM PHÁP 2: CHẤM ĐIỂM CHUỖI TRUYỀN LỰC 4 TẦNG LỤC HÀO (-100 .. +100 -> chuẩn hóa 0..100) ──
+    # ── TÂM PHÁP 2: CHẤM ĐIỂM BIỆN CHỨNG LỤC HÀO CỔ PHÁP V134.0 (TĂNG SAN BỐC DỊCH · BỐC PHỆ CHÍNH TÔNG) ──
     lh_pts = 0
     lh_chain_notes: List[str] = []
+    vs_map = {"Vượng": 22, "Tướng": 15, "Bình": 2, "Hưu": -7, "Tù": -13, "Tử": -19}
+
+    chi_ngay = _norm_chi(ly_res.get("chi_ngay") or cd.get("chi_ngay") or "Tý") or "Tý"
+    chi_thang = _norm_chi(ly_res.get("chi_thang") or cd.get("chi_thang") or "Tuất") or "Tuất"
+    chi_gio = _norm_chi(cd.get("chi_gio") or "Tý") or "Tý"
+    nhat_el = CHI_ELEMENT.get(chi_ngay, "Thủy")
+    nguyet_el = CHI_ELEMENT.get(chi_thang, "Thổ")
+    palace_el = str(ly_res.get("palace_el") or "Kim")
+
+    def _el_to_luc_than(e_chk: str) -> str:
+        if not e_chk:
+            return ""
+        if e_chk == palace_el:
+            return "Huynh Đệ"
+        if SINH_EL.get(e_chk) == palace_el:
+            return "Phụ Mẫu"
+        if SINH_EL.get(palace_el) == e_chk:
+            return "Tử Tôn"
+        if KHAC_EL.get(e_chk) == palace_el:
+            return "Quan Quỷ"
+        if KHAC_EL.get(palace_el) == e_chk:
+            return "Thê Tài"
+        return ""
+
+    nguyet_lt = _el_to_luc_than(nguyet_el)
+    nhat_lt = _el_to_luc_than(nhat_el)
+
     dt_el = str(dt_ln.get("ngu_hanh") or "Thổ")
     dt_chi = str(dt_ln.get("chi") or "Thìn")
     the_el = str(the_ln.get("ngu_hanh") or "Thổ")
     the_chi = str(the_ln.get("chi") or "Thìn")
+    ung_el = str(ung_ln.get("ngu_hanh") or "Thổ")
     vs = str(dt_ln.get("vuong_suy") or "Bình")
-
-    vs_map = {"Vượng": 22, "Tướng": 15, "Bình": 2, "Hưu": -7, "Tù": -13, "Tử": -19}
-    lh_pts += vs_map.get(vs, 0)
-    lh_chain_notes.append(f"Nguyệt Lệnh định khí Dụng Thần Hào {dt_idx} {dt_ln.get('luc_than','')} ({dt_chi}-{dt_el}) ở bậc {vs}")
-    if dt_ln.get("is_tao_tho_thoi_kim"):
-        lh_pts -= 8
-        lh_chain_notes.append("Tăng San Bốc Dịch: Nguyệt kiến Mùi/Tuất là Táo Thổ (Hỏa khố) làm giòn Kim, không sinh Kim như Thấp Thổ Thìn/Sửu")
-
-    if dt_ln.get("is_nguyet_pha"):
-        lh_pts -= 26
-        lh_chain_notes.append("Phạm Nguyệt Phá (tháng xung vỡ gốc hào — tổn lực nghiêm trọng)")
-    if dt_ln.get("is_am_dong"):
-        lh_pts += 18
-        lh_chain_notes.append("Đắc Nhật Xung Ám Động (hào vượng được ngày kích hoạt chạy ngầm cực nhanh)")
-    elif dt_ln.get("is_nhat_pha"):
-        lh_pts -= 24
-        lh_chain_notes.append("Phạm Nhật Phá (hào suy bị ngày xung tan rã)")
-
-    chi_ngay = _norm_chi(cd.get("chi_ngay") or "Tý") or "Tý"
-    chi_gio = _norm_chi(cd.get("chi_gio") or "Tý") or "Tý"
-    nhat_el = CHI_ELEMENT.get(chi_ngay, "Thủy")
-    if dt_chi == chi_ngay:
-        lh_pts += 22
-        lh_chain_notes.append(f"Dụng Thần Lâm Nhật Kiến ({chi_ngay}) — bất khả xâm phạm, ứng cực mạnh")
-    elif SINH_EL.get(nhat_el) == dt_el:
-        lh_pts += 15
-        lh_chain_notes.append(f"Được Nhật Thần ({chi_ngay}-{nhat_el}) tương sinh tiếp sức")
-    elif KHAC_EL.get(nhat_el) == dt_el and not dt_ln.get("is_moving"):
-        lh_pts -= 13
-        lh_chain_notes.append(f"Bị Nhật Thần ({chi_ngay}-{nhat_el}) khắc chế")
-
-    # Lục Hợp Chương (Tăng San Bốc Dịch): Động phùng Nhật Hợp = Hợp Trói (-12), Tĩnh phùng Nhật Hợp = Hợp Khởi (+16)
+    h_flags = set(dt_ln.get("hoa_flags") or [])
+    the_flags = set(the_ln.get("hoa_flags") or [])
     hop_st = str(dt_ln.get("hop_status") or "")
-    if hop_st == "HOP_TRU":
-        lh_pts -= 12
-        lh_chain_notes.append(f"Lục Hợp Chương: Hào Dụng Thần ĐỘNG bị Nhật Thần ({chi_ngay}) HỢP TRÓI (Hợp Trụ) — tạm thời vướng bận/chậm nhịp, phải chờ ngày Xung mở Hợp mới thành")
-    elif hop_st == "HOP_KHOI":
-        lh_pts += 16
-        lh_chain_notes.append(f"Lục Hợp Chương: Hào Dụng Thần TĨNH được Nhật Thần ({chi_ngay}) HỢP KHỞI — quý nhân nâng dậy, chuyển tĩnh thành vượng")
-
-    # Tam Mộ Chương (三墓章 — Tăng San Bốc Dịch): Phân Vượng Tướng Nhập Khố vs Hưu Tù Nhập Tuyệt Mộ
     mo_tp = str(dt_ln.get("mo_type") or "")
-    if mo_tp == "SUY_NHAP_MO":
-        lh_pts -= 20
-        lh_chain_notes.append("Tam Mộ Chương: Dụng Thần hưu tù vô khí rơi vào Chân Mộ — đối tượng/sự việc bế tắc, giấu kín hoặc mê muội")
-    elif mo_tp == "VUONG_NHAP_KHO":
-        lh_pts -= 6
-        lh_chain_notes.append("Tam Mộ Chương: Dụng Thần vượng tướng Nhập Khố (tạm cất giữ tích lũy trong kho, đến ngày Xung Khố sẽ bung phát mạnh!)")
+    dt_candidates = ly_res.get("dt_candidates") or []
+    dt_phuc_obj = ly_res.get("dt_phuc_obj")
+    ban_is_lx = bool(ly_res.get("ban_is_luc_xung"))
+    ban_is_lh = bool(ly_res.get("ban_is_luc_hop"))
+    bien_is_lx = bool(ly_res.get("bien_is_luc_xung"))
+    bien_is_lh = bool(ly_res.get("bien_is_luc_hop"))
+    xh_trans = str(ly_res.get("xung_hop_transition") or "")
+    qb_rel = str(ly_res.get("quai_bien_rel") or "")
 
-    # Quét Tam Hợp Cục Thành Hóa & Nguyên Thần Động vs Kỵ Thần Động (Tham Sinh Quên Khắc / Thông Quan)
     ng_el = next((k for k, v in SINH_EL.items() if v == dt_el), "")
     ky_el = next((k for k, v in KHAC_EL.items() if v == dt_el), "")
-    for gf_str in (ly_res.get("global_formations") or []):
-        if "Tam Hợp" in gf_str:
-            if f"hành {ng_el}" in gf_str or f"hành {dt_el}" in gf_str:
-                lh_pts += 24
-                lh_chain_notes.append(f"Đại Cát Tam Hợp Cục: {gf_str} tiếp nguồn sinh vượng cực đại cho Dụng Thần")
-            elif f"hành {ky_el}" in gf_str:
-                lh_pts -= 24
-                lh_chain_notes.append(f"Đại Kỵ Tam Hợp Cục: {gf_str} hợp đảng khắc Dụng Thần")
+    ng_movers: List[Dict[str, Any]] = []
+    ky_movers: List[Dict[str, Any]] = []
+    ky_broken: List[Dict[str, Any]] = []
 
-    moving_others = [ln for ln in lines if ln.get("hao") != dt_idx and (ln.get("is_moving") or ln.get("is_am_dong"))]
-    ng_movers = [ln for ln in moving_others if ln.get("ngu_hanh") == ng_el and "HOI_DAU_KHAC" not in (ln.get("hoa_flags") or []) and "HOA_KHONG" not in (ln.get("hoa_flags") or []) and ln.get("khong_type") != "CHAN_KHONG"]
-    ky_movers = [ln for ln in moving_others if ln.get("ngu_hanh") == ky_el and "HOI_DAU_KHAC" not in (ln.get("hoa_flags") or []) and "HOA_KHONG" not in (ln.get("hoa_flags") or []) and not ln.get("is_nhat_pha") and not ln.get("is_nguyet_pha")]
-    ky_broken = [ln for ln in moving_others if ln.get("ngu_hanh") == ky_el and ("HOI_DAU_KHAC" in (ln.get("hoa_flags") or []) or "HOA_KHONG" in (ln.get("hoa_flags") or []) or ln.get("is_nhat_pha") or ln.get("is_nguyet_pha"))]
-
-    if ng_movers and ky_movers:
-        lh_pts += 25
-        lh_chain_notes.append(f"Đại Cát Tham Sinh Quên Khắc: Kỵ Thần Hào {ky_movers[0]['hao']} động nhưng sinh qua Nguyên Thần Hào {ng_movers[0]['hao']} ──► dồn lực sinh Dụng Thần (chuyển nguy thành an!)")
-    elif ng_movers:
-        lh_pts += 20
-        lh_chain_notes.append(f"Nguyên Thần Hào {ng_movers[0]['hao']} ({ng_movers[0]['chi']}-{ng_el}) phát động sinh phù trực tiếp Dụng Thần (nguồn lực dồi dào)")
-    elif ky_movers:
-        lh_pts -= 24
-        lh_chain_notes.append(f"Kỵ Thần Hào {ky_movers[0]['hao']} ({ky_movers[0]['chi']}-{ky_el}) độc phát khắc thẳng vào Dụng Thần mà thiếu Nguyên Thần thông quan")
-    elif ky_broken:
-        lh_pts += 10
-        lh_chain_notes.append(f"Kỵ Thần Hào {ky_broken[0]['hao']} động nhưng tự bị Hồi Đầu Khắc / Hóa Không / Xung Phá — kẻ cản đường tự suy bại")
-
-    # Xét Hào Biến của chính Dụng Thần (Động Biến Sinh Khắc Xung Hợp Không Phá — Tăng San Bốc Dịch)
-    h_flags = set(dt_ln.get("hoa_flags") or [])
-    if "HOI_DAU_SINH" in h_flags:
-        lh_pts += 22
-        lh_chain_notes.append("Dụng Thần động hóa Hồi Đầu Sinh (càng về sau càng vượng, tự sinh tài lực)")
-    if "HOA_TIEN" in h_flags:
-        lh_pts += 18
-        lh_chain_notes.append("Dụng Thần động Hóa Tiến Thần (khí thế tiến bước mạnh mẽ)")
-    if "HOI_DAU_KHAC" in h_flags:
-        lh_pts -= 28
-        lh_chain_notes.append("Dụng Thần động hóa Hồi Đầu Khắc (đầu xuôi đuôi ngược, tự hủy kết quả ở phút chót!)")
-    if "HOA_KHONG" in h_flags:
-        lh_pts -= 25
-        lh_chain_notes.append("Dụng Thần động Hóa Tuần Không ('Động bất vi Không, Hóa Không phản Không' — trước tưởng có sau dễ hóa rỗng nếu chưa Xuất Không!)")
-    if "HOA_NGUYET_PHA" in h_flags or "HOA_NHAT_PHA" in h_flags:
-        lh_pts -= 23
-        lh_chain_notes.append("Dụng Thần động Hóa Phá ('Như thực mộc vô căn' — ngọn biến bị thương tổn, khó trọn vẹn ngay)")
-    if "HOA_THOAI" in h_flags:
-        lh_pts -= 18
-        lh_chain_notes.append("Dụng Thần động Hóa Thoái Thần (lực suy giảm dần, dễ bỏ dở hoặc hụt kỳ vọng)")
-    if "HOA_MO" in h_flags:
-        lh_pts -= 14
-        lh_chain_notes.append("Dụng Thần động Hóa Nhập Mộ (tạm thời bị giam hãm, đình trệ)")
-    if "HOA_HOP" in h_flags:
-        lh_pts -= 8
-        lh_chain_notes.append("Dụng Thần động Hóa Hợp (bị níu giữ ràng buộc bởi nhân tố phát sinh)")
-    if "HOA_TUYET" in h_flags and "HOI_DAU_SINH" not in h_flags:
-        lh_pts -= 18
-        lh_chain_notes.append("Dụng Thần động Hóa Tuyệt địa (sức kiệt giữa chừng)")
-    if "PHAN_NGAM_HAO" in h_flags:
-        lh_pts -= 15
-        lh_chain_notes.append("Hào phạm Phản Ngâm (lật đi lật lại, biến động bất thường)")
-
-    # Xét Không Vong & Phục Thần
-    if dt_ln.get("khong_type") == "CHAN_KHONG":
-        lh_pts -= 30
-        lh_chain_notes.append(f"Dụng Thần rơi vào Chân Không ({dt_chi} tĩnh vô khí) — hiện tại rỗng không, khó thành thực chất")
-    elif dt_ln.get("khong_type") == "GIA_KHONG":
-        lh_pts -= 4
-        lh_chain_notes.append(f"Dụng Thần lâm Giả Không ({dt_chi} hữu khí/động) — trước nghẽn nhẹ nhưng Xuất Không chắc chắn ứng nghiệm!")
-
-    # Xét Thế – Dụng tương tác (Tăng San Bốc Dịch: Tài khắc Thế đắc Tài!)
-    if dt_idx == the_pos:
-        lh_pts += 12
-        lh_chain_notes.append("Dụng Thần Trì Thế (việc nằm ngay trong tầm tay bản thân)")
-    elif SINH_EL.get(dt_el) == the_el or LUC_HOP.get(dt_chi, ("", ""))[0] == the_chi:
-        lh_pts += 14
-        lh_chain_notes.append(f"Dụng Thần ({dt_chi}-{dt_el}) tương sinh / lục hợp Hào Thế ({the_chi}-{the_el}) — sự việc chủ động tìm đến người hỏi, dễ thành")
-    elif KHAC_EL.get(dt_el) == the_el:
-        if is_wealth_q and dt_ln.get("luc_than") == "Thê Tài" and the_ln.get("vuong_suy") in ("Vượng", "Tướng", "Bình"):
-            lh_pts += 14
-            lh_chain_notes.append("Đắc cách cổ pháp 'Tài Khắc Thế Tất Đắc Tài' (Thê Tài tìm đến gõ cửa người hỏi, tiền về nhanh!)")
+    if lines:
+        phuc_blocked_fatal = False
+        # 2.1 Kiểm tra Dụng Thần Bất Hiện vs Nhật/Nguyệt Vi Dụng Thần (Phi Phục Thần Chương — Tăng San Bốc Dịch)
+        if not is_self_dt_ly and not dt_candidates:
+            # Khi Dụng Thần không hiện trên 6 hào, định Ngũ Hành chuẩn của Dụng Thần theo Bản Cung!
+            _lt_to_el = {
+                "Huynh Đệ": palace_el,
+                "Phụ Mẫu": next((k for k, v in SINH_EL.items() if v == palace_el), "Thổ"),
+                "Tử Tôn": SINH_EL.get(palace_el, "Thủy"),
+                "Quan Quỷ": next((k for k, v in KHAC_EL.items() if v == palace_el), "Hỏa"),
+                "Thê Tài": KHAC_EL.get(palace_el, "Mộc"),
+            }
+            dt_el = _lt_to_el.get(dt_clean_ly, dt_el)
+            ng_el = next((k for k, v in SINH_EL.items() if v == dt_el), "")
+            ky_el = next((k for k, v in KHAC_EL.items() if v == dt_el), "")
+            if dt_phuc_obj:
+                dt_chi = str(dt_phuc_obj.get("chi") or dt_chi)
+                vs = str(dt_phuc_obj.get("strength") or "Hưu")
+            if nhat_lt == dt_clean_ly or nguyet_lt == dt_clean_ly:
+                # Ngoại lệ Cầu Tài Chương: Nếu quẻ không có Tài, Huynh Đệ vượng tĩnh trì Thế (được Nguyệt sinh) mà Nhật Tài KHÔNG xung Thế thì Huynh Đệ cướp Tài ('Duyên mộc cầu ngư')!
+                if is_wealth_q and dt_clean_ly == "Thê Tài" and the_ln.get("luc_than") == "Huynh Đệ" and LUC_XUNG.get(the_chi) not in (chi_ngay, chi_thang) and not the_ln.get("is_nhat_pha") and not the_ln.get("is_nguyet_pha"):
+                    lh_pts -= 26
+                    lh_chain_notes.append("Cầu Tài Chương: Quẻ nội ngoại vô Tài, Huynh Đệ vượng trì Thế cướp khí Nhật Tài ('Như duyên mộc cầu ngư' — khó đắc tài)!")
+                else:
+                    lh_pts += 26
+                    lh_chain_notes.append(f"Phi Phục Chương: Dụng Thần ({dt_clean_ly}) tuy ẩn trên 6 hào nhưng ĐẮC NHẬT/NGUYỆT TRỰC TIẾP LÀM DỤNG THẦN ('Dụng lâm Nhật Nguyệt hưu tầm Phục') — cực vượng!")
+            elif dt_phuc_obj:
+                phi_chi_p = _norm_chi(str(dt_phuc_obj.get("phi_than_can_chi") or "").split("-")[0])
+                phuc_chi_p = _norm_chi(str(dt_phuc_obj.get("chi") or ""))
+                tri_set_pf = {phi_chi_p, phuc_chi_p, chi_ngay}
+                is_pf_tam_hinh = (tri_set_pf == {"Dần", "Tị", "Thân"}) or (tri_set_pf == {"Sửu", "Tuất", "Mùi"})
+                is_phuc_void_unclashed = bool(dt_phuc_obj.get("is_void") and LUC_XUNG.get(phuc_chi_p) != chi_ngay)
+                if is_pf_tam_hinh or is_phuc_void_unclashed:
+                    phuc_blocked_fatal = True
+                    lh_pts -= 34
+                    lh_chain_notes.append(
+                        f"Phi Phục Chương (Thiên Kim Phú): Dụng Thần ({dt_clean_ly}) {'phạm Tam Hình Phi–Phục–Nhật' if is_pf_tam_hinh else 'Phục Cư Không Địa (ẩn phục lại lâm Tuần Không)'} — sự dữ tâm vi, mưu cầu bất thành!"
+                    )
+                elif dt_phuc_obj.get("dac_xuat"):
+                    lh_pts += 6
+                    lh_chain_notes.append(f"Dụng Thần ẩn phục dưới Hào {dt_idx} nhưng Đắc Xuất ({dt_phuc_obj.get('can_chi_full','')})")
+                else:
+                    lh_pts -= 32
+                    lh_chain_notes.append(f"Phi Đè Phục: Dụng Thần ({dt_clean_ly}) ẩn phục vô lực, mưu cầu khó thành")
+            else:
+                lh_pts -= 28
+                lh_chain_notes.append(f"Dụng Thần ({dt_clean_ly}) vắng bóng hoàn toàn trên quẻ")
         else:
-            lh_pts -= 14
-            lh_chain_notes.append("Dụng Thần khắc Hào Thế (sự việc gây áp lực nặng lên bản thân)")
-    elif SINH_EL.get(the_el) == dt_el:
-        lh_pts -= 5
-        lh_chain_notes.append("Hào Thế sinh xuất cho Dụng Thần (bản thân phải bỏ nhiều tâm sức/chi phí theo đuổi)")
+            lh_pts += vs_map.get(vs, 0)
+            lh_chain_notes.append(f"Nguyệt Lệnh định khí Dụng Thần Hào {dt_idx} {dt_ln.get('luc_than','')} ({dt_chi}-{dt_el}) ở bậc {vs}")
+            if dt_ln.get("is_tao_tho_thoi_kim"):
+                lh_pts -= 8
+                lh_chain_notes.append("Tăng San Bốc Dịch: Nguyệt kiến Mùi/Tuất là Táo Thổ làm giòn Kim")
+
+            # Nguyệt Phá Chương: Động phùng Nguyệt Phá phi chung phá (đặc biệt khi Hóa Tiến / Hồi Đầu Sinh / Nhật Sinh)!
+            if dt_ln.get("is_nguyet_pha"):
+                if dt_ln.get("is_moving") and ("HOA_TIEN" in h_flags or "HOI_DAU_SINH" in h_flags or SINH_EL.get(nhat_el) == dt_el):
+                    lh_pts -= 6
+                    lh_chain_notes.append("Nguyệt Phá Chương: Dụng Thần tuy lâm Nguyệt Phá nhưng PHÁT ĐỘNG đắc Tiến/Sinh — xuất nguyệt thực phá ắt thành!")
+                elif dt_ln.get("is_moving"):
+                    lh_pts -= 12
+                    lh_chain_notes.append("Nguyệt Phá Chương: Dụng Thần phát động lâm Nguyệt Phá ('Động bất chung phá' — chờ ngày Thực Phá/Phùng Hợp)")
+                elif SINH_EL.get(nhat_el) == dt_el or hop_st == "HOP_KHOI":
+                    lh_pts -= 12
+                    lh_chain_notes.append("Dụng Thần tĩnh Nguyệt Phá nhưng được Nhật Thần sinh hợp cứu giải")
+                else:
+                    lh_pts -= 28
+                    lh_chain_notes.append("Phạm Tĩnh Nguyệt Phá vô cứu (tháng xung vỡ gốc hào — tổn lực nghiêm trọng)")
+
+            if dt_ln.get("is_am_dong"):
+                lh_pts += 18
+                lh_chain_notes.append("Đắc Nhật Xung Ám Động / Xung Không Tắc Thực (được Nhật Thần kích hoạt cực nhanh)")
+            elif dt_ln.get("is_xung_khong"):
+                lh_pts += 14
+                lh_chain_notes.append("Tuần Không Chương: Tĩnh Không phùng Nhật Xung ('Xung Không Tắc Thực' — phá rỗng thành thực)")
+            elif dt_ln.get("is_nhat_pha"):
+                lh_pts -= 24
+                lh_chain_notes.append("Phạm Nhật Phá (hào suy tĩnh bị ngày xung tan rã)")
+
+            if dt_chi == chi_ngay:
+                if LUC_XUNG.get(dt_chi) == chi_thang:
+                    lh_pts += 4
+                    lh_chain_notes.append(f"Nguyệt Xung phùng Nhật Kiến ({chi_ngay}): 'Phá nhi bất phá, công quá tương để' — vừa đủ bù trừ Nguyệt Phá")
+                else:
+                    lh_pts += 22
+                    lh_chain_notes.append(f"Dụng Thần Lâm Nhật Kiến ({chi_ngay}) — bất khả xâm phạm, ứng cực mạnh")
+            elif SINH_EL.get(nhat_el) == dt_el:
+                lh_pts += 15
+                lh_chain_notes.append(f"Được Nhật Thần ({chi_ngay}-{nhat_el}) tương sinh tiếp sức")
+            elif KHAC_EL.get(nhat_el) == dt_el and not dt_ln.get("is_moving"):
+                lh_pts -= 14
+                lh_chain_notes.append(f"Bị Nhật Thần ({chi_ngay}-{nhat_el}) khắc chế")
+
+            # Lục Hợp Chương: Hành nhân phùng Hợp bất lai vs mưu sự Hợp Khởi / Hợp Trụ
+            if hop_st == "HOP_TRU":
+                if is_traveler_q:
+                    lh_pts -= 26
+                    lh_chain_notes.append(f"Hành Nhân Chương: Dụng Thần động bị Nhật Thần ({chi_ngay}) HỢP TRÓI ('Bị hợp bất lai' — chân vướng bận chưa về)")
+                else:
+                    lh_pts -= 9
+                    lh_chain_notes.append(f"Lục Hợp Chương: Dụng Thần ĐỘNG bị Nhật ({chi_ngay}) Hợp Trụ — chờ ngày Xung mở Hợp")
+            elif hop_st == "HOP_KHOI":
+                lh_pts += 16
+                lh_chain_notes.append(f"Lục Hợp Chương: Dụng Thần TĨNH được Nhật ({chi_ngay}) HỢP KHỞI — chuyển tĩnh thành vượng")
+
+            # Tam Mộ Chương: Nếu Nhật/Động xung khắc phá Mộ ('Phá Mộ như phá võng') thì thoát Mộ!
+            mo_chi_dt = MO_BY_EL.get(dt_el, "")
+            mo_broken_by_day = bool(mo_chi_dt and (LUC_XUNG.get(mo_chi_dt) == chi_ngay or KHAC_EL.get(nhat_el) == CHI_ELEMENT.get(mo_chi_dt, "")))
+            if mo_tp == "SUY_NHAP_MO":
+                if mo_broken_by_day:
+                    lh_pts += 6
+                    lh_chain_notes.append(f"Tam Mộ Chương: Dụng Thần nhập Mộ nhưng được Nhật ({chi_ngay}) Xung/Khắc PHÁ MỘ ('Mộ phá như phá võng, dễ dàng thoát ra'!)")
+                elif dt_ln.get("is_moving"):
+                    lh_pts -= 6
+                    lh_chain_notes.append("Tam Mộ Chương: Dụng Thần tuy gặp Mộ lệnh nhưng đang PHÁT ĐỘNG mạnh — tới kỳ xung Mộ tất phát!")
+                else:
+                    lh_pts -= 20
+                    lh_chain_notes.append("Tam Mộ Chương: Dụng Thần hưu tù vô khí rơi vào Chân Mộ — bế tắc")
+            elif mo_tp == "VUONG_NHAP_KHO":
+                lh_pts -= 4
+                lh_chain_notes.append("Tam Mộ Chương: Dụng Thần hữu khí Nhập Khố (chờ ngày Xung Khố bung phát)")
+
+        # 2.2 Kiểm tra Căn Tiên Vu Viện ('Dụng Thần vô căn, Nguyên Thần hữu lực diệc nan sinh')
+        dt_is_rootless = bool(
+            phuc_blocked_fatal
+            or (not is_self_dt_ly and not dt_candidates and nhat_lt != dt_clean_ly and nguyet_lt != dt_clean_ly and not (dt_phuc_obj and dt_phuc_obj.get("dac_xuat")))
+            or (
+                not dt_ln.get("is_moving")
+                and not dt_ln.get("is_am_dong")
+                and (
+                    ((dt_ln.get("is_nguyet_pha") or dt_ln.get("is_nhat_pha")) and (KHAC_EL.get(nhat_el) == dt_el or vs in ("Tù", "Tử")) and SINH_EL.get(nhat_el) != dt_el and dt_chi != chi_ngay and hop_st != "HOP_KHOI")
+                    or (dt_ln.get("khong_type") == "CHAN_KHONG" and not dt_ln.get("is_xung_khong") and not is_recent_illness)
+                )
+            )
+        )
+
+        # 2.3 Xét Tam Hợp Cục & Phân biệt Sinh Thế hay Sinh Ứng ('Xuất hiện vô tình') vs Ứng Động Tiếp Tục Sinh Thế ('Tham sinh quên khắc')
+        veto_sinh_ung_only = False
+        ung_bridges_to_the = bool(ung_ln.get("is_moving") and SINH_EL.get(ung_el) == the_el and "HOI_DAU_KHAC" not in (ung_ln.get("hoa_flags") or []))
+        for th_item in (ly_res.get("tam_hop_cuc") or []):
+            cuc_el = str(th_item.get("element") or "")
+            cuc_lbl = str(th_item.get("label") or "")
+            the_in_cuc = the_chi in set(th_item.get("active_branches") or []) or the_chi in cuc_lbl
+            if (is_career_q or is_exam_q or is_wealth_q or is_marriage_q) and SINH_EL.get(cuc_el) == ung_el and SINH_EL.get(cuc_el) != the_el and not the_in_cuc and dt_idx != the_pos:
+                if ung_bridges_to_the:
+                    lh_pts += 26
+                    lh_chain_notes.append(f"Liên Hoàn Thông Quan Đại Cát: {cuc_lbl} sinh Hào Ứng ({ung_ln.get('chi','')}) đang phát động ──► chuyển tiếp SINH THẲNG HÀO THẾ ('Tham sinh quên khắc')!")
+                else:
+                    veto_sinh_ung_only = True
+                    lh_pts -= 42
+                    lh_chain_notes.append(f"Tam Hợp Chương: {cuc_lbl} thành cục nhưng SINH ỨNG BẤT SINH THẾ ('Xuất hiện vô tình' — lộc/chức rơi vào tay người khác!)")
+            elif KHAC_EL.get(cuc_el) == the_el and not is_safety_worry_q:
+                lh_pts -= 24
+                lh_chain_notes.append(f"Tam Hợp Cục ({cuc_lbl}) hợp đảng khắc thẳng Hào Thế — đại kỵ")
+            elif cuc_el in (ng_el, dt_el):
+                lh_pts += 22 if not dt_is_rootless else 0
+                lh_chain_notes.append(f"Tam Hợp Cục ({cuc_lbl}) tụ khí sinh trợ Dụng Thần")
+            elif cuc_el == ky_el:
+                lh_pts -= 24
+                lh_chain_notes.append(f"Đại Kỵ Tam Hợp Cục ({cuc_lbl}) hợp đảng khắc Dụng Thần")
+
+        # 2.4 Nguyên Thần Ngũ Hữu Lực / Lục Vô Lực, Kỵ Thần, Cừu Thần & Kim Cương Chi Thân (Tăng San Bốc Dịch · Chu Thần Bân Sơ Thám)
+        cuu_el = next((k for k, v in KHAC_EL.items() if v == ng_el), "")
+        cuu_movers: List[Dict[str, Any]] = []
+        bridge_bien_dt_movers: List[Dict[str, Any]] = []
+        moving_others = [ln for ln in lines if (not dt_candidates and not is_self_dt_ly or ln.get("hao") != dt_idx) and (ln.get("is_moving") or ln.get("is_am_dong"))]
+        for ln_m in moving_others:
+            lf = set(ln_m.get("hoa_flags") or [])
+            m_el = str(ln_m.get("ngu_hanh") or "")
+            m_chi = str(ln_m.get("chi") or "")
+            # Kiểm tra Động Biến Hóa Xuất Dụng Thần Thông Quan Sinh Thế ('Thần triệu cơ vu động' — VD Quan Tị động hóa Tài Dần hồi đầu sinh rồi sinh Thế):
+            if (
+                ln_m.get("is_moving")
+                and not is_self_dt_ly
+                and ln_m.get("bien_luc_than") == dt_clean_ly
+                and "HOA_NGUYET_PHA" not in lf
+                and ("HOI_DAU_SINH" in lf or SINH_EL.get(str(ln_m.get("bien_el") or ""), "") == the_el)
+                and (SINH_EL.get(m_el) == the_el or m_el == the_el)
+            ):
+                bridge_bien_dt_movers.append(ln_m)
+
+            if m_el == cuu_el and (ln_m.get("is_moving") or ln_m.get("is_am_dong")) and "HOI_DAU_KHAC" not in lf and "HOA_THOAI" not in lf and not ln_m.get("is_nhat_pha"):
+                cuu_movers.append(ln_m)
+            if m_el == ng_el:
+                # Đặc Thù Nhật Nguyệt Tổ Hợp ('Kim Cương Chi Thân'): Lâm Nguyệt đắc Nhật sinh/tỷ hoặc Lâm Nhật đắc Nguyệt sinh/tỷ -> miễn nhiễm Hồi Đầu Khắc!
+                is_ng_kim_cuong = (
+                    (m_chi == chi_thang and (SINH_EL.get(nhat_el) == m_el or nhat_el == m_el))
+                    or (m_chi == chi_ngay and (SINH_EL.get(nguyet_el) == m_el or nguyet_el == m_el))
+                )
+                # Động Vi Thủy Biến Vi Chung: Hào động bị Nhật Xung / Nguyệt Phá nhưng được Biến Hào Hồi Đầu Sinh hoặc Nhật Kiến tương sinh -> không phải Chân Phá!
+                ng_rescued = bool(
+                    ln_m.get("is_moving")
+                    and (("HOI_DAU_SINH" in lf and "HOA_NGUYET_PHA" not in lf) or SINH_EL.get(nhat_el) == m_el)
+                )
+                is_tu_bien_quy = (ln_m.get("luc_than") == "Tử Tôn" and ln_m.get("bien_luc_than") == "Quan Quỷ")
+                is_ng_disabled = (
+                    ("HOI_DAU_KHAC" in lf and not is_ng_kim_cuong)
+                    or "HOA_THOAI" in lf
+                    or is_tu_bien_quy
+                    or (ln_m.get("is_nhat_pha") and not ng_rescued)
+                    or (ln_m.get("is_nguyet_pha") and ln_m.get("vuong_suy") in ("Hưu", "Tù", "Tử") and "HOA_TIEN" not in lf and not ng_rescued)
+                )
+                if not is_ng_disabled:
+                    ng_movers.append(ln_m)
+                elif is_tu_bien_quy:
+                    lh_pts -= 22
+                    lh_chain_notes.append(f"Nguyên Thần Hào {ln_m['hao']} Tử Tôn động BIẾN QUAN QUỶ — mất nguồn sinh trợ, phản sinh tai họa!")
+            elif m_el == ky_el:
+                # LƯU Ý CỐT TỬ DÃ HẠC: Kỵ Thần động HÓA TIẾN hoặc HÓA KHÔNG vẫn cực kỳ hung hãn khi Xuất Không!
+                is_ky_self_defeated = (
+                    "HOI_DAU_KHAC" in lf
+                    or "HOA_THOAI" in lf
+                    or ("HOA_NGUYET_PHA" in lf and "HOA_TIEN" not in lf)
+                    or ("HOA_NHAT_PHA" in lf and "HOA_TIEN" not in lf)
+                    or ln_m.get("is_nhat_pha")
+                    or (ln_m.get("is_nguyet_pha") and "HOA_TIEN" not in lf and ln_m.get("chi") != chi_ngay)
+                )
+                if is_ky_self_defeated:
+                    ky_broken.append(ln_m)
+                else:
+                    ky_movers.append(ln_m)
+
+        if bridge_bien_dt_movers:
+            dt_is_rootless = False
+            bm0 = bridge_bien_dt_movers[0]
+            lh_pts += 32
+            lh_chain_notes.append(f"Động Biến Hóa Xuất Dụng Thần Thông Quan Sinh Thế: Hào {bm0['hao']} ({bm0['chi']}) động hóa ra {dt_clean_ly} ({bm0.get('bien_chi','')}) ──► tiếp lực sinh thẳng Hào Thế ('Thần triệu cơ vu động')!")
+
+        # Tham Sinh Quên Khắc chân chính chỉ thành lập khi CẢ Kỵ Thần và Nguyên Thần đều MINH ĐỘNG (is_moving) và KHÔNG bị Cừu Thần cắt nguồn / Dụng Thần Hóa Thoái!
+        real_ng_movers = [x for x in ng_movers if x.get("is_moving")]
+        real_ky_movers = [x for x in ky_movers if x.get("is_moving")]
+        # Nhật Nguyệt Công Quá Tương Để & Song Quyền Bất Địch Tứ Thủ: Hào lâm Nhật nhưng bị Nguyệt Xung (hoặc ngược lại) thì công quá vừa đủ triệt tiêu, không còn kim bài chắn Kỵ Thần!
+        dt_lam_nhat_nguyet = bool(
+            (dt_chi in (chi_ngay, chi_thang))
+            and LUC_XUNG.get(dt_chi) not in (chi_thang, chi_ngay)
+            and not dt_ln.get("is_nguyet_pha")
+            and not dt_ln.get("is_nhat_pha")
+            and len(ky_movers) == 1
+            and "HOA_THOAI" not in h_flags
+            and "HOI_DAU_KHAC" not in h_flags
+        )
+
+        if dt_is_rootless and ng_movers:
+            lh_pts -= 16
+            lh_chain_notes.append("Căn Tiên Vu Viện (Tăng San Bốc Dịch): Dụng Thần vô căn (Phá/Không bị khắc), Nguyên Thần tuy động cũng 'sinh chi bất khởi' (như cây đứt rễ)!")
+        elif real_ng_movers and real_ky_movers and not cuu_movers and "HOA_THOAI" not in h_flags:
+            lh_pts += 26
+            lh_chain_notes.append(f"Đại Cát Tham Sinh Quên Khắc: Kỵ Thần Hào {real_ky_movers[0]['hao']} minh động sinh qua Nguyên Thần Hào {real_ng_movers[0]['hao']} ──► tiếp lực sinh Dụng Thần!")
+        elif real_ng_movers and real_ky_movers and (cuu_movers or "HOA_THOAI" in h_flags):
+            lh_pts -= 26
+            lh_chain_notes.append("Cảnh báo 'Kỵ Dao Nguyên Động Cừu Hưng / Hóa Thoái Tuyệt Nguyên': Cừu Thần động chặn đứt mạch Nguyên Thần và Dụng Thần tự suy thoái!")
+        elif ky_movers:
+            ky0_f = set(ky_movers[0].get("hoa_flags") or [])
+            if dt_lam_nhat_nguyet and "HOA_TIEN" not in ky0_f:
+                # 'Hào ngộ Lệnh Tinh vật nan ngã hại — Hào thương Nhật đồ thụ kỳ danh' (Thiên Kim Phú):
+                lh_pts -= 7
+                lh_chain_notes.append(f"Thiên Kim Phú 'Hào Ngộ Lệnh Tinh Vật Nan Ngã Hại': Kỵ Thần Hào {ky_movers[0]['hao']} động nhưng Dụng Thần lâm Nhật/Nguyệt Kiến nên bất khả xâm phạm!")
+            else:
+                ky_pen = -34 if ("HOA_TIEN" in ky0_f or "HOI_DAU_SINH" in ky0_f or len(ky_movers) >= 2) else -25
+                lh_pts += ky_pen
+                lh_chain_notes.append(f"Kỵ Thần Hào {ky_movers[0]['hao']} ({ky_movers[0]['chi']}-{ky_el}) {'hợp đảng quần công / HÓA TIẾN cực mạnh' if ky_pen < -25 else 'độc phát'} khắc thẳng Dụng Thần!")
+        elif ng_movers and cuu_movers and (MO_BY_EL.get(ng_el) in (chi_thang, chi_ngay) or vs in ("Hưu", "Tù", "Tử")):
+            lh_pts -= 24
+            lh_chain_notes.append(f"Cừu Thần Hào {cuu_movers[0]['hao']} ({cuu_movers[0]['chi']}) động/ám động khắc gãy Nguyên Thần Hào {ng_movers[0]['hao']} (đang hưu tù/nhập Mộ) — cắt đứt nguồn sinh Dụng Thần!")
+        elif ng_movers:
+            ng0_f = set(ng_movers[0].get("hoa_flags") or [])
+            lh_pts += 12 if "HOA_HOP" in ng0_f else 22
+            lh_chain_notes.append(f"Nguyên Thần Hào {ng_movers[0]['hao']} ({ng_movers[0]['chi']}-{ng_el}) phát động sinh phù trực tiếp Dụng Thần")
+        elif ky_broken:
+            lh_pts += 14
+            lh_chain_notes.append(f"Kỵ Thần Hào {ky_broken[0]['hao']} tuy động nhưng tự Hóa Thoái / Hồi Đầu Khắc / Xung Phá — hoàn toàn mất lực hại Dụng Thần!")
+
+        # 2.5 Xét Biến Hào của chính Dụng Thần (Tiến Thoái Tứ Pháp & Động Hóa Không/Phá/Mộ/Tuyệt — Tăng San Bốc Dịch)
+        if is_self_dt_ly or dt_candidates:
+            has_tien = "HOA_TIEN" in h_flags
+            if "HOI_DAU_SINH" in h_flags:
+                if "HOA_NGUYET_PHA" in h_flags or "HOA_NHAT_PHA" in h_flags:
+                    lh_chain_notes.append("Dụng Thần tuy hóa Hồi Đầu Sinh nhưng Biến Hào lâm Nguyệt/Nhật Phá — nguồn sinh bị phá vỡ, không thể cứu trợ!")
+                else:
+                    lh_pts += 24
+                    lh_chain_notes.append("Dụng Thần động hóa Hồi Đầu Sinh (tự sinh nguồn lực dồi dào)")
+            if has_tien:
+                lh_pts += 24
+                lh_chain_notes.append("Tiến Thần Tứ Pháp: Dụng Thần động Hóa Tiến Thần (dù tạm Không/Phá đến kỳ Xuất Không Thực Phá ắt tiến mạnh!)")
+            if "HOI_DAU_KHAC" in h_flags:
+                # Ngoại trừ cách 'Thân thượng quỷ khử tắc an' xử lý riêng bên dưới
+                if not (is_safety_worry_q and dt_idx == the_pos and dt_ln.get("luc_than") == "Quan Quỷ"):
+                    lh_pts -= 32
+                    lh_chain_notes.append("Dụng Thần động hóa Hồi Đầu Khắc (nhất phiếu phủ quyết — tự triệt tiêu ở chặng kết!)")
+            if "HOA_THOAI" in h_flags:
+                if dt_chi == chi_ngay and not is_chronic_illness and not is_age_longevity_q:
+                    lh_pts -= 4
+                    lh_chain_notes.append("Tiến Thoái Tứ Pháp: Dụng Thần hóa Thoái nhưng LÂM NHẬT KIẾN ('Vượng nhi bất thoái' — việc gần vẫn thành!)")
+                else:
+                    lh_pts -= 26 if is_chronic_illness or "huyết" in q_low else 20
+                    lh_chain_notes.append("Dụng Thần động Hóa Thoái Thần (khí lực suy giảm rút lui dần)")
+            if "HOA_KHONG" in h_flags and not has_tien:
+                if "HOA_THOAI" in h_flags or "HOI_DAU_KHAC" in h_flags or is_chronic_illness:
+                    lh_pts -= 22
+                    lh_chain_notes.append("Dụng Thần suy thoái lại Hóa Không — rơi vào hư không")
+                else:
+                    lh_pts -= 4
+                    lh_chain_notes.append("Tuần Không Chương (Dã Hạc Đính Chính): Dụng Thần động Hóa Không ('Động bất vi Không, thực không chi nhật tất thành'!)")
+            if ("HOA_NGUYET_PHA" in h_flags or "HOA_NHAT_PHA" in h_flags) and not has_tien:
+                lh_pts -= 20
+                lh_chain_notes.append("Dụng Thần động Hóa Phá (ngọn biến tổn thương, cần chờ Thực Phá)")
+            if "HOA_MO" in h_flags and not has_tien:
+                lh_pts -= 5 if (vs in ("Vượng", "Tướng") or dt_chi == chi_ngay or SINH_EL.get(nhat_el) == dt_el) else 18
+                lh_chain_notes.append("Dụng Thần động Hóa Mộ (vượng chờ xung khai, suy bị giam hãm)")
+            if "HOA_HOP" in h_flags:
+                if is_traveler_q:
+                    lh_pts -= 26
+                    lh_chain_notes.append("Hành Nhân Chương: Dụng Thần động Hóa Hợp ('Bị hợp bất lai' — người đi xa bị níu chân không về)")
+                else:
+                    lh_pts -= 6
+            if "HOA_TUYET" in h_flags and "HOI_DAU_SINH" not in h_flags and not has_tien:
+                lh_pts -= 6 if (vs in ("Vượng", "Tướng") or dt_chi == chi_ngay or SINH_EL.get(nhat_el) == dt_el) else 18
+                lh_chain_notes.append("Dụng Thần động Hóa Tuyệt (hữu khí gặp sinh vượng vẫn thành, vô khí sức kiệt)")
+
+            if dt_ln.get("khong_type") == "CHAN_KHONG" and not dt_ln.get("is_xung_khong") and not is_recent_illness:
+                lh_pts -= 30
+                lh_chain_notes.append(f"Dụng Thần rơi vào Chân Không ({dt_chi} tĩnh vô khí) — rỗng không khó thành")
+            elif dt_ln.get("khong_type") == "GIA_KHONG":
+                lh_pts -= 3
+                lh_chain_notes.append(f"Dụng Thần lâm Giả Không ({dt_chi} hữu khí/động) — Xuất Không ắt ứng nghiệm!")
+
+        # 2.6 Xét Đại Tượng Quái Biến, Lục Xung / Lục Hợp, Phục Ngâm & Tam Hình Toàn Cục (Tăng San Bốc Dịch)
+        has_any_moving = any(x.get("is_moving") for x in lines)
+        if qb_rel == "QUAI_HOA_HOI_DAU_KHAC":
+            lh_pts -= 34
+            lh_chain_notes.append("Đại Tượng Quái Biến Hồi Đầu Khắc (Toàn quái biến khắc ngược gốc — bất luận Dụng Thần suy vượng đều chủ đại hung!)")
+        elif xh_trans == "XUNG_HOA_HOP" and not is_chronic_illness:
+            lh_pts += 28
+            lh_chain_notes.append("Đại Cát Đặc Cách 'Lục Xung Biến Lục Hợp' (Tăng San Bốc Dịch: Tán nhi phục tụ, thất nhi phục đắc, tiên nan hậu dị!)")
+        elif xh_trans == "HOP_HOA_XUNG" and not is_recent_illness:
+            lh_pts -= 20
+            lh_chain_notes.append("Cảnh báo 'Lục Hợp Biến Lục Xung' (Tiên hợp hậu ly, hữu thủy vô chung)")
+        elif ban_is_lx and bien_is_lx and has_any_moving and not is_recent_illness and not (is_safety_worry_q and not is_illness_q):
+            lh_pts -= 26
+            lh_chain_notes.append("Đại Kỵ 'Lục Xung Biến Lục Xung' (Tăng San Bốc Dịch: Hoa vị phát nhi tiên tạ — xung chồng thêm xung, cơ sự tan vỡ!)")
+
+        # Kiểm tra Động Biến Phục Ngâm tại Dụng Thần hoặc Hào Thế ('Động biến Phục Ngâm, hào suy bại vô dụng' — Phục Ngâm Chương):
+        if (dt_ln.get("is_moving") and dt_chi and dt_chi == dt_ln.get("bien_chi")) or (the_ln.get("is_moving") and the_chi and the_chi == the_ln.get("bien_chi")):
+            lh_pts -= 24
+            lh_chain_notes.append("Phục Ngâm Chương: Dụng Thần / Hào Thế ĐỘNG BIẾN PHỤC NGÂM (biến nhi bất biến, rên rỉ suy bại tại chỗ)!")
+
+        # Kiểm tra Nhật–Nguyệt–Dụng cấu thành Tam Hình Toàn Cục ({Dần, Tị, Thân} hoặc {Sửu, Tuất, Mùi}):
+        if dt_chi and {chi_thang, chi_ngay, dt_chi} in ({"Dần", "Tị", "Thân"}, {"Sửu", "Tuất", "Mùi"}):
+            lh_pts -= 34
+            lh_chain_notes.append(f"Tam Hình Chương: Nguyệt ({chi_thang}) · Nhật ({chi_ngay}) · Dụng Thần ({dt_chi}) cấu thành TAM HÌNH TOÀN CỤC vô cứu — đại hung!")
+
+        # 2.7 Xét Nền Tảng Hào Thế (Chủ thể người hỏi) & Thế–Dụng Tương Tác
+        veto_the_pha_khac = False
+        if dt_idx != the_pos:
+            if "HOI_DAU_KHAC" in the_flags or (the_ln.get("is_moving") and the_ln.get("bien_luc_than") == "Quan Quỷ" and KHAC_EL.get(str(the_ln.get("bien_el") or ""), "") == the_el):
+                lh_pts -= 28
+                lh_chain_notes.append("Hào Thế động hóa Hồi Đầu Khắc / Biến Quỷ khắc Thế — bản thân chủ thể gặp hung hiểm hoặc tự bại!")
+            elif the_ln.get("is_nguyet_pha") and not the_ln.get("is_moving") and (KHAC_EL.get(nhat_el) == the_el or the_ln.get("vuong_suy") in ("Tù", "Tử")):
+                veto_the_pha_khac = bool(KHAC_EL.get(nhat_el) == the_el)
+                lh_pts -= 34 if veto_the_pha_khac else 26
+                lh_chain_notes.append("Hào Thế lâm Nguyệt Phá lại bị khắc ('Thế phá bị khắc, tuy hữu quan tài diệc nan hưởng')")
+            elif the_ln.get("is_nhat_pha"):
+                lh_pts -= 20
+                lh_chain_notes.append("Hào Thế phạm Nhật Phá — căn cơ người hỏi suy sụp")
+
+        if is_self_dt_ly or dt_candidates:
+            if dt_idx == the_pos:
+                lh_pts += 12
+                lh_chain_notes.append("Dụng Thần Trì Thế (sự việc gắn liền bản thân)")
+            elif SINH_EL.get(dt_el) == the_el or LUC_HOP.get(dt_chi, ("", ""))[0] == the_chi:
+                if not (ky_movers and not real_ng_movers and not dt_lam_nhat_nguyet):
+                    lh_pts += 14
+                    lh_chain_notes.append(f"Dụng Thần ({dt_chi}) sinh/hợp Hào Thế ({the_chi}) — sự việc thuận tình hướng về ta")
+            elif KHAC_EL.get(dt_el) == the_el:
+                if is_wealth_q and dt_ln.get("luc_than") == "Thê Tài" and not the_ln.get("is_nhat_pha") and not (ky_movers and not real_ng_movers):
+                    lh_pts += 16
+                    lh_chain_notes.append("Đắc cách cổ pháp 'Tài Khắc Thế Tất Đắc Tài' (tiền tài tìm đến người!)")
+                elif is_traveler_q and not (ky_movers and not real_ng_movers) and not dt_is_rootless:
+                    lh_pts += 22
+                    lh_chain_notes.append("Hành Nhân Chương: 'Dụng hào khắc Thế tất nhiên quy' — người đi xa nóng lòng quay về rất nhanh!")
+                else:
+                    lh_pts -= 12
+                    lh_chain_notes.append("Dụng Thần khắc Hào Thế (áp lực đè lên bản thân)")
+            elif KHAC_EL.get(the_el) == dt_el and is_traveler_q:
+                lh_pts -= 14
+                lh_chain_notes.append("Hành Nhân Chương: 'Thế khắc Dụng hề nhân vị động' — người ở xa chưa khởi hành")
+            elif SINH_EL.get(the_el) == dt_el:
+                lh_pts -= 4
+                lh_chain_notes.append("Hào Thế sinh xuất cho Dụng Thần (hao tâm tốn sức)")
+
+        # 2.8 Chuyên Pháp Từng Môn Theo Sách Bí Truyền (Bệnh Tật · Cầu Tài · Công Danh Khoa Cử · Thất Vật · Hành Nhân · Ưu Nghi)
+        # (a) Thân Thượng Quỷ Khử Tắc An ('Thân thượng quỷ bất khử bất an' — Thiên Kim Phú):
+        # Chỉ áp dụng khi Hào Thế KHÔNG bị Nhật Phá / Nguyệt Phá (nếu Thế Nhật Phá trong kiện tụng/bản thân thì bản thể bị thương!)
+        # và không có Kỵ Thần Minh Động Hóa Tiến đang trực tiếp sát thương Dụng Thần!
+        has_lethal_ky = any("HOA_TIEN" in (x.get("hoa_flags") or []) for x in ky_movers if x.get("is_moving"))
+        if (
+            (is_safety_worry_q or (is_illness_q and not is_self_dt_ly))
+            and the_ln.get("luc_than") == "Quan Quỷ"
+            and not has_lethal_ky
+            and not (is_self_dt_ly and (the_ln.get("is_nhat_pha") or the_ln.get("is_nguyet_pha")))
+        ):
+            quy_removed = bool(
+                "HOI_DAU_KHAC" in the_flags
+                or (not is_self_dt_ly and (LUC_XUNG.get(the_chi) == chi_ngay or KHAC_EL.get(nhat_el) == the_el))
+                or any(ln.get("is_moving") and KHAC_EL.get(str(ln.get("ngu_hanh") or ""), "") == the_el for ln in lines)
+            )
+            if quy_removed:
+                lh_pts += 42
+                lh_chain_notes.append("Thiên Kim Phú Đặc Pháp 'Thân Thượng Quỷ Khử Tắc An': Quan Quỷ trì Thế (nỗi lo/ách nạn đeo bám) được động hào Xung/Khắc quét sạch ➔ chuyển nguy thành bình an vô sự!")
+
+        # (b) Chuyên Chương Tật Bệnh (Tăng San Bốc Dịch Quyển 4 Chương 99–104):
+        if is_illness_q:
+            if is_recent_illness:
+                if (ban_is_lx or bien_is_lx) and qb_rel != "QUAI_HOA_HOI_DAU_KHAC":
+                    # 'Cận bệnh phùng Lục Xung bất luận Dụng Thần suy vượng, bất dược nhi dũ!'
+                    lh_pts = max(lh_pts + 42, 18)
+                    lh_chain_notes.append("Y Dịch Cổ Pháp: 'Cận bệnh phùng Xung bất dược nhi dũ' — bệnh mới mắc gặp quẻ Lục Xung ắt mau khỏi (bất luận suy vượng)!")
+                if (dt_ln.get("is_void") or "HOA_KHONG" in h_flags) and (dt_ln.get("is_moving") or not ban_is_lh):
+                    # 'Phàm chiêm cận bệnh, Dụng Thần đắc ngộ Tuần Không giả, bất câu Nhật Nguyệt động hào khắc hại, xuất không chi nhật tức dũ!'
+                    lh_pts = max(lh_pts + 42, 18)
+                    lh_chain_notes.append("Y Dịch Cổ Pháp: 'Cận bệnh phùng Không tức dũ' — bệnh mới gặp Tuần Không / Hóa Không (luận Không bất luận Khắc), Xuất Không tự lui!")
+            elif is_chronic_illness:
+                if ban_is_lx or bien_is_lx:
+                    lh_pts = min(lh_pts - 38, -20)
+                    lh_chain_notes.append("Y Dịch Cổ Pháp: 'Cửu bệnh phùng Xung diệu dược nan y' — bệnh lâu ngày gặp Lục Xung cực kỳ nguy hiểm!")
+                if dt_ln.get("is_void") or dt_ln.get("is_nguyet_pha"):
+                    lh_pts = min(lh_pts - 30, -18)
+                    lh_chain_notes.append("Y Dịch Cổ Pháp: Bệnh lâu ngày kỵ nhất Dụng Thần lâm Tuần Không / Nguyệt Phá")
+
+            if is_self_dt_ly:
+                if (
+                    the_ln.get("luc_than") == "Tử Tôn"
+                    and "HOI_DAU_KHAC" not in the_flags
+                    and the_ln.get("khong_type") != "CHAN_KHONG"
+                    and not the_ln.get("is_nhat_pha")
+                ):
+                    lh_pts = max(lh_pts + 42, 20)
+                    lh_chain_notes.append("Y Dịch Cổ Pháp: 'Thân lâm Phúc Đức, thế tuy hiểm dĩ kham y' — Tử Tôn trì Thế ắt gặp lương y thuốc hay mà khỏi!")
+                elif the_ln.get("luc_than") == "Phụ Mẫu" and ("HOA_THOAI" in the_flags or is_chronic_illness):
+                    lh_pts -= 26
+                    lh_chain_notes.append("Y Dịch Cổ Pháp: 'Phụ hào trì Thế diệu dược nan điều' — Phụ Mẫu trì Thế khắc chế Tử Tôn (dược thần)")
+
+            if dt_ln.get("is_moving") and dt_ln.get("bien_luc_than") == "Quan Quỷ" and dt_clean_ly not in ("Phụ Mẫu", "Quan Quỷ") and not is_recent_illness:
+                lh_pts -= 28
+                lh_chain_notes.append("Y Dịch Đại Kỵ: 'Dụng hóa Quỷ thận phòng bất trắc' — người bệnh động biến Quan Quỷ")
+
+        # (b2) Chuyên Chương Xu Tị Phòng Hại, Thọ Nguyên & Xuất Hành Bình An (Tăng San Bốc Dịch Quyển 3 Chương 39–40 & Quyển 4 Chương 91):
+        # Lưu ý cổ pháp: 'Tử Tôn trì Thế bách vô ưu' chỉ ứng cho TỰ CHIÊM BẢN THÂN (is_self_dt_ly), tuyệt đối không lấy Thế Tử Tôn che cho Hành Nhân/Lục Thân khác đang bị Kỵ Thần khắc thương!
+        if ((is_safety_worry_q and not is_traveler_q) or (is_travel_any and is_self_dt_ly)) and not is_illness_q:
+            has_tu_ton_guard = (
+                (is_self_dt_ly and the_ln.get("luc_than") == "Tử Tôn" and "HOI_DAU_KHAC" not in the_flags and not the_ln.get("is_nhat_pha"))
+                or (not (ky_movers and not real_ng_movers) and any(ln.get("luc_than") == "Tử Tôn" and ln.get("is_moving") and "HOI_DAU_KHAC" not in (ln.get("hoa_flags") or []) and ln.get("bien_luc_than") != "Quan Quỷ" for ln in lines))
+                or (is_self_dt_ly and any(th_i.get("luc_than") == "Tử Tôn" for th_i in (ly_res.get("tam_hop_cuc") or [])))
+            )
+            if has_tu_ton_guard:
+                lh_pts = max(lh_pts + 34, 18)
+                lh_chain_notes.append("Xu Tị Chương: 'Đãn đắc Tử Tôn thừa vượng động / trì Thế, phi ương hoành họa hóa vi trần' — Phúc Đức hộ thân, vạn sự bình an!")
+        if is_age_longevity_q and is_self_dt_ly and ("bình an" in q_low or "trường thọ" in q_low or "qua khỏi" in q_low):
+            # Thọ Nguyên Chương: 'Nguyên thần nghi tĩnh bất nghi động, Kỵ thần tối phạ động dao'
+            if real_ng_movers and not real_ky_movers:
+                lh_pts -= 34
+                lh_chain_notes.append("Thọ Nguyên Chương: 'Chiêm thọ Nguyên Thần nghi tĩnh bất nghi động' — Nguyên Thần phát động báo hiệu có niên hạn nhập Mộ/Tuyệt!")
+
+        # (b3) Chuyên Chương Hôn Nhân (Tăng San Bốc Dịch Quyển 4 Chương 82):
+        if is_marriage_q:
+            if dt_clean_ly == "Quan Quỷ" and the_ln.get("luc_than") == "Tử Tôn":
+                lh_pts -= 32
+                lh_chain_notes.append("Hôn Nhân Chương: 'Nữ chiêm bất nghi Tử Tôn trì Thế' — khắc thương Quan tinh (phu tinh), duyên phận bất hòa/chia lìa!")
+            elif dt_clean_ly == "Thê Tài" and the_ln.get("luc_than") == "Huynh Đệ" and not (the_ln.get("is_moving") and the_ln.get("bien_luc_than") == "Thê Tài") and xh_trans != "XUNG_HOA_HOP":
+                lh_pts -= 26
+                lh_chain_notes.append("Hôn Nhân Chương: 'Nam chiêm Huynh trì Thế phi phối ngẫu' — dễ trắc trở hoặc tổn thương thê duyên")
+            # Nếu nhà gái hỏi mà hào Thê Tài bị Hồi Đầu Khắc (Lâm chi Ký Tế) thì âm dương thất phối
+            for ln_mr in lines:
+                if ln_mr.get("luc_than") == "Thê Tài" and ln_mr.get("is_moving") and "HOI_DAU_KHAC" in (ln_mr.get("hoa_flags") or []):
+                    lh_pts -= 26
+                    lh_chain_notes.append("Hôn Nhân Chương: Hào Thê Tài động bị Hồi Đầu Khắc — nam nữ bất tương sinh, hôn sự biến cố giữa chừng!")
+
+        # (c) Chuyên Chương Cầu Tài (Tăng San Bốc Dịch Quyển 4 Chương 68):
+        if is_wealth_q:
+            tai_lines = [ln for ln in lines if ln.get("luc_than") == "Thê Tài"]
+            if tai_lines and all(ln.get("is_void") and not ln.get("is_moving") and not ln.get("is_xung_khong") for ln in tai_lines):
+                lh_pts -= 38
+                lh_chain_notes.append("Cầu Tài Chương: Tất cả hào Thê Tài trên quẻ đều tĩnh lâm Tuần Không ('Lưỡng Tài giai Không, cầu tài bất đắc')")
+            if the_ln.get("luc_than") == "Huynh Đệ":
+                if (nhat_lt == "Thê Tài" and (LUC_XUNG.get(the_chi) == chi_ngay or KHAC_EL.get(nhat_el) == the_el)) or (
+                    nguyet_lt == "Thê Tài" and (LUC_XUNG.get(the_chi) == chi_thang or KHAC_EL.get(nguyet_el) == the_el)
+                ):
+                    lh_pts += 30
+                    lh_chain_notes.append("Cầu Tài Đặc Cách: Tuy Huynh Đệ trì Thế nhưng NHẬT/NGUYỆT TÁC TÀI TINH XUNG KHẮC THẾ — tài lộc dồn tới tất đắc!")
+                elif the_ln.get("is_moving") and the_ln.get("bien_luc_than") == "Thê Tài":
+                    lh_pts += 24
+                    lh_chain_notes.append("Cầu Tài Đặc Cách: Huynh Đệ trì Thế động HÓA XUẤT THÊ TÀI — tới ngày Tài hiện tất đắc!")
+                elif not (ng_movers and not dt_is_rootless):
+                    lh_pts -= 22
+                    lh_chain_notes.append("Cầu Tài Chương: 'Huynh Đệ trì Thế mạc cầu tài' — dễ hao tán hoặc cạnh tranh chia phần")
+            # Huynh - Tài - Quan đồng động: Quan chế Huynh hộ Tài!
+            mv_lts_all = {str(ln.get("luc_than") or "") for ln in lines if ln.get("is_moving")}
+            if {"Huynh Đệ", "Thê Tài", "Quan Quỷ"}.issubset(mv_lts_all) and not dt_is_rootless:
+                lh_pts += 22
+                lh_chain_notes.append("Cầu Tài Chương: 'Huynh dữ Tài chấn, Quan hào phát động diệc kham cầu' — Quan Quỷ chế phục Huynh Đệ bảo vệ Tài!")
+
+        # (d) Chuyên Chương Công Danh & Khoa Cử (Tăng San Bốc Dịch Quyển 3 Chương 49–61):
+        if is_career_q or is_exam_q:
+            if the_ln.get("luc_than") == "Tử Tôn":
+                lh_pts -= 30
+                lh_chain_notes.append("Công Danh Chương: 'Tử Tôn trì Thế hưu vọng vinh ấm' — khắc chế Quan tinh, cầu danh bất thành")
+            if the_ln.get("is_void") and not the_ln.get("is_moving") and not the_ln.get("is_xung_khong"):
+                lh_pts -= 16
+                lh_chain_notes.append("Công Danh Chương: Hào Thế lâm Tuần Không — nền tảng bản thân chưa vững")
+            if is_exam_q:
+                # Khoa cử kiêm xét Phụ Mẫu (văn bài/bảng vàng)
+                phu_lines = [ln for ln in lines if ln.get("luc_than") == "Phụ Mẫu"]
+                best_phu = next((ln for ln in phu_lines if ln.get("hao") == the_pos or ln.get("is_moving") or ln.get("is_am_dong") or ln.get("vuong_suy") in ("Vượng", "Tướng")), None)
+                if best_phu and ("HOA_TIEN" in (best_phu.get("hoa_flags") or []) or best_phu.get("is_am_dong") or best_phu.get("vuong_suy") in ("Vượng", "Tướng")):
+                    lh_pts += 18
+                    lh_chain_notes.append("Khoa Cử Chương: 'Phụ Vượng Quan Hưng, kham kỳ thủ tuyển' — Văn thư Phụ Mẫu vượng sáng nâng đỡ bảng vàng!")
+
+        # (e) Chuyên Chương Thất Vật & Hành Nhân:
+        if is_lost_q:
+            if (ban_is_lh or bien_is_lh or xh_trans == "XUNG_HOA_HOP") and not dt_is_rootless and "HOI_DAU_KHAC" not in h_flags:
+                lh_pts += 26
+                lh_chain_notes.append("Thất Vật Chương: Quẻ hội Lục Hợp / Xung biến Hợp — đồ thất lạc vẫn ở quanh gần, tìm lại được!")
+        if is_traveler_q:
+            if the_ln.get("is_void") and bien_is_lx and vs in ("Hưu", "Tù", "Tử"):
+                lh_pts -= 28
+                lh_chain_notes.append("Hành Nhân Chương: Thế Không + Dụng Thần hưu tù + Biến Lục Xung — nền tảng cuộc hẹn rỗng, người không đến!")
+            # Kiểm tra hào khác động hóa ra Dụng Thần và hợp chặt (VD: Tý động hóa Sửu Phụ Mẫu, Tý-Sửu hợp chặt không đến!)
+            bound_by_other_hop = False
+            for ln_other in lines:
+                if ln_other.get("is_moving") and ln_other.get("bien_luc_than") == dt_clean_ly and "HOA_HOP" in (ln_other.get("hoa_flags") or []):
+                    bound_by_other_hop = True
+                    lh_pts -= 36
+                    lh_chain_notes.append(f"Hành Nhân Chương: Hào {ln_other['hao']} ({ln_other['chi']}) động hóa {dt_clean_ly} ({ln_other.get('bien_chi','')}) LỤC HỢP TRÓI CHẶT ('Bị hợp bất lai')!")
+            if bound_by_other_hop or "HOA_HOP" in h_flags or hop_st == "HOP_TRU":
+                lh_pts = min(lh_pts, -14)
+
+        if veto_sinh_ung_only or veto_the_pha_khac:
+            lh_pts = min(lh_pts, -16)
 
     lh_norm = max(8, min(95, 52 + int(round(lh_pts * 0.65))))
 
-    # ── TÂM PHÁP 3: KỲ MÔN CHỦ-KHÁCH, TỨ HẠI & NGŨ BẤT NGỘ THỜI ──
+    # ── TÂM PHÁP 3: KỲ MÔN CHỦ-KHÁCH, CHUYÊN ĐỀ DỤNG THẦN, PHỤC/PHẢN NGÂM, TỨ HẠI & NGŨ BẤT NGỘ THỜI ──
     tc = int(qm_res.get("target_cung") or 2)
     cung_chu = int(qm_res.get("cung_chu") or 2)
-    pa_tc = (qm_res.get("palace_micro_audit") or {}).get(tc, {})
-    pa_chu = (qm_res.get("palace_micro_audit") or {}).get(cung_chu, {})
+    cung_khach = int(qm_res.get("cung_khach") or tc)
+    qm_dt_role = str(qm_res.get("qm_dt_role") or "GENERAL")
+    p_map_qm = qm_res.get("palace_micro_audit") or {}
+    pa_tc = p_map_qm.get(tc, {})
+    pa_chu = p_map_qm.get(cung_chu, {})
+    pa_khach = p_map_qm.get(cung_khach, {})
     el_tc = str(pa_tc.get("ngu_hanh") or "Thổ")
     el_chu = str(pa_chu.get("ngu_hanh") or "Thổ")
     door_tc = str(pa_tc.get("door") or "")
     star_tc = str(pa_tc.get("star") or "")
     deity_tc = str(pa_tc.get("deity") or "")
     tu_hai_tc = pa_tc.get("tu_hai") or []
+    tu_hai_chu = pa_chu.get("tu_hai") or []
+    truc_su_door = str(qm_res.get("truc_su_door") or cd.get("truc_su") or "")
 
     qm_pts = 0
     qm_notes: List[str] = []
-    if tc == cung_chu:
-        qm_pts += 12
-        qm_notes.append(f"Cung Sự Việc và Cung Người Hỏi đồng hội tại Cung {tc} (việc gắn sát thân, ứng nhanh)")
-    elif SINH_EL.get(el_tc) == el_chu:
-        qm_pts += 18
-        qm_notes.append(f"Cung Sự Việc ({tc}-{el_tc}) tương sinh Cung Người Hỏi ({cung_chu}-{el_chu}) — thiên thời địa lợi nâng đỡ")
-    elif KHAC_EL.get(el_chu) == el_tc:
-        qm_pts += 7
-        qm_notes.append(f"Cung Người Hỏi ({cung_chu}-{el_chu}) chế phục Cung Sự Việc ({tc}-{el_tc}) — chủ động nỗ lực sẽ kiểm soát được")
-    elif KHAC_EL.get(el_tc) == el_chu:
-        qm_pts -= 18
-        qm_notes.append(f"Cung Sự Việc ({tc}-{el_tc}) khắc ngược Cung Người Hỏi ({cung_chu}-{el_chu}) — ngoại cảnh chèn ép, nhiều lực cản")
-    elif SINH_EL.get(el_chu) == el_tc:
-        qm_pts -= 6
-        qm_notes.append(f"Cung Người Hỏi sinh xuất cho Cung Sự Việc — hao tâm tốn sức")
+    if p_map_qm:
+        chu_trapped = any("Nhập Mộ" in x or "Kích Hình" in x for x in tu_hai_chu)
+        if tc == cung_chu:
+            if chu_trapped:
+                qm_pts -= 10
+                qm_notes.append(f"Cung Dụng Thần và Nhật Can đồng cung tại Cung {tc} nhưng cùng vướng Nhập Mộ/Kích Hình — tự bó tay trói chân")
+            else:
+                qm_pts += 12
+                qm_notes.append(f"Cung Dụng Thần và Cung Người Hỏi đồng hội tại Cung {tc} (việc gắn sát thân, ứng nhanh)")
+        elif SINH_EL.get(el_tc) == el_chu:
+            qm_pts += 20
+            qm_notes.append(f"Cung Dụng Thần ({tc}-{el_tc}) tương sinh Cung Người Hỏi ({cung_chu}-{el_chu}) — thiên thời địa lợi nâng đỡ")
+        elif el_tc == el_chu:
+            qm_pts += 10
+            qm_notes.append(f"Cung Dụng Thần ({tc}-{el_tc}) tỷ hòa Cung Người Hỏi ({cung_chu}-{el_chu}) — thuận nhịp tương thông")
+        elif KHAC_EL.get(el_chu) == el_tc:
+            qm_pts += 7
+            qm_notes.append(f"Cung Người Hỏi ({cung_chu}-{el_chu}) chế phục Cung Dụng Thần ({tc}-{el_tc}) — chủ động điều phối sẽ kiểm soát được")
+        elif KHAC_EL.get(el_tc) == el_chu:
+            qm_pts -= 18
+            qm_notes.append(f"Cung Dụng Thần ({tc}-{el_tc}) khắc ngược Cung Người Hỏi ({cung_chu}-{el_chu}) — ngoại cảnh chèn ép, nhiều lực cản")
+        elif SINH_EL.get(el_chu) == el_tc:
+            if qm_dt_role == "WEALTH" and not tu_hai_tc and ("Sinh" in truc_su_door or any(d in str(pa_khach.get("door") or "") for d in ("Khai", "Hưu", "Sinh"))):
+                qm_pts += 12
+                qm_notes.append(f"Kinh Doanh Cầu Tài (Thần Kỳ Chi Môn): Sinh Môn Cung {tc} thanh tịnh vô Tứ Hại, bỏ vốn đầu tư sinh sôi thuận lợi")
+            else:
+                qm_pts -= 6
+                qm_notes.append("Cung Người Hỏi sinh xuất cho Cung Sự Việc — hao tâm tốn sức")
 
-    if any(d in door_tc for d in ("Khai", "Hưu", "Sinh")):
-        qm_pts += 14
-    elif "Cảnh" in door_tc:
-        qm_pts += 4
-    elif any(d in door_tc for d in ("Tử", "Kinh", "Thương", "Đỗ")):
-        qm_pts -= 12
+        # Kiểm tra Tứ Hại tại Cung Nhật Can (Người hỏi) khi khác Cung Dụng Thần:
+        if tc != cung_chu:
+            for th_c in tu_hai_chu:
+                if "Nhập Mộ" in th_c:
+                    qm_pts -= 12
+                    qm_notes.append(f"Nhật Can tại Cung {cung_chu} lâm Nhập Mộ — bản thân người hỏi đang bị bó buộc/thiếu chủ động")
+                elif "Kích Hình" in th_c:
+                    qm_pts -= 10
+                    qm_notes.append(f"Nhật Can tại Cung {cung_chu} phạm Kích Hình — nội lực hao tổn")
 
-    if any(s in star_tc for s in ("Tâm", "Phụ", "Nhậm", "Cầm", "Xung")):
-        qm_pts += 8
-    elif any(s in star_tc for s in ("Nhuế", "Bồng", "Trụ")):
-        qm_pts -= 8
+        # Kiểm tra Song Trục Thời Can (Hàng hóa/Sự việc cụ thể) & Chuyên Đề Đòi Nợ / Bệnh Tật:
+        if tc != cung_khach and pa_khach:
+            door_kh = str(pa_khach.get("door") or "")
+            th_kh = pa_khach.get("tu_hai") or []
+            if any(d in door_kh for d in ("Tử", "Kinh", "Thương", "Đỗ")) and any("Tuần Không" in x or "Nhập Mộ" in x or "Kích Hình" in x for x in th_kh):
+                qm_pts -= 18
+                qm_notes.append(f"Thời Can sự việc/hàng hóa (Cung {cung_khach}) lâm {door_kh} lại phùng Không/Mộ/Hình — thương vụ bế tắc hoặc hàng hóa ế đọng")
+            elif any(d in door_kh for d in ("Khai", "Hưu", "Sinh")) and not th_kh:
+                qm_pts += 10
+                qm_notes.append(f"Thời Can sự việc (Cung {cung_khach}) đắc cát môn {door_kh} thanh tịnh trợ lực")
 
-    for th in tu_hai_tc:
-        if "Môn Bức" in th:
-            qm_pts -= 14
-            qm_notes.append(f"Phạm Môn Bức tại Cung {tc} (cửa cát mất nửa lực, cửa hung càng thêm hung)")
-        elif "Kích Hình" in th:
-            qm_pts -= 14
-            qm_notes.append(f"Phạm Lục Nghi Kích Hình ({th}) — dễ va vấp thủ tục/tổn hao")
-        elif "Nhập Mộ" in th:
+        if qm_dt_role == "DEBT":
+            p_sinh_q = int(qm_res.get("p_sinh") or 0)
+            th_sinh_q = (p_map_qm.get(p_sinh_q) or {}).get("tu_hai") or []
+            if any("Môn Bức" in x or "Tuần Không" in x for x in th_sinh_q):
+                qm_pts -= 14
+                qm_notes.append(f"Đòi nợ gặp Sinh Môn (Cung {p_sinh_q}) phạm Môn Bức / Không Vong — dòng tiền đối phương đứt gãy, khó thu hồi")
+        elif qm_dt_role == "ILLNESS":
+            p_nhue_q = int(qm_res.get("p_nhue") or 0)
+            el_nhue_q = str((p_map_qm.get(p_nhue_q) or {}).get("ngu_hanh") or "")
+            if el_nhue_q and KHAC_EL.get(el_tc) == el_nhue_q:
+                qm_pts += 18
+                qm_notes.append(f"Thiên Tâm Y Dược (Cung {tc}) khắc chế Bệnh Tinh Thiên Nhuế (Cung {p_nhue_q}) — thuốc đúng bệnh, mau bình phục")
+            elif el_nhue_q and (KHAC_EL.get(el_nhue_q) == el_chu or p_nhue_q == cung_chu):
+                qm_pts -= 16
+                qm_notes.append(f"Bệnh Tinh Thiên Nhuế (Cung {p_nhue_q}) xâm khắc Nhật Can — bệnh tà còn vượng")
+
+        if any(d in door_tc for d in ("Khai", "Hưu", "Sinh")):
+            qm_pts += 14
+        elif "Cảnh" in door_tc:
+            qm_pts += 4
+        elif any(d in door_tc for d in ("Tử", "Kinh", "Thương", "Đỗ")):
             qm_pts -= 12
-            qm_notes.append(f"Thiên Can Nhập Mộ tại Cung {tc} — bế tắc tạm thời, chưa thông suốt")
-        elif "Tuần Không" in th:
-            qm_pts -= 10
-            qm_notes.append(f"Cung {tc} lâm Tuần Không — thông tin/kết quả còn bỏ ngỏ")
 
-    # Kiểm tra Ngũ Bất Ngộ Thời (Can Giờ khắc Can Ngày đồng tính Âm Dương)
+        if any(s in star_tc for s in ("Tâm", "Phụ", "Nhậm", "Cầm", "Xung")):
+            qm_pts += 8
+        elif any(s in star_tc for s in ("Nhuế", "Bồng", "Trụ")):
+            qm_pts -= 8
+
+        for th in tu_hai_tc:
+            if "Môn Bức" in th:
+                qm_pts -= 14
+                qm_notes.append(f"Phạm Môn Bức tại Cung {tc} (cửa cát mất nửa lực, cửa hung càng thêm hung)")
+            elif "Kích Hình" in th:
+                qm_pts -= 14
+                qm_notes.append(f"Phạm Lục Nghi Kích Hình ({th}) — dễ va vấp thủ tục/tổn hao")
+            elif "Nhập Mộ" in th:
+                qm_pts -= 12
+                qm_notes.append(f"Thiên Can Nhập Mộ tại Cung {tc} — bế tắc tạm thời, chưa thông suốt")
+            elif "Tuần Không" in th:
+                qm_pts -= 10
+                qm_notes.append(f"Cung {tc} lâm Tuần Không — thông tin/kết quả còn bỏ ngỏ")
+
+        # Kiểm tra Đại Cục Môn Phục Ngâm / Phản Ngâm & Trực Sử Tử Môn:
+        if qm_res.get("is_mon_phuc_ngam") and qm_dt_role in ("WEALTH", "DEBT", "CAREER", "GENERAL") and not is_lost_q:
+            qm_pts -= 18
+            qm_notes.append("Đại Cục Môn Phục Ngâm (8 cửa đóng yên bản cung): khí cục trì trệ, kỵ nhập hàng/đòi nợ/tiến công gấp")
+        elif qm_res.get("is_mon_phan_ngam"):
+            if is_lost_q or is_recent_illness:
+                qm_pts += 12
+                qm_notes.append("Môn Phản Ngâm đặc pháp: tìm đồ thất lạc dễ quay về / bệnh mới mắc mau lui")
+            else:
+                qm_pts -= 12
+                qm_notes.append("Đại Cục Môn Phản Ngâm: sự việc dễ biến động phản phúc nửa chừng")
+
+        if "Tử" in truc_su_door and not is_lost_q:
+            qm_pts -= 12
+            qm_notes.append(f"Trực Sử lâm Tử Môn nắm quyền thực thi — cửa bế tắc cản trở tiến độ")
+
+    # Kiểm tra Ngũ Bất Ngộ Thời (Can Giờ khắc Can Ngày đồng tính Âm Dương — Yên Ba Điếu Đồ Ca: 'Ngũ bất ngộ thời long bất tinh, bách sự giai hung!')
     can_n = str(cd.get("can_ngay") or "Giáp").strip()
     can_g = str(cd.get("can_gio") or "Giáp").strip()
     NGU_BAT_NGO = {
@@ -1882,32 +2526,60 @@ def synthesize_deep_classical_verdict(
     }
     is_nbnt = (can_n, can_g) in NGU_BAT_NGO
     if is_nbnt:
-        qm_pts -= 22
-        qm_notes.append(f"Cảnh báo đại kỵ Kỳ Môn: Phạm NGŨ BẤT NGỘ THỜI (Giờ {can_g} khắc Ngày {can_n}) — mưu sự dễ trục trặc trái ý")
+        qm_pts = min(qm_pts - 38, -20)
+        qm_notes.append(f"Cảnh báo đại kỵ Kỳ Môn: Phạm NGŨ BẤT NGỘ THỜI (Giờ {can_g} khắc Ngày {can_n}) — bách sự giai hung, mưu sự bất thành!")
 
     qm_norm = max(10, min(94, 52 + int(round(qm_pts * 0.72))))
 
-    # ── TÂM PHÁP 4: MAI HOA ĐẢNG THỂ VS ĐẢNG DỤNG 4 CHẶNG ──
+    # ── TÂM PHÁP 4: MAI HOA ĐẢNG THỂ VS ĐẢNG DỤNG 4 CHẶNG + NGUYỆT LỆNH SUY VƯỢNG (THIỆU KHANG TIẾT · MAI HOA DỊCH SỐ) ──
     el_the_mh = TRIGRAM_META_8.get(mh_res.get("the_quai", "Càn"), TRIGRAM_META_8["Càn"])[3]
+    el_dung_mh = TRIGRAM_META_8.get(mh_res.get("dung_quai", "Chấn"), TRIGRAM_META_8["Chấn"])[3]
+    el_bien_mh = TRIGRAM_META_8.get(mh_res.get("bien_dung_quai", "Chấn"), TRIGRAM_META_8["Chấn"])[3]
     stages_mh = [
-        (mh_res.get("dung_quai", "Chấn"), 1.0),
-        (mh_res.get("ha_ho", "Cấn"), 0.8),
-        (mh_res.get("thuong_ho", "Tốn"), 0.9),
-        (mh_res.get("bien_dung_quai", "Chấn"), 1.8),
+        (mh_res.get("dung_quai", "Chấn"), 1.1),
+        (mh_res.get("ha_ho", "Cấn"), 0.7),
+        (mh_res.get("thuong_ho", "Tốn"), 0.8),
+        (mh_res.get("bien_dung_quai", "Chấn"), 1.9),
     ]
     mh_pts = 0.0
     for q_nm, w_st in stages_mh:
         q_el = TRIGRAM_META_8.get(q_nm, TRIGRAM_META_8["Càn"])[3]
         if SINH_EL.get(q_el) == el_the_mh:
-            mh_pts += 14 * w_st
+            mh_pts += 15 * w_st
         elif q_el == el_the_mh:
-            mh_pts += 9 * w_st
+            mh_pts += 8 * w_st
         elif KHAC_EL.get(el_the_mh) == q_el:
             mh_pts += 4 * w_st
         elif SINH_EL.get(el_the_mh) == q_el:
-            mh_pts -= 8 * w_st
+            mh_pts -= 9 * w_st
         elif KHAC_EL.get(q_el) == el_the_mh:
-            mh_pts -= 15 * w_st
+            mh_pts -= 16 * w_st
+
+    # Thiệu Khang Tiết Suy Vượng Luận: Thể nghi vượng tướng, bất nghi suy tuyệt; Vượng Dụng khắc Suy Thể tắc đại hung!
+    def _mh_season_state(e_chk: str, m_el: str) -> str:
+        if e_chk == m_el:
+            return "Vượng"
+        if SINH_EL.get(m_el) == e_chk:
+            return "Tướng"
+        if SINH_EL.get(e_chk) == m_el:
+            return "Hưu"
+        if KHAC_EL.get(e_chk) == m_el:
+            return "Tù"
+        return "Tử"
+
+    the_season_mh = _mh_season_state(el_the_mh, nguyet_el)
+    dung_season_mh = _mh_season_state(el_dung_mh, nguyet_el)
+    if the_season_mh in ("Vượng", "Tướng"):
+        mh_pts += 12.0
+    elif the_season_mh in ("Tù", "Tử"):
+        mh_pts -= 12.0
+    if KHAC_EL.get(el_dung_mh) == el_the_mh and dung_season_mh in ("Vượng", "Tướng") and the_season_mh in ("Hưu", "Tù", "Tử"):
+        # Nếu Biến Quái không trực tiếp Hồi Đầu Sinh Thể thì Thể suy bị Vượng Dụng đốn gốc!
+        if SINH_EL.get(el_bien_mh) != el_the_mh:
+            mh_pts -= 28.0
+    elif SINH_EL.get(el_dung_mh) == el_the_mh and dung_season_mh in ("Vượng", "Tướng"):
+        mh_pts += 14.0
+
     mh_norm = max(12, min(92, 50 + int(round(mh_pts * 0.65))))
 
     # Điểm hợp nhất Tam Thức có trọng số thực chiến: Lục Hào 50% + Kỳ Môn 30% + Mai Hoa 20%
@@ -1989,16 +2661,115 @@ def synthesize_deep_classical_verdict(
             f"Cung Kỳ Môn = Cung {tc}. TUYỆT ĐỐI KHÔNG ĐƯỢC ép trần tuổi cố định 31-45 hay 50-78!"
         )
 
-    if is_weather_q and len(multi_opts) < 2:
+    if is_weather_q:
         special_mode = "WEATHER"
-        rain_pts, rain_evs = score_option_classical_imagery("trời mưa giông ẩm ướt", ly_res, qm_res, mh_res, 1)
-        sun_pts, sun_evs = score_option_classical_imagery("trời nắng quang đãng tạnh ráo", ly_res, qm_res, mh_res, 2)
-        if rain_pts > sun_pts + 4:
+        # V134.0 (Tăng San Bốc Dịch · Thiên Thời Chương Đệ 35 — Dã Hạc Lão Nhân):
+        # 'Thiên thời bất luận vượng suy, duy trọng động biến':
+        # - Tử Tôn vi Nhật Nguyệt tinh đẩu, động tắc vạn lý tình quang; Thê Tài động khắc Phụ sinh Tử chủ tình minh!
+        # - Phụ Mẫu vi vũ tuyết vụ sương, phát tắc bát phương nhuận trạch (tuy lâm Nguyệt Phá/Hồi Đầu Khắc, xung khai thực phá chi nhật diệc tác đại vũ; duy Phụ/Quỷ hóa Thoái Thần hoặc Phụ hóa Tử khi cầu tạnh tắc vũ chỉ thiên khai!).
+        # - Quan Quỷ động (khi Phụ tĩnh, không bị Huynh Mộc đồng động sinh phong thuần túy) sinh Phụ chủ lôi đình vụ điện vũ thủy; Huynh hóa Tài/Tử chủ vân khai nhật xuất!
+        asking_clear = any(w in q_low for w in ("nắng", "tạnh", "quang đãng", "hết mưa"))
+        rain_pts = 0
+        sun_pts = 0
+        rain_evs: List[str] = []
+        sun_evs: List[str] = []
+
+        if lines:
+            act_w_lines = [ln for ln in lines if ln.get("is_moving") or ln.get("is_am_dong") or ln.get("is_xung_khong")]
+            mv_only_lts = {str(ln.get("luc_than") or "") for ln in lines if ln.get("is_moving")}
+            seen_am_dong_keys = set()
+            for ln_w in act_w_lines:
+                lt_w = str(ln_w.get("luc_than") or "")
+                lf_w = set(ln_w.get("hoa_flags") or [])
+                blt_w = str(ln_w.get("bien_luc_than") or "")
+                is_real_mv = bool(ln_w.get("is_moving"))
+                if not is_real_mv:
+                    ad_key = (lt_w, str(ln_w.get("chi") or ""))
+                    if ad_key in seen_am_dong_keys:
+                        continue
+                    seen_am_dong_keys.add(ad_key)
+                if lt_w == "Phụ Mẫu":
+                    if is_real_mv and "HOA_THOAI" in lf_w:
+                        sun_pts += 36
+                        sun_evs.append("Phụ Mẫu động hóa Thoái Thần ('Phụ hóa Thoái vũ tương chỉ' — mây mưa tan dần, trời tạnh sáng)")
+                    elif is_real_mv and blt_w == "Tử Tôn" and asking_clear:
+                        sun_pts += 38
+                        sun_evs.append("Phụ Mẫu động hóa Tử Tôn ('Phụ hóa Tử vũ hậu tình minh' — sau cơn mưa trời hửng nắng rực rỡ)")
+                    elif is_real_mv and blt_w == "Huynh Đệ" and asking_clear and "Quan Quỷ" not in mv_only_lts:
+                        sun_pts += 26
+                        sun_evs.append("Phụ Mẫu tiết khí sang Huynh Đệ (sau đợt mưa ngắn mây tan trời tạnh, không mưa dầm)")
+                    else:
+                        # Nếu Thê Tài minh động trực tiếp khắc chế Phụ Mẫu chỉ Ám Động thì mưa bị kìm, chỉ có mây mỏng thoáng qua!
+                        ad_rain_w = 18 if (not is_real_mv and "Thê Tài" in mv_only_lts) else 36
+                        rain_pts += 44 if is_real_mv else ad_rain_w
+                        rain_evs.append(f"Hào {ln_w['hao']} Phụ Mẫu ({ln_w['chi']}) {'phát động' if is_real_mv else 'ám động/xung không'} chủ Vũ Thủy (trời đổ mưa)")
+                elif lt_w == "Tử Tôn":
+                    if is_real_mv and "HOA_THOAI" in lf_w:
+                        rain_pts += 10
+                    elif is_real_mv and blt_w == "Quan Quỷ" and not asking_clear:
+                        rain_pts += 18
+                        rain_evs.append("Tử Tôn hóa Quan Quỷ ('Tình chi bất cửu' — nắng tắt chuyển mây âm mưa tới)")
+                    else:
+                        sun_pts += 46 if ("HOA_TIEN" in lf_w or is_real_mv) else 34
+                        sun_evs.append(f"Hào {ln_w['hao']} Tử Tôn ({ln_w['chi']}) {'động' if is_real_mv else 'ám động/xung không'} ('Tử Tôn phát động, vạn lý tình quang' — nắng ráo quang đãng)")
+                elif lt_w == "Thê Tài":
+                    bonus_tc = 14 if blt_w == "Tử Tôn" else 0
+                    sun_pts += (40 if is_real_mv else 34) + bonus_tc
+                    sun_evs.append(f"Hào {ln_w['hao']} Thê Tài ({ln_w['chi']}) {'động' if is_real_mv else 'ám động/xung không'} khắc Phụ sinh Tử chủ trời quang mây tạnh")
+                elif lt_w == "Quan Quỷ":
+                    if is_real_mv and "HOA_THOAI" in lf_w:
+                        sun_pts += 38
+                        sun_evs.append("Quan Quỷ động hóa Thoái Thần ('Quỷ hóa Thoái vũ tương chỉ, vụ tán thiên khai' — mưa dứt trời quang)")
+                    elif "Phụ Mẫu" not in mv_only_lts and "Huynh Đệ" in mv_only_lts and (ln_w.get("ngu_hanh") == "Mộc" or any(x.get("is_moving") and x.get("ngu_hanh") == "Mộc" for x in lines)):
+                        # 'Chiêm vũ Phụ bất động, Huynh Quỷ đồng động, Mộc động sinh phong, vô vũ nhi hữu phong'
+                        sun_pts += 22
+                        sun_evs.append("Phụ Mẫu bất động, Huynh–Quỷ Mộc đồng động chỉ nổi gió lớn chứ không mưa")
+                    elif not asking_clear:
+                        rain_pts += 30
+                        rain_evs.append(f"Hào {ln_w['hao']} Quan Quỷ ({ln_w['chi']}) động sinh Phụ Mẫu chủ lôi điện mây đen & mưa")
+                elif lt_w == "Huynh Đệ":
+                    if is_real_mv and (blt_w in ("Thê Tài", "Tử Tôn") or "HOA_THOAI" in lf_w):
+                        sun_pts += 36
+                        sun_evs.append(f"Hào {ln_w['hao']} Huynh Đệ hóa {blt_w or 'Thoái'} ('Vân trung biến xuất nhật sắc / Đệ hóa Tôn vân khai nhật xuất')")
+
+            # Bổ sung Tam Hợp Cục Thiên Thời ('Tam hợp Tài/Tử cục chủ Tình, Tam hợp Phụ cục chủ Vũ')
+            for th_it in (ly_res.get("tam_hop_cuc") or []):
+                lt_c = str(th_it.get("luc_than") or "")
+                if lt_c in ("Tử Tôn", "Thê Tài"):
+                    sun_pts += 28
+                    sun_evs.append(f"Tam Hợp {lt_c} Cục hội tụ quang khí trời nắng")
+                elif lt_c == "Phụ Mẫu":
+                    rain_pts += 28
+                    rain_evs.append("Tam Hợp Phụ Mẫu Cục hội tụ vũ khí trời mưa")
+
+            # Trường hợp Lục Hào hoàn toàn Tĩnh và không có Ám Động: mới đối chứng Vượng Suy & Kỳ Môn / Mai Hoa
+            if not act_w_lines and not cd.get("_is_historical_liuyao_only"):
+                r_i, r_e = score_option_classical_imagery("trời mưa giông ẩm ướt", ly_res, qm_res, mh_res, 1)
+                s_i, s_e = score_option_classical_imagery("trời nắng quang đãng tạnh ráo", ly_res, qm_res, mh_res, 2)
+                rain_pts += r_i
+                sun_pts += s_i
+                rain_evs.extend(r_e)
+                sun_evs.extend(s_e)
+            elif not act_w_lines:
+                # Lục hào thuần tĩnh: so khí lực Phụ Mẫu vs Tử Tôn/Thê Tài; nếu hạn lâu không có Phụ/Quỷ động thì chủ Hạn (không mưa)
+                if not asking_clear:
+                    sun_pts += 12
+                else:
+                    sun_pts += 12
+        else:
+            r_i, r_e = score_option_classical_imagery("trời mưa giông ẩm ướt", ly_res, qm_res, mh_res, 1)
+            s_i, s_e = score_option_classical_imagery("trời nắng quang đãng tạnh ráo", ly_res, qm_res, mh_res, 2)
+            rain_pts += r_i
+            sun_pts += s_i
+            rain_evs.extend(r_e)
+            sun_evs.extend(s_e)
+
+        if rain_pts > sun_pts:
             verdict_polarity = "RAIN"
-            direct_headline = f"🌧️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: CÓ MƯA / TRỜI NHIỀU MÂY ẨM ƯỚT ({min(88, 55 + (rain_pts - sun_pts) // 2)}%) — {rain_evs[0] if rain_evs else 'Thủy khí & Phụ Mẫu vượng động'}!"
+            direct_headline = f"🌧️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: CÓ MƯA / TRỜI ĐỔ MƯA GIÔNG ({min(92, 58 + (rain_pts - sun_pts) // 2)}%) — {rain_evs[0] if rain_evs else 'Phụ Mẫu / Thủy khí phát động chủ Vũ'}!"
         else:
             verdict_polarity = "CLEAR"
-            direct_headline = f"☀️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: KHÔNG MƯA — TRỜI TẠNH RÁO / QUANG ĐÃNG ({min(88, 56 + max(4, sun_pts - rain_pts) // 2)}%) — {sun_evs[0] if sun_evs else 'Quẻ khô ráo, vắng bóng Thủy khí phát động'}!"
+            direct_headline = f"☀️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: TRỜI NẮNG / TẠNH RÁO QUANG ĐÃNG ({min(92, 58 + max(4, sun_pts - rain_pts) // 2)}%) — {sun_evs[0] if sun_evs else 'Tử Tôn / Thê Tài đắc thế chủ Tình quang'}!"
     elif is_done_yet_q and len(multi_opts) <= 2:
         special_mode = "DONE_YET"
         if already_happened:
@@ -2313,7 +3084,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V133.2 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V134.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Dược ứng kỳ:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn["duoc_ung_ky"]}</span>'
@@ -2323,7 +3094,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V133.2)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V134.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Dịch Số</span>'
         f'</div>'
         f'{ly_flow_html}'

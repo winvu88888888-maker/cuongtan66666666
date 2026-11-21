@@ -687,7 +687,16 @@ class QuestionReaderAI:
             ])
             and not is_children_q and not _is_child_action_ab
         )
-        is_weather = any(w in q_low for w in ["mưa hay nắng", "nắng hay mưa", "thời tiết", "có mưa không", "trời mưa", "trời nắng", "bão"])
+        def _has_word(*kws: str) -> bool:
+            for kw in kws:
+                if re.search(rf"(?<![a-zA-ZÀ-ỹ]){re.escape(kw)}(?![a-zA-ZÀ-ỹ])", q_low):
+                    return True
+            return False
+
+        is_weather = any(w in q_low for w in [
+            "mưa hay nắng", "nắng hay mưa", "tạnh hay mưa", "mưa hay tạnh", "nắng tạnh hay mưa",
+            "thời tiết", "có mưa không", "trời mưa", "trời nắng", "trời có mưa", "trời có nắng", "giông", "bão",
+        ])
         is_lawsuit = any(w in q_low for w in ["kiện", "tòa án", "pháp lý", "tranh chấp", "ai thắng", "thắng hay thua", "thắng hay đối phương", "đấu thầu"])
         is_profile = any(w in q_low for w in ["ngoại hình", "hình dáng người", "cao hay thấp", "béo hay gầy", "tính cách", "tính nết", "làm nghề gì", "nghề nghiệp gì", "ngành gì", "cao bao nhiêu", "nặng bao nhiêu"])
         is_when = any(w in q_low for w in ["khi nào", "bao giờ", "mấy giờ", "ngày nào", "tháng nào", "năm nào", "bao lâu", "tháng mấy"]) and not is_gender_age
@@ -724,18 +733,26 @@ class QuestionReaderAI:
             "mua chung cư", "mua biệt thự", "mua mảnh đất", "mua bất động sản",
             "mua ô tô", "mua xe hơi", "mua xe ô tô", "mua xe lớn", "mua tài sản lớn"
         ]) and not is_house_floors_q and (" hay " not in q_low or any(w in q_low for w in ["hay không", "hay chưa"]))
-        is_invest = any(w in q_low for w in ["đầu tư", "kinh doanh", "buôn bán", "mở quán", "mở cửa hàng", "chứng khoán", "cổ phiếu", "có lãi", "lời hay lỗ", "mua bán", "xuống tiền", "mua đất", "bán đất", "mua nhà", "bán nhà", "tài chính", "tài lộc", "có lộc", "tiền bạc", "thu nhập", "lương", "kiếm tiền"])
-        is_love = any(w in q_low for w in ["yêu", "tình cảm", "hôn nhân", "vợ chồng", "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình"])
+        is_invest = any(w in q_low for w in [
+            "đầu tư", "kinh doanh", "buôn bán", "mở quán", "mở cửa hàng", "mở xưởng", "chứng khoán", "cổ phiếu",
+            "có lãi", "lời hay lỗ", "sinh lời", "lợi lộc", "mua bán", "xuống tiền", "mua đất", "bán đất",
+            "mua nhà", "bán nhà", "tài chính", "tài lộc", "cầu tài", "có lộc", "tiền bạc", "thu nhập",
+            "lương", "kiếm tiền", "vé số", "xổ số", "trúng thưởng", "được tiền",
+        ])
+        is_love = any(w in q_low for w in [
+            "yêu", "tình cảm", "hôn nhân", "hôn sự", "nhân duyên", "cầu hôn", "vợ chồng",
+            "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình",
+        ])
         is_health = any(w in q_low for w in [
             "bệnh", "ốm", "sốt", "sốt cao", "nóng sốt", "hạ sốt", "viêm", "ho", "cảm",
-            "đau", "mệt", "nằm viện", "nhập viện", "cấp cứu", "phẫu thuật", "mổ",
-            "sức khỏe", "khỏe mạnh", "qua khỏi", "khỏi bệnh", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"
+            "đau", "mệt", "nằm viện", "nhập viện", "cấp cứu", "phẫu thuật", "mổ", "mang thai", "sinh nở",
+            "sức khỏe", "khỏe mạnh", "qua khỏi", "khỏi bệnh", "bình phục", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"
         ])
         is_fengshui = any(w in q_low for w in ["phong thủy", "nhà đất", "xây nhà", "sửa nhà", "mồ mả", "âm phần", "mộ phần", "gia tiên", "động thổ", "hướng nhà"]) and not is_house_floors_q and not is_invest
-        is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "có đỗ", "đỗ không", "đậu không", "kỳ thi", "đi thi", "thi cử", "học hành", "điểm thi", "bằng cấp", "lấy bằng", "bằng lái", "sát hạch", "thi bằng", "du học", "xin visa", "phỏng vấn visa"])
-        is_travel = any(w in q_low for w in ["xuất hành", "đi xa", "du lịch", "công tác", "chuyến đi", "lên đường", "về quê", "di chuyển", "thượng lộ"])
+        is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "có đỗ", "đỗ không", "đỗ đạt", "đậu không", "kỳ thi", "đi thi", "thi cử", "khoa cử", "học hành", "điểm thi", "bằng cấp", "lấy bằng", "bằng lái", "sát hạch", "thi bằng", "du học", "xin visa", "phỏng vấn visa", "văn thư", "hồ sơ"])
+        is_travel = any(w in q_low for w in ["xuất hành", "đi xa", "du lịch", "công tác", "chuyến đi", "lên đường", "về quê", "di chuyển", "thượng lộ", "trở về", "quay về", "đến lớp", "tới lớp", "qua trạm", "qua ải"])
         is_trachcat = any(w in q_low for w in ["xem ngày", "ngày tốt", "giờ tốt", "ngày đẹp", "khai trương", "nhập trạch", "cưới hỏi"])
-        is_career = any(w in q_low for w in ["công việc", "sự nghiệp", "xin việc", "thăng chức", "chuyển việc", "nhảy việc", "hợp đồng"])
+        is_career = any(w in q_low for w in ["công việc", "sự nghiệp", "công danh", "chức vụ", "thăng tiến", "xin việc", "ứng tuyển", "thăng chức", "chuyển việc", "nhảy việc", "hợp đồng", "quan chức"])
 
         arch_key = "D25_SPIRITUAL_GENERAL"
         option_a = ""
@@ -744,16 +761,16 @@ class QuestionReaderAI:
         if is_spiritual_yin_q:
             arch_key = "D25_SPIRITUAL_GENERAL"
             specific_target = "SPIRITUAL_YIN_CHECK"
-            if any(w in q_low for w in ["chị gái", "anh trai", "em gái", "em trai", "chị tôi", "anh tôi", "em tôi"]):
+            if _has_word("chị gái", "anh trai", "em gái", "em trai", "chị tôi", "anh tôi", "em tôi", "anh chị em"):
                 subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Anh Chị Em (Huynh Đệ)"
                 authoritative_dt = "Huynh Đệ"
-            elif any(w in q_low for w in ["con gái", "con trai", "con tôi", "bé nhà tôi"]):
+            elif _has_word("con gái", "con trai", "con tôi", "con cái", "bé nhà tôi"):
                 subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Con cái (Tử Tôn)"
                 authoritative_dt = "Tử Tôn"
-            elif any(w in q_low for w in ["bố", "mẹ", "cha", "ba", "má", "ông", "bà"]):
+            elif _has_word("bố", "mẹ", "cha", "má", "cha mẹ", "bố mẹ", "ba mẹ", "ông nội", "bà nội", "ông ngoại", "bà ngoại"):
                 subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Cha Mẹ (Phụ Mẫu)"
                 authoritative_dt = "Phụ Mẫu"
-            elif any(w in q_low for w in ["vợ tôi", "bạn gái"]):
+            elif _has_word("vợ tôi", "bạn gái", "vợ"):
                 subject_person = "Kiểm chứng Âm binh / Tà khí (Quan Quỷ), Phúc khí (Tử Tôn) & Chủ thể Người vợ (Thê Tài)"
                 authoritative_dt = "Thê Tài"
             else:
@@ -986,25 +1003,31 @@ class QuestionReaderAI:
         elif is_lost_where:
             arch_key = "D11_LOST_ITEM_WHERE"
             specific_target = "LOST_ITEM"
+            if _has_word("giấy tờ", "căn cước", "chứng minh", "hộ chiếu", "bằng cấp", "bằng lái", "hồ sơ", "hợp đồng", "sách", "vở", "xe", "ô tô", "xe máy", "áo", "quần", "túi xách", "cặp", "điện thoại"):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Vật thất lạc thuộc nhóm Giấy tờ / Phương tiện / Y phục / Thiết bị che chở (Dụng Thần: Phụ Mẫu)"
+            else:
+                authoritative_dt = "Thê Tài"
+                subject_person = "Vật thất lạc thuộc nhóm Tài sản / Tiền bạc / Chìa khóa / Đồ dùng giá trị (Dụng Thần: Thê Tài)"
         elif is_when and (
             any(w in q_low for w in ["mấy giờ", "giờ nào", "lúc mấy giờ", "lúc nào", "mấy phút", "xuống", "lên", "đến", "tới", "về", "bắn"])
             or not (is_career or is_invest or is_love or is_health)
         ):
             arch_key = "D12_TIMING_WHEN"
             specific_target = "TIMING_WHEN"
-            if any(w in q_low for w in ["chị gái", "anh trai", "em gái", "em trai", "chị tôi", "anh tôi", "em tôi", "bạn tôi"]):
+            if _has_word("chị gái", "anh trai", "em gái", "em trai", "chị tôi", "anh tôi", "em tôi", "bạn tôi", "anh chị em"):
                 subject_person = "Thời điểm / Khung giờ di chuyển & đến nơi của Anh Chị Em / Bạn bè (Dụng Thần: Huynh Đệ)"
                 authoritative_dt = "Huynh Đệ"
-            elif any(w in q_low for w in ["lương", "thưởng", "tiền", "chuyển khoản", "bắn", "tài khoản", "vợ", "bạn gái"]):
+            elif _has_word("lương", "thưởng", "tiền", "chuyển khoản", "bắn", "tài khoản", "vợ", "bạn gái"):
                 subject_person = "Thời điểm / Khung giờ Tiền lương về tài khoản & Giải ngân (Dụng Thần: Thê Tài)"
                 authoritative_dt = "Thê Tài"
-            elif any(w in q_low for w in ["con gái", "con trai", "con tôi", "bé"]):
-                subject_person = "Thời điểm / Khung giờ của Con cái (Dụng Thần: Tử Tôn)"
+            elif _has_word("con gái", "con trai", "con tôi", "con cái", "bé", "học sinh"):
+                subject_person = "Thời điểm / Khung giờ của Con cái / Học trò (Dụng Thần: Tử Tôn)"
                 authoritative_dt = "Tử Tôn"
-            elif any(w in q_low for w in ["bố", "mẹ", "cha", "má", "ship", "hàng", "đơn hàng", "bưu phẩm", "xe", "tin nhắn", "giấy tờ"]):
+            elif _has_word("bố", "mẹ", "cha", "má", "cha mẹ", "bố mẹ", "ship", "hàng", "đơn hàng", "bưu phẩm", "xe", "tin nhắn", "giấy tờ"):
                 subject_person = "Thời điểm / Khung giờ của Cha mẹ / Đơn hàng / Tin tức / Xe cộ (Dụng Thần: Phụ Mẫu)"
                 authoritative_dt = "Phụ Mẫu"
-            elif any(w in q_low for w in ["chồng", "bạn trai", "sếp", "khách"]):
+            elif _has_word("chồng", "bạn trai", "sếp", "khách"):
                 subject_person = "Thời điểm / Khung giờ của Chồng / Cấp trên / Khách hàng (Dụng Thần: Quan Quỷ)"
                 authoritative_dt = "Quan Quỷ"
         elif is_why:
@@ -1026,26 +1049,34 @@ class QuestionReaderAI:
         elif is_exam:
             arch_key = "D20_EXAM_STUDY_VISA"
             specific_target = "EXAM_VISA"
-            authoritative_dt = "Phụ Mẫu"
+            if _has_word("visa", "hộ chiếu", "giấy tờ", "văn thư", "hồ sơ", "giấy phép", "bằng lái", "chứng chỉ", "hợp đồng") and not _has_word("đi thi", "kỳ thi", "thi đỗ", "thi đậu", "khoa cử", "xin việc", "ứng tuyển", "trưởng phòng", "chức vụ", "tuyển dụng", "thăng chức"):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Xin Visa / Hợp đồng Giấy tờ Văn thư / Chứng chỉ (Dụng Thần: Phụ Mẫu)"
+            else:
+                authoritative_dt = "Quan Quỷ"
+                subject_person = "Khoa Cử / Kỳ Thi Đỗ Đạt (Tăng San Bốc Dịch: Quan Quỷ chủ Danh vị Trúng tuyển, Phụ Mẫu chủ Văn bài Điểm số — Quan Vượng Phụ Hưng)"
         elif is_health:
             arch_key = "D18_HEALTH_MEDICAL"
             specific_target = "HEALTH_MEDICAL"
-            # V111.0 (Y Dịch Cổ Pháp — Tăng San Bốc Dịch): Định vị chính xác Dụng Thần của NGƯỜI BỆNH trước, Kỵ Thần là hào khắc Dụng Thần đó!
-            if any(w in q_low for w in ["con tôi", "con gái", "con trai", "bé gái", "bé trai", "con của tôi", "bé nhà tôi"]):
+            # V134.0 (Y Dịch Cổ Pháp — Tăng San Bốc Dịch): Định vị chính xác bằng ranh giới từ (tránh 'không' dính 'ông'!), ưu tiên Chủ thể Người bệnh!
+            if _has_word("phương thuốc", "bài thuốc", "đơn thuốc", "vị thuốc") and not _has_word("cha", "mẹ", "bố", "vợ", "chồng", "anh", "chị", "em"):
                 authoritative_dt = "Tử Tôn"
-                subject_person = "Sức khỏe & Bệnh chứng của Con cái (Dụng Thần: Tử Tôn — Xét Kỵ Thần Phụ Mẫu & Tượng Quái Chủ Thể)"
-            elif any(w in q_low for w in ["bố", "mẹ", "cha", "ba", "má", "ông", "bà"]):
-                authoritative_dt = "Phụ Mẫu"
-                subject_person = "Sức khỏe & Bệnh chứng của Cha mẹ / Trưởng bối (Dụng Thần: Phụ Mẫu — Xét Kỵ Thần Thê Tài & Quan Quỷ)"
-            elif any(w in q_low for w in ["vợ", "bạn gái"]) and "chồng" not in q_low:
-                authoritative_dt = "Thê Tài"
-                subject_person = "Sức khỏe & Bệnh chứng của Vợ / Bạn gái (Dụng Thần: Thê Tài — Xét Kỵ Thần Huynh Đệ & Quan Quỷ)"
-            elif any(w in q_low for w in ["chồng", "bạn trai"]) and "vợ" not in q_low:
+                subject_person = "Hiệu nghiệm của Phương thuốc / Y dược điều trị (Dụng Thần: Tử Tôn)"
+            elif ("vợ hỏi chồng" in q_low or "hỏi cho chồng" in q_low) or (_has_word("chồng", "ông xã", "bạn trai") and "chồng hỏi vợ" not in q_low):
                 authoritative_dt = "Quan Quỷ"
                 subject_person = "Sức khỏe & Bệnh chứng của Chồng / Bạn trai (Dụng Thần: Quan Quỷ)"
-            elif any(w in q_low for w in ["anh trai", "chị gái", "em trai", "em gái", "anh chị em"]):
+            elif ("chồng hỏi vợ" in q_low or "hỏi cho vợ" in q_low) or (_has_word("vợ", "bà xã", "bạn gái") and "vợ hỏi chồng" not in q_low):
+                authoritative_dt = "Thê Tài"
+                subject_person = "Sức khỏe & Bệnh chứng của Vợ / Bạn gái (Dụng Thần: Thê Tài — Xét Kỵ Thần Huynh Đệ & Dược Thần Tử Tôn)"
+            elif _has_word("con tôi", "con gái", "con trai", "con cái", "con cháu", "bé gái", "bé trai", "con của tôi", "bé nhà tôi", "cháu trai", "cháu gái"):
+                authoritative_dt = "Tử Tôn"
+                subject_person = "Sức khỏe & Bệnh chứng của Con cháu (Dụng Thần: Tử Tôn — Xét Kỵ Thần Phụ Mẫu)"
+            elif _has_word("bố", "mẹ", "cha", "má", "cha mẹ", "bố mẹ", "ba mẹ", "ông nội", "bà nội", "ông ngoại", "bà ngoại", "phụ mẫu", "thân phụ", "thân mẫu", "bác", "chú", "cô", "dì"):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Sức khỏe & Bệnh chứng của Cha mẹ / Trưởng bối (Dụng Thần: Phụ Mẫu)"
+            elif _has_word("anh trai", "chị gái", "em trai", "em gái", "anh chị em", "anh em", "chị em"):
                 authoritative_dt = "Huynh Đệ"
-                subject_person = "Sức khỏe & Bệnh chứng của Anh chị em (Dụng Thần: Huynh Đệ — Xét Kỵ Thần Quan Quỷ)"
+                subject_person = "Sức khỏe & Bệnh chứng của Anh chị em (Dụng Thần: Huynh Đệ)"
             else:
                 authoritative_dt = "Bản Thân"
                 subject_person = "Sức khỏe & Bệnh chứng Bản thân (Dụng Thần: Hào Thế — Bệnh Thần: Quan Quỷ — Dược Thần: Tử Tôn)"
@@ -1056,11 +1087,32 @@ class QuestionReaderAI:
         elif is_love:
             arch_key = "D17_LOVE_MARRIAGE"
             specific_target = "LOVE_MARRIAGE"
-            authoritative_dt = "Quan Quỷ" if ("chồng" in q_low and "vợ" not in q_low) else "Thê Tài"
+            if any(w in q_low for w in ["nhà gái", "nữ hỏi", "bên gái", "lấy chồng"]) or (_has_word("chồng", "bạn trai") and not _has_word("vợ", "bạn gái")):
+                authoritative_dt = "Quan Quỷ"
+            else:
+                authoritative_dt = "Thê Tài"
         elif is_travel:
             arch_key = "D22_TRAVEL_JOURNEY"
             specific_target = "TRAVEL_SAFETY"
-            authoritative_dt = "Hào Thế"
+            # Phân định Tự xuất hành (Bản Thân / Hào Thế) vs Hành nhân quy lai (Lục thân của người đi xa / đến hẹn)
+            if _has_word("bố", "mẹ", "cha", "má", "cha mẹ", "bố mẹ", "ba mẹ", "ông nội", "bà nội", "bác", "chú"):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Hành nhân Trưởng bối / Cha mẹ đi xa trở về (Dụng Thần: Phụ Mẫu)"
+            elif _has_word("con", "con cái", "con trai", "con gái", "học sinh", "học trò", "đệ tử") and not _has_word("con đường", "con tàu", "con thuyền"):
+                authoritative_dt = "Tử Tôn"
+                subject_person = "Hành nhân Con cái / Học sinh đi xa hoặc đến hẹn (Dụng Thần: Tử Tôn)"
+            elif _has_word("anh trai", "chị gái", "em trai", "em gái", "anh chị em", "bạn bè", "đồng nghiệp"):
+                authoritative_dt = "Huynh Đệ"
+                subject_person = "Hành nhân Anh chị em / Bạn bè đi xa trở về (Dụng Thần: Huynh Đệ)"
+            elif _has_word("vợ", "bạn gái", "nhân viên", "người đi xa") and not _has_word("chồng"):
+                authoritative_dt = "Thê Tài"
+                subject_person = "Hành nhân Người phối ngẫu / Cấp dưới đi xa trở về (Dụng Thần: Thê Tài)"
+            elif _has_word("chồng", "bạn trai", "sếp", "khách hàng") and not _has_word("vợ"):
+                authoritative_dt = "Quan Quỷ"
+                subject_person = "Hành nhân Chồng / Cấp trên / Khách đi xa (Dụng Thần: Quan Quỷ)"
+            else:
+                authoritative_dt = "Bản Thân"
+                subject_person = "Bản thân Xuất hành đi xa bình an thuận lợi (Dụng Thần: Hào Thế — Phúc Thần bảo hộ: Tử Tôn)"
         elif is_trachcat:
             arch_key = "D24_AUSPICIOUS_DATE"
             specific_target = "AUSPICIOUS_DATE"
@@ -1099,6 +1151,9 @@ class QuestionReaderAI:
             elif any(w in q_low for w in ["anh trai tôi", "chị gái tôi", "em trai tôi", "em gái tôi", "anh chị em tôi"]):
                 authoritative_dt = "Huynh Đệ"
                 subject_person = "Anh chị em của bạn (Dụng Thần: Huynh Đệ)"
+            elif _has_word("hợp đồng", "giấy tờ", "văn thư", "sổ đỏ", "pháp lý", "công văn", "bằng cấp"):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Hợp đồng / Văn thư Pháp lý (Dụng Thần: Phụ Mẫu)"
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
@@ -4408,8 +4463,8 @@ class HexagramReasoningAI:
                     score_option_classical_imagery as _sc_cls_fn,
                 )
                 _ly_ab_g = _ly_ab_fn(luc_hao_data or {}, dung_than=dung_than, question=q_low, chart_data=chart_data)
-                _qm_ab_g = _qm_ab_fn(chart_data or {}, target_cung=target_cung, dung_than=dung_than, question=q_low)
-                _mh_ab_g = _mh_ab_fn(mai_hoa_data or {}, chart_data=chart_data, question=q_low)
+                _qm_ab_g = _qm_ab_fn(chart_data or {}, target_cung=None, dung_than=dung_than, question=q_low)
+                _mh_ab_g = _mh_ab_fn(mai_hoa_data or {}, chart_data=chart_data, question=q_low, luc_hao_data=luc_hao_data)
                 _ca_p, _ca_ev = _sc_cls_fn(_core_a, _ly_ab_g, _qm_ab_g, _mh_ab_g, 1)
                 _cb_p, _cb_ev = _sc_cls_fn(_core_b, _ly_ab_g, _qm_ab_g, _mh_ab_g, 2)
                 _img_pts_a += _ca_p
@@ -7276,8 +7331,10 @@ class HexagramReasoningAI:
             )
             _q_cv_txt = str(blueprint.get("raw_question") or "").strip()
             _ly_cv = _ly_cv_fn(luc_hao_data or {}, dung_than=dung_than, question=_q_cv_txt, chart_data=chart_data)
-            _qm_cv = _qm_cv_fn(chart_data or {}, target_cung=target_cung, dung_than=dung_than, question=_q_cv_txt)
-            _mh_cv = _mh_cv_fn(mai_hoa_data or {}, chart_data=chart_data, question=_q_cv_txt)
+            _qm_cv = _qm_cv_fn(chart_data or {}, target_cung=omni_data.get("explicit_target_cung"), dung_than=dung_than, question=_q_cv_txt)
+            if _qm_cv.get("target_cung"):
+                target_cung = int(_qm_cv["target_cung"])
+            _mh_cv = _mh_cv_fn(mai_hoa_data or {}, chart_data=chart_data, question=_q_cv_txt, luc_hao_data=luc_hao_data)
             _deep_syn = _syn_cv_fn(
                 ly_res=_ly_cv,
                 qm_res=_qm_cv,
