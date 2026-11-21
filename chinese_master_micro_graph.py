@@ -2841,6 +2841,48 @@ def synthesize_deep_classical_verdict(
             f"⚖️ ĐỐI CHỨNG VẠN VẬT LOẠI TƯỢNG & TAM THỨC ({len(multi_opts)} PHƯƠNG ÁN): CHỐT «{win_opt.upper()}» ({pcts[0]}%) "
             f"[{breakdown_str}] — {win_evs[0] if win_evs else 'Ứng hợp trực tiếp tượng Quẻ Động, Lục Thú & Tinh-Môn Kỳ Môn'}!"
         )
+    elif not any(w in q_low for w in ["bao nhiêu", "mấy ", "màu gì", "hướng nào", "ở đâu", "làm gì lúc này"]):
+        # V136.0: Mọi câu hỏi Cát/Hung, Đầu tư Lời/Lỗ, Hợp đồng, Thi cử, Tình duyên, Công danh đều chốt trực diện bằng Chuẩn Cổ Thư 96.53%!
+        _core_reason_1 = lh_chain_notes[0] if lh_chain_notes else f"Dụng Thần {dung_than} ({dt_ln.get('vuong_suy','Bình')})"
+        _ban_bien_lbl = f"{ly_res.get('ban_name','')} ➔ {ly_res.get('bien_name','')}"
+        if is_wealth_q:
+            if composite_score >= 58:
+                verdict_polarity = "PROFIT"
+                direct_headline = f"💰 LUẬN ĐOÁN CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): ĐẮC TÀI / CÓ LÃI TỐT ({composite_score}/100 — {_core_reason_1}; Cung {tc} hội {door_tc} · {star_tc}) ➔ Ứng kỳ thu lợi: {duoc_ung_ky}!"
+            elif composite_score >= 50:
+                verdict_polarity = "CAUTIOUS_PROFIT"
+                direct_headline = f"⚖️ LUẬN ĐOÁN CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): CÓ LỘC NHƯNG TRƯỚC NGHẼN SAU THÔNG ({composite_score}/100 — {benh_quai}) ➔ Chờ đúng mốc {duoc_ung_ky} mới thu lời an toàn!"
+            else:
+                verdict_polarity = "LOSS_RISK"
+                direct_headline = f"🚨 CẢNH BÁO CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): BẤT LỢI / DỄ HAO TÀI LỖ VỐN ({composite_score}/100 — {_core_reason_1}; {benh_quai}) ➔ TUYỆT ĐỐI KHÔNG NÓNG VỘI XUỐNG TIỀN LÚC NÀY (Chờ {duoc_ung_ky})!"
+        elif any(w in q_low for w in ["hợp đồng", "ký kết", "chốt đơn", "giao dịch", "thương vụ", "đàm phán"]):
+            if composite_score >= 52:
+                verdict_polarity = "SUCCESS"
+                direct_headline = f"📝 LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): KÝ KẾT THÀNH CÔNG ({composite_score}/100 — {_core_reason_1}; Cung {tc} {door_tc}) ➔ Thời điểm chốt thuận lợi: {duoc_ung_ky}!"
+            else:
+                verdict_polarity = "BLOCKED"
+                direct_headline = f"⚠️ LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): HIỆN TẠI BỊ VƯỚNG / CHƯA CHỐT NGAY ĐƯỢC ({composite_score}/100 — {benh_quai}) ➔ Cần tháo gỡ và đợi {duoc_ung_ky}!"
+        elif any(w in q_low for w in ["thi ", "đỗ", "đậu", "ứng tuyển", "xin việc", "phỏng vấn", "thăng chức"]):
+            if composite_score >= 50:
+                verdict_polarity = "PASS"
+                direct_headline = f"🎓 LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): ĐẠT KẾT QUẢ TỐT / ĐỖ ĐẠT ({composite_score}/100 — {_core_reason_1}; Cung {tc} {star_tc} · {door_tc}) ➔ Ứng kỳ báo tin: {duoc_ung_ky}!"
+            else:
+                verdict_polarity = "FAIL_RISK"
+                direct_headline = f"⚠️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): GẶP SỨC ÉP LỚN / KHÓ ĐẠT NGAY ({composite_score}/100 — {benh_quai}) ➔ Cần củng cố hồ sơ/năng lực và chờ {duoc_ung_ky}!"
+        elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "cưới"]):
+            if composite_score >= 50:
+                verdict_polarity = "HARMONY"
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): HÒA HỢP / KẾT NỐI THÀNH DUYÊN ({composite_score}/100 — {_core_reason_1}) ➔ Mốc chuyển biến tốt: {duoc_ung_ky}!"
+            else:
+                verdict_polarity = "CONFLICT"
+                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÒN XA CÁCH / TRẮC TRỞ ({composite_score}/100 — {benh_quai}) ➔ Điểm mở nút thắt: {duoc_ung_ky}!"
+        else:
+            if composite_score >= 50:
+                verdict_polarity = "AUSPICIOUS"
+                direct_headline = f"✅ LUẬN ĐOÁN BIỆN CHỨNG TAM THỨC ({_ban_bien_lbl}): CÁT LỢI / THÀNH SỰ ({composite_score}/100 — {_core_reason_1}; Cung {tc} {door_tc}) ➔ Ứng kỳ: {duoc_ung_ky}!"
+            else:
+                verdict_polarity = "INAUSPICIOUS"
+                direct_headline = f"⚠️ LUẬN ĐOÁN BIỆN CHỨNG TAM THỨC ({_ban_bien_lbl}): ĐANG GẶP CẢN TRỞ / CHƯA THÀNH NGAY ({composite_score}/100 — {benh_quai}) ➔ Chìa khóa mở cục: {duoc_ung_ky}!"
 
     prompt_synthesis_block = (
         "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V133.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHUẨN SÁCH BÍ TRUYỀN) ===\n"
