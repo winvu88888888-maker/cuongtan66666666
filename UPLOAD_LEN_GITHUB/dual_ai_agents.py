@@ -559,6 +559,24 @@ class QuestionReaderAI:
             (r"\bkhoe\b", "khỏe"),
             (r"\bsức khoẻ\b", "sức khỏe"),
             (r"\bcó\s+([^,?.!]+?)\s+khôn(?=\s*(?:[,?.!]|và\b|$))", r"có \1 không"),
+            (r"\bhom\s+nay\b", "hôm nay"),
+            (r"\bngay\s+mai\b", "ngày mai"),
+            (r"\btroi\s+mua\b", "trời mưa"),
+            (r"\btroi\s+nang\b", "trời nắng"),
+            (r"\btrong\s+tui\s+quan\b", "trong túi quần"),
+            (r"\btrong\s+tui\s+ao\b", "trong túi áo"),
+            (r"\btrong\s+tui\b", "trong túi"),
+            (r"\btrong\s+vi\b", "trong ví"),
+            (r"\bbao\s+nhieu\s+tien\b", "bao nhiêu tiền"),
+            (r"\bbao\s+nhieu\b", "bao nhiêu"),
+            (r"\bny\s+cu\b", "người yêu cũ"),
+            (r"\bco\s+quay\s+lai\b", "có quay lại"),
+            (r"\bco\s+lai\b", "có lãi"),
+            (r"\bbao\s+gio\b", "bao giờ"),
+            (r"\bkhi\s+nao\b", "khi nào"),
+            (r"\bo\s+dau\b", "ở đâu"),
+            (r"\blam\s+gi\b", "làm gì"),
+            (r"\bai\s+lay\b", "ai lấy"),
             (r"\bko\b", "không"),
             (r"\bk\b", "không"),
             (r"\bdc\b", "được"),
@@ -686,7 +704,10 @@ class QuestionReaderAI:
             and not is_marital_status_q and not is_children_q
             and not bool(re.search(r"\b(mấy|bao nhiêu)\b", q_low))
         )
-        is_quit_work = any(w in q_low for w in ["nghỉ hay", "nên nghỉ", "nghỉ việc", "bỏ việc", "xin nghỉ", "làm tiếp hay", "đi hay ở", "ở lại hay"])
+        is_quit_work = (
+            any(w in q_low for w in ["nghỉ hay", "nên nghỉ", "nên bỏ việc", "xin nghỉ", "làm tiếp hay", "đi hay ở", "ở lại hay"])
+            or (("nghỉ việc" in q_low or "bỏ việc" in q_low) and not any(w in q_low for w in ["sếp", "công ty cho", "muốn cho tôi nghỉ", "cho nghỉ", "đuổi việc", "sa thải"]))
+        )
         _is_child_action_ab = bool(re.search(r"(?:con\s+gái\s+hay\s+con\s+trai|con\s+trai\s+hay\s+con\s+gái)\s+\S+", q_low)) and not has_age_word and not any(w in q_low for w in ["sinh con", "đẻ con", "mang thai", "bầu"])
         is_gender_age = (
             any(w in q_low for w in [
@@ -717,6 +738,7 @@ class QuestionReaderAI:
             and not is_children_q
             and not is_gender_age
             and not is_when
+            and not any(w in q_low for w in ["đá với", "đấu với", "đội nào thắng", "tỷ số"])
         )
         is_object = (
             any(w in q_low for w in ["trong hộp", "trong túi", "trong phòng có gì", "trước mặt tôi có", "trên bàn có", "cầm cái gì", "đồ vật gì", "vật gì", "là cái gì", "chất liệu gì", "hình gì"])
@@ -759,11 +781,14 @@ class QuestionReaderAI:
             "yêu", "tình cảm", "hôn nhân", "hôn sự", "nhân duyên", "cầu hôn", "vợ chồng",
             "người yêu", "quay lại", "hàn gắn", "chia tay", "ly hôn", "kết hôn", "ngoại tình",
         ])
-        is_health = any(w in q_low for w in [
-            "bệnh", "ốm", "sốt", "sốt cao", "nóng sốt", "hạ sốt", "viêm", "ho", "cảm",
-            "đau", "mệt", "nằm viện", "nhập viện", "cấp cứu", "phẫu thuật", "mổ", "mang thai", "sinh nở",
-            "sức khỏe", "khỏe mạnh", "qua khỏi", "khỏi bệnh", "bình phục", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"
-        ])
+        is_health = (
+            any(w in q_low for w in [
+                "bệnh", "sốt cao", "nóng sốt", "hạ sốt", "viêm", "cảm cúm", "cảm mạo",
+                "nằm viện", "nhập viện", "cấp cứu", "phẫu thuật", "mang thai", "sinh nở",
+                "sức khỏe", "khỏe mạnh", "qua khỏi", "khỏi bệnh", "bình phục", "thuốc", "bác sĩ", "tai nạn", "nguy kịch"
+            ])
+            or _has_word("ốm", "bị ốm", "sốt", "ho", "bị ho", "ho khan", "đau", "mệt", "mổ")
+        ) and not any(w in q_low for w in ["mang bầu bé trai hay", "bầu trai hay gái"])
         is_fengshui = any(w in q_low for w in ["phong thủy", "nhà đất", "xây nhà", "sửa nhà", "mồ mả", "âm phần", "mộ phần", "gia tiên", "động thổ", "hướng nhà"]) and not is_house_floors_q and not is_invest
         is_exam = any(w in q_low for w in ["thi đỗ", "thi đậu", "có đỗ", "đỗ không", "đỗ đạt", "đậu không", "kỳ thi", "đi thi", "thi cử", "khoa cử", "học hành", "điểm thi", "bằng cấp", "lấy bằng", "bằng lái", "sát hạch", "thi bằng", "du học", "xin visa", "phỏng vấn visa", "văn thư", "hồ sơ"])
         is_travel = any(w in q_low for w in ["xuất hành", "đi xa", "du lịch", "công tác", "chuyến đi", "lên đường", "về quê", "di chuyển", "thượng lộ", "trở về", "quay về", "đến lớp", "tới lớp", "qua trạm", "qua ải"])
@@ -896,7 +921,7 @@ class QuestionReaderAI:
             arch_key = "D14_CAREER_WORK"
             specific_target = "QUIT_OR_STAY"
             option_a, option_b = "Nên giữ công việc hiện tại (Ở lại)", "Nên nghỉ việc / Chuyển hướng"
-        elif (" hay " in q_low) and not any(w in q_low for w in ["hay không", "có nên"]):
+        elif (" hay " in q_low) and (not is_why) and not re.search(r"\b(?:tôi|mình|bạn|con|vợ|chồng|bố|mẹ|nó|dạo này|gần đây|thường)\s+hay\s+(?:gặp|bị|mất|ốm|đau|quên|mơ|lo|cãi|khóc|buồn|xui)", q_low) and not any(w in q_low for w in ["hay không", "có nên"]):
             m_ab = re.search(r'(?:nên\s+|chọn\s+)?([^,?.;!]+?)\s+hay\s+([^,?.;!]+)', q_low)
             if m_ab:
                 arch_key = "D05_CHOICE_A_OR_B"
@@ -906,6 +931,9 @@ class QuestionReaderAI:
                 for pfx in ["cho hỏi ", "hỏi xem ", "xem giúp ", "bói xem ", "hiện tại ", "bây giờ ", "lúc này "]:
                     if option_a.startswith(pfx):
                         option_a = option_a[len(pfx):].strip()
+                # Làm sạch cấu trúc "X có Y được không" / "X có Y không" ở option_a để đối xứng với option_b!
+                option_a = re.sub(r"\bcó\s+(.+?)\s+được\s+không$", r"\1 được", option_a, flags=re.IGNORECASE).strip()
+                option_a = re.sub(r"\bcó\s+(.+?)\s+không$", r"\1", option_a, flags=re.IGNORECASE).strip()
                 # Trường hợp 1: option_a là chủ ngữ 1 ("con gái", "con trai", "vợ", "chồng", "bố", "mẹ") và option_b bắt đầu bằng chủ ngữ 2 kèm vị ngữ ("con trai đang khóc")
                 _PAIR_SUBJ = [
                     ("con gái", "con trai"), ("con trai", "con gái"),
@@ -1144,7 +1172,14 @@ class QuestionReaderAI:
         elif is_trachcat:
             arch_key = "D24_AUSPICIOUS_DATE"
             specific_target = "AUSPICIOUS_DATE"
-            authoritative_dt = "Dụng Thần"
+            if any(w in q_low for w in ["khai trương", "mở cửa hàng", "mở quán", "mở tiệm", "kinh doanh", "bán hàng"]):
+                authoritative_dt = "Thê Tài"
+                subject_person = "Trạch Nhật Khai Trương / Mở Cửa Hàng Kinh Doanh (Dụng Thần: Thê Tài & Khai/Sinh Môn)"
+            elif any(w in q_low for w in ["nhập trạch", "động thổ", "xây nhà", "sửa nhà", "ký hợp đồng"]):
+                authoritative_dt = "Phụ Mẫu"
+                subject_person = "Trạch Nhật Nhập Trạch / Động Thổ / Ký Kết (Dụng Thần: Phụ Mẫu)"
+            else:
+                authoritative_dt = "Dụng Thần"
         elif is_career:
             arch_key = "D14_CAREER_WORK"
             specific_target = "CAREER_WORK"
@@ -1203,6 +1238,16 @@ class QuestionReaderAI:
                     {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
                     {"label": "Người yêu của bạn", "role": "PARTNER", "lh_dt": "Hào Ứng", "km_role": "CAN_HOP"},
                 ]
+            elif any(p in q_low for p in ["chị tôi và em", "chị gái và em", "chị và em"]):
+                multi_subjects = [
+                    {"label": "Chị của bạn", "role": "OLDER_SIS", "lh_dt": "Huynh Đệ", "km_role": "NGUYET_CAN"},
+                    {"label": "Em của bạn", "role": "YOUNGER_SIB", "lh_dt": "Huynh Đệ", "km_role": "THOI_CAN"},
+                ]
+            elif any(p in q_low for p in ["anh tôi và em", "anh trai và em", "anh và em"]):
+                multi_subjects = [
+                    {"label": "Anh của bạn", "role": "OLDER_BRO", "lh_dt": "Huynh Đệ", "km_role": "NGUYET_CAN"},
+                    {"label": "Em của bạn", "role": "YOUNGER_SIB", "lh_dt": "Huynh Đệ", "km_role": "THOI_CAN"},
+                ]
             elif any(p in q_low for p in ["tôi và bạn", "bạn và tôi", "tôi và anh", "tôi và chị", "tôi và em", "tôi và đồng nghiệp", "tôi và đối tác", "hai anh em", "2 anh em", "hai chị em", "2 chị em"]):
                 multi_subjects = [
                     {"label": "Bản thân bạn", "role": "SELF", "lh_dt": "Hào Thế", "km_role": "NHAT_CAN"},
@@ -1240,7 +1285,7 @@ class QuestionReaderAI:
             "multi_subjects": multi_subjects,
             "is_compound_question": False,
             "sub_questions": [],
-            "raw_question": q_raw,
+            "raw_question": q_norm,
             "archetype_key": arch_key,
             "archetype_code": arch_meta["code"],
             "archetype_name": arch_meta["name"],
@@ -1377,14 +1422,8 @@ class QuestionReaderAI:
         for _pp in _PROTECT_PHRASES:
             protected_q = re.sub(re.escape(_pp), lambda m: m.group(0).replace(" và ", " __AND_KEEP__ "), protected_q, flags=re.IGNORECASE)
 
-        # 1. Tách theo dấu câu và từ nối vế câu hỏi (Không tách cụm trạng từ "còn thiếu", "còn bao nhiêu", "còn mấy", "còn lại", "còn cách", "còn phải")
-        protected_q = re.sub(
-            r"\bcòn\s+(thiếu|bao nhiêu|mấy|lại|cách|phải|cần|nợ|yêu|thương|sống|lâu)\b",
-            r"__CON_ADV__ \1",
-            protected_q,
-            flags=re.IGNORECASE,
-        )
-        raw_clauses = re.split(r"[,;?/|]+|\s+(?:và|cùng với|còn|rồi|kèm theo|kèm|thêm)\s+", protected_q, flags=re.IGNORECASE)
+        # 1. Tách theo dấu câu và từ nối vế câu hỏi (Không bao giờ tách chữ "còn" khi không có dấu phẩy đứng trước — tránh cắt đôi "có còn nhớ tôi không"!)
+        raw_clauses = re.split(r"[,;?/|]+(?:\s*còn\s+)?|\s+(?:và|cùng với|rồi|kèm theo|kèm|thêm)\s+", protected_q, flags=re.IGNORECASE)
         clauses = []
         for rc in raw_clauses:
             c_clean = rc.replace(" __AND_KEEP__ ", " và ").replace("__CON_ADV__ ", "còn ").strip(" .,;?!-/")
@@ -1512,6 +1551,12 @@ class QuestionReaderAI:
 
         # V137.0: Giữ nguyên câu hỏi Số con kèm hỏi "trai hay gái / mấy trai mấy gái" (khi không hỏi tuổi) để CHILDREN_COUNT giải trọn gói cả số lượng lẫn giới tính các con!
         if _has_child_cnt_kw and any(w in q_low for w in ["trai hay gái", "gái hay trai", "nam hay nữ", "mấy trai", "mấy gái"]) and not _has_age_kw:
+            return []
+
+        # V138.0: Giữ nguyên câu hỏi Thi đấu thể thao kèm tỷ số ("đội nào thắng, tỷ số bao nhiêu") hoặc Tâm ý đối phương ("có ý đồ gì, tốt hay xấu")!
+        if any(w in q_low for w in ["đá với", "đấu với", "đội nào thắng"]) and "tỷ số" in q_low:
+            return []
+        if any(w in q_low for w in ["ý đồ gì", "mưu đồ gì", "tâm ý gì"]) and ("tốt hay xấu" in q_low or "xấu hay tốt" in q_low):
             return []
 
         if len(clauses) >= 2:
@@ -5638,9 +5683,27 @@ class HexagramReasoningAI:
                             f"&nbsp;&nbsp;1. <b>Mốc 1 (Ứng trực diện Chi Dụng Thần {_dt_chi_tm}):</b> <b>Giờ {_dt_chi_tm} ({_dt_clock}, trọng tâm {_dt_peak})</b>.<br>"
                             f"&nbsp;&nbsp;2. <b>Mốc 2 (Ứng Chi Lục Hợp / Xung {_secondary_chi}):</b> <b>Giờ {_secondary_chi} ({_sec_clock}, trọng tâm {_sec_peak})</b>."
                         )
+                elif any(w in _q_low_tm for w in ["đẹp nhất", "tốt nhất", "giờ hoàng đạo", "chọn giờ", "giờ tốt", "giờ đẹp"]):
+                    # V138.0: Câu hỏi Chọn Khung Giờ Tốt Nhất (Trạch Cát Thời Thần — Hoàng Đạo & Sinh Hợp Dụng Thần)!
+                    short_hl = (
+                        f"🌟 KẾT LUẬN CHỌN KHUNG GIỜ ĐẠI CÁT CHO «{_raw_q_tm.upper()}» ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"[KHUNG GIỜ SỐ 1 — LỤC HỢP / ĐẮC DỤNG THẦN]: GIỜ {_hop_dt_chi.upper()} ({_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)})  |  "
+                        f"[KHUNG GIỜ SỐ 2 — BẢN VỊ DỤNG THẦN]: GIỜ {_dt_chi_tm.upper()} ({_dt_clock}, TRỌNG TÂM {_dt_peak}) "
+                        f"— ƯU TIÊN XUẤT PHÁT / KÝ KẾT VỀ HƯỚNG {huong_cung.upper()} (Cung {target_cung} {cua_name} · {sao_name})!"
+                    )
+                    why_s = (
+                        f"<b>• Pháp Trạch Cát Thời Thần (Hiệp Kỷ Biện Phương & Kỳ Môn Thời Gia):</b><br>"
+                        f"1. Dụng Thần của việc bạn hỏi là <b>{dung_than} ({_dt_chi_tm}-{_dt_nh_tm})</b> tại Hào {_dt_idx_tm}.<br>"
+                        f"2. Hai khung giờ đại lợi nhất là <b>Giờ Lục Hợp {_hop_dt_chi} ({_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)})</b> và <b>Giờ Bản Chi {_dt_chi_tm} ({_dt_clock})</b> giúp kích hoạt cát khí tối đa."
+                    )
+                    when_s = f"<b>Khung giờ vàng thực hiện:</b> <b>Giờ {_hop_dt_chi} ({_CHI_CLOCK_TM.get(_hop_dt_chi, _sec_clock)})</b> hoặc <b>Giờ {_dt_chi_tm} ({_dt_clock})</b>."
                 else:
-                    # Câu hỏi Người di chuyển / Chị gái / Anh em / Bạn bè / Khách mấy giờ xuống, đến, về — V126.0: Phân nhánh ĐỘNG vs TĨNH vs TUẦN KHÔNG 100% theo quẻ!
-                    _person_lbl = "CHỊ GÁI BẠN" if "chị gái" in _q_low_tm else ("ANH TRAI BẠN" if "anh trai" in _q_low_tm else ("EM BẠN" if "em " in _q_low_tm else "NGƯỜI BẠN HỎI"))
+                    # Câu hỏi Người di chuyển hoặc Đơn hàng / Bưu phẩm mấy giờ xuống, đến, về — V138.0: Tách rõ Đơn hàng vs Người!
+                    _is_pkg_tm = any(w in _q_low_tm for w in ["đơn hàng", "shopee", "lazada", "tiktok", "bưu phẩm", "kiện hàng", "giao hàng", "ship", "hàng đặt"])
+                    _person_lbl = (
+                        "ĐƠN HÀNG / BƯU PHẨM" if _is_pkg_tm
+                        else ("CHỊ GÁI BẠN" if "chị gái" in _q_low_tm else ("ANH TRAI BẠN" if "anh trai" in _q_low_tm else ("EM BẠN" if "em " in _q_low_tm else "NGƯỜI BẠN HỎI")))
+                    )
                     _xung_dt_chi = _XUNG_CHI_TM.get(_dt_chi_tm, "Tý")
                     _xung_clock = _CHI_CLOCK_TM.get(_xung_dt_chi, "23h00 – 01h00")
                     _xung_peak = _CHI_PEAK_TM.get(_xung_dt_chi, "23h30 – 00h30")
@@ -6307,12 +6370,27 @@ class HexagramReasoningAI:
         _is_activity_q = any(w in raw_q_g for w in ["đang làm gì", "đang xem gì", "phim gì", "đọc gì", "sách gì", "đang nghĩ gì", "tâm trạng"])
         _is_job_biz_q = any(w in raw_q_g for w in ["nghề gì", "ngành gì", "làm nghề", "kinh doanh gì", "buôn bán gì", "mặt hàng gì", "sản phẩm gì", "lĩnh vực gì"])
         _is_trait_q = any(w in raw_q_g for w in ["tính cách", "ngoại hình", "dáng người", "hình dáng", "người như thế nào", "tính nết", "đặc điểm"])
-        _is_what_obj_q = any(w in raw_q_g for w in ["cái gì", "vật gì", "thứ gì", "đồ gì", "loại gì", "thể loại gì", "chất liệu gì", "kiểu gì"]) and not any(w in raw_q_g for w in ["mất", "thất lạc", "đòi nợ"])
+        _is_which_dir_g = any(w in raw_q_g for w in ["hướng nào", "phương nào", "quay hướng gì", "chạy đi lạc hướng"])
+        _is_what_obj_q = (
+            any(w in raw_q_g for w in ["cái gì", "vật gì", "thứ gì", "đồ vật gì", "loại gì", "thể loại gì", "chất liệu gì", "kiểu gì"])
+            and not any(w in raw_q_g for w in ["mất", "thất lạc", "đòi nợ", "ý đồ gì", "mưu đồ gì"])
+        )
 
-        if t_code == "LOST_ITEM" or "D11" in t_code or any(w in raw_q_g for w in ["mất", "thất lạc", "tìm thấy", "tìm lại", "để quên"]):
+        if _is_which_dir_g:
+            _CHI_DIR_G = {
+                "Tý": "Chính Bắc", "Sửu": "Đông Bắc", "Dần": "Đông Bắc", "Mão": "Chính Đông",
+                "Thìn": "Đông Nam", "Tị": "Đông Nam", "Ngọ": "Chính Nam", "Mùi": "Tây Nam",
+                "Thân": "Tây Nam", "Dậu": "Chính Tây", "Tuất": "Tây Bắc", "Hợi": "Tây Bắc",
+            }
+            _d_chi_g = _CHI_DIR_G.get(dt_chi, huong_str)
+            short_hl = (
+                f"🧭 ĐỊNH VỊ PHƯƠNG HƯỚNG TỪ QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
+                f"ỨNG TẠI HƯỚNG «{huong_str.upper()}» (CUNG {_cung_g} · CỬA {_m['cua_name'].upper()}) KẾT HỢP PHƯƠNG ĐỊA CHI DỤNG THẦN «{_d_chi_g.upper()}» (HÀO {dt_idx} {dt_chi.upper()}-{dt_nh.upper()})!"
+            )
+        elif t_code == "LOST_ITEM" or "D11" in t_code or any(w in raw_q_g for w in ["mất", "thất lạc", "tìm thấy", "tìm lại", "để quên"]):
             _pos_in_out = "TRONG NHÀ / NỘI THẤT (NỘI QUÁI HÀO 1–3)" if dt_idx <= 3 else "BÊN NGOÀI / NƠI LÀM VIỆC / DI CHUYỂN (NGOẠI QUÁI HÀO 4–6)"
             _height_lvl = "vị trí thấp (sát sàn/ngăn dưới/gầm tủ)" if dt_idx in (1, 2) else ("vị trí ngang tầm tay (trên bàn/ngăn kéo/trong túi/tủ giữa)" if dt_idx in (3, 4) else "vị trí cao (kệ trên/nóc tủ/ngăn trên)")
-            if found_dt and not (dt_is_kv and "Huyền Vũ" in str(_m.get("than_name", ""))):
+            if found_dt and sq_score >= 48 and not dt_is_kv and "Huyền Vũ" not in str(_m.get("than_name", "")):
                 short_hl = (
                     f"🔎 KẾT LUẬN TÌM ĐỒ / ĐỊNH VỊ TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
                     f"CÓ THỂ TÌM LẠI ĐƯỢC ({sq_score}%) — ĐANG NẰM Ở {_pos_in_out}, TẠI PHƯƠNG {huong_str.upper()} (CUNG {_cung_g} · CỬA {_m['cua_name'].upper()} — {_height_lvl.upper()})! "
@@ -6321,8 +6399,8 @@ class HexagramReasoningAI:
             else:
                 short_hl = (
                     f"⚠️ KẾT LUẬN TÌM ĐỒ TỪ LIÊN KẾT QUẺ ({_m['full_chu'].upper()} ➔ {_m['full_bien'].upper()}): "
-                    f"ĐỒ VẬT ĐANG BỊ CHE KHUẤT SÂU HOẶC ĐÃ RỜI KHỎI VỊ TRÍ CŨ (DO DỤNG THẦN {sq_dt.upper()} CHẠM TUẦN KHÔNG / ẨN PHỤC TẠI HƯỚNG {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
-                    f"CẦN TÌM KỸ Ở {_height_lvl.upper()} HƯỚNG {huong_str.upper()} VÀO NGÀY/GIỜ {dt_chi.upper()} MỚI LỘ DIỆN!"
+                    f"KHÓ TÌM LẠI NGAY / ĐỒ VẬT ĐÃ RỜI KHỎI VỊ TRÍ CŨ HOẶC CÓ NGƯỜI CẦM ĐI ({sq_score}% — DO DỤNG THẦN {sq_dt.upper()} VƯỚNG CẢN TẠI HƯỚNG {huong_str.upper()} · CỬA {_m['cua_name'].upper()}) — "
+                    f"HÃY HỎI/RA SOÁT GẤP HƯỚNG {huong_str.upper()} ({_height_lvl.upper()}) VÀO KHUNG GIỜ {dt_chi.upper()}!"
                 )
         elif _is_money_clause_q:
             is_open_van_vat = True
@@ -7560,7 +7638,7 @@ class HexagramReasoningAI:
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V137_HOLOGRAPHIC_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V138_HOLOGRAPHIC_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig) if use_online_api else None
 
         if use_online_api and _real_ai_pair is None and len(_raw_q_str) >= 4:

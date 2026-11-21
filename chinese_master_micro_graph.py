@@ -1690,6 +1690,13 @@ def _extract_multi_options_classical(question: str, option_a: str = "", option_b
     raw_q = str(question or "").strip()
     if not raw_q and not (option_a and option_b):
         return []
+    if re.search(
+        r"\b(tại\s+sao|vì\s+sao|nguyên\s+nhân|do\s+đâu|ý\s+đồ\s+gì|mưu\s+đồ\s+gì|đá\s+với|đấu\s+với|đội\s+nào\s+thắng)\b"
+        r"|\b(?:tôi|mình|con|vợ|chồng|dạo\s+này|gần\s+đây)\s+hay\s+(?:gặp|bị|mất|ốm|đau|quên|mơ|lo|cãi|xui)\b",
+        raw_q,
+        flags=re.IGNORECASE,
+    ):
+        return []
 
     tail = raw_q
     # Cắt bỏ mệnh đề mở đầu câu hỏi ("tôi đang nghe nhạc gì,", "chọn cái nào:", "là gì:")
@@ -2626,7 +2633,9 @@ def synthesize_deep_classical_verdict(
     )
 
     if dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
-        benh_quai = f"Bệnh tại Dụng Thần vướng Không Vong ({dt_chi} — {dt_ln.get('khong_type') or 'Động Hóa Không'})"
+        _kt_raw = str(dt_ln.get("khong_type") or "")
+        _kt_vn = "Giả Không (tạm ẩn hữu khí, Xuất Không sẽ ứng)" if _kt_raw == "GIA_KHONG" else ("Chân Không (vô khí rỗng chân)" if _kt_raw == "CHAN_KHONG" else "Động Hóa Không")
+        benh_quai = f"Bệnh tại Dụng Thần vướng Không Vong ({dt_chi} — {_kt_vn})"
         duoc_ung_ky = f"Ứng vào Ngày/Giờ XUẤT KHÔNG hoặc XUNG KHÔNG: {dt_chi} ({CHI_CLOCK.get(dt_chi,'')}) hoặc {xung_dt} ({CHI_CLOCK.get(xung_dt,'')})"
     elif "HOA_MO" in h_flags or mo_tp in ("SUY_NHAP_MO", "VUONG_NHAP_KHO"):
         mo_chi = MO_BY_EL.get(dt_el, "Thìn")
@@ -2851,7 +2860,7 @@ def synthesize_deep_classical_verdict(
             f"⚖️ ĐỐI CHỨNG VẠN VẬT LOẠI TƯỢNG & TAM THỨC ({len(multi_opts)} PHƯƠNG ÁN): CHỐT «{win_opt.upper()}» ({pcts[0]}%) "
             f"[{breakdown_str}] — {win_evs[0] if win_evs else 'Ứng hợp trực tiếp tượng Quẻ Động, Lục Thú & Tinh-Môn Kỳ Môn'}!"
         )
-    elif not any(w in q_low for w in ["bao nhiêu", "mấy ", "màu gì"]):
+    elif any(w in q_low for w in ["đá với", "đấu với", "đội nào thắng"]) or not any(w in q_low for w in ["bao nhiêu", "mấy ", "màu gì"]):
         # V137.0: Giải mã ĐÚNG TRỌNG TÂM 100% cho cả Câu Hỏi Mở (Ai / Ở đâu / Làm gì / Cái gì / Nghề gì / Chuyện gì / Thế nào) lẫn Câu Hỏi Cát–Hung!
         from holographic_event_decoder import TRIGRAM_PAIR_64_IMAGERY, CHI_CONCRETE_IMAGE, LUC_THU_ROLE_COLOR
         _core_reason_1 = lh_chain_notes[0] if lh_chain_notes else f"Dụng Thần {dung_than} ({dt_ln.get('vuong_suy','Bình')})"
@@ -2865,20 +2874,136 @@ def synthesize_deep_classical_verdict(
         _YANG_CHIS = {"Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"}
         _YANG_TRIGS = {"Càn", "Chấn", "Khảm", "Cấn"}
 
-        _is_who_q = is_theft_q or bool(re.search(r"\b(ai\s+lấy|ai\s+ăn\s+cắp|ai\s+giúp|ai\s+đang|ai\s+nói|ai\s+hại|ai\s+cản|là\s+ai|người\s+nào)\b", q_low))
+        _is_who_q = is_theft_q or bool(re.search(r"\b(ai\s+lấy|ai\s+cầm|ai\s+ăn\s+cắp|ai\s+giúp|ai\s+đang|ai\s+nói|ai\s+hại|ai\s+cản|là\s+ai|người\s+nào)\b", q_low))
+        _is_motive_q = any(w in q_low for w in ("ý đồ gì", "mưu đồ gì", "tâm ý gì", "nghĩ gì về tôi", "có ý gì"))
+        _is_why_cause_q = any(w in q_low for w in ("tại sao", "vì sao", "nguyên nhân gì", "do đâu mà"))
+        _is_how_remedy_q = any(w in q_low for w in ("làm cách nào", "cách nào để", "làm sao để hóa giải", "cách hóa giải", "phương pháp hóa giải"))
+        _is_which_dir_q = any(w in q_low for w in ("hướng nào", "phương nào", "quay hướng gì", "chạy đi lạc hướng"))
+        _m_match_vs = re.search(r"(?:tối nay|hôm nay|ngày mai|trận này)?\s*([a-zA-ZÀ-ỹ0-9\s]{2,25}?)\s+(?:đá với|đấu với|gặp)\s+([a-zA-ZÀ-ỹ0-9\s]{2,25}?)\s+(?:đội nào thắng|ai thắng|bên nào thắng)", q_low)
         _is_where_doing_q = (
             any(w in q_low for w in ("ở đâu", "chỗ nào", "nơi nào", "đang làm gì", "làm gì lúc này"))
-            and not is_lost_q
+            and not is_lost_q and not _is_which_dir_q
         )
         _is_what_obj_q = (
             any(w in q_low for w in ("cái gì", "vật gì", "đồ vật gì", "thứ gì", "trong hộp", "trên bàn", "trước mặt tôi", "cầm cái gì"))
-            and not is_lost_q
+            and not is_lost_q and not _is_motive_q
         )
         _is_job_fit_q = any(w in q_low for w in ("nghề gì", "ngành gì", "làm nghề", "kinh doanh gì", "buôn bán gì", "mặt hàng gì", "hợp nghề"))
         _is_event_risk_q = any(w in q_low for w in ("có chuyện gì", "chuyện gì cần", "đề phòng gì", "cần đề phòng", "biến cố gì", "vận hạn gì", "tin vui gì", "có điềm gì"))
-        _is_how_outlook_q = any(w in q_low for w in ("thế nào", "như thế nào", "ra sao", "sắp tới sao", "tốt hay xấu", "ổn không"))
+        _is_how_outlook_q = any(w in q_low for w in ("thế nào", "như thế nào", "ra sao", "sắp tới sao", "tốt hay xấu", "ổn không")) and not _is_motive_q
 
-        if _is_who_q:
+        if _m_match_vs:
+            special_mode = "SPORTS_COMPETITION"
+            _t1_nm = _m_match_vs.group(1).strip().title()
+            _t2_nm = _m_match_vs.group(2).strip().title()
+            _the_sc = vs_map.get(str(the_ln.get("vuong_suy") or "Bình"), 0) + (8 if the_ln.get("is_moving") else 0) - (12 if the_ln.get("is_void") else 0)
+            _ung_sc = vs_map.get(str(ung_ln.get("vuong_suy") or "Bình"), 0) + (8 if ung_ln.get("is_moving") else 0) - (12 if ung_ln.get("is_void") else 0)
+            if KHAC_EL.get(the_el) == ung_el:
+                _the_sc += 10
+            elif KHAC_EL.get(ung_el) == the_el:
+                _ung_sc += 10
+            _XT_S = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+            _g1 = (_XT_S.get(_up_m_q, 2) + (1 if _the_sc >= _ung_sc else 0)) % 4
+            _g2 = (_XT_S.get(_lo_m_q, 1)) % 3
+            if abs(_the_sc - _ung_sc) <= 4:
+                _g_draw = max(1, _g1 % 3)
+                direct_headline = (
+                    f"⚽ LUẬN ĐOÁN TỶ SỐ & KẾT QUẢ THI ĐẤU ({_ban_bien_lbl}): "
+                    f"THẾ TRẬN CÂN BẰNG DỄ HÒA (HOẶC {_t1_nm.upper() if _the_sc >= _ung_sc else _t2_nm.upper()} THẮNG SÁT NÚT PHÚT CUỐI) — "
+                    f"TỶ SỐ DỰ BÁO TỪ QUÁI SỐ: {_g_draw} – {_g_draw} (HOẶC {_g_draw+1} – {_g_draw}) "
+                    f"[Chủ Hào Thế {the_chi}-{the_el} đối ứng Khách Hào Ứng {ung_ln.get('chi','')}-{ung_el} · Cung {tc} {door_tc}]!"
+                )
+            elif _the_sc > _ung_sc:
+                _w_g, _l_g = max(_g1, _g2 + 1), min(_g1, _g2)
+                if _w_g == _l_g:
+                    _w_g += 1
+                direct_headline = (
+                    f"⚽ LUẬN ĐOÁN TỶ SỐ & KẾT QUẢ THI ĐẤU ({_ban_bien_lbl}): "
+                    f"CHỐT ĐỘI THẮNG: «{_t1_nm.upper()}» CHIẾM ƯU THẾ CHIẾN THẮNG — "
+                    f"TỶ SỐ DỰ BÁO TỪ QUÁI SỐ: {_t1_nm.upper()} {_w_g} – {_l_g} {_t2_nm.upper()} "
+                    f"[Hào Thế {the_chi}-{the_el} áp đảo Hào Ứng {ung_ln.get('chi','')}-{ung_el} · Cung Chủ thắng Cung Khách]!"
+                )
+            else:
+                _w_g, _l_g = max(_g2 + 1, _g1), min(_g1, _g2)
+                if _w_g == _l_g:
+                    _w_g += 1
+                direct_headline = (
+                    f"⚽ LUẬN ĐOÁN TỶ SỐ & KẾT QUẢ THI ĐẤU ({_ban_bien_lbl}): "
+                    f"CHỐT ĐỘI THẮNG: «{_t2_nm.upper()}» CHIẾM ƯU THẾ CHIẾN THẮNG — "
+                    f"TỶ SỐ DỰ BÁO TỪ QUÁI SỐ: {_t1_nm.upper()} {_l_g} – {_w_g} {_t2_nm.upper()} "
+                    f"[Hào Ứng {ung_ln.get('chi','')}-{ung_el} vượng chế Hào Thế {the_chi}-{the_el} · Khách thắng Chủ]!"
+                )
+        elif _is_which_dir_q:
+            special_mode = "WHICH_DIRECTION"
+            _CHI_DIR_8 = {
+                "Tý": "Chính Bắc", "Sửu": "Đông Bắc", "Dần": "Đông Bắc", "Mão": "Chính Đông",
+                "Thìn": "Đông Nam", "Tị": "Đông Nam", "Ngọ": "Chính Nam", "Mùi": "Tây Nam",
+                "Thân": "Tây Nam", "Dậu": "Chính Tây", "Tuất": "Tây Bắc", "Hợi": "Tây Bắc",
+            }
+            _chi_dir_lbl = _CHI_DIR_8.get(dt_chi, _huong_tc)
+            if any(w in q_low for w in ("cửa chính", "nhà tôi", "hướng nhà", "bàn thờ", "cổng")):
+                _h2_chi = str(lines[1].get("chi") if len(lines) >= 2 else dt_chi)
+                _h4_chi = str(lines[3].get("chi") if len(lines) >= 4 else dt_chi)
+                _door_dir = _CHI_DIR_8.get(_h4_chi, _huong_tc)
+                direct_headline = (
+                    f"🧭 ĐỊNH VỊ PHƯƠNG HƯỚNG PHONG THỦY GIA TRẠCH ({_ban_bien_lbl}): "
+                    f"CỬA CHÍNH / MẶT TIỀN ỨNG PHƯƠNG «{_door_dir.upper()}» (Sơn {_h4_chi} — Hào 4 Môn Hộ) HOẶC HƯỚNG CUNG CHỦ «{_huong_tc.upper()}» (Cung {tc} {_quai_tc} · {door_tc}) "
+                    f"➔ KHÍ PHONG THỦY: {'VƯỢNG KHÍ TỤ TÀI TỐT' if composite_score >= 50 else 'ĐANG VƯỚNG XUNG KHÍ / CẦN GIỮ SẠCH THOÁNG CỬA RA VÀO'} ({composite_score}/100)!"
+                )
+            else:
+                direct_headline = (
+                    f"🧭 ĐỊNH VỊ PHƯƠNG HƯỚNG CHÍNH XÁC TỪ QUẺ ({_ban_bien_lbl}): "
+                    f"ỨNG TẠI PHƯƠNG «{_huong_tc.upper()}» (Cung {tc} {_quai_tc} · {door_tc}) KẾT HỢP PHƯƠNG ĐỊA CHI DỤNG THẦN «{_chi_dir_lbl.upper()}» (Chi {dt_chi} — {'ở gần khu vực quen' if dt_idx <= 3 else 'đi xa ra ngoài khu vực'})!"
+                )
+        elif _is_motive_q:
+            special_mode = "HUMAN_MOTIVE"
+            _u_thu = str(ung_ln.get("luc_thu") or "Thanh Long")
+            _u_lt = str(ung_ln.get("luc_than") or "")
+            _u_chi = str(ung_ln.get("chi") or "")
+            _am_c = str(pa_tc.get("am_can") or "")
+            if (SINH_EL.get(ung_el) == the_el or LUC_HOP.get(_u_chi, ("",""))[0] == the_chi) and not ung_ln.get("is_void") and _u_thu not in ("Huyền Vũ", "Đằng Xà"):
+                direct_headline = (
+                    f"💡 ĐỌC VỊ TÂM Ý & MỤC ĐÍCH ĐỐI PHƯƠNG ({_ban_bien_lbl}): "
+                    f"Ý ĐỒ TỐT & CHÂN THÀNH ({composite_score}/100) — Hào Ứng ({_u_lt} {_u_chi} · {_u_thu}) sinh/hợp Hào Thế, thực tâm muốn kết nối, hỗ trợ hoặc hợp tác nghiêm túc!"
+                )
+            else:
+                _mot_detail = (
+                    "nhắm vào lợi ích tiền bạc / vay mượn" if _u_lt in ("Huynh Đệ", "Thê Tài")
+                    else ("khéo miệng thăm dò tin tức nhưng lời nói thiếu thực chất" if _u_thu == "Chu Tước" or ung_ln.get("is_void")
+                          else "có tính toán ngầm riêng tư, thiếu minh bạch")
+                )
+                direct_headline = (
+                    f"🚨 ĐỌC VỊ TÂM Ý & MỤC ĐÍCH ĐỐI PHƯƠNG ({_ban_bien_lbl}): "
+                    f"CẦN CẢNH GIÁC — Ý ĐỒ THIẾU THUẦN KHIẾT ({composite_score}/100): Đối phương ({_u_lt} {_u_chi} · {_u_thu}, Ám Can [{_am_c}]) đang {_mot_detail}; nên giữ khoảng cách và kiểm chứng kỹ!"
+                )
+        elif _is_why_cause_q:
+            special_mode = "WHY_CAUSE_FORENSIC"
+            _causes: List[str] = []
+            if ky_movers:
+                _km0 = ky_movers[0]
+                _causes.append(f"Kỵ Thần Hào {_km0['hao']} {_km0['luc_than']} ({_km0['chi']} · {_km0.get('luc_thu','')}) phát động trực tiếp công phá Dụng Thần")
+            if any("Huynh Đệ" in str(ln.get("luc_than","")) and (ln.get("is_moving") or ln.get("is_am_dong")) for ln in lines):
+                _causes.append("Hào Huynh Đệ kích hoạt gây thất thoát tiền bạc qua bạn bè/cho vay/chi tiêu nóng vội")
+            if tu_hai_tc:
+                _causes.append(f"Cung {tc} ({_huong_tc}) vướng Tứ Hại Kỳ Môn ({tu_hai_tc[0]}) làm kế hoạch lệch nhịp")
+            if not _causes:
+                _causes.append(f"{benh_quai} dưới Nguyệt Lệnh {chi_thang} làm khí vận tạm chùng xuống")
+            direct_headline = (
+                f"🔎 TRUY TÌM CĂN NGUYÊN GỐC RỄ TRÊN BÀN QUẺ ({_ban_bien_lbl}): "
+                + "  +  ".join(_causes[:2])
+                + f" ➔ CÁCH HÓA GIẢI: Bồi đắp hành Thông Quan ({ng_el or 'Thủy/Mộc'}), giữ chặt tài chính và đợi mốc {duoc_ung_ky}!"
+            )
+        elif _is_how_remedy_q:
+            special_mode = "HOW_TO_REMEDY"
+            _cat_cung_list = [f"Cung {p_i} ({p_v.get('huong','')} — {p_v.get('door','')})" for p_i, p_v in p_map_qm.items() if p_i != 5 and any(d in str(p_v.get("door","")) for d in ("Khai", "Hưu", "Sinh")) and not p_v.get("tu_hai")]
+            _best_dir_rem = _cat_cung_list[0] if _cat_cung_list else f"Cung {tc} ({_huong_tc} — {door_tc})"
+            direct_headline = (
+                f"🛡️ PHÁP QUYẾT HÓA GIẢI VẬN HẠN CỔ PHÁP ({_ban_bien_lbl}): "
+                f"[1. Mở nút thắt gốc]: {benh_quai} ➔ Dùng hành Nguyên Thần «{(ng_el or the_el).upper()}» để thông quan chuyển hung thành cát  ||  "
+                f"[2. Không gian đắc lợi]: Ưu tiên làm việc/xuất hành hướng {_best_dir_rem}  ||  "
+                f"[3. Thời điểm chuyển vận]: {duoc_ung_ky} (tạm hoãn cho vay/đầu tư mạo hiểm trước mốc này)!"
+            )
+        elif _is_who_q:
             special_mode = "WHO_FORENSIC"
             # Đạo Tặc Chương & Nhân Sự Chương: Lấy Quan Quỷ (nếu hỏi trộm/kẻ xấu) hoặc Dụng Thần
             _qq_ln = next((ln for ln in lines if "Quan Quỷ" in str(ln.get("luc_than") or "")), dt_ln)
@@ -3080,18 +3205,22 @@ def synthesize_deep_classical_verdict(
             else:
                 verdict_polarity = "FAIL_RISK"
                 direct_headline = f"⚠️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): GẶP SỨC ÉP LỚN / KHÓ ĐẠT NGAY ({composite_score}/100 — {benh_quai}) ➔ Cần củng cố hồ sơ/năng lực và chờ {duoc_ung_ky}!"
-        elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "cưới"]):
+        elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "cưới", "nhớ tôi"]):
+            _ung_sinh_hop_the = (SINH_EL.get(ung_el) == the_el or LUC_HOP.get(str(ung_ln.get("chi","")), ("",""))[0] == the_chi) and not ung_ln.get("is_void")
             _ung_rel_str = (
-                "Hào Ứng sinh/hợp Hào Thế — người ấy CÓ TÌNH CẢM THẬT LÒNG & HƯỚNG VỀ BẠN"
-                if (SINH_EL.get(ung_el) == the_el or LUC_HOP.get(str(ung_ln.get("chi","")), ("",""))[0] == the_chi)
-                else ("Hào Ứng lâm Tuần Không / khắc Thế — lòng người ấy đang dao động, lạnh nhạt hoặc chưa thật sự toàn tâm" if (ung_ln.get("is_void") or KHAC_EL.get(ung_el) == the_el) else f"Thế ({the_chi}-{the_el}) & Ứng ({ung_ln.get('chi','')}-{ung_el}) đang dò xét nhịp độ nhau")
+                "Hào Ứng sinh/hợp Hào Thế — người ấy VẪN CÒN TÌNH CẢM & THƯƠNG NHỚ BẠN"
+                if _ung_sinh_hop_the
+                else ("Hào Ứng lâm Tuần Không / khắc Thế — lòng người ấy đang dao động, nguôi ngoai hoặc chưa toàn tâm" if (ung_ln.get("is_void") or KHAC_EL.get(ung_el) == the_el) else f"Thế ({the_chi}-{the_el}) & Ứng ({ung_ln.get('chi','')}-{ung_el}) đang dò xét nhịp độ nhau")
             )
             if composite_score >= 50:
                 verdict_polarity = "HARMONY"
                 direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): THUẬN DUYÊN / CÓ TÌNH Ý CHÂN THÀNH ({composite_score}/100 — {_ung_rel_str}) ➔ Mốc gắn kết tốt: {duoc_ung_ky}!"
+            elif _ung_sinh_hop_the:
+                verdict_polarity = "LINGERING_LOVE"
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): TRONG LÒNG VẪN CÒN NHỚ & VƯƠNG VẤN NHƯNG HIỆN TẠI ĐANG CÓ KHOẢNG CÁCH NGOẠI CẢNH ({composite_score}/100 — {_ung_rel_str}; cản trở tại: {benh_quai}) ➔ Mốc mở lời kết nối lại: {duoc_ung_ky}!"
             else:
                 verdict_polarity = "CONFLICT"
-                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÒN KHOẢNG CÁCH / CHƯA ĐỒNG LÒNG ({composite_score}/100 — {_ung_rel_str}; {benh_quai}) ➔ Điểm mở nút thắt: {duoc_ung_ky}!"
+                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÒN KHOẢNG CÁCH / LÒNG ĐÃ XA CÁCH ({composite_score}/100 — {_ung_rel_str}; {benh_quai}) ➔ Điểm mở nút thắt: {duoc_ung_ky}!"
         elif is_travel_any:
             if composite_score >= 50:
                 verdict_polarity = "SAFE_TRIP"
