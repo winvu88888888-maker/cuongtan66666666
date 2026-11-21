@@ -16620,13 +16620,15 @@ class FreeAIHelper:
                 + '</div>'
             ) if _on_cards else ''
             _dv_grid_html = str(locals().get('_dual_verified', {}).get('deep_a_to_z_grid_html') or '')
+            _dv_holo_html = str(locals().get('_dual_verified', {}).get('holographic_event_html') or '')
 
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V133.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Bí Truyền)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ TIÊN TRI TOÀN TỨC NGAY ĐẦU TRANG (V135.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
+                + _dv_holo_html
                 + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
             )
             if _dv_grid_html:
@@ -18139,6 +18141,7 @@ class FreeAIHelper:
 
                 _dv_fb_obj = locals().get('_dual_verified') or {}
                 _dv_grid_fb = str(_dv_fb_obj.get('deep_a_to_z_grid_html') or '')
+                _dv_holo_fb = str(_dv_fb_obj.get('holographic_event_html') or '')
                 if _dv_fb_obj.get('verified_headline'):
                     _fb_hl = str(_dv_fb_obj.get('verified_headline') or '')
                     _fb_why = str(_dv_fb_obj.get('verified_why') or '')
@@ -18171,9 +18174,10 @@ class FreeAIHelper:
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN TRỌNG TÂM NGAY ĐẦU TRANG (Antigravity Brain Mode V133.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Bí Truyền)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ TIÊN TRI TOÀN TỨC NGAY ĐẦU TRANG (V135.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
+                        + _dv_holo_fb
                         + f'</div><!-- SPLIT_TOP_VERDICT_END -->'
                     )
                     if _dv_grid_fb:

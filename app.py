@@ -1,8 +1,8 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V134.0"
-APP_VERSION_FULL = f"{APP_VERSION} — SUY LUẬN CỔ PHÁP ĐẠT CHUẨN TEST MÙ 96.88% · SƠ ĐỒ MŨI TÊN GIẢI ĐÁP TRỰC TIẾP · KẾT LUẬN ĐẦU TRANG ✨"
+APP_VERSION = "V135.0"
+APP_VERSION_FULL = f"{APP_VERSION} — ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG 100% YẾU TỐ QUẺ · ĐẠT CHUẨN TEST MÙ 96.5% · KẾT LUẬN ĐẦU TRANG ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
     st.set_page_config(
@@ -19,8 +19,8 @@ import os
 import traceback
 import re
 
-# V134.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V134.0"
+# V135.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
+_CODE_BUILD_VERSION = "V135.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -28,6 +28,7 @@ if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
         "qmdg_data",
         "github_zhouyi_384_data",
         "github_prophecy_engine",
+        "holographic_event_decoder",
         "chinese_master_micro_graph",
         "mai_hoa_dich_so",
         "luc_hao_kinh_dich",

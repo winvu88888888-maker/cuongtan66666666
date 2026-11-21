@@ -7322,6 +7322,7 @@ class HexagramReasoningAI:
 
         # Bước 0 (V131.0): Chạy Bộ Động Cơ Biện Chứng Cổ Pháp 7 Tầng (Tăng San Bốc Dịch · Vấn Chân Kỳ Môn · Mai Hoa · Bệnh-Dược Pháp)
         _deep_syn = {}
+        _holo_res_cv = {}
         try:
             from chinese_master_micro_graph import (
                 analyze_liuyao_exhaustive_micro_graph as _ly_cv_fn,
@@ -7329,6 +7330,7 @@ class HexagramReasoningAI:
                 analyze_meihua_exhaustive_micro_graph as _mh_cv_fn,
                 synthesize_deep_classical_verdict as _syn_cv_fn,
             )
+            from holographic_event_decoder import build_holographic_prophecy_reading as _holo_cv_fn
             _q_cv_txt = str(blueprint.get("raw_question") or "").strip()
             _ly_cv = _ly_cv_fn(luc_hao_data or {}, dung_than=dung_than, question=_q_cv_txt, chart_data=chart_data)
             _qm_cv = _qm_cv_fn(chart_data or {}, target_cung=omni_data.get("explicit_target_cung"), dung_than=dung_than, question=_q_cv_txt)
@@ -7345,10 +7347,20 @@ class HexagramReasoningAI:
                 option_a=str(blueprint.get("option_a") or ""),
                 option_b=str(blueprint.get("option_b") or ""),
             )
+            _holo_res_cv = _holo_cv_fn(
+                ly_res=_ly_cv,
+                qm_res=_qm_cv,
+                mh_res=_mh_cv,
+                deep_syn=_deep_syn,
+                chart_data=chart_data,
+                dung_than=dung_than,
+                question=_q_cv_txt,
+            ) or {}
             if isinstance(_deep_syn.get("composite_score"), int):
                 weighted_pct = int(round(weighted_pct * 0.30 + _deep_syn["composite_score"] * 0.70))
         except Exception:
             _deep_syn = {}
+            _holo_res_cv = {}
 
         # Bước 1: Chạy bộ giải mã Tam Thức Cơ Học (dùng làm nền tảng Offline & đối chứng số liệu)
         spec_res = HexagramReasoningAI.deduce_specialized_answer(
@@ -7382,7 +7394,7 @@ class HexagramReasoningAI:
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V133_CANON_MASTER::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V135_HOLOGRAPHIC_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig) if use_online_api else None
 
         if use_online_api and _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -7404,7 +7416,10 @@ class HexagramReasoningAI:
                 _ai1_json = _call_gemini_json_fast(_prompt_ai1, timeout_sec=10, tier="cheapest_reader")
             if isinstance(_ai1_json, dict) and _ai1_json.get("ai1_intent_summary"):
                 _syn_ref_txt = str(_deep_syn.get("prompt_synthesis_block") or "")
-                # --- GỌI CON AI SỐ 2 (ĐẠI SƯ LUẬN QUẺ BÍ TRUYỀN TRUNG HOA — 0% MẪU REGEX MỒI NHử!) ---
+                _holo_ref_txt = str(_holo_res_cv.get("holographic_prompt_text") or "")
+                if _holo_ref_txt:
+                    _syn_ref_txt = f"{_syn_ref_txt}\n{_holo_ref_txt}"
+                # --- GỌI CON AI SỐ 2 (ĐẠI SƯ LUẬN QUẺ BÍ TRUYỀN TRUNG HOA — ĐỌC VỊ TOÀN TỨC 12 TẦNG CHI TIẾT SỰ KIỆN!) ---
                 _prompt_ai2 = (
                     "Bạn là CON AI SỐ 2 (Đại Sư Dịch Học Bí Truyền Trung Hoa — Tinh thông Tăng San Bốc Dịch của Dã Hạc Lão Nhân, Bốc Phệ Chính Tông, Hoàng Kim Sách, Ngự Định Kỳ Môn Bảo Giám, Kỳ Môn Pháp Khiếu, Mai Hoa Dịch Số Thiệu Khang Tiết & Thiết Bản Thần Toán).\n"
                     f"1. CÂU HỎI GỐC CỦA NGƯỜI DÙNG: \"{_raw_q_str}\"\n"
@@ -7679,9 +7694,11 @@ class HexagramReasoningAI:
         )
 
         _syn_dir_block = str(_deep_syn.get("prompt_synthesis_block") or "")
+        if _holo_res_cv.get("holographic_prompt_text"):
+            _syn_dir_block = f"{_syn_dir_block}\n{_holo_res_cv['holographic_prompt_text']}"
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BIỆN CHỨNG TẦNG SÂU TỪ HỆ THỐNG SONG NÃO AI (V133.0 — TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · BỆNH-DƯỢC PHÁP — {_clk_cv['solar_date_str']}) ===\n"
+            f"=== HỒ SƠ BIỆN CHỨNG & ĐỌC VỊ TOÀN TỨC 12 TẦNG TỪ HỆ THỐNG SONG NÃO AI (V135.0 — TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA · ĐẠI LỤC NHÂM — {_clk_cv['solar_date_str']}) ===\n"
             f"1. [CON AI SỐ 1 - ĐỌC HIỂU Ý ĐỊNH & HỶ/KỴ DỤNG THẦN]:\n"
             f"   - Phân loại: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
@@ -7707,6 +7724,7 @@ class HexagramReasoningAI:
             "verified_why": why_proof,
             "verified_when": when_proof,
             "verified_advice": advice_proof,
+            "holographic_event_html": str(_holo_res_cv.get("holographic_html") or ""),
             "deep_a_to_z_grid_html": _deep_a2z_block_html,
             "dual_agent_html": dual_agent_html,
             "all_hexagrams_breakdown_html": _all_hex_breakdown_html,

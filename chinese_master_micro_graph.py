@@ -1455,6 +1455,10 @@ def analyze_meihua_exhaustive_micro_graph(
         "ten_chu": ten_chu,
         "ten_ho": ten_ho,
         "ten_bien": ten_bien,
+        "up_q": up_q,
+        "lo_q": lo_q,
+        "up_bien": up_bien,
+        "lo_bien": lo_bien,
         "dong_disp": dong_disp_mh,
         "the_quai": the_q,
         "dung_quai": dung_q,
@@ -3095,10 +3099,25 @@ def build_unified_causal_diagram_and_micro_audit(
         for p_idx, pa in qm_res["palace_micro_audit"].items()
     )
 
+    _holo_res: Dict[str, Any] = {}
+    try:
+        from holographic_event_decoder import build_holographic_prophecy_reading
+        _holo_res = build_holographic_prophecy_reading(
+            ly_res=ly_res,
+            qm_res=qm_res,
+            mh_res=mh_res,
+            deep_syn=deep_syn,
+            chart_data=chart_data,
+            dung_than=dung_than,
+            question=question,
+        ) or {}
+    except Exception:
+        _holo_res = {}
+
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V134.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V135.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Dược ứng kỳ:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn["duoc_ung_ky"]}</span>'
@@ -3108,8 +3127,8 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V134.0)</span>'
-        f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa Dịch Số</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V135.0)</span>'
+        f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'
         f'{qm_flow_html}'
@@ -3146,7 +3165,8 @@ def build_unified_causal_diagram_and_micro_audit(
     ]
     prompt_micro_chain_text = (
         f"{deep_syn['prompt_synthesis_block']}\n"
-        "=== MẠNG LƯỚI MŨI TÊN NHÂN QUẢ VI MÔ V131.0 (CHUẨN NGUYÊN HANH LỢI TRINH & VẤN CHÂN — BẮT BUỘC DÙNG ĐỂ LUẬN SÂU KHÔNG BỎ SÓT CHI TIẾT) ===\n"
+        + (f"{_holo_res.get('holographic_prompt_text', '')}\n" if _holo_res else "")
+        + "=== MẠNG LƯỚI MŨI TÊN NHÂN QUẢ VI MÔ V135.0 (CHUẨN NGUYÊN HANH LỢI TRINH & VẤN CHÂN — BẮT BUỘC DÙNG ĐỂ LUẬN SÂU KHÔNG BỎ SÓT CHI TIẾT) ===\n"
         f"- Quái Thân Lục Hào: {ly_res['quai_than']['status_str']} ({ly_res['quai_than']['meaning']}) | Thế Thân: {ly_res['the_than']['status_str']}.\n"
         f"- Kỳ Môn Ký Cung & Ám Can: Cung Dụng Thần {tc} có Thiên/Địa Can {qm_tc_audit.get('can_thien_disp','')}/{qm_tc_audit.get('can_dia_disp','')}, Ám Can [{qm_tc_audit.get('am_can','')}] ({qm_tc_audit.get('am_can_meaning','')}), Tứ Hại: {', '.join(qm_tc_audit.get('tu_hai',[])) or 'Không phạm'}.\n"
         f"- Chuỗi Lật Cung Kỳ Môn 4 Trạm (Quá khứ -> Hiện tại -> Kế tiếp -> Kết cục): {' ──► '.join('Cung ' + str(x) + ' (' + qm_res['palace_micro_audit'][x]['door'] + ')' for x in qm_res['phien_cung_chain'])}.\n"
@@ -3159,6 +3179,7 @@ def build_unified_causal_diagram_and_micro_audit(
         "qimen_micro": qm_res,
         "meihua_micro": mh_res,
         "deep_synthesis": deep_syn,
+        "holographic_reading": _holo_res,
         "all_directed_edges": all_edges,
         "resonances": resonances,
         "visual_flowchart_html": visual_flowchart_html,
