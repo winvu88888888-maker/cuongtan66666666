@@ -5440,27 +5440,27 @@ class HexagramReasoningAI:
             _med_cure_chis = _tuton_chi_md if _tuton_chi_md else _CHIS_BY_NH_MD.get(_ng_nh_md, "Thân · Dậu")
             _relief_chis_md = f"{_med_cure_chis} · {_dt_chi_md}" if _med_cure_chis != _dt_chi_md else f"{_dt_chi_md} · {_CHIS_BY_NH_MD.get(_ng_nh_md, 'Thân · Dậu')}"
             _qq_dong_attack = any(x[4] and _KHAC_MD.get(x[3]) == _dt_nh_md for x in (_m_hl.get("rival_haos_all") or []))
-            _severe_med_risk = (_qq_dong_attack and _m_hl.get("dt_is_kv") and ("Tử" in cua_name or "Bạch Hổ" in than_name))
+            _severe_med_risk = (_qq_dong_attack and _m_hl.get("dt_is_kv") and ("Tử" in cua_name or "Bạch Hổ" in than_name)) or (weighted_pct < 26 and _is_chronic_md)
             _recov_span = "1 – 3 NGÀY TỚI" if (_is_fever_q and not _is_chronic_md) else ("7 – 15 NGÀY TỚI (THEO ĐÚNG LIỆU TRÌNH THUỐC)" if _is_chronic_md else "3 – 7 NGÀY TỚI")
             _cure_verb = "HẠ SỐT & BÌNH PHỤC" if _is_fever_q else ("ỔN ĐỊNH ÊM DỊU & HỒI PHỤC RÕ RỆT" if _is_chronic_md else "THUYÊN GIẢM & KHỎI BỆNH")
 
             if _severe_med_risk:
                 short_hl = (
                     f"🚨 CẢNH BÁO Y DỊCH TAM THỨC ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | DỤNG THẦN {dung_than.upper()} TẠI HÀO {_dt_idx_md} {_dt_chi_md.upper()}-{_dt_nh_md.upper()}): "
-                    f"{_organ_str.upper()} ĐANG DIỄN TIẾN NẶNG (DO QUAN QUỶ ĐỘNG KHẮC DỤNG THẦN LÂM TUẦN KHÔNG & GẶP {cua_name.upper()} · {than_name.upper()}) — "
+                    f"{_organ_str.upper()} ĐANG CHỊU TỔN LỰC NẶNG ({weighted_pct}/100 — DỤNG THẦN SUY KHỐN & GẶP {cua_name.upper()} · {than_name.upper()}) — "
                     f"CẦN ĐƯA ĐI THĂM KHÁM BÁC SĨ CHUYÊN KHOA NGAY (ƯU TIÊN HƯỚNG SAO THIÊN TÂM / THIÊN Y) ĐỂ ĐIỀU TRỊ KỊP THỜI!"
                 )
-            elif _qq_dong_attack or ("DỤNG KHẮC THỂ" in _m_hl.get("rel_bien_tag", "") and _has_hung_door and not _tuton_dong_md):
+            elif weighted_pct < 48 or _qq_dong_attack or (_is_chronic_md and _m_hl.get("dt_is_kv")) or ("DỤNG KHẮC THỂ" in _m_hl.get("rel_bien_tag", "") and _has_hung_door and not _tuton_dong_md):
                 short_hl = (
                     f"🩺 KẾT LUẬN Y DỊCH CỔ PHÁP ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | NGƯỜI BỆNH: HÀO {_dt_idx_md} {dung_than.upper()} {_dt_chi_md.upper()}-{_dt_nh_md.upper()}): "
-                    f"{_organ_str.upper()} HIỆN CÒN DAI DẲNG / CHƯA DỨT NGAY (DO QUAN QUỶ HÀNH {_ky_nh_md.upper()} & CỬA {cua_name.upper()} CẢN TRỞ) — "
-                    f"CẦN ĐỔI / ĐIỀU CHỈNH ĐÚNG THUỐC (DƯỢC THẦN TỬ TÔN {_tuton_chi_md.upper() or _ng_nh_md.upper()}), SẼ {_cure_verb} VÀO CÁC NGÀY/TIẾT {_relief_chis_md.upper()}!"
+                    f"{_organ_str.upper()} HIỆN CÒN DAI DẲNG / CHƯA KHỎI NHANH NGAY ĐƯỢC ({weighted_pct}/100 — NGUYÊN KHÍ DỤNG THẦN ĐANG SUY PHÁ HOẶC VƯỚNG {cua_name.upper()}) — "
+                    f"CẦN KIÊN TRÌ ĐIỀU CHỈNH ĐÚNG PHÁC ĐỒ THUỐC (DƯỢC THẦN {_tuton_chi_md.upper() or _ng_nh_md.upper()}), SẼ {_cure_verb} TỪ CÁC MỐC NGÀY/THÁNG {_relief_chis_md.upper()}!"
                 )
             else:
                 short_hl = (
                     f"🩺 KẾT LUẬN Y DỊCH CỔ PHÁP ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()} | NGƯỜI BỆNH: HÀO {_dt_idx_md} {dung_than.upper()} {_dt_chi_md.upper()}-{_dt_nh_md.upper()}): "
-                    f"{_organ_str.upper()} CÓ TIÊN LƯỢNG LÀNH TÍNH & ĐÁP ỨNG THUỐC TỐT "
-                    f"(NGƯỜI BỆNH ĐẮC KHÍ + DƯỢC THẦN TỬ TÔN {_tuton_chi_md.upper() or _ng_nh_md.upper()} CHẾ QUỶ · SAO {sao_name.upper()} · CỬA {cua_name.upper()}) "
+                    f"{_organ_str.upper()} CÓ TIÊN LƯỢNG LÀNH TÍNH & ĐÁP ỨNG THUỐC TỐT ({weighted_pct}/100 — "
+                    f"NGƯỜI BỆNH ĐẮC KHÍ + DƯỢC THẦN TỬ TÔN {_tuton_chi_md.upper() or _ng_nh_md.upper()} CHẾ QUỶ · SAO {sao_name.upper()} · CỬA {cua_name.upper()}) "
                     f"➔ SẼ {_cure_verb} TRONG {_recov_span} (ỨNG MỐC NGÀY {_relief_chis_md.upper()})!"
                 )
             why_s = (
@@ -7638,7 +7638,7 @@ class HexagramReasoningAI:
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V138_HOLOGRAPHIC_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V139_FOUR_PILLAR_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig) if use_online_api else None
 
         if use_online_api and _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -7684,17 +7684,18 @@ class HexagramReasoningAI:
                     "   - [Bí pháp 5 - Ngự Định Kỳ Môn Chủ-Khách & Tứ Hại]: Xét Can Ngày (Người hỏi) đối chiếu Can Giờ / Cung Dụng Thần (Sự việc); xét kỹ Tứ Hại (Không Vong, Môn Bức, Lục Nghi Kích Hình, Nhập Mộ), Ký Can Trung Cung 5, Ám Can và chuỗi Lật Cung 4 trạm.\n"
                     "   - [Bí pháp 6 - Mai Hoa Vạn Vật Loại Tượng & Đa Phương Án (2..N lựa chọn)]: Xét 4 chặng Bản -> Hạ Hỗ -> Thượng Hỗ -> Biến Quái. Nếu người dùng đưa ra 2, 3, 4+ lựa chọn (ví dụ nhạc vui, nhạc buồn, nhạc Phật, nhạc đám ma; hoặc món ăn/vị trí/màu sắc), BẮT BUỘC đối chiếu tượng Quẻ Động/Biến + Lục Thú + Tinh/Môn/Thần với từng phương án để CHỐT ĐÍCH DANH 1 PHƯƠNG ÁN TRÚNG TƯỢNG NHẤT!\n"
                     "   - [Bí pháp 7 - Thọ Nguyên & Định Lượng Cổ Pháp]: Khi hỏi tuổi tác / thọ nguyên, phải kết hợp Vai Vế thực tế (ông bà/cha mẹ/trung niên/con cái) với Khí Lực Dụng Thần (Thượng Thọ 80-96+, Trung Thọ 65-79...) và Quái Số Tiên-Hậu Thiên + Địa Chi năm sinh; TUYỆT ĐỐI KHÔNG bao giờ áp trần tuổi máy móc 31-45 hay 56-65!\n"
-                    "   - [Bí pháp 8 - Bệnh Dược Ứng Kỳ Pháp (病药应期)]: Tìm đúng 'Bệnh' của quẻ để định 'Dược' mở khóa thời điểm ứng nghiệm chính xác.\n\n"
-                    "BẮT BUỘC SUY LUẬN THẤU ĐÁO TỪNG BƯỚC TRƯỚC (`ai2_step1_dung_than_and_xi_ji` -> `ai2_liuyao_verdict_box` -> `ai2_qimen_verdict_box` -> `ai2_meihua_verdict_box` -> `ai2_step2_causal_chain_synthesis` -> `ai2_when` -> `ai2_advice`) RỒI MỚI CHỐT `ai2_headline` Ở CUỐI CÙNG! Trả về ĐÚNG 1 JSON hợp lệ (không dùng dấu \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
+                    "   - [Bí pháp 8 - Bệnh Dược Ứng Kỳ Pháp & KHÓA CHỐNG LUẬN ẢO 4 TRỤ CỘT TIÊN TRI]: Bắt buộc luận thật 100% sát dữ kiện trên bàn quẻ (CẤM bịa đặt tình tiết vô căn cứ, CẤM viết sáo rỗng). Mọi câu trả lời phải làm sáng tỏ đủ 4 trụ cột của bậc Đại Tiên Tri: (1) SỰ VIỆC CỤ THỂ GÌ XẢY RA TRONG ĐỜI THỰC, (2) LIÊN QUAN TRỰC TIẾP ĐẾN CÁI GÌ & AI (vật dụng, giấy tờ, tiền bạc, bộ phận, địa điểm + chân dung người Nam/Nữ, độ tuổi, vai vế), (3) NGÀY – GIỜ – THÁNG – NĂM DƯƠNG/ÂM LỊCH CHÍNH XÁC (bắt buộc dùng đúng lịch thiên văn DD/MM/YYYY Dương lịch & Âm lịch đã tính sẵn ở [Trụ 3], CẤM tự nhẩm sai ngày Can Chi!), (4) GIẢI PHÁP VẬN HÀNH THỰC TẾ TRỊ ĐÚNG BỆNH QUẺ.\n\n"
+                    "BẮT BUỘC SUY LUẬN THẤU ĐÁO TỪNG BƯỚC TRƯỚC (`ai2_step1_dung_than_and_xi_ji` -> `ai2_liuyao_verdict_box` -> `ai2_qimen_verdict_box` -> `ai2_meihua_verdict_box` -> `ai2_step2_causal_chain_synthesis` -> `ai2_related_what_and_who` -> `ai2_when` -> `ai2_advice`) RỒI MỚI CHỐT `ai2_headline` Ở CUỐI CÙNG! Trả về ĐÚNG 1 JSON hợp lệ (không dùng dấu \" chưa escape bên trong chuỗi JSON, hãy dùng dấu « » hoặc ' '):\n"
                     "{\n"
                     "  \"ai2_step1_dung_than_and_xi_ji\": \"Xác định rõ Dụng Thần Lục Hào & Kỳ Môn, phân định Hỷ/Kỵ và Thời thái thực tế\",\n"
-                    "  \"ai2_liuyao_verdict_box\": \"Ô Kết Quả Lục Hào giải đáp câu hỏi chính: Chỉ rõ Nguyệt/Nhật -> Hào Động/Biến -> Thế/Dụng tác động nhau như thế nào để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
+                    "  \"ai2_liuyao_verdict_box\": \"Ô Kết Quả Lục Hào giải đáp câu hỏi chính: Chỉ rõ Nguyệt/Nhật -> Hào Động/Biến -> Thế/Dụng tác động nhau tạo ra sự việc gì để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
                     "  \"ai2_qimen_verdict_box\": \"Ô Kết Quả Kỳ Môn giải đáp câu hỏi chính: Chỉ rõ Cung Chủ/Khách, Sao, Cửa, Thần, Ám Can, Tứ Hại, Lật Cung tác động nhau như thế nào để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
                     "  \"ai2_meihua_verdict_box\": \"Ô Kết Quả Mai Hoa giải đáp câu hỏi chính: Chỉ rõ Quẻ Thể, Quẻ Dụng, Hỗ Quái, Biến Quái & Vạn Vật Loại Tượng tác động nhau như thế nào để trả lời trực tiếp câu hỏi (2 câu sắc bén)\",\n"
-                    "  \"ai2_step2_causal_chain_synthesis\": \"Phân tích sâu sắc 3 hệ thống theo sách bí truyền: (1) Chuỗi sinh khắc 4 tầng Lục Hào (Nguyệt/Nhật, Động/Biến, Không/Mộ/Hợp/Phá) -> (2) Chủ-Khách, Tinh-Môn-Thần, Tứ Hại & Ám Can Kỳ Môn -> (3) Thể-Dụng & Vạn Vật Loại Tượng Mai Hoa (khoảng 180-320 từ, lập luận sắc bén từng chi tiết)\",\n"
-                    "  \"ai2_when\": \"Chẩn đoán Bệnh-Dược Ứng Kỳ cụ thể (nêu rõ vì sao ứng vào giờ/ngày/tháng Can Chi đó)\",\n"
-                    "  \"ai2_advice\": \"Pháp quyết hành động thực tế sát đúng hoàn cảnh câu hỏi\",\n"
-                    "  \"ai2_headline\": \"CÂU TRẢ LỜI CHỐT HẠ TRỰC DIỆN, DỨT KHOÁT, ĐÚNG KHUÔN MẪU CÂU HỎI (1-2 câu sắc bén, in hoa đáp án cốt lõi)\"\n"
+                    "  \"ai2_step2_causal_chain_synthesis\": \"TRỤ CỘT 1 — SỰ VIỆC GÌ XẢY RA & NGUYÊN NHÂN CỐT LÕI: Dịch thẳng các hào động/biến, Lục Thú, Cung Kỳ Môn & Tam Truyền sang diễn biến sự việc đời thực cụ thể (trước -> hiện tại -> kết cục), kèm chứng cứ sinh khắc Tam Thức sắc bén (180-280 từ, CẤM nói chung chung)\",\n"
+                    "  \"ai2_related_what_and_who\": \"TRỤ CỘT 2 — LIÊN QUAN ĐẾN CÁI GÌ & AI: Chỉ đích danh vật việc/giấy tờ/tiền bạc/bộ phận/địa điểm phương hướng liên quan + chân dung nhân vật tác động chính (Nam/Nữ, độ tuổi, vai vế, thiện chí hay gây sức ép) căn cứ đúng Hào Dụng/Động/Ứng/Hào 5\",\n"
+                    "  \"ai2_when\": \"TRỤ CỘT 3 — NGÀY GIỜ THÁNG NĂM XẢY RA: Nêu đầy đủ Giờ + Ngày DD/MM/YYYY Dương lịch (kèm Âm lịch & Ngày Can Chi chuẩn từ hồ sơ Trụ 3) + Tháng + Năm + lý do Bệnh-Dược mở khóa\",\n"
+                    "  \"ai2_advice\": \"TRỤ CỘT 4 — GIẢI PHÁP THỰC TẾ & HÓA GIẢI: 3 bước hành động thực tế trị đúng điểm nghẽn tài chính/hợp đồng/nhân sự của quẻ + phương vị Cát Môn & khung giờ thực thi\",\n"
+                    "  \"ai2_headline\": \"CÂU TRẢ LỜI CHỐT HẠ TRỰC DIỆN, CỤ THỂ SỰ VIỆC + KẾT CỤC + MỐC NGÀY DƯƠNG/ÂM LỊCH CHÍNH XÁC (1-2 câu sắc bén, in hoa đáp án cốt lõi)\"\n"
                     "}"
                 )
                 _ai2_json = _call_gemini_json_fast(_prompt_ai2, timeout_sec=32, tier="supreme_pro_master")
@@ -7714,6 +7715,7 @@ class HexagramReasoningAI:
                 t = t[:max_chars].rsplit(" ", 1)[0] + "..."
             return t
 
+        _four_p_cv = (_deep_syn.get("four_pillars") or {}) if isinstance(_deep_syn, dict) else {}
         _ai2_online_succeeded = False
         _ai2_md_report = ""
         _ai2_model_used_badge = "GEMINI-2.5-PRO / GEMINI-2.5-FLASH (DEEP CLASSICAL CANON)"
@@ -7739,53 +7741,78 @@ class HexagramReasoningAI:
             if _ai2_hl_clean:
                 spec_res["headline"] = f"🎯 {_ai2_hl_clean}" if not _ai2_hl_clean.startswith("🎯") else _ai2_hl_clean
             if _ai2_w:
-                # V133.0: Giữ 100% lập luận tinh hoa của Con AI Số 2 + tóm tắt khí lực cổ pháp (KHÔNG ghép văn mẫu regex cũ gây mâu thuẫn!)
                 spec_res["why"] = (
                     f'<div style="padding:8px 11px;background:rgba(250,204,21,0.10);border-left:3px solid #facc15;border-radius:6px;margin-bottom:4px;">'
-                    f'<b style="color:#fde047;">🧠 [{_m_used_raw} — Luận Giải Bí Truyền Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa]:</b><br>{_ai2_w}</div>'
+                    f'<b style="color:#fde047;">🧠 [{_m_used_raw} — Trụ 1: Sự Việc Xảy Ra & Chuỗi Nhân Quả Sát Quẻ]:</b><br>{_ai2_w}</div>'
                 )
-            _ai2_when = _clean_ai2_bullets(_r_ai2.get("ai2_when", ""), max_chars=460)
+            _ai2_rel = _clean_ai2_bullets(_r_ai2.get("ai2_related_what_and_who", ""), max_chars=650)
+            spec_res["related"] = _ai2_rel or str(_four_p_cv.get("pillar2_related_html") or "")
+            _ai2_when = _clean_ai2_bullets(_r_ai2.get("ai2_when", ""), max_chars=580)
             if _ai2_when:
-                spec_res["when"] = _ai2_when
-            _ai2_adv = _clean_ai2_bullets(_r_ai2.get("ai2_advice", ""), max_chars=460)
+                if not re.search(r"\d{2}/\d{2}/\d{4}", _ai2_when) and _four_p_cv.get("pillar3_timing_html"):
+                    spec_res["when"] = f"{_ai2_when}<br>{_four_p_cv['pillar3_timing_html']}"
+                else:
+                    spec_res["when"] = _ai2_when
+            elif _four_p_cv.get("pillar3_timing_html"):
+                spec_res["when"] = str(_four_p_cv["pillar3_timing_html"])
+            _ai2_adv = _clean_ai2_bullets(_r_ai2.get("ai2_advice", ""), max_chars=620)
             if _ai2_adv:
                 spec_res["advice"] = _ai2_adv
+            elif _four_p_cv.get("pillar4_solution_html"):
+                spec_res["advice"] = str(_four_p_cv["pillar4_solution_html"])
             _ai2_md_report = (
-                f"### 🔮 BẢN LUẬN GIẢI CHUYÊN SÂU TỪ ĐẠI SƯ {_m_used_raw} (V133.0)\n"
+                f"### 🔮 BẢN LUẬN GIẢI 4 TRỤ CỘT TIÊN TRI TỪ ĐẠI SƯ {_m_used_raw} (V139.0)\n"
                 f"#### Đoàn 1: Pháp Định Dụng Thần & Thời Thái Câu Hỏi\n"
                 f"- {_step1_note or _r_ai1.get('ai1_dung_than_guide', '')}\n"
-                f"#### Đoàn 2: Chuỗi Nhân Quả Tam Thức (Lục Hào · Kỳ Môn · Mai Hoa)\n"
+                f"#### Đoàn 2: Sự Việc Gì Xảy Ra & Chuỗi Nhân Quả Tam Thức\n"
                 f"- {_full_why_for_md}\n"
-                f"#### Đoàn 3: Chẩn Đoán Bệnh – Dược Ứng Kỳ & Pháp Quyết Hành Động\n"
-                f"- **Ứng Kỳ:** {str(_r_ai2.get('ai2_when') or '')}\n"
-                f"- **Pháp Quyết:** {str(_r_ai2.get('ai2_advice') or '')}\n"
+                f"#### Đoàn 3: Liên Quan Đến Cái Gì & Nhân Vật Nào\n"
+                f"- {str(_r_ai2.get('ai2_related_what_and_who') or _four_p_cv.get('pillar2_plain') or '')}\n"
+                f"#### Đoàn 4: Ngày – Giờ – Tháng – Năm Ứng Nghiệm & Giải Pháp Thực Tế\n"
+                f"- **Ngày Giờ Tháng Năm:** {str(_r_ai2.get('ai2_when') or _four_p_cv.get('pillar3_plain') or '')}\n"
+                f"- **Giải Pháp Thực Tế:** {str(_r_ai2.get('ai2_advice') or _four_p_cv.get('pillar4_plain') or '')}\n"
             )
         else:
-            # Chế độ Offline / Fallback (V136.0): Sử dụng trực tiếp Động cơ Biện Chứng Cổ Pháp 7 Tầng (_deep_syn — chuẩn 96.53% cổ thư Trung Hoa)!
+            # Chế độ Offline / Fallback (V139.0): Xuất đầy đủ 4 Trụ Cột Tiên Tri Chống Luận Ảo (Sự việc gì · Liên quan ai/cái gì · Ngày Giờ Tháng Năm · Giải pháp thực tế)!
             if _deep_syn.get("direct_headline") and not spec_res.get("has_override"):
                 spec_res["has_override"] = True
                 spec_res["headline"] = f"🎯 {_deep_syn['direct_headline']}"
-                _lh_notes_off = " · ".join(_deep_syn.get("lh_chain_notes", [])[:4])
-                _qm_box_off = str(_deep_syn.get("qimen_verdict_box") or "")
-                _mh_box_off = str(_deep_syn.get("meihua_verdict_box") or "")
+                _lh_notes_off = " · ".join(_deep_syn.get("lh_chain_notes", [])[:3])
+                _p1_ev_html = str(_four_p_cv.get("pillar1_event_html") or "")
                 spec_res["why"] = (
-                    f'<div style="padding:8px 11px;background:rgba(16,185,129,0.12);border-left:3px solid #10b981;border-radius:6px;margin-bottom:6px;">'
-                    f'<b style="color:#6ee7b7;">🩺 [Biện Chứng Cổ Pháp 7 Tầng V136.0 — Lục Hào {_deep_syn.get("lh_score",50)} · Kỳ Môn {_deep_syn.get("qm_score",50)} · Mai Hoa {_deep_syn.get("mh_score",50)} ➔ Hợp nhất {_deep_syn.get("composite_score", weighted_pct)}/100]:</b><br>'
-                    f'• <b>Lục Hào 4 tầng (Tăng San Bốc Dịch):</b> {_lh_notes_off}.<br>'
-                    + (f'• <b>Kỳ Môn Độn Giáp:</b> {_qm_box_off}<br>' if _qm_box_off else '')
-                    + (f'• <b>Mai Hoa Dịch Số:</b> {_mh_box_off}<br>' if _mh_box_off else '')
-                    + f'• <b>Bệnh – Dược Quẻ:</b> {_deep_syn.get("benh_quai", "")} ══► <b>{_deep_syn.get("duoc_ung_ky", "")}</b>.</div>'
+                    (f"{_p1_ev_html}<br>" if _p1_ev_html else "")
+                    + f'<div style="padding:6px 9px;background:rgba(16,185,129,0.10);border-left:3px solid #10b981;border-radius:6px;margin-top:5px;font-size:0.90em;">'
+                    f'<b style="color:#6ee7b7;">📜 Bằng chứng gốc Lục Hào (Tăng San Bốc Dịch):</b> {_lh_notes_off}.</div>'
                 )
+                if _four_p_cv.get("pillar2_related_html"):
+                    spec_res["related"] = str(_four_p_cv["pillar2_related_html"])
+                spec_res["when"] = str(_four_p_cv.get("pillar3_timing_html") or _deep_syn.get("duoc_ung_ky") or "")
+                if _four_p_cv.get("pillar4_solution_html"):
+                    spec_res["advice"] = str(_four_p_cv["pillar4_solution_html"])
             elif _deep_syn.get("benh_quai") and "Bệnh – Dược" not in str(spec_res.get("why", "")):
                 _bd_off_html = (
                     f'<div style="padding:7px 10px;background:rgba(16,185,129,0.12);border-left:3px solid #10b981;border-radius:6px;margin-bottom:6px;">'
-                    f'<b style="color:#6ee7b7;">🩺 [Biện Chứng Cổ Pháp 7 Tầng — Hợp nhất {_deep_syn.get("composite_score", weighted_pct)}/100]:</b><br>'
+                    f'<b style="color:#6ee7b7;">🩺 [Biện Chứng Cổ Pháp 7 Tầng V139.0 — Hợp nhất {_deep_syn.get("composite_score", weighted_pct)}/100]:</b><br>'
                     f'• <b>Lục Hào 4 tầng:</b> {" · ".join(_deep_syn.get("lh_chain_notes", [])[:3])}.<br>'
-                    f'• <b>Bệnh – Dược Quẻ:</b> {_deep_syn.get("benh_quai", "")} ══► <b>{_deep_syn.get("duoc_ung_ky", "")}</b>.</div>'
+                    f'• <b>Bệnh – Dược Quẻ:</b> {_deep_syn.get("benh_quai", "")} ══► <b>{_deep_syn.get("short_inline_date") or _deep_syn.get("duoc_ung_ky", "")}</b>.</div>'
                 )
                 spec_res["why"] = _bd_off_html + str(spec_res.get("why", ""))
-            if _deep_syn.get("duoc_ung_ky") and not spec_res.get("when"):
-                spec_res["when"] = _deep_syn["duoc_ung_ky"]
+            _STATIC_TARGETS_NO_CAL = {
+                "GENDER_AGE_BIRTH", "SPOUSE_COUNT", "CHILDREN_COUNT", "CHILDREN_AGE",
+                "HOUSE_FLOORS", "SIBLINGS_COUNT", "HOUSEHOLD_MEMBERS", "CLOTHING_VEHICLE", "HIDDEN_OBJECT",
+            }
+            if not spec_res.get("related") and _four_p_cv.get("pillar2_related_html"):
+                spec_res["related"] = str(_four_p_cv["pillar2_related_html"])
+            if not spec_res.get("when"):
+                spec_res["when"] = str(_four_p_cv.get("pillar3_timing_html") or _deep_syn.get("duoc_ung_ky") or "")
+            elif (
+                _four_p_cv.get("pillar3_timing_html")
+                and str(blueprint.get("specific_target") or "") not in _STATIC_TARGETS_NO_CAL
+                and not re.search(r"\d{2}/\d{2}/\d{4}", str(spec_res.get("when") or ""))
+            ):
+                spec_res["when"] = f"{spec_res['when']}<br>{_four_p_cv['pillar3_timing_html']}"
+            if not spec_res.get("advice") and _four_p_cv.get("pillar4_solution_html"):
+                spec_res["advice"] = str(_four_p_cv["pillar4_solution_html"])
 
         # V107.0: Nếu không có mạng/API hoặc chưa có override, tự động kích hoạt Bộ Tự Luận Quẻ Tam Thức (Mai Hoa + Kỳ Môn + Lục Hào)
         if not spec_res.get("has_override"):
@@ -7801,6 +7828,7 @@ class HexagramReasoningAI:
 
         headline_ans = sanitize_outdated_years_text(spec_res.get("headline") or omni_data.get("binary_verdict_headline", ""), question=_raw_q_str)
         why_proof = sanitize_outdated_years_text(spec_res.get("why") or omni_data.get("binary_why_reasons", ""), question=_raw_q_str)
+        related_proof = sanitize_outdated_years_text(spec_res.get("related") or str(_four_p_cv.get("pillar2_related_html") or ""), question=_raw_q_str)
         when_proof = sanitize_outdated_years_text(spec_res.get("when") or omni_data.get("binary_when_note", ""), question=_raw_q_str)
         advice_proof = sanitize_outdated_years_text(spec_res.get("advice") or omni_data.get("binary_action_advice", ""), question=_raw_q_str)
 
@@ -7838,7 +7866,7 @@ class HexagramReasoningAI:
         except Exception:
             pass
         _tq_block_html = str(_univ_mat.get("thong_quan_html") or "")
-        if _tq_block_html and "Thông Quan & Trạch Cát" not in advice_proof:
+        if _tq_block_html and "Thông Quan & Trạch Cát" not in advice_proof and "Phương vị Cát Môn" not in advice_proof:
             advice_proof = f"{advice_proof}{_tq_block_html}"
 
         if not headline_ans and narrative_summary:
@@ -7924,7 +7952,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:14px 16px;border-radius:14px;margin-bottom:14px;border:2px solid #38bdf8;box-shadow:0 4px 18px rgba(56,189,248,0.2);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:6px;">'
-            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V133.0 — {_clk_cv["solar_date_str"]}): LUẬN QUẺ BÍ TRUYỀN TRUNG HOA & BỆNH–DƯỢC CỔ PHÁP</div>'
+            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V139.0 — {_clk_cv["solar_date_str"]}): ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO & BỆNH–DƯỢC CỔ PHÁP</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:2px 9px;border-radius:12px;font-size:0.8em;font-weight:800;border:1px solid #38bdf8;">{blueprint["archetype_code"]} — {blueprint["archetype_name"]}</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
@@ -7953,7 +7981,7 @@ class HexagramReasoningAI:
             _syn_dir_block = f"{_syn_dir_block}\n{_holo_res_cv['holographic_prompt_text']}"
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BIỆN CHỨNG & ĐỌC VỊ TOÀN TỨC 12 TẦNG TỪ HỆ THỐNG SONG NÃO AI (V135.0 — TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA · ĐẠI LỤC NHÂM — {_clk_cv['solar_date_str']}) ===\n"
+            f"=== HỒ SƠ BIỆN CHỨNG & ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO TỪ HỆ THỐNG SONG NÃO AI (V139.0 — TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA · ĐẠI LỤC NHÂM — {_clk_cv['solar_date_str']}) ===\n"
             f"1. [CON AI SỐ 1 - ĐỌC HIỂU Ý ĐỊNH & HỶ/KỴ DỤNG THẦN]:\n"
             f"   - Phân loại: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
@@ -7977,6 +8005,7 @@ class HexagramReasoningAI:
             "is_strict_override": bool(spec_res.get("is_strict_override", False)),
             "verified_headline": headline_ans,
             "verified_why": why_proof,
+            "verified_related": related_proof,
             "verified_when": when_proof,
             "verified_advice": advice_proof,
             "holographic_event_html": str(_holo_res_cv.get("holographic_html") or ""),

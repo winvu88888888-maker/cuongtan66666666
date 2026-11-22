@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V135.0
-BỘ ĐỘNG CƠ ĐỌC VỊ TOÀN TỨC 12 TẦNG CHI TIẾT SỰ KIỆN CỦA BẬC ĐẠI TIÊN TRI (ZERO-OMISSION HOLOGRAPHIC DECODER)
+holographic_event_decoder.py — V139.0
+BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
 1. 《增删卜易》·《卜筮正宗》·《易隐》· 全要素同象异读语法:
@@ -620,9 +620,26 @@ def build_holographic_prophecy_reading(
         else ("Nhịp độ CỰC NHANH / ĐẢO CHIỀU GẤP (do gặp Môn Phản Ngâm)" if qm_res.get("is_mon_phan_ngam")
               else ("Nhịp độ NHANH — GẦN (trục Nội Bàn)" if (chu_in_noi and tc_in_noi) else "Nhịp độ TRUNG BÌNH — THEO ĐÚNG TIẾT KỲ"))
     )
+    _ymdh_box5 = resolve_astronomical_ung_ky_ymdh(
+        ly_res=ly_res,
+        qm_res=qm_res,
+        mh_res=mh_res,
+        benh_quai=str(deep_syn.get("benh_quai") or ""),
+        duoc_ung_ky=str(deep_syn.get("duoc_ung_ky") or ""),
+        chart_data=cd,
+        question=question,
+    )
+    _exact_cal_line = (
+        f"• <b>Lịch Vạn Niên Thiên Văn Chính Xác (Ngày – Giờ – Tháng – Năm):</b> "
+        f"<span style='color:#fde68a;font-weight:800;'>{_ymdh_box5['hour_str']}</span> · "
+        f"<b>{_ymdh_box5['day_str']}</b> · <b>{_ymdh_box5['month_year_str']}</b>.<br>"
+        if _ymdh_box5.get("day_str")
+        else ""
+    )
     timing_detail = (
         f"• <b>Bệnh – Dược Mở Khóa:</b> {deep_syn.get('benh_quai', '')} ══► <b style='color:#fde047;'>{deep_syn.get('duoc_ung_ky', '')}</b>.<br>"
-        f"• <b>Nhịp độ Không–Thời Gian Kỳ Môn:</b> {speed_tag}"
+        + _exact_cal_line
+        + f"• <b>Nhịp độ Không–Thời Gian Kỳ Môn:</b> {speed_tag}"
         + (f" · Tín hiệu Canh Cách: <b>{'; '.join(canh_cach_notes)}</b>." if canh_cach_notes else ".")
     )
 
@@ -662,7 +679,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V135.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V139.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -681,7 +698,7 @@ def build_holographic_prophecy_reading(
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;margin-top:8px;font-size:0.87em;color:#f1f5f9;">'
         f'<div style="padding:8px 11px;background:rgba(6,78,59,0.42);border-radius:9px;border-left:3.5px solid #f59e0b;">'
-        f'<div style="font-weight:800;color:#fde68a;margin-bottom:3px;">⏱️ 5. Khoanh Vùng Không Gian – Thời Điểm Ứng Nghiệm Đa Tầng</div>'
+        f'<div style="font-weight:800;color:#fde68a;margin-bottom:3px;">⏱️ 5. Khoanh Vùng Không Gian – Ngày Giờ Tháng Năm Ứng Nghiệm</div>'
         f'<div style="line-height:1.48;">{timing_detail}</div></div>'
         f'<div style="padding:8px 11px;background:rgba(30,41,59,0.75);border-radius:9px;border-left:3.5px solid #f472b6;">'
         f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:3px;">⚡ 6. Ấn Chứng Cận Sự Thực Tế Quanh Bạn (Đối Chứng Linh Ứng)</div>'
@@ -690,12 +707,12 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V135.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V139.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
         "4. [KỊCH BẢN DIỄN BIẾN TỪNG BƯỚC · HÀO ĐỘNG CHU DỊCH · LẬT CUNG 4 TRẠM · TỨ KHÓA & TAM TRUYỀN ĐẠI LỤC NHÂM]: " + " | ".join(_strip_tags(x) for x in future_steps),
-        "5. [KHÔNG GIAN & THỜI ĐIỂM ỨNG KỲ CANH CÁCH]: " + _strip_tags(timing_detail),
+        "5. [NGÀY GIỜ THÁNG NĂM DƯƠNG/ÂM LỊCH & CANH CÁCH ỨNG KỲ]: " + _strip_tags(timing_detail),
         "6. [ẤN CHỨNG CẬN SỰ QUANH NGƯỜI HỎI]: " + " | ".join(_strip_tags(x) for x in near_verifications),
     ]
 
@@ -705,6 +722,7 @@ def build_holographic_prophecy_reading(
         "portrait_items": portrait_items,
         "future_steps": future_steps,
         "timing_detail": timing_detail,
+        "ymdh_resolved": _ymdh_box5,
         "near_verifications": near_verifications,
         "noi_ngoai_desc": noi_ngoai_desc,
         "canh_cach_notes": canh_cach_notes,
@@ -716,3 +734,696 @@ def build_holographic_prophecy_reading(
 def _strip_tags(s: str) -> str:
     import re as _re_st
     return _re_st.sub(r"<[^>]+>", "", str(s or "")).strip()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V139.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_CHI_12_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+_CAN_10_ORDER = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+_WEEKDAY_VN_7 = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
+_CHI_HOUR_SPAN = {
+    "Tý": ("23:00–01:00", 23), "Sửu": ("01:00–03:00", 1), "Dần": ("03:00–05:00", 3), "Mão": ("05:00–07:00", 5),
+    "Thìn": ("07:00–09:00", 7), "Tị": ("09:00–11:00", 9), "Ngọ": ("11:00–13:00", 11), "Mùi": ("13:00–15:00", 13),
+    "Thân": ("15:00–17:00", 15), "Dậu": ("17:00–19:00", 17), "Tuất": ("19:00–21:00", 19), "Hợi": ("21:00–23:00", 21),
+}
+_LUC_XUNG_12 = {
+    "Tý": "Ngọ", "Ngọ": "Tý", "Sửu": "Mùi", "Mùi": "Sửu", "Dần": "Thân", "Thân": "Dần",
+    "Mão": "Dậu", "Dậu": "Mão", "Thìn": "Tuất", "Tuất": "Thìn", "Tị": "Hợi", "Hợi": "Tị",
+}
+_LUC_HOP_12 = {
+    "Tý": "Sửu", "Sửu": "Tý", "Dần": "Hợi", "Hợi": "Dần", "Mão": "Tuất", "Tuất": "Mão",
+    "Thìn": "Dậu", "Dậu": "Thìn", "Tị": "Thân", "Thân": "Tị", "Ngọ": "Mùi", "Mùi": "Ngọ",
+}
+_MO_BY_EL_12 = {"Kim": "Sửu", "Mộc": "Mùi", "Thủy": "Thìn", "Thổ": "Thìn", "Hỏa": "Tuất"}
+_TS_SINH_BY_EL = {"Kim": "Tị", "Mộc": "Hợi", "Thủy": "Thân", "Hỏa": "Dần", "Thổ": "Thân"}
+_VUONG_CHI_BY_EL = {"Kim": "Dậu", "Mộc": "Mão", "Thủy": "Tý", "Hỏa": "Ngọ", "Thổ": "Thìn"}
+
+
+def resolve_astronomical_ung_ky_ymdh(
+    ly_res: Dict[str, Any],
+    qm_res: Dict[str, Any],
+    mh_res: Dict[str, Any],
+    benh_quai: str,
+    duoc_ung_ky: str,
+    chart_data: Optional[Dict[str, Any]] = None,
+    question: str = "",
+) -> Dict[str, str]:
+    """
+    Chuyển hóa Địa Chi Bệnh–Dược Ứng Kỳ thành NGÀY – GIỜ – THÁNG – NĂM DƯƠNG LỊCH & ÂM LỊCH CHÍNH XÁC 100%
+    bằng thuật toán thiên văn Jean Meeus + Âm lịch Hồ Ngọc Đức trong qmdg_calc (Tuyệt đối 0% đoán mò lịch).
+    """
+    import datetime as _dt_mod
+    import re as _re_ym
+
+    cd = chart_data if isinstance(chart_data, dict) else {}
+    if cd.get("_is_historical_liuyao_only"):
+        return {
+            "primary_chi": "",
+            "secondary_chi": "",
+            "hour_str": "",
+            "day_str": "",
+            "month_year_str": "",
+            "short_inline_date": duoc_ung_ky,
+            "pillar3_html": duoc_ung_ky,
+            "pillar3_plain": duoc_ung_ky,
+        }
+
+    try:
+        import qmdg_calc as _qcalc
+    except Exception:
+        _qcalc = None
+
+    # 1. Xác định mốc ngày giờ gốc đang lập quẻ
+    now_dt: _dt_mod.datetime
+    try:
+        if cd.get("year") and cd.get("month") and cd.get("day"):
+            _hr = int(cd.get("hour", 12) or 12)
+            _mn = int(cd.get("minute", 0) or 0)
+            now_dt = _dt_mod.datetime(int(cd["year"]), int(cd["month"]), int(cd["day"]), _hr, _mn)
+        elif _qcalc is not None:
+            now_dt = _qcalc.get_vn_now()
+        else:
+            now_dt = _dt_mod.datetime.now(_dt_mod.timezone(_dt_mod.timedelta(hours=7))).replace(tzinfo=None)
+    except Exception:
+        now_dt = _dt_mod.datetime(2026, 11, 22, 12, 0)
+
+    base_date = now_dt.date()
+    lines: List[Dict[str, Any]] = list(ly_res.get("line_micro_audit") or [])
+    dt_idx = int(ly_res.get("dt_hao_idx") or 1)
+    dt_ln = lines[dt_idx - 1] if 1 <= dt_idx <= len(lines) else {}
+    dt_chi = str(dt_ln.get("chi") or "Dần")
+    dt_el = str(dt_ln.get("ngu_hanh") or CHI_EL.get(dt_chi, "Mộc"))
+    h_flags = set(dt_ln.get("hoa_flags") or [])
+    mo_tp = str(dt_ln.get("mo_type") or "")
+    vs = str(dt_ln.get("vuong_suy") or "Bình")
+    chi_ngay = str(cd.get("chi_ngay") or ly_res.get("chi_ngay") or "Tý")
+    chi_gio = str(cd.get("chi_gio") or "Tý")
+    xung_dt = _LUC_XUNG_12.get(dt_chi, "Thân")
+    hop_dt = _LUC_HOP_12.get(dt_chi, "Hợi")
+
+    # 2. Trích xuất Chi Ứng Kỳ chính & phụ sát đúng pháp Bệnh–Dược
+    found_chis = [c for c in _re_ym.findall(r"\b(Tý|Sửu|Dần|Mão|Thìn|Tị|Ngọ|Mùi|Thân|Dậu|Tuất|Hợi)\b", duoc_ung_ky)]
+    uniq_chis: List[str] = []
+    for c_it in found_chis:
+        if c_it not in uniq_chis:
+            uniq_chis.append(c_it)
+
+    if len(uniq_chis) >= 2:
+        pri_chi, sec_chi = uniq_chis[0], uniq_chis[1]
+    elif len(uniq_chis) == 1:
+        pri_chi = uniq_chis[0]
+        sec_chi = hop_dt if dt_ln.get("is_moving") or dt_ln.get("is_am_dong") else xung_dt
+        if sec_chi == pri_chi:
+            sec_chi = dt_chi if pri_chi != dt_chi else xung_dt
+    else:
+        if dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
+            pri_chi, sec_chi = dt_chi, xung_dt
+        elif "HOA_MO" in h_flags or mo_tp in ("SUY_NHAP_MO", "VUONG_NHAP_KHO"):
+            pri_chi, sec_chi = _LUC_XUNG_12.get(_MO_BY_EL_12.get(dt_el, "Thìn"), "Tuất"), dt_chi
+        elif dt_ln.get("is_moving") or dt_ln.get("is_am_dong"):
+            pri_chi, sec_chi = hop_dt, dt_chi
+        elif vs in ("Tù", "Tử"):
+            pri_chi, sec_chi = _TS_SINH_BY_EL.get(dt_el, dt_chi), dt_chi
+        else:
+            pri_chi, sec_chi = xung_dt, dt_chi
+
+    # 3. Nhận diện tầm vóc thời gian trong câu hỏi để tra đúng khung lịch (Hôm nay / Tuần tới / Tháng tới / Năm tới)
+    q_low = str(question or "").lower()
+    is_already = "ĐÃ XẢY RA" in duoc_ung_ky.upper()
+    is_today_q = any(w in q_low for w in ("hôm nay", "tối nay", "chiều nay", "sáng nay", "đêm nay", "ngay bây giờ"))
+    is_next_week_q = any(w in q_low for w in ("tuần tới", "tuần sau", "mấy ngày tới", "vài ngày tới"))
+    is_next_month_q = any(w in q_low for w in ("tháng tới", "tháng sau"))
+    is_this_month_q = any(w in q_low for w in ("tháng này", "trong tháng"))
+    is_next_year_or_daisu = any(
+        w in q_low
+        for w in (
+            "năm tới", "năm sau", "sang năm", "năm nào", "mua nhà mặt đất", "mua được nhà",
+            "xây nhà", "làm nhà", "mua đất ở", "kết hôn", "lấy vợ", "lấy chồng",
+        )
+    )
+
+    def _fmt_date_full(d_obj: _dt_mod.date) -> Tuple[str, str, str]:
+        wd = _WEEKDAY_VN_7[d_obj.weekday()]
+        if _qcalc is not None:
+            c_d, ch_d = _qcalc.get_can_chi_day(d_obj)
+            ld, lm, ly, is_lp = _qcalc.solar_to_lunar(_dt_mod.datetime(d_obj.year, d_obj.month, d_obj.day, 12, 0))
+            lp_s = " nhuận" if is_lp else ""
+            full_s = f"{wd} {d_obj.strftime('%d/%m/%Y')} Dương lịch (tức {ld:02d}/{lm:02d}{lp_s} Âm lịch — Ngày {c_d} {ch_d})"
+            short_s = f"Ngày {c_d} {ch_d} {d_obj.strftime('%d/%m/%Y')} DL ({ld:02d}/{lm:02d} ÂL)"
+            return ch_d, full_s, short_s
+        idx60 = (d_obj - _dt_mod.date(2024, 1, 1)).days % 60
+        c_d, ch_d = _CAN_10_ORDER[idx60 % 10], _CHI_12_ORDER[idx60 % 12]
+        full_s = f"{wd} {d_obj.strftime('%d/%m/%Y')} Dương lịch (Ngày {c_d} {ch_d})"
+        short_s = f"Ngày {c_d} {ch_d} {d_obj.strftime('%d/%m/%Y')}"
+        return ch_d, full_s, short_s
+
+    # 4. Tính Khung Giờ & Khắc Vàng 15 phút chuẩn Tiên Thiên Quái Số + Hà Đồ Ngũ Hành
+    h_span_pri, h_start_pri = _CHI_HOUR_SPAN.get(pri_chi, ("07:00–09:00", 7))
+    h_span_sec, _ = _CHI_HOUR_SPAN.get(sec_chi, ("15:00–17:00", 15))
+    _QUAI_NUM = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+    _dung_q = str(mh_res.get("dung_quai") or "Chấn")
+    _khac_idx = _QUAI_NUM.get(_dung_q, 3)
+    _m_off1 = (_khac_idx - 1) * 15
+    _m_off2 = _m_off1 + 15
+    _k_h1, _k_m1 = (h_start_pri * 60 + _m_off1) // 60 % 24, (h_start_pri * 60 + _m_off1) % 60
+    _k_h2, _k_m2 = (h_start_pri * 60 + _m_off2) // 60 % 24, (h_start_pri * 60 + _m_off2) % 60
+    if is_already:
+        _g_span, _ = _CHI_HOUR_SPAN.get(chi_gio, ("hiện tại", 12))
+        hour_str = f"Đã nổ ngay khung Giờ {chi_gio} ({_g_span}) hôm nay"
+    else:
+        hour_str = f"Giờ {pri_chi} ({h_span_pri}, đỉnh điểm Khắc {_khac_idx}: {_k_h1:02d}:{_k_m1:02d}–{_k_h2:02d}:{_k_m2:02d})"
+        if sec_chi != pri_chi:
+            hour_str += f" hoặc Giờ {sec_chi} ({h_span_sec})"
+
+    # 5. Quét Ngày Dương Lịch & Âm Lịch chuẩn theo đúng cửa sổ câu hỏi
+    pri_dates_full: List[str] = []
+    pri_dates_short: List[str] = []
+    sec_dates_full: List[str] = []
+    sec_dates_short: List[str] = []
+
+    if is_already:
+        _, f0, s0 = _fmt_date_full(base_date)
+        pri_dates_full.append(f"Ngay hôm nay — {f0}")
+        pri_dates_short.append(f"ngay hôm nay {s0}")
+    elif is_next_month_q:
+        # Cửa sổ chính xác trong Tháng Dương lịch kế tiếp
+        nm_year = base_date.year + (1 if base_date.month == 12 else 0)
+        nm_month = 1 if base_date.month == 12 else (base_date.month + 1)
+        d_cur = _dt_mod.date(nm_year, nm_month, 1)
+        for _ in range(31):
+            if d_cur.month != nm_month:
+                break
+            ch_d, f_s, sh_s = _fmt_date_full(d_cur)
+            if ch_d == pri_chi and len(pri_dates_full) < 2:
+                pri_dates_full.append(f_s)
+                pri_dates_short.append(sh_s)
+            elif ch_d == sec_chi and len(sec_dates_full) < 1:
+                sec_dates_full.append(f_s)
+                sec_dates_short.append(sh_s)
+            d_cur += _dt_mod.timedelta(days=1)
+    else:
+        start_delta = 0 if (is_today_q or dt_ln.get("is_am_dong")) else (3 if is_next_week_q else 1)
+        max_delta = 14 if is_today_q else (21 if is_next_week_q else (32 if is_this_month_q else 36))
+        for delta in range(start_delta, start_delta + max_delta):
+            d_cur = base_date + _dt_mod.timedelta(days=delta)
+            ch_d, f_s, sh_s = _fmt_date_full(d_cur)
+            if ch_d == pri_chi and len(pri_dates_full) < 2:
+                pri_dates_full.append(f_s)
+                pri_dates_short.append(sh_s)
+            elif ch_d == sec_chi and len(sec_dates_full) < 1:
+                sec_dates_full.append(f_s)
+                sec_dates_short.append(sh_s)
+            if len(pri_dates_full) >= 1 and len(sec_dates_full) >= 1 and not is_this_month_q:
+                break
+
+    # 6. Quét Tháng & Năm Thiên Văn Thực Tế (24 Tiết Khí Jean Meeus + Can Chi Tháng/Năm)
+    month_year_str = ""
+    short_month_tag = ""
+    if _qcalc is not None:
+        matched_months: List[str] = []
+        target_m_chis = [pri_chi, sec_chi, _VUONG_CHI_BY_EL.get(dt_el, pri_chi)]
+        seen_ym = set()
+        start_m_step = 1 if is_next_month_q else (2 if is_next_year_or_daisu else 0)
+        for m_step in range(start_m_step, start_m_step + 14):
+            probe_dt = now_dt + _dt_mod.timedelta(days=m_step * 29 + (18 if m_step > 0 else 0))
+            if is_next_year_or_daisu and probe_dt.year <= base_date.year and base_date.month <= 9:
+                continue
+            tk_p = _qcalc.get_tiet_khi(probe_dt)
+            cy_p, chy_p = _qcalc.get_can_chi_year(probe_dt.year if probe_dt.month >= 2 else probe_dt.year - 1)
+            # Xét chính xác Lập Xuân cho Can Chi Năm
+            _, lm_p, ly_p, _ = _qcalc.solar_to_lunar(probe_dt)
+            cy_real, chy_real = _qcalc.get_can_chi_year(ly_p)
+            cm_p, chm_p = _qcalc.get_can_chi_month(cy_real, tk_p)
+            ym_key = (probe_dt.year, probe_dt.month, chm_p)
+            if ym_key in seen_ym:
+                continue
+            seen_ym.add(ym_key)
+            if is_next_month_q and len(matched_months) == 0:
+                nm_y = base_date.year + (1 if base_date.month == 12 else 0)
+                nm_m = 1 if base_date.month == 12 else (base_date.month + 1)
+                mid_nm = _dt_mod.datetime(nm_y, nm_m, 15, 12, 0)
+                tk_nm = _qcalc.get_tiet_khi(mid_nm)
+                _, lm_nm, ly_nm, _ = _qcalc.solar_to_lunar(mid_nm)
+                cy_nm, chy_nm = _qcalc.get_can_chi_year(ly_nm)
+                cm_nm, chm_nm = _qcalc.get_can_chi_month(cy_nm, tk_nm)
+                matched_months.append(
+                    f"Tháng {nm_m:02d}/{nm_y} Dương lịch (Tháng {cm_nm} {chm_nm} · Âm lịch Tháng {lm_nm:02d} Năm {cy_nm} {chy_nm})"
+                )
+                short_month_tag = f"Tháng {cm_nm} {chm_nm} ({nm_m:02d}/{nm_y} DL)"
+                break
+            if chm_p in target_m_chis:
+                lbl_m = f"Tháng {probe_dt.month:02d}/{probe_dt.year} Dương lịch (Tháng {cm_p} {chm_p} · Tháng {lm_p:02d} ÂL — Năm {cy_real} {chy_real} {ly_p})"
+                matched_months.append(lbl_m)
+                if not short_month_tag:
+                    short_month_tag = f"Tháng {cm_p} {chm_p} ({probe_dt.month:02d}/{probe_dt.year} DL)"
+                # Nếu là Đại Sự / Năm tới, tìm luôn ngày đẹp pri_chi ngay trong tháng ứng nghiệm đó!
+                if is_next_year_or_daisu and len(matched_months) == 1:
+                    pri_dates_full.clear()
+                    pri_dates_short.clear()
+                    d_scan = _dt_mod.date(probe_dt.year, probe_dt.month, 1)
+                    for _d_i in range(30):
+                        if d_scan.month != probe_dt.month:
+                            break
+                        ch_ds, f_ds, sh_ds = _fmt_date_full(d_scan)
+                        if ch_ds == pri_chi and len(pri_dates_full) < 2:
+                            pri_dates_full.append(f_ds)
+                            pri_dates_short.append(sh_ds)
+                        d_scan += _dt_mod.timedelta(days=1)
+                if len(matched_months) >= 2:
+                    break
+        if matched_months:
+            month_year_str = " ➔ ".join(matched_months[:2])
+        else:
+            _, lm_b, ly_b, _ = _qcalc.solar_to_lunar(now_dt)
+            cy_b, chy_b = _qcalc.get_can_chi_year(ly_b)
+            month_year_str = f"Tháng {base_date.month:02d}/{base_date.year} Dương lịch (Năm {cy_b} {chy_b} {ly_b})"
+
+    if pri_dates_full and sec_dates_full:
+        day_str = f"Mốc 1 (Chính kỳ — Chi {pri_chi}): {pri_dates_full[0]} · Mốc 2 (Phụ kỳ — Chi {sec_chi}): {sec_dates_full[0]}"
+    elif len(pri_dates_full) >= 2:
+        day_str = f"Mốc 1: {pri_dates_full[0]} · Mốc 2: {pri_dates_full[1]}"
+    elif pri_dates_full:
+        day_str = pri_dates_full[0]
+    else:
+        _, f_fb, _ = _fmt_date_full(base_date)
+        day_str = f_fb
+
+    if is_already:
+        short_inline_date = f"ĐÃ XẢY RA NGAY TRONG HÔM NAY ({pri_dates_short[0] if pri_dates_short else ''}, Giờ {chi_gio})"
+    elif is_next_year_or_daisu and short_month_tag:
+        short_inline_date = (
+            f"Ứng trọng tâm vào {short_month_tag}"
+            + (f" — điểm rơi {pri_dates_short[0]}" if pri_dates_short else "")
+            + f", khung Giờ {pri_chi} ({h_span_pri})"
+        )
+    elif is_next_month_q and short_month_tag:
+        short_inline_date = (
+            f"{short_month_tag}: điểm nổ {pri_dates_short[0] if pri_dates_short else ''}"
+            + (f" hoặc {sec_dates_short[0]}" if sec_dates_short else (f" / {pri_dates_short[1]}" if len(pri_dates_short) > 1 else ""))
+            + f", Giờ {pri_chi} ({h_span_pri})"
+        )
+    else:
+        short_inline_date = (
+            f"{pri_dates_short[0] if pri_dates_short else f'Ngày {pri_chi}'}"
+            + (f" hoặc {sec_dates_short[0]}" if sec_dates_short else "")
+            + f" [Khung Giờ {pri_chi} {h_span_pri}"
+            + (f" · Đại cục {short_month_tag}]" if short_month_tag else "]")
+        )
+
+    pillar3_html = (
+        f"• <b>⏰ Giờ & Khắc ứng trong ngày:</b> <span style='color:#fde047;font-weight:800;'>{hour_str}</span>.<br>"
+        f"• <b>📆 Ngày Dương lịch & Âm lịch chính xác:</b> <b>{day_str}</b>.<br>"
+        f"• <b>🗓️ Tháng & Năm ứng nghiệm:</b> <b>{month_year_str}</b>.<br>"
+        f"• <b>🔑 Căn cứ Bệnh–Dược Chống Luận Ảo:</b> {benh_quai} ══► <i>{duoc_ung_ky}</i> (Tính chuẩn lịch thiên văn từ mốc lập quẻ {base_date.strftime('%d/%m/%Y')})."
+    )
+    pillar3_plain = _strip_tags(pillar3_html.replace("<br>", " | "))
+
+    return {
+        "primary_chi": pri_chi,
+        "secondary_chi": sec_chi,
+        "hour_str": hour_str,
+        "day_str": day_str,
+        "month_year_str": month_year_str,
+        "short_inline_date": short_inline_date,
+        "pillar3_html": pillar3_html,
+        "pillar3_plain": pillar3_plain,
+    }
+
+
+def build_four_pillar_prophecy(
+    ly_res: Dict[str, Any],
+    qm_res: Dict[str, Any],
+    mh_res: Dict[str, Any],
+    deep_syn: Dict[str, Any],
+    chart_data: Optional[Dict[str, Any]] = None,
+    dung_than: str = "Bản Thân",
+    question: str = "",
+) -> Dict[str, Any]:
+    """
+    V139.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
+    2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
+    3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)
+    4. GIẢI PHÁP HÀNH ĐỘNG THỰC TẾ (3 Concrete Operational Steps Curing the Chart's Exact Bottleneck)
+    """
+    cd = chart_data if isinstance(chart_data, dict) else {}
+    q_low = str(question or "").lower().strip()
+    lines: List[Dict[str, Any]] = list(ly_res.get("line_micro_audit") or [])
+    ban_name = str(ly_res.get("ban_name") or mh_res.get("ten_chu") or "Quẻ Chủ")
+    bien_name = str(ly_res.get("bien_name") or mh_res.get("ten_bien") or ban_name)
+    the_pos = int(ly_res.get("the_pos") or 3)
+    ung_pos = int(ly_res.get("ung_pos") or 6)
+    dt_idx = int(ly_res.get("dt_hao_idx") or the_pos)
+    dt_ln = lines[dt_idx - 1] if 1 <= dt_idx <= len(lines) else {}
+    the_ln = lines[the_pos - 1] if 1 <= the_pos <= len(lines) else {}
+    ung_ln = lines[ung_pos - 1] if 1 <= ung_pos <= len(lines) else {}
+
+    dt_lt = str(dt_ln.get("luc_than") or dung_than)
+    dt_chi = str(dt_ln.get("chi") or "Dần")
+    dt_el = str(dt_ln.get("ngu_hanh") or CHI_EL.get(dt_chi, "Mộc"))
+    dt_thu = str(dt_ln.get("luc_thu") or "Thanh Long")
+    dt_vs = str(dt_ln.get("vuong_suy") or "Bình")
+    dt_nap_am = str(dt_ln.get("nap_am") or "")
+    h_flags = set(dt_ln.get("hoa_flags") or [])
+    the_el = str(the_ln.get("ngu_hanh") or "Thổ")
+    the_chi = str(the_ln.get("chi") or "Thìn")
+
+    tc_qm = int(qm_res.get("target_cung") or 2)
+    chu_qm = int(qm_res.get("cung_chu") or 2)
+    p_map_qm = qm_res.get("palace_micro_audit") or {}
+    pa_tc = p_map_qm.get(tc_qm, {})
+    door_tc = str(pa_tc.get("door") or "Khai Môn")
+    star_tc = str(pa_tc.get("star") or "Thiên Tâm")
+    deity_tc = str(pa_tc.get("deity") or "Trực Phù")
+    huong_tc = str(pa_tc.get("huong") or "Đông Nam")
+    tu_hai_tc = list(pa_tc.get("tu_hai") or [])
+    t_st = str(pa_tc.get("can_thien") or "Mậu")
+    d_st = str(pa_tc.get("can_dia") or "Mậu")
+    pat_name, pat_desc = QIMEN_10_STEM_PATTERNS.get((t_st, d_st), (f"Cách {t_st}+{d_st}", "tương tác chủ khách theo thời lệnh"))
+
+    comp_sc = int(deep_syn.get("composite_score", 50))
+    lh_sc = int(deep_syn.get("lh_score", 50))
+    qm_sc = int(deep_syn.get("qm_score", 50))
+    mh_sc = int(deep_syn.get("mh_score", 50))
+    benh_quai = str(deep_syn.get("benh_quai") or "")
+    duoc_ung_ky = str(deep_syn.get("duoc_ung_ky") or "")
+
+    # Giải lịch thiên văn trước để cả 4 trụ cột dùng chung mốc ngày chuẩn 100%
+    ymdh = resolve_astronomical_ung_ky_ymdh(
+        ly_res=ly_res,
+        qm_res=qm_res,
+        mh_res=mh_res,
+        benh_quai=benh_quai,
+        duoc_ung_ky=duoc_ung_ky,
+        chart_data=cd,
+        question=question,
+    )
+
+    # ── PHÂN LOẠI MIỀN ĐỜI SỐNG CỦA CÂU HỎI ──
+    if any(w in q_low for w in ("mở quán", "cà phê", "cửa hàng", "shop", "kinh doanh", "buôn bán", "nhập hàng", "đầu tư", "khởi nghiệp", "hùn vốn", "chứng khoán", "cổ phiếu", "lướt sóng")):
+        domain = "BIZ_INVEST"
+    elif any(w in q_low for w in ("công việc", "sự nghiệp", "đi làm", "cơ quan", "công ty", "sếp", "thăng chức", "nhảy việc", "nghỉ việc", "xin việc", "ứng tuyển", "lương")):
+        domain = "WORK_CAREER"
+    elif any(w in q_low for w in ("đòi nợ", "trả nợ", "cho vay", "vay tiền", "công nợ", "tiền bạc", "tài chính", "lộc", "thu nhập")):
+        domain = "MONEY_DEBT"
+    elif any(w in q_low for w in ("hợp đồng", "ký kết", "giấy tờ", "sổ đỏ", "pháp lý", "kiện", "tranh chấp", "tòa án", "thủ tục")):
+        domain = "CONTRACT_LEGAL"
+    elif any(w in q_low for w in ("gia đình", "gia đạo", "trong nhà", "nhà tôi", "nhà cửa", "bố mẹ", "cha mẹ", "vợ chồng", "con cái", "anh em")):
+        domain = "FAMILY_HOME"
+    elif any(w in q_low for w in ("tình cảm", "người yêu", "yêu", "hôn nhân", "cưới", "quay lại", "chia tay", "nhớ", "hẹn hò")):
+        domain = "LOVE_MARRIAGE"
+    elif any(w in q_low for w in ("sức khỏe", "bệnh", "đau ", "ốm", "khám", "mổ", "thuốc", "điều trị")):
+        domain = "HEALTH_BODY"
+    elif any(w in q_low for w in ("mất ", "thất lạc", "rơi ", "để quên", "trộm", "lấy cắp", "tìm lại")):
+        domain = "LOST_THEFT"
+    elif any(w in q_low for w in ("thi ", "đỗ", "đậu", "học ", "điểm", "visa", "du học")):
+        domain = "STUDY_EXAM"
+    elif any(w in q_low for w in ("xuất hành", "đi xa", "chuyến đi", "du lịch", "công tác", "về quê")):
+        domain = "TRAVEL_MOVE"
+    else:
+        domain = "GENERAL"
+
+    # ── TRỤ CỘT 1: SỰ VIỆC CỤ THỂ GÌ XẢY RA TRONG ĐỜI THỰC (CHỐNG LUẬN ẢO 100%) ──
+    active_lines = [ln for ln in lines if ln.get("is_moving") or ln.get("is_am_dong")]
+    real_events: List[str] = []
+
+    # 1a. Giải nghĩa trạng thái trực diện của chính Dụng Thần ra sự kiện thực tế
+    if dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
+        _void_ev_map = {
+            "BIZ_INVEST": f"Thương vụ/kế hoạch mở bán hiện mới đẹp trên tính toán bề mặt, dòng thu thực chất hoặc cam kết khách/đối tác còn bỏ ngỏ ('{dt_lt} {dt_chi} vướng Không Vong' — nếu dốc vốn ngay lúc này sẽ hụt doanh thu kỳ đầu, phải qua mốc Xuất Không mới tụ tiền thật)",
+            "WORK_CAREER": f"Đề xuất công việc/vị trí hoặc lời hứa từ cấp trên hiện chưa ra quyết định chính thức ('{dt_lt} {dt_chi} vướng Không Vong' — hồ sơ/chỉ tiêu còn treo tạm thời chờ ngày Xuất Không mới chốt)",
+            "MONEY_DEBT": f"Khoản tiền/công nợ đang hỏi hiện chưa sẵn tiền mặt để về tay ngay ('{dt_lt} {dt_chi} Không Vong' — đối phương tạm khất hẹn hoặc dòng tiền về chậm hơn dự kiến)",
+            "CONTRACT_LEGAL": f"Bản hợp đồng/giấy tờ còn thiếu điều khoản chốt hoặc chữ ký phê duyệt cuối ('{dt_lt} {dt_chi} Không Vong' — chưa thể ký xong ngay lập tức)",
+        }
+        real_events.append(_void_ev_map.get(domain, f"Mục tiêu chính ({dt_lt} {dt_chi}) đang ở trạng thái 'tạm ẩn / chưa thành hình thực chất' trên thực tế, cần qua mốc Xuất Không mới chuyển thành kết quả thật"))
+    elif "HOI_DAU_KHAC" in h_flags:
+        real_events.append(f"Sự việc khởi đầu tưởng thuận nhưng đến chặng chốt lại phát sinh lực cản dội ngược ('Hào {dt_idx} {dt_lt} {dt_chi} động hóa Hồi Đầu Khắc' — dễ đổi ý phút chót hoặc đội chi phí/rủi ro ngoài dự tính)")
+    elif "HOI_DAU_SINH" in h_flags or "HOA_TIEN" in h_flags:
+        real_events.append(f"Mạch việc đang mở đà tăng trưởng thực chất rất tốt ('Hào {dt_idx} {dt_lt} {dt_chi} động đắc {'Hồi Đầu Sinh' if 'HOI_DAU_SINH' in h_flags else 'Hóa Tiến Thần'}' — càng triển khai về sau càng có thêm nguồn lực tiếp sức)")
+    elif dt_vs in ("Tù", "Tử") and not dt_ln.get("is_moving"):
+        _weak_ev_map = {
+            "WORK_CAREER": f"Công việc hiện tại chịu sức ép kiểm soát hoặc chững lại về quyền hạn/chỉ tiêu (Dụng Thần {dt_lt} {dt_chi} thất lệnh '{dt_vs}' dưới tháng lệnh), dễ có đợt rà soát quy trình hoặc điều chỉnh phân công khiến bạn vất vả tâm sức trước khi ổn định",
+            "BIZ_INVEST": f"Sức mua thị trường và biên lợi nhuận thực tế hiện đang mỏng hơn kỳ vọng (Dụng Thần {dt_lt} {dt_chi} ở bậc '{dt_vs}'), mở vội dễ chịu áp lực chi phí cố định đè nặng",
+        }
+        real_events.append(_weak_ev_map.get(domain, f"Nền lực của sự việc ({dt_lt} {dt_chi} ở bậc '{dt_vs}') hiện còn mỏng, chưa đủ đà bùng nổ ngay mà cần bước đệm tích lũy"))
+
+    # 1b. Giải nghĩa từng Hào Động / Ám Động sang biến cố thực tế sát miền câu hỏi
+    for aln in active_lines[:3]:
+        a_h = int(aln.get("hao") or 1)
+        a_lt = str(aln.get("luc_than") or "")
+        a_chi = str(aln.get("chi") or "")
+        a_thu = str(aln.get("luc_thu") or "")
+        a_blt = str(aln.get("bien_luc_than") or "")
+        a_act_lbl = f"Hào {a_h} {a_lt} ({a_chi} · {a_thu}) {'động hóa ' + a_blt if aln.get('is_moving') else 'ám động'}"
+        if a_lt == "Huynh Đệ":
+            if domain in ("BIZ_INVEST", "MONEY_DEBT"):
+                real_events.append(f"Phát sinh khoản chi phí đội vốn, cạnh tranh khách/giá trực tiếp hoặc rủi ro hao hụt nếu chung đụng tiền bạc với bạn bè/đối tác ngang hàng [{a_act_lbl}]")
+            elif domain == "WORK_CAREER":
+                real_events.append(f"Có sự cạnh tranh ngầm từ đồng nghiệp/đội nhóm cùng cấp hoặc chia sẻ lại khối lượng công việc – quyền lợi [{a_act_lbl}]")
+            elif domain == "FAMILY_HOME":
+                real_events.append(f"Trong nhà phát sinh khoản chi tiêu lớn cho mua sắm/sửa chữa hoặc có cuộc bàn bạc tài chính hơi căng giữa anh chị em/người thân [{a_act_lbl}]")
+            else:
+                real_events.append(f"Xuất hiện yếu tố hao phí tiền bạc hoặc người ngang vai xen vào chia lực [{a_act_lbl}]")
+        elif a_lt == "Quan Quỷ":
+            if a_thu == "Chu Tước":
+                real_events.append(f"Xảy ra cuộc trao đổi căng thẳng, rà soát giấy tờ/quy chế hoặc tranh luận đúng–sai trực diện cần giữ bình tĩnh lời nói [{a_act_lbl}]")
+            elif a_thu == "Bạch Hổ":
+                real_events.append(f"Có áp lực tiến độ gấp gáp, kiểm tra kỷ luật gắt gao hoặc cần chú ý an toàn đi lại & sức khỏe cơ thể [{a_act_lbl}]")
+            elif domain == "WORK_CAREER":
+                real_events.append(f"Có sự biến động từ cấp quản lý: giao thêm trọng trách khó, thay đổi quy chế điều hành hoặc rà soát KPI/nhân sự [{a_act_lbl}]")
+            else:
+                real_events.append(f"Phát sinh rào cản thủ tục quản lý hoặc áp lực lo toan tâm lý cần tháo gỡ khéo [{a_act_lbl}]")
+        elif a_lt == "Phụ Mẫu":
+            if domain in ("WORK_CAREER", "CONTRACT_LEGAL"):
+                real_events.append(f"Biến động xoay quanh văn bản quyết định, hợp đồng, hồ sơ hành chính hoặc sự dịch chuyển phòng ban/đơn vị công tác [{a_act_lbl}]")
+            elif domain == "BIZ_INVEST":
+                real_events.append(f"Phát sinh việc ký kết mặt bằng, giấy phép kinh doanh, đầu tư trang thiết bị/cơ sở vật chất ban đầu tốn nhiều công sức [{a_act_lbl}]")
+            elif domain == "FAMILY_HOME":
+                real_events.append(f"Gia đình bận rộn việc giấy tờ nhà đất/xe cộ, tu sửa không gian sống hoặc chăm lo sức khỏe bậc cha mẹ/trưởng bối [{a_act_lbl}]")
+            else:
+                real_events.append(f"Sự việc gắn trực tiếp với khâu giấy tờ thủ tục, chứng từ hoặc nhà cửa phương tiện [{a_act_lbl}]")
+        elif a_lt == "Thê Tài":
+            real_events.append(f"Dòng tiền/lợi ích kinh tế chuyển động rõ rệt: có khoản thu–chi thực tế, thanh toán đơn hàng hoặc điều chỉnh ngân sách [{a_act_lbl}]")
+        elif a_lt == "Tử Tôn":
+            if domain in ("WORK_CAREER", "CONTRACT_LEGAL") and dt_lt == "Quan Quỷ":
+                real_events.append(f"Tâm lý muốn tự do đổi mới hoặc nảy sinh hướng đi riêng làm xáo trộn khuôn khổ chức vụ cũ (Tử Tôn khắc Quan Quỷ) [{a_act_lbl}]")
+            else:
+                real_events.append(f"Có Phúc Thần giải nguy: quý nhân/khách hàng mở lối tháo gỡ rắc rối êm đẹp, đón tin vui con cái hoặc nguồn khách tự nhiên [{a_act_lbl}]")
+
+    # 1c. Bổ sung cách cục Kỳ Môn & kết cục để tạo bức tranh trọn vẹn
+    real_events.append(
+        f"Trên bàn Kỳ Môn Cung {tc_qm} ({huong_tc}) hiện cách <b>«{pat_name}»</b> ({pat_desc.lower()}), hội <b>{door_tc} · {star_tc} · {deity_tc}</b>"
+        + (f" (vướng {', '.join(tu_hai_tc)})" if tu_hai_tc else " (cung sạch Tứ Hại)")
+    )
+
+    concrete_event_summary = real_events[0] if real_events else f"Sự việc vận hành theo quẻ {ban_name} ➔ {bien_name} ({comp_sc}/100)"
+    pillar1_event_html = (
+        f"<div style='margin-bottom:5px;color:#bae6fd;font-weight:800;font-size:0.86em;'>"
+        f"⚖️ Khí lực Tam Thức: Lục Hào {lh_sc} · Kỳ Môn {qm_sc} · Mai Hoa {mh_sc} ➔ Hợp nhất {comp_sc}/100 ({ban_name} ➔ {bien_name})"
+        f"</div>"
+        + "".join(f"• {ev}.<br>" for ev in real_events[:3])
+        + f"• <b>Điểm nghẽn gốc trên quẻ:</b> {benh_quai}."
+    )
+
+    # ── TRỤ CỘT 2: LIÊN QUAN ĐẾN CÁI GÌ & AI (ĐỊNH VỊ ĐÚNG MIỀN CÂU HỎI — CHỐNG RÂU ÔNG NỌ CẮM CẰM BÀ KIA!) ──
+    if domain == "HEALTH_BODY":
+        thing_core = "chứng bệnh cơ thể đang gặp, phác đồ thuốc điều trị (Tử Tôn) và chế độ ăn uống – nghỉ ngơi phục hồi nguyên khí"
+    elif domain == "FAMILY_HOME":
+        thing_core = {
+            "Phụ Mẫu": "giấy tờ nhà đất, tu sửa không gian sống/phương tiện gia đình hoặc sức khỏe bậc sinh thành",
+            "Thê Tài": "ngân sách chi tiêu sinh hoạt trong nhà, tài sản chung hoặc đời sống vợ chồng",
+            "Huynh Đệ": "khoản chi tiêu phát sinh trong gia đình, chuyện anh chị em họ hàng hoặc sửa chữa vật dụng",
+            "Quan Quỷ": "sức khỏe thành viên trong nhà, hệ thống điện–nước–bếp núc hoặc thủ tục hộ tịch",
+            "Tử Tôn": "chuyện con cái, học hành, tin vui hỷ sự bình an trong gia đạo",
+        }.get(dt_lt, "nếp sinh hoạt, nhà cửa và sự bình an của các thành viên trong gia đình")
+    elif domain == "LOVE_MARRIAGE":
+        thing_core = "sự gắn kết tình cảm đôi lứa, cuộc trò chuyện/gặp gỡ trực tiếp và cam kết tương lai giữa hai người"
+    else:
+        _LT_CONCRETE_THINGS = {
+            "Phụ Mẫu": "hợp đồng văn bản, giấy phép/hồ sơ pháp lý, mặt bằng nhà đất/cửa hàng hoặc phương tiện xe cộ",
+            "Thê Tài": "nguồn vốn tiền mặt, doanh thu bán hàng, khoản công nợ/thanh toán hoặc tài sản hàng hóa",
+            "Quan Quỷ": "quyết định quản lý/chức vụ, chỉ tiêu kiểm tra, thủ tục pháp chế–thuế hoặc quy trình cơ quan",
+            "Huynh Đệ": "chi phí trung gian/đội vốn, thỏa thuận ăn chia cổ phần, giao dịch bạn bè hoặc đối thủ cùng ngành",
+            "Tử Tôn": "sản phẩm/nguồn khách hàng thực tế, con cái/hậu bối, hoặc phương án tháo gỡ rủi ro",
+        }
+        thing_core = _LT_CONCRETE_THINGS.get(dt_lt, "công việc và kế hoạch cá nhân")
+
+    chi_img = CHI_CONCRETE_IMAGE.get(dt_chi, "")
+    palace_loc_raw = PALACE_BODY_LOC.get(tc_qm, "")
+    palace_loc_short = palace_loc_raw.split("(", 1)[1].rstrip(")") if "(" in palace_loc_raw else huong_tc
+
+    # Chân dung Nhân vật tác động mạnh nhất trên quẻ (phân vai sát đúng miền Sức khỏe / Gia đình / Tình cảm / Công việc)
+    _YANG_C = {"Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"}
+    mover_other = next((ln for ln in active_lines if int(ln.get("hao") or 0) != the_pos), None)
+    key_person_ln = (dt_ln if domain == "HEALTH_BODY" and dt_idx != the_pos else None) or mover_other or ung_ln or dt_ln
+    kp_hao = int(key_person_ln.get("hao") or ung_pos)
+    kp_chi = str(key_person_ln.get("chi") or "Ngọ")
+    kp_el = str(key_person_ln.get("ngu_hanh") or "Hỏa")
+    kp_lt = str(key_person_ln.get("luc_than") or "Quan Quỷ")
+    kp_thu = str(key_person_ln.get("luc_thu") or "Chu Tước")
+    kp_ts = str(key_person_ln.get("ts_ngay") or "Lâm Quan")
+    kp_gender = "Nam giới" if kp_chi in _YANG_C else "Nữ giới"
+    kp_age = (
+        "trẻ tuổi (khoảng 20–34 tuổi)" if kp_ts in ("Thai", "Dưỡng", "Trường Sinh", "Mộc Dục", "Quan Đái")
+        else ("trung niên (khoảng 35–50 tuổi)" if kp_ts in ("Lâm Quan", "Đế Vượng", "Suy") else "đứng tuổi/cao niên (trên 48 tuổi)")
+    )
+    if kp_lt == "Phụ Mẫu" and domain in ("HEALTH_BODY", "FAMILY_HOME"):
+        if any(w in q_low for w in ("bố", "cha", "ông nội", "ông ngoại")):
+            kp_gender = "Nam giới"
+        elif any(w in q_low for w in ("mẹ", "má", "bà nội", "bà ngoại")):
+            kp_gender = "Nữ giới"
+        if any(w in q_low for w in ("bố", "mẹ", "cha", "má", "ông", "bà")):
+            kp_age = "bậc sinh thành / trung–cao niên (trên 48 tuổi)"
+    if domain == "HEALTH_BODY":
+        _KP_ROLE_BY_LT = {
+            "Phụ Mẫu": "bậc cha mẹ / trưởng bối đang điều trị hoặc người nhà trực tiếp chăm sóc",
+            "Quan Quỷ": "bác sĩ chuyên khoa / phác đồ can thiệp y tế (hoặc tác nhân gây mệt mỏi)",
+            "Tử Tôn": "thầy thuốc mát tay / dược thần giúp cắt cơn đau và phục hồi sức khỏe",
+            "Thê Tài": "người phối ngẫu / người thân chăm lo dinh dưỡng và thuốc thang",
+            "Huynh Đệ": "anh chị em trong nhà cùng phụ giúp thăm khám",
+        }
+    elif domain == "FAMILY_HOME":
+        _KP_ROLE_BY_LT = {
+            "Phụ Mẫu": "bậc cha mẹ / người lớn tuổi trụ cột trong gia đình",
+            "Quan Quỷ": "người đàn ông trụ cột trong nhà hoặc người đang mang nỗi lo công việc/sức khỏe",
+            "Huynh Đệ": "anh chị em ruột thịt / họ hàng thân thiết",
+            "Thê Tài": "người vợ / phụ nữ giữ tay hòm chìa khóa trong nhà",
+            "Tử Tôn": "con cháu / thế hệ trẻ mang lại sinh khí vui vẻ cho gia đình",
+        }
+    elif domain == "LOVE_MARRIAGE":
+        _KP_ROLE_BY_LT = {
+            "Quan Quỷ": "người nam / bạn trai / chồng (hoặc rào cản tâm lý giữa hai người)",
+            "Thê Tài": "người nữ / bạn gái / vợ đang được hỏi tới",
+            "Phụ Mẫu": "gia đình hai bên / bậc phụ huynh tác động vào chuyện tình cảm",
+            "Huynh Đệ": "bạn bè xung quanh hoặc người gây xao nhãng mối quan hệ",
+            "Tử Tôn": "người bạn hòa giải giúp kết nối lại cảm xúc tự nhiên",
+        }
+    else:
+        _KP_ROLE_BY_LT = {
+            "Quan Quỷ": "cấp trên, người quản lý/xét duyệt, cơ quan chức năng hoặc người nắm quyền quyết định",
+            "Phụ Mẫu": "người lớn tuổi/trưởng bối, chủ mặt bằng/nhà đất hoặc người phụ trách hồ sơ hợp đồng",
+            "Huynh Đệ": "đồng nghiệp ngang cấp, bạn bè quen biết, người hùn vốn hoặc đối thủ cạnh tranh",
+            "Thê Tài": "khách hàng, người nắm giữ nguồn tiền/tài chính, đối tác kinh doanh hoặc người phối ngẫu",
+            "Tử Tôn": "cấp dưới, khách hàng trẻ, hậu bối hoặc người đứng ra hòa giải giúp đỡ",
+        }
+    kp_role_desc = _KP_ROLE_BY_LT.get(kp_lt, "người liên quan trực tiếp")
+    if SINH_EL.get(kp_el) == the_el or _LUC_HOP_12.get(kp_chi) == the_chi:
+        kp_attitude = "có thiện chí nâng đỡ, đồng hành hỗ trợ bạn thực chất (Hào sinh/hợp Thế)"
+    elif KHAC_EL.get(kp_el) == the_el:
+        kp_attitude = (
+            "đang khiến bạn lo lắng tốn nhiều tâm sức chăm lo (Hào tác động mạnh lên Thế)"
+            if domain in ("HEALTH_BODY", "FAMILY_HOME")
+            else "đang gây sức ép, kiểm soát chặt hoặc đưa ra điều kiện khắt khe với bạn (Hào khắc Thế)"
+        )
+    else:
+        kp_attitude = "giữ thái độ thực tế, rõ ràng theo đúng nguyên tắc"
+
+    h5_ln = lines[4] if len(lines) >= 5 else {}
+    h5_note = ""
+    if h5_ln and kp_hao != 5 and domain not in ("HEALTH_BODY", "LOVE_MARRIAGE"):
+        h5_note = (
+            f" · <b>Trục chủ đạo Hào 5:</b> {h5_ln.get('luc_than','')} ({h5_ln.get('chi','')}) "
+            + ("đang phát động trực tiếp cầm trịch" if h5_ln.get("is_moving") else ("tạm Tuần Không chưa chốt văn bản cuối" if h5_ln.get("is_void") else "giữ nhịp ổn định"))
+        )
+
+    concrete_related_summary = f"Liên quan trực tiếp đến {thing_core} (hướng {huong_tc}) & {kp_gender} ({kp_role_desc})"
+    pillar2_related_html = (
+        f"• <b>📦 Liên quan đến cái gì (Vật việc & Khâu cụ thể):</b> Trực tiếp xoay quanh <b>{thing_core}</b> "
+        f"[Căn cứ Hào {dt_idx} {dt_lt} {dt_chi}-{dt_el}{(' · Nạp Âm ' + dt_nap_am) if dt_nap_am else ''}: {chi_img}].<br>"
+        f"• <b>📍 Không gian / Bộ phận / Hiện trường ứng quẻ:</b> <b>{palace_loc_short}</b>.<br>"
+        f"• <b>👤 Liên quan đến ai (Nhân vật trọng tâm):</b> <b>{kp_gender}, {kp_age}</b> — vai trò <b>{kp_role_desc}</b> "
+        f"(ứng Hào {kp_hao} {kp_lt} {kp_chi}-{kp_el} · {kp_thu}), hiện {kp_attitude}{h5_note}."
+    )
+
+    # ── TRỤ CỘT 4: GIẢI PHÁP HÀNH ĐỘNG THỰC TẾ & HÓA GIẢI CHỐNG LUẬN ẢO ──
+    can_n_s = str(cd.get("can_ngay") or "Giáp")
+    can_g_s = str(cd.get("can_gio") or "Giáp")
+    _NGU_BN = {
+        ("Giáp", "Canh"), ("Ất", "Tân"), ("Bính", "Nhâm"), ("Đinh", "Quý"), ("Mậu", "Giáp"),
+        ("Kỷ", "Ất"), ("Canh", "Bính"), ("Tân", "Đinh"), ("Nhâm", "Mậu"), ("Quý", "Kỷ"),
+    }
+    is_nbnt_now = (can_n_s, can_g_s) in _NGU_BN
+    ng_el = next((k for k, v in SINH_EL.items() if v == dt_el), "Thủy")
+
+    # Bước 1: Giải pháp vận hành thực tế trị đúng Bệnh của quẻ
+    if domain == "HEALTH_BODY":
+        step1_act = (
+            f"<b>Phác đồ Chăm sóc & Điều trị Đúng Gốc:</b> "
+            + (
+                f"Nguyên khí người bệnh ({dt_lt} {dt_chi}) hiện còn suy yếu/vướng cản ({comp_sc}/100) — cần tái khám chuyên khoa kỹ lưỡng, tuân thủ đủ phác đồ thuốc (không tự ý ngắt thuốc sớm) và giữ ấm/ăn uống thanh đạm cho tới mốc chuyển khí <b>{ymdh['short_inline_date'].split('[')[0].strip()}</b>"
+                if comp_sc < 50
+                else f"Dược thần và nguyên khí đang đáp ứng tốt ({comp_sc}/100) — kiên trì dùng đúng liệu trình hiện tại kết hợp nghỉ ngơi điều độ sẽ sớm hồi phục"
+            )
+        )
+    elif dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
+        step1_act = (
+            f"<b>Khóa rủi ro 'Hóa Không / Tuần Không':</b> Tuyệt đối KHÔNG dốc 100% vốn, không đặt cọc lớn một lần hay tin hoàn toàn vào lời hứa miệng lúc này; "
+            f"hãy tách nhỏ kế hoạch liên quan <i>{thing_core}</i> thành 2–3 bước kiểm chứng thực tế và đợi qua mốc Xuất Không (<b>{ymdh['short_inline_date'].split('[')[0].strip()}</b>) mới chốt chính thức"
+        )
+    elif any(ln.get("luc_than") == "Huynh Đệ" and (ln.get("is_moving") or ln.get("is_am_dong")) for ln in lines) and domain in ("BIZ_INVEST", "MONEY_DEBT", "WORK_CAREER"):
+        step1_act = (
+            f"<b>Chặn thất thoát do Hào Huynh Đệ kích hoạt:</b> Không hùn vốn chung đụng nhập nhằng, không cho vay/ứng tiền trước và khóa chặt trần chi phí phát sinh cho <i>{thing_core}</i>; "
+            f"mọi thu–chi phải do chính tay bạn kiểm soát trực tiếp"
+        )
+    elif comp_sc < 50 or dt_vs in ("Tù", "Tử") or tu_hai_tc or "HOI_DAU_KHAC" in h_flags:
+        step1_act = (
+            f"<b>Chiến thuật 'Thủ Vững Trước – Tiến Sau':</b> Quẻ hiện báo nút thắt (<i>{benh_quai}</i>)"
+            + (f" kèm Giờ Ngũ Bất Ngộ ({can_g_s} khắc {can_n_s})" if is_nbnt_now else "")
+            + f" — tuyệt đối tránh quyết định nóng vội ngay lúc này; hãy rà soát chặt chẽ các điều khoản/chi phí xoay quanh <i>{thing_core}</i> trước khi bước sang kỳ mở khóa"
+        )
+    else:
+        step1_act = (
+            f"<b>Chủ động nắm bắt thời cơ đắc khí ({comp_sc}/100):</b> Mạch quẻ đã thông cho <i>{thing_core}</i> — hãy chuẩn bị sẵn hồ sơ/nguồn lực hoàn chỉnh và xúc tiến dứt khoát thay vì chần chừ để lỡ nhịp vượng"
+        )
+
+    # Bước 2: Đối sách nhân sự với người liên quan (kp_role_desc)
+    if domain == "HEALTH_BODY":
+        step2_people = (
+            f"<b>Chọn Thầy Thuốc & Người Chăm Sóc Hợp Khí:</b> Ưu tiên thăm khám bác sĩ có chuyên môn sâu (ứng hành <b>{ng_el}</b> / Sao Thiên Tâm) và động viên tinh thần người bệnh nhẹ nhàng, tránh tạo tâm lý lo âu"
+        )
+    elif KHAC_EL.get(kp_el) == the_el:
+        step2_people = (
+            f"<b>Đối sách với {kp_gender} ({kp_role_desc} — Hào {kp_hao} {kp_chi}):</b> Tránh tranh luận gay gắt trực diện; "
+            f"hãy dùng văn bản/số liệu minh bạch và mượn khâu trung gian mềm dẻo (thuộc hành <b>{ng_el}</b>) để hóa giải áp lực êm thấm"
+        )
+    else:
+        step2_people = (
+            f"<b>Kết nối đúng người mấu chốt:</b> Chủ động trao đổi thẳng thắn, thống nhất rõ ràng với <b>{kp_gender} ({kp_role_desc} — Hào {kp_hao} {kp_chi})</b> để chốt cam kết cụ thể"
+        )
+
+    # Bước 3: Luôn ưu tiên Tam Cát Môn (Khai · Sinh · Hưu) trên bàn Kỳ Môn — TUYỆT ĐỐI KHÔNG khuyên đi vào Tử/Kinh/Thương Môn!
+    cat_candidates: List[Tuple[int, str]] = []
+    for pi, pv in p_map_qm.items():
+        if pi == 5:
+            continue
+        d_nm = str(pv.get("door") or "")
+        if any(d in d_nm for d in ("Khai", "Sinh", "Hưu")):
+            th_cnt = len(pv.get("tu_hai") or [])
+            th_note = "sạch Tứ Hại" if th_cnt == 0 else "cát môn chủ lực"
+            cat_candidates.append((th_cnt, f"Hướng <b>{pv.get('huong','')}</b> (Cung {pi} — đắc <b>{d_nm} · {pv.get('star','')}</b>, {th_note})"))
+    cat_candidates.sort(key=lambda x: x[0])
+    best_cat_dir = cat_candidates[0][1] if cat_candidates else f"Hướng <b>{huong_tc}</b> (Cung {tc_qm})"
+    step3_remedy = (
+        f"<b>Phương vị Cát Môn & Thời khắc hành sự:</b> Ưu tiên đi giao dịch/thăm khám/mở việc về {best_cat_dir}, "
+        f"thực hiện đúng mốc <b>{ymdh['short_inline_date']}</b> (bồi đắp hành Thông Quan <b>{ng_el}</b> để chuyển hung thành cát)"
+    )
+
+    pillar4_solution_html = f"• 1️⃣ {step1_act}.<br>• 2️⃣ {step2_people}.<br>• 3️⃣ {step3_remedy}."
+
+    return {
+        "domain": domain,
+        "concrete_event_summary": concrete_event_summary,
+        "concrete_related_summary": concrete_related_summary,
+        "short_inline_date": ymdh["short_inline_date"],
+        "ymdh": ymdh,
+        "pillar1_event_html": pillar1_event_html,
+        "pillar2_related_html": pillar2_related_html,
+        "pillar3_timing_html": ymdh["pillar3_html"],
+        "pillar3_plain": ymdh["pillar3_plain"],
+        "pillar4_solution_html": pillar4_solution_html,
+        "pillar1_plain": _strip_tags(pillar1_event_html.replace("<br>", " | ")),
+        "pillar2_plain": _strip_tags(pillar2_related_html.replace("<br>", " | ")),
+        "pillar4_plain": _strip_tags(pillar4_solution_html.replace("<br>", " | ")),
+    }

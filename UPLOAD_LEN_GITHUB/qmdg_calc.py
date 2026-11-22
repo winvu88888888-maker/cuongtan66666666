@@ -146,7 +146,8 @@ def get_can_chi_month(year_can, tiet_khi):
     chi_idx = CHI.index(month_chi)
     start_can_map = {"Giáp": 2, "Kỷ": 2, "Ất": 4, "Canh": 4, "Bính": 6, "Tân": 6, "Đinh": 8, "Nhâm": 8, "Mậu": 0, "Quý": 0}
     year_can_idx = start_can_map.get(year_can, 0)
-    month_can_idx = (year_can_idx + (chi_idx - 2)) % 10
+    month_offset = (chi_idx - 2) % 12
+    month_can_idx = (year_can_idx + month_offset) % 10
     return CAN[month_can_idx], month_chi
 
 

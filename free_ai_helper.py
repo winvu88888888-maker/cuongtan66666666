@@ -16506,36 +16506,27 @@ class FreeAIHelper:
             _omni_ch_data = (_omniscient_res.get('data', {}) if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) else {})
             _is_spec_override_box = bool(locals().get('_dual_verified', {}).get('has_specialized_override'))
             _is_bin_fact_box = bool(_omni_ch_data.get('is_binary_factual_q'))
+            _online_lienquan = ''
             if _is_spec_override_box and locals().get('_dual_verified', {}).get('verified_headline'):
                 _dv_box = locals().get('_dual_verified', {})
                 _dv_hl_str = str(_dv_box['verified_headline'] or '')
-                if _dv_box.get('ai2_online_succeeded', False) or _dv_box.get('is_strict_override', False):
-                    # V133.0: Giữ nguyên 100% đáp án tinh hoa của Con AI Số 2 — tuyệt đối không bị bộ lọc cũ ghi đè!
-                    _online_verdict_line = _dv_hl_str
-                    _online_visao = str(_dv_box.get('verified_why') or '') or _online_visao
-                    _online_ungky = str(_dv_box.get('verified_when') or '') or _online_ungky
-                    _online_giaiphap = str(_dv_box.get('verified_advice') or '') or _online_giaiphap
+                _online_lienquan = str(_dv_box.get('verified_related') or '')
+                # V139.0: Luôn giữ chuẩn đáp án 4 Trụ Cột Tiên Tri Chống Luận Ảo từ _dual_verified (không để văn mẫu chung chung ghi đè!)
+                _online_verdict_line = _dv_hl_str
+                _v_why_dv = str(_dv_box.get('verified_why') or '')
+                if (not _dv_box.get('ai2_online_succeeded', False)) and _online_visao and len(_online_visao.strip()) > 35 and "Tóm Tắt]:" not in _v_why_dv:
+                    _short_on_vs = _online_visao.strip()
+                    if len(_short_on_vs) > 220:
+                        _short_on_vs = _short_on_vs[:220].rsplit(" ", 1)[0] + "..."
+                    _online_visao = (
+                        f'{_v_why_dv}'
+                        f'<div style="padding:5px 9px;background:rgba(56,189,248,0.10);border-left:3px solid #38bdf8;border-radius:6px;margin-top:5px;font-size:0.89em;">'
+                        f'<b style="color:#7dd3fc;">🌐 [Đối chứng AI Online]:</b> {_short_on_vs}</div>'
+                    )
                 else:
-                    if _online_verdict_line and len(_online_verdict_line.strip()) > 18 and not any(g in _online_verdict_line.upper() for g in ['CẦN CÂN NHẮC', 'THUẬN LỢI & ĐẠT KẾT QUẢ TỐT', 'ĐẠI CÁT (', 'CÁT (', 'BÌNH (', 'HUNG (']):
-                        _online_verdict_line = _online_verdict_line.strip()
-                    else:
-                        _online_verdict_line = _dv_hl_str
-                    _v_why_dv = str(_dv_box.get('verified_why') or '')
-                    if _online_visao and len(_online_visao.strip()) > 35 and "Tóm Tắt]:" not in _v_why_dv:
-                        _short_on_vs = _online_visao.strip()
-                        if len(_short_on_vs) > 260:
-                            _short_on_vs = _short_on_vs[:260].rsplit(" ", 1)[0] + "..."
-                        _online_visao = (
-                            f'<div style="padding:6px 10px;background:rgba(56,189,248,0.12);border-left:3px solid #38bdf8;border-radius:6px;margin-bottom:6px;">'
-                            f'<b style="color:#7dd3fc;">🌐 [AI Online Tóm Tắt]:</b> {_short_on_vs}</div>'
-                            f'{_v_why_dv}'
-                        )
-                    else:
-                        _online_visao = _v_why_dv or _online_visao
-                    _v_when_dv = str(_dv_box.get('verified_when') or '')
-                    _online_ungky = _v_when_dv or _online_ungky
-                    _v_adv_dv = str(_dv_box.get('verified_advice') or '')
-                    _online_giaiphap = _v_adv_dv or _online_giaiphap
+                    _online_visao = _v_why_dv or _online_visao
+                _online_ungky = str(_dv_box.get('verified_when') or '') or _online_ungky
+                _online_giaiphap = str(_dv_box.get('verified_advice') or '') or _online_giaiphap
             elif _is_bin_fact_box and _omni_ch_data.get('binary_verdict_headline'):
                 _online_verdict_line = _omni_ch_data['binary_verdict_headline']
                 _online_visao = _omni_ch_data.get('binary_why_reasons') or _online_visao
@@ -16598,24 +16589,30 @@ class FreeAIHelper:
             _on_cards = []
             if _online_visao:
                 _on_cards.append(
-                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #38bdf8;">'
-                    f'<div style="font-weight:800;color:#38bdf8;font-size:0.92em;margin-bottom:5px;">🔍 VÌ SAO (NGUYÊN NHÂN CỐT LÕI)</div>'
-                    f'<div style="color:#f1f5f9;font-size:0.93em;line-height:1.52;">{_online_visao.rstrip(".")}</div></div>'
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #38bdf8;">'
+                    f'<div style="font-weight:800;color:#38bdf8;font-size:0.92em;margin-bottom:5px;">🔮 1. SỰ VIỆC GÌ XẢY RA & NGUYÊN NHÂN QUẺ</div>'
+                    f'<div style="color:#f1f5f9;font-size:0.92em;line-height:1.52;">{_online_visao.rstrip(".")}</div></div>'
+                )
+            if _online_lienquan:
+                _on_cards.append(
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #c084fc;">'
+                    f'<div style="font-weight:800;color:#d8b4fe;font-size:0.92em;margin-bottom:5px;">🔗 2. LIÊN QUAN ĐẾN CÁI GÌ & AI</div>'
+                    f'<div style="color:#f3e8ff;font-size:0.92em;line-height:1.52;">{_online_lienquan.rstrip(".")}</div></div>'
                 )
             if _online_ungky:
                 _on_cards.append(
-                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #fbbf24;">'
-                    f'<div style="font-weight:800;color:#fbbf24;font-size:0.92em;margin-bottom:5px;">⏰ KHI NÀO (THỜI ĐIỂM ỨNG KỲ)</div>'
-                    f'<div style="color:#fef3c7;font-size:0.93em;line-height:1.52;">{_online_ungky.rstrip(".")}</div></div>'
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #fbbf24;">'
+                    f'<div style="font-weight:800;color:#fbbf24;font-size:0.92em;margin-bottom:5px;">📅 3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA</div>'
+                    f'<div style="color:#fef3c7;font-size:0.92em;line-height:1.52;">{_online_ungky.rstrip(".")}</div></div>'
                 )
             if _online_giaiphap:
                 _on_cards.append(
-                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #34d399;">'
-                    f'<div style="font-weight:800;color:#34d399;font-size:0.92em;margin-bottom:5px;">🧭 LÀM GÌ (PHÁP QUYẾT HÀNH ĐỘNG)</div>'
-                    f'<div style="color:#ecfdf5;font-size:0.93em;line-height:1.52;">{_online_giaiphap.rstrip(".")}</div></div>'
+                    f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #34d399;">'
+                    f'<div style="font-weight:800;color:#34d399;font-size:0.92em;margin-bottom:5px;">🧭 4. GIẢI PHÁP THỰC TẾ & HÓA GIẢI</div>'
+                    f'<div style="color:#ecfdf5;font-size:0.92em;line-height:1.52;">{_online_giaiphap.rstrip(".")}</div></div>'
                 )
             _online_prose_html = (
-                f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px;">'
+                f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(265px,1fr));gap:10px;margin-top:10px;">'
                 + "".join(_on_cards)
                 + '</div>'
             ) if _on_cards else ''
@@ -16625,7 +16622,7 @@ class FreeAIHelper:
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ TIÊN TRI TOÀN TỨC NGAY ĐẦU TRANG (V135.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V139.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_holo_html
@@ -18145,36 +18142,43 @@ class FreeAIHelper:
                 if _dv_fb_obj.get('verified_headline'):
                     _fb_hl = str(_dv_fb_obj.get('verified_headline') or '')
                     _fb_why = str(_dv_fb_obj.get('verified_why') or '')
+                    _fb_rel = str(_dv_fb_obj.get('verified_related') or '')
                     _fb_when = str(_dv_fb_obj.get('verified_when') or '')
                     _fb_adv = str(_dv_fb_obj.get('verified_advice') or '')
                     _fb_cards = []
                     if _fb_why:
                         _fb_cards.append(
-                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #38bdf8;">'
-                            f'<div style="font-weight:800;color:#38bdf8;font-size:0.92em;margin-bottom:5px;">🔍 VÌ SAO (NGUYÊN NHÂN CỐT LÕI)</div>'
-                            f'<div style="color:#f1f5f9;font-size:0.93em;line-height:1.52;">{_fb_why.rstrip(".")}</div></div>'
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #38bdf8;">'
+                            f'<div style="font-weight:800;color:#38bdf8;font-size:0.92em;margin-bottom:5px;">🔮 1. SỰ VIỆC GÌ XẢY RA & NGUYÊN NHÂN QUẺ</div>'
+                            f'<div style="color:#f1f5f9;font-size:0.92em;line-height:1.52;">{_fb_why.rstrip(".")}</div></div>'
+                        )
+                    if _fb_rel:
+                        _fb_cards.append(
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #c084fc;">'
+                            f'<div style="font-weight:800;color:#d8b4fe;font-size:0.92em;margin-bottom:5px;">🔗 2. LIÊN QUAN ĐẾN CÁI GÌ & AI</div>'
+                            f'<div style="color:#f3e8ff;font-size:0.92em;line-height:1.52;">{_fb_rel.rstrip(".")}</div></div>'
                         )
                     if _fb_when:
                         _fb_cards.append(
-                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #fbbf24;">'
-                            f'<div style="font-weight:800;color:#fbbf24;font-size:0.92em;margin-bottom:5px;">⏰ KHI NÀO (THỜI ĐIỂM ỨNG KỲ)</div>'
-                            f'<div style="color:#fef3c7;font-size:0.93em;line-height:1.52;">{_fb_when.rstrip(".")}</div></div>'
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #fbbf24;">'
+                            f'<div style="font-weight:800;color:#fbbf24;font-size:0.92em;margin-bottom:5px;">📅 3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA</div>'
+                            f'<div style="color:#fef3c7;font-size:0.92em;line-height:1.52;">{_fb_when.rstrip(".")}</div></div>'
                         )
                     if _fb_adv:
                         _fb_cards.append(
-                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.82);border-radius:10px;border-left:4px solid #34d399;">'
-                            f'<div style="font-weight:800;color:#34d399;font-size:0.92em;margin-bottom:5px;">🧭 LÀM GÌ (PHÁP QUYẾT HÀNH ĐỘNG)</div>'
-                            f'<div style="color:#ecfdf5;font-size:0.93em;line-height:1.52;">{_fb_adv.rstrip(".")}</div></div>'
+                            f'<div style="padding:11px 14px;background:rgba(15,23,42,0.85);border-radius:10px;border-left:4px solid #34d399;">'
+                            f'<div style="font-weight:800;color:#34d399;font-size:0.92em;margin-bottom:5px;">🧭 4. GIẢI PHÁP THỰC TẾ & HÓA GIẢI</div>'
+                            f'<div style="color:#ecfdf5;font-size:0.92em;line-height:1.52;">{_fb_adv.rstrip(".")}</div></div>'
                         )
                     _fb_cards_html = (
-                        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px;">'
+                        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(265px,1fr));gap:10px;margin-top:10px;">'
                         + "".join(_fb_cards)
                         + '</div>'
                     ) if _fb_cards else ''
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ TIÊN TRI TOÀN TỨC NGAY ĐẦU TRANG (V135.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V139.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_holo_fb

@@ -52,7 +52,7 @@ LUC_HOP = {
     'Thìn': 'Dậu', 'Tị': 'Thân', 'Ngọ': 'Mùi', 'Mùi': 'Ngọ',
     'Thân': 'Tị', 'Dậu': 'Thìn', 'Tuất': 'Mão', 'Hợi': 'Dần',
 }
-MO_KHO = {'Kim': 'Sửu', 'Mộc': 'Mùi', 'Thủy': 'Thìn', 'Hỏa': 'Tuất', 'Thổ': 'Tuất'}
+MO_KHO = {'Kim': 'Sửu', 'Mộc': 'Mùi', 'Thủy': 'Thìn', 'Hỏa': 'Tuất', 'Thổ': 'Thìn'}
 SINH = {'Kim': 'Thủy', 'Thủy': 'Mộc', 'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim'}
 
 # ═══ SỐ TIÊN THIÊN & HẬU THIÊN & HÀ ĐỒ ═══
@@ -132,7 +132,7 @@ def _chi_to_dates(chi, base_date=None, scope='month'):
     if scope in ('day', 'month', 'year'):
         chi_idx = DIA_CHI.index(chi) if chi in DIA_CHI else -1
         if chi_idx >= 0:
-            for delta in range(0, 365):
+            for delta in range(1, 366):
                 check_date = base_date + datetime.timedelta(days=delta)
                 jdn = _calc_jdn(check_date.day, check_date.month, check_date.year)
                 day_idx = (jdn + 1) % 12

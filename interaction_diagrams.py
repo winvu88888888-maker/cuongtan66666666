@@ -726,19 +726,19 @@ import re as _re
 
 # Từ vô nghĩa / filler / noise thường gặp trong câu hỏi
 _NOISE_WORDS = {
-    # Filler / padding
-    'ạ', 'á', 'ơi', 'nhé', 'hen', 'ha', 'hả', 'nhỉ', 'thôi',
-    'vậy đó', 'đấy', 'nè', 'giúp', 'giùm', 'dùm', 'hộ',
-    'kìa', 'chút', 'xíu', 'tí', 'tý',
-    # Lịch sự thừa (dài→ngắn)
+    # Filler / padding (TUYỆT ĐỐI KHÔNG đưa các từ có nghĩa như 'dạ' [dạ dày], 'tý' [tuổi/giờ Tý], 'hộ' [căn hộ/hộ khẩu], 'giúp' [ai giúp], 'thôi' [thôi việc], 'cho tôi' [cho tôi nghỉ việc] vào đây!)
+    'ạ', 'ơi', 'nhé', 'hen', 'nhỉ',
+    'vậy đó', 'nè', 'giùm', 'dùm',
+    'kìa', 'xíu',
+    # Lịch sự thừa ở cụm câu hỏi
     'cho tôi hỏi', 'cho em hỏi', 'em muốn hỏi', 'tôi muốn hỏi',
     'mình muốn hỏi', 'hỏi xíu', 'hỏi chút', 'hỏi tí', 'hỏi tý',
-    'xin hỏi', 'cho hỏi', 'cho tôi', 'cho em', 'bạn ơi',
+    'xin hỏi', 'cho hỏi', 'bạn ơi',
     'làm ơn', 'vui lòng', 'cảm ơn', 'thank', 'thanks',
-    # Filler dài
-    'thưa thầy', 'thưa cô', 'dạ thưa', 'dạ', 'vâng',
+    # Filler dài đầu câu
+    'thưa thầy', 'thưa cô', 'dạ thưa', 'dạ cho hỏi', 'dạ xin hỏi',
     # Noise internet
-    'haha', 'hihi', 'huhu', 'hehe', 'lol', 'omg', 'ok', 'okay',
+    'haha', 'hihi', 'huhu', 'hehe', 'lol', 'omg',
     '...', '!!!', '???', '!?',
 }
 
