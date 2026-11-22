@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V139.0
+holographic_event_decoder.py — V140.0
 BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
@@ -679,7 +679,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V139.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V140.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -707,7 +707,7 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V139.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V140.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
@@ -737,7 +737,7 @@ def _strip_tags(s: str) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# V139.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
+# V140.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _CHI_12_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
@@ -759,6 +759,99 @@ _LUC_HOP_12 = {
 _MO_BY_EL_12 = {"Kim": "Sửu", "Mộc": "Mùi", "Thủy": "Thìn", "Thổ": "Thìn", "Hỏa": "Tuất"}
 _TS_SINH_BY_EL = {"Kim": "Tị", "Mộc": "Hợi", "Thủy": "Thân", "Hỏa": "Dần", "Thổ": "Thân"}
 _VUONG_CHI_BY_EL = {"Kim": "Dậu", "Mộc": "Mão", "Thủy": "Tý", "Hỏa": "Ngọ", "Thổ": "Thìn"}
+_EL_SEASON_CHIS = {
+    "Kim": ("Thân", "Dậu"), "Mộc": ("Dần", "Mão"), "Thủy": ("Hợi", "Tý"),
+    "Hỏa": ("Tị", "Ngọ"), "Thổ": ("Thìn", "Tuất", "Sửu", "Mùi"),
+}
+_MONTH_SEG_CACHE: Dict[Tuple[int, int, int, int], List[Dict[str, Any]]] = {}
+
+
+def build_solar_term_month_segments(start_date: Any, span_days: int = 430) -> List[Dict[str, Any]]:
+    """
+    V139.1: Phân đoạn CHÍNH XÁC từng Tháng Can Chi theo 24 Tiết Khí (Jean Meeus) tính từng ngày.
+    Mỗi đoạn: {start, end, can, chi, year_can, year_chi, year_num, lunar_start, lunar_end}.
+    (Tháng tiết khí bắt đầu giữa tháng Dương lịch — tuyệt đối không gán 1 tháng DL = 1 tháng Can Chi!)
+    """
+    import datetime as _dtm
+    key = (start_date.year, start_date.month, start_date.day, int(span_days))
+    if key in _MONTH_SEG_CACHE:
+        return _MONTH_SEG_CACHE[key]
+    try:
+        import qmdg_calc as _qc
+    except Exception:
+        return []
+    segs: List[Dict[str, Any]] = []
+    cur: Optional[Dict[str, Any]] = None
+    last_day = start_date
+    for d_off in range(int(span_days)):
+        day = start_date + _dtm.timedelta(days=d_off)
+        last_day = day
+        tk = _qc.get_tiet_khi(_dtm.datetime(day.year, day.month, day.day, 12, 0))
+        _, chm = _qc.get_can_chi_month("Giáp", tk)
+        if cur is None or cur["chi"] != chm:
+            if cur is not None:
+                cur["end"] = day - _dtm.timedelta(days=1)
+                segs.append(cur)
+            # Năm Can Chi tính theo Lập Xuân: tháng Tý/Sửu rơi vào tháng 1–2 DL vẫn thuộc năm trước
+            yb = day.year - 1 if (day.month <= 2 and chm in ("Tý", "Sửu")) else day.year
+            cy, chy = _qc.get_can_chi_year(yb)
+            cm, _ = _qc.get_can_chi_month(cy, tk)
+            cur = {"start": day, "end": None, "can": cm, "chi": chm, "year_can": cy, "year_chi": chy, "year_num": yb}
+    if cur is not None:
+        cur["end"] = last_day
+        segs.append(cur)
+    for sg in segs:
+        try:
+            l1 = _qc.solar_to_lunar(_dtm.datetime(sg["start"].year, sg["start"].month, sg["start"].day, 12, 0))
+            l2 = _qc.solar_to_lunar(_dtm.datetime(sg["end"].year, sg["end"].month, sg["end"].day, 12, 0))
+            sg["lunar_start"] = (int(l1[0]), int(l1[1]))
+            sg["lunar_end"] = (int(l2[0]), int(l2[1]))
+        except Exception:
+            sg["lunar_start"] = sg["lunar_end"] = None
+    if len(_MONTH_SEG_CACHE) > 64:
+        _MONTH_SEG_CACHE.clear()
+    _MONTH_SEG_CACHE[key] = segs
+    return segs
+
+
+def format_month_segment(seg: Dict[str, Any], short: bool = False) -> str:
+    s, e = seg["start"], seg["end"]
+    if short:
+        return f"Tháng {seg['can']} {seg['chi']} ({s.strftime('%d/%m')}–{e.strftime('%d/%m/%Y')} DL)"
+    lunar_part = ""
+    if seg.get("lunar_start") and seg.get("lunar_end"):
+        ls, le = seg["lunar_start"], seg["lunar_end"]
+        lunar_part = f", tức {ls[0]:02d}/{ls[1]:02d} → {le[0]:02d}/{le[1]:02d} ÂL"
+    return (
+        f"Tháng {seg['can']} {seg['chi']} (từ {s.strftime('%d/%m/%Y')} đến {e.strftime('%d/%m/%Y')} DL{lunar_part}"
+        f" · Năm {seg['year_can']} {seg['year_chi']} {seg['year_num']})"
+    )
+
+
+def upcoming_month_segments(chis: Any, base_date: Any, min_start: Any = None, limit: int = 2) -> List[Dict[str, Any]]:
+    """Trả về các đoạn Tháng Can Chi sắp tới (gồm cả tháng đang hiện hành) có Địa Chi nằm trong `chis`."""
+    out: List[Dict[str, Any]] = []
+    for sg in build_solar_term_month_segments(base_date):
+        if sg["end"] < base_date:
+            continue
+        if min_start is not None and sg["start"] < min_start and sg["end"] < min_start:
+            continue
+        if sg["chi"] in chis:
+            out.append(sg)
+            if len(out) >= limit:
+                break
+    return out
+
+
+def describe_element_peak_window(element: str, base_date: Any, min_days: int = 0, limit: int = 2) -> str:
+    """Mốc Tháng vượng khí thực tế (theo lịch tiết khí) của một Ngũ Hành tính từ ngày lập quẻ."""
+    import datetime as _dtm
+    chis = _EL_SEASON_CHIS.get(element, ("Dần", "Mão"))
+    min_start = base_date + _dtm.timedelta(days=min_days) if min_days else None
+    segs = upcoming_month_segments(chis, base_date, min_start=min_start, limit=limit)
+    if not segs:
+        return ""
+    return " & ".join(format_month_segment(sg) for sg in segs)
 
 
 def resolve_astronomical_ung_ky_ymdh(
@@ -938,67 +1031,50 @@ def resolve_astronomical_ung_ky_ymdh(
             if len(pri_dates_full) >= 1 and len(sec_dates_full) >= 1 and not is_this_month_q:
                 break
 
-    # 6. Quét Tháng & Năm Thiên Văn Thực Tế (24 Tiết Khí Jean Meeus + Can Chi Tháng/Năm)
+    # 6. Quét Tháng & Năm Thiên Văn Thực Tế (Phân đoạn 24 Tiết Khí từng ngày — V139.1 không bỏ sót tháng nào)
     month_year_str = ""
     short_month_tag = ""
     if _qcalc is not None:
-        matched_months: List[str] = []
-        target_m_chis = [pri_chi, sec_chi, _VUONG_CHI_BY_EL.get(dt_el, pri_chi)]
-        seen_ym = set()
-        start_m_step = 1 if is_next_month_q else (2 if is_next_year_or_daisu else 0)
-        for m_step in range(start_m_step, start_m_step + 14):
-            probe_dt = now_dt + _dt_mod.timedelta(days=m_step * 29 + (18 if m_step > 0 else 0))
-            if is_next_year_or_daisu and probe_dt.year <= base_date.year and base_date.month <= 9:
-                continue
-            tk_p = _qcalc.get_tiet_khi(probe_dt)
-            cy_p, chy_p = _qcalc.get_can_chi_year(probe_dt.year if probe_dt.month >= 2 else probe_dt.year - 1)
-            # Xét chính xác Lập Xuân cho Can Chi Năm
-            _, lm_p, ly_p, _ = _qcalc.solar_to_lunar(probe_dt)
-            cy_real, chy_real = _qcalc.get_can_chi_year(ly_p)
-            cm_p, chm_p = _qcalc.get_can_chi_month(cy_real, tk_p)
-            ym_key = (probe_dt.year, probe_dt.month, chm_p)
-            if ym_key in seen_ym:
-                continue
-            seen_ym.add(ym_key)
-            if is_next_month_q and len(matched_months) == 0:
-                nm_y = base_date.year + (1 if base_date.month == 12 else 0)
-                nm_m = 1 if base_date.month == 12 else (base_date.month + 1)
-                mid_nm = _dt_mod.datetime(nm_y, nm_m, 15, 12, 0)
-                tk_nm = _qcalc.get_tiet_khi(mid_nm)
-                _, lm_nm, ly_nm, _ = _qcalc.solar_to_lunar(mid_nm)
-                cy_nm, chy_nm = _qcalc.get_can_chi_year(ly_nm)
-                cm_nm, chm_nm = _qcalc.get_can_chi_month(cy_nm, tk_nm)
-                matched_months.append(
-                    f"Tháng {nm_m:02d}/{nm_y} Dương lịch (Tháng {cm_nm} {chm_nm} · Âm lịch Tháng {lm_nm:02d} Năm {cy_nm} {chy_nm})"
-                )
-                short_month_tag = f"Tháng {cm_nm} {chm_nm} ({nm_m:02d}/{nm_y} DL)"
-                break
-            if chm_p in target_m_chis:
-                lbl_m = f"Tháng {probe_dt.month:02d}/{probe_dt.year} Dương lịch (Tháng {cm_p} {chm_p} · Tháng {lm_p:02d} ÂL — Năm {cy_real} {chy_real} {ly_p})"
-                matched_months.append(lbl_m)
-                if not short_month_tag:
-                    short_month_tag = f"Tháng {cm_p} {chm_p} ({probe_dt.month:02d}/{probe_dt.year} DL)"
-                # Nếu là Đại Sự / Năm tới, tìm luôn ngày đẹp pri_chi ngay trong tháng ứng nghiệm đó!
-                if is_next_year_or_daisu and len(matched_months) == 1:
+        target_m_chis = list(dict.fromkeys([pri_chi, sec_chi, _VUONG_CHI_BY_EL.get(dt_el, pri_chi)]))
+        all_segs = build_solar_term_month_segments(base_date)
+        if is_next_month_q and all_segs:
+            nm_y = base_date.year + (1 if base_date.month == 12 else 0)
+            nm_m = 1 if base_date.month == 12 else (base_date.month + 1)
+            nm_first = _dt_mod.date(nm_y, nm_m, 1)
+            nm_last = (nm_first + _dt_mod.timedelta(days=32)).replace(day=1) - _dt_mod.timedelta(days=1)
+            ov_segs = [sg for sg in all_segs if sg["start"] <= nm_last and sg["end"] >= nm_first]
+            if ov_segs:
+                def _ov_len(sg: Dict[str, Any]) -> int:
+                    return (min(sg["end"], nm_last) - max(sg["start"], nm_first)).days + 1
+                main_seg = max(ov_segs, key=_ov_len)
+                month_year_str = f"Tháng {nm_m:02d}/{nm_y} Dương lịch gồm: " + " ➔ ".join(format_month_segment(sg) for sg in ov_segs)
+                short_month_tag = f"Tháng {nm_m:02d}/{nm_y} DL (chủ khí {main_seg['can']} {main_seg['chi']})"
+        elif all_segs:
+            explicit_next_year = any(w in q_low for w in ("năm tới", "năm sau", "sang năm"))
+            if explicit_next_year:
+                min_start = _dt_mod.date(base_date.year + 1, 1, 1)
+            elif is_next_year_or_daisu:
+                min_start = base_date + _dt_mod.timedelta(days=45)
+            else:
+                min_start = None
+            m_segs = upcoming_month_segments(target_m_chis, base_date, min_start=min_start, limit=2)
+            if m_segs:
+                month_year_str = " ➔ ".join(format_month_segment(sg) for sg in m_segs)
+                short_month_tag = format_month_segment(m_segs[0], short=True)
+                # Đại Sự / Năm tới: chốt luôn ngày Dụng Thần ngay trong tháng ứng nghiệm
+                if is_next_year_or_daisu:
                     pri_dates_full.clear()
                     pri_dates_short.clear()
-                    d_scan = _dt_mod.date(probe_dt.year, probe_dt.month, 1)
-                    for _d_i in range(30):
-                        if d_scan.month != probe_dt.month:
-                            break
+                    d_scan = max(m_segs[0]["start"], base_date)
+                    while d_scan <= m_segs[0]["end"] and len(pri_dates_full) < 2:
                         ch_ds, f_ds, sh_ds = _fmt_date_full(d_scan)
-                        if ch_ds == pri_chi and len(pri_dates_full) < 2:
+                        if ch_ds == pri_chi:
                             pri_dates_full.append(f_ds)
                             pri_dates_short.append(sh_ds)
                         d_scan += _dt_mod.timedelta(days=1)
-                if len(matched_months) >= 2:
-                    break
-        if matched_months:
-            month_year_str = " ➔ ".join(matched_months[:2])
-        else:
-            _, lm_b, ly_b, _ = _qcalc.solar_to_lunar(now_dt)
-            cy_b, chy_b = _qcalc.get_can_chi_year(ly_b)
-            month_year_str = f"Tháng {base_date.month:02d}/{base_date.year} Dương lịch (Năm {cy_b} {chy_b} {ly_b})"
+            else:
+                cur_seg = next((sg for sg in all_segs if sg["start"] <= base_date <= sg["end"]), all_segs[0])
+                month_year_str = format_month_segment(cur_seg)
 
     if pri_dates_full and sec_dates_full:
         day_str = f"Mốc 1 (Chính kỳ — Chi {pri_chi}): {pri_dates_full[0]} · Mốc 2 (Phụ kỳ — Chi {sec_chi}): {sec_dates_full[0]}"
@@ -1062,7 +1138,7 @@ def build_four_pillar_prophecy(
     question: str = "",
 ) -> Dict[str, Any]:
     """
-    V139.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    V140.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
     1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
     2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
     3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)

@@ -142,11 +142,21 @@ def _chi_to_dates(chi, base_date=None, scope='month'):
                         break
 
     if scope in ('month', 'year'):
-        month_num = CHI_MONTH_MAP.get(chi)
-        if month_num:
-            dl_month = month_num + 1 if month_num <= 11 else 1
-            dl_year = base_date.year if dl_month >= base_date.month else base_date.year + 1
-            results.append(f"Tháng {dl_month:02d}/{dl_year} Dương lịch (Tháng {month_num:02d} Âm lịch — tháng {chi})")
+        _m_added = False
+        try:
+            from holographic_event_decoder import upcoming_month_segments as _up_m_segs
+            _segs_m = _up_m_segs([chi], base_date, limit=1)
+            if _segs_m:
+                results.append(_segs_m[0])
+                _m_added = True
+        except Exception:
+            pass
+        if not _m_added:
+            month_num = CHI_MONTH_MAP.get(chi)
+            if month_num:
+                dl_month = month_num + 1 if month_num <= 11 else 1
+                dl_year = base_date.year if dl_month >= base_date.month else base_date.year + 1
+                results.append(f"Tháng {dl_month:02d}/{dl_year} Dương lịch (Tháng {month_num:02d} Âm lịch — tháng {chi})")
 
     if scope == 'year':
         chi_idx = DIA_CHI.index(chi) if chi in DIA_CHI else -1
@@ -631,19 +641,40 @@ def calc_ung_ky_detail(
             f"{primary_date_str or result['day']} — hoặc chắc chắn nhất vào {result['month']}"
         )
     else:
-        pin_min = ''
-        if result.get('minute_data', {}).get('exact_minutes'):
-            pin_min = result['minute_data']['exact_minutes'][0]
-        elif result.get('minute_data', {}).get('window'):
-            pin_min = result['minute_data']['window']
-
-        result['exact_timestamp'] = (
-            f"Lúc {pin_min or '?'} ({ 'Giờ ' + target_chi_hour if target_chi_hour else result['hour'] }) — "
-            f"{primary_date_str or result['day']} — {result['month']}"
+        _q_low_uk = str(question or '').lower()
+        _ask_exact_minute = any(
+            w in _q_low_uk
+            for w in (
+                'mấy giờ', 'giờ nào', 'mấy phút', 'phút thứ mấy', 'khắc nào',
+                'bao lâu nữa tới', 'mấy giờ tới', 'mấy giờ về', 'mấy giờ đến',
+                'mấy giờ gọi', 'trong hôm nay', 'tối nay mấy giờ', 'sáng nay mấy giờ', 'chiều nay mấy giờ',
+            )
         )
+        if _ask_exact_minute:
+            pin_min = ''
+            if result.get('minute_data', {}).get('exact_minutes'):
+                pin_min = result['minute_data']['exact_minutes'][0]
+            elif result.get('minute_data', {}).get('window'):
+                pin_min = result['minute_data']['window']
+            result['exact_timestamp'] = (
+                f"Lúc {pin_min or '?'} ({'Giờ ' + target_chi_hour if target_chi_hour else result['hour']}) — "
+                f"{primary_date_str or result['day']} — {result['month']}"
+            )
+        else:
+            # Chống luận ảo phút lẻ (VD: 'Lúc 00:16') cho các câu hỏi sự việc nhiều ngày / tháng
+            result['minute'] = ''
+            _hr_band_str = (
+                f"Khung Giờ {target_chi_hour} ({CHI_HOUR_MAP.get(target_chi_hour, '')})"
+                if target_chi_hour and CHI_HOUR_MAP.get(target_chi_hour)
+                else (f"Giờ {target_chi_hour}" if target_chi_hour else result['hour'])
+            )
+            result['exact_timestamp'] = (
+                f"{primary_date_str or result['day']} · {_hr_band_str}"
+                + (f" — {result['month']}" if result.get('month') else "")
+            )
 
     # ═══ 8. ĐỘ TIN CẬY ═══
-    conf_count = sum(1 for v in [result['minute'], result['hour'], result['day'], result['month']] if v)
+    conf_count = sum(1 for v in [result['minute'] or result['year'], result['hour'], result['day'], result['month']] if v)
     if event_scale == 'DAI_SU':
         result['confidence'] = '🟢 RẤT CAO (Đã liên kết chặt chẽ 4 mắt xích: Bản Thân [Hào Thế] + Nguồn Tiền [Thê Tài] + Mục Tiêu [Phụ Mẫu/Dụng Thần] + Cục Diện Kỳ Môn)'
     elif conf_count >= 4:

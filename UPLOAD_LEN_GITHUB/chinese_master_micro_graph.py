@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V130.0)
+CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V140.0)
 =================================================================
 Đối chuẩn toàn diện theo các nền tảng phân tích quẻ chuyên sâu hàng đầu Trung Quốc:
 1. Nguyên Hanh Lợi Trinh (元亨利贞网 china95.net) — Lục Hào 4 Tầng Tác Động Tuyến Lộ Đồ, Quái Thân, Thế Thân, 12 Thần Sát, Tam Hình/Lục Hại/Lục Phá.
@@ -1654,11 +1654,11 @@ def score_option_classical_imagery(
         if dt_idx >= 4 or any(d in door for d in ("Khai", "Cảnh", "Thương", "Kinh")):
             pts += 22
             evs.append(f"Ngoại Quái (Hào {dt_idx}) & Cửa động ({door}) khẳng định đang ở công ty/bên ngoài")
-    if _has_kw("ngồi", "nằm", "nghỉ", "ngủ"):
+    if _has_kw("ngồi", "đang ngồi", "nằm", "đang nằm", "nằm nghỉ", "ngủ", "đang ngủ") and not _has_kw("nghỉ việc", "nghỉ làm", "nghỉ học", "nghỉ hưu", "cho nghỉ"):
         if not moving_lines or any(q in ("Cấn", "Khôn") for q in (the_q, dung_q)) or any(d in door for d in ("Hưu", "Tử", "Đỗ")):
             pts += 22
             evs.append("Quẻ thiên Tĩnh (Cấn/Khôn, Cửa Tĩnh) ứng tư thế ngồi/nằm nghỉ")
-    if _has_kw("đứng", "đi", "di chuyển", "thức"):
+    if _has_kw("đứng", "đang đứng", "đi bộ", "đang đi lại", "thức", "đang thức"):
         if len(moving_lines) >= 1 and (any(q in ("Chấn", "Càn", "Tốn") for q in (the_q, dung_q, biendung_q)) or any(d in door for d in ("Thương", "Khai", "Cảnh", "Kinh"))):
             pts += 22
             evs.append("Quẻ phát động (Chấn Túc/Càn Hành, Cửa Động) ứng trạng thái đứng/di chuyển/thức")
@@ -2704,7 +2704,7 @@ def synthesize_deep_classical_verdict(
         benh_quai = f"Dụng Thần ({dt_chi}) hữu khí nhưng đang An Tĩnh ('Tĩnh nhi phùng Xung tắc động')"
         duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ XUNG ĐỘNG {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc trực {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
 
-    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V139.0) ──
+    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V140.0) ──
     special_mode = "STANDARD"
     verdict_polarity = "POSITIVE" if composite_score >= 55 else ("NEUTRAL" if composite_score >= 45 else "NEGATIVE")
     direct_headline = ""
@@ -3305,22 +3305,30 @@ def synthesize_deep_classical_verdict(
             else:
                 verdict_polarity = "FAIL_RISK"
                 direct_headline = f"⚠️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): GẶP SỨC ÉP LỚN / KHÓ ĐẠT NGAY ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Củng cố hồ sơ/năng lực và chờ {_uk_disp}!"
-        elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "cưới", "nhớ tôi"]):
-            _ung_sinh_hop_the = (SINH_EL.get(ung_el) == the_el or LUC_HOP.get(str(ung_ln.get("chi","")), ("",""))[0] == the_chi) and not ung_ln.get("is_void")
-            _ung_rel_str = (
-                "Hào Ứng sinh/hợp Hào Thế — người ấy VẪN CÒN TÌNH CẢM & THƯƠNG NHỚ BẠN"
-                if _ung_sinh_hop_the
-                else ("Hào Ứng lâm Tuần Không / khắc Thế — lòng người ấy đang dao động, nguôi ngoai hoặc chưa toàn tâm" if (ung_ln.get("is_void") or KHAC_EL.get(ung_el) == the_el) else f"Thế ({the_chi}-{the_el}) & Ứng ({ung_ln.get('chi','')}-{ung_el}) đang dò xét nhịp độ nhau")
-            )
-            if composite_score >= 50:
+        elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "làm lành", "vợ chồng", "cưới", "nhớ tôi"]):
+            _ung_chi_s = str(ung_ln.get("chi", ""))
+            _ung_sinh_hop_the = (SINH_EL.get(ung_el) == the_el or ung_el == the_el or LUC_HOP.get(_ung_chi_s, ("", ""))[0] == the_chi) and not ung_ln.get("is_void")
+            _ung_void_or_khac = bool(ung_ln.get("is_void") or KHAC_EL.get(ung_el) == the_el)
+            if composite_score >= 50 and _ung_sinh_hop_the:
                 verdict_polarity = "HARMONY"
-                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): THUẬN DUYÊN / CÓ TÌNH Ý CHÂN THÀNH ({composite_score}/100 — {_ung_rel_str}) ➔ Mốc gắn kết tốt: {_uk_disp}!"
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): THUẬN DUYÊN / CÒN TÌNH Ý CHÂN THÀNH & DỄ LÀM LÀNH ({composite_score}/100 — Hào Ứng {_ung_chi_s}-{ung_el} sinh/hợp Hào Thế {the_chi}-{the_el}, duyên khí tương thông) ➔ Mốc gắn kết tốt: {_uk_disp}!"
+            elif composite_score >= 50 and _ung_void_or_khac:
+                verdict_polarity = "MIXED_HESITANT_LOVE"
+                _hes_why = (
+                    f"Dụng Thần vượng khí chứng tỏ duyên nợ/kỷ niệm chưa dứt hẳn, song Hào Ứng ({_ung_chi_s}-{ung_el}) "
+                    + ("lâm Tuần Không nên lòng người ấy còn chênh vênh, chưa dám tiến tới ngay" if ung_ln.get("is_void") else f"tạm khắc Hào Thế ({the_chi}-{the_el}) nên còn tự ái/căng thẳng bề ngoài")
+                )
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): DUYÊN CHƯA DỨT HẲN NHƯNG CÒN TỰ ÁI / NGẦN NGẠI CHƯA MỞ LỜI NGAY ({composite_score}/100 — {_hes_why}) ➔ Mốc hóa giải & kết nối lại: {_uk_disp}!"
+            elif composite_score >= 50:
+                verdict_polarity = "HARMONY"
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÓ CƠ HỘI HÀN GẮN & HÒA HỢP LẠI ({composite_score}/100 — Thế {the_chi}-{the_el} & Ứng {_ung_chi_s}-{ung_el} giữ mạch duyên ổn định, Quẻ Biến nâng đỡ) ➔ Mốc gắn kết tốt: {_uk_disp}!"
             elif _ung_sinh_hop_the:
                 verdict_polarity = "LINGERING_LOVE"
-                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): TRONG LÒNG VẪN CÒN NHỚ & VƯƠNG VẤN NHƯNG HIỆN TẠI ĐANG CÓ KHOẢNG CÁCH NGOẠI CẢNH ({composite_score}/100 — {_ung_rel_str}; cản trở tại: {benh_quai}) ➔ Mốc mở lời kết nối lại: {_uk_disp}!"
+                direct_headline = f"💞 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): TRONG LÒNG VẪN CÒN NHỚ & VƯƠNG VẤN NHƯNG ĐANG VƯỚNG RÀO CẢN NGOẠI CẢNH ({composite_score}/100 — Hào Ứng sinh/hợp Thế nhưng cản trở tại: {benh_quai}) ➔ Mốc mở lời kết nối lại: {_uk_disp}!"
             else:
                 verdict_polarity = "CONFLICT"
-                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): CÒN KHOẢNG CÁCH / LÒNG ĐÃ XA CÁCH ({composite_score}/100 — {_ung_rel_str}; {benh_quai}) ➔ Điểm mở nút thắt: {_uk_disp}!"
+                _conf_why = "Hào Ứng lâm Tuần Không / khắc Hào Thế — tâm ý đang nguôi ngoai hoặc xa cách" if _ung_void_or_khac else f"Thế ({the_chi}-{the_el}) & Ứng ({_ung_chi_s}-{ung_el}) đang lệch nhịp"
+                direct_headline = f"💔 LUẬN ĐOÁN TÌNH DUYÊN CỔ PHÁP ({_ban_bien_lbl}): ĐANG XA CÁCH / KHÓ HÀN GẮN NGAY ({composite_score}/100 — {_conf_why}; {benh_quai}) ➔ Điểm mở nút thắt: {_uk_disp}!"
         elif is_travel_any:
             if composite_score >= 50:
                 verdict_polarity = "SAFE_TRIP"
@@ -3347,7 +3355,7 @@ def synthesize_deep_classical_verdict(
         )
 
     prompt_synthesis_block = (
-        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V139.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V140.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
         f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
         f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào (Tăng San Bốc Dịch)]: {' | '.join(lh_chain_notes)}.\n"
         f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn (Ngự Định Kỳ Môn Bảo Giám)]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
@@ -3624,7 +3632,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V139.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V140.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Lịch ứng kỳ chính xác:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn.get("short_inline_date") or deep_syn["duoc_ung_ky"]}</span>'
@@ -3634,7 +3642,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V139.0)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V140.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'
