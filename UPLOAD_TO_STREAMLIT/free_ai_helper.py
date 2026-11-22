@@ -16511,7 +16511,7 @@ class FreeAIHelper:
                 _dv_box = locals().get('_dual_verified', {})
                 _dv_hl_str = str(_dv_box['verified_headline'] or '')
                 _online_lienquan = str(_dv_box.get('verified_related') or '')
-                # V140.0: Luôn giữ chuẩn đáp án 4 Trụ Cột Tiên Tri Chống Luận Ảo từ _dual_verified (không để văn mẫu chung chung ghi đè!)
+                # V141.0: Luôn giữ chuẩn đáp án 4 Trụ Cột Tiên Tri Chống Luận Ảo từ _dual_verified (không để văn mẫu chung chung ghi đè!)
                 _online_verdict_line = _dv_hl_str
                 _v_why_dv = str(_dv_box.get('verified_why') or '')
                 if (not _dv_box.get('ai2_online_succeeded', False)) and _online_visao and len(_online_visao.strip()) > 35 and "Tóm Tắt]:" not in _v_why_dv:
@@ -16622,7 +16622,7 @@ class FreeAIHelper:
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V140.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V141.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_holo_html
@@ -18178,7 +18178,7 @@ class FreeAIHelper:
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V140.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V141.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_holo_fb

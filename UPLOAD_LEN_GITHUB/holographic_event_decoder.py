@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V140.0
+holographic_event_decoder.py — V141.0
 BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
@@ -270,6 +270,41 @@ PALACE_BODY_LOC = {
 }
 
 
+def _qualify_qimen_stem_pattern(pat_name: str, pat_desc: str, door_str: str, tu_hai_list: Optional[List[str]] = None) -> Tuple[str, str]:
+    """
+    V141.0 (Ngự Định Kỳ Môn Bảo Giám — 'Đắc Kỳ bất đắc Môn, bất vi Cát'):
+    Khử mâu thuẫn khi Cách Thập Can mang nhãn CÁT / ĐẠI CÁT nhưng Cung lại lâm Hung Môn (Tử/Kinh/Thương/Đỗ) hoặc vướng Tứ Hại.
+    """
+    th = list(tu_hai_list or [])
+    is_hung_door = any(h in str(door_str or "") for h in ("Tử", "Kinh", "Thương", "Đỗ"))
+    is_cat_door = any(c in str(door_str or "") for c in ("Khai", "Sinh", "Hưu"))
+    p_up = str(pat_name or "").upper()
+    if "CÁT" in p_up and (is_hung_door or th):
+        clean_nm = (
+            str(pat_name)
+            .replace(" (ĐẠI CÁT)", " (Cát cách bị Hung Môn kìm hãm)")
+            .replace(" (CÁT)", " (Cát cách bị chế ước)")
+        )
+        reason_blk = f"lâm {door_str}" + (f" và vướng {', '.join(th)}" if th else "")
+        adj_desc = f"tín hiệu bề mặt có cơ hội thuận ({pat_desc.lower()}), song do cung {reason_blk} ('Đắc Kỳ bất đắc Môn') nên thực tế còn chốt chặn, chớ vội chủ quan"
+        return clean_nm, adj_desc
+    if "HUNG" in p_up and is_cat_door and not th:
+        adj_desc = f"{pat_desc} — may nhờ đắc Cát Môn {door_str} sạch Tứ Hại nên giảm nhẹ xung lực nếu hành xử thận trọng"
+        return pat_name, adj_desc
+    return pat_name, pat_desc
+
+
+def _strip_body_anatomy_if_non_health(text_s: str, is_health: bool) -> str:
+    if is_health or not text_s:
+        return text_s
+    out = str(text_s)
+    if " · Cơ thể:" in out:
+        out = out.split(" · Cơ thể:")[0] + (")" if out.endswith(")") and not out.split(" · Cơ thể:")[0].endswith(")") else "")
+    if "; cơ thể ứng " in out:
+        out = out.split("; cơ thể ứng ")[0]
+    return out
+
+
 def _qimen_star_season_state(star: str, nguyet_el: str) -> str:
     star_el_map = {
         "Bồng": "Thủy", "Nhuế": "Thổ", "Xung": "Mộc", "Phụ": "Mộc", "Cầm": "Thổ",
@@ -481,6 +516,8 @@ def build_holographic_prophecy_reading(
     dt_thu = str(dt_ln.get("luc_thu") or "Thanh Long")
     dt_ss = list(dt_ln.get("shensha") or [])
 
+    _q_low_holo = str(question or "").lower()
+    _is_health_holo = any(w in _q_low_holo for w in ("sức khỏe", "bệnh", "đau ", "ốm", "khám", "mổ", "thuốc", "điều trị", "cơ thể", "nhập viện", "nằm viện", "sốt"))
     portrait_items: List[str] = []
     if dt_ln:
         portrait_items.append(
@@ -488,8 +525,9 @@ def build_holographic_prophecy_reading(
             f"<b>{dt_ln.get('luc_than','')} ({dt_ln.get('can_chi_full','')} · Nạp Âm: {dt_nap_am})</b>, phối <b>{dt_thu}</b> ({LUC_THU_ROLE_COLOR.get(dt_thu,'')})"
             + (f", hội Thần Sát: <b>{', '.join(dt_ss)}</b>." if dt_ss else ".")
         )
+        _nh_temp_disp = _strip_body_anatomy_if_non_health(NGU_HANH_TEMPERAMENT.get(dt_el, ""), _is_health_holo)
         portrait_items.append(
-            f"<b>Khí chất & Vật tượng ({dt_el} – Chi {dt_chi}):</b> {NGU_HANH_TEMPERAMENT.get(dt_el, '')}. Hiện trường/chi tiết ứng với <b>Chi {dt_chi}</b>: {CHI_CONCRETE_IMAGE.get(dt_chi, '')}."
+            f"<b>Khí chất & Vật tượng ({dt_el} – Chi {dt_chi}):</b> {_nh_temp_disp}. Hiện trường/chi tiết ứng với <b>Chi {dt_chi}</b>: {CHI_CONCRETE_IMAGE.get(dt_chi, '')}."
         )
         portrait_items.append(
             f"<b>Chu kỳ 12 Trường Sinh đang ở bậc «{dt_ts}»:</b> {TRUONG_SINH_STAGE_MEANING.get(dt_ts, 'Đang vận hành theo thời lệnh')}."
@@ -502,15 +540,18 @@ def build_holographic_prophecy_reading(
             continue
         t_st = str(pa_q.get("can_thien") or "Mậu")
         d_st = str(pa_q.get("can_dia") or "Mậu")
-        pat_name, pat_desc = QIMEN_10_STEM_PATTERNS.get(
+        pat_name_raw, pat_desc_raw = QIMEN_10_STEM_PATTERNS.get(
             (t_st, d_st),
             (f"Cách {t_st} gia {d_st}", f"Thiên bàn {t_st} lâm Địa bàn {d_st}, xét tương tác Tinh–Môn để điều tiết chủ khách"),
         )
+        pat_name, pat_desc = _qualify_qimen_stem_pattern(pat_name_raw, pat_desc_raw, str(pa_q.get("door") or ""), pa_q.get("tu_hai") or [])
         star_q = str(pa_q.get("star") or "Thiên Tâm")
         star_vs = _qimen_star_season_state(star_q, nguyet_el)
+        _loc_lbl_h = "định vị không gian/cơ thể" if _is_health_holo else "định vị không gian hiện trường"
+        _loc_val_h = _strip_body_anatomy_if_non_health(PALACE_BODY_LOC.get(p_idx_q, ""), _is_health_holo)
         portrait_items.append(
-            f"<b>Thập Can Khắc Ứng {lbl_p} (Cung {p_idx_q} — {t_st} + {d_st}):</b> Đắc cách <b>«{pat_name}»</b> — {pat_desc}. "
-            f"Sao <b>{star_q}</b> ở thế <b>{star_vs}</b>, hội <b>{pa_q.get('door','')} · {pa_q.get('deity','')}</b>; định vị không gian/cơ thể: {PALACE_BODY_LOC.get(p_idx_q, '')}."
+            f"<b>Thập Can Khắc Ứng {lbl_p} (Cung {p_idx_q} — {t_st} + {d_st}):</b> Hiện <b>«{pat_name}»</b> — {pat_desc}. "
+            f"Sao <b>{star_q}</b> ở thế <b>{star_vs}</b>, hội <b>{pa_q.get('door','')} · {pa_q.get('deity','')}</b>; {_loc_lbl_h}: {_loc_val_h}."
         )
         if tc_qm == chu_qm:
             break
@@ -679,7 +720,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V140.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V141.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -707,7 +748,7 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V140.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V141.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
@@ -737,7 +778,7 @@ def _strip_tags(s: str) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# V140.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
+# V141.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _CHI_12_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
@@ -1138,7 +1179,7 @@ def build_four_pillar_prophecy(
     question: str = "",
 ) -> Dict[str, Any]:
     """
-    V140.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    V141.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
     1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
     2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
     3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)
@@ -1177,7 +1218,8 @@ def build_four_pillar_prophecy(
     tu_hai_tc = list(pa_tc.get("tu_hai") or [])
     t_st = str(pa_tc.get("can_thien") or "Mậu")
     d_st = str(pa_tc.get("can_dia") or "Mậu")
-    pat_name, pat_desc = QIMEN_10_STEM_PATTERNS.get((t_st, d_st), (f"Cách {t_st}+{d_st}", "tương tác chủ khách theo thời lệnh"))
+    _pat_nm_raw, _pat_ds_raw = QIMEN_10_STEM_PATTERNS.get((t_st, d_st), (f"Cách {t_st}+{d_st}", "tương tác chủ khách theo thời lệnh"))
+    pat_name, pat_desc = _qualify_qimen_stem_pattern(_pat_nm_raw, _pat_ds_raw, door_tc, tu_hai_tc)
 
     comp_sc = int(deep_syn.get("composite_score", 50))
     lh_sc = int(deep_syn.get("lh_score", 50))
@@ -1326,9 +1368,16 @@ def build_four_pillar_prophecy(
         }
         thing_core = _LT_CONCRETE_THINGS.get(dt_lt, "công việc và kế hoạch cá nhân")
 
-    chi_img = CHI_CONCRETE_IMAGE.get(dt_chi, "")
+    chi_img_raw = CHI_CONCRETE_IMAGE.get(dt_chi, "")
+    chi_img = ", ".join(p.strip() for p in chi_img_raw.split(",") if not p.strip().startswith("người "))
     palace_loc_raw = PALACE_BODY_LOC.get(tc_qm, "")
-    palace_loc_short = palace_loc_raw.split("(", 1)[1].rstrip(")") if "(" in palace_loc_raw else huong_tc
+    palace_loc_short_full = palace_loc_raw.split("(", 1)[1].rstrip(")") if "(" in palace_loc_raw else huong_tc
+    palace_loc_short = (
+        palace_loc_short_full
+        if domain == "HEALTH_BODY"
+        else palace_loc_short_full.split(" · Cơ thể:")[0]
+    )
+    _loc_bullet_title = "📍 Bộ phận cơ thể & Phương vị ứng quẻ" if domain == "HEALTH_BODY" else "📍 Không gian & Hiện trường ứng quẻ"
 
     # Chân dung Nhân vật tác động mạnh nhất trên quẻ (phân vai sát đúng miền Sức khỏe / Gia đình / Tình cảm / Công việc)
     _YANG_C = {"Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"}
@@ -1408,7 +1457,7 @@ def build_four_pillar_prophecy(
     pillar2_related_html = (
         f"• <b>📦 Liên quan đến cái gì (Vật việc & Khâu cụ thể):</b> Trực tiếp xoay quanh <b>{thing_core}</b> "
         f"[Căn cứ Hào {dt_idx} {dt_lt} {dt_chi}-{dt_el}{(' · Nạp Âm ' + dt_nap_am) if dt_nap_am else ''}: {chi_img}].<br>"
-        f"• <b>📍 Không gian / Bộ phận / Hiện trường ứng quẻ:</b> <b>{palace_loc_short}</b>.<br>"
+        f"• <b>{_loc_bullet_title}:</b> <b>{palace_loc_short}</b>.<br>"
         f"• <b>👤 Liên quan đến ai (Nhân vật trọng tâm):</b> <b>{kp_gender}, {kp_age}</b> — vai trò <b>{kp_role_desc}</b> "
         f"(ứng Hào {kp_hao} {kp_lt} {kp_chi}-{kp_el} · {kp_thu}), hiện {kp_attitude}{h5_note}."
     )

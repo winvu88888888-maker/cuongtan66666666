@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V140.0)
+CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V141.0)
 =================================================================
 Đối chuẩn toàn diện theo các nền tảng phân tích quẻ chuyên sâu hàng đầu Trung Quốc:
 1. Nguyên Hanh Lợi Trinh (元亨利贞网 china95.net) — Lục Hào 4 Tầng Tác Động Tuyến Lộ Đồ, Quái Thân, Thế Thân, 12 Thần Sát, Tam Hình/Lục Hại/Lục Phá.
@@ -1346,10 +1346,24 @@ def analyze_meihua_exhaustive_micro_graph(
     if not (1 <= dong_hao <= 6):
         dong_hao = 4
 
-    lh_dong = lh.get("dong_hao") if isinstance(lh.get("dong_hao"), list) else []
-    dong_list_mh = [int(x) for x in lh_dong if str(x).isdigit() and 1 <= int(x) <= 6] or [dong_hao]
-
     lines6 = list(TRIGRAM_META_8[lo_q][0]) + list(TRIGRAM_META_8[up_q][0])
+    _lh_ban_d = lh.get("ban") if isinstance(lh.get("ban"), dict) else {}
+    _lh_lines_raw = _lh_ban_d.get("lines") or [
+        int(h.get("line", 0)) for h in (_lh_ban_d.get("haos") or []) if isinstance(h, dict) and "line" in h
+    ]
+    if not mh and len(_lh_lines_raw) == 6:
+        lines6 = [int(x) for x in _lh_lines_raw]
+        lo_q = BIN_TO_TRIGRAM_8.get(tuple(lines6[:3]), lo_q)
+        up_q = BIN_TO_TRIGRAM_8.get(tuple(lines6[3:]), up_q)
+        _lh_same_hex = True
+    else:
+        _lh_same_hex = len(_lh_lines_raw) == 6 and [int(x) for x in _lh_lines_raw] == lines6
+
+    if _lh_same_hex and isinstance(lh.get("dong_hao"), list):
+        dong_list_mh = [int(x) for x in lh["dong_hao"] if str(x).isdigit() and 1 <= int(x) <= 6]
+    else:
+        dong_list_mh = [dong_hao]
+
     lines_bien = list(lines6)
     for d_idx in dong_list_mh:
         lines_bien[d_idx - 1] = 0 if lines_bien[d_idx - 1] == 1 else 1
@@ -1359,10 +1373,16 @@ def analyze_meihua_exhaustive_micro_graph(
     lo_bien = BIN_TO_TRIGRAM_8.get(tuple(lines_bien[:3]), lo_q)
     up_bien = BIN_TO_TRIGRAM_8.get(tuple(lines_bien[3:]), up_q)
 
-    # Nếu cả Thượng và Hạ đều có hào động, lấy quẻ ít hào động hơn (hoặc quẻ chứa Hào Thế) làm Thể
+    # Nếu Quẻ Tĩnh (0 hào động), lấy quẻ chứa Hào Thế làm Thể; nếu có hào động, lấy quẻ tĩnh/ít hào động hơn làm Thể
     low_mv_cnt = sum(1 for x in dong_list_mh if x <= 3)
     up_mv_cnt = sum(1 for x in dong_list_mh if x >= 4)
-    if low_mv_cnt <= up_mv_cnt and up_mv_cnt > 0:
+    if not dong_list_mh:
+        _the_pos_mh = int(lh.get("the_pos") or _lh_ban_d.get("the_pos") or 3)
+        if _the_pos_mh <= 3:
+            the_q, dung_q, bien_dung_q = lo_q, up_q, up_bien
+        else:
+            the_q, dung_q, bien_dung_q = up_q, lo_q, lo_bien
+    elif low_mv_cnt <= up_mv_cnt and up_mv_cnt > 0:
         the_q = lo_q
         dung_q = up_q
         bien_dung_q = up_bien if up_bien != up_q else lo_bien
@@ -1393,14 +1413,14 @@ def analyze_meihua_exhaustive_micro_graph(
     r3_lbl, r3_col, r3_desc = _td_arrow(f"Thượng Hỗ {thuong_ho}", el_thuongho)
     r4_lbl, r4_col, r4_desc = _td_arrow(f"Biến Dụng {bien_dung_q}", el_biendung)
 
-    lh_ban_nm = str((lh.get("ban") or {}).get("name") or "")
-    lh_bien_nm = str((lh.get("bien") or {}).get("name") or "")
+    lh_ban_nm = str(_lh_ban_d.get("name") or "") if _lh_same_hex else ""
+    lh_bien_nm = str((lh.get("bien") or {}).get("name") or "") if _lh_same_hex else ""
     ten_chu = lh_ban_nm or str(mh.get("ten") or mh.get("ten_que") or f"{up_q}/{lo_q}")
     ten_ho = str(mh.get("ten_ho") or f"{thuong_ho}/{ha_ho}")
-    ten_bien = lh_bien_nm or str(mh.get("ten_qua_bien") or f"{up_bien}/{lo_bien}")
+    ten_bien = lh_bien_nm or str(mh.get("ten_qua_bien") or mh.get("bien_que") or f"{up_bien}/{lo_bien}")
     sum_tien_thien = TRIGRAM_META_8[up_q][1] + TRIGRAM_META_8[lo_q][1]
     sum_hau_thien = TRIGRAM_META_8[up_q][2] + TRIGRAM_META_8[lo_q][2]
-    dong_disp_mh = ", ".join(map(str, dong_list_mh))
+    dong_disp_mh = ", ".join(map(str, dong_list_mh)) if dong_list_mh else "Tĩnh (0 hào động)"
 
     mh_edges = [
         {"tier": "Mai Hoa · Chặng 1 (Khởi sự)", "src": f"Quẻ Dụng {dung_q} ({el_dung})", "rel": r1_lbl, "color": r1_col, "dst": f"Quẻ Thể {the_q} ({el_the})", "outcome": r1_desc},
@@ -1959,6 +1979,19 @@ def synthesize_deep_classical_verdict(
             elif SINH_EL.get(nhat_el) == dt_el:
                 lh_pts += 15
                 lh_chain_notes.append(f"Được Nhật Thần ({chi_ngay}-{nhat_el}) tương sinh tiếp sức")
+            elif nhat_el == dt_el and LUC_XUNG.get(dt_chi) != chi_ngay:
+                _CUNG_PHU_PAIRS = {
+                    ("Hợi", "Tý"), ("Tý", "Hợi"),
+                    ("Dần", "Mão"), ("Mão", "Dần"),
+                    ("Tị", "Ngọ"), ("Ngọ", "Tị"),
+                    ("Thân", "Dậu"), ("Dậu", "Thân"),
+                }
+                if (dt_chi, chi_ngay) in _CUNG_PHU_PAIRS:
+                    lh_pts += 14
+                    lh_chain_notes.append(f"Củng Phù Chương (Tăng San Bốc Dịch): Được Nhật Thần ({chi_ngay}-{nhat_el}) đồng hành Củng Phù / Tỷ Vượng tiếp khí")
+                else:
+                    lh_pts += 8
+                    lh_chain_notes.append(f"Được Nhật Thần ({chi_ngay}-{nhat_el}) đồng hành tỷ trợ")
             elif KHAC_EL.get(nhat_el) == dt_el and not dt_ln.get("is_moving"):
                 lh_pts -= 14
                 if dt_ln.get("is_am_dong"):
@@ -2003,7 +2036,7 @@ def synthesize_deep_classical_verdict(
                 not dt_ln.get("is_moving")
                 and not dt_ln.get("is_am_dong")
                 and (
-                    ((dt_ln.get("is_nguyet_pha") or dt_ln.get("is_nhat_pha")) and (KHAC_EL.get(nhat_el) == dt_el or vs in ("Tù", "Tử")) and SINH_EL.get(nhat_el) != dt_el and dt_chi != chi_ngay and hop_st != "HOP_KHOI")
+                    ((dt_ln.get("is_nguyet_pha") or dt_ln.get("is_nhat_pha")) and (KHAC_EL.get(nhat_el) == dt_el or vs in ("Tù", "Tử")) and SINH_EL.get(nhat_el) != dt_el and nhat_el != dt_el and dt_chi != chi_ngay and hop_st != "HOP_KHOI")
                     or (dt_ln.get("khong_type") == "CHAN_KHONG" and not dt_ln.get("is_xung_khong") and not is_recent_illness)
                 )
             )
@@ -2130,6 +2163,9 @@ def synthesize_deep_classical_verdict(
                 # 'Hào ngộ Lệnh Tinh vật nan ngã hại — Hào thương Nhật đồ thụ kỳ danh' (Thiên Kim Phú):
                 lh_pts -= 7
                 lh_chain_notes.append(f"Thiên Kim Phú 'Hào Ngộ Lệnh Tinh Vật Nan Ngã Hại': Kỵ Thần Hào {ky_movers[0]['hao']} động nhưng Dụng Thần lâm Nhật/Nguyệt Kiến nên bất khả xâm phạm!")
+            elif dt_ln.get("is_void") and dt_ln.get("khong_type") == "GIA_KHONG" and not is_chronic_illness and "HOA_TIEN" not in ky0_f and len(ky_movers) == 1:
+                lh_pts -= 12
+                lh_chain_notes.append(f"Tuần Không Chương 'Tị Không Đắc Cứu': Kỵ Thần Hào {ky_movers[0]['hao']} động khắc nhưng Dụng Thần ({dt_chi}) tạm lâm Giả Không né đòn, chờ Xuất Không ứng cát!")
             else:
                 ky_pen = -34 if ("HOA_TIEN" in ky0_f or "HOI_DAU_SINH" in ky0_f or len(ky_movers) >= 2) else -25
                 lh_pts += ky_pen
@@ -2696,7 +2732,7 @@ def synthesize_deep_classical_verdict(
     elif dt_ln.get("is_am_dong"):
         benh_quai = f"Dụng Thần ({dt_chi}) đang Ám Động bởi Nhật ({chi_ngay}) Xung ('Ám động như minh động, phùng Hợp / Trị Nhật tất ứng')"
         duoc_ung_ky = f"Ứng nghiệm nhanh vào Ngày/Giờ LỤC HỢP {hop_dt} ({CHI_CLOCK.get(hop_dt,'')}) hoặc chính vị {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
-    elif vs in ("Tù", "Tử") and SINH_EL.get(nhat_el) != dt_el and dt_chi != chi_ngay and hop_st != "HOP_KHOI":
+    elif vs in ("Tù", "Tử") and SINH_EL.get(nhat_el) != dt_el and nhat_el != dt_el and dt_chi != chi_ngay and hop_st != "HOP_KHOI":
         _ts_sinh_chi = {"Kim": "Tị", "Mộc": "Hợi", "Thủy": "Thân", "Hỏa": "Dần", "Thổ": "Thân"}.get(dt_el, dt_chi)
         benh_quai = f"Bệnh tại Dụng Thần ({dt_chi}-{dt_el}) hưu tù thất lệnh ({vs}) dưới Nguyệt Kiến {chi_thang} và đang tĩnh chưa đủ khí lực"
         duoc_ung_ky = f"Ứng khi ĐẮC SINH VƯỢNG TIẾP KHÍ vào Ngày/Giờ {_ts_sinh_chi} ({CHI_CLOCK.get(_ts_sinh_chi,'')}) hoặc chính vị {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
@@ -2704,7 +2740,7 @@ def synthesize_deep_classical_verdict(
         benh_quai = f"Dụng Thần ({dt_chi}) hữu khí nhưng đang An Tĩnh ('Tĩnh nhi phùng Xung tắc động')"
         duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ XUNG ĐỘNG {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc trực {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
 
-    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V140.0) ──
+    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V141.0) ──
     special_mode = "STANDARD"
     verdict_polarity = "POSITIVE" if composite_score >= 55 else ("NEUTRAL" if composite_score >= 45 else "NEGATIVE")
     direct_headline = ""
@@ -3355,7 +3391,7 @@ def synthesize_deep_classical_verdict(
         )
 
     prompt_synthesis_block = (
-        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V140.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V141.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
         f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
         f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào (Tăng San Bốc Dịch)]: {' | '.join(lh_chain_notes)}.\n"
         f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn (Ngự Định Kỳ Môn Bảo Giám)]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
@@ -3632,7 +3668,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V140.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V141.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Lịch ứng kỳ chính xác:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn.get("short_inline_date") or deep_syn["duoc_ung_ky"]}</span>'
@@ -3642,7 +3678,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V140.0)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V141.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'

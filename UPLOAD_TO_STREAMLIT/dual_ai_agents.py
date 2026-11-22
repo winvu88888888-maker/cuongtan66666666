@@ -1249,7 +1249,7 @@ class QuestionReaderAI:
 
         arch_meta = UNIVERSAL_25_ARCHETYPES.get(arch_key, UNIVERSAL_25_ARCHETYPES["D25_SPIRITUAL_GENERAL"])
 
-        # V140.0: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng ứng tuyển / cùng hỏi kết quả độc lập).
+        # V141.0: Nhận diện Câu hỏi Đa Chủ Thể (2 người cùng thi / cùng ứng tuyển / cùng hỏi kết quả độc lập).
         # Tuyệt đối KHÔNG tách "vợ chồng tôi" / "hai vợ chồng" / "bố mẹ tôi" thành 2 người đỗ–trượt đối lập
         # khi hỏi về Hòa hợp Hôn nhân, Tình cảm, Mua nhà đất chung hoặc Gia đạo chung!
         multi_subjects = []
@@ -1681,7 +1681,7 @@ class QuestionReaderAI:
         if len(sub_blueprints) >= 2 and all(bp.get("specific_target") == "SIBLINGS_COUNT" for bp in sub_blueprints):
             return []
 
-        # V140.0: Chống cắt vụn câu hỏi đơn có 2 động từ đồng hướng nối bằng "và" trên CÙNG 1 CHỦ THỂ & CÙNG 1 DỤNG THẦN
+        # V141.0: Chống cắt vụn câu hỏi đơn có 2 động từ đồng hướng nối bằng "và" trên CÙNG 1 CHỦ THỂ & CÙNG 1 DỤNG THẦN
         # (VD: "người yêu cũ còn nhớ tôi và muốn quay lại không", "vợ chồng tôi cãi nhau có làm lành và hạnh phúc lại không").
         # Chỉ giữ tách khi thực sự có dấu câu ngắt vế (, ; ? / |), hoặc có >= 2 mục tiêu định lượng/WH riêng biệt, hoặc 2 vế thuộc 2 trục Dụng Thần / Archetype khác nhau (VD: Công việc [Quan Quỷ] + Tài chính [Thê Tài])!
         if (
@@ -1925,8 +1925,14 @@ class HexagramReasoningAI:
         ic_chu_info = _IC64_MAP.get(kd_chu_info.get("thu_tu", 0)) or {}
         ic_bien_info = _IC64_MAP.get(kd_bien_info.get("thu_tu", 0)) or {}
 
-        # Xác định Quẻ Thể (Chủ thể) và Quẻ Dụng (Sự việc/Ngoại cảnh) theo Hào Động
-        _d_main = dong_list[0] if dong_list else int(mai_hoa_data.get("dong_hao") or 4)
+        # Xác định Quẻ Thể (Chủ thể) và Quẻ Dụng (Sự việc/Ngoại cảnh) theo Hào Động (hoặc Hào Thế nếu Quẻ Tĩnh Lục Hào)
+        if dong_list:
+            _d_main = dong_list[0]
+        elif lh_ban.get("name"):
+            _tp_static = int(luc_hao_data.get("the_pos") or lh_ban.get("the_pos") or 3)
+            _d_main = 5 if _tp_static <= 3 else 2
+        else:
+            _d_main = int(mai_hoa_data.get("dong_hao") or 4)
         if _d_main <= 3:
             the_quai, dung_quai, bien_dung_quai = up_chu, lo_chu, lo_bien
             the_pos_lbl, dung_pos_lbl = "Thượng Quái", "Hạ Quái"
@@ -4621,7 +4627,7 @@ class HexagramReasoningAI:
                         pts += 16
                         evs.append(f"<b>Tượng Nội Quái Tĩnh Thủ (Cấn Sơn / Khôn Địa / Cửu Địa):</b> Quẻ khuyên giữ vững căn cơ hiện tại, lấy tĩnh chế động")
 
-                # 11. V140.0: TÂM Ý CẤP TRÊN / TỔ CHỨC ĐỐI VỚI BẢN THÂN (GIỮ LẠI / TRỌNG DỤNG vs CHO NGHỈ VIỆC / SA THẢI)
+                # 11. V141.0: TÂM Ý CẤP TRÊN / TỔ CHỨC ĐỐI VỚI BẢN THÂN (GIỮ LẠI / TRỌNG DỤNG vs CHO NGHỈ VIỆC / SA THẢI)
                 _SINH_AB = {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"}
                 _KHAC_AB = {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
                 _LUC_HOP_AB = {
@@ -7842,7 +7848,7 @@ class HexagramReasoningAI:
         _clk_cv = get_realtime_vn_clock_context()
         _raw_q_str = str(blueprint.get("raw_question") or "").strip()
         _haos_summary_str = " | ".join(_univ_mat["haos_lines_desc"])
-        _cache_sig = "V140_FOUR_PILLAR_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
+        _cache_sig = "V141_FOUR_PILLAR_PROPHET::" + hashlib.md5(f"{_clk_cv['solar_date_str']}::{_raw_q_str}::{ten_que_chu}::{ten_que_bien}::{dong_hao_list}::{cuc_km}::{target_cung}::{cua_name}::{can_n}_{chi_n}_{can_g}_{chi_g}".encode("utf-8")).hexdigest()
         _real_ai_pair = _REAL_DUAL_AI_CACHE.get(_cache_sig) if use_online_api else None
 
         if use_online_api and _real_ai_pair is None and len(_raw_q_str) >= 4:
@@ -7965,7 +7971,7 @@ class HexagramReasoningAI:
             elif _four_p_cv.get("pillar4_solution_html"):
                 spec_res["advice"] = str(_four_p_cv["pillar4_solution_html"])
             _ai2_md_report = (
-                f"### 🔮 BẢN LUẬN GIẢI 4 TRỤ CỘT TIÊN TRI TỪ ĐẠI SƯ {_m_used_raw} (V140.0)\n"
+                f"### 🔮 BẢN LUẬN GIẢI 4 TRỤ CỘT TIÊN TRI TỪ ĐẠI SƯ {_m_used_raw} (V141.0)\n"
                 f"#### Đoàn 1: Pháp Định Dụng Thần & Thời Thái Câu Hỏi\n"
                 f"- {_step1_note or _r_ai1.get('ai1_dung_than_guide', '')}\n"
                 f"#### Đoàn 2: Sự Việc Gì Xảy Ra & Chuỗi Nhân Quả Tam Thức\n"
@@ -7977,7 +7983,7 @@ class HexagramReasoningAI:
                 f"- **Giải Pháp Thực Tế:** {str(_r_ai2.get('ai2_advice') or _four_p_cv.get('pillar4_plain') or '')}\n"
             )
         else:
-            # Chế độ Offline / Fallback (V140.0): Xuất đầy đủ 4 Trụ Cột Tiên Tri Chống Luận Ảo (Sự việc gì · Liên quan ai/cái gì · Ngày Giờ Tháng Năm · Giải pháp thực tế)!
+            # Chế độ Offline / Fallback (V141.0): Xuất đầy đủ 4 Trụ Cột Tiên Tri Chống Luận Ảo (Sự việc gì · Liên quan ai/cái gì · Ngày Giờ Tháng Năm · Giải pháp thực tế)!
             if _deep_syn.get("direct_headline") and not spec_res.get("has_override"):
                 spec_res["has_override"] = True
                 spec_res["headline"] = f"🎯 {_deep_syn['direct_headline']}"
@@ -7996,7 +8002,7 @@ class HexagramReasoningAI:
             elif _deep_syn.get("benh_quai") and "Bệnh – Dược" not in str(spec_res.get("why", "")):
                 _bd_off_html = (
                     f'<div style="padding:7px 10px;background:rgba(16,185,129,0.12);border-left:3px solid #10b981;border-radius:6px;margin-bottom:6px;">'
-                    f'<b style="color:#6ee7b7;">🩺 [Biện Chứng Cổ Pháp 7 Tầng V140.0 — Hợp nhất {_deep_syn.get("composite_score", weighted_pct)}/100]:</b><br>'
+                    f'<b style="color:#6ee7b7;">🩺 [Biện Chứng Cổ Pháp 7 Tầng V141.0 — Hợp nhất {_deep_syn.get("composite_score", weighted_pct)}/100]:</b><br>'
                     f'• <b>Lục Hào 4 tầng:</b> {" · ".join(_deep_syn.get("lh_chain_notes", [])[:3])}.<br>'
                     f'• <b>Bệnh – Dược Quẻ:</b> {_deep_syn.get("benh_quai", "")} ══► <b>{_deep_syn.get("short_inline_date") or _deep_syn.get("duoc_ung_ky", "")}</b>.</div>'
                 )
@@ -8156,7 +8162,7 @@ class HexagramReasoningAI:
         dual_agent_html = (
             f'<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:14px 16px;border-radius:14px;margin-bottom:14px;border:2px solid #38bdf8;box-shadow:0 4px 18px rgba(56,189,248,0.2);">'
             f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:6px;">'
-            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V140.0 — {_clk_cv["solar_date_str"]}): ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO & BỆNH–DƯỢC CỔ PHÁP</div>'
+            f'<div style="font-size:1.0em;font-weight:900;color:#38bdf8;">🤖 HỆ THỐNG SONG NÃO AI (V141.0 — {_clk_cv["solar_date_str"]}): ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO & BỆNH–DƯỢC CỔ PHÁP</div>'
             f'<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:2px 9px;border-radius:12px;font-size:0.8em;font-weight:800;border:1px solid #38bdf8;">{blueprint["archetype_code"]} — {blueprint["archetype_name"]}</span>'
             f'</div>'
             f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">'
@@ -8185,7 +8191,7 @@ class HexagramReasoningAI:
             _syn_dir_block = f"{_syn_dir_block}\n{_holo_res_cv['holographic_prompt_text']}"
         online_directive = (
             f"{_clk_cv['clock_banner']}\n"
-            f"=== HỒ SƠ BIỆN CHỨNG & ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO TỪ HỆ THỐNG SONG NÃO AI (V140.0 — TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA · ĐẠI LỤC NHÂM — {_clk_cv['solar_date_str']}) ===\n"
+            f"=== HỒ SƠ BIỆN CHỨNG & ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO TỪ HỆ THỐNG SONG NÃO AI (V141.0 — TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA · ĐẠI LỤC NHÂM — {_clk_cv['solar_date_str']}) ===\n"
             f"1. [CON AI SỐ 1 - ĐỌC HIỂU Ý ĐỊNH & HỶ/KỴ DỤNG THẦN]:\n"
             f"   - Phân loại: {blueprint['archetype_code']} ({blueprint['archetype_name']})\n"
             f"   - Bản chất câu hỏi: {blueprint.get('ai1_intent_summary') or blueprint['archetype_name']}\n"
