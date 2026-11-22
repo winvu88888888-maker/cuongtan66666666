@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V141.0)
+CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V142.0)
 =================================================================
 Đối chuẩn toàn diện theo các nền tảng phân tích quẻ chuyên sâu hàng đầu Trung Quốc:
 1. Nguyên Hanh Lợi Trinh (元亨利贞网 china95.net) — Lục Hào 4 Tầng Tác Động Tuyến Lộ Đồ, Quái Thân, Thế Thân, 12 Thần Sát, Tam Hình/Lục Hại/Lục Phá.
@@ -2740,7 +2740,7 @@ def synthesize_deep_classical_verdict(
         benh_quai = f"Dụng Thần ({dt_chi}) hữu khí nhưng đang An Tĩnh ('Tĩnh nhi phùng Xung tắc động')"
         duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ XUNG ĐỘNG {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc trực {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
 
-    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V141.0) ──
+    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V142.0) ──
     special_mode = "STANDARD"
     verdict_polarity = "POSITIVE" if composite_score >= 55 else ("NEUTRAL" if composite_score >= 45 else "NEGATIVE")
     direct_headline = ""
@@ -3391,7 +3391,7 @@ def synthesize_deep_classical_verdict(
         )
 
     prompt_synthesis_block = (
-        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V141.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V142.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
         f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
         f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào (Tăng San Bốc Dịch)]: {' | '.join(lh_chain_notes)}.\n"
         f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn (Ngự Định Kỳ Môn Bảo Giám)]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
@@ -3668,7 +3668,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V141.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V142.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Lịch ứng kỳ chính xác:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn.get("short_inline_date") or deep_syn["duoc_ung_ky"]}</span>'
@@ -3678,7 +3678,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V141.0)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V142.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'

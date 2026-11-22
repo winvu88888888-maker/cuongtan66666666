@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V141.0
+holographic_event_decoder.py — V142.0
 BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
@@ -272,7 +272,7 @@ PALACE_BODY_LOC = {
 
 def _qualify_qimen_stem_pattern(pat_name: str, pat_desc: str, door_str: str, tu_hai_list: Optional[List[str]] = None) -> Tuple[str, str]:
     """
-    V141.0 (Ngự Định Kỳ Môn Bảo Giám — 'Đắc Kỳ bất đắc Môn, bất vi Cát'):
+    V142.0 (Ngự Định Kỳ Môn Bảo Giám — 'Đắc Kỳ bất đắc Môn, bất vi Cát'):
     Khử mâu thuẫn khi Cách Thập Can mang nhãn CÁT / ĐẠI CÁT nhưng Cung lại lâm Hung Môn (Tử/Kinh/Thương/Đỗ) hoặc vướng Tứ Hại.
     """
     th = list(tu_hai_list or [])
@@ -720,7 +720,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V141.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V142.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -748,7 +748,7 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V141.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V142.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
@@ -778,7 +778,7 @@ def _strip_tags(s: str) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# V141.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
+# V142.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _CHI_12_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
@@ -1179,7 +1179,7 @@ def build_four_pillar_prophecy(
     question: str = "",
 ) -> Dict[str, Any]:
     """
-    V141.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    V142.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
     1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
     2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
     3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)
