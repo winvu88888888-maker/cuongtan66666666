@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V142.0
+holographic_event_decoder.py — V143.0
 BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
@@ -303,6 +303,374 @@ def _strip_body_anatomy_if_non_health(text_s: str, is_health: bool) -> str:
     if "; cơ thể ứng " in out:
         out = out.split("; cơ thể ứng ")[0]
     return out
+
+
+def _smart_team_title(raw_nm: str) -> str:
+    import re as _re_tt
+    s = _re_tt.sub(r"\s+", " ", str(raw_nm or "").strip(" ,.;:?!-–—'\"«»()[]"))
+    if not s:
+        return ""
+    keep_upper = {"U15", "U16", "U17", "U18", "U19", "U20", "U21", "U22", "U23", "MU", "PSG", "FC", "CLB", "SLNA", "HAGL", "CAHN", "TPHCM", "TP.HCM", "UAE", "USA", "UK"}
+    out_w = []
+    for w in s.split():
+        wu = w.upper()
+        if wu in keep_upper or _re_tt.match(r"^U\d{2}$", wu):
+            out_w.append(wu)
+        else:
+            out_w.append(w[0].upper() + w[1:] if len(w) > 1 else wu)
+    return " ".join(out_w)
+
+
+def extract_head_to_head_match_info(question: str) -> Optional[Dict[str, str]]:
+    """
+    V143.0: Nhận diện chính xác mọi câu hỏi Thi đấu Thể thao / Bóng đá / Đối đầu Chủ–Khách
+    (hỗ trợ đầy đủ 'vs', 'v.s', 'versus', 'đá với', 'đấu với', 'gặp', 'đối đầu', 'chạm trán', 'so tài', '-', '–',
+    kể cả có tiền tố dài như 'tối ngày mai dự đoán trận U17 Việt Nam vs U17 New Zealand đội nào thắng').
+    """
+    import re as _re_sp
+    q_raw = str(question or "").strip()
+    if len(q_raw) < 6:
+        return None
+    q_low = q_raw.lower()
+    # Tránh bắt nhầm câu hỏi hòa hợp vợ chồng / tình yêu / gia đình / thời tiết / bệnh tật / quân sự cổ đại
+    if any(
+        bad in q_low
+        for bad in (
+            "vợ chồng", "người yêu", "hôn nhân", "làm lành", "chia tay", "ly hôn", "bố mẹ", "anh chị em",
+            "trận mưa", "trận bão", "trận lụt", "trận ốm", "xuất quân", "công thành", "quân địch",
+        )
+    ):
+        return None
+
+    has_strong_vs = bool(
+        _re_sp.search(
+            r"(?:(?<!\w)(?:vs\.?|v\.s\.?|versus)(?!\w)|\b(?:đá\s+với|đấu\s+với|so\s+tài(?:\s+với)?|chạm\s+trán(?:\s+với)?)\b)",
+            q_low,
+        )
+    )
+    has_sport_ctx = any(
+        w in q_low
+        for w in (
+            "bóng đá", "bóng rổ", "bóng chuyền", "tennis", "cầu lông", "pickleball", "esports",
+            "đội nào thắng", "bên nào thắng", "tỷ số", "tỉ số", "trận ", "trận đấu", "chung kết",
+            "bán kết", "tứ kết", "vòng bảng", "vòng loại", "u16", "u17", "u19", "u20", "u22", "u23",
+            "đội tuyển", "clb ", "fc ", "ngoại hạng", "world cup", "asian cup", "sea games", "aff",
+        )
+    )
+    if not has_sport_ctx and any(
+        w in q_low for w in ("nên mua", "nên chọn", "nên đầu tư", "nên học", "nên làm", "nên ở", "cái nào tốt", "loại nào tốt", "hợp với tôi")
+    ):
+        return None
+    if not (has_strong_vs or has_sport_ctx):
+        return None
+
+    cleaned = q_raw
+    # Cắt bỏ tiền tố thời gian + động từ mở đầu (lặp 3 vòng để gọt sạch cả cụm dài)
+    _PREFIX_PAT = _re_sp.compile(
+        r"^(?:"
+        r"\[[^\]]+\]\s*|"
+        r"(?:cho\s+(?:tôi|mình|em|anh)\s+hỏi|xin\s+hỏi|hỏi\s+quẻ|xem\s+quẻ\s+giúp(?:\s+tôi)?|xem\s+giúp(?:\s+tôi)?|luận\s+giải(?:\s+giúp)?|xem\s+quẻ|luận\s+quẻ)\s+|"
+        r"(?:vào\s+|lúc\s+)?(?:\d{1,2}\s*(?:h|giờ|:)\s*\d{0,2}\s*)?(?:rạng\s+sáng\s+ngày\s+mai|tối\s+ngày\s+mai|chiều\s+ngày\s+mai|sáng\s+ngày\s+mai|đêm\s+ngày\s+mai|ngày\s+mai|rạng\s+sáng\s+mai|tối\s+mai|chiều\s+mai|sáng\s+mai|đêm\s+mai|tối\s+nay|đêm\s+nay|chiều\s+nay|sáng\s+nay|hôm\s+nay|ngày\s+kia|cuối\s+tuần\s+này|ngày\s+\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?)\s+|"
+        r"(?:dự\s+đoán|nhận\s+định|soi\s+kèo|phân\s+tích|xem|bói|đoán)\s+|"
+        r"(?:kết\s+quả|tỷ\s+số|tỉ\s+số|thắng\s+thua)\s+|"
+        r"(?:trận\s+bóng\s+đá|trận\s+đấu\s+giữa|trận\s+cầu\s+giữa|cặp\s+đấu\s+giữa|cuộc\s+đối\s+đầu\s+giữa|trận\s+đấu|trận\s+cầu|cặp\s+đấu|trận|giữa)\s+"
+        r")+",
+        flags=_re_sp.IGNORECASE,
+    )
+    cleaned = _PREFIX_PAT.sub("", cleaned).strip(" ,:;-–—")
+
+    # Cắt bỏ hậu tố thời gian / câu hỏi phía sau tên đội 2 (lặp 2 lượt để gọt cả "tối mai đội nào thắng")
+    _SUFFIX_PAT = _re_sp.compile(
+        r"(?:[,;.?]+\s*|\s+)(?:"
+        r"(?:vào\s+|lúc\s+)?(?:\d{1,2}\s*(?:h|giờ|:)\s*\d{0,2}\s*)?(?:rạng\s+sáng\s+ngày\s+mai|tối\s+ngày\s+mai|chiều\s+ngày\s+mai|sáng\s+ngày\s+mai|đêm\s+ngày\s+mai|ngày\s+mai|rạng\s+sáng\s+mai|tối\s+mai|chiều\s+mai|sáng\s+mai|đêm\s+mai|tối\s+nay|đêm\s+nay|chiều\s+nay|sáng\s+nay|hôm\s+nay|ngày\s+kia).*|"
+        r"đội\s+nào\s+(?:sẽ\s+)?(?:giành\s+chiến\s+)?thắng.*|"
+        r"bên\s+nào\s+(?:sẽ\s+)?thắng.*|"
+        r"ai\s+(?:sẽ\s+)?(?:là\s+người\s+|là\s+đội\s+)?thắng.*|"
+        r"thắng\s+hay\s+(?:thua|hòa|bại).*|"
+        r"hòa\s+hay\s+(?:thắng|thua).*|"
+        r"có\s+(?:giành\s+chiến\s+)?thắng\s+(?:được\s+)?không.*|"
+        r"(?:và\s+)?(?:với\s+)?(?:tỷ|tỉ)\s+số\s+(?:là\s+)?bao\s+nhiêu.*|"
+        r"(?:tỷ|tỉ)\s+số\s+(?:thế\s+nào|ra\s+sao|như\s+thế\s+nào).*|"
+        r"kết\s+quả\s+(?:thế\s+nào|ra\s+sao|như\s+thế\s+nào|sao).*|"
+        r"đá\s+(?:có\s+thắng\s+không|thế\s+nào|ra\s+sao).*|"
+        r"thi\s+đấu\s+(?:thế\s+nào|ra\s+sao|có\s+thắng\s+không).*"
+        r")$",
+        flags=_re_sp.IGNORECASE,
+    )
+    cleaned = _SUFFIX_PAT.sub("", cleaned).strip(" ,.;:?!-–—")
+    cleaned = _SUFFIX_PAT.sub("", cleaned).strip(" ,.;:?!-–—")
+
+    # Tách 2 đội theo từ nối đối đầu
+    sep_pat = (
+        r"\s+(?:vs\.?|v\.s\.?|versus|đá\s+với|đấu\s+với|đối\s+đầu(?:\s+với)?|chạm\s+trán(?:\s+với)?|so\s+tài(?:\s+với)?|gặp"
+        + (r"|với|và" if has_sport_ctx else "")
+        + r")\s+"
+        + (r"|\s+[-–—]\s+" if has_sport_ctx else "")
+    )
+    parts = _re_sp.split(sep_pat, cleaned, maxsplit=1, flags=_re_sp.IGNORECASE)
+    if len(parts) == 2:
+        t1 = _smart_team_title(parts[0])
+        t2 = _smart_team_title(parts[1])
+        if 2 <= len(t1) <= 42 and 2 <= len(t2) <= 42 and t1.lower() != t2.lower():
+            return {"team_1": t1, "team_2": t2, "is_two_teams": "1"}
+
+    # Câu hỏi 1 đội bóng (VD: "tối mai U17 Việt Nam đá có thắng không")
+    has_pure_sport_team_kw = any(
+        w in q_low
+        for w in (
+            "bóng đá", "bóng rổ", "bóng chuyền", "tennis", "cầu lông", "pickleball", "esports",
+            "u16", "u17", "u19", "u20", "u22", "u23", "đội tuyển", "clb ", "fc ", "tỷ số", "tỉ số", "đội nào thắng", "đá có thắng",
+        )
+    )
+    if has_pure_sport_team_kw and any(w in q_low for w in ("thắng không", "thắng hay thua", "thắng hay hòa", "tỷ số", "tỉ số", "kết quả thế nào", "đá thế nào")):
+        single_t = _re_sp.sub(r"\s+(?:đá|thi\s+đấu|ra\s+sân).*$", "", cleaned, flags=_re_sp.IGNORECASE)
+        t1 = _smart_team_title(single_t)
+        if 2 <= len(t1) <= 40:
+            return {"team_1": t1, "team_2": "Đội Đối Thủ", "is_two_teams": "0"}
+    return None
+
+
+def compute_classical_head_to_head_verdict(
+    team_1: str,
+    team_2: str,
+    ly_res: Dict[str, Any],
+    qm_res: Dict[str, Any],
+    mh_res: Dict[str, Any],
+    chart_data: Optional[Dict[str, Any]] = None,
+    target_day_chi: str = "",
+) -> Dict[str, Any]:
+    """
+    V143.0 — BỘ LUẬN ĐOÁN THI ĐẤU ĐỐI KHÁNG CHỦ–KHÁCH TAM THỨC (100% CĂN CỨ QUẺ THẬT — CHỐNG LUẬN ẢO):
+    1. Lục Hào (50%): Trục Thế (Đội 1 / Chủ) vs Ứng (Đội 2 / Khách) dưới Nguyệt Lệnh, Nhật Thần, Đích Nhật thi đấu, Động Biến & Gian Hào.
+    2. Kỳ Môn (30%): Cung Chủ (Nhật Can / Trực Phù) vs Cung Khách (Thời Can / Canh), Cửu Tinh, Bát Môn & Tứ Hại.
+    3. Mai Hoa (20%): Quẻ Thể (Đội 1) vs Quẻ Dụng (Hiệp 1) ➔ Hỗ Quái ➔ Quẻ Biến Dụng (Hiệp 2 / Kết cục) & Quái Số định tỷ số.
+    """
+    cd = chart_data if isinstance(chart_data, dict) else {}
+    lines: List[Dict[str, Any]] = list(ly_res.get("line_micro_audit") or [])
+    the_pos = int(ly_res.get("the_pos") or 3)
+    ung_pos = int(ly_res.get("ung_pos") or 6)
+    the_ln = lines[the_pos - 1] if 1 <= the_pos <= len(lines) else {}
+    ung_ln = lines[ung_pos - 1] if 1 <= ung_pos <= len(lines) else {}
+    chi_ngay = str(cd.get("chi_ngay") or ly_res.get("chi_ngay") or "Tý")
+    chi_thang = str(cd.get("chi_thang") or ly_res.get("chi_thang") or "Hợi")
+    nhat_el = CHI_EL.get(chi_ngay, "Thủy")
+    dich_chi = str(target_day_chi or "")
+    dich_el = CHI_EL.get(dich_chi, "")
+
+    _VS_PTS = {"Vượng": 18, "Tướng": 14, "Bình": 2, "Hưu": -2, "Tù": -10, "Tử": -14}
+
+    def _eval_combat_line(ln_obj: Dict[str, Any]) -> Tuple[float, List[str]]:
+        if not ln_obj:
+            return 0.0, []
+        sc = 0.0
+        notes: List[str] = []
+        ch = str(ln_obj.get("chi") or "Tý")
+        el = str(ln_obj.get("ngu_hanh") or CHI_EL.get(ch, "Thủy"))
+        vs_s = str(ln_obj.get("vuong_suy") or "Bình")
+        hf = set(ln_obj.get("hoa_flags") or [])
+        sc += _VS_PTS.get(vs_s, 0)
+        notes.append(f"Nguyệt Lệnh {chi_thang}: bậc {vs_s}")
+        if ln_obj.get("is_nguyet_pha"):
+            sc -= 20
+            notes.append("lâm Nguyệt Phá (tổn lực nặng)")
+        if ch == chi_ngay:
+            sc += 18
+            notes.append(f"lâm Nhật Kiến {chi_ngay} (cực vượng)")
+        elif SINH_EL.get(nhat_el) == el or (nhat_el == el and _LUC_XUNG_12.get(ch) != chi_ngay):
+            sc += 14
+            notes.append(f"đắc Nhật Thần {chi_ngay}-{nhat_el} sinh/trợ")
+        elif ln_obj.get("is_nhat_pha"):
+            sc -= 22
+            notes.append(f"phạm Nhật Phá ({chi_ngay} xung vỡ {ch})")
+        elif ln_obj.get("is_am_dong"):
+            sc += 14
+            notes.append(f"Ám Động bởi Nhật {chi_ngay} (bùng nổ mạnh)")
+        elif KHAC_EL.get(nhat_el) == el and not ln_obj.get("is_moving"):
+            sc -= 11
+            notes.append(f"bị Nhật Thần {chi_ngay}-{nhat_el} chế khắc")
+        if _LUC_HOP_12.get(ch) == chi_ngay:
+            if ln_obj.get("is_moving"):
+                sc -= 6
+                notes.append("động phùng Nhật Hợp (bị kèm chặt)")
+            else:
+                sc += 10
+                notes.append("tĩnh đắc Nhật Hợp Khởi")
+        # Cộng hưởng thêm với Đích Nhật ngày bóng lăn (nếu hỏi trước cho ngày mai / ngày kia)
+        if dich_chi and dich_chi != chi_ngay:
+            if ch == dich_chi:
+                sc += 10
+                notes.append(f"đúng ngày đấu {dich_chi} trực vị vượng khí")
+            elif SINH_EL.get(dich_el) == el or _LUC_HOP_12.get(ch) == dich_chi:
+                sc += 7
+                notes.append(f"ngày đấu {dich_chi} tương sinh/tương hợp")
+            elif _LUC_XUNG_12.get(ch) == dich_chi and vs_s in ("Tù", "Tử"):
+                sc -= 10
+                notes.append(f"ngày đấu {dich_chi} xung kích khi suy")
+        if ln_obj.get("is_void"):
+            if ln_obj.get("khong_type") == "CHAN_KHONG":
+                sc -= 18
+                notes.append("rơi vào Chân Không (hụt hơi/thiếu sắc bén)")
+            else:
+                sc -= 5
+                notes.append("tạm Giả Không")
+        if "HOA_TIEN" in hf or "HOI_DAU_SINH" in hf:
+            sc += 16
+            notes.append("động đắc Hóa Tiến / Hồi Đầu Sinh (càng đá càng lên chân)")
+        if "HOI_DAU_KHAC" in hf:
+            sc -= 22
+            notes.append("động hóa Hồi Đầu Khắc (dễ tự mắc sai lầm hiệp 2)")
+        elif "HOA_THOAI" in hf:
+            sc -= 15
+            notes.append("động Hóa Thoái Thần (suy giảm thể lực cuối trận)")
+        return sc, notes
+
+    t1_lh, t1_notes = _eval_combat_line(the_ln)
+    t2_lh, t2_notes = _eval_combat_line(ung_ln)
+    the_el = str(the_ln.get("ngu_hanh") or "Thủy")
+    ung_el = str(ung_ln.get("ngu_hanh") or "Hỏa")
+    the_chi = str(the_ln.get("chi") or "Dần")
+    ung_chi = str(ung_ln.get("chi") or "Ngọ")
+
+    if KHAC_EL.get(the_el) == ung_el:
+        t1_lh += 12
+        t1_notes.append(f"Hào Thế ({the_el}) khắc chế trực diện Hào Ứng ({ung_el})")
+    elif KHAC_EL.get(ung_el) == the_el:
+        t2_lh += 12
+        t2_notes.append(f"Hào Ứng ({ung_el}) khắc chế trực diện Hào Thế ({the_el})")
+    elif SINH_EL.get(ung_el) == the_el:
+        t1_lh += 7
+        t2_lh -= 4
+        t1_notes.append("Hào Ứng sinh trợ ngược cho Hào Thế")
+    elif SINH_EL.get(the_el) == ung_el:
+        t2_lh += 7
+        t1_lh -= 4
+        t2_notes.append("Hào Thế tiết khí sinh sang Hào Ứng")
+
+    # Tác động từ các Hào Động khác trên sân (Gian Hào / Biến số trận đấu)
+    field_movers: List[str] = []
+    for ln_m in lines:
+        h_i = int(ln_m.get("hao") or 0)
+        if h_i in (the_pos, ung_pos) or not (ln_m.get("is_moving") or ln_m.get("is_am_dong")):
+            continue
+        m_el = str(ln_m.get("ngu_hanh") or "")
+        m_lt = str(ln_m.get("luc_than") or "")
+        m_ch = str(ln_m.get("chi") or "")
+        m_th = str(ln_m.get("luc_thu") or "")
+        if SINH_EL.get(m_el) == the_el:
+            t1_lh += 9
+            field_movers.append(f"Hào {h_i} {m_lt} ({m_ch} · {m_th}) động tiếp sức cho {team_1}")
+        elif KHAC_EL.get(m_el) == the_el:
+            t1_lh -= 9
+            field_movers.append(f"Hào {h_i} {m_lt} ({m_ch} · {m_th}) động gây sức ép lên hàng thủ {team_1}")
+        if SINH_EL.get(m_el) == ung_el:
+            t2_lh += 9
+            field_movers.append(f"Hào {h_i} {m_lt} ({m_ch} · {m_th}) động trợ lực phản công cho {team_2}")
+        elif KHAC_EL.get(m_el) == ung_el:
+            t2_lh -= 9
+            field_movers.append(f"Hào {h_i} {m_lt} ({m_ch} · {m_th}) động khóa chặt mũi nhọn của {team_2}")
+
+    # 2. Kỳ Môn Độn Giáp Chủ (Cung Nhật Can) vs Khách (Cung Thời Can) — trọng số 30%
+    p_map = qm_res.get("palace_micro_audit") or {}
+    c_chu = int(qm_res.get("cung_chu") or 2)
+    c_khach = int(qm_res.get("cung_khach") or qm_res.get("target_cung") or 8)
+    pa_c = p_map.get(c_chu, {})
+    pa_k = p_map.get(c_khach, {})
+    el_c = str(pa_c.get("ngu_hanh") or "Thổ")
+    el_k = str(pa_k.get("ngu_hanh") or "Thổ")
+    qm_diff = 0.0
+    qm_reason = f"Cung Chủ {c_chu} ({pa_c.get('door','')} · {pa_c.get('star','')}) đối Cung Khách {c_khach} ({pa_k.get('door','')} · {pa_k.get('star','')})"
+    if c_chu != c_khach:
+        if KHAC_EL.get(el_c) == el_k:
+            qm_diff += 14
+            qm_reason += f" — Cung Chủ ({el_c}) chế phục Cung Khách ({el_k})"
+        elif KHAC_EL.get(el_k) == el_c:
+            qm_diff -= 14
+            qm_reason += f" — Cung Khách ({el_k}) khắc ép Cung Chủ ({el_c})"
+        elif SINH_EL.get(el_k) == el_c:
+            qm_diff += 9
+            qm_reason += f" — Cung Khách ({el_k}) sinh lợi cho Cung Chủ ({el_c})"
+        elif SINH_EL.get(el_c) == el_k:
+            qm_diff -= 9
+            qm_reason += f" — Cung Chủ ({el_c}) hao lực sinh Cung Khách ({el_k})"
+    if any(d in str(pa_c.get("door") or "") for d in ("Khai", "Sinh", "Cảnh", "Thương")):
+        qm_diff += 6
+    if any(d in str(pa_k.get("door") or "") for d in ("Khai", "Sinh", "Cảnh", "Thương")):
+        qm_diff -= 6
+    qm_diff -= 8 * len(pa_c.get("tu_hai") or [])
+    qm_diff += 8 * len(pa_k.get("tu_hai") or [])
+
+    # 3. Mai Hoa Dịch Số Thể (Đội 1) vs Dụng & Biến Dụng (Đội 2) — trọng số 20%
+    the_q_m = str(mh_res.get("the_quai") or "Khảm")
+    dung_q_m = str(mh_res.get("dung_quai") or "Khảm")
+    bien_q_m = str(mh_res.get("bien_dung_quai") or dung_q_m)
+    _TR_EL = {"Càn": "Kim", "Đoài": "Kim", "Ly": "Hỏa", "Chấn": "Mộc", "Tốn": "Mộc", "Khảm": "Thủy", "Cấn": "Thổ", "Khôn": "Thổ"}
+    _XT_NUM = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
+    el_tm = _TR_EL.get(the_q_m, "Thủy")
+    el_dm = _TR_EL.get(dung_q_m, "Thủy")
+    el_bm = _TR_EL.get(bien_q_m, el_dm)
+    mh_diff = 0.0
+    for w_m, e_opp in ((1.0, el_dm), (1.8, el_bm)):
+        if SINH_EL.get(e_opp) == el_tm or KHAC_EL.get(el_tm) == e_opp:
+            mh_diff += 10.0 * w_m
+        elif KHAC_EL.get(e_opp) == el_tm or SINH_EL.get(el_tm) == e_opp:
+            mh_diff -= 10.0 * w_m
+
+    lh_diff = t1_lh - t2_lh
+    total_diff = lh_diff * 0.55 + qm_diff * 0.25 + mh_diff * 0.20
+
+    # Tính xác suất 3 cửa (Thắng – Hòa – Thua = 100%) & Tỷ số sát thực tế bóng đá
+    is_luchop_draw_bias = bool(ly_res.get("ban_is_luc_hop") or ly_res.get("bien_is_luc_hop") or qm_res.get("is_mon_phuc_ngam"))
+    draw_pct = max(14, min(36, int(round((32 if is_luchop_draw_bias else 26) - min(16.0, abs(total_diff) * 0.42)))))
+    rem_pct = 100 - draw_pct
+    share_t1 = 1.0 / (1.0 + pow(2.71828, -max(-3.2, min(3.2, total_diff / 14.0))))
+    p_t1 = max(8, min(rem_pct - 8, int(round(rem_pct * share_t1))))
+    p_t2 = 100 - p_t1 - draw_pct
+
+    # Tỷ số ước lượng từ Quái Số & độ chênh khí lực thực tế
+    up_q_s = str(mh_res.get("up_q") or the_q_m)
+    lo_q_s = str(mh_res.get("lo_q") or dung_q_m)
+    seed_sum = _XT_NUM.get(up_q_s, 3) + _XT_NUM.get(lo_q_s, 4)
+    if abs(total_diff) <= 5.5:
+        outcome_code = "DRAW_LEAN"
+        lean_team = team_1 if total_diff >= 0 else team_2
+        g_draw = 1 if (seed_sum % 2 == 0) else 2
+        score_pred = f"{g_draw} – {g_draw} (hoặc {lean_team} thắng sát nút {g_draw} – {g_draw - 1})"
+        winner_label = f"THẾ TRẬN GIẰNG CO DỄ HÒA — NGHIÊNG NHẸ VỀ «{lean_team.upper()}»"
+    elif total_diff > 5.5:
+        outcome_code = "TEAM1_WIN"
+        winner_label = f"«{team_1.upper()}» CHIẾM ƯU THẾ GIÀNH CHIẾN THẮNG"
+        margin = 2 if total_diff >= 22 else 1
+        lose_g = 0 if (t2_lh < -8) else 1
+        win_g = lose_g + margin
+        alt_s = f"{win_g - 1} – 0" if lose_g == 1 and margin == 1 else f"{win_g} – {max(0, lose_g - 1 if lose_g > 0 else 1)}"
+        score_pred = f"{team_1} {win_g} – {lose_g} {team_2} (phương án sát: {alt_s})"
+    else:
+        outcome_code = "TEAM2_WIN"
+        winner_label = f"«{team_2.upper()}» CHIẾM ƯU THẾ GIÀNH CHIẾN THẮNG"
+        margin = 2 if abs(total_diff) >= 22 else 1
+        lose_g = 0 if (t1_lh < -8) else 1
+        win_g = lose_g + margin
+        alt_s = f"0 – {win_g - 1}" if lose_g == 1 and margin == 1 else f"{max(0, lose_g - 1 if lose_g > 0 else 1)} – {win_g}"
+        score_pred = f"{team_1} {lose_g} – {win_g} {team_2} (phương án sát: {alt_s})"
+
+    return {
+        "team_1": team_1,
+        "team_2": team_2,
+        "outcome_code": outcome_code,
+        "winner_label": winner_label,
+        "p_t1": p_t1,
+        "p_draw": draw_pct,
+        "p_t2": p_t2,
+        "score_pred": score_pred,
+        "total_diff": round(total_diff, 1),
+        "the_pos": the_pos,
+        "ung_pos": ung_pos,
+        "the_desc": f"Hào Thế (Hào {the_pos} {the_ln.get('luc_than','')} {the_chi}-{the_el}: {', '.join(t1_notes[:3])})",
+        "ung_desc": f"Hào Ứng (Hào {ung_pos} {ung_ln.get('luc_than','')} {ung_chi}-{ung_el}: {', '.join(t2_notes[:3])})",
+        "field_movers": field_movers,
+        "qm_reason": qm_reason,
+        "mh_reason": f"Quẻ Thể {the_q_m} ({el_tm}) đối Quẻ Dụng {dung_q_m} ({el_dm}) ➔ Biến Dụng {bien_q_m} ({el_bm})",
+    }
 
 
 def _qimen_star_season_state(star: str, nguyet_el: str) -> str:
@@ -720,7 +1088,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V142.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V143.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -748,7 +1116,7 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V142.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V143.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
@@ -778,7 +1146,7 @@ def _strip_tags(s: str) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# V142.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
+# V143.0: BỘ GIẢI LỊCH THIÊN VĂN THỰC TẾ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _CHI_12_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
@@ -983,18 +1351,70 @@ def resolve_astronomical_ung_ky_ymdh(
         else:
             pri_chi, sec_chi = xung_dt, dt_chi
 
-    # 3. Nhận diện tầm vóc thời gian trong câu hỏi để tra đúng khung lịch (Hôm nay / Tuần tới / Tháng tới / Năm tới)
+    # 3. Nhận diện tầm vóc thời gian & ngày đích danh trong câu hỏi (Hôm nay / Ngày mai / Ngày kia / Tuần tới / Tháng tới / Năm tới)
     q_low = str(question or "").lower()
     is_already = "ĐÃ XẢY RA" in duoc_ung_ky.upper()
-    is_today_q = any(w in q_low for w in ("hôm nay", "tối nay", "chiều nay", "sáng nay", "đêm nay", "ngay bây giờ"))
+    explicit_day_offset: Optional[int] = None
+    if any(w in q_low for w in ("ngày kia", "ngày mốt", "tối ngày kia", "sáng ngày kia", "chiều ngày kia")):
+        explicit_day_offset = 2
+    elif any(
+        w in q_low
+        for w in (
+            "tối ngày mai", "sáng ngày mai", "chiều ngày mai", "trưa ngày mai", "đêm ngày mai",
+            "rạng sáng ngày mai", "rạng sáng mai", "ngày mai", "tối mai", "sáng mai", "chiều mai", "trưa mai", "đêm mai",
+        )
+    ):
+        explicit_day_offset = 1
+    elif any(w in q_low for w in ("hôm nay", "tối nay", "chiều nay", "sáng nay", "trưa nay", "đêm nay", "ngay bây giờ")):
+        explicit_day_offset = 0
+    else:
+        _m_exp_dm = _re_ym.search(r"\bngày\s+(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b", q_low)
+        if _m_exp_dm:
+            try:
+                _ed_d = int(_m_exp_dm.group(1))
+                _ed_m = int(_m_exp_dm.group(2))
+                _ed_y_raw = _m_exp_dm.group(3)
+                _ed_y = (int(_ed_y_raw) + 2000 if len(_ed_y_raw) == 2 else int(_ed_y_raw)) if _ed_y_raw else base_date.year
+                _cand_ed = _dt_mod.date(_ed_y, _ed_m, _ed_d)
+                if not _ed_y_raw and _cand_ed < base_date - _dt_mod.timedelta(days=2):
+                    _cand_ed = _dt_mod.date(base_date.year + 1, _ed_m, _ed_d)
+                _ed_off = (_cand_ed - base_date).days
+                if 0 <= _ed_off <= 366:
+                    explicit_day_offset = _ed_off
+            except Exception:
+                pass
+
+    explicit_tod_lbl = ""
+    explicit_tod_chis: List[str] = []
+    _m_exp_hr = _re_ym.search(r"\b(\d{1,2})\s*(?:h|giờ)\s*(\d{0,2})\b", q_low)
+    if _m_exp_hr and 0 <= int(_m_exp_hr.group(1)) <= 23:
+        _hr_val = int(_m_exp_hr.group(1))
+        _hr_chi = _CHI_12_ORDER[((_hr_val + 1) // 2) % 12]
+        explicit_tod_lbl = f"Lúc {_hr_val:02d}:{int(_m_exp_hr.group(2) or 0):02d}"
+        explicit_tod_chis = [_hr_chi]
+    elif any(w in q_low for w in ("rạng sáng", "nửa đêm")):
+        explicit_tod_lbl, explicit_tod_chis = "Rạng sáng (01:00–05:00)", ["Sửu", "Dần"]
+    elif any(w in q_low for w in ("tối ", "tối nay", "tối mai", "tối ngày mai", "đêm nay", "đêm mai", "buổi tối")):
+        explicit_tod_lbl, explicit_tod_chis = "Khung tối (19:00–23:00)", ["Tuất", "Hợi"]
+    elif any(w in q_low for w in ("chiều ", "chiều nay", "chiều mai", "chiều ngày mai", "buổi chiều")):
+        explicit_tod_lbl, explicit_tod_chis = "Buổi chiều (13:00–19:00)", ["Mùi", "Thân", "Dậu"]
+    elif any(w in q_low for w in ("trưa ", "trưa nay", "trưa mai", "buổi trưa")):
+        explicit_tod_lbl, explicit_tod_chis = "Buổi trưa (11:00–13:00)", ["Ngọ"]
+    elif any(w in q_low for w in ("sáng ", "sáng nay", "sáng mai", "sáng ngày mai", "buổi sáng")):
+        explicit_tod_lbl, explicit_tod_chis = "Buổi sáng (05:00–11:00)", ["Mão", "Thìn", "Tị"]
+
+    is_today_q = explicit_day_offset == 0
     is_next_week_q = any(w in q_low for w in ("tuần tới", "tuần sau", "mấy ngày tới", "vài ngày tới"))
     is_next_month_q = any(w in q_low for w in ("tháng tới", "tháng sau"))
     is_this_month_q = any(w in q_low for w in ("tháng này", "trong tháng"))
-    is_next_year_or_daisu = any(
-        w in q_low
-        for w in (
-            "năm tới", "năm sau", "sang năm", "năm nào", "mua nhà mặt đất", "mua được nhà",
-            "xây nhà", "làm nhà", "mua đất ở", "kết hôn", "lấy vợ", "lấy chồng",
+    is_next_year_or_daisu = (
+        explicit_day_offset is None
+        and any(
+            w in q_low
+            for w in (
+                "năm tới", "năm sau", "sang năm", "năm nào", "mua nhà mặt đất", "mua được nhà",
+                "xây nhà", "làm nhà", "mua đất ở", "kết hôn", "lấy vợ", "lấy chồng",
+            )
         )
     )
 
@@ -1013,6 +1433,21 @@ def resolve_astronomical_ung_ky_ymdh(
         short_s = f"Ngày {c_d} {ch_d} {d_obj.strftime('%d/%m/%Y')}"
         return ch_d, full_s, short_s
 
+    # Nếu câu hỏi đã khóa buổi cụ thể (VD: "tối ngày mai" -> Tuất/Hợi), chọn giờ trong buổi đó cộng hưởng mạnh nhất với quẻ!
+    if explicit_tod_chis:
+        if pri_chi in explicit_tod_chis:
+            _best_tod_chi = pri_chi
+        elif sec_chi in explicit_tod_chis:
+            _best_tod_chi = sec_chi
+        else:
+            _best_tod_chi = explicit_tod_chis[0]
+            for _cand_tc in explicit_tod_chis:
+                if _LUC_HOP_12.get(_cand_tc) == dt_chi or SINH_EL.get(CHI_EL.get(_cand_tc, "")) == dt_el:
+                    _best_tod_chi = _cand_tc
+                    break
+        pri_chi = _best_tod_chi
+        sec_chi = explicit_tod_chis[-1] if explicit_tod_chis[-1] != pri_chi else sec_chi
+
     # 4. Tính Khung Giờ & Khắc Vàng 15 phút chuẩn Tiên Thiên Quái Số + Hà Đồ Ngũ Hành
     h_span_pri, h_start_pri = _CHI_HOUR_SPAN.get(pri_chi, ("07:00–09:00", 7))
     h_span_sec, _ = _CHI_HOUR_SPAN.get(sec_chi, ("15:00–17:00", 15))
@@ -1026,6 +1461,10 @@ def resolve_astronomical_ung_ky_ymdh(
     if is_already:
         _g_span, _ = _CHI_HOUR_SPAN.get(chi_gio, ("hiện tại", 12))
         hour_str = f"Đã nổ ngay khung Giờ {chi_gio} ({_g_span}) hôm nay"
+    elif explicit_tod_lbl:
+        hour_str = f"{explicit_tod_lbl} — trọng tâm Giờ {pri_chi} ({h_span_pri}, cao trào Khắc {_khac_idx}: {_k_h1:02d}:{_k_m1:02d}–{_k_h2:02d}:{_k_m2:02d})"
+        if sec_chi != pri_chi and sec_chi in explicit_tod_chis:
+            hour_str += f" nối sang Giờ {sec_chi} ({h_span_sec})"
     else:
         hour_str = f"Giờ {pri_chi} ({h_span_pri}, đỉnh điểm Khắc {_khac_idx}: {_k_h1:02d}:{_k_m1:02d}–{_k_h2:02d}:{_k_m2:02d})"
         if sec_chi != pri_chi:
@@ -1036,11 +1475,23 @@ def resolve_astronomical_ung_ky_ymdh(
     pri_dates_short: List[str] = []
     sec_dates_full: List[str] = []
     sec_dates_short: List[str] = []
+    explicit_target_date_chi = ""
 
     if is_already:
-        _, f0, s0 = _fmt_date_full(base_date)
+        ch0, f0, s0 = _fmt_date_full(base_date)
+        explicit_target_date_chi = ch0
         pri_dates_full.append(f"Ngay hôm nay — {f0}")
         pri_dates_short.append(f"ngay hôm nay {s0}")
+    elif explicit_day_offset is not None:
+        d_target = base_date + _dt_mod.timedelta(days=explicit_day_offset)
+        ch_td, f_td, sh_td = _fmt_date_full(d_target)
+        explicit_target_date_chi = ch_td
+        _rel_day_lbl = (
+            "Hôm nay" if explicit_day_offset == 0
+            else ("Ngày mai" if explicit_day_offset == 1 else ("Ngày kia" if explicit_day_offset == 2 else "Đúng mốc ngày hỏi"))
+        )
+        pri_dates_full.append(f"{_rel_day_lbl} — {f_td}")
+        pri_dates_short.append(f"{_rel_day_lbl} ({sh_td})")
     elif is_next_month_q:
         # Cửa sổ chính xác trong Tháng Dương lịch kế tiếp
         nm_year = base_date.year + (1 if base_date.month == 12 else 0)
@@ -1078,7 +1529,12 @@ def resolve_astronomical_ung_ky_ymdh(
     if _qcalc is not None:
         target_m_chis = list(dict.fromkeys([pri_chi, sec_chi, _VUONG_CHI_BY_EL.get(dt_el, pri_chi)]))
         all_segs = build_solar_term_month_segments(base_date)
-        if is_next_month_q and all_segs:
+        if explicit_day_offset is not None and all_segs:
+            d_target_seg = base_date + _dt_mod.timedelta(days=explicit_day_offset)
+            cur_seg_td = next((sg for sg in all_segs if sg["start"] <= d_target_seg <= sg["end"]), all_segs[0])
+            month_year_str = format_month_segment(cur_seg_td)
+            short_month_tag = format_month_segment(cur_seg_td, short=True)
+        elif is_next_month_q and all_segs:
             nm_y = base_date.year + (1 if base_date.month == 12 else 0)
             nm_m = 1 if base_date.month == 12 else (base_date.month + 1)
             nm_first = _dt_mod.date(nm_y, nm_m, 1)
@@ -1129,6 +1585,11 @@ def resolve_astronomical_ung_ky_ymdh(
 
     if is_already:
         short_inline_date = f"ĐÃ XẢY RA NGAY TRONG HÔM NAY ({pri_dates_short[0] if pri_dates_short else ''}, Giờ {chi_gio})"
+    elif explicit_day_offset is not None:
+        short_inline_date = (
+            f"{pri_dates_short[0] if pri_dates_short else ''}"
+            + (f" [{explicit_tod_lbl} · trọng tâm Giờ {pri_chi} {h_span_pri}]" if explicit_tod_lbl else f" [Khung Giờ {pri_chi} {h_span_pri}]")
+        )
     elif is_next_year_or_daisu and short_month_tag:
         short_inline_date = (
             f"Ứng trọng tâm vào {short_month_tag}"
@@ -1160,6 +1621,7 @@ def resolve_astronomical_ung_ky_ymdh(
     return {
         "primary_chi": pri_chi,
         "secondary_chi": sec_chi,
+        "explicit_target_date_chi": explicit_target_date_chi,
         "hour_str": hour_str,
         "day_str": day_str,
         "month_year_str": month_year_str,
@@ -1179,7 +1641,7 @@ def build_four_pillar_prophecy(
     question: str = "",
 ) -> Dict[str, Any]:
     """
-    V142.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    V143.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
     1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
     2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
     3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)
@@ -1238,6 +1700,63 @@ def build_four_pillar_prophecy(
         chart_data=cd,
         question=question,
     )
+
+    # ── KIỂM TRA MIỀN THI ĐẤU THỂ THAO / ĐỐI KHÁNG CHỦ–KHÁCH (SPORTS_MATCH — CHUYÊN BIỆT 4 TRỤ CỘT SÁT TRẬN ĐẤU!) ──
+    _match_info_4p = extract_head_to_head_match_info(question)
+    if _match_info_4p:
+        _h2h = compute_classical_head_to_head_verdict(
+            team_1=_match_info_4p["team_1"],
+            team_2=_match_info_4p["team_2"],
+            ly_res=ly_res,
+            qm_res=qm_res,
+            mh_res=mh_res,
+            chart_data=cd,
+            target_day_chi=str(ymdh.get("explicit_target_date_chi") or ""),
+        )
+        _t1 = _h2h["team_1"]
+        _t2 = _h2h["team_2"]
+        _mv_str_sp = "; ".join(_h2h["field_movers"][:2]) if _h2h["field_movers"] else f"Quẻ {ban_name} ➔ {bien_name} định nhịp công–thủ rõ rệt"
+        _p1_sp = (
+            f"<div style='margin-bottom:5px;color:#bae6fd;font-weight:800;font-size:0.86em;'>"
+            f"⚽ Tỷ lệ Tam Thức: {_t1} thắng {_h2h['p_t1']}% · Hòa {_h2h['p_draw']}% · {_t2} thắng {_h2h['p_t2']}% | Tỷ số dự báo: {_h2h['score_pred']}"
+            f"</div>"
+            f"• <b>Kết cục & Thế trận trên sân ({ban_name} ➔ {bien_name}):</b> {_h2h['winner_label']}. "
+            f"Hiệp 1 vận hành theo <b>{ban_name}</b> ({'nhịp độ đôi công nhanh, tranh chấp quyết liệt ngay từ đầu' if ly_res.get('ban_is_luc_xung') else 'hai đội nhập cuộc thăm dò chặt chẽ'}), sang Hiệp 2 chuyển về <b>{bien_name}</b> định đoạt kết quả.<br>"
+            f"• <b>Biến số Hào Động trên sân:</b> {_mv_str_sp}.<br>"
+            f"• <b>Đối chứng Kỳ Môn & Mai Hoa:</b> {_h2h['qm_reason']} · {_h2h['mh_reason']}."
+        )
+        _p2_sp = (
+            f"• <b>🟦 Đội Chủ (Nêu trước — {_t1}):</b> Ứng <b>{_h2h['the_desc']}</b>.<br>"
+            f"• <b>🟥 Đội Khách (Nêu sau — {_t2}):</b> Ứng <b>{_h2h['ung_desc']}</b>.<br>"
+            f"• <b>⚡ Nhân tố định đoạt trận đấu:</b> Tuyến cầu thủ tốc độ/đột biến ứng hào động trên quẻ <b>{ban_name} ➔ {bien_name}</b> và phương vị <b>{huong_tc} (Cung {tc_qm} — {door_tc} · {star_tc})</b>."
+        )
+        _p3_sp = (
+            f"• <b>⏰ Khung giờ bóng lăn & Phút cao trào nổ bàn thắng:</b> <span style='color:#fde047;font-weight:800;'>{ymdh['hour_str']}</span> (các thời điểm dễ có bàn thắng nhất rơi vào cuối Hiệp 1 và khoảng phút 65–85 Hiệp 2 khi khí quẻ chuyển sang <b>{bien_name}</b>).<br>"
+            f"• <b>📆 Ngày thi đấu chính xác:</b> <b>{ymdh['day_str']}</b>.<br>"
+            f"• <b>🗓️ Tháng Tiết Khí hiện hành:</b> <b>{ymdh['month_year_str']}</b>."
+        )
+        _has_sneak = any(ln.get("luc_thu") in ("Huyền Vũ", "Đằng Xà") and ln.get("is_moving") for ln in lines)
+        _p4_sp = (
+            f"• 1️⃣ <b>Chìa khóa chiến thuật trên sân:</b> Đội cửa trên ({_t1 if _h2h['p_t1'] >= _h2h['p_t2'] else _t2}) phát huy tối đa ưu thế thể lực/tốc độ từ trục Hào đắc lệnh, khóa chặt các pha phản công biên và bóng cố định.<br>"
+            f"• 2️⃣ <b>Cảnh báo biến số từ Lục Thú:</b> {'Trên quẻ có Huyền Vũ / Đằng Xà động — dễ có tình huống bất ngờ (phạt đền, VAR, thẻ phạt hoặc bàn thắng phút bù giờ)' if _has_sneak else 'Thế trận diễn biến đúng thực lực chuyên môn, ít biến cố bất thường ngoài chuyên môn'}.<br>"
+            f"• 3️⃣ <b>Khuyến nghị thực tế cho người xem:</b> Dùng quẻ để thưởng thức & chiêm nghiệm chuyên môn thể thao lành mạnh ({ymdh['short_inline_date']}), tuyệt đối tránh đặt cược tài chính mạo hiểm."
+        )
+        return {
+            "domain": "SPORTS_MATCH",
+            "match_verdict": _h2h,
+            "concrete_event_summary": f"{_h2h['winner_label']} — Tỷ số dự báo: {_h2h['score_pred']}",
+            "concrete_related_summary": f"{_t1} ({_h2h['p_t1']}%) vs {_t2} ({_h2h['p_t2']}%) · Hòa {_h2h['p_draw']}%",
+            "short_inline_date": ymdh["short_inline_date"],
+            "ymdh": ymdh,
+            "pillar1_event_html": _p1_sp,
+            "pillar2_related_html": _p2_sp,
+            "pillar3_timing_html": _p3_sp,
+            "pillar3_plain": _strip_tags(_p3_sp.replace("<br>", " | ")),
+            "pillar4_solution_html": _p4_sp,
+            "pillar1_plain": _strip_tags(_p1_sp.replace("<br>", " | ")),
+            "pillar2_plain": _strip_tags(_p2_sp.replace("<br>", " | ")),
+            "pillar4_plain": _strip_tags(_p4_sp.replace("<br>", " | ")),
+        }
 
     # ── PHÂN LOẠI MIỀN ĐỜI SỐNG CỦA CÂU HỎI ──
     if any(w in q_low for w in ("mở quán", "cà phê", "cửa hàng", "shop", "kinh doanh", "buôn bán", "nhập hàng", "đầu tư", "khởi nghiệp", "hùn vốn", "chứng khoán", "cổ phiếu", "lướt sóng")):
@@ -1312,7 +1831,7 @@ def build_four_pillar_prophecy(
             elif domain == "WORK_CAREER":
                 real_events.append(f"Có sự biến động từ cấp quản lý: giao thêm trọng trách khó, thay đổi quy chế điều hành hoặc rà soát KPI/nhân sự [{a_act_lbl}]")
             else:
-                real_events.append(f"Phát sinh rào cản thủ tục quản lý hoặc áp lực lo toan tâm lý cần tháo gỡ khéo [{a_act_lbl}]")
+                real_events.append(f"Xuất hiện lực cản khách quan hoặc biến số phát sinh giữa chừng cần bình tĩnh tháo gỡ khéo léo [{a_act_lbl}]")
         elif a_lt == "Phụ Mẫu":
             if domain in ("WORK_CAREER", "CONTRACT_LEGAL"):
                 real_events.append(f"Biến động xoay quanh văn bản quyết định, hợp đồng, hồ sơ hành chính hoặc sự dịch chuyển phòng ban/đơn vị công tác [{a_act_lbl}]")

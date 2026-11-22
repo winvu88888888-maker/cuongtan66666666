@@ -16181,7 +16181,7 @@ class FreeAIHelper:
                 question=question,
                 dung_than_hint=dung_than,
                 category_hint=detected_category,
-                allow_online_llm=bool(kwargs.get('use_online_api', True) and not kwargs.get('force_offline', False)),
+                allow_online_llm=False,
             )
             if _q_blueprint.get("authoritative_dt"):
                 dung_than = _q_blueprint["authoritative_dt"]
@@ -16624,7 +16624,7 @@ class FreeAIHelper:
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V142.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V143.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_holo_html
@@ -18180,7 +18180,7 @@ class FreeAIHelper:
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V142.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V143.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_holo_fb

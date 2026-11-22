@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V142.0)
+CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V143.0)
 =================================================================
 Đối chuẩn toàn diện theo các nền tảng phân tích quẻ chuyên sâu hàng đầu Trung Quốc:
 1. Nguyên Hanh Lợi Trinh (元亨利贞网 china95.net) — Lục Hào 4 Tầng Tác Động Tuyến Lộ Đồ, Quái Thân, Thế Thân, 12 Thần Sát, Tam Hình/Lục Hại/Lục Phá.
@@ -2740,7 +2740,7 @@ def synthesize_deep_classical_verdict(
         benh_quai = f"Dụng Thần ({dt_chi}) hữu khí nhưng đang An Tĩnh ('Tĩnh nhi phùng Xung tắc động')"
         duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ XUNG ĐỘNG {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc trực {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
 
-    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V142.0) ──
+    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V143.0) ──
     special_mode = "STANDARD"
     verdict_polarity = "POSITIVE" if composite_score >= 55 else ("NEUTRAL" if composite_score >= 45 else "NEGATIVE")
     direct_headline = ""
@@ -2905,6 +2905,31 @@ def synthesize_deep_classical_verdict(
         else:
             verdict_polarity = "CLEAR"
             direct_headline = f"☀️ KẾT LUẬN THIÊN THỜI CỔ PHÁP: TRỜI NẮNG / TẠNH RÁO QUANG ĐÃNG ({min(92, 58 + max(4, sun_pts - rain_pts) // 2)}%) — {sun_evs[0] if sun_evs else 'Tử Tôn / Thê Tài đắc thế chủ Tình quang'}!"
+    elif _four_pillars.get("domain") == "SPORTS_MATCH" or any(w in q_low for w in (" vs ", " v.s", "versus", "đá với", "đấu với", "đội nào thắng")):
+        from holographic_event_decoder import extract_head_to_head_match_info as _ext_h2h_mg, compute_classical_head_to_head_verdict as _cmp_h2h_mg
+        _h2h_mg = _four_pillars.get("match_verdict")
+        if not isinstance(_h2h_mg, dict):
+            _mi_mg = _ext_h2h_mg(question)
+            if _mi_mg:
+                _h2h_mg = _cmp_h2h_mg(
+                    team_1=_mi_mg["team_1"],
+                    team_2=_mi_mg["team_2"],
+                    ly_res=ly_res,
+                    qm_res=qm_res,
+                    mh_res=mh_res,
+                    chart_data=cd,
+                )
+        if isinstance(_h2h_mg, dict):
+            special_mode = "SPORTS_COMPETITION"
+            verdict_polarity = str(_h2h_mg.get("outcome_code") or "TEAM1_WIN")
+            _ban_bien_sp = f"{ly_res.get('ban_name','')} ➔ {ly_res.get('bien_name','')}"
+            direct_headline = (
+                f"⚽ LUẬN ĐOÁN THI ĐẤU CHỦ–KHÁCH TAM THỨC ({_ban_bien_sp}): "
+                f"{_h2h_mg['winner_label']} "
+                f"[Xác suất: {_h2h_mg['team_1']} {_h2h_mg['p_t1']}% · Hòa {_h2h_mg['p_draw']}% · {_h2h_mg['team_2']} {_h2h_mg['p_t2']}%] — "
+                f"TỶ SỐ DỰ BÁO: {_h2h_mg['score_pred'].upper()} "
+                f"({_h2h_mg['the_desc']} đối {_h2h_mg['ung_desc']}) ➔ Thời điểm thi đấu: {_uk_disp}!"
+            )
     elif is_done_yet_q and len(multi_opts) <= 2:
         special_mode = "DONE_YET"
         if already_happened:
@@ -2977,7 +3002,6 @@ def synthesize_deep_classical_verdict(
         _is_why_cause_q = any(w in q_low for w in ("tại sao", "vì sao", "nguyên nhân gì", "do đâu mà"))
         _is_how_remedy_q = any(w in q_low for w in ("làm cách nào", "cách nào để", "làm sao để hóa giải", "cách hóa giải", "phương pháp hóa giải"))
         _is_which_dir_q = any(w in q_low for w in ("hướng nào", "phương nào", "quay hướng gì", "chạy đi lạc hướng"))
-        _m_match_vs = re.search(r"(?:tối nay|hôm nay|ngày mai|trận này)?\s*([a-zA-ZÀ-ỹ0-9\s]{2,25}?)\s+(?:đá với|đấu với|gặp)\s+([a-zA-ZÀ-ỹ0-9\s]{2,25}?)\s+(?:đội nào thắng|ai thắng|bên nào thắng)", q_low)
         _is_where_doing_q = (
             any(w in q_low for w in ("ở đâu", "chỗ nào", "nơi nào", "đang làm gì", "làm gì lúc này"))
             and not is_lost_q and not _is_which_dir_q
@@ -2997,48 +3021,7 @@ def synthesize_deep_classical_verdict(
         )
         _is_how_outlook_q = any(w in q_low for w in ("thế nào", "như thế nào", "ra sao", "sắp tới sao", "tốt hay xấu", "ổn không")) and not _is_motive_q
 
-        if _m_match_vs:
-            special_mode = "SPORTS_COMPETITION"
-            _t1_nm = _m_match_vs.group(1).strip().title()
-            _t2_nm = _m_match_vs.group(2).strip().title()
-            _the_sc = vs_map.get(str(the_ln.get("vuong_suy") or "Bình"), 0) + (8 if the_ln.get("is_moving") else 0) - (12 if the_ln.get("is_void") else 0)
-            _ung_sc = vs_map.get(str(ung_ln.get("vuong_suy") or "Bình"), 0) + (8 if ung_ln.get("is_moving") else 0) - (12 if ung_ln.get("is_void") else 0)
-            if KHAC_EL.get(the_el) == ung_el:
-                _the_sc += 10
-            elif KHAC_EL.get(ung_el) == the_el:
-                _ung_sc += 10
-            _XT_S = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
-            _g1 = (_XT_S.get(_up_m_q, 2) + (1 if _the_sc >= _ung_sc else 0)) % 4
-            _g2 = (_XT_S.get(_lo_m_q, 1)) % 3
-            if abs(_the_sc - _ung_sc) <= 4:
-                _g_draw = max(1, _g1 % 3)
-                direct_headline = (
-                    f"⚽ LUẬN ĐOÁN TỶ SỐ & KẾT QUẢ THI ĐẤU ({_ban_bien_lbl}): "
-                    f"THẾ TRẬN CÂN BẰNG DỄ HÒA (HOẶC {_t1_nm.upper() if _the_sc >= _ung_sc else _t2_nm.upper()} THẮNG SÁT NÚT PHÚT CUỐI) — "
-                    f"TỶ SỐ DỰ BÁO TỪ QUÁI SỐ: {_g_draw} – {_g_draw} (HOẶC {_g_draw+1} – {_g_draw}) "
-                    f"[Chủ Hào Thế {the_chi}-{the_el} đối ứng Khách Hào Ứng {ung_ln.get('chi','')}-{ung_el} · Cung {tc} {door_tc}]!"
-                )
-            elif _the_sc > _ung_sc:
-                _w_g, _l_g = max(_g1, _g2 + 1), min(_g1, _g2)
-                if _w_g == _l_g:
-                    _w_g += 1
-                direct_headline = (
-                    f"⚽ LUẬN ĐOÁN TỶ SỐ & KẾT QUẢ THI ĐẤU ({_ban_bien_lbl}): "
-                    f"CHỐT ĐỘI THẮNG: «{_t1_nm.upper()}» CHIẾM ƯU THẾ CHIẾN THẮNG — "
-                    f"TỶ SỐ DỰ BÁO TỪ QUÁI SỐ: {_t1_nm.upper()} {_w_g} – {_l_g} {_t2_nm.upper()} "
-                    f"[Hào Thế {the_chi}-{the_el} áp đảo Hào Ứng {ung_ln.get('chi','')}-{ung_el} · Cung Chủ thắng Cung Khách]!"
-                )
-            else:
-                _w_g, _l_g = max(_g2 + 1, _g1), min(_g1, _g2)
-                if _w_g == _l_g:
-                    _w_g += 1
-                direct_headline = (
-                    f"⚽ LUẬN ĐOÁN TỶ SỐ & KẾT QUẢ THI ĐẤU ({_ban_bien_lbl}): "
-                    f"CHỐT ĐỘI THẮNG: «{_t2_nm.upper()}» CHIẾM ƯU THẾ CHIẾN THẮNG — "
-                    f"TỶ SỐ DỰ BÁO TỪ QUÁI SỐ: {_t1_nm.upper()} {_l_g} – {_w_g} {_t2_nm.upper()} "
-                    f"[Hào Ứng {ung_ln.get('chi','')}-{ung_el} vượng chế Hào Thế {the_chi}-{the_el} · Khách thắng Chủ]!"
-                )
-        elif _is_which_dir_q:
+        if _is_which_dir_q:
             special_mode = "WHICH_DIRECTION"
             _CHI_DIR_8 = {
                 "Tý": "Chính Bắc", "Sửu": "Đông Bắc", "Dần": "Đông Bắc", "Mão": "Chính Đông",
@@ -3372,6 +3355,13 @@ def synthesize_deep_classical_verdict(
             else:
                 verdict_polarity = "DELAY_TRIP"
                 direct_headline = f"⚠️ LUẬN ĐOÁN XUẤT HÀNH & DI CHUYỂN ({_ban_bien_lbl}): DỄ TRỄ NHỊP / VƯỚNG ĐƯỜNG XÁ THỦ TỤC ({composite_score}/100 — {benh_quai}; Cung {tc} {door_tc}) ➔ Chuẩn bị kỹ phương tiện và chọn {_uk_disp}!"
+        elif any(w in q_low for w in ("kiện", "tòa án", "tranh chấp", "đấu thầu")):
+            if composite_score >= 52:
+                verdict_polarity = "LAWSUIT_WIN"
+                direct_headline = f"⚖️ LUẬN ĐOÁN TRANH CHẤP & PHÁP LÝ ({_ban_bien_lbl}): BÊN BẠN (HÀO THẾ {the_chi}-{the_el}) ĐẮC LÝ CHIẾM ƯU THẾ ({composite_score}/100 — {_ev_real_short or _core_reason_1}) ➔ Mốc phân xử thuận lợi: {_uk_disp}!"
+            else:
+                verdict_polarity = "LAWSUIT_CAUTION"
+                direct_headline = f"⚠️ LUẬN ĐOÁN TRANH CHẤP & PHÁP LÝ ({_ban_bien_lbl}): ĐỐI PHƯƠNG (HÀO ỨNG {ung_ln.get('chi','')}-{ung_el}) ĐANG CỨNG — NÊN ƯU TIÊN THƯƠNG LƯỢNG HÒA GIẢI ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Mốc tháo gỡ: {_uk_disp}!"
         elif not any(w in q_low for w in ("hướng nào",)):
             if composite_score >= 50:
                 verdict_polarity = "AUSPICIOUS"
@@ -3391,7 +3381,7 @@ def synthesize_deep_classical_verdict(
         )
 
     prompt_synthesis_block = (
-        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V142.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V143.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
         f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
         f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào (Tăng San Bốc Dịch)]: {' | '.join(lh_chain_notes)}.\n"
         f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn (Ngự Định Kỳ Môn Bảo Giám)]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
@@ -3668,7 +3658,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V142.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V143.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Lịch ứng kỳ chính xác:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn.get("short_inline_date") or deep_syn["duoc_ung_ky"]}</span>'
@@ -3678,7 +3668,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V142.0)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V143.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'
