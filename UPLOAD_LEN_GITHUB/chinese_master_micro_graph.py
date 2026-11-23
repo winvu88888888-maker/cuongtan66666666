@@ -1766,6 +1766,7 @@ def _extract_multi_options_classical(question: str, option_a: str = "", option_b
             "thật hay giả", "giả hay thật", "thật hay nói dối", "nói dối hay thật",
             "rồi hay chưa", "chưa hay rồi", "mưa hay nắng", "nắng hay mưa",
             "buồn hay vui", "vui hay buồn", "buồn hay đ", "vui hay đ",
+            "buon hay vui", "vui hay buon", "buon hay d", "vui hay d",
             "vui vẻ hay", "buồn bã hay", "lo hay yên tâm", "yên tâm hay lo",
             "giận hay", "hết giận hay", "hạnh phúc hay", "cô đơn hay",
             "thương hay ghét", "ghét hay thương",
@@ -3060,22 +3061,28 @@ def synthesize_deep_classical_verdict(
             w in q_low
             for w in (
                 "buồn hay", "vui hay", "hay buồn", "hay vui", "buồn cái gì", "buồn chuyện gì", "buồn vì",
+                "buon hay", "vui hay", "hay buon", "dang buon", "buon cai gi", "buon chuyen gi",
                 "vui vì", "lo cái gì", "lo chuyện gì", "lo lắng chuyện gì", "giận chuyện gì", "giận cái gì",
                 "giận tôi vì", "giận nhau vì", "vướng mắc cái gì", "trong lòng đang",
+                "tôi đang nghĩ gì", "mình đang nghĩ gì", "trong đầu tôi", "tôi nghĩ gì",
             )
         )
         _is_mood_cause_q = (
             _explicit_emotion_why
             or (
                 any(w in q_low for w in ("đang buồn", "tâm trạng", "đang giận", "nặng lòng", "bất an", "mất ngủ", "chán nản", "trăn trở"))
-                and not any(w in q_low for w in ("làm lành", "hàn gắn", "quay lại", "chia tay", "ly hôn", "cưới"))
+                and not any(w in q_low for w in ("làm lành", "hàn gắn", "quay lại", "chia tay", "ly hôn", "cưới", "lam lanh", "han gan"))
             )
         ) and not any(w in q_low for w in ("nhạc gì", "nghe nhạc", "bài hát"))
         _is_motive_q = (not _is_mood_cause_q) and any(w in q_low for w in ("ý đồ gì", "mưu đồ gì", "tâm ý gì", "nghĩ gì về", "đang nghĩ gì", "có ý gì", "thái độ gì", "thật lòng với tôi"))
         _is_why_cause_q = (
             (not _is_mood_cause_q)
             and (not re.search(r"\bnếu\s+", q_low))
-            and any(w in q_low for w in ("tại sao", "vì sao", "nguyên nhân gì", "nguyên nhân", "do đâu", "vướng ở đâu", "vướng cái gì", "sai ở đâu", "sai cái gì", "vấn đề gì", "vấn đề cái gì"))
+            and any(w in q_low for w in (
+                "tại sao", "vì sao", "nguyên nhân gì", "nguyên nhân", "do đâu",
+                "vướng ở đâu", "vướng cái gì", "sai ở đâu", "sai cái gì", "lỗi ở đâu", "lỗi cái gì",
+                "thiếu ở đâu", "khó ở đâu", "tắc ở đâu", "nghẽn ở đâu", "kẹt ở đâu", "vấn đề gì", "vấn đề cái gì",
+            ))
         )
         _is_how_remedy_q = any(w in q_low for w in ("làm cách nào", "cách nào để", "làm sao để hóa giải", "cách hóa giải", "phương pháp hóa giải"))
         _is_which_dir_q = any(w in q_low for w in ("hướng nào", "phương nào", "quay hướng gì", "chạy đi lạc hướng"))
@@ -3739,7 +3746,10 @@ def synthesize_deep_classical_verdict(
             else:
                 verdict_polarity = "FAIL_RISK"
                 direct_headline = f"⚠️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): GẶP SỨC ÉP LỚN / KHÓ ĐẠT NGAY ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Củng cố hồ sơ/năng lực và chờ {_uk_disp}!"
-        elif any(w in q_low for w in ["tình cảm", "yêu", "hôn nhân", "quay lại", "hàn gắn", "làm lành", "vợ chồng", "cưới", "nhớ tôi"]):
+        elif any(w in q_low for w in [
+            "tình cảm", "tinh cam", "yêu", "yeu", "hôn nhân", "hon nhan", "quay lại", "quay lai",
+            "hàn gắn", "han gan", "làm lành", "lam lanh", "vợ chồng", "vo chong", "cưới", "nhớ tôi", "con nho",
+        ]):
             _ung_chi_s = str(ung_ln.get("chi", ""))
             _ung_sinh_hop_the = (SINH_EL.get(ung_el) == the_el or ung_el == the_el or LUC_HOP.get(_ung_chi_s, ("", ""))[0] == the_chi) and not ung_ln.get("is_void")
             _ung_void_or_khac = bool(ung_ln.get("is_void") or KHAC_EL.get(ung_el) == the_el)

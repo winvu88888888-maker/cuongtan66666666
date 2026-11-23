@@ -143,7 +143,7 @@ def get_lunar_date_offline(d=None):
     No 3rd party library required.
     """
     if d is None:
-        d = datetime.date.today()
+        d = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).date()
     try:
         from lich_van_nien import solar_to_lunar
         ld, lm, ly, _ = solar_to_lunar(d.day, d.month, d.year)

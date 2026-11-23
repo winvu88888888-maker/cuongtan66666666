@@ -283,9 +283,9 @@ def lap_la_so(nam_sinh, thang_am, ngay_am, gio_idx, gioi_tinh='nam'):
             "chi": CHI[han_chi_idx]
         })
 
-    # Lưu Niên (năm hiện tại)
+    # Lưu Niên (năm hiện tại theo giờ Việt Nam UTC+7)
     import datetime
-    nam_hien_tai = datetime.date.today().year
+    nam_hien_tai = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).date().year
     tuoi_hien_tai = nam_hien_tai - nam_sinh + 1
     luu_nien_chi_idx = (nam_hien_tai - 4) % 12
     luu_nien_cung = ""

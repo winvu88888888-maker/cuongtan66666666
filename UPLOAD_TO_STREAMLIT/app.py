@@ -4268,8 +4268,8 @@ elif st.session_state.current_view == "thai_at":
         from thai_at_than_so import tinh_thai_at_than_so, format_display as ta_format
         import datetime
         
-        # Lấy dữ liệu
-        now = datetime.datetime.now()
+        # Lấy dữ liệu theo giờ Việt Nam (UTC+7 — tránh lệch ngày trên Streamlit Cloud)
+        now = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).replace(tzinfo=None)
         chart = st.session_state.get('chart_data', {})
         can_ngay = chart.get('can_ngay', 'Giáp')
         chi_ngay = chart.get('chi_ngay', 'Tý')
@@ -4383,7 +4383,8 @@ elif st.session_state.current_view == "xem_ngay":
             col_input1, col_input2 = st.columns(2)
             with col_input1:
                 st.markdown("<div class='xn-input-label'>📆 Chọn ngày dương lịch</div>", unsafe_allow_html=True)
-                ngay_xem = st.date_input("Chọn ngày:", value=datetime.date.today(), key="xn_date", label_visibility="collapsed")
+                _vn_today_xn = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).date()
+                ngay_xem = st.date_input("Chọn ngày:", value=_vn_today_xn, key="xn_date", label_visibility="collapsed")
             with col_input2:
                 st.markdown("<div class='xn-input-label'>🎯 Chọn loại việc (hoặc tự nhập bên dưới)</div>", unsafe_allow_html=True)
                 viec_keys = list(VIEC_XEM_NGAY.keys())
@@ -4429,7 +4430,7 @@ elif st.session_state.current_view == "xem_ngay":
                 chi_tuoi_idx = (nam_sinh - 4) % 12
                 can_tuoi = CAN_10[can_tuoi_idx]
                 chi_tuoi = CHI_12[chi_tuoi_idx]
-                tuoi_am = datetime.date.today().year - nam_sinh + 1
+                tuoi_am = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).date().year - nam_sinh + 1
                 st.markdown(f"""
                 <div style='background:linear-gradient(135deg,#312e81,#4c1d95);padding:16px;border-radius:14px;
                     margin-top:8px;text-align:center;border:1px solid #7c3aed;

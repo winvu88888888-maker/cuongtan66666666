@@ -136,7 +136,7 @@ class AIOrchestrator:
         if intent == "CALCULATION":
             try:
                 import datetime
-                d_val = datetime.datetime.now()
+                d_val = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).replace(tzinfo=None)
                 if hasattr(st, 'session_state') and 'selected_date' in st.session_state:
                      d_val = st.session_state.selected_date
                 from ai_tools import get_lunar_date_offline, get_khong_minh_luc_dieu

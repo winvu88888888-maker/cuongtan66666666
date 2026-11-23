@@ -38,8 +38,8 @@ MUA_HANH_VUONG = {
 }
 
 def _get_mua_hien_tai():
-    """Xác định mùa hiện tại"""
-    m = datetime.datetime.now().month
+    """Xác định mùa hiện tại theo giờ Việt Nam (UTC+7)"""
+    m = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).month
     if m in [2, 3, 4]: return 'Xuân'
     if m in [5, 6, 7]: return 'Hạ'
     if m in [8, 9, 10]: return 'Thu'

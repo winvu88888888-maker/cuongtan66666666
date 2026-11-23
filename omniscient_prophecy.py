@@ -23,43 +23,25 @@ Giải mã toàn diện MỌI SỰ VIỆC từ 6 Phương Pháp Huyền Học (K
 import datetime
 
 
+def _vn_today_op() -> datetime.date:
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).date()
+
 
 try:
-
-    from blind_reading import STAR_READINGS, DOOR_READINGS, DEITY_READINGS, PALACE_ELEMENTS, STEM_COMBINATIONS
-
+    from luc_hao_ky_mon_rules import SAO_KY_MON, CUA_KY_MON, THAN_KY_MON, THAP_CAN_KHAC_UNG
 except Exception:
+    SAO_KY_MON, CUA_KY_MON, THAN_KY_MON, THAP_CAN_KHAC_UNG = {}, {}, {}, {}
 
-    STAR_READINGS, DOOR_READINGS, DEITY_READINGS, PALACE_ELEMENTS, STEM_COMBINATIONS = {}, {}, {}, {}, {}
-
-
-
-try:
-
-    from qmdg_inference_rules import (
-
-        CUNG_DIRECTION_DETAIL, STAR_PERSONALITY, DOOR_PERSONALITY, DEITY_PERSONALITY,
-
-        BAT_QUAI_OBJECT, BAT_QUAI_BODY_DISEASE, STAR_DISEASE, CAN_BODY,
-
-    )
-
-except Exception:
-
-    CUNG_DIRECTION_DETAIL, STAR_PERSONALITY, DOOR_PERSONALITY, DEITY_PERSONALITY = {}, {}, {}, {}
-
-    BAT_QUAI_OBJECT, BAT_QUAI_BODY_DISEASE, STAR_DISEASE, CAN_BODY = {}, {}, {}, {}
-
+STAR_READINGS = SAO_KY_MON
+DOOR_READINGS = CUA_KY_MON
+DEITY_READINGS = THAN_KY_MON
+STEM_COMBINATIONS = THAP_CAN_KHAC_UNG
 
 
 try:
-
     from van_vat import get_van_vat_chi_tiet, get_tham_tu_mo_ta
-
 except Exception:
-
     def get_van_vat_chi_tiet(*a, **kw): return {}
-
     def get_tham_tu_mo_ta(*a, **kw): return ""
 
 
@@ -629,52 +611,39 @@ def build_omniscient_prophecy(
 
     # ═════════════════════════════════════════════════════════════════════════
 
-    # Tra cứu blind_reading cho Sao, Cửa, Thần, Cách cục
-
+    # Tra cứu trực tiếp SAO_KY_MON, CUA_KY_MON, THAN_KY_MON, THAP_CAN_KHAC_UNG (81 Cách Cục)
     star_desc = "Chuyển biến theo thiên thời"
-
     for k_s, v_s in STAR_READINGS.items():
-
-        if k_s in sao_name:
-
-            star_desc = v_s.get('Past_Reason', '') or v_s.get('Nature', '')
-
+        if k_s in sao_name and isinstance(v_s, dict):
+            star_desc = v_s.get('y_nghia') or v_s.get('Past_Reason') or v_s.get('Nature') or star_desc
             break
-
-
 
     door_desc = "Sự việc đang vận động ở nhân gian"
-
     door_action = ""
-
     for k_d, v_d in DOOR_READINGS.items():
-
-        if k_d in cua_name:
-
-            door_desc = v_d.get('Current_Action', '')
-
-            door_action = v_d.get('Hidden_Truth', '')
-
+        if k_d in cua_name and isinstance(v_d, dict):
+            door_desc = v_d.get('y_nghia') or v_d.get('Current_Action') or door_desc
+            door_action = v_d.get('loai') or v_d.get('Hidden_Truth') or ""
             break
-
-
 
     deity_desc = "Có yếu tố tâm linh/ẩn tình tác động"
-
     for k_th, v_th in DEITY_READINGS.items():
-
-        if k_th in than_name:
-
-            deity_desc = v_th.get('Secret_Factor', '')
-
+        if k_th in than_name and isinstance(v_th, dict):
+            deity_desc = v_th.get('y_nghia') or v_th.get('Secret_Factor') or deity_desc
             break
 
-
-
-    stem_combo_desc = STEM_COMBINATIONS.get((can_thien, can_dia), '')
-
+    _raw_combo = (
+        STEM_COMBINATIONS.get(f"{can_thien}+{can_dia}")
+        or STEM_COMBINATIONS.get((can_thien, can_dia))
+    )
+    if isinstance(_raw_combo, dict):
+        _c_ten = _raw_combo.get('ten', '')
+        _c_ch = _raw_combo.get('cat_hung', '')
+        _c_luan = _raw_combo.get('luan', '')
+        stem_combo_desc = f"{_c_ten} [{_c_ch}]: {_c_luan}" if _c_ten else _c_luan
+    else:
+        stem_combo_desc = str(_raw_combo or "")
     if not stem_combo_desc:
-
         stem_combo_desc = f"Thiên bàn {can_thien} lâm Địa bàn {can_dia} tại cung {c_info['quai']} ({c_info['huong']})"
 
 
@@ -741,7 +710,7 @@ def build_omniscient_prophecy(
 
     uk_month = ung_ky_detail.get('month', 'Tháng hiện tại')
 
-    uk_year = ung_ky_detail.get('year', f'Năm {datetime.date.today().year}')
+    uk_year = ung_ky_detail.get('year', f'Năm {_vn_today_op().year}')
 
     uk_speed = ung_ky_detail.get('speed', '⚡ Ứng nghiệm theo chu kỳ Can Chi')
 
@@ -958,7 +927,7 @@ def build_omniscient_prophecy(
 
 
     # Độ tuổi / Thọ số (Tính động 100% từ Quái số Mai Hoa + Cung Kỳ Môn + Địa Chi Hào Dụng Thần Lục Hào)
-    cur_year = datetime.date.today().year
+    cur_year = _vn_today_op().year
     _TT_OM_AGE = {'Càn': 1, 'Đoài': 2, 'Ly': 3, 'Chấn': 4, 'Tốn': 5, 'Khảm': 6, 'Cấn': 7, 'Khôn': 8}
     _HT_OM_AGE = {'Khảm': 1, 'Khôn': 2, 'Chấn': 3, 'Tốn': 4, 'Càn': 6, 'Đoài': 7, 'Cấn': 8, 'Ly': 9}
     _PREFIX_TRIG_OM = {'Thiên': 'Càn', 'Trạch': 'Đoài', 'Hỏa': 'Ly', 'Lôi': 'Chấn', 'Phong': 'Tốn', 'Thủy': 'Khảm', 'Sơn': 'Cấn', 'Địa': 'Khôn'}

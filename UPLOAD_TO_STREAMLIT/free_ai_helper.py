@@ -16,6 +16,11 @@ import re
 import json
 import os
 import datetime
+
+
+def _vn_now_fh() -> datetime.datetime:
+    """Giờ hiện tại theo múi giờ Việt Nam UTC+7 (chống lệch ngày trên server UTC)."""
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).replace(tzinfo=None)
 # V42.9.4: Master Knowledge Tree — 158 yếu tố, 8 PP
 try:
     from divination_knowledge_tree import TREE as DKT
@@ -182,7 +187,7 @@ except ImportError:
 # V32.0: Vạn Vật Lazy-Load Package — AI chỉ load hành cần thiết
 try:
     from van_vat import get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta
-    from van_vat import smart_van_vat_for_question
+    from van_vat_tong_hop import smart_van_vat_for_question
 except ImportError:
     try:
         from van_vat_tong_hop import (
@@ -190,16 +195,10 @@ except ImportError:
             smart_van_vat_for_question,
         )
     except ImportError:
-        try:
-            from van_vat_tong_hop import (
-                get_van_vat_chi_tiet, format_van_vat_for_ai, get_tham_tu_mo_ta,
-                smart_van_vat_for_question,
-            )
-        except ImportError:
-            def get_van_vat_chi_tiet(h, ts): return {}
-            def format_van_vat_for_ai(h, ts): return ""
-            def get_tham_tu_mo_ta(h, ts, q=""): return ""
-            def smart_van_vat_for_question(h, ts, q=""): return ("", ['full'])
+        def get_van_vat_chi_tiet(h, ts): return {}
+        def format_van_vat_for_ai(h, ts): return ""
+        def get_tham_tu_mo_ta(h, ts, q=""): return ""
+        def smart_van_vat_for_question(h, ts, q=""): return ("", ['full'])
 
 # === NGŨ HÀNH ENGINE ===
 SINH = {'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy', 'Thủy': 'Mộc'}
@@ -462,7 +461,7 @@ def _save_learned_topic(question, category, dung_than_list, goi_y):
             "Dụng_Thần": dung_than_list,
             "Luận_Giải_Gợi_Ý": goi_y,
             "Nhóm": category,
-            "Ngày_Tạo": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "Ngày_Tạo": _vn_now_fh().strftime("%Y-%m-%d %H:%M"),
             "Câu_Hỏi_Gốc": question
         }
         try:
@@ -2048,7 +2047,7 @@ def _get_lenh_thang_hanh(chi_thang=None):
         return 'Thủy', f'Tháng {chi_thang} (Mùa Đông - Thủy vượng)'
     elif chi_thang in ('Thìn', 'Tuất', 'Sửu', 'Mùi'):
         return 'Thổ', f'Tháng {chi_thang} (Tứ Quý - Thổ vượng)' 
-    now = datetime.datetime.now()
+    now = _vn_now_fh()
     month = now.month
     # Xuân (2,3,4) = Mộc vượng, Hạ (5,6,7) = Hỏa vượng, Thu (8,9,10) = Kim vượng, Đông (11,12,1) = Thủy vượng
     # Thổ vượng vào các tháng chuyển mùa (3,6,9,12)
@@ -3179,7 +3178,7 @@ class FreeAIHelper:
             try:
                 import datetime as _dt_fm
                 from qmdg_calc import calculate_qmdg_params as _calc_fm
-                _pf = _calc_fm(_dt_fm.datetime.now())
+                _pf = _calc_fm(_vn_now_fh())
                 nguyet_lenh = _pf.get('chi_thang', '?')
                 if not nhat_than or nhat_than == '?':
                     nhat_than = _pf.get('can_ngay', '?')
@@ -3638,7 +3637,7 @@ class FreeAIHelper:
         try:
             from thai_at_than_so import tinh_thai_at_than_so as _ta_calc
             import datetime as _dt_ta
-            _now_ta = _dt_ta.datetime.now()
+            _now_ta = _vn_now_fh()
             _ta_can = chart_data.get('can_ngay', 'Giáp') if chart_data else 'Giáp'
             _ta_chi = chart_data.get('chi_ngay', 'Tý') if chart_data else 'Tý'
             _ta_data = _ta_calc(_now_ta.year, _now_ta.month, _ta_can, _ta_chi)
@@ -4750,7 +4749,7 @@ class FreeAIHelper:
                 try:
                     import datetime as _dt_im
                     from qmdg_calc import calculate_qmdg_params as _calc_im
-                    _pi = _calc_im(_dt_im.datetime.now())
+                    _pi = _calc_im(_vn_now_fh())
                     nguyet = _pi.get('chi_thang', '?')
                     if not nhat: nhat = _pi.get('can_ngay', '?')
                 except:
@@ -7431,7 +7430,7 @@ class FreeAIHelper:
             try:
                 import datetime as _dt_lh
                 from qmdg_calc import calculate_qmdg_params as _calc_lh
-                _p = _calc_lh(_dt_lh.datetime.now())
+                _p = _calc_lh(_vn_now_fh())
                 chi_thang = _p.get('chi_thang', '')
                 if not can_ngay: can_ngay = _p.get('can_ngay', '')
                 if not chi_ngay: chi_ngay = _p.get('chi_ngay', '')
@@ -7767,7 +7766,7 @@ class FreeAIHelper:
             try:
                 import datetime as _dt_tp
                 from qmdg_calc import calculate_qmdg_params as _calc_tp
-                _pp = _calc_tp(_dt_tp.datetime.now())
+                _pp = _calc_tp(_vn_now_fh())
                 chi_nam = _pp.get('chi_nam', '')
             except:
                 pass
@@ -8290,7 +8289,7 @@ class FreeAIHelper:
         # V27.0: Bổ sung Đại Vận/Lưu Niên từ JSON (nếu có)
         try:
             import datetime as _dt_tb
-            current_year = _dt_tb.datetime.now().year
+            current_year = _vn_now_fh().year
             import json as _json_tb
             tb_json_path = os.path.join(os.path.dirname(__file__), 'thiet_ban_than_toan.json')
             if os.path.exists(tb_json_path):
@@ -10206,7 +10205,7 @@ class FreeAIHelper:
                 """Tìm tháng ÂL tiếp theo mang Chi cho trước."""
                 import datetime
                 from xem_ngay_dep import solar2lunar
-                today = datetime.date.today()
+                today = _vn_now_fh().date()
                 d_al, m_al, y_al, _ = solar2lunar(today.day, today.month, today.year)
                 
                 # Chi tháng: T1=Dần(2), T2=Mão(3),...T11=Tý(0), T12=Sửu(1)
@@ -10240,7 +10239,7 @@ class FreeAIHelper:
                 nam_list = CHI_NAM.get(chi, [])
                 
                 import datetime
-                now_year = datetime.datetime.now().year
+                now_year = _vn_now_fh().year
                 nam_gan = [n for n in nam_list if n >= now_year]
                 nam_str = str(nam_gan[0]) if nam_gan else str(nam_list[0]) if nam_list else '?'
                 
@@ -10618,9 +10617,11 @@ class FreeAIHelper:
             lines.append(f"\n{icon} **CÂU TRẢ LỜI: THAI SẢN**")
             if any(k in q for k in ['trai hay gái', 'giới tính']):
                 # Âm Dương quái → giới tính
-                if the_quai:
-                    from free_ai_helper import QUAI_AM_DUONG
-                    _ad = QUAI_AM_DUONG.get(the_quai, '') if locals().get('QUAI_AM_DUONG') else ''
+                _QUAI_AM_DUONG_MAP = {
+                    'Càn': 'Dương', 'Khảm': 'Dương', 'Cấn': 'Dương', 'Chấn': 'Dương',
+                    'Tốn': 'Âm', 'Ly': 'Âm', 'Khôn': 'Âm', 'Đoài': 'Âm',
+                }
+                _ad = _QUAI_AM_DUONG_MAP.get(the_quai, '') if the_quai else ''
                 if pct >= 55:
                     lines.append(f"- 👶 **Nghiêng CON TRAI** (Dương khí vượng, {pct}%)")
                 else:
@@ -14008,21 +14009,30 @@ class FreeAIHelper:
         sections.append(f"### BƯỚC 5.66 — LỊCH VẠN NIÊN & THIÊN VĂN HỌC (Mặt Trời λ☉ · 24 Tiết Khí)")
         try:
             from lich_van_nien_thien_van import get_full_day_calendar_info
-            _lvn_info = get_full_day_calendar_info(_d, _m, _y, _h, 0)
-            _tk_info = _lvn_info.get('tiet_khi', {})
-            _cc_info = _lvn_info.get('can_chi', {})
-            _hd_hours = ", ".join([f"{h['chi']} ({h['khung_gio']})" for h in _lvn_info.get('gio_hoang_dao', [])])
+            _lvn_info = get_full_day_calendar_info(_d, _m, _y)
+            _tk_info = _lvn_info.get('tiet_khi', {}) or {}
+            _cc_nam = _lvn_info.get('canchi_nam', '?')
+            _cc_thang = _lvn_info.get('canchi_thang', '?')
+            _cc_ngay = _lvn_info.get('canchi_ngay', '?')
+            _gio_idx_lvn = ((int(_h) + 1) // 2) % 12
+            _hrs_lvn = _lvn_info.get('hours_list', []) or []
+            _cc_gio = _hrs_lvn[_gio_idx_lvn].get('can_chi', '?') if _gio_idx_lvn < len(_hrs_lvn) else '?'
+            _sol_lon = _tk_info.get('solar_longitude', '?')
+            _tk_name = _tk_info.get('name', '?')
+            _tk_desc = _tk_info.get('desc', '')
+            _tk_next = _tk_info.get('next_name', '')
+            _tk_days = _tk_info.get('days_to_next', '')
             thien_van_reason = (
-                f"Kinh độ Mặt Trời λ☉={_tk_info.get('solar_lon_deg','?')}°, "
-                f"Tiết khí {_tk_info.get('name','?')} ({_tk_info.get('han','')}), "
-                f"Tứ Trụ: {_cc_info.get('nam','?')} / {_cc_info.get('thang','?')} / {_cc_info.get('ngay','?')} / {_cc_info.get('gio','?')}"
+                f"Kinh độ Mặt Trời λ☉={_sol_lon}°, "
+                f"Tiết khí {_tk_name}, "
+                f"Tứ Trụ: {_cc_nam} / {_cc_thang} / {_cc_ngay} / {_cc_gio}"
             )
             _lvn_lines = [
-                f"- **Dương lịch:** {_lvn_info.get('thu','')}, {_lvn_info.get('solar_str','')} | **Âm lịch:** {_lvn_info.get('lunar_str','')} (JDN: `{_lvn_info.get('jdn','?')}`)",
-                f"- **Kinh độ Hoàng đạo Mặt Trời (λ☉):** `{_tk_info.get('solar_lon_deg','?')}°` — Tiết khí: **{_tk_info.get('name','?')} ({_tk_info.get('han','')})** [{_tk_info.get('progress_in_term_pct',0)}% kỳ tiết khí]",
-                f"- **Khí hậu & Thiên văn:** {_tk_info.get('meaning','')}",
-                f"- **Tứ Trụ Thiên Văn:** Năm **{_cc_info.get('nam','?')}** · Tháng **{_cc_info.get('thang','?')}** · Ngày **{_cc_info.get('ngay','?')}** · Giờ **{_cc_info.get('gio','?')}**",
-                f"- **6 Giờ Hoàng Đạo trong ngày:** {_hd_hours}",
+                f"- **Dương lịch:** {_lvn_info.get('weekday','')}, {_lvn_info.get('solar_str','')} | **Âm lịch:** {_lvn_info.get('lunar_str','')} (JDN: `{_lvn_info.get('jdn','?')}`)",
+                f"- **Kinh độ Hoàng đạo Mặt Trời (λ☉):** `{_sol_lon}°` — Tiết khí: **{_tk_name}**"
+                + (f" (còn {_tk_days} ngày tới {_tk_next})" if _tk_next and _tk_days else ""),
+                f"- **Khí hậu & Thiên văn:** {_tk_desc}",
+                f"- **Tứ Trụ Thiên Văn:** Năm **{_cc_nam}** · Tháng **{_cc_thang}** · Ngày **{_cc_ngay}** · Giờ **{_cc_gio}**",
             ]
             sections.append("\n".join(_lvn_lines))
         except Exception as _lvn_e:
@@ -15896,7 +15906,7 @@ class FreeAIHelper:
                 hanh_dt=hanh_dt_v22 if 'hanh_dt_v22' in locals() else '',
                 weighted_pct=weighted_pct,
                 ts_stage=ts_stage if 'ts_stage' in locals() else '',
-                ngu_khi=ngu_khi_v22 if 'ngu_khi_v22' in locals() else '',
+                ngu_khi=locals().get('ngu_khi_str', '') or locals().get('ngu_khi', ''),
                 chart_data=chart_data,
                 luc_hao_data=luc_hao_data,
                 mai_hoa_data=mai_hoa_data,
@@ -17632,7 +17642,7 @@ class FreeAIHelper:
                         _CANS2 = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý']
                         _CGW2 = {'Tý':'23h-1h','Sửu':'1h-3h','Dần':'3h-5h','Mão':'5h-7h','Thìn':'7h-9h','Tị':'9h-11h',
                                  'Ngọ':'11h-13h','Mùi':'13h-15h','Thân':'15h-17h','Dậu':'17h-19h','Tuất':'19h-21h','Hợi':'21h-23h'}
-                        _td2 = _dt_h2.date.today()
+                        _td2 = _vn_now_fh().date()
                         for _o2 in range(1, 200):
                             _dd2 = _td2 + _dt_h2.timedelta(days=_o2)
                             _jj2 = _jdn_h2(_dd2.day, _dd2.month, _dd2.year)

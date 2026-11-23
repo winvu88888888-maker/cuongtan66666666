@@ -890,7 +890,7 @@ class GeminiQMDGHelper:
                 # FALLBACK: Calculate fresh from current time
                 try:
                     from qmdg_calc import calculate_qmdg_params
-                    now = datetime.datetime.now()
+                    now = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).replace(tzinfo=None)
                     params = calculate_qmdg_params(now)
                     def safe(k): return str(params.get(k, '?'))
                     t_tru = f"{safe('can_nam')} {safe('chi_nam')} / {safe('can_thang')} {safe('chi_thang')} / {safe('can_ngay')} {safe('chi_ngay')} / {safe('can_gio')} {safe('chi_gio')}"
@@ -920,7 +920,7 @@ class GeminiQMDGHelper:
                 # Calculate fresh
                 try:
                     from mai_hoa_dich_so import tinh_qua_theo_thoi_gian, giai_qua
-                    now = datetime.datetime.now()
+                    now = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).replace(tzinfo=None)
                     mai_hoa_data = tinh_qua_theo_thoi_gian(now.year, now.month, now.day, now.hour)
                     mai_hoa_data['interpretation'] = giai_qua(mai_hoa_data, topic)
                 except: pass
@@ -1031,7 +1031,7 @@ class GeminiQMDGHelper:
             if not luc_hao_data:
                 try:
                     from luc_hao_kinh_dich import lap_qua_luc_hao
-                    now = datetime.datetime.now()
+                    now = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).replace(tzinfo=None)
                     can_ngay_lh = qmdg_input.get('can_ngay', 'Giáp') if qmdg_input else 'Giáp'
                     chi_ngay_lh = qmdg_input.get('chi_ngay', 'Tý') if qmdg_input else 'Tý'
                     luc_hao_data = lap_qua_luc_hao(now.year, now.month, now.day, now.hour, topic=topic, can_ngay=can_ngay_lh, chi_ngay=chi_ngay_lh)
@@ -1427,7 +1427,7 @@ class GeminiQMDGHelper:
             try:
                 from thai_at_than_so import tinh_thai_at_than_so
                 import datetime as _dt_ta
-                now_ta = _dt_ta.datetime.now()
+                now_ta = (_dt_ta.datetime.now(_dt_ta.timezone.utc) + _dt_ta.timedelta(hours=7)).replace(tzinfo=None)
                 ta_can = qmdg_input.get('can_ngay', 'Giáp') if qmdg_input and isinstance(qmdg_input, dict) else 'Giáp'
                 ta_chi = qmdg_input.get('chi_ngay', 'Tý') if qmdg_input and isinstance(qmdg_input, dict) else 'Tý'
                 ta_data = tinh_thai_at_than_so(now_ta.year, now_ta.month, ta_can, ta_chi)

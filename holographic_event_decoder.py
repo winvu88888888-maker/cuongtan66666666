@@ -344,15 +344,16 @@ def extract_head_to_head_match_info(question: str) -> Optional[Dict[str, str]]:
 
     has_strong_vs = bool(
         _re_sp.search(
-            r"(?:(?<!\w)(?:vs\.?|v\.s\.?|versus)(?!\w)|\b(?:đá\s+với|đấu\s+với|so\s+tài(?:\s+với)?|chạm\s+trán(?:\s+với)?)\b)",
+            r"(?:(?<!\w)(?:vs\.?|v\.s\.?|versus)(?!\w)|\b(?:đá\s+với|da\s+voi|đấu\s+với|dau\s+voi|so\s+tài(?:\s+với)?|chạm\s+trán(?:\s+với)?)\b)",
             q_low,
         )
     )
     has_sport_ctx = any(
         w in q_low
         for w in (
-            "bóng đá", "bóng rổ", "bóng chuyền", "tennis", "cầu lông", "pickleball", "esports",
-            "đội nào thắng", "bên nào thắng", "tỷ số", "tỉ số", "trận ", "trận đấu", "chung kết",
+            "bóng đá", "bong da", "bóng rổ", "bóng chuyền", "tennis", "cầu lông", "pickleball", "esports",
+            "đội nào thắng", "doi nao thang", "bên nào thắng", "ben nao thang", "tỷ số", "tỉ số", "ty so", "ti so",
+            "trận ", "tran ", "trận đấu", "tran dau", "chung kết", "chung ket",
             "bán kết", "tứ kết", "vòng bảng", "vòng loại", "u16", "u17", "u19", "u20", "u22", "u23",
             "đội tuyển", "clb ", "fc ", "ngoại hạng", "world cup", "asian cup", "sea games", "aff",
         )
@@ -365,35 +366,35 @@ def extract_head_to_head_match_info(question: str) -> Optional[Dict[str, str]]:
         return None
 
     cleaned = q_raw
-    # Cắt bỏ tiền tố thời gian + động từ mở đầu (lặp 3 vòng để gọt sạch cả cụm dài)
+    # Cắt bỏ tiền tố thời gian + động từ mở đầu (hỗ trợ cả tiếng Việt có dấu & không dấu)
     _PREFIX_PAT = _re_sp.compile(
         r"^(?:"
         r"\[[^\]]+\]\s*|"
-        r"(?:cho\s+(?:tôi|mình|em|anh)\s+hỏi|xin\s+hỏi|hỏi\s+quẻ|xem\s+quẻ\s+giúp(?:\s+tôi)?|xem\s+giúp(?:\s+tôi)?|luận\s+giải(?:\s+giúp)?|xem\s+quẻ|luận\s+quẻ)\s+|"
-        r"(?:vào\s+|lúc\s+)?(?:\d{1,2}\s*(?:h|giờ|:)\s*\d{0,2}\s*)?(?:rạng\s+sáng\s+ngày\s+mai|tối\s+ngày\s+mai|chiều\s+ngày\s+mai|sáng\s+ngày\s+mai|đêm\s+ngày\s+mai|ngày\s+mai|rạng\s+sáng\s+mai|tối\s+mai|chiều\s+mai|sáng\s+mai|đêm\s+mai|tối\s+nay|đêm\s+nay|chiều\s+nay|sáng\s+nay|hôm\s+nay|ngày\s+kia|cuối\s+tuần\s+này|ngày\s+\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?)\s+|"
-        r"(?:dự\s+đoán|nhận\s+định|soi\s+kèo|phân\s+tích|xem|bói|đoán)\s+|"
-        r"(?:kết\s+quả|tỷ\s+số|tỉ\s+số|thắng\s+thua)\s+|"
-        r"(?:trận\s+bóng\s+đá|trận\s+đấu\s+giữa|trận\s+cầu\s+giữa|cặp\s+đấu\s+giữa|cuộc\s+đối\s+đầu\s+giữa|trận\s+đấu|trận\s+cầu|cặp\s+đấu|trận|giữa)\s+"
+        r"(?:cho\s+(?:tôi|mình|em|anh|toi|minh)\s+hỏi|cho\s+(?:toi|minh)\s+hoi|xin\s+hỏi|xin\s+hoi|hỏi\s+quẻ|xem\s+quẻ\s+giúp(?:\s+tôi)?|xem\s+giúp(?:\s+tôi)?|luận\s+giải(?:\s+giúp)?|xem\s+quẻ|luận\s+quẻ)\s+|"
+        r"(?:vào\s+|lúc\s+|vao\s+|luc\s+)?(?:\d{1,2}\s*(?:h|giờ|gio|:)\s*\d{0,2}\s*)?(?:rạng\s+sáng\s+ngày\s+mai|tối\s+ngày\s+mai|chiều\s+ngày\s+mai|sáng\s+ngày\s+mai|đêm\s+ngày\s+mai|ngày\s+mai|ngay\s+mai|rạng\s+sáng\s+mai|tối\s+mai|toi\s+mai|chiều\s+mai|sáng\s+mai|đêm\s+mai|tối\s+nay|toi\s+nay|đêm\s+nay|dem\s+nay|chiều\s+nay|sáng\s+nay|hôm\s+nay|hom\s+nay|ngày\s+kia|cuối\s+tuần\s+này|ngày\s+\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?)\s+|"
+        r"(?:dự\s+đoán|du\s+doan|nhận\s+định|soi\s+kèo|soi\s+keo|phân\s+tích|xem|bói|đoán)\s+|"
+        r"(?:kết\s+quả|ket\s+qua|tỷ\s+số|tỉ\s+số|ty\s+so|ti\s+so|thắng\s+thua|thang\s+thua)\s+|"
+        r"(?:trận\s+bóng\s+đá|tran\s+bong\s+da|trận\s+đấu\s+giữa|tran\s+dau\s+giua|trận\s+cầu\s+giữa|cặp\s+đấu\s+giữa|cuộc\s+đối\s+đầu\s+giữa|trận\s+đấu|tran\s+dau|trận\s+cầu|cặp\s+đấu|trận|tran|giữa|giua)\s+"
         r")+",
         flags=_re_sp.IGNORECASE,
     )
     cleaned = _PREFIX_PAT.sub("", cleaned).strip(" ,:;-–—")
 
-    # Cắt bỏ hậu tố thời gian / câu hỏi phía sau tên đội 2 (lặp 2 lượt để gọt cả "tối mai đội nào thắng")
+    # Cắt bỏ hậu tố thời gian / câu hỏi phía sau tên đội 2 (hỗ trợ cả có dấu & không dấu)
     _SUFFIX_PAT = _re_sp.compile(
         r"(?:[,;.?]+\s*|\s+)(?:"
-        r"(?:vào\s+|lúc\s+)?(?:\d{1,2}\s*(?:h|giờ|:)\s*\d{0,2}\s*)?(?:rạng\s+sáng\s+ngày\s+mai|tối\s+ngày\s+mai|chiều\s+ngày\s+mai|sáng\s+ngày\s+mai|đêm\s+ngày\s+mai|ngày\s+mai|rạng\s+sáng\s+mai|tối\s+mai|chiều\s+mai|sáng\s+mai|đêm\s+mai|tối\s+nay|đêm\s+nay|chiều\s+nay|sáng\s+nay|hôm\s+nay|ngày\s+kia).*|"
-        r"đội\s+nào\s+(?:sẽ\s+)?(?:giành\s+chiến\s+)?thắng.*|"
-        r"bên\s+nào\s+(?:sẽ\s+)?thắng.*|"
-        r"ai\s+(?:sẽ\s+)?(?:là\s+người\s+|là\s+đội\s+)?thắng.*|"
-        r"thắng\s+hay\s+(?:thua|hòa|bại).*|"
-        r"hòa\s+hay\s+(?:thắng|thua).*|"
-        r"có\s+(?:giành\s+chiến\s+)?thắng\s+(?:được\s+)?không.*|"
-        r"(?:và\s+)?(?:với\s+)?(?:tỷ|tỉ)\s+số\s+(?:là\s+)?bao\s+nhiêu.*|"
-        r"(?:tỷ|tỉ)\s+số\s+(?:thế\s+nào|ra\s+sao|như\s+thế\s+nào).*|"
-        r"kết\s+quả\s+(?:thế\s+nào|ra\s+sao|như\s+thế\s+nào|sao).*|"
-        r"đá\s+(?:có\s+thắng\s+không|thế\s+nào|ra\s+sao).*|"
-        r"thi\s+đấu\s+(?:thế\s+nào|ra\s+sao|có\s+thắng\s+không).*"
+        r"(?:vào\s+|lúc\s+|vao\s+|luc\s+)?(?:\d{1,2}\s*(?:h|giờ|gio|:)\s*\d{0,2}\s*)?(?:rạng\s+sáng\s+ngày\s+mai|tối\s+ngày\s+mai|chiều\s+ngày\s+mai|sáng\s+ngày\s+mai|đêm\s+ngày\s+mai|ngày\s+mai|ngay\s+mai|rạng\s+sáng\s+mai|tối\s+mai|toi\s+mai|chiều\s+mai|sáng\s+mai|đêm\s+mai|tối\s+nay|toi\s+nay|đêm\s+nay|chiều\s+nay|sáng\s+nay|hôm\s+nay|hom\s+nay|ngày\s+kia).*|"
+        r"(?:đội|doi)\s+(?:nào|nao)\s+(?:sẽ\s+|se\s+)?(?:giành\s+chiến\s+)?(?:thắng|thang).*|"
+        r"(?:bên|ben)\s+(?:nào|nao)\s+(?:sẽ\s+|se\s+)?(?:thắng|thang).*|"
+        r"ai\s+(?:sẽ\s+|se\s+)?(?:là\s+người\s+|là\s+đội\s+)?(?:thắng|thang).*|"
+        r"(?:thắng|thang)\s+hay\s+(?:thua|hòa|hoa|bại|bai).*|"
+        r"(?:hòa|hoa)\s+hay\s+(?:thắng|thang|thua).*|"
+        r"(?:có|co)\s+(?:giành\s+chiến\s+)?(?:thắng|thang)\s+(?:được\s+|duoc\s+)?(?:không|khong|ko).*|"
+        r"(?:và\s+|va\s+)?(?:với\s+|voi\s+)?(?:tỷ|tỉ|ty|ti)\s+(?:số|so)\s+(?:là\s+|la\s+)?(?:bao\s+nhiêu|bao\s+nhieu).*|"
+        r"(?:tỷ|tỉ|ty|ti)\s+(?:số|so)\s+(?:thế\s+nào|the\s+nao|ra\s+sao|như\s+thế\s+nào).*|"
+        r"(?:kết\s+quả|ket\s+qua)\s+(?:thế\s+nào|the\s+nao|ra\s+sao|như\s+thế\s+nào|sao).*|"
+        r"(?:đá|da)\s+(?:có\s+thắng\s+không|co\s+thang\s+khong|thế\s+nào|the\s+nao|ra\s+sao).*|"
+        r"thi\s+(?:đấu|dau)\s+(?:thế\s+nào|ra\s+sao|có\s+thắng\s+không).*"
         r")$",
         flags=_re_sp.IGNORECASE,
     )

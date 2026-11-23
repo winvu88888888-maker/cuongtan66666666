@@ -732,7 +732,10 @@ class QuestionReaderAI:
                 "bao nhiêu con", "mấy trai mấy gái", "con cái", "sinh con", "đường con cái", "tử tức",
                 "có con chưa", "mấy đứa"
             ])
-            and not any(ex in q_low for ex in ["con số", "con đường", "con xe", "con dao", "con thứ mấy"])
+            and not any(ex in q_low for ex in [
+                "con số", "con đường", "con xe", "con dao", "con thứ mấy",
+                "trai hay gái", "gái hay trai", "nam hay nữ", "nữ hay nam", "giới tính",
+            ])
             and not is_siblings_q
         )
 
@@ -829,22 +832,28 @@ class QuestionReaderAI:
         )
         _explicit_emo_qr = any(w in q_low for w in [
             "buồn hay", "vui hay", "hay buồn", "hay vui", "buồn cái gì", "buồn chuyện gì", "buồn vì",
+            "buon hay", "vui hay", "hay buon", "dang buon", "buon cai gi", "buon chuyen gi",
             "vui vì", "lo cái gì", "lo chuyện gì", "lo lắng chuyện gì", "giận chuyện gì", "giận cái gì",
             "giận tôi vì", "giận nhau vì", "vướng mắc cái gì", "trong lòng đang",
+            "tôi đang nghĩ gì", "mình đang nghĩ gì", "trong đầu tôi",
         ])
         is_mood_cause_q = (
             (
                 _explicit_emo_qr
                 or (
                     any(w in q_low for w in ["đang buồn", "tâm trạng", "đang giận", "nặng lòng", "bất an", "mất ngủ", "chán nản", "trăn trở"])
-                    and not any(w in q_low for w in ["làm lành", "hàn gắn", "quay lại", "chia tay", "ly hôn", "cưới"])
+                    and not any(w in q_low for w in ["làm lành", "hàn gắn", "quay lại", "chia tay", "ly hôn", "cưới", "lam lanh", "han gan"])
                 )
             )
             and not any(w in q_low for w in ["nhạc gì", "nghe nhạc", "bài hát"])
         )
         is_why = is_mood_cause_q or (
             (not re.search(r"\bnếu\s+", q_low))
-            and any(w in q_low for w in ["tại sao", "vì sao", "nguyên nhân", "lý do", "do đâu", "ý đồ gì", "nghĩ gì", "tâm lý", "vướng ở đâu", "vướng cái gì", "vướng chuyện gì", "sai ở đâu", "vấn đề gì"])
+            and any(w in q_low for w in [
+                "tại sao", "vì sao", "nguyên nhân", "lý do", "do đâu", "ý đồ gì", "nghĩ gì", "tâm lý",
+                "vướng ở đâu", "vướng cái gì", "vướng chuyện gì", "sai ở đâu", "lỗi ở đâu", "thiếu ở đâu",
+                "khó ở đâu", "tắc ở đâu", "nghẽn ở đâu", "kẹt ở đâu", "vấn đề gì",
+            ])
         )
         is_debt = any(w in q_low for w in ["đòi nợ", "trả nợ", "thu hồi nợ", "cho vay", "vay tiền", "vay ngân hàng", "khoản nợ", "con nợ"])
         _is_profit_invest_focus = any(w in q_low for w in ["đầu tư", "có lãi", "có lời", "lời hay lỗ", "sinh lời", "lướt sóng", "bán lại", "bán đất", "bán nhà", "ký hợp đồng", "chốt cọc"])
@@ -1020,6 +1029,7 @@ class QuestionReaderAI:
         elif (
             ((" hay " in q_low) or (" vs " in q_low))
             and (not is_why)
+            and not bool(re.search(r"[^,?.;!]+,\s*[^,?.;!]+\s+(?:hay|hoặc)\s+[^,?.;!]+", q_low))
             and not re.search(r"\b(?:tôi|mình|bạn|con|vợ|chồng|bố|mẹ|nó|dạo này|gần đây|thường)\s+hay\s+(?:gặp|bị|mất|ốm|đau|quên|mơ|lo|cãi|khóc|buồn|xui)", q_low)
             and not any(w in q_low for w in ["hay không", "có nên"])
             and not any(p in q_low for p in [
@@ -1031,6 +1041,7 @@ class QuestionReaderAI:
                 "khỏi hay không", "sống hay chết", "còn hay mất", "mất hay còn",
                 "tìm thấy hay", "thuận hay nghịch",
                 "buồn hay vui", "vui hay buồn", "buồn hay đ", "vui hay đ",
+                "buon hay vui", "vui hay buon", "buon hay d", "vui hay d",
                 "vui vẻ hay", "buồn bã hay", "lo hay yên tâm", "yên tâm hay lo",
                 "giận hay", "hạnh phúc hay", "cô đơn hay", "thương hay ghét", "ghét hay thương",
             ])
@@ -3719,7 +3730,7 @@ class HexagramReasoningAI:
         # ── 8. GIẢI MÃ CHUYÊN SÂU: GIỚI TÍNH, ĐỘ TUỔI / NĂM SINH & THỌ SỐ (TUỔI LÚC MẤT / HƯỞNG THỌ) TỪ TAM THỨC (100% ĐỘNG THEO QUẺ) ──
         if target == "GENDER_AGE":
             import datetime as _dt_ga
-            _cur_yr_ga = _dt_ga.date.today().year
+            _cur_yr_ga = (_dt_ga.datetime.now(_dt_ga.timezone.utc) + _dt_ga.timedelta(hours=7)).date().year
             _TT_GA = {"Càn": 1, "Đoài": 2, "Ly": 3, "Chấn": 4, "Tốn": 5, "Khảm": 6, "Cấn": 7, "Khôn": 8}
             _HT_GA = {"Khảm": 1, "Khôn": 2, "Chấn": 3, "Tốn": 4, "Càn": 6, "Đoài": 7, "Cấn": 8, "Ly": 9}
             _HD_GA = {"Thủy": (1, 6), "Hỏa": (2, 7), "Mộc": (3, 8), "Kim": (4, 9), "Thổ": (5, 10)}
@@ -3745,11 +3756,51 @@ class HexagramReasoningAI:
             _hop_dt_chi_ga = str(_mat_spec.get("hop_dt_chi") or "Thân")
             _prim_dong_ga = int(dong_list[0]) if dong_list and str(dong_list[0]).isdigit() else 1
 
-            # Nhận diện Chủ thể Nam/Nữ từ câu hỏi hoặc từ Quái tượng
+            # Nếu hỏi giới tính thai nhi ("sinh con trai hay gái", "có bầu trai hay gái") — giải mã Âm/Dương thực tế từ Quẻ (KHÔNG gán 100% đàn ông 28-54 tuổi!)
+            _is_baby_gender_q = any(
+                w in q_low for w in ("sinh con", "đẻ con", "có bầu", "mang thai", "thai nhi", "bầu bí")
+            ) and any(w in q_low for w in ("trai hay gái", "gái hay trai", "nam hay nữ", "nữ hay nam", "giới tính"))
+            if _is_baby_gender_q:
+                _YANG_QUAIS_BG = {"Càn", "Chấn", "Khảm", "Cấn"}
+                _YANG_CHIS_BG = {"Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"}
+                _bg_votes_boy = sum(1 for q_b in (_up_ga, _lo_ga, _the_ga, _mat_spec.get("quai_cung", "Cấn")) if q_b in _YANG_QUAIS_BG)
+                if _dt_chi_ga in _YANG_CHIS_BG:
+                    _bg_votes_boy += 2
+                _boy_pct_bg = max(18, min(84, int(round(_bg_votes_boy * 100 / 6))))
+                _girl_pct_bg = 100 - _boy_pct_bg
+                if _boy_pct_bg >= 50:
+                    _bg_hl = (
+                        f"🎯 👶 KẾT LUẬN GIỚI TÍNH THAI NHI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"NGHIÊNG VỀ «BÉ TRAI» ({_boy_pct_bg}% Bé trai ↔ {_girl_pct_bg}% Bé gái — "
+                        f"Dương khí Quẻ {_up_ga}/{_lo_ga} & Hào Dụng Thần {_dt_chi_ga} chiếm ưu thế; Cung {target_cung} {sao_name} · {cua_name})!"
+                    )
+                else:
+                    _bg_hl = (
+                        f"🎯 👶 KẾT LUẬN GIỚI TÍNH THAI NHI TỪ QUẺ ({ten_que_chu.upper()} ➔ {ten_que_bien.upper()}): "
+                        f"NGHIÊNG VỀ «BÉ GÁI» ({_girl_pct_bg}% Bé gái ↔ {_boy_pct_bg}% Bé trai — "
+                        f"Âm khí Quẻ {_up_ga}/{_lo_ga} & Hào Dụng Thần {_dt_chi_ga} chiếm ưu thế; Cung {target_cung} {sao_name} · {cua_name})!"
+                    )
+                return {
+                    "has_override": True,
+                    "headline": _bg_hl,
+                    "why": (
+                        f"Phân tích Âm–Dương thai nhi theo cổ pháp Tăng San Bốc Dịch & Mai Hoa: "
+                        f"Thượng Quái <b>{_up_ga}</b> ({'Dương' if _up_ga in _YANG_QUAIS_BG else 'Âm'}), "
+                        f"Hạ Quái <b>{_lo_ga}</b> ({'Dương' if _lo_ga in _YANG_QUAIS_BG else 'Âm'}), "
+                        f"Hào Dụng Thần <b>{_dt_chi_ga}-{_dt_nh_ga}</b> ({'Dương Chi' if _dt_chi_ga in _YANG_CHIS_BG else 'Âm Chi'}), "
+                        f"Cung {target_cung} ({_mat_spec.get('quai_cung','')}, {sao_name} · {cua_name}). "
+                        f"(Kết quả Dịch học mang tính chiêm nghiệm tham khảo, ưu tiên thăm khám y khoa định kỳ để chăm sóc sức khỏe mẹ và bé)."
+                    ),
+                    "when": f"Thai kỳ vận hành theo trục <b>{ten_que_chu} ➔ {ten_que_bien}</b> ({cua_name} tại hướng {huong_cung}).",
+                    "advice": f"Giữ tinh thần thư thái, dinh dưỡng đầy đủ và khám thai đúng lịch; hướng dưỡng khí tốt: <b>{huong_cung}</b> (màu hợp: <b>{colors_str}</b>).",
+                }
+
+            # Nhận diện Chủ thể Nam/Nữ từ câu hỏi hoặc từ Quái tượng (loại trừ cụm lựa chọn "trai hay gái / nam hay nữ")
+            _q_kin_scan = re.sub(r"(?:con\s+)?(?:trai\s+hay\s+(?:con\s+)?gái|gái\s+hay\s+(?:con\s+)?trai|nam\s+hay\s+nữ|nữ\s+hay\s+nam)", " ", q_low)
             _MALE_KIN_GA = ["ông nội", "ông ngoại", "ông tôi", "bố tôi", "cha tôi", "ba tôi", "bố", "cha", "ba", "chồng", "con trai", "anh trai", "em trai", "chú", "bác trai", "cậu", "dượng", "bạn trai"]
             _FEMALE_KIN_GA = ["bà nội", "bà ngoại", "bà tôi", "mẹ tôi", "má tôi", "mẹ", "má", "vợ", "con gái", "chị gái", "em gái", "cô", "dì", "bác gái", "mợ", "bạn gái"]
-            _m_kin_ga = next((w for w in _MALE_KIN_GA if re.search(r"(?:^|[\s,;.!?])" + re.escape(w) + r"(?:[\s,;.!?]|$)", q_low)), None)
-            _f_kin_ga = next((w for w in _FEMALE_KIN_GA if re.search(r"(?:^|[\s,;.!?])" + re.escape(w) + r"(?:[\s,;.!?]|$)", q_low)), None)
+            _m_kin_ga = next((w for w in _MALE_KIN_GA if re.search(r"(?:^|[\s,;.!?])" + re.escape(w) + r"(?:[\s,;.!?]|$)", _q_kin_scan)), None)
+            _f_kin_ga = next((w for w in _FEMALE_KIN_GA if re.search(r"(?:^|[\s,;.!?])" + re.escape(w) + r"(?:[\s,;.!?]|$)", _q_kin_scan)), None)
             if _m_kin_ga:
                 _g_lbl = f"NAM GIỚI / ĐÀN ÔNG (Chủ thể: {_m_kin_ga.upper()} — 100%)"
             elif _f_kin_ga:

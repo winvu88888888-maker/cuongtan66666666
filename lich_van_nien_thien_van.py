@@ -8,6 +8,11 @@ import math
 import datetime
 import calendar
 
+
+def _vn_today_lvn() -> datetime.date:
+    """Ngày hôm nay theo múi giờ Việt Nam UTC+7 (tránh lệch ngày khi chạy trên server UTC)."""
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=7)).date()
+
 try:
     import streamlit as st
     _cache_data = st.cache_data(ttl=3600, show_spinner=False)
@@ -191,7 +196,7 @@ def lunar_to_solar_search(ld_target: int, lm_target: int, ly_target: int, leap_t
 
 def render_compact_today_banner():
     """Hiển thị thanh thông tin Lịch Vạn Niên & Tiết Khí hôm nay gọn nhẹ ở đầu trang."""
-    today = datetime.date.today()
+    today = _vn_today_lvn()
     info = get_full_day_calendar_info(today.day, today.month, today.year)
     tk = info["tiet_khi"]
     st.markdown(
@@ -249,7 +254,7 @@ def render_lich_van_nien_view():
         with col_sel:
             selected_date = st.date_input(
                 "Chọn ngày cần tra cứu:",
-                value=datetime.date.today(),
+                value=_vn_today_lvn(),
                 min_value=datetime.date(1900, 1, 1),
                 max_value=datetime.date(2100, 12, 31),
                 key="lvn_selected_date",
@@ -258,7 +263,7 @@ def render_lich_van_nien_view():
             st.write("")
             st.write("")
             if st.button("📍 Về Hôm Nay", use_container_width=True, key="lvn_btn_today"):
-                selected_date = datetime.date.today()
+                selected_date = _vn_today_lvn()
 
         info = get_full_day_calendar_info(selected_date.day, selected_date.month, selected_date.year)
         tk = info["tiet_khi"]
@@ -342,7 +347,7 @@ def render_lich_van_nien_view():
             st.markdown("#### ☀️ ➜ 🌙 Đổi Dương Lịch sang Âm Lịch")
             d_in = st.date_input(
                 "Chọn ngày Dương lịch:",
-                value=datetime.date.today(),
+                value=_vn_today_lvn(),
                 min_value=datetime.date(1900, 1, 1),
                 max_value=datetime.date(2100, 12, 31),
                 key="conv_s2l_date",
@@ -360,7 +365,7 @@ def render_lich_van_nien_view():
         with col_l2s:
             st.markdown("#### 🌙 ➜ ☀️ Đổi Âm Lịch sang Dương Lịch")
             today_l = get_full_day_calendar_info(
-                datetime.date.today().day, datetime.date.today().month, datetime.date.today().year
+                _vn_today_lvn().day, _vn_today_lvn().month, _vn_today_lvn().year
             )
             c_ld, c_lm, c_ly = st.columns(3)
             with c_ld:
@@ -385,7 +390,7 @@ def render_lich_van_nien_view():
 
     # ═══ TAB 3: BẢNG LỊCH THÁNG (SONG SONG DƯƠNG - ÂM) ═══
     with tab_month:
-        today_dt = datetime.date.today()
+        today_dt = _vn_today_lvn()
         cm1, cm2 = st.columns(2)
         with cm1:
             cal_month = st.selectbox("Tháng Dương lịch:", list(range(1, 13)), index=today_dt.month - 1, key="lvn_cal_m")
