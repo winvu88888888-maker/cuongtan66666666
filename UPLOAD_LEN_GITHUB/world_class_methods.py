@@ -342,18 +342,14 @@ def build_world_class_synthesis_prose(
     )
 
     prose_html = (
-        f"🌐 <b>Đối chiếu Tinh Hoa Huyền Học Thế Giới & Hội Tụ Bayes (Đông - Tây Hợp Nhất):</b> "
-        f"{horary['summary']} "
-        f"{vedic['summary']} "
+        f"🌐 <b>Đối chiếu Huyền Không Phi Tinh Vận 9, Điều Hầu Bát Tự & Hội Tụ Bayes:</b> "
         f"{xk_dh['summary']} "
-        f"Khi đưa toàn bộ các hệ thống độc lập vào <b>Mô hình Hợp Nhất Xác Suất Hậu Nghiệm Bayes (Bayesian Evidence Fusion)</b>, "
+        f"Khi đưa toàn bộ các hệ thống Tam Thức & Kinh Dịch độc lập vào <b>Mô hình Hợp Nhất Xác Suất Hậu Nghiệm Bayes (Bayesian Evidence Fusion)</b>, "
         f"độ đồng thuận liên hệ thống đạt <b>{bayes['consensus_pct']}%</b> (xác suất hậu nghiệm hiệu chỉnh: <b>{bayes['bayesian_posterior_pct']}%</b>)."
     )
 
     prompt_text = (
-        f"=== ĐỐI CHIẾU TINH HOA THẾ GIỚI (HORARY + VEDIC KP + HUYỀN KHÔNG VẬN 9 + BAYES) ===\n"
-        f"- [Horary Astrology Phương Tây]: {horary['ascendant']} | {horary['quesited_house']} | {horary['aspect']} ({horary['verdict']})\n"
-        f"- [Vedic KP Prashna Ấn Độ]: Tinh tú {vedic['nakshatra']} | {vedic['kp_significators']} ({vedic['verdict']})\n"
+        f"=== ĐỐI CHIẾU HUYỀN KHÔNG VẬN 9 · ĐIỀU HÀU BÁT TỰ & HỘI TỤ BAYES ===\n"
         f"- [Huyền Không Phi Tinh Vận 9 & Điều Hầu Bát Tự]: {xk_dh['flying_star']} | {xk_dh['dieu_hau']}\n"
         f"- [Hội Tụ Xác Suất Bayes]: Xác suất hậu nghiệm = {bayes['bayesian_posterior_pct']}% | Độ đồng thuận = {bayes['consensus_pct']}%\n"
     )
@@ -559,7 +555,7 @@ def _extract_full_18_systems_live(chart_data: dict, target_cung: int = 1) -> dic
         "ta_chu_khach": ta_chu_khach,
         "tv_summary": tv_summary,
         "kich_hinh_note": kich_hinh_note,
-        "pars_fortunae": f"Điểm Phúc Lộc (Pars Fortunae) tại {pf_sign}",
+        "pars_fortunae": f"Trực {truc_name} · Nạp Âm {nap_am_ngay}",
     }
 
 
@@ -764,12 +760,12 @@ def build_holographic_7_position_picture(
     }
     ho_display = _TRIGRAM_PAIR_MAP.get(ho_name, ho_name or "Giai đoạn chuyển tiếp")
 
-    # VỊ TRÍ 1: Tâm Điểm Quẻ Kinh Dịch Lục Hào + Chiêm Tinh Horary
+    # VỊ TRÍ 1: Tâm Điểm Quẻ Kinh Dịch Lục Hào Nạp Giáp
     if omni_data.get("is_binary_factual_q") and omni_data.get("binary_verdict_headline"):
         pos1_what = f"<b>{omni_data['binary_verdict_headline']}</b>"
         pos1_opp = f"<b>Bằng chứng sát từ quẻ:</b> {omni_data.get('binary_why_reasons', '')}"
-        pos1_adv = omni_data.get("binary_action_advice", "Quẻ đã phân định dứt khoát giữa 2 phương án dựa trên Tuần Không và Hào Động thực tế.")
-        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary Nhà 1/4/10"
+        pos1_adv = omni_data.get("binary_action_advice", "Quẻ đã phân định dứt khoát giữa các phương án dựa trên Tuần Không và Hào Động thực tế.")
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Nạp Giáp Lục Hào"
     elif is_children_age_wc:
         pos1_what = f"<b>{omni_data.get('children_age_headline', 'Xác định độ tuổi Con Gái & Con Trai từ liên kết Đa Hệ Thống')}</b>"
         pos1_opp = f"<b>Luận cứ liên kết sâu:</b> {omni_data.get('children_age_why', '')}"
@@ -779,12 +775,12 @@ def build_holographic_7_position_picture(
         pos1_what = f"<b>Kết quả từ Quẻ:</b> <b>{omni_data.get('children_summary', 'Khoảng 2 người con — 1 Trai, 1 Gái (Đủ nếp đủ tẻ)')}</b>."
         pos1_opp = f"<b>Luận cứ sát quẻ:</b> {omni_data.get('children_reasons', f'Quẻ {ban_name} biến {bien_name} và Hào Tử Tôn hành {hanh_dt} hội đủ cả khí Dương (Trai) và Âm (Gái).')}"
         pos1_adv = "Lộc con cái (hào Tử Tôn) là phúc phần lớn của gia đình; các con tuy mỗi đứa một cá tính nhưng đều có duyên gắn bó sâu sắc với cha mẹ."
-        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · Hào Tử Tôn ({hanh_dt}) · Horary Nhà 5 (Tử Tức)"
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · Hào Tử Tôn ({hanh_dt}) · Cung Tử Tức"
     elif is_identity_q and omni_data:
         pos1_what = f"Xác định trực tiếp bản mệnh người hỏi là <b>{omni_data.get('gender', 'Nam giới')}</b>, thuộc nhóm <b>{omni_data.get('age_tier', 'Dưới 45 tuổi')}</b>."
         pos1_opp = f"Năm sinh & độ tuổi ứng nghiệm trên quẻ: <b>{', '.join(omni_data.get('birth_years', [])[:3])}</b> ({omni_data.get('gender_reasons', '')})."
-        pos1_adv = "Năng lượng bản mệnh trên Hào Thế và Cung Mọc Horary đang rõ ràng, thuận lợi để tự chủ quyết định."
-        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary Nhà 1"
+        pos1_adv = "Năng lượng bản mệnh trên Hào Thế và Nạp Âm đang rõ ràng, thuận lợi để tự chủ quyết định."
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Hào Thế Bản Mệnh"
     else:
         _hao_short = (_lh_hao_prose_clean[:190] + "...") if len(_lh_hao_prose_clean) > 195 else _lh_hao_prose_clean
         if weighted_pct >= 55:
@@ -799,7 +795,7 @@ def build_holographic_7_position_picture(
             pos1_what = f"Quẻ <b>{ban_name}</b> biến <b>{bien_name or 'Bình hòa'}</b> đạt <b>{weighted_pct}% (Đang gặp lực cản)</b>. {_hao_short}"
             pos1_opp = "Nhận diện sớm được nút thắt trên hào quẻ giúp bạn phòng tránh rủi ro kịp thời."
             pos1_adv = "Cần bình tĩnh tháo gỡ từng vướng mắc, tránh hành động nóng vội khi khí số chưa thông."
-        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · Horary {horary['aspect'].split('(')[0].strip()} · {full18['pars_fortunae']}"
+        pos1_ref = f"Quẻ {ban_name} → {bien_name or 'Bình hòa'} · {dung_than} ({hanh_dt}) · {full18['pars_fortunae']}"
     pos1_result = (
         f"<div>📌 <b>Nói về gì:</b> {pos1_what}</div>"
         f"<div style='margin-top:3px;'>✨ <b>Chi tiết từ quẻ:</b> {pos1_opp}</div>"
@@ -904,7 +900,7 @@ def build_holographic_7_position_picture(
         f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Vạn Vật hành {hanh_dt} · Trường Sinh [{ts_stage or 'Tướng khí'}] · Nạp Âm [{full18['nap_am_ngay'].split('(')[0].strip()}]</i></div>"
     )
 
-    # VỊ TRÍ 5: Đồng hồ thời điểm ứng nghiệm (Ứng Kỳ + Vệ Đà KP)
+    # VỊ TRÍ 5: Đồng hồ thời điểm ứng nghiệm (Bệnh–Dược Ứng Kỳ & Thập Nhị Trực)
     _raw_exact_ts = omni_data.get("exact_timestamp", "")
     if ung_ky_str and ung_ky_str != "?" and "hội tụ khí số" not in ung_ky_str.lower():
         uk_display = ung_ky_str
@@ -915,16 +911,16 @@ def build_holographic_7_position_picture(
     if is_children_q:
         pos5_what = "Chỉ ra các mốc thời gian gia đình đón tin vui về con cái (học hành, trưởng thành hoặc thêm phúc lộc)."
         pos5_opp = f"<b>Mốc thời gian vượng khí Tử Tức gần nhất:</b> <b>{uk_display}</b>."
-        pos5_adv = f"Tinh tú Vệ Đà <b>{vedic['nakshatra']}</b> chủ về <i>{vedic['nak_trait'].lower()}</i>, báo hiệu con cái càng về hậu vận càng vững vàng, thành đạt."
+        pos5_adv = f"Ngày lập quẻ ứng <b>Trực {full18['truc_name']}</b> ({full18['truc_meaning'].lower()}), báo hiệu con cái càng về hậu vận càng vững vàng, thành đạt."
     else:
         pos5_what = "Chỉ ra mốc thời gian sự việc sẽ mở nút thắt, có tin tức rõ ràng hoặc thuận lợi nhất để quyết định."
         pos5_opp = f"<b>Thời điểm chuyển biến quan trọng:</b> <b>{uk_display}</b>."
-        pos5_adv = f"Từ nay đến mốc đó hãy chuẩn bị thật chắc chắn (theo tinh thần <i>{vedic['nak_trait'].lower()}</i>); <b>đợi đúng mốc này mới chốt quyết định lớn</b>."
+        pos5_adv = f"Từ nay đến mốc đó hãy chuẩn bị thật chắc chắn (ứng khí <b>Trực {full18['truc_name']}</b> — {full18['truc_meaning'].lower()}); <b>đợi đúng mốc này mới chốt quyết định lớn</b>."
     pos5_result = (
         f"<div>📌 <b>Nói về gì:</b> {pos5_what}</div>"
         f"<div style='margin-top:3px;'>⏰ {pos5_opp}</div>"
         f"<div style='margin-top:3px;'>💡 <b>Khuyên bạn:</b> {pos5_adv}</div>"
-        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Động cơ Ứng Kỳ · Tinh tú Vệ Đà {vedic['nakshatra']}</i></div>"
+        f"<div style='margin-top:4px;font-size:0.82em;color:#94a3b8;'>⚙️ <i>Căn cứ: Bệnh–Dược Ứng Kỳ Pháp · Trực {full18['truc_name']}</i></div>"
     )
 
     # PHÂN KHU RIÊNG 1: TỬ VI ĐẨU SỐ (CHUYÊN XEM RIÊNG VỀ CẢ CUỘC ĐỜI & VẬN MỆNH TRỌN ĐỜI)
@@ -1060,12 +1056,12 @@ def build_holographic_7_position_picture(
     )
 
     prompt_blueprint = (
-        f"=== BẢN ĐỒ GHÉP TRANH TOÀN CẢNH 7 VỊ TRÍ ĐÔNG - TÂY (BẮT BUỘC KẾT NỐI THÀNH 1 BỨC TRANH THỐNG NHẤT) ===\n"
-        f"1. [VỊ TRÍ 1 - CON NGƯỜI & CỐT LÕI (Lục Hào + Horary)]: {re.sub(r'<[^>]+>', '', pos1_result)}\n"
+        f"=== BẢN ĐỒ GHÉP TRANH TOÀN CẢNH 7 VỊ TRÍ TAM THỨC & KINH DỊCH (BẮT BUỘC KẾT NỐI THÀNH 1 BỨC TRANH THỐNG NHẤT) ===\n"
+        f"1. [VỊ TRÍ 1 - CON NGƯỜI & CỐT LÕI (Lục Hào Nạp Giáp)]: {re.sub(r'<[^>]+>', '', pos1_result)}\n"
         f"2. [VỊ TRÍ 2 - KHÔNG GIAN & PHƯƠNG HƯỚNG (Kỳ Môn + Huyền Không Vận 9)]: {re.sub(r'<[^>]+>', '', pos2_result)}\n"
         f"3. [VỊ TRÍ 3 - QUÁ KHỨ -> HIỆN TẠI -> TƯƠNG LAI (Đại Lục Nhâm + Mai Hoa)]: {re.sub(r'<[^>]+>', '', pos3_result)}\n"
         f"4. [VỊ TRÍ 4 - HÌNH TƯỚNG, TUỔI TÁC & ĐỊNH LƯỢNG (Vạn Vật + Thiết Bản + 12 Trường Sinh)]: {re.sub(r'<[^>]+>', '', pos4_result)}\n"
-        f"5. [VỊ TRÍ 5 - ĐỒNG HỒ ỨNG KỲ (Ứng Kỳ + Ấn Độ Vệ Đà KP Sub-Lord)]: {re.sub(r'<[^>]+>', '', pos5_result)}\n"
+        f"5. [VỊ TRÍ 5 - ĐỒNG HỒ ỨNG KỲ (Bệnh–Dược Ứng Kỳ + Thập Nhị Trực)]: {re.sub(r'<[^>]+>', '', pos5_result)}\n"
         f"6. [VỊ TRÍ 6 - THỜI THẾ & CHIẾN LƯỢC CÔNG/THỦ (Thái Ất + Tử Vi + Trạch Cát)]: {re.sub(r'<[^>]+>', '', pos6_result)}\n"
         f"7. [VỊ TRÍ 7 - PHÁP QUYẾT HÓA GIẢI & HỘI TỤ BAYES (Bát Tự Điều Hầu + Bayes)]: {re.sub(r'<[^>]+>', '', pos7_result)}\n"
     )
@@ -1118,18 +1114,18 @@ def compute_7_link_synergy_chain(
     synergy_delta = 0
     chain_steps = []
 
-    # Liên kết 1 -> 2: Lục Hào + Horary (Nhân) kết hợp Kỳ Môn + Huyền Không Vận 9 (Địa)
+    # Liên kết 1 -> 2: Lục Hào Nạp Giáp (Nhân) kết hợp Kỳ Môn + Huyền Không Vận 9 (Địa)
     lh_cat = "CÁT" in str(luc_hao_verdict).upper()
     km_cat = "CÁT" in str(ky_mon_verdict).upper()
     xk_cat = xk_dh["score"] >= 60
     if (lh_cat or horary["score"] >= 60) and (km_cat or xk_cat):
         synergy_delta += 3
-        link_1_2 = f"Mắt xích 1 (Lục Hào + Horary) đắc khí truyền lực sang Mắt xích 2 (Kỳ Môn + Phi Tinh Vận 9 tại {direction}) tạo thế Nhân - Địa đồng tâm (+3% cộng hưởng)"
+        link_1_2 = f"Mắt xích 1 (Lục Hào Nạp Giáp) đắc khí truyền lực sang Mắt xích 2 (Kỳ Môn + Phi Tinh Vận 9 tại {direction}) tạo thế Nhân - Địa đồng tâm (+3% cộng hưởng)"
     elif not lh_cat and not km_cat and xk_dh["score"] < 45:
         synergy_delta -= 3
-        link_1_2 = f"Mắt xích 1 (Lục Hào + Horary) gặp lực cản lại rơi vào cung Mắt xích 2 (Kỳ Môn + Phi Tinh tại {direction}) đang suy khí (-3% cảnh báo)"
+        link_1_2 = f"Mắt xích 1 (Lục Hào Nạp Giáp) gặp lực cản lại rơi vào cung Mắt xích 2 (Kỳ Môn + Phi Tinh tại {direction}) đang suy khí (-3% cảnh báo)"
     else:
-        link_1_2 = f"Mắt xích 1 (Lục Hào + Horary) phối hợp cân bằng với không gian Mắt xích 2 (Kỳ Môn + Phi Tinh Vận 9 tại {direction})"
+        link_1_2 = f"Mắt xích 1 (Lục Hào Nạp Giáp) phối hợp cân bằng với không gian Mắt xích 2 (Kỳ Môn + Phi Tinh Vận 9 tại {direction})"
     chain_steps.append(link_1_2)
 
     # Liên kết 2 -> 3 -> 4: Không gian truyền sang Trục 3 thời (Đại Lục Nhâm + Mai Hoa) & Vạn Vật Trường Sinh
@@ -1145,14 +1141,14 @@ def compute_7_link_synergy_chain(
         link_3_4 = f"Mắt xích 3 (Đại Lục Nhâm + Mai Hoa) dẫn dắt diễn biến sang Mắt xích 4 (Dụng Thần {dung_than} hành {hanh_dt}, vòng Trường Sinh {ts_stage or 'Bình hòa'})"
     chain_steps.append(link_3_4)
 
-    # Liên kết 5 -> 6 -> 7: Ứng Kỳ + Vedic KP khóa thời điểm & Điều Hầu + Bayes chốt phán quyết
+    # Liên kết 5 -> 6 -> 7: Ứng Kỳ khóa thời điểm & Điều Hầu + Bayes chốt phán quyết
     synergy_pct = int(round((weighted_pct * 0.65) + (bayes["bayesian_posterior_pct"] * 0.35) + synergy_delta))
     synergy_pct = max(8, min(96, synergy_pct))
 
     synergy_summary_sentence = (
-        f"🔗 <b>Chuỗi Liên Kết Hợp Sức 14 Hệ Thống (Đông – Tây Hội Tụ {bayes['consensus_pct']}%):</b> "
+        f"🔗 <b>Chuỗi Liên Kết Hợp Sức Đa Hệ Thống (Đồng thuận Tam Thức {bayes['consensus_pct']}%):</b> "
         f"{link_1_2}; tiếp nối sang {link_3_4}; khóa điểm rơi Ứng Kỳ tại <b>{ung_ky_str or 'chu kỳ Can Chi kế tiếp'}</b> "
-        f"(Tinh tú Vệ Đà <b>{vedic['nakshatra']}</b>) và dùng pháp quyết Điều Hầu <b>{xk_dh['dieu_hau_god']}</b> "
+        f"và dùng pháp quyết Điều Hầu <b>{xk_dh['dieu_hau_god']}</b> "
         f"(hướng <b>{xk_dh['dieu_hau_dir']}</b>) để chốt độ chuẩn xác hợp lực ở mức <b>{synergy_pct}%</b>."
     )
 

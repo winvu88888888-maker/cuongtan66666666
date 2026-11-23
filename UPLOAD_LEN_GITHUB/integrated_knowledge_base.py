@@ -1256,8 +1256,8 @@ def compute_deep_interacting_factors_a_to_z(
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #f472b6;">'
         f'<div style="font-weight:800;color:#f9a8d4;margin-bottom:5px;">2️⃣ MAI HOA DỊCH SỐ & 18 LOẠI CHIÊM (V130.0)</div>'
         f'• <b>Trục Tam Quái:</b> Quẻ Chủ <b>{full_chu}</b> ({up_chu}/{lo_chu}) ➔ Quẻ Hỗ <b>{full_ho}</b> ({up_ho}/{lo_ho}) ➔ Quẻ Biến <b>{full_bien}</b> ({up_bien}/{lo_bien}).<br>'
-        f'• <b>Thể – Dụng Theo Mùa:</b> Quẻ Thể <b>{the_quai} ({hanh_the} — {mh_the_season.split("(")[0].strip()})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung} — {mh_dung_season.split("(")[0].strip()})</b> ➔ <b>{univ_mat.get("rel_chu_tag","")}</b> ({univ_mat.get("rel_chu_desc","")}).<br>'
-        f'• <b>Thể – Dụng Biến:</b> Biến sang <b>{bien_dung_quai} ({hanh_bien_dung})</b> ➔ <b>{univ_mat.get("rel_bien_tag","")}</b> ({univ_mat.get("rel_bien_desc","")}).<br>'
+        f'• <b>Thể – Dụng Theo Mùa:</b> Quẻ Thể <b>{the_quai} ({hanh_the} — {mh_the_season.split("(")[0].strip()})</b> ↔ Quẻ Dụng <b>{dung_quai} ({hanh_dung} — {mh_dung_season.split("(")[0].strip()})</b> ➔ <b>{univ_mat.get("rel_chu_tag","")}</b>{(" (" + str(univ_mat.get("rel_chu_desc")) + ")") if univ_mat.get("rel_chu_desc") else ""}.<br>'
+        f'• <b>Thể – Dụng Biến:</b> Biến sang <b>{bien_dung_quai} ({hanh_bien_dung})</b> ➔ <b>{univ_mat.get("rel_bien_tag","")}</b>{(" (" + str(univ_mat.get("rel_bien_desc")) + ")") if univ_mat.get("rel_bien_desc") else ""}.<br>'
         f'• <b>Đảng Thể/Dụng (Quẻ Hỗ):</b> {dang_ho_verdict}{mh_18_html}'
         f'</div>'
         # Thẻ 3: Kỳ Môn KinQiMen

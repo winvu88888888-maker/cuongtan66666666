@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V143.0"
+APP_VERSION = "V144.0"
 APP_VERSION_FULL = f"{APP_VERSION} — ĐẠI TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO (SỰ VIỆC · VẬT & NGƯỜI · NGÀY GIỜ THÁNG NĂM · GIẢI PHÁP) · HOÀN CHỈNH TOÀN DIỆN ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -20,7 +20,7 @@ import traceback
 import re
 
 # V139.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V143.0"
+_CODE_BUILD_VERSION = "V144.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2689,27 +2689,20 @@ def render_master_unified_qa_box(location_key="main"):
                                 st.session_state.chart_data = chart_for_q
                             _enr_real_q(chart_for_q)
                             _q_salt = 0 if (_prev_tuple is None or _is_fixed_manual_dt) else _cast_seq
-                            mai_hoa_for_q = tinh_qua_theo_thoi_gian(
-                                dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
-                                minute=dt_now.minute, second=dt_now.second,
-                                question_text=_q_clean_now, cast_salt=_q_salt
-                            )
-                            while (not _is_fixed_manual_dt) and _prev_tuple and (mai_hoa_for_q['upper'], mai_hoa_for_q['lower'], mai_hoa_for_q['dong_hao']) == tuple(_prev_tuple) and _q_salt < _cast_seq + 8:
-                                _q_salt += 1
+                            if _is_fixed_manual_dt:
                                 mai_hoa_for_q = tinh_qua_theo_thoi_gian(
                                     dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                     minute=dt_now.minute, second=dt_now.second,
-                                    question_text=_q_clean_now, cast_salt=_q_salt
+                                    question_text=_q_clean_now, cast_salt=0
                                 )
-                            mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
-                            st.session_state.mai_hoa_result = mai_hoa_for_q
+                                mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
+                                st.session_state.mai_hoa_result = mai_hoa_for_q
 
-                            _u_q = mai_hoa_for_q['upper']
-                            _l_q = mai_hoa_for_q['lower']
-                            _d_q = mai_hoa_for_q['dong_hao']
-                            st.session_state['_last_cast_tuple'] = (_u_q, _l_q, _d_q)
+                                _u_q = mai_hoa_for_q['upper']
+                                _l_q = mai_hoa_for_q['lower']
+                                _d_q = mai_hoa_for_q['dong_hao']
+                                st.session_state['_last_cast_tuple'] = (_u_q, _l_q, _d_q)
 
-                            if _is_fixed_manual_dt:
                                 luc_hao_for_q = lap_qua_luc_hao(
                                     dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                     topic=selected_topic,
@@ -2722,11 +2715,28 @@ def render_master_unified_qa_box(location_key="main"):
                                     moving_override=_d_q,
                                 )
                             else:
-                                # V137.0: Lục Hào khởi độc lập bằng xác suất 3 đồng xu Văn Vương thật (6=Lão Âm [1/8], 7=Thiếu Dương [3/8], 8=Thiếu Âm [3/8], 9=Lão Dương [1/8])
-                                # cảm ứng theo Thời Khắc + Tâm Niệm Câu Hỏi để có đủ Quẻ Tĩnh (0 hào động), Độc Phát (1 hào), Lưỡng/Tam Động Thông Quan (2-3 hào)!
-                                _seed_b = _hl_cast.sha256(f"{dt_now:%Y%m%d%H%M}::{_q_clean_now.lower()}::{_q_salt}".encode("utf-8")).digest()
+                                # V144.0: ĐỒNG BỘ TUYỆT ĐỐI 100% QUẺ CHỦ & QUẺ BIẾN GIỮA LỤC HÀO VÀ MAI HOA (TRIỆT TIÊU LỆCH 2 QUẺ TRÊN CÙNG MÀN HÌNH!)
+                                from mai_hoa_dich_so import build_res as _mh_build_sync
+                                from luc_hao_kinh_dich import lines_to_quai_num as _lh_l2q_sync
                                 _COIN_DIST_8 = (6, 7, 7, 7, 8, 8, 8, 9)
+                                _seed_b = _hl_cast.sha256(f"{dt_now:%Y%m%d%H%M}::{_q_clean_now.lower()}::{_q_salt}".encode("utf-8")).digest()
                                 _lh_coins_6 = [_COIN_DIST_8[_seed_b[i] & 7] for i in range(6)]
+                                _ban_l6_s = [1 if x in (7, 9) else 0 for x in _lh_coins_6]
+                                _l_q = _lh_l2q_sync(_ban_l6_s[:3])
+                                _u_q = _lh_l2q_sync(_ban_l6_s[3:])
+                                _mv_6_s = [idx + 1 for idx, x in enumerate(_lh_coins_6) if x in (6, 9)]
+                                _d_q = _mv_6_s[0] if _mv_6_s else (((_u_q + _l_q + dt_now.hour) % 6) + 1)
+                                while _prev_tuple and (_u_q, _l_q, _d_q) == tuple(_prev_tuple) and _q_salt < _cast_seq + 8:
+                                    _q_salt += 1
+                                    _seed_b = _hl_cast.sha256(f"{dt_now:%Y%m%d%H%M}::{_q_clean_now.lower()}::{_q_salt}".encode("utf-8")).digest()
+                                    _lh_coins_6 = [_COIN_DIST_8[_seed_b[i] & 7] for i in range(6)]
+                                    _ban_l6_s = [1 if x in (7, 9) else 0 for x in _lh_coins_6]
+                                    _l_q = _lh_l2q_sync(_ban_l6_s[:3])
+                                    _u_q = _lh_l2q_sync(_ban_l6_s[3:])
+                                    _mv_6_s = [idx + 1 for idx, x in enumerate(_lh_coins_6) if x in (6, 9)]
+                                    _d_q = _mv_6_s[0] if _mv_6_s else (((_u_q + _l_q + dt_now.hour) % 6) + 1)
+
+                                st.session_state['_last_cast_tuple'] = (_u_q, _l_q, _d_q)
                                 luc_hao_for_q = lap_qua_luc_hao(
                                     dt_now.year, dt_now.month, dt_now.day, dt_now.hour,
                                     topic=selected_topic,
@@ -2736,6 +2746,12 @@ def render_master_unified_qa_box(location_key="main"):
                                     chi_thang=chart_for_q.get('chi_thang', 'Tý'),
                                     coin_throws=_lh_coins_6,
                                 )
+                                mai_hoa_for_q = _mh_build_sync(_u_q, _l_q, _d_q)
+                                if (luc_hao_for_q.get('bien') or {}).get('name'):
+                                    mai_hoa_for_q['ten_qua_bien'] = luc_hao_for_q['bien']['name']
+                                mai_hoa_for_q['dong_hao_list'] = list(luc_hao_for_q.get('dong_hao') or [])
+                                mai_hoa_for_q['interpretation'] = giai_qua(mai_hoa_for_q, selected_topic)
+                                st.session_state.mai_hoa_result = mai_hoa_for_q
                             st.session_state.luc_hao_result = luc_hao_for_q
                         except Exception:
                             mai_hoa_for_q = st.session_state.get('mai_hoa_result')

@@ -1273,7 +1273,7 @@ def extract_deep_divination_dossier(
         ("km_palace_prose", "Cung Dụng Thần Kỳ Môn Độn Giáp"),
         ("km_cach_cuc_prose", "Cách Cục Thiên Địa Bàn"),
         ("mh_the_dung_prose", "Mai Hoa Thể Dụng"),
-        ("world_class_prose", "Đối Chiếu Tinh Hoa Thế Giới (Horary + Vedic KP + Huyền Không Vận 9 + Bayes)"),
+        ("world_class_prose", "Đối Chiếu Huyền Không Vận 9, Điều Hầu Bát Tự & Hội Tụ Bayes"),
     ]:
         val = res.get(k_name, "")
         if val:
@@ -1489,7 +1489,7 @@ def build_connected_prose_analysis(
     _mh_td_p = dossier.get("mh_the_dung_prose", "Mai Hoa Thể Dụng cân bằng.")
     _km_pal_p = dossier.get("km_palace_prose", f"Cung trọng tâm tọa tại hướng <b>{direction}</b>.")
     _km_cc_p = dossier.get("km_cach_cuc_prose", "Cần điềm tĩnh tháo gỡ từng bước.")
-    _wc_p = dossier.get("world_class_prose", "Chiêm tinh Horary, Ấn Độ Vệ Đà KP và Huyền Không Vận 9 đồng thuận với kết quả quẻ.")
+    _wc_p = dossier.get("world_class_prose", "Huyền Không Phi Tinh Vận 9 và Điều Hầu Bát Tự đồng thuận với kết quả quẻ.")
     _is_child_age_deep = any(ag in q_low for ag in ["tuổi", "mấy tuổi", "bao nhiêu tuổi", "năm sinh", "sinh năm"]) and any(w in q_low for w in ["con gái", "con trai", "con của tôi", "con tôi", "mấy đứa con", "2 đứa con", "các con", "con cái"])
     _is_child_deep = _is_child_age_deep or any(w in q_low for w in ["người con", "mấy con", "bao nhiêu con", "mấy đứa con", "mấy trai mấy gái", "con trai hay con gái", "sinh con trai hay", "sinh trai hay gái", "tử tức", "có mấy người con"]) or ("con" in q_low and any(w in q_low for w in ["bao nhiêu", "mấy trai", "mấy gái", "có mấy"]))
     if _is_child_deep:
@@ -1523,9 +1523,9 @@ def build_connected_prose_analysis(
             f"Tận dụng cát khí tại hướng <b>{direction}</b> và hóa giải các nút thắt tâm lý bằng sự mềm mỏng, linh hoạt."
         )
     _dc3 = _deep_card(
-        "🌍", "Thẻ 3 — Đối Chiếu Đông – Tây Thực Tế (Horary · Vệ Đà KP · Phi Tinh Vận 9)", "#a78bfa",
+        "🌍", "Thẻ 3 — Đối Chiếu Huyền Không Phi Tinh Vận 9 · Điều Hầu Bát Tự & Thập Nhị Trực", "#a78bfa",
         _wc_p[:260] + ("..." if len(_wc_p) > 260 else ""),
-        _wc_p[260:520] + ("..." if len(_wc_p) > 520 else "") if len(_wc_p) > 260 else "Các hệ thống tinh tú Đông – Tây hội tụ xác nhận rõ xu hướng vận động của quẻ.",
+        _wc_p[260:520] + ("..." if len(_wc_p) > 520 else "") if len(_wc_p) > 260 else "Các hệ thống Tam Thức, Phi Tinh Vận 9 và Điều Hầu Bát Tự hội tụ xác nhận rõ xu hướng vận động của quẻ.",
         "Kết hợp chặt chẽ giữa thực lực cá nhân và thời điểm mở vận để đạt kết quả cao nhất."
     )
     _adv_joined = " ".join(clean_advs) if clean_advs else "Giữ vững nhịp độ ổn định, chuẩn bị kỹ phương án trước khi bước sang giai đoạn mới."

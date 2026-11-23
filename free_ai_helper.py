@@ -5713,7 +5713,7 @@ class FreeAIHelper:
                 f"**⏳ ỨNG KỲ:** [Ghi rõ mốc giờ/ngày/tháng ứng nghiệm hoặc thời điểm chuyển biến theo Nạp Giáp Can Chi (Xung Không / Xuất Không / Hợp Xung)]\n"
                 f"**🔧 GIẢI PHÁP:** [Lời khuyên hành động thực tế sát với câu hỏi, Dụng Thần Thông Quan, phương hướng Tam Cát Môn và màu sắc/con số trợ vận]\n\n"
                 f"### 🔮 4 THẺ GIẢI MÃ TRỰC QUAN (DỄ ĐỌC CHO NGƯỜI KHÔNG CHUYÊN)\n"
-                f"#### 🎯 Thẻ 1 — Thực Lực Hiện Tại & Bản Chất Sự Việc (Lục Hào + Horary)\n"
+                f"#### 🎯 Thẻ 1 — Thực Lực Hiện Tại & Bản Chất Sự Việc (Lục Hào Nạp Giáp)\n"
                 f"- **📌 Nói về cái gì:** [Giải thích ngắn gọn 1 câu bằng tiếng Việt đời thường về tình hình thực tế của '{question}']\n"
                 f"- **✨ Cơ hội / Điểm sáng:** [Chỉ rõ 1 câu về lợi thế hoặc cơ hội đang có]\n"
                 f"- **💡 Khuyên bạn:** [1 câu lời khuyên thực tế dễ hiểu]\n\n"
@@ -13214,6 +13214,34 @@ class FreeAIHelper:
             except Exception as e:
                 self.log_step("V110.0 AutoCast", "LH_ERR", str(e)[:60])
 
+        # V144.0: Đồng bộ tuyệt đối Mai Hoa với Lục Hào khi cả hai cùng được truyền vào (chống triệt để lỗi 2 quẻ lệch nhau trên cùng 1 lần luận!)
+        if isinstance(luc_hao_data, dict) and isinstance(mai_hoa_data, dict) and not mai_hoa_data.get('_independent_meihua'):
+            _lh_b_sync = luc_hao_data.get('ban') or {}
+            _lh_bi_sync = luc_hao_data.get('bien') or {}
+            _lh_nm_sync = _lh_b_sync.get('name') or ''
+            if _lh_nm_sync and mai_hoa_data.get('ten_que') != _lh_nm_sync:
+                _lh_dl_sync = luc_hao_data.get('dong_hao') or _lh_b_sync.get('dong_hao') or []
+                if isinstance(_lh_dl_sync, int):
+                    _lh_dl_sync = [_lh_dl_sync]
+                try:
+                    from mai_hoa_dich_so import build_res as _mh_br_s, giai_qua as _mh_gq_s
+                    from luc_hao_kinh_dich import lines_to_quai_num as _l2q_s
+                    _b_l6_s = _lh_b_sync.get('lines') or []
+                    _u_s = int(_lh_b_sync.get('upper') or (_l2q_s(_b_l6_s[3:]) if len(_b_l6_s) >= 6 else mai_hoa_data.get('upper', 1)))
+                    _l_s = int(_lh_b_sync.get('lower') or (_l2q_s(_b_l6_s[:3]) if len(_b_l6_s) >= 6 else mai_hoa_data.get('lower', 8)))
+                    _d_s = int(_lh_dl_sync[0]) if _lh_dl_sync else int(mai_hoa_data.get('dong_hao') or 1)
+                    _rebuilt_mh = _mh_br_s(_u_s, _l_s, _d_s)
+                    _rebuilt_mh['ten_qua_bien'] = _lh_bi_sync.get('name') or _rebuilt_mh.get('ten_qua_bien') or _lh_nm_sync
+                    _rebuilt_mh['dong_hao_list'] = list(_lh_dl_sync)
+                    _rebuilt_mh['interpretation'] = _mh_gq_s(_rebuilt_mh, topic or 'Chung')
+                    mai_hoa_data = _rebuilt_mh
+                except Exception:
+                    mai_hoa_data = dict(mai_hoa_data)
+                    mai_hoa_data['ten'] = _lh_nm_sync
+                    mai_hoa_data['ten_que'] = _lh_nm_sync
+                    mai_hoa_data['ten_qua_chu'] = _lh_nm_sync
+                    mai_hoa_data['ten_qua_bien'] = _lh_bi_sync.get('name') or _lh_nm_sync
+
 # ====== V8.2: SMART CATEGORY DETECTION ======
         # Phân loại câu hỏi theo 6 nhóm lớn thay vì match 220+ topics cụ thể
         q_lower = question.lower()
@@ -16280,15 +16308,18 @@ class FreeAIHelper:
                 use_online_api=bool(kwargs.get('use_online_api', True)),
             )
             _dual_agent_banner_html = _dual_verified.get("dual_agent_html", "")
-            if _dual_verified.get("has_specialized_override") and _dual_verified.get("verified_headline"):
-                # Đồng bộ ngược vào _omniscient_res['data'] để Hộp Online, Hộp Offline, Hộp Nghiệm Chứng và 7 Mắt Xích khớp 100%
+            if isinstance(_dual_verified.get("verified_pct"), int):
+                weighted_pct = int(_dual_verified["verified_pct"])
+                if isinstance(offline_analysis_data, dict):
+                    offline_analysis_data['weighted_pct'] = weighted_pct
+            if _dual_verified.get("verified_headline"):
+                # V144.0: Đồng bộ ngược toàn diện vào _omniscient_res['data'] để Hộp Online, Hộp Offline, Hộp Nghiệm Chứng và 7 Mắt Xích khớp 100%
                 if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict):
                     _omniscient_res['data']['binary_verdict_headline'] = _dual_verified['verified_headline']
                     _omniscient_res['data']['binary_why_reasons'] = _dual_verified.get('verified_why') or _omniscient_res['data'].get('binary_why_reasons', '')
                     _omniscient_res['data']['binary_when_note'] = _dual_verified.get('verified_when') or _omniscient_res['data'].get('binary_when_note', '')
                     _omniscient_res['data']['binary_action_advice'] = _dual_verified.get('verified_advice') or _omniscient_res['data'].get('binary_action_advice', '')
-                    if _dual_verified.get('is_strict_override', True):
-                        _omniscient_res['data']['is_binary_factual_q'] = True
+                    _omniscient_res['data']['is_binary_factual_q'] = True
                     _omniscient_res['data']['dual_ai_verified_override'] = True
                 # Xây dựng lại _narrative_main và Vị trí 1 của 7 Mắt Xích khi có câu hỏi ghép / đối chứng 2 phương án
                 try:
@@ -16624,7 +16655,7 @@ class FreeAIHelper:
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V143.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V144.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_holo_html
@@ -18180,7 +18211,7 @@ class FreeAIHelper:
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V143.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V144.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_holo_fb

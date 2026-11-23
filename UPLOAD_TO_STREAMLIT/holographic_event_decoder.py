@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V143.0
+holographic_event_decoder.py — V144.0
 BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
@@ -732,7 +732,13 @@ def build_holographic_prophecy_reading(
     qt_info = ly_res.get("quai_than") or {}
     tt_info = ly_res.get("the_than") or {}
     if qt_info:
-        tt_str = f" · <b>Thế Thân an tại Hào {tt_info.get('hao','')} ({tt_info.get('chi','')})</b>" if tt_info else ""
+        _tt_hao = int(tt_info.get("hao") or 0) if isinstance(tt_info, dict) else 0
+        _tt_chi = str((tt_info.get("chi") if isinstance(tt_info, dict) else "") or (lines[_tt_hao - 1].get("chi", "") if 1 <= _tt_hao <= len(lines) else "")).strip()
+        tt_str = (
+            f" · <b>Thế Thân an tại Hào {_tt_hao}{f' ({_tt_chi})' if _tt_chi else ''}</b>"
+            if _tt_hao
+            else ""
+        )
         if qt_info.get("is_present"):
             past_traces.append(
                 f"<b>Quái Thân ({qt_info.get('chi','')}-{qt_info.get('luc_than','')}) đã hiện rõ trên quẻ{tt_str}:</b> Sự việc bạn hỏi đã có hình hài thực tế rõ ràng ({qt_info.get('meaning','')})."
@@ -948,7 +954,16 @@ def build_holographic_prophecy_reading(
     if tam_hop_list or xh_trans:
         cuc_parts = []
         if tam_hop_list:
-            cuc_parts.append("Tam Hợp Cục: " + "; ".join(str(c.get("desc") or c) if isinstance(c, dict) else str(c) for c in tam_hop_list))
+            def _fmt_th_cuc(c_obj: Any) -> str:
+                if not isinstance(c_obj, dict):
+                    return str(c_obj)
+                if c_obj.get("desc"):
+                    return str(c_obj["desc"])
+                lbl = str(c_obj.get("label") or "")
+                lt_c = str(c_obj.get("luc_than") or "")
+                el_c = str(c_obj.get("element") or "")
+                return f"{lbl} ({lt_c} hành {el_c})".strip(" ()")
+            cuc_parts.append("Tam Hợp Cục: " + "; ".join(_fmt_th_cuc(c) for c in tam_hop_list))
         if xh_trans:
             cuc_parts.append(f"Biến thái Lục Xung/Lục Hợp: {xh_trans}")
         future_steps.append(f"<b>Kết Cấu Toàn Quẻ Lục Hào:</b> {' · '.join(cuc_parts)}.")
@@ -1088,7 +1103,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V143.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V144.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -1116,7 +1131,7 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V143.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V144.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
@@ -1641,7 +1656,7 @@ def build_four_pillar_prophecy(
     question: str = "",
 ) -> Dict[str, Any]:
     """
-    V143.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    V144.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
     1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
     2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
     3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)
@@ -1659,11 +1674,20 @@ def build_four_pillar_prophecy(
     the_ln = lines[the_pos - 1] if 1 <= the_pos <= len(lines) else {}
     ung_ln = lines[ung_pos - 1] if 1 <= ung_pos <= len(lines) else {}
 
-    dt_lt = str(dt_ln.get("luc_than") or dung_than)
-    dt_chi = str(dt_ln.get("chi") or "Dần")
-    dt_el = str(dt_ln.get("ngu_hanh") or CHI_EL.get(dt_chi, "Mộc"))
+    dt_phuc: Dict[str, Any] = ly_res.get("dt_phuc_obj") if isinstance(ly_res.get("dt_phuc_obj"), dict) else {}
+    phi_lt = str(dt_ln.get("luc_than") or "")
+    phi_chi = str(dt_ln.get("chi") or "")
+    if dt_phuc and dt_phuc.get("chi"):
+        dt_lt = str(dt_phuc.get("luc_than") or dung_than)
+        dt_chi = str(dt_phuc.get("chi") or "Dần")
+        dt_el = str(dt_phuc.get("ngu_hanh") or dt_phuc.get("element") or CHI_EL.get(dt_chi, "Mộc"))
+        dt_vs = str(dt_phuc.get("vuong_suy") or "Phục Tàng")
+    else:
+        dt_lt = str(dt_ln.get("luc_than") or dung_than)
+        dt_chi = str(dt_ln.get("chi") or "Dần")
+        dt_el = str(dt_ln.get("ngu_hanh") or CHI_EL.get(dt_chi, "Mộc"))
+        dt_vs = str(dt_ln.get("vuong_suy") or "Bình")
     dt_thu = str(dt_ln.get("luc_thu") or "Thanh Long")
-    dt_vs = str(dt_ln.get("vuong_suy") or "Bình")
     dt_nap_am = str(dt_ln.get("nap_am") or "")
     h_flags = set(dt_ln.get("hoa_flags") or [])
     the_el = str(the_ln.get("ngu_hanh") or "Thổ")
@@ -1787,7 +1811,18 @@ def build_four_pillar_prophecy(
     real_events: List[str] = []
 
     # 1a. Giải nghĩa trạng thái trực diện của chính Dụng Thần ra sự kiện thực tế
-    if dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
+    if dt_phuc and dt_phuc.get("chi"):
+        if domain == "LOST_THEFT":
+            real_events.append(
+                f"Vật thất lạc ({dt_lt} {dt_chi} hành {dt_el}) đang ẩn phục (Phục Thần) ngay dưới Hào {dt_idx} {phi_lt} ({phi_chi}) — "
+                f"đồ chưa mất hẳn mà đang bị giấy tờ, quần áo hoặc vật dụng khác che khuất đè lên trên"
+            )
+        else:
+            real_events.append(
+                f"Mục tiêu chính ({dt_lt} {dt_chi} hành {dt_el}) hiện đang ẩn phục (Phục Thần) dưới Hào {dt_idx} {phi_lt} ({phi_chi}) — "
+                f"cơ hội/nguồn lực nằm tiềm ẩn bên trong, cần qua ngày Xuất Lộ ({dt_chi}) hoặc Xung Phi mới hiện rõ ra ngoài"
+            )
+    elif dt_ln.get("is_void") or "HOA_KHONG" in h_flags:
         _void_ev_map = {
             "BIZ_INVEST": f"Thương vụ/kế hoạch mở bán hiện mới đẹp trên tính toán bề mặt, dòng thu thực chất hoặc cam kết khách/đối tác còn bỏ ngỏ ('{dt_lt} {dt_chi} vướng Không Vong' — nếu dốc vốn ngay lúc này sẽ hụt doanh thu kỳ đầu, phải qua mốc Xuất Không mới tụ tiền thật)",
             "WORK_CAREER": f"Đề xuất công việc/vị trí hoặc lời hứa từ cấp trên hiện chưa ra quyết định chính thức ('{dt_lt} {dt_chi} vướng Không Vong' — hồ sơ/chỉ tiêu còn treo tạm thời chờ ngày Xuất Không mới chốt)",
@@ -1824,7 +1859,10 @@ def build_four_pillar_prophecy(
             else:
                 real_events.append(f"Xuất hiện yếu tố hao phí tiền bạc hoặc người ngang vai xen vào chia lực [{a_act_lbl}]")
         elif a_lt == "Quan Quỷ":
-            if a_thu == "Chu Tước":
+            _a_hf_set = set(aln.get("hoa_flags") or [])
+            if dung_than == "Quan Quỷ" and domain in ("WORK_CAREER", "STUDY_EXAM") and not (_a_hf_set & {"HOI_DAU_KHAC", "HOA_THOAI", "HOA_KHONG", "HOA_NGUYET_PHA"}):
+                real_events.append(f"Tín hiệu danh vị / kết quả xét duyệt phát động tích cực: cấp trên hoặc hội đồng chấm duyệt bắt đầu mở cơ hội ghi nhận năng lực [{a_act_lbl}]")
+            elif a_thu == "Chu Tước":
                 real_events.append(f"Xảy ra cuộc trao đổi căng thẳng, rà soát giấy tờ/quy chế hoặc tranh luận đúng–sai trực diện cần giữ bình tĩnh lời nói [{a_act_lbl}]")
             elif a_thu == "Bạch Hổ":
                 real_events.append(f"Có áp lực tiến độ gấp gáp, kiểm tra kỷ luật gắt gao hoặc cần chú ý an toàn đi lại & sức khỏe cơ thể [{a_act_lbl}]")

@@ -285,8 +285,8 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay=None, chi_ng
     _min_lh = kwargs.get("minute", 0)
     _sec_lh = kwargs.get("second", 0)
     _salt_lh = kwargs.get("cast_salt", 0)
-    _up_ov_lh = kwargs.get("upper_override", None)
-    _lo_ov_lh = kwargs.get("lower_override", None)
+    _up_ov_lh = kwargs.get("upper_override", kwargs.get("upper_idx", None))
+    _lo_ov_lh = kwargs.get("lower_override", kwargs.get("lower_idx", None))
     _mv_ov_lh = kwargs.get("moving_override", None)
     _up_off_lh, _lo_off_lh, _dong_off_lh = 0, 0, 0
     if _q_txt_lh or _min_lh or _sec_lh or _salt_lh:
@@ -313,7 +313,7 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay=None, chi_ng
     }
 
     _coin_throws = kwargs.get("coin_throws", None)
-    _mv_list_ov = kwargs.get("moving_list_override", None)
+    _mv_list_ov = kwargs.get("moving_list_override", kwargs.get("manual_dong_list", None))
 
     if isinstance(_coin_throws, (list, tuple)) and len(_coin_throws) == 6 and all(x in (6, 7, 8, 9) for x in _coin_throws):
         hao_results = [int(x) for x in _coin_throws]
@@ -830,8 +830,8 @@ def lap_qua_luc_hao(year, month, day, hour, topic="Chung", can_ngay=None, chi_ng
         pass
 
     return {
-        'ban': {'name': ban_name, 'lines': ban_lines, 'details': details_ban, 'haos': details_ban, 'palace': palace},
-        'bien': {'name': bien_name, 'lines': bien_lines, 'details': details_bien, 'haos': details_bien},
+        'ban': {'name': ban_name, 'upper': up_b1, 'lower': lo_b1, 'lines': ban_lines, 'details': details_ban, 'haos': details_ban, 'palace': palace},
+        'bien': {'name': bien_name, 'upper': up_b2, 'lower': lo_b2, 'lines': bien_lines, 'details': details_bien, 'haos': details_bien},
         'dong_hao': dong_list,
         'hao_results': hao_results,
         'phuc_than': phuc_than_list,
