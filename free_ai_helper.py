@@ -13214,7 +13214,7 @@ class FreeAIHelper:
             except Exception as e:
                 self.log_step("V110.0 AutoCast", "LH_ERR", str(e)[:60])
 
-        # V144.0: Đồng bộ tuyệt đối Mai Hoa với Lục Hào khi cả hai cùng được truyền vào (chống triệt để lỗi 2 quẻ lệch nhau trên cùng 1 lần luận!)
+        # V145.0: Đồng bộ tuyệt đối Mai Hoa với Lục Hào khi cả hai cùng được truyền vào (chống triệt để lỗi 2 quẻ lệch nhau trên cùng 1 lần luận!)
         if isinstance(luc_hao_data, dict) and isinstance(mai_hoa_data, dict) and not mai_hoa_data.get('_independent_meihua'):
             _lh_b_sync = luc_hao_data.get('ban') or {}
             _lh_bi_sync = luc_hao_data.get('bien') or {}
@@ -16313,7 +16313,7 @@ class FreeAIHelper:
                 if isinstance(offline_analysis_data, dict):
                     offline_analysis_data['weighted_pct'] = weighted_pct
             if _dual_verified.get("verified_headline"):
-                # V144.0: Đồng bộ ngược toàn diện vào _omniscient_res['data'] để Hộp Online, Hộp Offline, Hộp Nghiệm Chứng và 7 Mắt Xích khớp 100%
+                # V145.0: Đồng bộ ngược toàn diện vào _omniscient_res['data'] để Hộp Online, Hộp Offline, Hộp Nghiệm Chứng và 7 Mắt Xích khớp 100%
                 if '_omniscient_res' in locals() and isinstance(_omniscient_res, dict) and isinstance(_omniscient_res.get('data'), dict):
                     _omniscient_res['data']['binary_verdict_headline'] = _dual_verified['verified_headline']
                     _omniscient_res['data']['binary_why_reasons'] = _dual_verified.get('verified_why') or _omniscient_res['data'].get('binary_why_reasons', '')
@@ -16655,7 +16655,7 @@ class FreeAIHelper:
             final_parts.insert(
                 0,
                 f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V144.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V145.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                 f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_online_verdict_line}</div>'
                 + _online_prose_html
                 + _dv_holo_html
@@ -18211,7 +18211,7 @@ class FreeAIHelper:
                     final_parts.insert(
                         0,
                         f'<div style="background:linear-gradient(135deg,#451a03,#78350f);padding:16px 20px;border-radius:16px;margin:4px 0 10px 0;border:2.5px solid #f59e0b;box-shadow:0 4px 22px rgba(245,158,11,0.35);">'
-                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V144.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
+                        f'<div style="font-size:1.0em;font-weight:900;color:#fde68a;margin-bottom:8px;">🏆 KẾT LUẬN & ĐỌC VỊ 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO NGAY ĐẦU TRANG (V145.0 — Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm)</div>'
                         f'<div style="padding:12px 16px;background:rgba(0,0,0,0.45);border-radius:12px;border:1.5px solid rgba(251,191,36,0.75);font-size:1.28em;font-weight:900;color:#ffffff;line-height:1.38;">📢 {_fb_hl}</div>'
                         + _fb_cards_html
                         + _dv_holo_fb

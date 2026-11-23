@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-holographic_event_decoder.py — V144.0
+holographic_event_decoder.py — V145.0
 BỘ ĐỘNG CƠ ĐỌC VỊ TIÊN TRI 4 TRỤ CỘT & TOÀN TỨC 12 TẦNG CHỐNG LUẬN ẢO (MASTER PROPHET CONCRETE DEDUCTION ENGINE)
 
 Tổng hợp tinh hoa đọc chi tiết sự kiện (断细节 · 全息读象 · 来意近事断验) từ:
@@ -1103,7 +1103,7 @@ def build_holographic_prophecy_reading(
     holographic_html = (
         f'<div style="margin-top:11px;padding:12px 15px;background:linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,27,75,0.92));border-radius:12px;border:1.5px solid rgba(56,189,248,0.65);box-shadow:0 3px 14px rgba(14,165,233,0.18);">'
         f'<div style="font-size:0.95em;font-weight:900;color:#7dd3fc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-bottom:1px solid rgba(56,189,248,0.28);padding-bottom:5px;">'
-        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V144.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
+        f'<span>🔮 ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC TỪ 100% YẾU TỐ QUẺ (V145.0 — KHÔNG BỎ SÓT DẤU HIỆU NÀO · CHỐNG LUẬN ẢO)</span>'
         f'<span style="font-size:0.78em;color:#fde68a;background:rgba(251,191,36,0.14);padding:2px 8px;border-radius:999px;border:1px solid rgba(251,191,36,0.4);">Lục Hào · Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:9px;font-size:0.87em;color:#f1f5f9;">'
@@ -1131,7 +1131,7 @@ def build_holographic_prophecy_reading(
     )
 
     clean_prompt_lines = [
-        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V144.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
+        "=== HỒ SƠ ĐỌC VỊ CHI TIẾT SỰ KIỆN TOÀN TỨC 12 TẦNG (V145.0 — BẮT BUỘC DÙNG ĐỂ TIÊN ĐOÁN CHI TIẾT NHƯ ĐẠI TIÊN TRI, KHÔNG BỎ SÓT 1 YẾU TỐ NÀO, CẤM LUẬN ẢO) ===",
         "1. [DẤU VẾT QUÁ KHỨ & LAI Ý]: " + " | ".join(_strip_tags(x) for x in past_traces),
         "2. [HIỆN TRẠNG · GIAN HÀO TRUNG GIAN · QUÂN VỊ HÀO 5 · PHI–PHỤC · NỘI/NGOẠI BÀN · ÁM CAN · TỨ HẠI · ÁM ĐỘNG]: " + " | ".join(_strip_tags(x) for x in present_undercurrents),
         "3. [CHÂN DUNG NGƯỜI/VẬT · NẠP ÂM · 12 TRƯỜNG SINH · THẬP CAN KHẮC ỨNG · 64 SONG QUÁI]: " + " | ".join(_strip_tags(x) for x in portrait_items),
@@ -1656,7 +1656,7 @@ def build_four_pillar_prophecy(
     question: str = "",
 ) -> Dict[str, Any]:
     """
-    V144.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
+    V145.0 MASTER PROPHET 4-PILLAR ENGINE (100% GROUNDED IN REAL CHART MECHANICS — ZERO HALLUCINATION):
     1. SỰ VIỆC GÌ XẢY RA (Concrete Real-Life Event Narrative + Classical Score Proof)
     2. LIÊN QUAN ĐẾN CÁI GÌ & AI (Concrete Objects/Money/Documents/Places + Specific Person Profile)
     3. NGÀY – GIỜ – THÁNG – NĂM XẢY RA (Astronomical Solar/Lunar/Can-Chi Dates + Bệnh-Dược Proof)
@@ -1783,7 +1783,9 @@ def build_four_pillar_prophecy(
         }
 
     # ── PHÂN LOẠI MIỀN ĐỜI SỐNG CỦA CÂU HỎI ──
-    if any(w in q_low for w in ("mở quán", "cà phê", "cửa hàng", "shop", "kinh doanh", "buôn bán", "nhập hàng", "đầu tư", "khởi nghiệp", "hùn vốn", "chứng khoán", "cổ phiếu", "lướt sóng")):
+    if any(w in q_low for w in ("buồn hay", "vui hay", "hay buồn", "hay vui", "đang buồn", "buồn cái gì", "buồn chuyện gì", "tâm trạng", "lo cái gì", "lo chuyện gì", "giận chuyện gì", "giận cái gì", "giận tôi vì", "nặng lòng", "bất an", "mất ngủ", "chán nản", "trăn trở", "vướng mắc cái gì")) and not any(w in q_low for w in ("nhạc gì", "nghe nhạc", "bài hát")):
+        domain = "MOOD_PSYCHOLOGY"
+    elif any(w in q_low for w in ("mở quán", "cà phê", "cửa hàng", "shop", "kinh doanh", "buôn bán", "nhập hàng", "đầu tư", "khởi nghiệp", "hùn vốn", "chứng khoán", "cổ phiếu", "lướt sóng")):
         domain = "BIZ_INVEST"
     elif any(w in q_low for w in ("công việc", "sự nghiệp", "đi làm", "cơ quan", "công ty", "sếp", "thăng chức", "nhảy việc", "nghỉ việc", "xin việc", "ứng tuyển", "lương")):
         domain = "WORK_CAREER"
@@ -1903,7 +1905,22 @@ def build_four_pillar_prophecy(
     )
 
     # ── TRỤ CỘT 2: LIÊN QUAN ĐẾN CÁI GÌ & AI (ĐỊNH VỊ ĐÚNG MIỀN CÂU HỎI — CHỐNG RÂU ÔNG NỌ CẮM CẰM BÀ KIA!) ──
-    if domain == "HEALTH_BODY":
+    if domain == "MOOD_PSYCHOLOGY":
+        if ly_res.get("ban_is_du_hon"):
+            real_events.insert(0, f"Quẻ Chủ {ban_name} là Quẻ Du Hồn ('Du Hồn tâm thần bất định') — tâm trí đang suy nghĩ miên man, bề ngoài cố giữ bình tĩnh nhưng trong lòng bồn chồn chưa yên")
+        _mover_att_m = next(
+            (ln for ln in active_lines if int(ln.get("hao") or 0) != the_pos and KHAC_EL.get(str(ln.get("ngu_hanh") or "")) == the_el),
+            None,
+        )
+        _ref_lt_m = str((_mover_att_m or the_ln).get("luc_than") or dt_lt)
+        thing_core = {
+            "Huynh Đệ": "áp lực hao hụt tiền bạc – chi tiêu cá nhân (Huynh Đệ kiếp Tài) kèm nỗi ấm ức, thất vọng trong cách cư xử của bạn bè / người thân quen",
+            "Thê Tài": "nỗi lo thu nhập – tài chính cá nhân chưa đạt kỳ vọng hoặc chuyện tình cảm gia đình / người thương đang có khoảng cách",
+            "Quan Quỷ": "áp lực công việc – trách nhiệm đè nặng tinh thần, lời ăn tiếng nói bất đồng hoặc nỗi trăn trở tình cảm riêng tư khó giãi bày",
+            "Phụ Mẫu": "gánh nặng lo toan việc gia đình, cha mẹ/người lớn tuổi, chuyện nhà cửa chỗ ở hoặc công việc giấy tờ vất vả một mình gánh vác",
+            "Tử Tôn": "nỗi bận tâm về chuyện con cái, hậu bối hoặc cảm giác bí bách, thiếu sự thảnh thơi tự do trong cuộc sống",
+        }.get(_ref_lt_m, "chuyện tiền bạc chi tiêu cá nhân và mối quan hệ tình cảm gần gũi")
+    elif domain == "HEALTH_BODY":
         thing_core = "chứng bệnh cơ thể đang gặp, phác đồ thuốc điều trị (Tử Tôn) và chế độ ăn uống – nghỉ ngơi phục hồi nguyên khí"
     elif domain == "FAMILY_HOME":
         thing_core = {
@@ -1915,6 +1932,14 @@ def build_four_pillar_prophecy(
         }.get(dt_lt, "nếp sinh hoạt, nhà cửa và sự bình an của các thành viên trong gia đình")
     elif domain == "LOVE_MARRIAGE":
         thing_core = "sự gắn kết tình cảm đôi lứa, cuộc trò chuyện/gặp gỡ trực tiếp và cam kết tương lai giữa hai người"
+    elif domain == "GENERAL" and dung_than == "Bản Thân":
+        thing_core = {
+            "Phụ Mẫu": "công việc giấy tờ, nhà cửa chỗ ở hoặc trách nhiệm chăm lo gia đình",
+            "Thê Tài": "tài chính chi tiêu cá nhân, nguồn thu nhập thực tế hoặc chuyện tình cảm đời sống",
+            "Quan Quỷ": "áp lực công việc, uy tín cá nhân hoặc vấn đề sức khỏe – tâm lý",
+            "Huynh Đệ": "quan hệ bạn bè – đồng nghiệp – anh chị em và các khoản chi tiêu phát sinh",
+            "Tử Tôn": "sự bình an tinh thần, niềm vui cuộc sống hoặc chuyện con cái",
+        }.get(dt_lt, "kế hoạch và đời sống cá nhân")
     else:
         _LT_CONCRETE_THINGS = {
             "Phụ Mẫu": "hợp đồng văn bản, giấy phép/hồ sơ pháp lý, mặt bằng nhà đất/cửa hàng hoặc phương tiện xe cộ",
@@ -1982,6 +2007,22 @@ def build_four_pillar_prophecy(
             "Huynh Đệ": "bạn bè xung quanh hoặc người gây xao nhãng mối quan hệ",
             "Tử Tôn": "người bạn hòa giải giúp kết nối lại cảm xúc tự nhiên",
         }
+    elif domain == "MOOD_PSYCHOLOGY":
+        _KP_ROLE_BY_LT = {
+            "Quan Quỷ": (
+                "người chồng / bạn trai, cấp trên hoặc người đang tạo sức ép tâm lý trực tiếp lên bạn"
+                if kp_gender == "Nam giới"
+                else "cấp trên / quản lý hoặc người đang tạo sức ép tâm lý trực tiếp lên bạn"
+            ),
+            "Thê Tài": (
+                "người vợ / bạn gái hoặc người phụ nữ liên quan trực tiếp đến chuyện tiền bạc – tình cảm của bạn"
+                if kp_gender == "Nữ giới"
+                else "người nắm giữ tài chính, đối tác hoặc người thân liên quan trực tiếp đến chuyện tiền bạc của bạn"
+            ),
+            "Phụ Mẫu": "bậc cha mẹ / người lớn tuổi trong gia đình làm bạn bận lòng lo nghĩ",
+            "Huynh Đệ": "bạn bè, anh chị em hoặc người quen ngang vai đang làm bạn ấm ức / hao tổn tiền bạc",
+            "Tử Tôn": "con cái / hậu bối hoặc người bạn tri kỷ giúp bạn giải tỏa nỗi buồn",
+        }
     else:
         _KP_ROLE_BY_LT = {
             "Quan Quỷ": "cấp trên, người quản lý/xét duyệt, cơ quan chức năng hoặc người nắm quyền quyết định",
@@ -2030,7 +2071,16 @@ def build_four_pillar_prophecy(
     ng_el = next((k for k, v in SINH_EL.items() if v == dt_el), "Thủy")
 
     # Bước 1: Giải pháp vận hành thực tế trị đúng Bệnh của quẻ
-    if domain == "HEALTH_BODY":
+    if domain == "MOOD_PSYCHOLOGY":
+        step1_act = (
+            f"<b>Giải Tỏa Tâm Tư & Tháo Gỡ Đúng Nút Thắt Gốc:</b> "
+            + (
+                f"Đừng cố kìm nén một mình trong trạng thái bồn chồn ({ban_name} ➔ {bien_name}); hãy tạm gác việc tự dằn vặt, tách bạch rõ phần <i>{thing_core}</i> để xử lý từng việc nhỏ thay vì ôm đồm cùng lúc, tâm cảnh sẽ nhẹ hẳn từ mốc <b>{ymdh['short_inline_date'].split('[')[0].strip()}</b>"
+                if comp_sc < 52
+                else f"Tâm thế của bạn hiện đang sáng rõ và cân bằng ({comp_sc}/100) — hãy duy trì nhịp sống thư thái, dành năng lượng tích cực chăm sóc bản thân và gia đình"
+            )
+        )
+    elif domain == "HEALTH_BODY":
         step1_act = (
             f"<b>Phác đồ Chăm sóc & Điều trị Đúng Gốc:</b> "
             + (

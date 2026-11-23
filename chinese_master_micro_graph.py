@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V144.0)
+CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V145.0)
 =================================================================
 Đối chuẩn toàn diện theo các nền tảng phân tích quẻ chuyên sâu hàng đầu Trung Quốc:
 1. Nguyên Hanh Lợi Trinh (元亨利贞网 china95.net) — Lục Hào 4 Tầng Tác Động Tuyến Lộ Đồ, Quái Thân, Thế Thân, 12 Thần Sát, Tam Hình/Lục Hại/Lục Phá.
@@ -972,6 +972,19 @@ def analyze_liuyao_exhaustive_micro_graph(
 
     flowchart_html = _build_lh_flowchart()
 
+    _DU_HON_8 = {
+        "Hỏa Địa Tấn", "Thủy Thiên Nhu", "Sơn Lôi Di", "Lôi Sơn Tiểu Quá",
+        "Trạch Hỏa Cách", "Phong Thủy Hoán", "Địa Hỏa Minh Di", "Thiên Thủy Tụng",
+    }
+    _QUY_HON_8 = {
+        "Hỏa Thiên Đại Hữu", "Thủy Địa Tỷ", "Sơn Phong Cổ", "Lôi Trạch Quy Muội",
+        "Trạch Lôi Tùy", "Phong Sơn Tiệm", "Địa Thủy Sư", "Thiên Hỏa Đồng Nhân",
+    }
+    ban_is_du_hon = ban_name in _DU_HON_8
+    ban_is_quy_hon = ban_name in _QUY_HON_8
+    bien_is_du_hon = bien_name in _DU_HON_8
+    bien_is_quy_hon = bien_name in _QUY_HON_8
+
     return {
         "ban_name": ban_name,
         "bien_name": bien_name,
@@ -987,6 +1000,10 @@ def analyze_liuyao_exhaustive_micro_graph(
         "ban_is_luc_hop": bool(lh.get("ban_is_luc_hop")),
         "bien_is_luc_xung": bool(lh.get("bien_is_luc_xung")),
         "bien_is_luc_hop": bool(lh.get("bien_is_luc_hop")),
+        "ban_is_du_hon": ban_is_du_hon,
+        "ban_is_quy_hon": ban_is_quy_hon,
+        "bien_is_du_hon": bien_is_du_hon,
+        "bien_is_quy_hon": bien_is_quy_hon,
         "xung_hop_transition": str(lh.get("xung_hop_transition") or ""),
         "quai_bien_rel": str(lh.get("quai_bien_rel") or ""),
         "tam_hop_cuc": list(lh.get("tam_hop_cuc") or []),
@@ -1729,7 +1746,7 @@ def _extract_multi_options_classical(question: str, option_a: str = "", option_b
     if not raw_q and not (option_a and option_b):
         return []
     if re.search(
-        r"\b(tại\s+sao|vì\s+sao|nguyên\s+nhân|do\s+đâu|ý\s+đồ\s+gì|mưu\s+đồ\s+gì|tâm\s+ý\s+gì|nghĩ\s+gì|có\s+ý\s+gì|thái\s+độ\s+gì|đá\s+với|đấu\s+với|đội\s+nào\s+thắng)\b"
+        r"\b(tại\s+sao|vì\s+sao|nguyên\s+nhân|do\s+đâu|ý\s+đồ\s+gì|mưu\s+đồ\s+gì|tâm\s+ý\s+gì|nghĩ\s+gì|có\s+ý\s+gì|thái\s+độ\s+gì|đá\s+với|đấu\s+với|đội\s+nào\s+thắng|nếu\s+\S+\s+thì|còn\s+nếu|giả\s+sử)\b"
         r"|\b(?:tôi|mình|con|vợ|chồng|dạo\s+này|gần\s+đây)\s+hay\s+(?:gặp|bị|mất|ốm|đau|quên|mơ|lo|cãi|xui)\b",
         raw_q,
         flags=re.IGNORECASE,
@@ -1748,6 +1765,10 @@ def _extract_multi_options_classical(question: str, option_a: str = "", option_b
             "tìm thấy hay", "thuận hay nghịch",
             "thật hay giả", "giả hay thật", "thật hay nói dối", "nói dối hay thật",
             "rồi hay chưa", "chưa hay rồi", "mưa hay nắng", "nắng hay mưa",
+            "buồn hay vui", "vui hay buồn", "buồn hay đ", "vui hay đ",
+            "vui vẻ hay", "buồn bã hay", "lo hay yên tâm", "yên tâm hay lo",
+            "giận hay", "hết giận hay", "hạnh phúc hay", "cô đơn hay",
+            "thương hay ghét", "ghét hay thương",
         )
     ):
         return []
@@ -2777,7 +2798,7 @@ def synthesize_deep_classical_verdict(
         benh_quai = f"Dụng Thần ({dt_chi}) hữu khí nhưng đang An Tĩnh ('Tĩnh nhi phùng Xung tắc động')"
         duoc_ung_ky = f"Ứng nghiệm vào Ngày/Giờ XUNG ĐỘNG {xung_dt} ({CHI_CLOCK.get(xung_dt,'')}) hoặc trực {dt_chi} ({CHI_CLOCK.get(dt_chi,'')})"
 
-    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V144.0) ──
+    # ── TÂM PHÁP 6: CHUYÊN PHÁP ĐẶC THÙ & 4 TRỤ CỘT TIÊN TRI CHỐNG LUẬN ẢO (V145.0) ──
     special_mode = "STANDARD"
     verdict_polarity = "POSITIVE" if composite_score >= 55 else ("NEUTRAL" if composite_score >= 45 else "NEGATIVE")
     direct_headline = ""
@@ -3035,17 +3056,49 @@ def synthesize_deep_classical_verdict(
         _YANG_TRIGS = {"Càn", "Chấn", "Khảm", "Cấn"}
 
         _is_who_q = is_theft_q or bool(re.search(r"\b(ai\s+lấy|ai\s+cầm|ai\s+ăn\s+cắp|ai\s+giúp|ai\s+đang|ai\s+nói|ai\s+hại|ai\s+cản|là\s+ai|người\s+nào)\b", q_low))
-        _is_motive_q = any(w in q_low for w in ("ý đồ gì", "mưu đồ gì", "tâm ý gì", "nghĩ gì về", "đang nghĩ gì", "có ý gì", "thái độ gì", "thật lòng với tôi"))
-        _is_why_cause_q = any(w in q_low for w in ("tại sao", "vì sao", "nguyên nhân gì", "do đâu mà"))
+        _explicit_emotion_why = any(
+            w in q_low
+            for w in (
+                "buồn hay", "vui hay", "hay buồn", "hay vui", "buồn cái gì", "buồn chuyện gì", "buồn vì",
+                "vui vì", "lo cái gì", "lo chuyện gì", "lo lắng chuyện gì", "giận chuyện gì", "giận cái gì",
+                "giận tôi vì", "giận nhau vì", "vướng mắc cái gì", "trong lòng đang",
+            )
+        )
+        _is_mood_cause_q = (
+            _explicit_emotion_why
+            or (
+                any(w in q_low for w in ("đang buồn", "tâm trạng", "đang giận", "nặng lòng", "bất an", "mất ngủ", "chán nản", "trăn trở"))
+                and not any(w in q_low for w in ("làm lành", "hàn gắn", "quay lại", "chia tay", "ly hôn", "cưới"))
+            )
+        ) and not any(w in q_low for w in ("nhạc gì", "nghe nhạc", "bài hát"))
+        _is_motive_q = (not _is_mood_cause_q) and any(w in q_low for w in ("ý đồ gì", "mưu đồ gì", "tâm ý gì", "nghĩ gì về", "đang nghĩ gì", "có ý gì", "thái độ gì", "thật lòng với tôi"))
+        _is_why_cause_q = (
+            (not _is_mood_cause_q)
+            and (not re.search(r"\bnếu\s+", q_low))
+            and any(w in q_low for w in ("tại sao", "vì sao", "nguyên nhân gì", "nguyên nhân", "do đâu", "vướng ở đâu", "vướng cái gì", "sai ở đâu", "sai cái gì", "vấn đề gì", "vấn đề cái gì"))
+        )
         _is_how_remedy_q = any(w in q_low for w in ("làm cách nào", "cách nào để", "làm sao để hóa giải", "cách hóa giải", "phương pháp hóa giải"))
         _is_which_dir_q = any(w in q_low for w in ("hướng nào", "phương nào", "quay hướng gì", "chạy đi lạc hướng"))
+        _ABSTRACT_WHERE_KW = (
+            "vướng ở đâu", "sai ở đâu", "thiếu ở đâu", "lỗi ở đâu", "khó ở đâu",
+            "tắc ở đâu", "nghẽn ở đâu", "hỏng ở đâu", "kẹt ở đâu", "yếu ở đâu", "thua ở đâu",
+        )
         _is_where_doing_q = (
             any(w in q_low for w in ("ở đâu", "chỗ nào", "nơi nào", "đang làm gì", "làm gì lúc này"))
-            and not is_lost_q and not _is_which_dir_q
+            and not any(aw in q_low for aw in _ABSTRACT_WHERE_KW)
+            and not is_lost_q and not _is_which_dir_q and not _is_why_cause_q
+        )
+        _NON_PHYSICAL_WHAT_KW = (
+            "buồn", "vui", "lo", "sợ", "giận", "nghĩ", "tâm", "bệnh", "đau", "ốm",
+            "vướng", "sai", "lỗi", "chuyện", "việc", "vấn đề", "khó khăn", "rắc rối",
+            "thiếu", "cãi", "mâu thuẫn", "nguyên nhân", "tại sao", "vì sao", "nếu ",
         )
         _is_what_obj_q = (
-            any(w in q_low for w in ("cái gì", "vật gì", "đồ vật gì", "thứ gì", "trong hộp", "trên bàn", "trước mặt tôi", "cầm cái gì"))
-            and not is_lost_q and not _is_motive_q
+            (
+                any(w in q_low for w in ("đồ vật gì", "vật gì", "trong hộp", "trong túi", "trên bàn", "trước mặt tôi", "cầm cái gì", "đựng cái gì"))
+                or (any(w in q_low for w in ("cái gì", "thứ gì")) and not any(nw in q_low for nw in _NON_PHYSICAL_WHAT_KW))
+            )
+            and not is_lost_q and not _is_motive_q and not _is_mood_cause_q and not _is_why_cause_q
         )
         _is_job_fit_q = any(w in q_low for w in ("nghề gì", "ngành gì", "làm nghề", "kinh doanh gì", "buôn bán gì", "mặt hàng gì", "hợp nghề"))
         _is_event_risk_q = any(
@@ -3080,6 +3133,275 @@ def synthesize_deep_classical_verdict(
                     f"🧭 ĐỊNH VỊ PHƯƠNG HƯỚNG CHÍNH XÁC TỪ QUẺ ({_ban_bien_lbl}): "
                     f"ỨNG TẠI PHƯƠNG «{_huong_tc.upper()}» (Cung {tc} {_quai_tc} · {door_tc}) KẾT HỢP PHƯƠNG ĐỊA CHI DỤNG THẦN «{_chi_dir_lbl.upper()}» (Chi {dt_chi} — {'ở gần khu vực quen' if dt_idx <= 3 else 'đi xa ra ngoài khu vực'})!"
                 )
+        elif _is_mood_cause_q:
+            special_mode = "INNER_MOOD_AND_CAUSE"
+            # 1. Định vị Hào Tâm Chủ (Người đang được hỏi tâm trạng: Bản thân = Hào Thế; Vợ chồng = Thế-Ứng; Vợ = Thê Tài; Chồng/Sếp = Quan Quỷ; Con = Tử Tôn; Cha mẹ = Phụ Mẫu; Người kia = Hào Ứng)
+            if "vợ chồng" in q_low:
+                _mc_ln = the_ln or dt_ln
+                _mc_who = "Hai vợ chồng bạn"
+            elif any(w in q_low for w in ("vợ tôi", "vợ ", "bạn gái")):
+                _mc_ln = next((ln for ln in lines if "Thê Tài" in str(ln.get("luc_than", ""))), ung_ln) or the_ln
+                _mc_who = "Vợ / Bạn gái bạn"
+            elif any(w in q_low for w in ("chồng tôi", "chồng ", "bạn trai")):
+                _mc_ln = next((ln for ln in lines if "Quan Quỷ" in str(ln.get("luc_than", ""))), ung_ln) or the_ln
+                _mc_who = "Chồng / Bạn trai bạn"
+            elif any(w in q_low for w in ("con tôi", "con gái", "con trai", "bé ")):
+                _mc_ln = next((ln for ln in lines if "Tử Tôn" in str(ln.get("luc_than", ""))), dt_ln) or the_ln
+                _mc_who = "Con của bạn"
+            elif any(w in q_low for w in ("bố ", "mẹ ", "cha ", "má ")):
+                _mc_ln = next((ln for ln in lines if "Phụ Mẫu" in str(ln.get("luc_than", ""))), dt_ln) or the_ln
+                _mc_who = "Bố / Mẹ bạn"
+            elif any(w in q_low for w in ("người yêu", "người ấy", "cô ấy", "anh ấy", "họ ")):
+                _mc_ln = ung_ln or the_ln
+                _mc_who = "Người ấy"
+            else:
+                _mc_ln = the_ln or dt_ln
+                _mc_who = "Bạn"
+
+            _mc_hao = int(_mc_ln.get("hao") or the_pos)
+            _mc_lt = str(_mc_ln.get("luc_than") or "Bản Thân")
+            _mc_chi = str(_mc_ln.get("chi") or the_chi)
+            _mc_el = str(_mc_ln.get("ngu_hanh") or the_el)
+            _mc_thu = str(_mc_ln.get("luc_thu") or "Thanh Long")
+            _mc_vs = str(_mc_ln.get("vuong_suy") or "Bình")
+            _mc_void = bool(_mc_ln.get("is_void"))
+            _mc_np = bool(_mc_ln.get("is_nguyet_pha") or _mc_ln.get("is_nhat_pha"))
+            _mc_mo = str(_mc_ln.get("mo_type") or "")
+
+            _HINH_PAIRS_MC = {
+                ("Dần", "Tị"), ("Tị", "Dần"), ("Tị", "Thân"), ("Thân", "Tị"), ("Dần", "Thân"), ("Thân", "Dần"),
+                ("Sửu", "Tuất"), ("Tuất", "Sửu"), ("Tuất", "Mùi"), ("Mùi", "Tuất"), ("Sửu", "Mùi"), ("Mùi", "Sửu"),
+                ("Tý", "Mão"), ("Mão", "Tý"), ("Thìn", "Thìn"), ("Ngọ", "Ngọ"), ("Dậu", "Dậu"), ("Hợi", "Hợi"),
+            }
+            _nhat_hinh_mc = (chi_ngay, _mc_chi) in _HINH_PAIRS_MC
+            _nguyet_hinh_mc = (chi_thang, _mc_chi) in _HINH_PAIRS_MC
+            _nhat_khac_mc = KHAC_EL.get(nhat_el) == _mc_el
+            _nhat_xung_mc = LUC_XUNG.get(chi_ngay) == _mc_chi
+
+            _sad_pts = 18
+            _joy_pts = 18
+            _mood_proofs_sad: List[str] = []
+            _mood_proofs_joy: List[str] = []
+            _attackers_mc: List[Dict[str, Any]] = []
+
+            # Vector 1: Lục Thân & Lục Thú đóng ngay tại Hào Tâm Chủ (Tăng San Bốc Dịch: Tử Tôn trì Thế vô ưu hoan hỷ; Quan Quỷ trì Thế ưu nghi bất giải)
+            if "Tử Tôn" in _mc_lt and not _mc_void and not _mc_np and _mc_vs in ("Vượng", "Tướng", "Bình"):
+                _joy_pts += 28
+                _mood_proofs_joy.append(f"Hào {_mc_hao} Tử Tôn ({_mc_chi}-{_mc_el}) trì tâm ('Tử Tôn vi hoan hỷ phúc thần, vô ưu vô lự')")
+            elif "Quan Quỷ" in _mc_lt:
+                _sad_pts += 26
+                _mood_proofs_sad.append(f"Hào {_mc_hao} Quan Quỷ ({_mc_chi}-{_mc_el}) lâm tâm chủ ('Quan Quỷ trì Thế ưu nghi mãn phúc' — lòng nhiều lo âu trăn trở)")
+            elif "Phụ Mẫu" in _mc_lt:
+                _sad_pts += 14
+                _mood_proofs_sad.append(f"Hào {_mc_hao} Phụ Mẫu ({_mc_chi}-{_mc_el}) lâm tâm chủ ('Phụ Mẫu trì Thế thân tâm lao nhọc, khắc chế Tử Tôn hoan hỷ')")
+
+            if _mc_thu == "Thanh Long" and not _mc_void and not _mc_np and _mc_vs in ("Vượng", "Tướng"):
+                _joy_pts += 15
+                _mood_proofs_joy.append(f"Thanh Long lâm Hào {_mc_hao} đắc vượng khí (tín hiệu hỷ sự/vui vẻ)")
+            elif _mc_thu in ("Đằng Xà", "Bạch Hổ", "Huyền Vũ", "Chu Tước"):
+                _sad_pts += 13
+                _thu_mood_map = {
+                    "Đằng Xà": "tâm tư rối bời, hay suy nghĩ quẩn quanh trằn trọc",
+                    "Bạch Hổ": "áp lực nặng nề, uất ức hoặc mệt mỏi căng thẳng",
+                    "Huyền Vũ": "nỗi buồn thầm kín uẩn khúc giấu trong lòng khó giãi bày",
+                    "Chu Tước": "ấm ức vì lời ăn tiếng nói, tranh luận hoặc hiểu lầm",
+                }
+                _mood_proofs_sad.append(f"{_mc_thu} lâm Hào {_mc_hao} ({_thu_mood_map[_mc_thu]})")
+            elif _mc_thu == "Câu Trần":
+                _sad_pts += 8
+                _mood_proofs_sad.append(f"Câu Trần lâm Hào {_mc_hao} (nỗi vướng bận cũ âm ỉ trong lòng)")
+
+            # Vector 2: Hào Động / Ám Động tác động trực tiếp vào Hào Tâm Chủ
+            for _ln_m in lines:
+                if int(_ln_m.get("hao") or 0) == _mc_hao:
+                    if _ln_m.get("is_moving"):
+                        _hf_m = set(_ln_m.get("hoa_flags") or [])
+                        if _hf_m & {"HOI_DAU_KHAC", "HOA_KHONG", "HOA_NGUYET_PHA", "HOA_THOAI"}:
+                            _sad_pts += 20
+                            _mood_proofs_sad.append(f"Hào {_mc_hao} ({_mc_lt} {_mc_chi}) động hóa xấu ({', '.join(_hf_m)}) gây hụt hẫng tâm lý")
+                        elif _hf_m & {"HOI_DAU_SINH", "HOA_TIEN"}:
+                            _joy_pts += 16
+                            _mood_proofs_joy.append(f"Hào {_mc_hao} ({_mc_lt} {_mc_chi}) động đắc Hồi Đầu Sinh / Tiến Thần mở thông tâm trạng")
+                    continue
+                if not (_ln_m.get("is_moving") or _ln_m.get("is_am_dong")):
+                    continue
+                _m_el = str(_ln_m.get("ngu_hanh") or "")
+                _m_chi = str(_ln_m.get("chi") or "")
+                _m_lt = str(_ln_m.get("luc_than") or "")
+                _m_hao = int(_ln_m.get("hao") or 1)
+                _m_thu = str(_ln_m.get("luc_thu") or "")
+                if KHAC_EL.get(_m_el) == _mc_el or LUC_XUNG.get(_m_chi) == _mc_chi or (_m_chi, _mc_chi) in _HINH_PAIRS_MC:
+                    _sad_pts += 26
+                    _attackers_mc.append(_ln_m)
+                    _rel_act_w = "khắc thẳng" if KHAC_EL.get(_m_el) == _mc_el else ("xung động" if LUC_XUNG.get(_m_chi) == _mc_chi else "tương hình")
+                    _mood_proofs_sad.append(f"Hào {_m_hao} {_m_lt} ({_m_chi}-{_m_el} · {_m_thu}) phát động {_rel_act_w} Hào {_mc_hao} ({_mc_lt} {_mc_chi})")
+                elif SINH_EL.get(_m_el) == _mc_el or LUC_HOP.get(_m_chi, ("", ""))[0] == _mc_chi:
+                    if "Tử Tôn" in _m_lt:
+                        _joy_pts += 24
+                        _mood_proofs_joy.append(f"Hào {_m_hao} Tử Tôn ({_m_chi}-{_m_el}) động sinh/hợp giải ưu cho Hào {_mc_hao}")
+                    else:
+                        _joy_pts += 12
+                        _mood_proofs_joy.append(f"Hào {_m_hao} {_m_lt} ({_m_chi}-{_m_el}) động tương sinh/hợp nâng đỡ Hào {_mc_hao}")
+
+            # Vector 3: Nhật / Nguyệt Hình – Xung – Phá – Khắc – Mộ – Không lên Hào Tâm Chủ
+            if _mc_np:
+                _sad_pts += 22
+                _mood_proofs_sad.append(f"Hào {_mc_hao} ({_mc_chi}) bị Nguyệt/Nhật Phá làm tổn thương tinh thần")
+            if _nhat_hinh_mc or _nguyet_hinh_mc:
+                _sad_pts += 16
+                _h_src_lbl = f"Nhật {chi_ngay}" if _nhat_hinh_mc else f"Nguyệt {chi_thang}"
+                _mood_proofs_sad.append(f"{_h_src_lbl} Tương Hình trực tiếp Hào {_mc_hao} ({_mc_chi}) — nội tâm dằn vặt, bức bối khó chịu ngầm")
+            if _nhat_khac_mc or _nhat_xung_mc:
+                _sad_pts += 14
+                _mood_proofs_sad.append(f"Nhật Thần {chi_ngay} khắc/xung Hào {_mc_hao} ({_mc_chi})")
+            if _mc_void:
+                _sad_pts += 15
+                _mood_proofs_sad.append(f"Hào {_mc_hao} ({_mc_chi}) rơi vào Tuần Không — cảm giác trống trải, chênh vênh hụt hẫng")
+            if _mc_mo:
+                _sad_pts += 15
+                _mood_proofs_sad.append(f"Hào {_mc_hao} ({_mc_chi}) Nhập Mộ — tâm tư chất chứa, đóng kín u uất")
+            if _mc_vs in ("Vượng", "Tướng") and not (_mc_np or _nhat_hinh_mc or _nhat_khac_mc or _mc_void or _mc_mo):
+                _joy_pts += 16
+                _mood_proofs_joy.append(f"Hào {_mc_hao} ({_mc_chi}) đắc lệnh {_mc_vs}, nội lực vững vàng")
+
+            # Vector 4: Quẻ Du Hồn / Lục Xung / Tượng Quẻ Kinh Dịch (Sơn Lôi Di, Khảm, Khốn, Kiển, Bĩ, Minh Di vs Đoài, Thái, Dự, Hàm)
+            _ban_nm_mc = str(ly_res.get("ban_name") or "")
+            _bien_nm_mc = str(ly_res.get("bien_name") or "")
+            if ly_res.get("ban_is_du_hon"):
+                _sad_pts += 16
+                _mood_proofs_sad.append(f"Quẻ Chủ {_ban_nm_mc} thuộc nhóm Quẻ Du Hồn ('Du Hồn tâm thần bất định' — lòng bâng khuâng suy nghĩ miên man không yên)")
+            if ly_res.get("ban_is_luc_xung") or ly_res.get("bien_is_luc_xung"):
+                _sad_pts += 13
+                _mood_proofs_sad.append("Quẻ phạm Lục Xung báo hiệu va chạm cảm xúc / tâm cảnh xáo động")
+            if any(w in (_ban_nm_mc + " " + _bien_nm_mc) for w in ("Khảm", "Khốn", "Kiển", "Bĩ", "Bác", "Tụng", "Minh Di", "Khuê", "Độn", "Cổ", "Vị Tế", "Ký Tế")):
+                _sad_pts += 11
+                _mood_proofs_sad.append(f"Tượng quẻ {_ban_nm_mc} ➔ {_bien_nm_mc} mang khí Khảm hiểm / Thủy–Hỏa giằng co nội tâm")
+            if any(w in (_ban_nm_mc + " " + _bien_nm_mc) for w in ("Đoài", "Thái", "Dự", "Hàm", "Đại Hữu", "Gia Nhân", "Trung Phu")) or ly_res.get("ban_is_luc_hop"):
+                _joy_pts += 15
+                _mood_proofs_joy.append(f"Tượng quẻ {_ban_nm_mc} ➔ {_bien_nm_mc} mang khí Duyệt lạc / Giao hòa êm ấm")
+
+            # Vector 5: Tinh – Môn – Thần Kỳ Môn Độn Giáp
+            if any(s in star_tc for s in ("Nhuế", "Bồng", "Trụ")):
+                _sad_pts += 12
+                _mood_proofs_sad.append(f"Kỳ Môn Cung {tc} gặp Sao {star_tc} (tinh tú chủ nỗi phiền muộn, bận lòng)")
+            if any(d in door_tc for d in ("Thương", "Kinh", "Tử", "Đỗ")):
+                _sad_pts += 14
+                _mood_proofs_sad.append(f"Kỳ Môn gặp Cửa {door_tc} (tâm trạng tổn thương/lo âu/khép kín)")
+            elif any(d in door_tc for d in ("Hưu", "Sinh", "Khai")) and not tu_hai_tc:
+                _joy_pts += 11
+                _mood_proofs_joy.append(f"Kỳ Môn Cung {tc} đắc Cửa {door_tc} sạch Tứ Hại")
+            if tu_hai_tc:
+                _sad_pts += 10
+                _mood_proofs_sad.append(f"Cung {tc} vướng Tứ Hại ({', '.join(tu_hai_tc[:2])})")
+
+            # Kiểm tra thêm nếu có hào Thê Tài hoặc Tử Tôn bị Tuần Không / Nguyệt Phá trên bàn quẻ
+            _void_or_broken_tai = [
+                ln for ln in lines
+                if "Thê Tài" in str(ln.get("luc_than", "")) and (ln.get("is_void") or ln.get("is_nguyet_pha") or ln.get("is_nhat_pha"))
+            ]
+            if _void_or_broken_tai and "Thê Tài" in _mc_lt:
+                _sad_pts += 10
+
+            _tot_mc = max(1, _sad_pts + _joy_pts)
+            _sad_pct = max(15, min(88, int(round(_sad_pts * 100.0 / _tot_mc))))
+            _joy_pct = 100 - _sad_pct
+
+            # 2. Giải mã ĐÍCH DANH «BUỒN / LO / GIẬN VÌ CHUYỆN GÌ» từ Hào Động công kích + Lục Thân Hào Tâm Chủ (Tuyệt đối 0% nói chung chung!)
+            _cause_items: List[str] = []
+            _att0 = _attackers_mc[0] if _attackers_mc else {}
+            _att_lt = str(_att0.get("luc_than") or "")
+            _att_chi = str(_att0.get("chi") or "")
+            _att_hao = int(_att0.get("hao") or 0)
+            _att_thu = str(_att0.get("luc_thu") or _mc_thu)
+
+            if "Huynh Đệ" in _att_lt or ("Thê Tài" in _mc_lt and (_attackers_mc or _void_or_broken_tai or _nhat_hinh_mc)):
+                _tai_void_note = (
+                    f", Hào {_void_or_broken_tai[0]['hao']} Thê Tài ({_void_or_broken_tai[0]['chi']}) vướng {'Tuần Không' if _void_or_broken_tai[0].get('is_void') else 'Xung Phá'}"
+                    if _void_or_broken_tai else ""
+                )
+                _hd_act_note = (
+                    f"Hào {_att_hao} Huynh Đệ ({_att_chi}) phát động khắc thẳng Hào {_mc_hao} ({_mc_lt} {_mc_chi}){_tai_void_note}"
+                    if "Huynh Đệ" in _att_lt else f"Hào {_mc_hao} Thê Tài ({_mc_chi}) chịu hình khắc{_tai_void_note}"
+                )
+                _cause_items.append(
+                    f"(1) Nỗi lo áp lực tiền bạc – chi tiêu, hao hụt tài chính hoặc công việc làm ăn/thu nhập chưa đạt kỳ vọng ({_hd_act_note})"
+                )
+                _cause_items.append(
+                    f"(2) Nỗi ấm ức trong chuyện tình cảm / gia đình hoặc thất vọng vì lời nói, cách hành xử của người thân quen / bạn bè xung quanh"
+                )
+            elif "Quan Quỷ" in _att_lt or "Quan Quỷ" in _mc_lt:
+                if _att_thu == "Chu Tước" or "Kinh" in door_tc:
+                    _cause_items.append("Buồn bực ấm ức vì lời ăn tiếng nói, sự bất đồng cãi vã, thị phi hiểu lầm hoặc áp lực chỉ trích trong công việc (Quan Quỷ lâm Chu Tước/Kinh Môn)")
+                elif _att_thu == "Huyền Vũ":
+                    _cause_items.append("Nỗi buồn thầm kín chuyện tình cảm đôi lứa, sự lạnh nhạt/nghi ngại lòng người hoặc tâm sự riêng tư khó nói thành lời (Quan Quỷ lâm Huyền Vũ)")
+                elif _att_thu == "Bạch Hổ" or "Nhuế" in star_tc:
+                    _cause_items.append("Áp lực công việc căng thẳng kéo dài đi kèm sự mệt mỏi cơ thể / lo lắng sức khỏe (Quan Quỷ hội Bạch Hổ/Thiên Nhuế)")
+                else:
+                    _cause_items.append(f"Áp lực nặng nề về công việc – sự nghiệp chưa thông suốt hoặc nỗi lo chuyện tình cảm / rắc rối cá nhân đè nặng trong lòng (Quan Quỷ {_att_chi or _mc_chi})")
+            elif "Phụ Mẫu" in _att_lt or "Phụ Mẫu" in _mc_lt or any("Phụ Mẫu" in str(ln.get("luc_than", "")) and ln.get("is_moving") for ln in lines):
+                _pm_mv = next((ln for ln in lines if "Phụ Mẫu" in str(ln.get("luc_than", "")) and ln.get("is_moving")), _mc_ln)
+                _cause_items.append(
+                    f"Nặng lòng vì gánh nặng trách nhiệm gia đình, lo cho cha mẹ/người thân, chuyện nhà cửa chỗ ở hoặc giấy tờ công việc bận rộn vất vả phải tự gánh vác (Hào {_pm_mv.get('hao', _mc_hao)} Phụ Mẫu {_pm_mv.get('chi', _mc_chi)})"
+                )
+            else:
+                _cause_items.append(
+                    f"Tâm tư trăn trở vì kế hoạch cá nhân và chuyện tình cảm/tiền bạc hiện đang chững lại chưa như ý ({_mc_lt} {_mc_chi} tại Hào {_mc_hao})"
+                )
+
+            _cause_joined = "; ".join(_cause_items)
+            _sad_ev_short = " · ".join(_mood_proofs_sad[:3]) if _mood_proofs_sad else f"Hào {_mc_hao} {_mc_lt} ({_mc_chi}) chịu lực cản"
+            _joy_ev_short = " · ".join(_mood_proofs_joy[:2]) if _mood_proofs_joy else f"Hào {_mc_hao} ({_mc_chi}) đắc khí an hòa"
+
+            if _sad_pct >= _joy_pct:
+                verdict_polarity = "MOOD_SAD_WORRIED"
+                composite_score = min(composite_score, max(24, 100 - _sad_pct + 8))
+                lh_chain_notes = _mood_proofs_sad[:3] + lh_chain_notes[:1]
+                benh_quai = _mood_proofs_sad[0] if _mood_proofs_sad else benh_quai
+                if any(w in q_low for w in ("giận", "dỗi")):
+                    direct_headline = (
+                        f"💔 ĐỌC VỊ TÂM CẢNH & NGUYÊN NHÂN ({_ban_bien_lbl}): "
+                        f"{_mc_who.upper()} HIỆN ĐANG GIẬN / NẶNG LÒNG ẤM ỨC ({_sad_pct}% Tâm sự/Giận ↔ {_joy_pct}% Nguôi ngoai) — "
+                        f"NGUYÊN NHÂN SÂU XA: {_cause_joined} [{_sad_ev_short}] ➔ Thời điểm nguôi giận & mở lòng: {_uk_disp}!"
+                    )
+                else:
+                    direct_headline = (
+                        f"💔 ĐỌC VỊ TÂM CẢNH & NỖI NIỀM SÁT QUẺ ({_ban_bien_lbl}): "
+                        f"{_mc_who.upper()} ĐANG BUỒN & NẶNG LÒNG TRĂN TRỞ ({_sad_pct}% Buồn/Tâm sự ↔ {_joy_pct}% Vui — bề ngoài cố giữ bình thường nhưng trong tâm bất an) — "
+                        f"BUỒN VÌ CHUYỆN GÌ: {_cause_joined} [{_sad_ev_short}] ➔ Mốc giải tỏa tâm tư: {_uk_disp}!"
+                    )
+            else:
+                verdict_polarity = "MOOD_HAPPY_PEACEFUL"
+                composite_score = max(composite_score, min(84, _joy_pct))
+                lh_chain_notes = _mood_proofs_joy[:3] + lh_chain_notes[:1]
+                _cond_note = (
+                    f" — Giải đáp vế «Nếu buồn thì buồn chuyện gì»: Hiện trong lòng {_mc_who.lower()} KHÔNG có nỗi buồn lớn đè nặng, chỉ thoáng chút bận tâm nhỏ về {_cause_items[0].lower()} nhưng hoàn toàn làm chủ được"
+                    if ("nếu" in q_low or "cái gì" in q_low or "chuyện gì" in q_low) else ""
+                )
+                direct_headline = (
+                    f"😊 ĐỌC VỊ TÂM CẢNH SÁT QUẺ ({_ban_bien_lbl}): "
+                    f"{_mc_who.upper()} HIỆN ĐANG VUI VẺ, THƯ THÁI & AN ĐỊNH ({_joy_pct}% Vui/An hòa ↔ {_sad_pct}% Bận tâm — {_joy_ev_short})"
+                    f"{_cond_note}!"
+                )
+            try:
+                from holographic_event_decoder import build_four_pillar_prophecy as _b4p_mc_fn
+                _four_pillars = _b4p_mc_fn(
+                    ly_res=ly_res,
+                    qm_res=qm_res,
+                    mh_res=mh_res,
+                    deep_syn={
+                        "composite_score": composite_score,
+                        "lh_score": min(lh_norm, composite_score) if _sad_pct >= _joy_pct else max(lh_norm, composite_score),
+                        "qm_score": qm_norm,
+                        "mh_score": mh_norm,
+                        "benh_quai": benh_quai,
+                        "duoc_ung_ky": duoc_ung_ky,
+                    },
+                    chart_data=cd,
+                    dung_than=dung_than,
+                    question=question,
+                )
+            except Exception:
+                pass
         elif _is_motive_q:
             special_mode = "HUMAN_MOTIVE"
             _is_boss_motive = any(w in q_low for w in ("sếp", "cấp trên", "lãnh đạo", "giám đốc", "chủ tịch"))
@@ -3380,16 +3702,18 @@ def synthesize_deep_classical_verdict(
                     f"[3. Mốc mở khóa]: {_uk_disp} (Nên thủ thế chắc chắn, tránh mạo hiểm lúc này)!"
                 )
         elif any(w in q_low for w in ["hợp đồng", "ký kết", "chốt đơn", "đàm phán"]) and not any(w in q_low for w in ("kiện", "tòa án", "tranh chấp", "đấu thầu")):
+            _cond_cav = f" [Nếu chủ quan dễ vướng khâu: {benh_quai}]" if re.search(r"\bnếu\s+", q_low) else ""
             if composite_score >= 52:
                 verdict_polarity = "SUCCESS"
-                direct_headline = f"📝 LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): KÝ KẾT THÀNH CÔNG ({composite_score}/100 — {_ev_real_short or _core_reason_1}) ➔ Thời điểm chốt thuận lợi: {_uk_disp}!"
+                direct_headline = f"📝 LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): KÝ KẾT THÀNH CÔNG ({composite_score}/100 — {_ev_real_short or _core_reason_1}){_cond_cav} ➔ Thời điểm chốt thuận lợi: {_uk_disp}!"
             else:
                 verdict_polarity = "BLOCKED"
                 direct_headline = f"⚠️ LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): HIỆN TẠI VƯỚNG ĐIỀU KHOẢN / CHƯA CHỐT NGAY ĐƯỢC ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Cần tháo gỡ và đợi {_uk_disp}!"
         elif is_wealth_q:
+            _cond_cav = f" [Điểm duy nhất cần phòng ngừa nếu chủ quan: {benh_quai}]" if re.search(r"\bnếu\s+", q_low) else ""
             if composite_score >= 58:
                 verdict_polarity = "PROFIT"
-                direct_headline = f"💰 LUẬN ĐOÁN CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): ĐẮC TÀI / SINH LỜI TỐT ({composite_score}/100 — {_ev_real_short or _core_reason_1}) ➔ Ứng kỳ thu lợi: {_uk_disp}!"
+                direct_headline = f"💰 LUẬN ĐOÁN CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): ĐẮC TÀI / SINH LỜI TỐT ({composite_score}/100 — {_ev_real_short or _core_reason_1}){_cond_cav} ➔ Ứng kỳ thu lợi: {_uk_disp}!"
             elif composite_score >= 50:
                 verdict_polarity = "CAUTIOUS_PROFIT"
                 direct_headline = f"⚖️ LUẬN ĐOÁN CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): CÓ LỘC NHƯNG TRƯỚC NGHẼN SAU THÔNG ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Chờ đúng mốc {_uk_disp} mới thu lời an toàn!"
@@ -3397,19 +3721,21 @@ def synthesize_deep_classical_verdict(
                 verdict_polarity = "LOSS_RISK"
                 direct_headline = f"🚨 CẢNH BÁO CẦU TÀI & ĐẦU TƯ CỔ PHÁP ({_ban_bien_lbl}): BẤT LỢI / DỄ HAO TÀI KẸT VỐN NẾU LÀM GẤP ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ TẠM HOÃN XUỐNG TIỀN LỚN, CHỜ MỐC MỞ KHÓA: {_uk_disp}!"
         elif any(w in q_low for w in ["giao dịch", "thương vụ"]):
+            _cond_cav = f" [Nếu chủ quan dễ vướng khâu: {benh_quai}]" if re.search(r"\bnếu\s+", q_low) else ""
             if composite_score >= 52:
                 verdict_polarity = "SUCCESS"
-                direct_headline = f"📝 LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): KÝ KẾT THÀNH CÔNG ({composite_score}/100 — {_ev_real_short or _core_reason_1}) ➔ Thời điểm chốt thuận lợi: {_uk_disp}!"
+                direct_headline = f"📝 LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): KÝ KẾT THÀNH CÔNG ({composite_score}/100 — {_ev_real_short or _core_reason_1}){_cond_cav} ➔ Thời điểm chốt thuận lợi: {_uk_disp}!"
             else:
                 verdict_polarity = "BLOCKED"
                 direct_headline = f"⚠️ LUẬN ĐOÁN HỢP ĐỒNG & GIAO DỊCH ({_ban_bien_lbl}): HIỆN TẠI VƯỚNG ĐIỀU KHOẢN / CHƯA CHỐT NGAY ĐƯỢC ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Cần tháo gỡ và đợi {_uk_disp}!"
         elif any(w in q_low for w in ["thi ", "đỗ", "đậu", "ứng tuyển", "xin việc", "phỏng vấn", "thăng chức"]):
+            _cond_cav = f" [Điểm duy nhất cần phòng ngừa nếu chủ quan: {benh_quai}]" if re.search(r"\bnếu\s+", q_low) else ""
             if composite_score >= 56:
                 verdict_polarity = "PASS"
-                direct_headline = f"🎓 LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): ĐẠT KẾT QUẢ TỐT / ĐỖ ĐẠT ({composite_score}/100 — {_ev_real_short or _core_reason_1}; Cung {tc} {star_tc} · {door_tc}) ➔ Ứng kỳ báo tin: {_uk_disp}!"
+                direct_headline = f"🎓 LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): ĐẠT KẾT QUẢ TỐT / ĐỖ ĐẠT ({composite_score}/100 — {_ev_real_short or _core_reason_1}; Cung {tc} {star_tc} · {door_tc}){_cond_cav} ➔ Ứng kỳ báo tin: {_uk_disp}!"
             elif composite_score >= 50:
                 verdict_polarity = "CAUTIOUS_PASS"
-                direct_headline = f"⚖️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): CÓ CƠ HỘI ĐẠT SÁT NÚT NHƯNG CẦN NỖ LỰC VƯỢT ÁP LỰC PHÚT CHÓT ({composite_score}/100 — {_ev_real_short or _core_reason_1}; Cung {tc} {star_tc} · {door_tc}) ➔ Ứng kỳ báo tin: {_uk_disp}!"
+                direct_headline = f"⚖️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): CÓ CƠ HỘI ĐẠT SÁT NÚT NHƯNG CẦN NỖ LỰC VƯỢT ÁP LỰC PHÚT CHÓT ({composite_score}/100 — {_ev_real_short or _core_reason_1}; Cung {tc} {star_tc} · {door_tc}){_cond_cav} ➔ Ứng kỳ báo tin: {_uk_disp}!"
             else:
                 verdict_polarity = "FAIL_RISK"
                 direct_headline = f"⚠️ LUẬN ĐOÁN CÔNG DANH & KHOA CỬ ({_ban_bien_lbl}): GẶP SỨC ÉP LỚN / KHÓ ĐẠT NGAY ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Củng cố hồ sơ/năng lực và chờ {_uk_disp}!"
@@ -3452,9 +3778,10 @@ def synthesize_deep_classical_verdict(
                 verdict_polarity = "LAWSUIT_CAUTION"
                 direct_headline = f"⚠️ LUẬN ĐOÁN TRANH CHẤP & PHÁP LÝ ({_ban_bien_lbl}): ĐỐI PHƯƠNG (HÀO ỨNG {ung_ln.get('chi','')}-{ung_el}) ĐANG CỨNG — NÊN ƯU TIÊN THƯƠNG LƯỢNG HÒA GIẢI ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Mốc tháo gỡ: {_uk_disp}!"
         elif not any(w in q_low for w in ("hướng nào",)):
+            _cond_cav = f" [Điểm duy nhất cần phòng ngừa nếu chủ quan: {benh_quai}]" if re.search(r"\bnếu\s+", q_low) else ""
             if composite_score >= 50:
                 verdict_polarity = "AUSPICIOUS"
-                direct_headline = f"✅ LUẬN ĐOÁN SỰ VIỆC TAM THỨC ({_ban_bien_lbl}): THUẬN LỢI THÀNH SỰ ({composite_score}/100 — {_ev_real_short or _core_reason_1}) ➔ Ứng nghiệm vào: {_uk_disp}!"
+                direct_headline = f"✅ LUẬN ĐOÁN SỰ VIỆC TAM THỨC ({_ban_bien_lbl}): THUẬN LỢI THÀNH SỰ ({composite_score}/100 — {_ev_real_short or _core_reason_1}){_cond_cav} ➔ Ứng nghiệm vào: {_uk_disp}!"
             else:
                 verdict_polarity = "INAUSPICIOUS"
                 direct_headline = f"⚠️ LUẬN ĐOÁN SỰ VIỆC TAM THỨC ({_ban_bien_lbl}): HIỆN ĐANG VƯỚNG NÚT THẮT CHƯA THÔNG ({composite_score}/100 — {_ev_real_short or benh_quai}) ➔ Chìa khóa mở cục: {_uk_disp}!"
@@ -3470,7 +3797,7 @@ def synthesize_deep_classical_verdict(
         )
 
     prompt_synthesis_block = (
-        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V144.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V145.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
         f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
         f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào (Tăng San Bốc Dịch)]: {' | '.join(lh_chain_notes)}.\n"
         f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn (Ngự Định Kỳ Môn Bảo Giám)]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
@@ -3747,7 +4074,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V144.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V145.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Lịch ứng kỳ chính xác:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn.get("short_inline_date") or deep_syn["duoc_ung_ky"]}</span>'
@@ -3757,7 +4084,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V144.0)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V145.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'

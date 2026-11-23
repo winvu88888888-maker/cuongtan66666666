@@ -1,7 +1,7 @@
 import streamlit as st
 
 # ═══ PHIÊN BẢN — CHỈ SỬA Ở ĐÂY, TỰ ĐỘNG CẬP NHẬT TOÀN BỘ APP ═══
-APP_VERSION = "V144.0"
+APP_VERSION = "V145.0"
 APP_VERSION_FULL = f"{APP_VERSION} — ĐẠI TIÊN TRI 4 TRỤ CỘT CHỐNG LUẬN ẢO (SỰ VIỆC · VẬT & NGƯỜI · NGÀY GIỜ THÁNG NĂM · GIẢI PHÁP) · HOÀN CHỈNH TOÀN DIỆN ✨"
 # ═══════════════════════════════════════════════════════════════════════
 try:
@@ -20,7 +20,7 @@ import traceback
 import re
 
 # V139.0: Tự động Hot-Reload toàn bộ module Python trên Streamlit Cloud ngay khi có bản cập nhật mới
-_CODE_BUILD_VERSION = "V144.0"
+_CODE_BUILD_VERSION = "V145.0"
 import importlib as _imp_hot
 if getattr(sys, "_qmdg_loaded_build_version", None) != _CODE_BUILD_VERSION:
     for _m_name in [
@@ -2715,7 +2715,7 @@ def render_master_unified_qa_box(location_key="main"):
                                     moving_override=_d_q,
                                 )
                             else:
-                                # V144.0: ĐỒNG BỘ TUYỆT ĐỐI 100% QUẺ CHỦ & QUẺ BIẾN GIỮA LỤC HÀO VÀ MAI HOA (TRIỆT TIÊU LỆCH 2 QUẺ TRÊN CÙNG MÀN HÌNH!)
+                                # V145.0: ĐỒNG BỘ TUYỆT ĐỐI 100% QUẺ CHỦ & QUẺ BIẾN GIỮA LỤC HÀO VÀ MAI HOA (TRIỆT TIÊU LỆCH 2 QUẺ TRÊN CÙNG MÀN HÌNH!)
                                 from mai_hoa_dich_so import build_res as _mh_build_sync
                                 from luc_hao_kinh_dich import lines_to_quai_num as _lh_l2q_sync
                                 _COIN_DIST_8 = (6, 7, 7, 7, 8, 8, 8, 9)

@@ -1170,7 +1170,11 @@ def compute_deep_interacting_factors_a_to_z(
     try:
         from luc_hao_ky_mon_rules import THAP_CAN_KHAC_UNG
         _cc_val = THAP_CAN_KHAC_UNG.get((can_thien_dt, can_dia_dt)) or THAP_CAN_KHAC_UNG.get(f"{can_thien_dt}+{can_dia_dt}")
-        if _cc_val:
+        if isinstance(_cc_val, dict):
+            _cc_lbl = f"{_cc_val.get('ten', '')} [{_cc_val.get('cat_hung', '')}]".strip(" []")
+            _cc_desc = str(_cc_val.get("luan", "")).strip()
+            cach_cuc_81_str += f" — <b>{_cc_lbl}</b>{(': ' + _cc_desc) if _cc_desc else ''}"
+        elif _cc_val:
             cach_cuc_81_str += f" — <b>{_cc_val}</b>"
     except Exception:
         pass
@@ -1266,7 +1270,7 @@ def compute_deep_interacting_factors_a_to_z(
         f'• <b>Bàn & Độn Giáp Chủ–Khách:</b> {noi_ngoai_ban_str}. {chu_khach_km_str}.<br>'
         f'• <b>Cung {target_cung} ({quai_cung} — {huong_cung}):</b> Hội <b>Sao {sao_name}{km_star_st}</b> · <b>Cửa {cua_name}</b> · <b>Thần {than_name}</b> ({mon_cung_state}).<br>'
         f'• <b>Cách Cục Lưu Bá Ôn:</b> {cach_cuc_81_str}.<br>'
-        f'• <b>Cửu Độn / Hình–Mộ–Bức:</b> {km_special_flags_str}.{nm_line_html}'
+        f'• <b>Cửu Độn / Hình–Mộ–Bức:</b> {str(km_special_flags_str).rstrip(".")}.{nm_line_html}'
         f'</div>'
         # Thẻ 4: Thiết Bản & Pháp Quyết Thông Quan
         f'<div style="padding:10px 12px;background:rgba(30,41,59,0.85);border-radius:9px;border-left:4px solid #34d399;">'
