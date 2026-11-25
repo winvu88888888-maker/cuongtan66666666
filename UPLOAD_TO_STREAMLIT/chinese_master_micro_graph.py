@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V145.0)
+CHINESE MASTER MICRO-SIGN & DIRECTED CAUSAL GRAPH ENGINE (V146.0 — MULTI-STEP & PARALLEL THINKING)
 =================================================================
 Đối chuẩn toàn diện theo các nền tảng phân tích quẻ chuyên sâu hàng đầu Trung Quốc:
 1. Nguyên Hanh Lợi Trinh (元亨利贞网 china95.net) — Lục Hào 4 Tầng Tác Động Tuyến Lộ Đồ, Quái Thân, Thế Thân, 12 Thần Sát, Tam Hình/Lục Hại/Lục Phá.
@@ -3807,7 +3807,7 @@ def synthesize_deep_classical_verdict(
         )
 
     prompt_synthesis_block = (
-        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V145.0 (TĂNG SAN BỐC DỊCH · NGỰ ĐỊNH KỲ MÔN · MAI HOA DỊCH SỐ — CHỐNG LUẬN ẢO) ===\n"
+        "=== HỘI ĐỒNG ĐẠI SƯ LUẬN QUẺ BIỆN CHỨNG TẦNG SÂU V146.0 (SUY LUẬN ĐA BƯỚC & TƯ DUY SONG SONG · /PROMAX · /RAW · /TLDR · /SOURCE) ===\n"
         f"1. [Điểm Khí Lực Thực Chiến Tam Thức]: Hợp nhất = {composite_score}/100 (Lục Hào 4 tầng = {lh_norm}/100 · Kỳ Môn Chủ-Khách/Tứ Hại = {qm_norm}/100 · Mai Hoa Đảng Thể/Dụng = {mh_norm}/100).\n"
         f"2. [Chuỗi Sinh Khắc Cứu Ứng Lục Hào (Tăng San Bốc Dịch)]: {' | '.join(lh_chain_notes)}.\n"
         f"3. [Biện Chứng Chủ-Khách & Tứ Hại Kỳ Môn (Ngự Định Kỳ Môn Bảo Giám)]: {' | '.join(qm_notes) or f'Cung {tc} ({door_tc}, {star_tc}, {deity_tc}) vận hành ổn định'}.\n"
@@ -3838,6 +3838,80 @@ def synthesize_deep_classical_verdict(
     }
 
 
+_MICRO_GRAPH_CORE_CACHE: Dict[str, Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]] = {}
+
+
+def _compute_parallel_micro_graphs_cached(
+    chart_data: Optional[Dict[str, Any]],
+    luc_hao_data: Optional[Dict[str, Any]],
+    mai_hoa_data: Optional[Dict[str, Any]],
+    dung_than: str = "Bản Thân",
+    topic: str = "Chung",
+    question: str = "",
+    target_cung: Optional[int] = None,
+    option_a: str = "",
+    option_b: str = "",
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    """
+    V146.0 PARALLEL THINKING + TURN CACHE:
+    Chạy đồng thời 3 luồng vi mô (Lục Hào · Kỳ Môn · Mai Hoa) trên ThreadPoolExecutor,
+    kèm bộ nhớ đệm chữ ký quẻ để loại bỏ triệt để việc tính lặp 3 lần trong 1 lượt hỏi!
+    """
+    import hashlib as _hl_mg
+    _cd = chart_data or {}
+    _lh = luc_hao_data or {}
+    _mh = mai_hoa_data or {}
+    _ban_n = str((_lh.get("ban") or {}).get("name") or _mh.get("ten_qua_chu") or _mh.get("ten_que") or "")
+    _bien_n = str((_lh.get("bien") or {}).get("name") or _mh.get("ten_qua_bien") or "")
+    _dong_l = str(_lh.get("dong_hao") or (_lh.get("ban") or {}).get("dong_hao") or _mh.get("dong_hao") or "")
+    _sig_raw = (
+        f"V146::{_cd.get('year')}-{_cd.get('month')}-{_cd.get('day')}-{_cd.get('hour')}::"
+        f"{_cd.get('can_ngay')}_{_cd.get('chi_ngay')}_{_cd.get('can_gio')}_{_cd.get('chi_gio')}_{_cd.get('cuc')}::"
+        f"{_ban_n}->{_bien_n}::{_dong_l}::{dung_than}::{target_cung}::{question}::{option_a}::{option_b}"
+    )
+    _sig = _hl_mg.md5(_sig_raw.encode("utf-8", errors="ignore")).hexdigest()
+    _hit = _MICRO_GRAPH_CORE_CACHE.get(_sig)
+    if _hit is not None:
+        return _hit
+
+    try:
+        from multi_step_parallel_reasoner import _SHARED_PARALLEL_POOL as _mg_pool
+        _f_ly = _mg_pool.submit(
+            analyze_liuyao_exhaustive_micro_graph,
+            _lh, dung_than=dung_than, topic=topic, question=question, chart_data=_cd
+        )
+        _f_qm = _mg_pool.submit(
+            analyze_qimen_exhaustive_micro_graph,
+            _cd, target_cung=target_cung, dung_than=dung_than, topic=topic, question=question
+        )
+        _f_mh = _mg_pool.submit(
+            analyze_meihua_exhaustive_micro_graph,
+            _mh, chart_data=_cd, topic=topic, question=question, luc_hao_data=_lh
+        )
+        ly_res = _f_ly.result()
+        qm_res = _f_qm.result()
+        mh_res = _f_mh.result()
+    except Exception:
+        ly_res = analyze_liuyao_exhaustive_micro_graph(_lh, dung_than=dung_than, topic=topic, question=question, chart_data=_cd)
+        qm_res = analyze_qimen_exhaustive_micro_graph(_cd, target_cung=target_cung, dung_than=dung_than, topic=topic, question=question)
+        mh_res = analyze_meihua_exhaustive_micro_graph(_mh, chart_data=_cd, topic=topic, question=question, luc_hao_data=_lh)
+
+    deep_syn = synthesize_deep_classical_verdict(
+        ly_res=ly_res,
+        qm_res=qm_res,
+        mh_res=mh_res,
+        chart_data=_cd,
+        dung_than=dung_than,
+        question=question,
+        option_a=option_a,
+        option_b=option_b,
+    )
+    if len(_MICRO_GRAPH_CORE_CACHE) > 256:
+        _MICRO_GRAPH_CORE_CACHE.clear()
+    _MICRO_GRAPH_CORE_CACHE[_sig] = (ly_res, qm_res, mh_res, deep_syn)
+    return ly_res, qm_res, mh_res, deep_syn
+
+
 def build_unified_causal_diagram_and_micro_audit(
     chart_data: Optional[Dict[str, Any]],
     luc_hao_data: Optional[Dict[str, Any]],
@@ -3849,7 +3923,7 @@ def build_unified_causal_diagram_and_micro_audit(
     ai_verdict_overrides: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """
-    V133.2 MASTER SYNTHESIS:
+    V146.0 MASTER SYNTHESIS (PARALLEL MICRO-GRAPHS + TURN CACHE):
     Biến ô '══► KẾT QUẢ' cuối mỗi Sơ Đồ Mũi Tên (Lục Hào · Kỳ Môn · Mai Hoa + Sơ Đồ Hợp Nhất Tam Thức)
     thành PHẦN TRỰC TIẾP GIẢI ĐÁP CÂU HỎI CHÍNH thông qua cơ chế tác động nhân quả từng yếu tố của từng loại quẻ!
     """
@@ -3857,25 +3931,17 @@ def build_unified_causal_diagram_and_micro_audit(
     ai_ov = ai_verdict_overrides if isinstance(ai_verdict_overrides, dict) else {}
     q_clean_disp = _html.escape(str(question or "").strip())
 
-    ly_res = analyze_liuyao_exhaustive_micro_graph(
-        luc_hao_data or {}, dung_than=dung_than, topic=topic, question=question, chart_data=chart_data
-    )
-    qm_res = analyze_qimen_exhaustive_micro_graph(
-        chart_data or {}, target_cung=target_cung, dung_than=dung_than, topic=topic, question=question
-    )
-    mh_res = analyze_meihua_exhaustive_micro_graph(
-        mai_hoa_data or {}, chart_data=chart_data, topic=topic, question=question, luc_hao_data=luc_hao_data
+    ly_res, qm_res, mh_res, deep_syn = _compute_parallel_micro_graphs_cached(
+        chart_data=chart_data,
+        luc_hao_data=luc_hao_data,
+        mai_hoa_data=mai_hoa_data,
+        dung_than=dung_than,
+        topic=topic,
+        question=question,
+        target_cung=target_cung,
     )
 
     all_edges = list(ly_res["directed_edges"]) + list(qm_res["directed_edges"]) + list(mh_res["directed_edges"])
-    deep_syn = synthesize_deep_classical_verdict(
-        ly_res=ly_res,
-        qm_res=qm_res,
-        mh_res=mh_res,
-        chart_data=chart_data,
-        dung_than=dung_than,
-        question=question,
-    )
 
     tc = qm_res["target_cung"]
     qm_tc_audit = qm_res["palace_micro_audit"].get(tc, {})
@@ -4084,7 +4150,7 @@ def build_unified_causal_diagram_and_micro_audit(
     res_items_html = "".join(f'<div style="margin:3px 0;font-size:0.87em;color:#f1f5f9;line-height:1.48;">• {r}</div>' for r in resonances)
     _bd_box_html = (
         f'<div style="padding:9px 12px;background:rgba(6,78,59,0.52);border-radius:9px;border-left:4px solid #34d399;margin-bottom:8px;">'
-        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V145.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
+        f'<div style="font-size:0.86em;font-weight:900;color:#6ee7b7;margin-bottom:3px;">🩺 CHẨN ĐOÁN BỆNH – DƯỢC QUẺ & TRỌNG SỐ BIỆN CHỨNG TAM THỨC (V146.0 — Lục Hào {deep_syn["lh_score"]} · Kỳ Môn {deep_syn["qm_score"]} · Mai Hoa {deep_syn["mh_score"]} ➔ Hợp Nhất {deep_syn["composite_score"]}/100)</div>'
         f'<div style="font-size:0.86em;color:#ecfdf5;line-height:1.48;">'
         f'• <b>Điểm nghẽn / Bệnh của quẻ:</b> {deep_syn["benh_quai"]}<br>'
         f'• <b>Chìa khóa mở khóa / Lịch ứng kỳ chính xác:</b> <span style="color:#fde68a;font-weight:700;">{deep_syn.get("short_inline_date") or deep_syn["duoc_ung_ky"]}</span>'
@@ -4094,7 +4160,7 @@ def build_unified_causal_diagram_and_micro_audit(
     visual_flowchart_html = (
         f'<div style="margin-top:12px;padding:13px 15px;background:linear-gradient(135deg,rgba(9,13,26,0.96),rgba(23,37,84,0.92));border-radius:13px;border:1.5px solid #38bdf8;box-shadow:0 4px 18px rgba(14,165,233,0.2);">'
         f'<div style="font-size:0.96em;font-weight:900;color:#fde047;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'
-        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V145.0)</span>'
+        f'<span>🗺️ SƠ ĐỒ MŨI TÊN TÁC ĐỘNG NHÂN QUẢ CHI TIẾT & GIẢI ĐÁP TRỰC TIẾP CÂU HỎI CHÍNH (V146.0)</span>'
         f'<span style="font-size:0.78em;color:#bae6fd;background:rgba(56,189,248,0.16);padding:2px 9px;border-radius:999px;border:1px solid rgba(56,189,248,0.4);">Đối chuẩn Tăng San Bốc Dịch · Ngự Định Kỳ Môn · Mai Hoa · Đại Lục Nhâm</span>'
         f'</div>'
         f'{ly_flow_html}'
